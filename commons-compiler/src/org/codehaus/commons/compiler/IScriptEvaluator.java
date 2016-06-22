@@ -31,6 +31,8 @@ import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * An engine that executes a script in Java&trade; bytecode.
  * <p>
@@ -155,7 +157,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      *
      * @param arguments The actual parameter values
      */
-    Object evaluate(Object[] arguments) throws InvocationTargetException;
+    @Nullable Object evaluate(Object[] arguments) throws InvocationTargetException;
 
     /**
      * Returns the loaded {@link java.lang.reflect.Method}.
@@ -211,13 +213,13 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      *                               size different from that of <code>scanners</code>
      */
     void
-    cook(String[] optionalFileNames, Reader[] readers) throws CompileException, IOException;
+    cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException;
 
     /** Same as {@link #cook(String)}, but for multiple scripts. */
     void cook(String[] strings) throws CompileException;
 
     /** Same as {@link #cook(String, String)}, but for multiple scripts. */
-    void cook(String[] optionalFileNames, String[] strings) throws CompileException;
+    void cook(@Nullable String[] optionalFileNames, String[] strings) throws CompileException;
 
     /** Same as {@link #evaluate(Object[])}, but for multiple scripts. */
     Object evaluate(int idx, Object[] arguments) throws InvocationTargetException;

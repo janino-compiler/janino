@@ -25,4 +25,7 @@
  */
 
 /** Utility classes for testing. */
+@NotNullByDefault
 package util;
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

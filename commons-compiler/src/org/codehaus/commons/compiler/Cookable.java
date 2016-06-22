@@ -34,13 +34,15 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /** Base class for a simple {@link ICookable}. */
 public abstract
 class Cookable implements ICookable {
 
     /** @see ICookable#cook(String, Reader) */
     @Override public abstract void
-    cook(String optionalFileName, Reader r) throws CompileException, IOException;
+    cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException;
 
     /** @see ICookable#cook(Reader) */
     @Override public final void
@@ -56,19 +58,20 @@ class Cookable implements ICookable {
      * @see ICookable#cook(String, InputStream)
      */
     @Override public final void
-    cook(String optionalFileName, InputStream is) throws CompileException, IOException {
+    cook(@Nullable String optionalFileName, InputStream is) throws CompileException, IOException {
         this.cook(optionalFileName, is, null);
     }
 
     /** @see ICookable#cook(InputStream, String) */
     @Override public final void
-    cook(InputStream is, String optionalEncoding) throws CompileException, IOException {
+    cook(InputStream is, @Nullable String optionalEncoding) throws CompileException, IOException {
         this.cook(optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding));
     }
 
     /** @see ICookable#cook(String, InputStream, String) */
     @Override public final void
-    cook(String optionalFileName, InputStream is, String optionalEncoding) throws CompileException, IOException {
+    cook(@Nullable String optionalFileName, InputStream is, @Nullable String optionalEncoding)
+    throws CompileException, IOException {
         this.cook(
             optionalFileName,
             optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding)
@@ -83,7 +86,7 @@ class Cookable implements ICookable {
 
     /** @see ICookable#cook(String, String) */
     @Override public void
-    cook(String optionalFileName, String s) throws CompileException {
+    cook(@Nullable String optionalFileName, String s) throws CompileException {
         try {
             this.cook(optionalFileName, new StringReader(s));
         } catch (IOException ioe) {
@@ -101,7 +104,7 @@ class Cookable implements ICookable {
 
     /** @see ICookable#cookFile(File, String) */
     @Override public final void
-    cookFile(File file, String optionalEncoding) throws CompileException, IOException {
+    cookFile(File file, @Nullable String optionalEncoding) throws CompileException, IOException {
         InputStream is = new FileInputStream(file);
         try {
             this.cook(
@@ -123,7 +126,7 @@ class Cookable implements ICookable {
 
     /** @see ICookable#cookFile(String, String) */
     @Override public final void
-    cookFile(String fileName, String optionalEncoding) throws CompileException, IOException {
+    cookFile(String fileName, @Nullable String optionalEncoding) throws CompileException, IOException {
         this.cookFile(new File(fileName), optionalEncoding);
     }
 

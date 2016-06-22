@@ -43,6 +43,7 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.Compiler;
 import org.codehaus.janino.IClassLoader;
@@ -112,7 +113,7 @@ class CompilerTests {
             c.setCompileErrorHandler(new ErrorHandler() {
 
                 @Override public void
-                handleError(String message, Location optionalLocation) throws CompileException {
+                handleError(String message, @Nullable Location optionalLocation) throws CompileException {
                     throw new CompileException(message, optionalLocation);
                 }
             });
@@ -144,7 +145,7 @@ class CompilerTests {
             c.setCompileErrorHandler(new ErrorHandler() {
 
                 @Override public void
-                handleError(String message, Location optionalLocation) throws CompileException {
+                handleError(String message, @Nullable Location optionalLocation) throws CompileException {
                     throw new CompileException(message, optionalLocation);
                 }
             });

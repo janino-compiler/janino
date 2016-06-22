@@ -47,6 +47,7 @@ import javax.tools.ToolProvider;
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * A {@link ClassLoader} that loads classes by looking for their source files through a 'source path' and compiling
@@ -55,15 +56,15 @@ import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaF
 public
 class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
-    private File[]             sourcePath;
-    private String             optionalCharacterEncoding;
+    private File[]             sourcePath = { new File(".") };
+    @Nullable private String   optionalCharacterEncoding;
     private boolean            debuggingInfoLines;
     private boolean            debuggingInfoVars;
     private boolean            debuggingInfoSource;
     private Collection<String> compilerOptions = new ArrayList<String>();
 
-    private JavaCompiler    compiler;
-    private JavaFileManager fileManager;
+    @Nullable private JavaCompiler    compiler;
+    @Nullable private JavaFileManager fileManager;
 
     /** @see ICompilerFactory#newJavaSourceClassLoader() */
     public
@@ -76,15 +77,16 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         this.init();
     }
 
-
     private void
     init() {
-        this.compiler = ToolProvider.getSystemJavaCompiler();
-        if (this.compiler == null) {
+        JavaCompiler c = ToolProvider.getSystemJavaCompiler();
+        if (c == null) {
             throw new UnsupportedOperationException(
                 "JDK Java compiler not available - probably you're running a JRE, not a JDK"
             );
         }
+
+        this.compiler = c;
     }
 
     /**
@@ -93,35 +95,35 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      */
     JavaFileManager
     getJavaFileManager() {
-        if (this.fileManager == null) {
+        if (this.fileManager != null) return this.fileManager;
 
-            // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
-            // CLASSPATH.
-            JavaFileManager jfm = this.compiler.getStandardFileManager(null, null, null);
+        // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
+        // CLASSPATH.
+        JavaCompiler c = this.compiler;
+        if (c == null) throw new IllegalStateException("System Java compiler not available");
+        JavaFileManager jfm = c.getStandardFileManager(null, null, null);
 
-            // Wrap it so that the output files (in our case class files) are stored in memory rather
-            // than in files.
-            jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
+        // Wrap it so that the output files (in our case class files) are stored in memory rather
+        // than in files.
+        jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
 
-            // Wrap it in a file manager that finds source files through the source path.
-            jfm = new FileInputJavaFileManager(
-                jfm,
-                StandardLocation.SOURCE_PATH,
-                Kind.SOURCE,
-                this.sourcePath,
-                this.optionalCharacterEncoding
-            );
+        // Wrap it in a file manager that finds source files through the source path.
+        jfm = new FileInputJavaFileManager(
+            jfm,
+            StandardLocation.SOURCE_PATH,
+            Kind.SOURCE,
+            this.sourcePath,
+            this.optionalCharacterEncoding
+        );
 
-            this.fileManager = jfm;
-        }
-        return this.fileManager;
+        return (this.fileManager = jfm);
     }
 
     @Override public void
     setSourcePath(File[] sourcePath) { this.sourcePath = sourcePath; }
 
     @Override public void
-    setSourceFileCharacterEncoding(String optionalCharacterEncoding) {
+    setSourceFileCharacterEncoding(@Nullable String optionalCharacterEncoding) {
         this.optionalCharacterEncoding = optionalCharacterEncoding;
     }
 
@@ -147,7 +149,11 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @throws ClassNotFoundException
      */
     @Override protected Class<?>
-    findClass(String className) throws ClassNotFoundException {
+    findClass(@Nullable String className) throws ClassNotFoundException {
+        assert className != null;
+
+        JavaCompiler c = this.compiler;
+        if (c == null) throw new IllegalStateException("System Java compiler not available");
 
         byte[] ba;
         int    size;
@@ -188,13 +194,15 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                 ) : this.debuggingInfoVars ? "-g:vars" : "-g:none");
 
                 // Run the compiler.
-                if (!this.compiler.getTask(
+                if (!c.getTask(
                     null,                                      // out
                     this.getJavaFileManager(),                 // fileManager
                     new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
                         @Override public void
-                        report(final Diagnostic<? extends JavaFileObject> diagnostic) {
+                        report(final @Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
+                            assert diagnostic != null;
+
                             if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
                                 throw new DiagnosticException(diagnostic);
                             }
@@ -247,11 +255,11 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         }
 
         return this.defineClass(className, ba, 0, size, (
-            this.optionalProtectionDomainFactory == null
-            ? null
-            : this.optionalProtectionDomainFactory.getProtectionDomain(
+            this.optionalProtectionDomainFactory != null
+            ? this.optionalProtectionDomainFactory.getProtectionDomain(
                 JavaSourceClassLoader.getSourceResourceName(className)
             )
+            : null
         ));
     }
 

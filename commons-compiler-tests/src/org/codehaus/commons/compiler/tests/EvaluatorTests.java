@@ -24,6 +24,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+package org.codehaus.commons.compiler.tests;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;

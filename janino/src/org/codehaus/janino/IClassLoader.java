@@ -34,6 +34,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.util.resource.JarDirectoriesResourceFinder;
@@ -70,10 +72,12 @@ class IClassLoader {
     public IClass TYPE_java_lang_Cloneable;
     /** Representation of the {@link java.lang.Double} type. */
     public IClass TYPE_java_lang_Double;
-    /** Representation of the {@link java.lang.Exception} type. */
-    public IClass TYPE_java_lang_Exception;
+    /** Representation of the {@link java.lang.Enum} type. */
+    public IClass TYPE_java_lang_Enum;
     /** Representation of the {@link java.lang.Error} type. */
     public IClass TYPE_java_lang_Error;
+    /** Representation of the {@link java.lang.Exception} type. */
+    public IClass TYPE_java_lang_Exception;
     /** Representation of the {@link java.lang.Float} type. */
     public IClass TYPE_java_lang_Float;
     /** Representation of the {@link java.lang.Integer} type. */
@@ -127,12 +131,12 @@ class IClassLoader {
     public IMethod METH_java_util_Iterator__next;
 
     /** Representation of the {@link StringBuilder#StringBuilder(String)} constructor. */
-    public IConstructor CTOR_java_lang_StringBuilder__java_lang_String;
+    @Nullable public IConstructor CTOR_java_lang_StringBuilder__java_lang_String;
     // CHECKSTYLE AbbreviationAsWordInName:ON
     // CHECKSTYLE MemberName:ON
 
     public
-    IClassLoader(IClassLoader optionalParentIClassLoader) {
+    IClassLoader(@Nullable IClassLoader optionalParentIClassLoader) {
         this.optionalParentIClassLoader = optionalParentIClassLoader;
     }
 
@@ -145,53 +149,98 @@ class IClassLoader {
     protected final void
     postConstruct() {
         try {
-            this.ANNO_java_lang_annotation_Retention = this.loadIClass(Descriptor.JAVA_LANG_ANNOTATION_RETENTION);
-            this.ANNO_java_lang_Override             = this.loadIClass(Descriptor.JAVA_LANG_OVERRIDE);
+            this.ANNO_java_lang_annotation_Retention = this.requireType(Descriptor.JAVA_LANG_ANNOTATION_RETENTION);
+            this.ANNO_java_lang_Override             = this.requireType(Descriptor.JAVA_LANG_OVERRIDE);
 
-            this.TYPE_java_lang_AssertionError   = this.loadIClass(Descriptor.JAVA_LANG_ASSERTIONERROR);
-            this.TYPE_java_lang_Boolean          = this.loadIClass(Descriptor.JAVA_LANG_BOOLEAN);
-            this.TYPE_java_lang_Byte             = this.loadIClass(Descriptor.JAVA_LANG_BYTE);
-            this.TYPE_java_lang_Character        = this.loadIClass(Descriptor.JAVA_LANG_CHARACTER);
-            this.TYPE_java_lang_Class            = this.loadIClass(Descriptor.JAVA_LANG_CLASS);
-            this.TYPE_java_lang_Cloneable        = this.loadIClass(Descriptor.JAVA_LANG_CLONEABLE);
-            this.TYPE_java_lang_Double           = this.loadIClass(Descriptor.JAVA_LANG_DOUBLE);
-            this.TYPE_java_lang_Exception        = this.loadIClass(Descriptor.JAVA_LANG_EXCEPTION);
-            this.TYPE_java_lang_Error            = this.loadIClass(Descriptor.JAVA_LANG_ERROR);
-            this.TYPE_java_lang_Float            = this.loadIClass(Descriptor.JAVA_LANG_FLOAT);
-            this.TYPE_java_lang_Integer          = this.loadIClass(Descriptor.JAVA_LANG_INTEGER);
-            this.TYPE_java_lang_Iterable         = this.loadIClass(Descriptor.JAVA_LANG_ITERABLE);
-            this.TYPE_java_lang_Long             = this.loadIClass(Descriptor.JAVA_LANG_LONG);
-            this.TYPE_java_lang_Object           = this.loadIClass(Descriptor.JAVA_LANG_OBJECT);
-            this.TYPE_java_lang_RuntimeException = this.loadIClass(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
-            this.TYPE_java_lang_Short            = this.loadIClass(Descriptor.JAVA_LANG_SHORT);
-            this.TYPE_java_lang_String           = this.loadIClass(Descriptor.JAVA_LANG_STRING);
-            this.TYPE_java_lang_StringBuilder    = this.loadIClass(Descriptor.JAVA_LANG_STRINGBUILDER);
-            this.TYPE_java_lang_Throwable        = this.loadIClass(Descriptor.JAVA_LANG_THROWABLE);
-            this.TYPE_java_io_Serializable       = this.loadIClass(Descriptor.JAVA_IO_SERIALIZABLE);
-            this.TYPE_java_util_Iterator         = this.loadIClass(Descriptor.JAVA_UTIL_ITERATOR);
+            this.TYPE_java_lang_AssertionError   = this.requireType(Descriptor.JAVA_LANG_ASSERTIONERROR);
+            this.TYPE_java_lang_Boolean          = this.requireType(Descriptor.JAVA_LANG_BOOLEAN);
+            this.TYPE_java_lang_Byte             = this.requireType(Descriptor.JAVA_LANG_BYTE);
+            this.TYPE_java_lang_Character        = this.requireType(Descriptor.JAVA_LANG_CHARACTER);
+            this.TYPE_java_lang_Class            = this.requireType(Descriptor.JAVA_LANG_CLASS);
+            this.TYPE_java_lang_Cloneable        = this.requireType(Descriptor.JAVA_LANG_CLONEABLE);
+            this.TYPE_java_lang_Double           = this.requireType(Descriptor.JAVA_LANG_DOUBLE);
+            this.TYPE_java_lang_Enum             = this.requireType(Descriptor.JAVA_LANG_ENUM);
+            this.TYPE_java_lang_Error            = this.requireType(Descriptor.JAVA_LANG_ERROR);
+            this.TYPE_java_lang_Exception        = this.requireType(Descriptor.JAVA_LANG_EXCEPTION);
+            this.TYPE_java_lang_Float            = this.requireType(Descriptor.JAVA_LANG_FLOAT);
+            this.TYPE_java_lang_Integer          = this.requireType(Descriptor.JAVA_LANG_INTEGER);
+            this.TYPE_java_lang_Iterable         = this.requireType(Descriptor.JAVA_LANG_ITERABLE);
+            this.TYPE_java_lang_Long             = this.requireType(Descriptor.JAVA_LANG_LONG);
+            this.TYPE_java_lang_Object           = this.requireType(Descriptor.JAVA_LANG_OBJECT);
+            this.TYPE_java_lang_RuntimeException = this.requireType(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
+            this.TYPE_java_lang_Short            = this.requireType(Descriptor.JAVA_LANG_SHORT);
+            this.TYPE_java_lang_String           = this.requireType(Descriptor.JAVA_LANG_STRING);
+            this.TYPE_java_lang_StringBuilder    = this.requireType(Descriptor.JAVA_LANG_STRINGBUILDER);
+            this.TYPE_java_lang_Throwable        = this.requireType(Descriptor.JAVA_LANG_THROWABLE);
+            this.TYPE_java_io_Serializable       = this.requireType(Descriptor.JAVA_IO_SERIALIZABLE);
+            this.TYPE_java_util_Iterator         = this.requireType(Descriptor.JAVA_UTIL_ITERATOR);
 
-            // CHECKSTYLE LineLength:OFF
-            // CHECKSTYLE Whitespace:OFF
-            this.METH_java_lang_Iterable__iterator                      = this.TYPE_java_lang_Iterable     .findIMethod("iterator", new IClass[0]);
-            this.METH_java_lang_String__concat__java_lang_String        = this.TYPE_java_lang_String       .findIMethod("concat",   new IClass[] { this.TYPE_java_lang_String });
-            this.METH_java_lang_String__valueOf__int                    = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.INT });
-            this.METH_java_lang_String__valueOf__long                   = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.LONG });
-            this.METH_java_lang_String__valueOf__float                  = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.FLOAT });
-            this.METH_java_lang_String__valueOf__double                 = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.DOUBLE });
-            this.METH_java_lang_String__valueOf__char                   = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.CHAR });
-            this.METH_java_lang_String__valueOf__boolean                = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { IClass.BOOLEAN });
-            this.METH_java_lang_String__valueOf__java_lang_Object       = this.TYPE_java_lang_String       .findIMethod("valueOf",  new IClass[] { this.TYPE_java_lang_Object });
-            this.METH_java_lang_StringBuilder__append__java_lang_String = this.TYPE_java_lang_StringBuilder.findIMethod("append",   new IClass[] { this.TYPE_java_lang_String });
-            this.METH_java_lang_StringBuilder__toString                 = this.TYPE_java_lang_StringBuilder.findIMethod("toString", new IClass[0]);
-            this.METH_java_util_Iterator__hasNext                       = this.TYPE_java_util_Iterator     .findIMethod("hasNext",  new IClass[0]);
-            this.METH_java_util_Iterator__next                          = this.TYPE_java_util_Iterator     .findIMethod("next",     new IClass[0]);
+            // SUPPRESS CHECKSTYLE LineLength:13
+            this.METH_java_lang_Iterable__iterator                      = IClassLoader.requireMethod(this.TYPE_java_lang_Iterable,      "iterator");
+            this.METH_java_lang_String__concat__java_lang_String        = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "concat",   this.TYPE_java_lang_String);
+            this.METH_java_lang_String__valueOf__int                    = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.INT);
+            this.METH_java_lang_String__valueOf__long                   = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.LONG);
+            this.METH_java_lang_String__valueOf__float                  = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.FLOAT);
+            this.METH_java_lang_String__valueOf__double                 = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.DOUBLE);
+            this.METH_java_lang_String__valueOf__char                   = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.CHAR);
+            this.METH_java_lang_String__valueOf__boolean                = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.BOOLEAN);
+            this.METH_java_lang_String__valueOf__java_lang_Object       = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  this.TYPE_java_lang_Object);
+            this.METH_java_lang_StringBuilder__append__java_lang_String = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   this.TYPE_java_lang_String);
+            this.METH_java_lang_StringBuilder__toString                 = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "toString");
+            this.METH_java_util_Iterator__hasNext                       = IClassLoader.requireMethod(this.TYPE_java_util_Iterator,      "hasNext");
+            this.METH_java_util_Iterator__next                          = IClassLoader.requireMethod(this.TYPE_java_util_Iterator,      "next");
 
-            this.CTOR_java_lang_StringBuilder__java_lang_String   = this.TYPE_java_lang_StringBuilder.findIConstructor(new IClass[] { this.TYPE_java_lang_String });
-            // CHECKSTYLE Whitespace:ON
-            // CHECKSTYLE LineLength:ON
+            // SUPPRESS CHECKSTYLE LineLength:1
+            this.CTOR_java_lang_StringBuilder__java_lang_String = IClassLoader.requireConstructor(this.TYPE_java_lang_StringBuilder, this.TYPE_java_lang_String);
+
         } catch (Exception e) {
             throw new JaninoRuntimeException("Cannot load simple types", e);
         }
+    }
+
+    private IClass
+    requireType(String descriptor) {
+
+        IClass result;
+        try {
+            result = this.loadIClass(descriptor);
+        } catch (ClassNotFoundException cnfe) {
+            throw new AssertionError(cnfe);
+        }
+
+        if (result != null) return result;
+
+        throw new AssertionError("Required type \"" + descriptor + "\" not found");
+    }
+
+    private static IMethod
+    requireMethod(IClass declaringType, String name, IClass... parameterTypes) {
+
+        IMethod result;
+        try {
+            result = declaringType.findIMethod(name, parameterTypes);
+        } catch (CompileException ce) {
+            throw new AssertionError(ce);
+        }
+
+        if (result != null) return result;
+
+        throw new AssertionError("Required method \"" + name + "\" not found in \"" + declaringType + "\"");
+    }
+
+    private static IConstructor
+    requireConstructor(IClass declaringType, IClass... parameterTypes) {
+
+        IConstructor result;
+        try {
+            result = declaringType.findIConstructor(parameterTypes);
+        } catch (CompileException ce) {
+            throw new AssertionError(ce);
+        }
+
+        if (result != null) return result;
+
+        throw new AssertionError("Required constructor not found in \"" + declaringType + "\"");
     }
 
     /**
@@ -201,7 +250,7 @@ class IClassLoader {
      * @return                        {@code null} if an {@link IClass} could not be loaded
      * @throws ClassNotFoundException An exception was raised while loading the {@link IClass}
      */
-    public final IClass
+    @Nullable public final IClass
     loadIClass(String fieldDescriptor) throws ClassNotFoundException {
         IClassLoader.LOGGER.entering(null, "loadIClass", fieldDescriptor);
 
@@ -305,7 +354,8 @@ class IClassLoader {
      * @return <code>null</code> if a class with that descriptor could not be found
      * @throws ClassNotFoundException if an exception was raised while loading the class
      */
-    protected abstract IClass findIClass(String descriptor) throws ClassNotFoundException;
+    protected abstract @Nullable IClass
+    findIClass(String descriptor) throws ClassNotFoundException;
 
     /**
      * Define an {@link IClass} in the context of this {@link IClassLoader}.
@@ -345,9 +395,9 @@ class IClassLoader {
      */
     public static IClassLoader
     createJavacLikePathIClassLoader(
-        final File[] optionalBootClassPath,
-        final File[] optionalExtDirs,
-        final File[] classPath
+        final @Nullable File[] optionalBootClassPath,
+        final @Nullable File[] optionalExtDirs,
+        final File[]           classPath
     ) {
         ResourceFinder bootClassPathResourceFinder = new PathResourceFinder(
             optionalBootClassPath == null
@@ -382,7 +432,7 @@ class IClassLoader {
         return icl;
     }
 
-    private final IClassLoader                       optionalParentIClassLoader;
+    @Nullable private final IClassLoader             optionalParentIClassLoader;
     private final Map<String /*descriptor*/, IClass> loadedIClasses     = new HashMap();
     private final Set<String /*descriptor*/>         unloadableIClasses = new HashSet();
 }

@@ -26,6 +26,8 @@
 
 package org.codehaus.commons.compiler.samples;
 
+import java.util.Arrays;
+
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 
@@ -132,7 +134,11 @@ class ExpressionDemo extends DemoBase {
         Object res = ee.evaluate(arguments);
 
         // Print expression result.
-        System.out.println("Result = " + DemoBase.toString(res));
+        System.out.println("Result = " + (
+            res instanceof Object[]
+            ? Arrays.toString((Object[]) res)
+            : String.valueOf(res)
+        ));
     }
 
     private ExpressionDemo() {}

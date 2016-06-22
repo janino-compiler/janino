@@ -29,6 +29,8 @@ package org.codehaus.commons.compiler;
 import java.io.IOException;
 import java.io.Reader;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * Parses a class body and returns it as a {@link Class} object ready for use with
  * <tt>java.lang.reflect</tt>.
@@ -109,7 +111,7 @@ interface IClassBodyEvaluator extends ICookable {
      *         "static java.util.Collections.*",         // Static-import-on-demand
      *     });</pre>
      */
-    void setDefaultImports(String[] optionalDefaultImports);
+    void setDefaultImports(@Nullable String[] optionalDefaultImports);
 
     /**
      * Set the name of the generated class. Defaults to {@link #DEFAULT_CLASS_NAME}. In most cases,
@@ -129,10 +131,10 @@ interface IClassBodyEvaluator extends ICookable {
      * The common reason to set a base class for an evaluator is that the generated class can
      * directly access the base superclass's (non-private) members.
      */
-    void setExtendedClass(Class optionalExtendedClass);
+    void setExtendedClass(@Nullable Class optionalExtendedClass);
 
     /** @deprecated Use {@link #setExtendedClass(Class)} instead. */
-    @Deprecated void setExtendedType(Class optionalExtendedClass);
+    @Deprecated void setExtendedType(@Nullable Class optionalExtendedClass);
 
     /** Set a particular set of interfaces that the generated class will implement. */
     void setImplementedInterfaces(Class[] implementedInterfaces);

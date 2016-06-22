@@ -30,6 +30,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * A class that represents an enumerated value. Its main features are its {@link #toString()} and
  * {@link #fromString(String, Class)} method, which map names to values and vice versa.
@@ -78,7 +80,7 @@ class Enumerator {
 
     /** Equality is reference identity. */
     @Override public final boolean
-    equals(Object that) { return this == that; }
+    equals(@Nullable Object that) { return this == that; }
 
     /** Enforce {@link Object}'s notion of {@link Object#hashCode()}. */
     @Override public final int

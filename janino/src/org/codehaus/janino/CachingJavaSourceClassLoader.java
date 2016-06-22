@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.resource.DirectoryResourceCreator;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
@@ -68,14 +69,14 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * See {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)}.
      *
      * @param optionalSourcePath Directories to scan for source files
-     * @param cacheDirectory Directory to use for caching generated class files (see class description)
+     * @param cacheDirectory     Directory to use for caching generated class files (see class description)
      */
     public
     CachingJavaSourceClassLoader(
-        ClassLoader   parentClassLoader,
-        File[]        optionalSourcePath,
-        String        optionalCharacterEncoding,
-        File          cacheDirectory
+        ClassLoader             parentClassLoader,
+        @Nullable File[]        optionalSourcePath,
+        @Nullable String        optionalCharacterEncoding,
+        File                    cacheDirectory
     ) {
         this(
             parentClassLoader,                           // parentClassLoader
@@ -111,11 +112,11 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      */
     public
     CachingJavaSourceClassLoader(
-        ClassLoader     parentClassLoader,
-        ResourceFinder  sourceFinder,
-        String          optionalCharacterEncoding,
-        ResourceFinder  classFileCacheResourceFinder,
-        ResourceCreator classFileCacheResourceCreator
+        ClassLoader      parentClassLoader,
+        ResourceFinder   sourceFinder,
+        @Nullable String optionalCharacterEncoding,
+        ResourceFinder   classFileCacheResourceFinder,
+        ResourceCreator  classFileCacheResourceCreator
     ) {
         super(parentClassLoader, sourceFinder, optionalCharacterEncoding);
         this.classFileCacheResourceFinder  = classFileCacheResourceFinder;

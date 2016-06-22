@@ -25,4 +25,7 @@
  */
 
 /***/
+@NotNullByDefault
 package org.codehaus.commons.compiler.tests.annotation;
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

@@ -50,6 +50,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.CodeContext.Inserter;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IAnnotation;
@@ -145,6 +146,7 @@ import org.codehaus.janino.Java.NewInitializedArray;
 import org.codehaus.janino.Java.NormalAnnotation;
 import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.Package;
+import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.PackageMemberInterfaceDeclaration;
 import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
@@ -325,23 +327,31 @@ class UnitCompiler {
             });
         }
 
+        if (this.generatedClassFiles != null) {
+            throw new IllegalStateException("\"UnitCompiler.compileUnit()\" is not reentrant");
+        }
+
         this.generatedClassFiles = new ArrayList();
+        try {
 
-        for (PackageMemberTypeDeclaration pmtd : this.compilationUnit.packageMemberTypeDeclarations) {
-            this.compile(pmtd);
+            for (PackageMemberTypeDeclaration pmtd : this.compilationUnit.packageMemberTypeDeclarations) {
+                this.compile(pmtd);
+            }
+
+            if (this.compileErrorCount > 0) {
+                throw new CompileException((
+                    this.compileErrorCount
+                    + " error(s) while compiling unit \""
+                    + this.compilationUnit.optionalFileName
+                    + "\""
+                ), null);
+            }
+
+            List<ClassFile> l = this.generatedClassFiles;
+            return (ClassFile[]) l.toArray(new ClassFile[l.size()]);
+        } finally {
+            this.generatedClassFiles = null;
         }
-
-        if (this.compileErrorCount > 0) {
-            throw new CompileException((
-                this.compileErrorCount
-                + " error(s) while compiling unit \""
-                + this.compilationUnit.optionalFileName
-                + "\""
-            ), null);
-        }
-
-        List<ClassFile> l = this.generatedClassFiles;
-        return (ClassFile[]) l.toArray(new ClassFile[l.size()]);
     }
 
     // ------------ TypeDeclaration.compile() -------------
@@ -430,12 +440,16 @@ class UnitCompiler {
         }
 
         // Create "ClassFile" object.
-        ClassFile cf = new ClassFile(
-            (short) (cd.getModifierFlags() | Mod.SUPER),  // accessFlags
-            iClass.getDescriptor(),                       // thisClassFD
-            iClass.getSuperclass().getDescriptor(),       // superclassFD
-            IClass.getDescriptors(iClass.getInterfaces()) // interfaceFDs
-        );
+        ClassFile cf;
+        {
+            IClass superclass = iClass.getSuperclass();
+            cf = new ClassFile(
+                (short) (cd.getModifierFlags() | Mod.SUPER),            // accessFlags
+                iClass.getDescriptor(),                                 // thisClassFD
+                superclass != null ? superclass.getDescriptor() : null, // superclassFD
+                IClass.getDescriptors(iClass.getInterfaces())           // interfaceFDs
+            );
+        }
 
         // Add class annotations with retention != SOURCE.
         this.compileAnnotations(cd.getAnnotations(), cf, cf);
@@ -571,6 +585,12 @@ class UnitCompiler {
 
 
         // Add the generated class file to a thread-local store.
+        this.addClassFile(cf);
+    }
+
+    private void
+    addClassFile(ClassFile cf) {
+        assert this.generatedClassFiles != null;
         this.generatedClassFiles.add(cf);
     }
 
@@ -593,7 +613,6 @@ class UnitCompiler {
                 // To make the private field accessible for enclosing types, enclosed types and types enclosed by the
                 // same type, it is modified as follows:
                 //  + Access is changed from PRIVATE to PACKAGE
-                assert fd.modifiers.annotations.length == 0 : "NYI";
                 fi = cf.addFieldInfo(
                     fd.modifiers.changeAccess(Mod.PACKAGE),       // modifiers
                     vd.name,                                      // fieldName
@@ -608,10 +627,10 @@ class UnitCompiler {
                     this.getType(type).getDescriptor(),           // fieldTypeFD
                     ocv == UnitCompiler.NOT_CONSTANT ? null : ocv // optionalConstantValue
                 );
-
-                // Add field annotations with retention != SOURCE.
-                UnitCompiler.this.compileAnnotations(fd.getAnnotations(), fi, cf);
             }
+
+            // Add field annotations with retention != SOURCE.
+            this.compileAnnotations(fd.getAnnotations(), fi, cf);
 
             // Add "Deprecated" attribute (JVMS 4.7.10).
             if (fd.hasDeprecatedDocTag()) {
@@ -720,7 +739,7 @@ class UnitCompiler {
         this.compileDeclaredMemberTypes(id, cf);
 
         // Add the generated class file to a thread-local store.
-        this.generatedClassFiles.add(cf);
+        this.addClassFile(cf);
     }
 
     private void
@@ -896,6 +915,40 @@ class UnitCompiler {
                 private ElementValue
                 visitRvalue(Rvalue rv) throws CompileException {
 
+                    // Enum constant?
+                    ENUM_CONSTANT:
+                    if (rv instanceof Java.AmbiguousName) {
+
+                        Rvalue enumConstant = UnitCompiler.this.reclassify((Java.AmbiguousName) rv).toRvalue();
+                        if (!(enumConstant instanceof Java.FieldAccess)) break ENUM_CONSTANT; // Not a field access.
+                        Java.FieldAccess enumConstantFieldAccess = (Java.FieldAccess) enumConstant;
+
+                        Type enumType = enumConstantFieldAccess.lhs.toType();
+                        if (enumType == null) break ENUM_CONSTANT; // LHS is not a type.
+
+                        IClass enumIClass = UnitCompiler.this.findTypeByName(rv.getLocation(), enumType.toString());
+                        if (enumIClass == null) {
+                            UnitCompiler.this.compileError(
+                                "Cannot find enum \"" + enumType + "\"",
+                                enumType.getLocation()
+                            );
+                            break ENUM_CONSTANT;
+                        }
+
+                        if (enumIClass.getSuperclass() != UnitCompiler.this.iClassLoader.TYPE_java_lang_Enum) {
+                            UnitCompiler.this.compileError(
+                                "\"" + enumType + "\" is not an enum",
+                                enumType.getLocation()
+                            );
+                            break ENUM_CONSTANT;
+                        }
+
+                        return new ClassFile.AnnotationsAttribute.EnumConstValue(
+                            cf.addConstantUtf8Info(enumIClass.getDescriptor()),             // typeNameIndex
+                            cf.addConstantUtf8Info(enumConstantFieldAccess.field.getName()) // constNameIndex
+                        );
+                    }
+
                     Object cv = UnitCompiler.this.getConstantValue(rv);
 
                     if (cv == UnitCompiler.NOT_CONSTANT) {
@@ -905,26 +958,25 @@ class UnitCompiler {
                         );
                     }
 
-                    // SUPPRESS CHECKSTYLE LineLength:9
-                    if (cv instanceof Boolean)   { return new ClassFile.AnnotationsAttribute.BooleanElementValue(cf.addConstantIntegerInfo((Boolean) cv ? 1 : 0)); } else
-                    if (cv instanceof Byte)      { return new ClassFile.AnnotationsAttribute.ByteElementValue(cf.addConstantIntegerInfo((Byte) cv));               } else
-                    if (cv instanceof Short)     { return new ClassFile.AnnotationsAttribute.ShortElementValue(cf.addConstantIntegerInfo((Short) cv));             } else
-                    if (cv instanceof Integer)   { return new ClassFile.AnnotationsAttribute.IntElementValue(cf.addConstantIntegerInfo((Integer) cv));             } else
-                    if (cv instanceof Long)      { return new ClassFile.AnnotationsAttribute.LongElementValue(cf.addConstantLongInfo((Long) cv));                  } else
-                    if (cv instanceof Float)     { return new ClassFile.AnnotationsAttribute.FloatElementValue(cf.addConstantFloatInfo((Float) cv));               } else
-                    if (cv instanceof Double)    { return new ClassFile.AnnotationsAttribute.DoubleElementValue(cf.addConstantDoubleInfo((Double) cv));            } else
-                    if (cv instanceof Character) { return new ClassFile.AnnotationsAttribute.CharElementValue(cf.addConstantIntegerInfo((Character) cv));          } else
-                    if (cv instanceof String)    { return new ClassFile.AnnotationsAttribute.StringElementValue(cf.addConstantUtf8Info((String) cv));              } else
-
-                        if (cv == null) {
+                    if (cv == null) {
                         throw new CompileException(
                             "Null literal not allowed as element value",
                             rv.getLocation()
                         );
-                    } else
-                    {
-                        throw new AssertionError(cv);
                     }
+
+                    // SUPPRESS CHECKSTYLE LineLength:9
+                    if (cv instanceof Boolean)   { return new ClassFile.AnnotationsAttribute.BooleanElementValue(cf.addConstantIntegerInfo((Boolean) cv ? 1 : 0)); }
+                    if (cv instanceof Byte)      { return new ClassFile.AnnotationsAttribute.ByteElementValue(cf.addConstantIntegerInfo((Byte) cv));               }
+                    if (cv instanceof Short)     { return new ClassFile.AnnotationsAttribute.ShortElementValue(cf.addConstantIntegerInfo((Short) cv));             }
+                    if (cv instanceof Integer)   { return new ClassFile.AnnotationsAttribute.IntElementValue(cf.addConstantIntegerInfo((Integer) cv));             }
+                    if (cv instanceof Long)      { return new ClassFile.AnnotationsAttribute.LongElementValue(cf.addConstantLongInfo((Long) cv));                  }
+                    if (cv instanceof Float)     { return new ClassFile.AnnotationsAttribute.FloatElementValue(cf.addConstantFloatInfo((Float) cv));               }
+                    if (cv instanceof Double)    { return new ClassFile.AnnotationsAttribute.DoubleElementValue(cf.addConstantDoubleInfo((Double) cv));            }
+                    if (cv instanceof Character) { return new ClassFile.AnnotationsAttribute.CharElementValue(cf.addConstantIntegerInfo((Character) cv));          }
+                    if (cv instanceof String)    { return new ClassFile.AnnotationsAttribute.StringElementValue(cf.addConstantUtf8Info((String) cv));              }
+
+                    throw new AssertionError(cv);
                 }
             }
         );
@@ -1230,9 +1282,13 @@ class UnitCompiler {
         ds.whereToContinue = null;
         if (!this.compile(ds.body) && ds.whereToContinue == null) {
             this.warning("DSNTC", "\"do\" statement never tests its condition", ds.getLocation());
-            if (ds.whereToBreak == null) return false;
-            ds.whereToBreak.set();
+
+            Offset wtb = ds.whereToBreak;
+            if (wtb == null) return false;
+
+            wtb.set();
             ds.whereToBreak = null;
+
             return true;
         }
         if (ds.whereToContinue != null) {
@@ -1253,14 +1309,16 @@ class UnitCompiler {
 
     private boolean
     compile2(ForStatement fs) throws CompileException {
+
         this.codeContext.saveLocalVariables();
         try {
+            Rvalue[] ou = fs.optionalUpdate;
 
             // Compile initializer.
             if (fs.optionalInit != null) this.compile(fs.optionalInit);
 
             if (fs.optionalCondition == null) {
-                return this.compileUnconditionalLoop(fs, fs.body, fs.optionalUpdate);
+                return this.compileUnconditionalLoop(fs, fs.body, ou);
             } else
             {
                 Object cvc = this.getConstantValue(fs.optionalCondition);
@@ -1270,7 +1328,7 @@ class UnitCompiler {
                             "Condition of FOR statement is always TRUE; "
                             + "the proper way of declaring an unconditional loop is \"for (;;)\""
                         ), fs.getLocation());
-                        return this.compileUnconditionalLoop(fs, fs.body, fs.optionalUpdate);
+                        return this.compileUnconditionalLoop(fs, fs.body, ou);
                     } else
                     {
                         this.warning("FSNR", "FOR statement never repeats", fs.getLocation());
@@ -1288,12 +1346,12 @@ class UnitCompiler {
             if (fs.whereToContinue != null) fs.whereToContinue.set();
 
             // Compile update.
-            if (fs.optionalUpdate != null) {
+            if (ou != null) {
                 if (!bodyCcn && fs.whereToContinue == null) {
                     this.warning("FUUR", "For update is unreachable", fs.getLocation());
                 } else
                 {
-                    for (Rvalue rv : fs.optionalUpdate) this.compile(rv);
+                    for (Rvalue rv : ou) this.compile(rv);
                 }
             }
             fs.whereToContinue = null;
@@ -1347,8 +1405,10 @@ class UnitCompiler {
 
                 this.load(fes, expressionType, expressionLv);
                 this.load(fes, indexLv);
-                this.writeOpcode(fes, Opcode.IALOAD + UnitCompiler.ilfdabcs(expressionType.getComponentType()));
-                this.assignmentConversion(fes.currentElement, expressionType.getComponentType(), elementLv.type, null);
+                IClass componentType = expressionType.getComponentType();
+                assert componentType != null;
+                this.writeOpcode(fes, Opcode.IALOAD + UnitCompiler.ilfdabcs(componentType));
+                this.assignmentConversion(fes.currentElement, componentType, elementLv.type, null);
                 this.store(fes, elementLv);
 
                 boolean bodyCcn = this.compile(fes.body);
@@ -1466,11 +1526,12 @@ class UnitCompiler {
         }
 
         // Compile body.
-        ws.whereToContinue = this.codeContext.new Offset();
-        this.writeBranch(ws, Opcode.GOTO, ws.whereToContinue);
+        Offset wtc = (ws.whereToContinue = this.codeContext.new Offset());
+        this.writeBranch(ws, Opcode.GOTO, wtc);
         final CodeContext.Offset bodyOffset = this.codeContext.newOffset();
         this.compile(ws.body); // Return value (CCN) is ignored.
-        ws.whereToContinue.set();
+        assert ws.whereToContinue == wtc;
+        wtc.set();
         ws.whereToContinue = null;
 
         // Compile condition.
@@ -1484,18 +1545,21 @@ class UnitCompiler {
     }
 
     private boolean
-    compileUnconditionalLoop(ContinuableStatement cs, BlockStatement body, Rvalue[] optionalUpdate)
+    compileUnconditionalLoop(ContinuableStatement cs, BlockStatement body, @Nullable Rvalue[] optionalUpdate)
     throws CompileException {
         if (optionalUpdate != null) return this.compileUnconditionalLoopWithUpdate(cs, body, optionalUpdate);
 
         // Compile body.
-        cs.whereToContinue = this.codeContext.newOffset();
-        if (this.compile(body)) this.writeBranch(cs, Opcode.GOTO, cs.whereToContinue);
+        Offset wtc = (cs.whereToContinue = this.codeContext.newOffset());
+        if (this.compile(body)) this.writeBranch(cs, Opcode.GOTO, wtc);
         cs.whereToContinue = null;
 
-        if (cs.whereToBreak == null) return false;
-        cs.whereToBreak.set();
+        Offset wtb = cs.whereToBreak;
+        if (wtb == null) return false;
+
+        wtb.set();
         cs.whereToBreak = null;
+
         return true;
     }
     private boolean
@@ -1518,9 +1582,12 @@ class UnitCompiler {
         }
         cs.whereToContinue = null;
 
-        if (cs.whereToBreak == null) return false;
-        cs.whereToBreak.set();
+        Offset wtb = cs.whereToBreak;
+        if (wtb == null) return false;
+        wtb.set();
+
         cs.whereToBreak = null;
+
         return true;
     }
 
@@ -1528,10 +1595,13 @@ class UnitCompiler {
     compile2(LabeledStatement ls) throws CompileException {
         boolean canCompleteNormally = this.compile(ls.body);
 
-        if (ls.whereToBreak == null) return canCompleteNormally;
+        Offset wtb = ls.whereToBreak;
+        if (wtb == null) return canCompleteNormally;
 
-        ls.whereToBreak.set();
+        wtb.set();
+
         ls.whereToBreak = null;
+
         return true;
     }
 
@@ -1670,10 +1740,14 @@ class UnitCompiler {
                 canCompleteNormally = this.compile(bs);
             }
         }
-        if (ss.whereToBreak == null) return canCompleteNormally;
 
-        ss.whereToBreak.set();
+        Offset wtb = ss.whereToBreak;
+        if (wtb == null) return canCompleteNormally;
+
+        wtb.set();
+
         ss.whereToBreak = null;
+
         return true;
     }
 
@@ -1787,8 +1861,9 @@ class UnitCompiler {
             }
         }
 
-        if (continuedStatement.whereToContinue == null) {
-            continuedStatement.whereToContinue = this.codeContext.new Offset();
+        Offset wtc = continuedStatement.whereToContinue;
+        if (wtc == null) {
+            wtc = (continuedStatement.whereToContinue = this.codeContext.new Offset());
         }
 
         this.leaveStatements(
@@ -1796,7 +1871,9 @@ class UnitCompiler {
             continuedStatement.getEnclosingScope(), // to
             null                                    // optionalStackValueType
         );
-        this.writeBranch(cs, Opcode.GOTO, continuedStatement.whereToContinue);
+
+        this.writeBranch(cs, Opcode.GOTO, wtc);
+
         return false;
     }
 
@@ -2008,12 +2085,14 @@ class UnitCompiler {
                     ? ((Block) es).statements
                     : ((FunctionDeclarator) es).optionalStatements
                 );
-                for (BlockStatement bs2 : statements) {
-                    if (bs2 instanceof LocalClassDeclarationStatement) {
-                        LocalClassDeclarationStatement lcds = ((LocalClassDeclarationStatement) bs2);
-                        if (lcds.lcd.name.equals(name)) return lcds.lcd;
+                if (statements != null) {
+                    for (BlockStatement bs2 : statements) {
+                        if (bs2 instanceof LocalClassDeclarationStatement) {
+                            LocalClassDeclarationStatement lcds = ((LocalClassDeclarationStatement) bs2);
+                            if (lcds.lcd.name.equals(name)) return lcds.lcd;
+                        }
+                        if (bs2 == bs) break;
                     }
-                    if (bs2 == bs) break;
                 }
             }
             s = es;
@@ -2038,9 +2117,10 @@ class UnitCompiler {
                 this.codeContext.allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), vd.name, lv.type)
             );
 
-            if (vd.optionalInitializer != null) {
-                if (vd.optionalInitializer instanceof Rvalue) {
-                    Rvalue rhs = (Rvalue) vd.optionalInitializer;
+            ArrayInitializerOrRvalue oi = vd.optionalInitializer;
+            if (oi != null) {
+                if (oi instanceof Rvalue) {
+                    Rvalue rhs = (Rvalue) oi;
                     this.assignmentConversion(
                         lvds,                      // locatable
                         this.compileGetValue(rhs), // sourceType
@@ -2048,13 +2128,13 @@ class UnitCompiler {
                         this.getConstantValue(rhs) // optionalConstantValue
                     );
                 } else
-                if (vd.optionalInitializer instanceof ArrayInitializer) {
-                    this.compileGetValue((ArrayInitializer) vd.optionalInitializer, lv.type);
+                if (oi instanceof ArrayInitializer) {
+                    this.compileGetValue((ArrayInitializer) oi, lv.type);
                 } else
                 {
                     throw new JaninoRuntimeException(
                         "Unexpected rvalue or array initialized class "
-                        + vd.optionalInitializer.getClass().getName()
+                        + oi.getClass().getName()
                     );
                 }
                 this.store(lvds, lv);
@@ -2066,19 +2146,18 @@ class UnitCompiler {
     /** @return The {@link LocalVariable} corresponding with the local variable declaration/declarator */
     public LocalVariable
     getLocalVariable(LocalVariableDeclarationStatement lvds, VariableDeclarator vd) throws CompileException {
-        if (vd.localVariable == null) {
 
-            // Determine variable type.
-            Type variableType = lvds.type;
-            for (int k = 0; k < vd.brackets; ++k) variableType = new ArrayType(variableType);
+        if (vd.localVariable != null) return vd.localVariable;
 
-            assert lvds.modifiers.annotations.length == 0;
-            vd.localVariable = new LocalVariable(
-                Mod.isFinal(lvds.modifiers.flags), // finaL
-                this.getType(variableType)         // type
-            );
-        }
-        return vd.localVariable;
+        // Determine variable type.
+        Type variableType = lvds.type;
+        for (int k = 0; k < vd.brackets; ++k) variableType = new ArrayType(variableType);
+
+        assert lvds.modifiers.annotations.length == 0;
+        return (vd.localVariable = new LocalVariable(
+            Mod.isFinal(lvds.modifiers.flags), // finaL
+            this.getType(variableType)         // type
+        ));
     }
 
     private boolean
@@ -2464,10 +2543,13 @@ class UnitCompiler {
                 } else {
 
                     // Determine qualification for superconstructor invocation.
-                    IClass outerClassOfSuperclass = this.resolve(
-                        cd.getDeclaringClass()
-                    ).getSuperclass().getOuterIClass();
-                    QualifiedThisReference qualification = null;
+                    IClass superclass = this.resolve(cd.getDeclaringClass()).getSuperclass();
+                    if (superclass == null) {
+                        throw new CompileException("\"" + cd + "\" has no superclass", cd.getLocation());
+                    }
+
+                    IClass                 outerClassOfSuperclass = superclass.getOuterIClass();
+                    QualifiedThisReference qualification          = null;
                     if (outerClassOfSuperclass != null) {
                         qualification = new QualifiedThisReference(
                             cd.getLocation(),                                        // location
@@ -2786,15 +2868,15 @@ class UnitCompiler {
     public LocalVariable
     getLocalVariable(FormalParameter parameter, boolean isVariableArityParameter)
     throws CompileException {
-        if (parameter.localVariable == null) {
-            assert parameter.type != null;
-            IClass parameterType = this.getType(parameter.type);
-            if (isVariableArityParameter) {
-                parameterType = parameterType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
-            }
-            parameter.localVariable = new LocalVariable(parameter.finaL, parameterType);
+        if (parameter.localVariable != null) return parameter.localVariable;
+
+        assert parameter.type != null;
+        IClass parameterType = this.getType(parameter.type);
+        if (isVariableArityParameter) {
+            parameterType = parameterType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
         }
-        return parameter.localVariable;
+
+        return (parameter.localVariable = new LocalVariable(parameter.finaL, parameterType));
     }
 
     // ------------------ Rvalue.compile() ----------------
@@ -2962,6 +3044,8 @@ class UnitCompiler {
         this.writeOpcode(sci, Opcode.ALOAD_0);
         ClassDeclaration declaringClass = declaringConstructor.getDeclaringClass();
         IClass           superclass     = this.resolve(declaringClass).getSuperclass();
+
+        if (superclass == null) throw new CompileException("Class has no superclass", sci.getLocation());
 
         Rvalue optionalEnclosingInstance;
         if (sci.optionalQualification != null) {
@@ -4354,10 +4438,13 @@ class UnitCompiler {
 
     private IClass
     compileGet2(NewAnonymousClassInstance naci) throws CompileException {
-        // Find constructors.
-        AnonymousClassDeclaration acd           = naci.anonymousClassDeclaration;
-        IClass                    sc            = this.resolve(acd).getSuperclass();
-        IClass.IConstructor[]     iConstructors = sc.getDeclaredIConstructors();
+        AnonymousClassDeclaration acd = naci.anonymousClassDeclaration;
+
+        // Find constructors of superclass.
+        IClass sc = this.resolve(acd).getSuperclass();
+        assert sc != null;
+
+        IClass.IConstructor[] iConstructors = sc.getDeclaredIConstructors();
         if (iConstructors.length == 0) throw new JaninoRuntimeException("SNO: Base class has no constructors");
 
         // Determine most specific constructor.
@@ -4598,7 +4685,7 @@ class UnitCompiler {
      *
      * @return {@link #NOT_CONSTANT} iff the rvalue is not a constant value
      */
-    public final Object
+    @Nullable public final Object
     getConstantValue(Rvalue rv) throws CompileException {
 
         if (rv.constantValue != Rvalue.CONSTANT_VALUE_UNKNOWN) return rv.constantValue;
@@ -5176,7 +5263,7 @@ class UnitCompiler {
      * JSR).
      */
     private void
-    leave(BlockStatement bs, final IClass optionalStackValueType) {
+    leave(BlockStatement bs, @Nullable final IClass optionalStackValueType) {
         BlockStatementVisitor<Void, RuntimeException> bsv = new BlockStatementVisitor<Void, RuntimeException>() {
 
             // SUPPRESS CHECKSTYLE LineLengthCheck:23
@@ -5208,16 +5295,16 @@ class UnitCompiler {
     }
 
     private void
-    leave2(BlockStatement bs, IClass optionalStackValueType) {}
+    leave2(BlockStatement bs, @Nullable IClass optionalStackValueType) {}
 
     private void
-    leave2(SynchronizedStatement ss, IClass optionalStackValueType) {
+    leave2(SynchronizedStatement ss, @Nullable IClass optionalStackValueType) {
         this.load(ss, this.iClassLoader.TYPE_java_lang_Object, ss.monitorLvIndex);
         this.writeOpcode(ss, Opcode.MONITOREXIT);
     }
 
     private void
-    leave2(TryStatement ts, IClass optionalStackValueType) {
+    leave2(TryStatement ts, @Nullable IClass optionalStackValueType) {
         if (ts.finallyOffset != null) {
 
             this.codeContext.saveLocalVariables();
@@ -5458,13 +5545,14 @@ class UnitCompiler {
             if (optionalTypeParameters != null) {
                 for (TypeParameter tp : optionalTypeParameters) {
                     if (tp.name.equals(simpleTypeName)) {
-                        IClass[] boundTypes;
-                        if (tp.optionalBound == null) {
+                        IClass[]        boundTypes;
+                        ReferenceType[] ob = tp.optionalBound;
+                        if (ob == null) {
                             boundTypes = new IClass[] { this.iClassLoader.TYPE_java_lang_Object };
                         } else {
-                            boundTypes = new IClass[tp.optionalBound.length];
+                            boundTypes = new IClass[ob.length];
                             for (int i = 0; i < boundTypes.length; i++) {
-                                boundTypes[i] = this.getType(tp.optionalBound[i]);
+                                boundTypes[i] = this.getType(ob[i]);
                             }
                         }
 
@@ -5484,13 +5572,14 @@ class UnitCompiler {
             if (optionalTypeParameters != null) {
                 for (TypeParameter tp : optionalTypeParameters) {
                     if (tp.name.equals(simpleTypeName)) {
-                        IClass[] boundTypes;
-                        if (tp.optionalBound == null) {
+                        IClass[]        boundTypes;
+                        ReferenceType[] ob = tp.optionalBound;
+                        if (ob == null) {
                             boundTypes = new IClass[] { this.iClassLoader.TYPE_java_lang_Object };
                         } else {
-                            boundTypes = new IClass[tp.optionalBound.length];
+                            boundTypes = new IClass[ob.length];
                             for (int i = 0; i < boundTypes.length; i++) {
-                                boundTypes[i] = this.getType(tp.optionalBound[i]);
+                                boundTypes[i] = this.getType(ob[i]);
                             }
                         }
                         return boundTypes[0];
@@ -5542,10 +5631,9 @@ class UnitCompiler {
 
         // 6.5.5.1.5 Type declared in other compilation unit of same package.
         {
-            String pkg = (
-                scopeCompilationUnit.optionalPackageDeclaration == null ? null :
-                scopeCompilationUnit.optionalPackageDeclaration.packageName
-            );
+            PackageDeclaration opd = scopeCompilationUnit.optionalPackageDeclaration;
+
+            String pkg       = opd == null ? null : opd.packageName;
             String className = pkg == null ? simpleTypeName : pkg + "." + simpleTypeName;
             IClass result    = this.findTypeByName(location, className);
             if (result != null) return result;
@@ -6346,7 +6434,7 @@ class UnitCompiler {
      * "finally" clauses of all "try...catch" statements are executed.
      */
     private void
-    leaveStatements(Scope from, Scope to, IClass optionalStackValueType) {
+    leaveStatements(Scope from, Scope to, @Nullable IClass optionalStackValueType) {
         for (Scope s = from; s != to; s = s.getEnclosingScope()) {
             if (s instanceof BlockStatement) {
                 this.leave((BlockStatement) s, optionalStackValueType);
@@ -6613,7 +6701,7 @@ class UnitCompiler {
                     operand = (Rvalue) operands.next();
                     Object cv2 = this.getConstantValue(operand);
                     if (cv2 != UnitCompiler.NOT_CONSTANT) {
-                        StringBuilder sb = new StringBuilder(cv.toString()).append(cv2);
+                        StringBuilder sb = new StringBuilder(String.valueOf(cv)).append(cv2);
                         for (;;) {
                             if (!operands.hasNext()) {
                                 operand = null;
@@ -6631,7 +6719,7 @@ class UnitCompiler {
                     operand = null;
                 }
                 // Break long string constants up into UTF8-able chunks.
-                final String[] ss = UnitCompiler.makeUtf8Able(cv.toString());
+                final String[] ss = UnitCompiler.makeUtf8Able(String.valueOf(cv));
                 for (final String s : ss) {
                     tmp.add(new Compilable() {
                         @Override public void
@@ -6721,11 +6809,11 @@ class UnitCompiler {
      */
     private void
     invokeConstructor(
-        Locatable locatable,
-        Scope     scope,
-        Rvalue    optionalEnclosingInstance,
-        IClass    targetClass,
-        Rvalue[]  arguments
+        Locatable        locatable,
+        Scope            scope,
+        @Nullable Rvalue optionalEnclosingInstance,
+        IClass           targetClass,
+        Rvalue[]         arguments
     ) throws CompileException {
         // Find constructors.
         IClass.IConstructor[] iConstructors = targetClass.getDeclaredIConstructors();
@@ -6851,16 +6939,18 @@ class UnitCompiler {
                                 continue;
                             }
 
-                            for (BlockStatement bs2 : statements) {
-                                if (bs2 == bs) break;
-                                if (bs2 instanceof LocalVariableDeclarationStatement) {
-                                    LocalVariableDeclarationStatement lvds = (
-                                        (LocalVariableDeclarationStatement) bs2
-                                    );
-                                    for (VariableDeclarator vd : lvds.variableDeclarators) {
-                                        if (vd.name.equals(localVariableName)) {
-                                            lv = this.getLocalVariable(lvds, vd);
-                                            break DETERMINE_LV;
+                            if (statements != null) {
+                                for (BlockStatement bs2 : statements) {
+                                    if (bs2 == bs) break;
+                                    if (bs2 instanceof LocalVariableDeclarationStatement) {
+                                        LocalVariableDeclarationStatement lvds = (
+                                            (LocalVariableDeclarationStatement) bs2
+                                        );
+                                        for (VariableDeclarator vd : lvds.variableDeclarators) {
+                                            if (vd.name.equals(localVariableName)) {
+                                                lv = this.getLocalVariable(lvds, vd);
+                                                break DETERMINE_LV;
+                                            }
                                         }
                                     }
                                 }
@@ -7104,7 +7194,7 @@ class UnitCompiler {
      * @return                  {@code null} iff an {@code IClass} with that name could not be loaded
      * @throws CompileException An exception was raised while loading the {@link IClass}
      */
-    private IClass
+    @Nullable private IClass
     findTypeByName(Location location, String className) throws CompileException {
 
         // Is the type defined in the same compilation unit?
@@ -7389,11 +7479,10 @@ class UnitCompiler {
         // 6.5.2.BL1.B1.B4 Class or interface declared in same package.
         // Notice: Why is this missing in JLS3?
         {
-            String className = (
-                scopeCompilationUnit.optionalPackageDeclaration == null
-                ? identifier
-                : scopeCompilationUnit.optionalPackageDeclaration.packageName + '.' + identifier
-            );
+            PackageDeclaration opd = scopeCompilationUnit.optionalPackageDeclaration;
+
+            String className = opd == null ? identifier : opd.packageName + '.' + identifier;
+
             IClass result = this.findTypeByName(location, className);
             if (result != null) return new SimpleType(location, result);
         }
@@ -9315,10 +9404,10 @@ class UnitCompiler {
     /** Implements "assignment conversion" (JLS7 5.2). */
     private void
     assignmentConversion(
-        Locatable locatable,
-        IClass    sourceType,
-        IClass    targetType,
-        Object    optionalConstantValue
+        Locatable        locatable,
+        IClass           sourceType,
+        IClass           targetType,
+        @Nullable Object optionalConstantValue
     ) throws CompileException {
         if (!this.tryAssignmentConversion(locatable, sourceType, targetType, optionalConstantValue)) {
             this.compileError(
@@ -9330,10 +9419,10 @@ class UnitCompiler {
 
     private boolean
     tryAssignmentConversion(
-        Locatable locatable,
-        IClass    sourceType,
-        IClass    targetType,
-        Object    optionalConstantValue
+        Locatable        locatable,
+        IClass           sourceType,
+        IClass           targetType,
+        @Nullable Object optionalConstantValue
     ) throws CompileException {
         UnitCompiler.LOGGER.entering(
             null,
@@ -10080,7 +10169,12 @@ class UnitCompiler {
     }
 
     private boolean
-    tryUnboxingConversion(Locatable locatable, IClass sourceType, IClass targetType, Inserter optionalInserter) {
+    tryUnboxingConversion(
+        Locatable          locatable,
+        IClass             sourceType,
+        IClass             targetType,
+        @Nullable Inserter optionalInserter
+    ) {
         if (this.isUnboxingConvertible(sourceType) == targetType) {
             this.unboxingConversion(locatable, sourceType, targetType, optionalInserter);
             return true;
@@ -10093,7 +10187,7 @@ class UnitCompiler {
      * @param sourceType the corresponding wrapper type
      */
     private void
-    unboxingConversion(Locatable locatable, IClass sourceType, IClass targetType, Inserter optionalInserter) {
+    unboxingConversion(Locatable locatable, IClass sourceType, IClass targetType, @Nullable Inserter optionalInserter) {
         if (optionalInserter == null) {
             this.unboxingConversion(locatable, sourceType, targetType);
         } else {
@@ -10389,11 +10483,9 @@ class UnitCompiler {
     findClass(String className) {
 
         // Examine package name.
-        String packageName = (
-            this.compilationUnit.optionalPackageDeclaration == null ? null :
-            this.compilationUnit.optionalPackageDeclaration.packageName
-        );
-        if (packageName != null) {
+        PackageDeclaration opd = this.compilationUnit.optionalPackageDeclaration;
+        if (opd != null) {
+            String packageName = opd.packageName;
             if (!className.startsWith(packageName + '.')) return null;
             className = className.substring(packageName.length() + 1);
         }
@@ -10422,7 +10514,7 @@ class UnitCompiler {
      * @param optionalLocation The location to report
      */
     private void
-    compileError(String message, Location optionalLocation) throws CompileException {
+    compileError(String message, @Nullable Location optionalLocation) throws CompileException {
         ++this.compileErrorCount;
         if (this.optionalCompileErrorHandler != null) {
             this.optionalCompileErrorHandler.handleError(message, optionalLocation);
@@ -10439,7 +10531,7 @@ class UnitCompiler {
      * suppress individual warnings.
      */
     private void
-    warning(String handle, String message, Location optionalLocation) throws CompileException {
+    warning(String handle, String message, @Nullable Location optionalLocation) throws CompileException {
         if (this.optionalWarningHandler != null) {
             this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
         }
@@ -10462,7 +10554,7 @@ class UnitCompiler {
      *                                    CompileException}
      */
     public void
-    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
+    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
@@ -10472,7 +10564,7 @@ class UnitCompiler {
      * @param optionalWarningHandler {@code null} to indicate that no warnings be issued
      */
     public void
-    setWarningHandler(WarningHandler optionalWarningHandler) {
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
@@ -10776,16 +10868,18 @@ class UnitCompiler {
     private CodeContext codeContext;
 
     // Used for elaborate compile error handling.
-    private ErrorHandler optionalCompileErrorHandler;
-    private int          compileErrorCount;
+    @Nullable private ErrorHandler optionalCompileErrorHandler;
+    private int                    compileErrorCount;
 
     // Used for elaborate warning handling.
-    private WarningHandler optionalWarningHandler;
+    @Nullable private WarningHandler optionalWarningHandler;
 
     private final CompilationUnit compilationUnit;
 
     private final IClassLoader  iClassLoader;
-    private List<ClassFile>     generatedClassFiles;
+
+    /** Non-{@code null} while {@link #compileUnit(boolean, boolean, boolean)} is executing. */
+    @Nullable private List<ClassFile> generatedClassFiles;
 
     private boolean debugSource;
     private boolean debugLines;

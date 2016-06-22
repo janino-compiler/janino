@@ -51,13 +51,15 @@ import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
+
 /**
  * A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s in byte arrays, i.e. in
  * memory (as opposed to the {@link StandardJavaFileManager}, which stores them in files).
  *
  * @param <M>
  */
-public
+@NotNullByDefault(false) public
 class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
 
     private final Map<Location, Map<Kind, Map<String /*className*/, JavaFileObject>>> javaFiles = (

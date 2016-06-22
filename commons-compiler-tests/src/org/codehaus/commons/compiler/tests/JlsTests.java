@@ -24,6 +24,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+package org.codehaus.commons.compiler.tests;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Handler;

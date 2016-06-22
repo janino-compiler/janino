@@ -24,6 +24,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+package org.codehaus.commons.compiler.tests;
+
 import java.io.File;
 import java.util.Collection;
 

@@ -127,6 +127,7 @@ class Opcode {
     public static final byte I2L             = (byte) 133;
     public static final byte I2S             = (byte) 147;
     public static final byte IADD            = 96;
+    /** @see <a href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-6.html#jvms-6.5.iaload">JVMS 8</a> */
     public static final byte IALOAD          = 46;
     public static final byte IAND            = 126;
     public static final byte IASTORE         = 79;

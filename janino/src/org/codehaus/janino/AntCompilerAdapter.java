@@ -32,6 +32,7 @@ import java.io.IOException;
 import org.apache.tools.ant.taskdefs.compilers.DefaultCompilerAdapter;
 import org.apache.tools.ant.types.Path;
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * A simple {@link org.apache.tools.ant.taskdefs.compilers.CompilerAdapter} for the "ant" tool
@@ -82,7 +83,7 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
         File destinationDirectory = this.destDir == null ? Compiler.NO_DESTINATION_DIRECTORY : this.destDir;
 
         // Determine the source path.
-        File[] optionalSourcePath = AntCompilerAdapter.pathToFiles(
+        @Nullable File[] optionalSourcePath = AntCompilerAdapter.pathToFiles(
             this.compileSourcepath != null
             ? this.compileSourcepath
             : this.src
@@ -92,13 +93,13 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
         File[] classPath = AntCompilerAdapter.pathToFiles(this.compileClasspath, new File[] { new File(".") });
 
         // Determine the ext dirs.
-        File[] optionalExtDirs = AntCompilerAdapter.pathToFiles(this.extdirs);
+        @Nullable File[] optionalExtDirs = AntCompilerAdapter.pathToFiles(this.extdirs);
 
         // Determine the boot class path
-        File[] optionalBootClassPath = AntCompilerAdapter.pathToFiles(this.bootclasspath);
+        @Nullable File[] optionalBootClassPath = AntCompilerAdapter.pathToFiles(this.bootclasspath);
 
         // Determine the encoding.
-        String optionalCharacterEncoding = this.encoding;
+        @Nullable String optionalCharacterEncoding = this.encoding;
 
         // Determine verbosity.
         boolean verbose = this.verbose;
@@ -157,8 +158,8 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
      * @param path
      * @return The converted path, or <code>null</code> if <code>path</code> is <code>null</code>
      */
-    private static File[]
-    pathToFiles(Path path) {
+    @Nullable private static File[]
+    pathToFiles(@Nullable Path path) {
         if (path == null) return null;
 
         String[] fileNames = path.list();
@@ -175,9 +176,14 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
      * @return The converted path, or, if <code>path</code> is <code>null</code>, the <code>defaultValue</code>
      */
     private static File[]
-    pathToFiles(Path path, File[] defaultValue) {
+    pathToFiles(@Nullable Path path, File[] defaultValue) {
+
         if (path == null) return defaultValue;
-        return AntCompilerAdapter.pathToFiles(path);
+
+        File[] result = AntCompilerAdapter.pathToFiles(path);
+        assert result != null;
+
+        return result;
     }
 }
 

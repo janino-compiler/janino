@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * A {@link java.io.FilterReader} that copies the bytes being passed through
  * to a given {@link java.io.Writer}. This is in analogy with the UNIX "tee" command.
@@ -69,7 +71,7 @@ class TeeReader extends FilterReader {
     }
 
     @Override public int
-    read(char[] cbuf, int off, int len) throws IOException {
+    read(@Nullable char[] cbuf, int off, int len) throws IOException {
         int bytesRead = this.in.read(cbuf, off, len);
         if (bytesRead == -1) {
             if (this.closeWriterOnEOF) {

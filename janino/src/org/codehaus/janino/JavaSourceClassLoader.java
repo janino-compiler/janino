@@ -38,6 +38,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
@@ -79,9 +80,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      */
     public
     JavaSourceClassLoader(
-        ClassLoader parentClassLoader,
-        File[]      optionalSourcePath,
-        String      optionalCharacterEncoding
+        ClassLoader      parentClassLoader,
+        @Nullable File[] optionalSourcePath,
+        @Nullable String optionalCharacterEncoding
     ) {
         this(
             parentClassLoader,        // parentClassLoader
@@ -109,9 +110,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      */
     public
     JavaSourceClassLoader(
-        ClassLoader    parentClassLoader,
-        ResourceFinder sourceFinder,
-        String         optionalCharacterEncoding
+        ClassLoader      parentClassLoader,
+        ResourceFinder   sourceFinder,
+        @Nullable String optionalCharacterEncoding
     ) {
         this(parentClassLoader, new JavaSourceIClassLoader(
             sourceFinder,                                  // sourceFinder
@@ -135,7 +136,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     @Override public void
-    setSourceFileCharacterEncoding(String optionalCharacterEncoding) {
+    setSourceFileCharacterEncoding(@Nullable String optionalCharacterEncoding) {
         this.iClassLoader.setCharacterEncoding(optionalCharacterEncoding);
     }
 
@@ -148,7 +149,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     /** @see UnitCompiler#setCompileErrorHandler */
     public void
-    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
+    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
         this.iClassLoader.setCompileErrorHandler(optionalCompileErrorHandler);
     }
 
@@ -157,7 +158,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @see UnitCompiler#setCompileErrorHandler
      */
     public void
-    setWarningHandler(WarningHandler optionalWarningHandler) {
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.iClassLoader.setWarningHandler(optionalWarningHandler);
     }
 
@@ -167,7 +168,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @throws ClassNotFoundException
      */
     @Override protected /*synchronized <- No need to synchronize, because 'loadClass()' is synchronized */ Class
-    findClass(String name) throws ClassNotFoundException {
+    findClass(@Nullable String name) throws ClassNotFoundException {
+        assert name != null;
 
         // Check if the bytecode for that class was generated already.
         byte[] bytecode = (byte[]) this.precompiledClasses.remove(name);
@@ -242,9 +244,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     defineBytecode(String className, byte[] ba) {
 
         return this.defineClass(className, ba, 0, ba.length, (
-            this.optionalProtectionDomainFactory == null
-            ? null
-            : this.optionalProtectionDomainFactory.getProtectionDomain(ClassFile.getSourceResourceName(className))
+            this.optionalProtectionDomainFactory != null
+            ? this.optionalProtectionDomainFactory.getProtectionDomain(ClassFile.getSourceResourceName(className))
+            : null
         ));
     }
 

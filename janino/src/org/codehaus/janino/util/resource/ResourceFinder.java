@@ -29,6 +29,8 @@ package org.codehaus.janino.util.resource;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * Finds a resource by name.
  * <p>
@@ -49,7 +51,7 @@ class ResourceFinder {
      * @return             <code>null</code> if the resource could not be found
      * @throws IOException The resource was found, but there are problems opening it
      */
-    public final InputStream
+    @Nullable public final InputStream
     findResourceAsStream(String resourceName) throws IOException {
         Resource resource = this.findResource(resourceName);
         if (resource == null) return null;
@@ -63,11 +65,12 @@ class ResourceFinder {
      *                     "<code>com/foo/pkg/Bar.class</code>"
      * @return             <code>null</code> if the resource could not be found
      */
-    public abstract Resource findResource(String resourceName);
+    @Nullable public abstract Resource
+    findResource(String resourceName);
 
     /** This one's useful when a resource finder is required, but cannot be created for some reason. */
     public static final ResourceFinder EMPTY_RESOURCE_FINDER = new ResourceFinder() {
-        @Override public Resource findResource(String resourceName) { return null; }
-        @Override public String   toString()                        { return "invalid entry"; }
+        @Override @Nullable public Resource findResource(String resourceName) { return null; }
+        @Override public String             toString()                        { return "invalid entry"; }
     };
 }

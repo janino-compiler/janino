@@ -298,10 +298,12 @@ class Descriptor {
     public static final String JAVA_LANG_CLASS = "Ljava/lang/Class;";
     /** The field descriptor for the class {@link java.lang.Double}. */
     public static final String JAVA_LANG_DOUBLE = "Ljava/lang/Double;";
-    /** The field descriptor for the class {@link java.lang.Exception}. */
-    public static final String JAVA_LANG_EXCEPTION = "Ljava/lang/Exception;";
+    /** The field descriptor for the class {@link java.lang.Enum}. */
+    public static final String JAVA_LANG_ENUM = "Ljava/lang/Enum;";
     /** The field descriptor for the class {@link java.lang.Error}. */
     public static final String JAVA_LANG_ERROR = "Ljava/lang/Error;";
+    /** The field descriptor for the class {@link java.lang.Exception}. */
+    public static final String JAVA_LANG_EXCEPTION = "Ljava/lang/Exception;";
     /** The field descriptor for the class {@link java.lang.Float}. */
     public static final String JAVA_LANG_FLOAT = "Ljava/lang/Float;";
     /** The field descriptor for the class {@link java.lang.Integer}. */

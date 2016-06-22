@@ -43,6 +43,7 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.PrimitiveWrapper;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.Rvalue;
@@ -92,7 +93,7 @@ import org.codehaus.janino.util.Traverser;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
 
-    private Class[] optionalExpressionTypes;
+    @Nullable private Class[] optionalExpressionTypes;
 
     /**
      * Equivalent to<pre>
@@ -136,12 +137,12 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      */
     public
     ExpressionEvaluator(
-        String      expression,
-        Class       expressionType,
-        String[]    parameterNames,
-        Class[]     parameterTypes,
-        Class[]     thrownExceptions,
-        ClassLoader optionalParentClassLoader
+        String                expression,
+        Class                 expressionType,
+        String[]              parameterNames,
+        Class[]               parameterTypes,
+        Class[]               thrownExceptions,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
@@ -172,14 +173,14 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      */
     public
     ExpressionEvaluator(
-        String      expression,
-        Class       expressionType,
-        String[]    parameterNames,
-        Class[]     parameterTypes,
-        Class[]     thrownExceptions,
-        Class       optionalExtendedType,
-        Class[]     implementedTypes,
-        ClassLoader optionalParentClassLoader
+        String                expression,
+        Class                 expressionType,
+        String[]              parameterNames,
+        Class[]               parameterTypes,
+        Class[]               thrownExceptions,
+        @Nullable Class       optionalExtendedType,
+        Class[]               implementedTypes,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
@@ -223,17 +224,17 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      */
     public
     ExpressionEvaluator(
-        Scanner     scanner,
-        String      className,
-        Class       optionalExtendedType,
-        Class[]     implementedTypes,
-        boolean     staticMethod,
-        Class       expressionType,
-        String      methodName,
-        String[]    parameterNames,
-        Class[]     parameterTypes,
-        Class[]     thrownExceptions,
-        ClassLoader optionalParentClassLoader
+        Scanner               scanner,
+        String                className,
+        @Nullable Class       optionalExtendedType,
+        Class[]               implementedTypes,
+        boolean               staticMethod,
+        Class                 expressionType,
+        String                methodName,
+        String[]              parameterNames,
+        Class[]               parameterTypes,
+        Class[]               thrownExceptions,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         this.setClassName(className);
         this.setExtendedClass(optionalExtendedType);
@@ -250,7 +251,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     public ExpressionEvaluator() {}
 
     @Override public void
-    setExpressionType(Class expressionType) { this.setExpressionTypes(new Class[] { expressionType }); }
+    setExpressionType(@Nullable Class expressionType) { this.setExpressionTypes(new Class[] { expressionType }); }
 
     @Override public void
     setExpressionTypes(Class[] expressionTypes) {
@@ -287,11 +288,8 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         // Parse the expression.
         Rvalue value = parser.parseExpression().toRvalueOrCompileException();
 
-        Class et = (
-            this.optionalExpressionTypes == null
-            ? IExpressionEvaluator.ANY_TYPE
-            : this.optionalExpressionTypes[idx]
-        );
+        Class[] oets = this.optionalExpressionTypes;
+        Class   et   = oets == null ? IExpressionEvaluator.ANY_TYPE : oets[idx];
         if (et == void.class) {
 
             // ExpressionEvaluator with an expression type "void" is a simple expression statement.
@@ -344,10 +342,10 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      */
     @Deprecated public static Object
     createFastExpressionEvaluator(
-        String      expression,
-        Class       interfaceToImplement,
-        String[]    parameterNames,
-        ClassLoader optionalParentClassLoader
+        String                expression,
+        Class                 interfaceToImplement,
+        String[]              parameterNames,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException {
         IExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setParentClassLoader(optionalParentClassLoader);
@@ -363,12 +361,12 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      */
     @Deprecated public static Object
     createFastExpressionEvaluator(
-        Scanner     scanner,
-        String      className,
-        Class       optionalExtendedType,
-        Class       interfaceToImplement,
-        String[]    parameterNames,
-        ClassLoader optionalParentClassLoader
+        Scanner               scanner,
+        String                className,
+        @Nullable Class       optionalExtendedType,
+        Class                 interfaceToImplement,
+        String[]              parameterNames,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setClassName(className);
@@ -386,13 +384,13 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      */
     @Deprecated public static Object
     createFastExpressionEvaluator(
-        Scanner     scanner,
-        String[]    optionalDefaultImports,
-        String      className,
-        Class       optionalExtendedType,
-        Class       interfaceToImplement,
-        String[]    parameterNames,
-        ClassLoader optionalParentClassLoader
+        Scanner               scanner,
+        @Nullable String[]    optionalDefaultImports,
+        String                className,
+        @Nullable Class       optionalExtendedType,
+        Class                 interfaceToImplement,
+        String[]              parameterNames,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setClassName(className);

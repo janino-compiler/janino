@@ -37,6 +37,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.resource.Resource;
@@ -53,19 +54,19 @@ class JavaSourceIClassLoader extends IClassLoader {
 
     private static final Logger LOGGER = Logger.getLogger(JavaSourceIClassLoader.class.getName());
 
-    private ResourceFinder          sourceFinder;
-    private String                  optionalCharacterEncoding;
+    private ResourceFinder           sourceFinder;
+    @Nullable private String         optionalCharacterEncoding;
     /** Collection of parsed compilation units. */
-    private final Set<UnitCompiler> unitCompilers = new HashSet<UnitCompiler>();
+    private final Set<UnitCompiler>  unitCompilers = new HashSet<UnitCompiler>();
 
-    private ErrorHandler            optionalCompileErrorHandler;
-    private WarningHandler          optionalWarningHandler;
+    @Nullable private ErrorHandler   optionalCompileErrorHandler;
+    @Nullable private WarningHandler optionalWarningHandler;
 
     public
     JavaSourceIClassLoader(
-        ResourceFinder    sourceFinder,
-        String            optionalCharacterEncoding,
-        IClassLoader      optionalParentIClassLoader
+        ResourceFinder         sourceFinder,
+        @Nullable String       optionalCharacterEncoding,
+        @Nullable IClassLoader optionalParentIClassLoader
     ) {
         super(optionalParentIClassLoader);
 
@@ -91,13 +92,13 @@ class JavaSourceIClassLoader extends IClassLoader {
      *                                  use the platform's 'default charset'
      */
     public void
-    setCharacterEncoding(String optionalCharacterEncoding) {
+    setCharacterEncoding(@Nullable String optionalCharacterEncoding) {
         this.optionalCharacterEncoding = optionalCharacterEncoding;
     }
 
     /** @see UnitCompiler#setCompileErrorHandler(ErrorHandler) */
     public void
-    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
+    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
@@ -106,7 +107,7 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
      */
     public void
-    setWarningHandler(WarningHandler optionalWarningHandler) {
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
@@ -114,7 +115,7 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @param fieldDescriptor         Field descriptor of the {@link IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
      * @throws ClassNotFoundException An exception was raised while loading the {@link IClass}
      */
-    @Override public IClass
+    @Override public @Nullable IClass
     findIClass(final String fieldDescriptor) throws ClassNotFoundException {
         JavaSourceIClassLoader.LOGGER.entering(null, "findIClass", fieldDescriptor);
 

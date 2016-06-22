@@ -25,4 +25,7 @@
  */
 
 /** Some generic {@link java.util.Iterator}-related helper classes. */
+@NotNullByDefault
 package org.codehaus.janino.util.iterator;
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

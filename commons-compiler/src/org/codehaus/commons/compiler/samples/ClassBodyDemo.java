@@ -30,6 +30,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
@@ -77,7 +78,13 @@ class ClassBodyDemo {
         Object returnValue = m.invoke(null, new Object[] { arguments });
 
         // If non-VOID, print the return value.
-        if (m.getReturnType() != void.class) System.out.println(DemoBase.toString(returnValue));
+        if (m.getReturnType() != void.class) {
+            System.out.println(
+                returnValue instanceof Object[]
+                ? Arrays.toString((Object[]) returnValue)
+                : String.valueOf(returnValue)
+            );
+        }
     }
 
     private ClassBodyDemo() {}

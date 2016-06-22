@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.LocalVariableSlot;
 import org.codehaus.janino.util.ClassFile;
 
@@ -139,7 +140,7 @@ class CodeContext {
      * @param type The variable type. if the name isn't null, the type is needed to write to the localvariabletable
      */
     public Java.LocalVariableSlot
-    allocateLocalVariable(short size, String name, IClass type) {
+    allocateLocalVariable(short size, @Nullable String name, @Nullable IClass type) {
         List<Java.LocalVariableSlot> currentVars = null;
 
         if (this.scopedVars.size() == 0) {
@@ -150,7 +151,7 @@ class CodeContext {
 
         Java.LocalVariableSlot slot = new Java.LocalVariableSlot(name, this.nextLocalVariableSlot, type);
 
-        if (slot.getName() != null) {
+        if (name != null) {
             slot.setStart(this.newOffset());
         }
 
@@ -254,7 +255,7 @@ class CodeContext {
     /**
      * @return A {@link org.codehaus.janino.util.ClassFile.LocalVariableTableAttribute} for this {@link CodeContext}
      */
-    protected ClassFile.AttributeInfo
+    @Nullable protected ClassFile.AttributeInfo
     storeLocalVariableTable(DataOutputStream dos, short localVariableTableAttributeNameIndex) {
         ClassFile                                               cf        = this.getClassFile();
         final List<ClassFile.LocalVariableTableAttribute.Entry> entryList = new ArrayList();
@@ -287,9 +288,9 @@ class CodeContext {
                 localVariableTableAttributeNameIndex,
                 (ClassFile.LocalVariableTableAttribute.Entry[]) entries
             );
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -725,6 +726,7 @@ class CodeContext {
     private void
     fixUp() {
         for (Offset o = this.beginning; o != this.end; o = o.next) {
+            assert o != null;
             if (o instanceof FixUp) ((FixUp) o).fixUp();
         }
     }
@@ -910,6 +912,7 @@ class CodeContext {
         if (lineNumber != -1) {
             Offset o;
             for (o = this.currentInserter.prev; o != this.beginning; o = o.prev) {
+                assert o != null;
                 if (o instanceof LineNumberOffset) {
                     if (((LineNumberOffset) o).lineNumber == lineNumber) break INSERT_LINE_NUMBER_OFFSET;
                     break;
@@ -1166,11 +1169,16 @@ class CodeContext {
      */
     public
     class Offset {
+
         /** The offset in the code attribute that this object represents. */
         int offset = Offset.UNSET;
 
-        /** Links to preceding and succeding offsets. */
-        Offset prev, next;
+        /**
+         * Links to preceding and succeding offsets. Both are {@code null} <em>before</em> {@link #set()} is called,
+         * and both are non-{@code null} <em>after</em> {@link #set()} has been called. This implies that {@link
+         * #set()} must be invoked at most <em>once</em>.
+         */
+        @Nullable Offset prev, next;
 
         /**
          * Special value for {@link #offset} which indicates that this {@link Offset} has not yet been {@link #set()}
@@ -1230,7 +1238,7 @@ class CodeContext {
     /** A class that implements an insertion point into a "Code" attribute. */
     public
     class Inserter extends Offset {
-        private Inserter nextInserter; // null == not in "currentInserter" stack
+        @Nullable private Inserter nextInserter; // null == not in "currentInserter" stack
     }
 
     /** An {@link Offset} who#s sole purpose is to later create a 'LneNumberTable' attribute. */
@@ -1298,6 +1306,7 @@ class CodeContext {
         Set<Offset> invalidOffsets = new HashSet<Offset>();
         {
             Offset o = from.next;
+            assert o != null;
 
             for (; o != to;) {
                 assert o != null;
@@ -1305,15 +1314,20 @@ class CodeContext {
                 invalidOffsets.add(o);
 
                 // Invalidate the offset for fast failure.
+                Offset n = o.next;
                 o.offset    = -77;
                 o.prev      = null;
-                o           = o.next;
-                o.prev.next = null;
+                o.next      = null;
+
+                o = n;
+                assert o != null;
             }
 
-            for (;; o = o.next) {
+            for (;;) {
                 o.offset -= size;
                 if (o == this.end) break;
+                o = o.next;
+                assert o != null;
             }
         }
 

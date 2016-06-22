@@ -43,6 +43,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.IClass;
@@ -341,9 +342,9 @@ class JGrep {
     private static
     class MethodInvocationTarget {
 
-        String                          optionalClassNamePattern;
+        @Nullable String                optionalClassNamePattern;
         String                          methodNamePattern;
-        String[]                        optionalArgumentTypeNamePatterns;
+        @Nullable String[]              optionalArgumentTypeNamePatterns;
         List<MethodInvocationPredicate> predicates = new ArrayList();
         List<MethodInvocationAction>    actions    = new ArrayList();
 
@@ -455,17 +456,17 @@ class JGrep {
         "  void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method)",
     };
 
-    private final IClassLoader iClassLoader;
-    private final String       optionalCharacterEncoding;
-    private final Benchmark    benchmark;
+    private final IClassLoader     iClassLoader;
+    @Nullable private final String optionalCharacterEncoding;
+    private final Benchmark        benchmark;
 
     public
     JGrep(
-        File[]  classPath,
-        File[]  optionalExtDirs,
-        File[]  optionalBootClassPath,
-        String  optionalCharacterEncoding,
-        boolean verbose
+        File[]           classPath,
+        @Nullable File[] optionalExtDirs,
+        @Nullable File[] optionalBootClassPath,
+        @Nullable String optionalCharacterEncoding,
+        boolean          verbose
     ) {
         this(
             org.codehaus.janino.IClassLoader.createJavacLikePathIClassLoader( // iClassLoader
@@ -486,7 +487,7 @@ class JGrep {
     }
 
     public
-    JGrep(IClassLoader iClassLoader, final String optionalCharacterEncoding, boolean verbose) {
+    JGrep(IClassLoader iClassLoader, @Nullable final String optionalCharacterEncoding, boolean verbose) {
         this.iClassLoader              = new JGrepIClassLoader(iClassLoader);
         this.optionalCharacterEncoding = optionalCharacterEncoding;
         this.benchmark                 = new Benchmark(verbose);
@@ -507,11 +508,19 @@ class JGrep {
             rootDirectories,              // rootDirectories
             new FilenameFilter() {        // directoryNameFilter
                 @Override public boolean
-                accept(File dir, String name) { return StringPattern.matches(directoryNamePatterns, name); }
+                accept(@Nullable File dir, @Nullable String name) {
+                    assert dir != null;
+                    assert name != null;
+                    return StringPattern.matches(directoryNamePatterns, name);
+                }
             },
             new FilenameFilter() {        // fileNameFilter
                 @Override public boolean
-                accept(File dir, String name) { return StringPattern.matches(fileNamePatterns, name); }
+                accept(@Nullable File dir, @Nullable String name) {
+                    assert dir != null;
+                    assert name != null;
+                    return StringPattern.matches(fileNamePatterns, name);
+                }
             }
         ), methodInvocationTargets);
     }
@@ -608,7 +617,8 @@ class JGrep {
      * @return the parsed compilation unit
      */
     private Java.CompilationUnit
-    parseCompilationUnit(File sourceFile, String optionalCharacterEncoding) throws CompileException, IOException {
+    parseCompilationUnit(File sourceFile, @Nullable String optionalCharacterEncoding)
+    throws CompileException, IOException {
         InputStream is = new BufferedInputStream(new FileInputStream(sourceFile));
         try {
             Parser parser = new Parser(new Scanner(sourceFile.getPath(), is, optionalCharacterEncoding));
@@ -636,12 +646,13 @@ class JGrep {
      * If <code>optionalDestinationDirectory</code> is null, the returned path is the
      * directory of the <code>sourceFile</code> plus the class name plus ".class". Example:
      * "srcdir/Outer$Inner.class"
-     * @param className E.g. "pkg1.pkg2.Outer$Inner"
-     * @param sourceFile E.g. "srcdir/Outer.java"
+     *
+     * @param className                    E.g. "pkg1.pkg2.Outer$Inner"
+     * @param sourceFile                   E.g. "srcdir/Outer.java"
      * @param optionalDestinationDirectory E.g. "destdir"
      */
     public static File
-    getClassFile(String className, File sourceFile, File optionalDestinationDirectory) {
+    getClassFile(String className, File sourceFile, @Nullable File optionalDestinationDirectory) {
         if (optionalDestinationDirectory != null) {
             return new File(optionalDestinationDirectory, ClassFile.getClassFileResourceName(className));
         } else {
@@ -671,13 +682,13 @@ class JGrep {
         /**
          * @param optionalParentIClassLoader The {@link IClassLoader} through which {@link IClass}es are to be loaded
          */
-        JGrepIClassLoader(IClassLoader optionalParentIClassLoader) {
+        JGrepIClassLoader(@Nullable IClassLoader optionalParentIClassLoader) {
             super(optionalParentIClassLoader);
             super.postConstruct();
         }
 
         /** @param type Field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;" */
-        @Override protected IClass
+        @Override protected @Nullable IClass
         findIClass(final String type) {
             JGrep.LOGGER.entering(null, "findIClass", type);
 

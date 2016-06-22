@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.util.resource.Resource;
 import org.codehaus.janino.util.resource.ResourceFinder;
@@ -54,7 +55,8 @@ class ResourceFinderClassLoader extends ClassLoader {
     getResourceFinder() { return this.resourceFinder; }
 
     @Override protected Class
-    findClass(String className) throws ClassNotFoundException {
+    findClass(@Nullable String className) throws ClassNotFoundException {
+        assert className != null;
 
         // Find the resource containing the class bytecode.
         Resource classFileResource = this.resourceFinder.findResource(ClassFile.getClassFileResourceName(className));

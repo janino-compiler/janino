@@ -25,4 +25,7 @@
  */
 
 /** Sample applications for the Janino Java<sup>TM</sup> compiler. */
+@NotNullByDefault
 package org.codehaus.janino.samples;
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

@@ -33,13 +33,15 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /** Utility class that finds implementations of {@link ICompilerFactory}s. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class CompilerFactoryFactory {
 
     private CompilerFactoryFactory() {}
 
-    private static ICompilerFactory defaultCompilerFactory;
+    @Nullable private static ICompilerFactory defaultCompilerFactory;
 
     /**
      * Finds the first implementation of <code>org.codehaus.commons.compiler</code> on the class path, then loads and
@@ -50,28 +52,30 @@ class CompilerFactoryFactory {
      */
     public static ICompilerFactory
     getDefaultCompilerFactory() throws Exception {
-        if (CompilerFactoryFactory.defaultCompilerFactory == null) {
-            Properties  properties = new Properties();
-            InputStream is         = Thread.currentThread().getContextClassLoader().getResourceAsStream(
-                "org.codehaus.commons.compiler.properties"
-            );
-            if (is == null) {
-                throw new ClassNotFoundException(
-                    "No implementation of org.codehaus.commons.compiler is on the class path. Typically, you'd have "
-                    + "'janino.jar', or 'commons-compiler-jdk.jar', or both on the classpath."
-                );
-            }
-            try {
-                properties.load(is);
-            } finally {
-                is.close();
-            }
-            String compilerFactoryClassName = properties.getProperty("compilerFactory");
-            CompilerFactoryFactory.defaultCompilerFactory = (
-                CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName)
+        if (CompilerFactoryFactory.defaultCompilerFactory != null) {
+            return CompilerFactoryFactory.defaultCompilerFactory;
+        }
+        Properties  properties = new Properties();
+        InputStream is         = Thread.currentThread().getContextClassLoader().getResourceAsStream(
+            "org.codehaus.commons.compiler.properties"
+        );
+        if (is == null) {
+            throw new ClassNotFoundException(
+                "No implementation of org.codehaus.commons.compiler is on the class path. Typically, you'd have "
+                + "'janino.jar', or 'commons-compiler-jdk.jar', or both on the classpath."
             );
         }
-        return CompilerFactoryFactory.defaultCompilerFactory;
+        try {
+            properties.load(is);
+        } finally {
+            is.close();
+        }
+        String compilerFactoryClassName = properties.getProperty("compilerFactory");
+
+        return (
+            CompilerFactoryFactory.defaultCompilerFactory
+            = CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName)
+        );
     }
 
     /**

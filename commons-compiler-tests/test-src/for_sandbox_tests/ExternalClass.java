@@ -28,6 +28,9 @@
 
 package for_sandbox_tests; // SUPPRESS CHECKSTYLE PackageName
 
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
+
+@NotNullByDefault(false)
 public
 class ExternalClass extends BaseOfExternalClass implements InterfaceOfExternalClass {
     public final OtherExternalClass x = new OtherExternalClass();

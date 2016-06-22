@@ -37,6 +37,7 @@ import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * The <code>optionalClassLoader</code> serves two purposes:
@@ -54,11 +55,11 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     private static final Class[] ZERO_CLASSES = new Class[0];
 
-    private String[] optionalDefaultImports;
-    private String   className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
-    private Class    optionalExtendedType;
-    private Class[]  implementedTypes = ClassBodyEvaluator.ZERO_CLASSES;
-    private Class    result; // null=uncooked
+    @Nullable private String[] optionalDefaultImports;
+    private String             className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
+    @Nullable private Class    optionalExtendedType;
+    private Class[]            implementedTypes = ClassBodyEvaluator.ZERO_CLASSES;
+    private Class              result; // null=uncooked
 
     /**
      * Equivalent to<pre>
@@ -80,7 +81,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * @see Cookable#cook(String, InputStream)
      */
     public
-    ClassBodyEvaluator(String optionalFileName, InputStream is) throws CompileException, IOException {
+    ClassBodyEvaluator(@Nullable String optionalFileName, InputStream is) throws CompileException, IOException {
         this.cook(optionalFileName, is);
     }
 
@@ -93,7 +94,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * @see Cookable#cook(String, Reader)
      */
     public
-    ClassBodyEvaluator(String optionalFileName, Reader reader) throws CompileException, IOException {
+    ClassBodyEvaluator(@Nullable String optionalFileName, Reader reader) throws CompileException, IOException {
         this.cook(optionalFileName, reader);
     }
 
@@ -108,7 +109,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * @see Cookable#cook(Reader)
      */
     public
-    ClassBodyEvaluator(Scanner scanner, ClassLoader optionalParentClassLoader) throws CompileException, IOException {
+    ClassBodyEvaluator(Scanner scanner, @Nullable ClassLoader optionalParentClassLoader)
+    throws CompileException, IOException {
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(scanner);
     }
@@ -129,10 +131,10 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      */
     public
     ClassBodyEvaluator(
-        Scanner     scanner,
-        Class       optionalExtendedType,
-        Class[]     implementedTypes,
-        ClassLoader optionalParentClassLoader
+        Scanner               scanner,
+        @Nullable Class       optionalExtendedType,
+        Class[]               implementedTypes,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         this.setExtendedClass(optionalExtendedType);
         this.setImplementedInterfaces(implementedTypes);
@@ -158,11 +160,11 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      */
     public
     ClassBodyEvaluator(
-        Scanner     scanner,
-        String      className,
-        Class       optionalExtendedType,
-        Class[]     implementedTypes,
-        ClassLoader optionalParentClassLoader
+        Scanner               scanner,
+        String                className,
+        @Nullable Class       optionalExtendedType,
+        Class[]               implementedTypes,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         this.setClassName(className);
         this.setExtendedClass(optionalExtendedType);
@@ -174,7 +176,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     public ClassBodyEvaluator() {}
 
     @Override public void
-    setDefaultImports(String[] optionalDefaultImports) {
+    setDefaultImports(@Nullable String[] optionalDefaultImports) {
         this.assertNotCooked();
         this.optionalDefaultImports = optionalDefaultImports;
     }
@@ -187,14 +189,14 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     @Override public void
-    setExtendedClass(Class optionalExtendedType) {
+    setExtendedClass(@Nullable Class optionalExtendedType) {
         this.assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
     /** @deprecated */
     @Deprecated @Override public void
-    setExtendedType(Class optionalExtendedClass) {
+    setExtendedType(@Nullable Class optionalExtendedClass) {
         this.setExtendedClass(optionalExtendedClass);
     }
 
@@ -240,7 +242,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * compilation unit.
      */
     protected final Java.CompilationUnit
-    makeCompilationUnit(Parser optionalParser) throws CompileException, IOException {
+    makeCompilationUnit(@Nullable Parser optionalParser) throws CompileException, IOException {
         Java.CompilationUnit cu = (
             new Java.CompilationUnit(optionalParser == null
             ? null
@@ -379,9 +381,9 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      */
     public static Object
     createFastClassBodyEvaluator(
-        Scanner     scanner,
-        Class       optionalBaseType,
-        ClassLoader optionalParentClassLoader
+        Scanner               scanner,
+        @Nullable Class       optionalBaseType,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         return ClassBodyEvaluator.createFastClassBodyEvaluator(
             scanner,                                // scanner
@@ -417,11 +419,11 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      */
     @Deprecated public static Object
     createFastClassBodyEvaluator(
-        Scanner     scanner,
-        String      className,
-        Class       optionalExtendedClass,
-        Class[]     implementedInterfaces,
-        ClassLoader optionalParentClassLoader
+        Scanner               scanner,
+        String                className,
+        @Nullable Class       optionalExtendedClass,
+        Class[]               implementedInterfaces,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         ClassBodyEvaluator cbe = new ClassBodyEvaluator();
         cbe.setClassName(className);

@@ -34,6 +34,7 @@ import java.lang.reflect.Modifier;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /** Wraps a {@link java.lang.Class} in an {@link org.codehaus.janino.IClass}. */
 @SuppressWarnings("rawtypes")
@@ -93,20 +94,20 @@ class ReflectionIClass extends IClass {
     @Override protected IClass[]
     getDeclaredIClasses2() { return this.classesToIClasses(this.clazz.getDeclaredClasses()); }
 
-    @Override protected IClass
+    @Override protected @Nullable IClass
     getDeclaringIClass2() {
         Class declaringClass = this.clazz.getDeclaringClass();
         if (declaringClass == null) return null;
         return this.classToIClass(declaringClass);
     }
 
-    @Override protected IClass
+    @Override protected @Nullable IClass
     getOuterIClass2() throws CompileException {
         if (Modifier.isStatic(this.clazz.getModifiers())) return null;
         return this.getDeclaringIClass();
     }
 
-    @Override protected IClass
+    @Override protected @Nullable IClass
     getSuperclass2() {
         Class superclass = this.clazz.getSuperclass();
         return superclass == null ? null : this.classToIClass(superclass);
@@ -128,7 +129,7 @@ class ReflectionIClass extends IClass {
     @Override public boolean isAbstract()  { return Modifier.isAbstract(this.clazz.getModifiers()); }
     @Override public boolean isArray()     { return this.clazz.isArray(); }
 
-    @Override protected IClass
+    @Override protected @Nullable IClass
     getComponentType2() {
         Class componentType = this.clazz.getComponentType();
         return componentType == null ? null : this.classToIClass(componentType);
@@ -174,6 +175,9 @@ class ReflectionIClass extends IClass {
                     cnfe
                 );
             }
+            if (annotationTypeIClass == null) {
+                throw new CompileException("Could not load \"" + annotationType.getName() + "\"", null);
+            }
 
             result[i] = new IAnnotation() {
 
@@ -195,7 +199,7 @@ class ReflectionIClass extends IClass {
                 }
 
                 @Override public String
-                toString() { return '@' + annotationTypeIClass.toString(); }
+                toString() { return "@" + annotationTypeIClass; }
             };
         }
         return result;
@@ -361,8 +365,7 @@ class ReflectionIClass extends IClass {
         }
 
         /**
-         * This implementation of {@link IClass.IField#getConstantValue()} is
-         * not completely correct:
+         * This implementation of {@link IClass.IField#getConstantValue()} is not completely correct:
          * <ul>
          *   <li>
          *   It treats non-static fields as non-constant
@@ -372,6 +375,8 @@ class ReflectionIClass extends IClass {
          *   different JVM instance -- the classical example is
          *   {@link java.io.File#separator}.)
          * </ul>
+         * <p>
+         *   Notice that enum constants are <em>not</em> constant expression (despite the similarity of names).
          */
         @Override public Object
         getConstantValue() throws CompileException {

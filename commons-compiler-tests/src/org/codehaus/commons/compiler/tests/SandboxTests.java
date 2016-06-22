@@ -24,6 +24,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+package org.codehaus.commons.compiler.tests;
+
 import java.util.Collection;
 
 import org.codehaus.commons.compiler.CompileException;
@@ -36,8 +38,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import util.TestUtil;
 import for_sandbox_tests.ExternalClass;
+import util.TestUtil;
 
 // CHECKSTYLE JavadocMethod:OFF
 
@@ -77,7 +79,10 @@ class SandboxTests {
         // Invoke method of allowed external class.
         IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
         ee.cook("for_sandbox_tests.ExternalClass.m1()");
-        Assert.assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());
+
+        Integer result = (Integer) ee.evaluate(new Object[0]);
+        assert result != null;
+        Assert.assertEquals(7, result.intValue());
     }
 
     @Test public void
@@ -87,7 +92,10 @@ class SandboxTests {
         IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
         ee.setExtendedClass(ExternalClass.class);
         ee.cook("m1()");
-        Assert.assertEquals(7, ((Integer) ee.evaluate(new Object[0])).intValue());
+
+        Integer result = (Integer) ee.evaluate(new Object[0]);
+        assert result != null;
+        Assert.assertEquals(7, result.intValue());
     }
 }
 

@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * "Cooking" means scanning a sequence of characters and turning them into some
  * JVM-executable artifact. For example, if you cook a {@link
@@ -63,7 +65,7 @@ interface ICookable {
      * </tr></table>
      * The parent class loader defaults to the current thread's context class loader.
      */
-    void setParentClassLoader(ClassLoader optionalParentClassLoader);
+    void setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader);
 
     /**
      * Value 'org.codehaus.janino.source_debugging.enable'.
@@ -96,7 +98,7 @@ interface ICookable {
      *
      * @param optionalFileName Used when reporting errors and warnings.
      */
-    void cook(String optionalFileName, Reader r) throws CompileException, IOException;
+    void cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException;
 
     /**Reads, scans, parses and compiles Java tokens from the given {@link Reader}. */
     void cook(Reader r) throws CompileException, IOException;
@@ -113,13 +115,13 @@ interface ICookable {
      *
      * @param optionalFileName Used when reporting errors and warnings.
      */
-    void cook(String optionalFileName, InputStream is) throws CompileException, IOException;
+    void cook(@Nullable String optionalFileName, InputStream is) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream} with the
      * given <code>encoding</code>.
      */
-    void cook(InputStream is, String optionalEncoding) throws CompileException, IOException;
+    void cook(InputStream is, @Nullable String optionalEncoding) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream} with the
@@ -129,9 +131,9 @@ interface ICookable {
      */
     void
     cook(
-        String      optionalFileName,
-        InputStream is,
-        String      optionalEncoding
+        @Nullable String optionalFileName,
+        InputStream      is,
+        @Nullable String optionalEncoding
     ) throws CompileException, IOException;
 
     /** Reads, scans, parses and compiles Java tokens from the given {@link String}. */
@@ -142,7 +144,7 @@ interface ICookable {
      *
      * @param optionalFileName Used when reporting errors and warnings.
      */
-    void cook(String optionalFileName, String s) throws CompileException;
+    void cook(@Nullable String optionalFileName, String s) throws CompileException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link File}, encoded
@@ -155,7 +157,7 @@ interface ICookable {
      * given <code>encoding</code>.
      */
     void
-    cookFile(File file, String optionalEncoding) throws CompileException, IOException;
+    cookFile(File file, @Nullable String optionalEncoding) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the named file, encoded in the "platform
@@ -165,7 +167,7 @@ interface ICookable {
 
     /** Reads, scans, parses and compiles Java tokens from the named file with the given {@code optionalEncoding}. */
     void
-    cookFile(String fileName, String optionalEncoding) throws CompileException, IOException;
+    cookFile(String fileName, @Nullable String optionalEncoding) throws CompileException, IOException;
 
     /**
      * By default, {@link CompileException}s are thrown on compile errors, but an application my install its own
@@ -186,12 +188,12 @@ interface ICookable {
      * @param optionalCompileErrorHandler {@code null} to restore the default behavior (throwing a {@link
      *                                    CompileException}
      */
-    void setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler);
+    void setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler);
 
     /**
      * By default, warnings are discarded, but an application my install a custom {@link WarningHandler}.
      *
      * @param optionalWarningHandler {@code null} to indicate that no warnings be issued
      */
-    void setWarningHandler(WarningHandler optionalWarningHandler);
+    void setWarningHandler(@Nullable WarningHandler optionalWarningHandler);
 }

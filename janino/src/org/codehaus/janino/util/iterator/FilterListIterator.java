@@ -28,6 +28,8 @@ package org.codehaus.janino.util.iterator;
 
 import java.util.ListIterator;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * An {@link java.util.ListIterator} that retrieves its elements from a delegate {@link java.util.ListIterator}. The
  * default implementation simply passes all method invocations to the delegate.
@@ -75,9 +77,9 @@ class FilterListIterator<T> implements ListIterator<T> {
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#set(java.lang.Object)} */
     @Override public void
-    set(T o) { this.delegate.set(o); }
+    set(@Nullable T o) { this.delegate.set(o); }
 
     /** Calls {@link #delegate}.{@link java.util.ListIterator#add(java.lang.Object)} */
     @Override public void
-    add(T o) { this.delegate.add(o); }
+    add(@Nullable T o) { this.delegate.add(o); }
 }

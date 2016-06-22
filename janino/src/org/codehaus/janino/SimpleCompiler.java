@@ -46,6 +46,7 @@ import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.TypeVisitor;
@@ -66,9 +67,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     // Set when "cook()"ing.
     private ClassLoaderIClassLoader classLoaderIClassLoader;
 
-    private ClassLoader    result;
-    private ErrorHandler   optionalCompileErrorHandler;
-    private WarningHandler optionalWarningHandler;
+    private ClassLoader              result;
+    @Nullable private ErrorHandler   optionalCompileErrorHandler;
+    @Nullable private WarningHandler optionalWarningHandler;
 
     private boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
     private boolean debugLines  = this.debugSource;
@@ -120,7 +121,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @see Cookable#cook(String, Reader)
      */
     public
-    SimpleCompiler(String optionalFileName, Reader in) throws IOException, CompileException {
+    SimpleCompiler(@Nullable String optionalFileName, Reader in) throws IOException, CompileException {
         this.cook(optionalFileName, in);
     }
 
@@ -133,7 +134,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @see Cookable#cook(String, InputStream)
      */
     public
-    SimpleCompiler(String optionalFileName, InputStream is) throws IOException, CompileException {
+    SimpleCompiler(@Nullable String optionalFileName, InputStream is) throws IOException, CompileException {
         this.cook(optionalFileName, is);
     }
 
@@ -161,7 +162,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @see Cookable#cook(Reader)
      */
     public
-    SimpleCompiler(Scanner scanner, ClassLoader optionalParentClassLoader) throws IOException, CompileException {
+    SimpleCompiler(Scanner scanner, @Nullable ClassLoader optionalParentClassLoader)
+    throws IOException, CompileException {
         this.setParentClassLoader(optionalParentClassLoader);
         this.cook(scanner);
     }
@@ -169,7 +171,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     public SimpleCompiler() {}
 
     @Override public void
-    setParentClassLoader(ClassLoader optionalParentClassLoader) {
+    setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader) {
         this.assertNotCooked();
         this.parentClassLoader = (
             optionalParentClassLoader != null
@@ -190,7 +192,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * #getClassLoader()} returns a {@link ClassLoader} that allows for access to the compiled classes.
      */
     @Override public final void
-    cook(String optionalFileName, Reader r) throws CompileException, IOException {
+    cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException {
         this.cook(new Scanner(optionalFileName, r));
     }
 
@@ -232,7 +234,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * </ul>
      */
     @Override public boolean
-    equals(Object o) {
+    equals(@Nullable Object o) {
         if (!(o instanceof SimpleCompiler)) return false;
         SimpleCompiler that = (SimpleCompiler) o;
         if (this.getClass() != that.getClass()) return false;
@@ -246,18 +248,18 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     hashCode() { return this.parentClassLoader.hashCode(); }
 
     @Override public void
-    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
+    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
     @Override public void
-    setWarningHandler(WarningHandler optionalWarningHandler) {
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
     /** Wraps a reflection {@link Class} in a {@link Java.Type} object. */
     protected Java.Type
-    classToType(final Location location, final Class clazz) {
+    classToType(final Location location, @Nullable final Class clazz) {
         if (clazz == null) return null;
 
 //        IClass iClass;
@@ -287,7 +289,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         // Type that lazily creates a delegate Type at COMPILE TIME.
         return new Java.Type(location) {
 
-            private Java.SimpleType delegate;
+            @Nullable private Java.SimpleType delegate;
 
             // SUPPRESS CHECKSTYLE LineLength:2
             @Override public <R, EX extends Throwable> R accept(AtomVisitor<R, EX> visitor) throws EX { return this.getDelegate().accept((TypeVisitor<R, EX>) visitor); }
@@ -297,58 +299,58 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
             private Type
             getDelegate() {
-                if (this.delegate == null) {
-                    IClass iClass;
-                    try {
-                        iClass = SimpleCompiler.this.classLoaderIClassLoader.loadIClass(
-                            Descriptor.fromClassName(clazz.getName())
-                        );
-                    } catch (ClassNotFoundException ex) {
-                        throw new JaninoRuntimeException("Loading IClass \"" + clazz.getName() + "\": " + ex);
-                    }
-                    if (iClass == null) {
-                        throw new JaninoRuntimeException(
-                            "Cannot load class '"
-                            + clazz.getName()
-                            + "' through the parent loader"
-                        );
-                    }
 
-                    // Verify that the class loaders match.
-                    IClass iClass2 = iClass;
-                    Class  class2  = clazz;
-                    for (;;) {
-                        IClass ct = iClass2.getComponentType();
-                        if (ct == null) {
-                            if (class2.getComponentType() != null) {
-                                throw new JaninoRuntimeException("Array type/class inconsistency");
-                            }
-                            break;
-                        }
-                        iClass2 = ct;
-                        class2  = class2.getComponentType();
-                        if (class2 == null) throw new JaninoRuntimeException("Array type/class inconsistency");
-                    }
-                    if (class2.isPrimitive()) {
-                        if (!iClass2.isPrimitive()) {
-                            throw new JaninoRuntimeException("Primitive type/class inconsistency");
-                        }
-                    } else {
-                        if (iClass2.isPrimitive()) {
-                            throw new JaninoRuntimeException("Primitive type/class inconsistency");
-                        }
-                        if (((ReflectionIClass) iClass2).getClazz() != class2) {
-                            throw new JaninoRuntimeException(
-                                "Class '"
-                                + class2.getName()
-                                + "' was loaded through a different loader"
-                            );
-                        }
-                    }
-                    this.delegate = new Java.SimpleType(location, iClass);
+                if (this.delegate != null) return this.delegate;
+
+                IClass iClass;
+                try {
+                    iClass = SimpleCompiler.this.classLoaderIClassLoader.loadIClass(
+                        Descriptor.fromClassName(clazz.getName())
+                    );
+                } catch (ClassNotFoundException ex) {
+                    throw new JaninoRuntimeException("Loading IClass \"" + clazz.getName() + "\": " + ex);
+                }
+                if (iClass == null) {
+                    throw new JaninoRuntimeException(
+                        "Cannot load class '"
+                        + clazz.getName()
+                        + "' through the parent loader"
+                    );
                 }
 
-                return this.delegate;
+                // Verify that the class loaders match.
+                IClass iClass2 = iClass;
+                Class  class2  = clazz;
+                for (;;) {
+                    IClass ct = iClass2.getComponentType();
+                    if (ct == null) {
+                        if (class2.getComponentType() != null) {
+                            throw new JaninoRuntimeException("Array type/class inconsistency");
+                        }
+                        break;
+                    }
+                    iClass2 = ct;
+                    class2  = class2.getComponentType();
+                    if (class2 == null) throw new JaninoRuntimeException("Array type/class inconsistency");
+                }
+                if (class2.isPrimitive()) {
+                    if (!iClass2.isPrimitive()) {
+                        throw new JaninoRuntimeException("Primitive type/class inconsistency");
+                    }
+                } else {
+                    if (iClass2.isPrimitive()) {
+                        throw new JaninoRuntimeException("Primitive type/class inconsistency");
+                    }
+                    if (((ReflectionIClass) iClass2).getClazz() != class2) {
+                        throw new JaninoRuntimeException(
+                            "Class '"
+                            + class2.getName()
+                            + "' was loaded through a different loader"
+                        );
+                    }
+                }
+
+                return (this.delegate = new Java.SimpleType(location, iClass));
             }
         };
     }

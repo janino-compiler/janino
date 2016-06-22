@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Java;
@@ -69,7 +70,7 @@ class ClassFile implements Annotatable {
      * @param interfaceFds the field descriptors for the implemented interfaces
      */
     public
-    ClassFile(short accessFlags, String thisClassFd, String superclassFd, String[] interfaceFds) {
+    ClassFile(short accessFlags, String thisClassFd, @Nullable String superclassFd, String[] interfaceFds) {
 
         // Must not set these to "..._1_5", for otherwise "EvaluatorTests.testCovariantClone()" and
         // "JlsTests.test_8_4_8_3__Requirements_in_Overriding_and_Hiding()" choke.
@@ -97,7 +98,7 @@ class ClassFile implements Annotatable {
 
         this.accessFlags   = accessFlags;
         this.thisClass     = this.addConstantClassInfo(thisClassFd);
-        this.superclass    = this.addConstantClassInfo(superclassFd);
+        this.superclass    = superclassFd == null ? (short) 0 : this.addConstantClassInfo(superclassFd);
         this.interfaces    = new short[interfaceFds.length];
         for (int i = 0; i < interfaceFds.length; ++i) {
             this.interfaces[i] = this.addConstantClassInfo(interfaceFds[i]);
@@ -130,7 +131,7 @@ class ClassFile implements Annotatable {
      * Find the "InnerClasses" attribute of this class file
      * @return <code>null</code> if this class has no "InnerClasses" attribute
      */
-    public InnerClassesAttribute
+    @Nullable public InnerClassesAttribute
     getInnerClassesAttribute() {
         Short ni = (Short) this.constantPoolMap.get(new ConstantUtf8Info("InnerClasses"));
         if (ni == null) return null;
@@ -164,7 +165,7 @@ class ClassFile implements Annotatable {
      *
      * @return <code>null</code> if this class has no such attribute
      */
-    public AnnotationsAttribute
+    @Nullable public AnnotationsAttribute
     getAnnotationsAttribute(String attributeName, List<AttributeInfo> attributes) {
         assert "RuntimeVisibleAnnotations".equals(attributeName) || "RuntimeInvisibleAnnotations".equals(attributeName);
         Short ni = (Short) this.constantPoolMap.get(new ConstantUtf8Info(attributeName));
@@ -499,10 +500,10 @@ class ClassFile implements Annotatable {
      */
     public FieldInfo
     addFieldInfo(
-        Java.Modifiers modifiers,
-        String         fieldName,
-        String         fieldTypeFd,
-        Object         optionalConstantValue
+        Java.Modifiers   modifiers,
+        String           fieldName,
+        String           fieldTypeFd,
+        @Nullable Object optionalConstantValue
     ) {
         List<AttributeInfo> attributes = new ArrayList();
         if (optionalConstantValue != null) {
@@ -905,7 +906,7 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) {
+        equals(@Nullable Object o) {
             return o instanceof ConstantClassInfo && ((ConstantClassInfo) o).nameIndex == this.nameIndex;
         }
 
@@ -945,7 +946,7 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) {
+        equals(@Nullable Object o) {
             return (
                 o instanceof ConstantFieldrefInfo
                 && ((ConstantFieldrefInfo) o).classIndex       == this.classIndex
@@ -989,7 +990,7 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) {
+        equals(@Nullable Object o) {
             return (
                 o instanceof ConstantMethodrefInfo
                 && ((ConstantMethodrefInfo) o).classIndex       == this.classIndex
@@ -1032,7 +1033,7 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) {
+        equals(@Nullable Object o) {
             return (
                 o instanceof ConstantInterfaceMethodrefInfo
                 && ((ConstantInterfaceMethodrefInfo) o).classIndex ==       this.classIndex
@@ -1067,7 +1068,7 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) {
+        equals(@Nullable Object o) {
             return o instanceof ConstantStringInfo && ((ConstantStringInfo) o).stringIndex == this.stringIndex;
         }
 
@@ -1098,7 +1099,9 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) { return o instanceof ConstantIntegerInfo && ((ConstantIntegerInfo) o).value == this.value; }
+        equals(@Nullable Object o) {
+            return o instanceof ConstantIntegerInfo && ((ConstantIntegerInfo) o).value == this.value;
+        }
 
         @Override public int
         hashCode() { return this.value; }
@@ -1127,7 +1130,7 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) {
+        equals(@Nullable Object o) {
             return o instanceof ConstantFloatInfo && ((ConstantFloatInfo) o).value == this.value;
         }
 
@@ -1158,7 +1161,7 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) {
+        equals(@Nullable Object o) {
             return o instanceof ConstantLongInfo && ((ConstantLongInfo) o).value == this.value;
         }
 
@@ -1188,7 +1191,9 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) { return o instanceof ConstantDoubleInfo && ((ConstantDoubleInfo) o).value == this.value; }
+        equals(@Nullable Object o) {
+            return o instanceof ConstantDoubleInfo && ((ConstantDoubleInfo) o).value == this.value;
+        }
 
         @Override public int
         hashCode() {
@@ -1229,7 +1234,7 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) {
+        equals(@Nullable Object o) {
             return (
                 o instanceof ConstantNameAndTypeInfo
                 && ((ConstantNameAndTypeInfo) o).nameIndex       == this.nameIndex
@@ -1273,7 +1278,7 @@ class ClassFile implements Annotatable {
         }
 
         @Override public boolean
-        equals(Object o) {
+        equals(@Nullable Object o) {
             return o instanceof ConstantUtf8Info && ((ConstantUtf8Info) o).s.equals(this.s);
         }
 
@@ -1834,6 +1839,12 @@ class ClassFile implements Annotatable {
 
             public final short typeNameIndex, constNameIndex;
 
+            /**
+             * @param typeNameIndex  {@code type_name_index}; index of a {@link ConstantUtf8Info} representing a field
+             *                       descriptor
+             * @param constNameIndex {@code const_name_index}; index of a {@link ConstantUtf8Info} giveing the simple
+             *                       name of the enum constant represented by this {@code element_value} structure
+             */
             public
             EnumConstValue(short typeNameIndex, short constNameIndex) {
                 this.typeNameIndex  = typeNameIndex;

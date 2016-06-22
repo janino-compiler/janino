@@ -28,6 +28,8 @@ package org.codehaus.janino.util;
 
 import java.util.Stack;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * Implements a scheme for benchmarking, i.e. for determining and/or reporting the time elapsed
  * between the beginning and the end of an activity.
@@ -62,12 +64,6 @@ import java.util.Stack;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class Benchmark {
     private final Stack beginTimes = new Stack(); // Long
-
-    public
-    Benchmark() {
-        this.reportingEnabled = false;
-        this.reporter         = null;
-    }
 
     /** @see Benchmark */
     public void
@@ -151,7 +147,7 @@ class Benchmark {
      * @param o
      */
     public void
-    report(String optionalTitle, Object o) {
+    report(@Nullable String optionalTitle, Object o) {
         if (!this.reportingEnabled) return;
 
         String prefix = optionalTitle == null ? "" : (

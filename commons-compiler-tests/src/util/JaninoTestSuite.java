@@ -37,6 +37,7 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.junit.Assert;
 
 /** A base class for JUnit 4 test cases that provides easy-to-use functionality to test JANINO. */
@@ -95,14 +96,10 @@ class JaninoTestSuite {
         }
 
         @Override protected void
-        compile() throws Exception {
-            this.expressionEvaluator.cook(this.expression);
-        }
+        compile() throws Exception { this.expressionEvaluator.cook(this.expression); }
 
-        @Override protected Object
-        execute() throws Exception {
-            return this.expressionEvaluator.evaluate(new Object[0]);
-        }
+        @Override @Nullable protected Object
+        execute() throws Exception { return this.expressionEvaluator.evaluate(new Object[0]); }
     }
 
     /**
@@ -173,14 +170,10 @@ class JaninoTestSuite {
         }
 
         @Override protected void
-        compile() throws Exception {
-            this.scriptEvaluator.cook(this.script);
-        }
+        compile() throws Exception { this.scriptEvaluator.cook(this.script); }
 
-        @Override protected Object
-        execute() throws Exception {
-            return this.scriptEvaluator.evaluate(new Object[0]);
-        }
+        @Override @Nullable protected Object
+        execute() throws Exception { return this.scriptEvaluator.evaluate(new Object[0]); }
     }
 
     /**
@@ -328,7 +321,7 @@ class JaninoTestSuite {
         protected abstract void compile() throws Exception;
 
         /** @see CompileAndExecuteTest */
-        protected abstract Object execute() throws Exception;
+        protected abstract @Nullable Object execute() throws Exception;
 
         /**
          * Assert that cooking issues an error.

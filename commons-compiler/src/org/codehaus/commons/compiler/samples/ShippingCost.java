@@ -62,6 +62,6 @@ class ShippingCost {
         Object res = ee.evaluate(arguments);
 
         // Print expression result.
-        System.out.println("Result = " + (res == null ? "(null)" : res.toString()));
+        System.out.println("Result = " + String.valueOf(res));
     }
 }

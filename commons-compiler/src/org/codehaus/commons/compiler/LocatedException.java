@@ -26,20 +26,22 @@
 
 package org.codehaus.commons.compiler;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /** An {@link Exception} that is associated with an optional {@link Location} in a source file. */
 public
 class LocatedException extends Exception {
 
-    private final Location optionalLocation;
+    @Nullable private final Location optionalLocation;
 
     public
-    LocatedException(String message, Location optionalLocation) {
+    LocatedException(String message, @Nullable Location optionalLocation) {
         super(message);
         this.optionalLocation = optionalLocation;
     }
 
     public
-    LocatedException(String message, Location optionalLocation, Throwable optionalCause) {
+    LocatedException(String message, @Nullable Location optionalLocation, @Nullable Throwable optionalCause) {
         super(message, optionalCause);
         this.optionalLocation = optionalLocation;
     }
@@ -51,13 +53,13 @@ class LocatedException extends Exception {
     @Override public String
     getMessage() {
         return (
-            this.optionalLocation == null
-            ? super.getMessage()
-            : this.optionalLocation.toString() + ": " + super.getMessage()
+            this.optionalLocation != null
+            ? this.optionalLocation.toString() + ": " + super.getMessage()
+            : super.getMessage()
         );
     }
 
     /** @return The {@link Location} specified at construction time (may be <code>null</code>) */
-    public Location
+    @Nullable public Location
     getLocation() { return this.optionalLocation; }
 }

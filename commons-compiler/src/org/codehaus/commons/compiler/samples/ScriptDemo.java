@@ -26,6 +26,8 @@
 
 package org.codehaus.commons.compiler.samples;
 
+import java.util.Arrays;
+
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 
@@ -119,7 +121,11 @@ class ScriptDemo extends DemoBase {
         Object res = se.evaluate(arguments);
 
         // Print script return value.
-        System.out.println("Result = " + DemoBase.toString(res));
+        System.out.println("Result = " + (
+            res instanceof Object[]
+            ? Arrays.toString((Object[]) res)
+            : String.valueOf(res)
+        ));
     }
 
     private ScriptDemo() {}

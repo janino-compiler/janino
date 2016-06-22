@@ -33,6 +33,7 @@ import java.util.List;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Annotation;
@@ -302,10 +303,10 @@ class Parser {
      * </pre>
      */
     private PackageMemberTypeDeclaration
-    parsePackageMemberTypeDeclarationRest(String optionalDocComment, Modifiers modifiers)
+    parsePackageMemberTypeDeclarationRest(@Nullable String optionalDocComment, Modifiers modifiers)
     throws CompileException, IOException {
 
-        switch (this.read(new String[] { "class", "interface" })) {
+        switch (this.read(new String[] { "class", "interface", "@" })) {
 
         case 0:
             if (optionalDocComment == null) this.warning("CDCM", "Class doc comment missing", this.location());
@@ -322,6 +323,17 @@ class Parser {
                 modifiers,                                   // modifiers
                 InterfaceDeclarationContext.COMPILATION_UNIT // context
             );
+
+        case 2:
+            if (optionalDocComment == null) {
+                this.warning("ATDCM", "Annotation type doc comment missing", this.location());
+            }
+            this.read("interface");
+            return (PackageMemberInterfaceDeclaration) this.parseInterfaceDeclarationRest(
+                optionalDocComment,                          // optionalDocComment
+                modifiers,                                   // modifiers
+                InterfaceDeclarationContext.COMPILATION_UNIT // context
+                );
 
         default:
             throw new IllegalStateException();
@@ -343,6 +355,10 @@ class Parser {
         List<Java.Annotation> as  = new ArrayList();
         for (;;) {
             if (this.peek("@")) {
+
+                // Annotation type declaration ahead?
+                if (this.peekNextButOne().value.equals("interface")) break;
+
                 as.add(this.parseAnnotation());
                 continue;
             }
@@ -482,7 +498,7 @@ class Parser {
      */
     public NamedClassDeclaration
     parseClassDeclarationRest(
-        String                  optionalDocComment,
+        @Nullable String        optionalDocComment,
         Modifiers               modifiers,
         ClassDeclarationContext context
     ) throws CompileException, IOException {
@@ -729,7 +745,7 @@ class Parser {
      */
     public InterfaceDeclaration
     parseInterfaceDeclarationRest(
-        String                      optionalDocComment,
+        @Nullable String            optionalDocComment,
         Modifiers                   modifiers,
         InterfaceDeclarationContext context
     ) throws CompileException, IOException {
@@ -925,7 +941,7 @@ class Parser {
      * </pre>
      */
     public ConstructorDeclarator
-    parseConstructorDeclarator(String optionalDocComment, Modifiers modifiers)
+    parseConstructorDeclarator(@Nullable String optionalDocComment, Modifiers modifiers)
     throws CompileException, IOException {
         this.readIdentifier();  // Class name
 
@@ -1002,15 +1018,14 @@ class Parser {
      *     [ 'throws' ReferenceTypeList ]
      *     ( ';' | MethodBody )
      * </pre>
-     * @param optionalTypeParameters TODO
      */
     public MethodDeclarator
     parseMethodDeclarationRest(
-        String          optionalDocComment,
-        Modifiers       modifiers,
-        TypeParameter[] optionalTypeParameters,
-        Type            type,
-        String          name
+        @Nullable String          optionalDocComment,
+        Modifiers                 modifiers,
+        @Nullable TypeParameter[] optionalTypeParameters,
+        Type                      type,
+        String                    name
     ) throws CompileException, IOException {
         Location location = this.location();
 
@@ -1124,7 +1139,19 @@ class Parser {
      */
     public FormalParameter
     parseFormalParameter(boolean[] hasEllipsis) throws CompileException, IOException {
-        final boolean finaL = this.peekRead("final");
+
+        Modifiers modifiers = this.parseModifiers();
+        if ((modifiers.flags & ~Mod.FINAL) != 0) {
+            this.warning(
+                "OFAAAOPD",
+                "Only \"final\" and annotations allowed on parameter declaration",
+                this.location()
+            );
+        }
+
+        final boolean finaL = (modifiers.flags & Mod.FINAL) != 0;
+
+        // Ignore annotations.
 
         Type type = this.parseType(); // SUPPRESS CHECKSTYLE UsageDistance
 
@@ -3203,12 +3230,12 @@ class Parser {
      * @param optionalWarningHandler <code>null</code> to indicate that no warnings be issued
      */
     public void
-    setWarningHandler(WarningHandler optionalWarningHandler) {
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
     // Used for elaborate warning handling.
-    private WarningHandler optionalWarningHandler;
+    @Nullable private WarningHandler optionalWarningHandler;
 
     /**
      * Issues a warning with the given message and location and returns. This is done through
@@ -3222,7 +3249,7 @@ class Parser {
      *                          CompileException}
      */
     private void
-    warning(String handle, String message, Location optionalLocation) throws CompileException {
+    warning(String handle, String message, @Nullable Location optionalLocation) throws CompileException {
         if (this.optionalWarningHandler != null) {
             this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
         }

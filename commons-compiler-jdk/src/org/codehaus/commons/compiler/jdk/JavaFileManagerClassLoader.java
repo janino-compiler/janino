@@ -35,6 +35,8 @@ import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /** A {@link ClassLoader} that loads classes through a {@link JavaFileManager}. */
 public
 class JavaFileManagerClassLoader extends ClassLoader {
@@ -51,7 +53,7 @@ class JavaFileManagerClassLoader extends ClassLoader {
     }
 
     @Override protected Class<?>
-    findClass(String className) throws ClassNotFoundException {
+    findClass(@Nullable String className) throws ClassNotFoundException {
         byte[] ba;
         try {
             JavaFileObject classFile = this.javaFileManager.getJavaFileForInput(

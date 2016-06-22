@@ -25,4 +25,7 @@
  */
 
 /** Declares a helper class for {@link ReportedBugs#testBug172()}. */
+@NotNullByDefault
 package org.codehaus.commons.compiler.tests.bug172;
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

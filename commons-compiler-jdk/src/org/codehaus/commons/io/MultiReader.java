@@ -34,6 +34,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * Similar to {@link FilterReader}, but when the first delegate is at end-of-input, it continues
  * with reading from the next delegate.
@@ -87,7 +89,7 @@ class MultiReader extends Reader {
     }
 
     @Override public int
-    read(final char[] cbuf, final int off, final int len) throws IOException {
+    read(final @Nullable char[] cbuf, final int off, final int len) throws IOException {
         int read = 0;
         for (;;) {
             long result = this.currentDelegate.read(cbuf, off + read, len - read);

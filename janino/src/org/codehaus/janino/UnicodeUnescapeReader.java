@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * A {@link FilterReader} that unescapes the "Unicode Escapes" as described in JLS7 3.10.6.
  * <p>
@@ -95,7 +97,8 @@ class UnicodeUnescapeReader extends FilterReader {
 
     /** Overrides {@link FilterReader#read(char[], int, int)}. */
     @Override public int
-    read(char[] cbuf, int off, int len) throws IOException {
+    read(@Nullable char[] cbuf, int off, int len) throws IOException {
+        assert cbuf != null;
         if (len == 0) return 0;
         int res = 0;
         do {

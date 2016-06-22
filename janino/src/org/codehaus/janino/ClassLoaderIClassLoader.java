@@ -29,6 +29,8 @@ package org.codehaus.janino;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /** An {@link IClassLoader} that loads {@link IClass}es through a reflection {@link ClassLoader}. */
 @SuppressWarnings("rawtypes") public
 class ClassLoaderIClassLoader extends IClassLoader {
@@ -61,7 +63,7 @@ class ClassLoaderIClassLoader extends IClassLoader {
     public ClassLoader
     getClassLoader() { return this.classLoader; }
 
-    @Override protected IClass
+    @Override protected @Nullable IClass
     findIClass(String descriptor) throws ClassNotFoundException {
         ClassLoaderIClassLoader.LOGGER.entering(null, "findIClass", descriptor);
 

@@ -34,6 +34,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * A {@link org.codehaus.janino.util.resource.FileResourceFinder} that finds file resources in
  * a directory. The name of the file is constructed by concatenating a dirctory name
@@ -52,7 +54,7 @@ class DirectoryResourceFinder extends FileResourceFinder {
     @Override public final String toString() { return "dir:" + this.directory; }
 
     // Implement FileResourceFinder.
-    @Override protected final File
+    @Override @Nullable protected final File
     findResourceAsFile(String resourceName) {
 
         // Determine the subdirectory name (null for no subdirectory).

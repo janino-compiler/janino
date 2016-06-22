@@ -1,4 +1,6 @@
 
+package de.unkrig.jdisasm.test;
+
 // SUPPRESS CHECKSTYLE RegexpHeader
 
 // CHECKSTYLE JavadocType:OFF

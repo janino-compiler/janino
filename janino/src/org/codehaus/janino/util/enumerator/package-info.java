@@ -25,4 +25,7 @@
  */
 
 /** {@link org.codehaus.janino.util.enumerator.Enumerator}-related utility classes. */
+@NotNullByDefault
 package org.codehaus.janino.util.enumerator;
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

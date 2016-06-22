@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 
 /**
  * An engine that evaluates expressions in Java&trade; bytecode.
@@ -100,7 +102,7 @@ import java.lang.reflect.InvocationTargetException;
 interface IExpressionEvaluator extends IScriptEvaluator {
 
     /** Special value for {@link #setExpressionType(Class)} that indicates that the expression may have any type. */
-    Class ANY_TYPE = null;
+    @Nullable Class ANY_TYPE = null;
 
     /**
      * Define the type of the expression. The special type {@link #ANY_TYPE} allows the expression
@@ -111,7 +113,7 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      * <p>
      * Defaults to {@link #ANY_TYPE}.
      */
-    void setExpressionType(Class expressionType);
+    void setExpressionType(@Nullable Class expressionType);
 
     /** Same as {@link #setExpressionType(Class)}, but for multiple expressions. */
     void setExpressionTypes(Class[] expressionTypes);
@@ -141,7 +143,7 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      *
      * @param arguments The actual parameter values.
      */
-    @Override Object evaluate(Object[] arguments) throws InvocationTargetException;
+    @Override @Nullable Object evaluate(Object[] arguments) throws InvocationTargetException;
 
     /**
      * If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator

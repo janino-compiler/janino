@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
 
@@ -133,8 +134,9 @@ class ClassFileIClass extends IClass {
         return (IClass[]) res.toArray(new IClass[res.size()]);
     }
 
-    @Override protected IClass
+    @Override protected @Nullable IClass
     getDeclaringIClass2() throws CompileException {
+
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return null;
 
@@ -152,7 +154,7 @@ class ClassFileIClass extends IClass {
         return null;
     }
 
-    @Override protected IClass
+    @Override protected @Nullable IClass
     getOuterIClass2() throws CompileException {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return null;
@@ -179,7 +181,7 @@ class ClassFileIClass extends IClass {
         return null;
     }
 
-    @Override protected IClass
+    @Override protected @Nullable IClass
     getSuperclass2() throws CompileException {
         if (this.classFile.superclass == 0) return null;
         try {
@@ -216,8 +218,8 @@ class ClassFileIClass extends IClass {
     @Override public boolean
     isPrimitiveNumeric() { return false; }
 
-    @Override protected IClass
-    getComponentType2()  { return null; }
+    @Override protected @Nullable IClass
+    getComponentType2() { return null; }
 
     /** Resolves all classes referenced by this class file. */
     public void

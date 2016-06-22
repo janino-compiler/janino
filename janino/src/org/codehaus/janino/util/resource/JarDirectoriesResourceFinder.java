@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.zip.ZipFile;
 
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.iterator.MultiDimensionalIterator;
 import org.codehaus.janino.util.iterator.TransformingIterator;
 
@@ -56,7 +57,11 @@ class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
 
                     // Iterate over the JAR files in the given directory.
                     File[] jarFiles = directory.listFiles(new FilenameFilter() {
-                        @Override public boolean accept(File dir, String name) { return name.endsWith(".jar"); }
+                        @Override public boolean accept(@Nullable File dir, @Nullable String name) {
+                            assert dir != null;
+                            assert name != null;
+                            return name.endsWith(".jar");
+                        }
                     });
                     return new TransformingIterator(Arrays.asList(jarFiles).iterator()) {
 

@@ -44,28 +44,31 @@ import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 
 import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * A {@link ForwardingJavaFileManager} that maps accesses to a particular {@link Location} and {@link Kind} to
  * a path-based search in the file system.
  */
-final
+@NotNullByDefault(false) final
 class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> {
-    private final Location location;
-    private final Kind     kind;
-    private final File[]   path;
-    private final String   optionalCharacterEncoding;
+
+    private final Location         location;
+    private final Kind             kind;
+    private final File[]           path;
+    @Nullable private final String optionalCharacterEncoding;
 
     /**
      * @param path                      List of directories to look through
      * @param optionalCharacterEncoding Encoding of the files being read
      */
     FileInputJavaFileManager(
-        JavaFileManager delegate,
-        Location        location,
-        Kind            kind,
-        File[]          path,
-        String          optionalCharacterEncoding
+        JavaFileManager  delegate,
+        Location         location,
+        Kind             kind,
+        File[]           path,
+        @Nullable String optionalCharacterEncoding
     ) {
         super(delegate);
         this.location                  = location;
@@ -130,7 +133,13 @@ class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager
     hasLocation(Location location) { return location == this.location || super.hasLocation(location); }
 
     @Override public JavaFileObject
-    getJavaFileForInput(Location location, String className, Kind kind) throws IOException {
+    getJavaFileForInput(Location location, String className, Kind kind)
+    throws IOException {
+        assert location != null;
+        assert className != null;
+        assert kind != null;
+
+
         if (location == this.location && kind == this.kind) {
 
             // Find the source file through the source path.

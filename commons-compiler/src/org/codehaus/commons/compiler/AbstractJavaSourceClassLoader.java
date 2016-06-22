@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s, does not load byte code, but reads Java&trade; source
  * code and then scans, parses, compiles and loads it into the virtual machine.
@@ -44,7 +46,7 @@ import java.util.StringTokenizer;
 class AbstractJavaSourceClassLoader extends ClassLoader {
 
     /** @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain) */
-    protected ProtectionDomainFactory optionalProtectionDomainFactory;
+    @Nullable protected ProtectionDomainFactory optionalProtectionDomainFactory;
 
     public
     AbstractJavaSourceClassLoader() {}
@@ -56,7 +58,7 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
     public abstract void setSourcePath(File[] sourcePath);
 
     /** @param optionalCharacterEncoding if {@code null}, use platform default encoding */
-    public abstract void setSourceFileCharacterEncoding(String optionalCharacterEncoding);
+    public abstract void setSourceFileCharacterEncoding(@Nullable String optionalCharacterEncoding);
 
     /**
      * @param lines  Whether line number debugging information should be generated
@@ -67,7 +69,7 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
 
     /** @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain) */
     public final void
-    setProtectionDomainFactory(ProtectionDomainFactory optionalProtectionDomainFactory) {
+    setProtectionDomainFactory(@Nullable ProtectionDomainFactory optionalProtectionDomainFactory) {
         this.optionalProtectionDomainFactory = optionalProtectionDomainFactory;
     }
 

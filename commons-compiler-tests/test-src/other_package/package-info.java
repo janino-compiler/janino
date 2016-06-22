@@ -25,4 +25,7 @@
  */
 
 /***/
+@NotNullByDefault
 package other_package; // SUPPRESS CHECKSTYLE PackageName
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

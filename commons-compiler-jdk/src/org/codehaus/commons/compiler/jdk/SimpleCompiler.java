@@ -50,24 +50,31 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /** The JDK-based implementation of {@link ISimpleCompiler}. */
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
-    private ClassLoader    parentClassLoader = Thread.currentThread().getContextClassLoader();
-    private ClassLoader    result;
-    private boolean        debugSource;
-    private boolean        debugLines;
-    private boolean        debugVars;
-    private ErrorHandler   optionalCompileErrorHandler;
-    private WarningHandler optionalWarningHandler;
+    private ClassLoader              parentClassLoader = Thread.currentThread().getContextClassLoader();
+    @Nullable private ClassLoader    result;
+    private boolean                  debugSource;
+    private boolean                  debugLines;
+    private boolean                  debugVars;
+    @Nullable private ErrorHandler   optionalCompileErrorHandler;
+    @Nullable private WarningHandler optionalWarningHandler;
 
+    /**
+     * @throws IllegalStateException This {@link Cookable} is not yet cooked
+     */
     @Override public ClassLoader
-    getClassLoader() { this.assertCooked(); return this.result; }
+    getClassLoader() {
+        if (this.result != null) return this.result;
+        throw new IllegalStateException("Not yet cooked");
+    }
 
     @Override public void
-    cook(String optionalFileName, final Reader r) throws CompileException, IOException {
+    cook(@Nullable String optionalFileName, final Reader r) throws CompileException, IOException {
         this.assertNotCooked();
 
         // Create one Java source file in memory, which will be compiled later.
@@ -82,7 +89,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             compilationUnit = new SimpleJavaFileObject(uri, Kind.SOURCE) {
 
                 @Override public boolean
-                isNameCompatible(String simpleName, Kind kind) { return true; }
+                isNameCompatible(@Nullable String simpleName, @Nullable Kind kind) { return true; }
 
                 @Override public Reader
                 openReader(boolean ignoreEncodingErrors) throws IOException { return r; }
@@ -117,7 +124,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         ) {
 
             @Override public ClassLoader
-            getClassLoader(javax.tools.JavaFileManager.Location location) {
+            getClassLoader(@Nullable javax.tools.JavaFileManager.Location location) {
                 return SimpleCompiler.this.parentClassLoader;
             }
         };
@@ -131,7 +138,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
                     @Override public void
-                    report(Diagnostic<? extends JavaFileObject> diagnostic) {
+                    report(@Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
+                        assert diagnostic != null;
 
                         Location loc = new Location(
                             null,
@@ -142,26 +150,23 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
                         try {
                             switch (diagnostic.getKind()) {
+
                             case ERROR:
-                                if (SimpleCompiler.this.optionalCompileErrorHandler == null) {
-                                    throw new CompileException(message, loc);
-                                } else {
-                                    SimpleCompiler.this.optionalCompileErrorHandler.handleError(message, loc);
-                                }
+                                ErrorHandler oceh = SimpleCompiler.this.optionalCompileErrorHandler;
+                                if (oceh == null) throw new CompileException(message, loc);
+                                oceh.handleError(message, loc);
                                 break;
+
                             case MANDATORY_WARNING:
                             case WARNING:
-                                if (SimpleCompiler.this.optionalWarningHandler == null) {
-                                    ;
-                                } else {
-                                    SimpleCompiler.this.optionalWarningHandler.handleWarning(null, message, loc);
-                                }
+                                WarningHandler owh = SimpleCompiler.this.optionalWarningHandler;
+                                if (owh != null) owh.handleWarning(null, message, loc);
                                 break;
+
                             case NOTE:
                             case OTHER:
                             default:
                                 break;
-
                             }
                         } catch (CompileException ce) {
                             if (caughtCompileException[0] == null) caughtCompileException[0] = ce;
@@ -213,7 +218,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     @Override public void
-    setParentClassLoader(ClassLoader optionalParentClassLoader) {
+    setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader) {
         this.assertNotCooked();
         this.parentClassLoader = (
             optionalParentClassLoader != null
@@ -224,25 +229,23 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     /** @deprecated Auxiliary classes never really worked... don't use them. */
     @Deprecated public void
-    setParentClassLoader(ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
+    setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
         this.setParentClassLoader(optionalParentClassLoader);
     }
 
     @Override public void
-    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
+    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
     @Override public void
-    setWarningHandler(WarningHandler optionalWarningHandler) {
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
-    /** Throw an {@link IllegalStateException} if this {@link Cookable} is not yet cooked. */
+    /** Throws an {@link IllegalStateException} if this {@link Cookable} is already cooked. */
     protected void
-    assertCooked() { if (this.result == null) throw new IllegalStateException("Not yet cooked"); }
-
-    /** Throw an {@link IllegalStateException} if this {@link Cookable} is already cooked. */
-    protected void
-    assertNotCooked() { if (this.result != null) throw new IllegalStateException("Already cooked"); }
+    assertNotCooked() {
+        if (this.result != null) throw new IllegalStateException("Already cooked");
+    }
 }

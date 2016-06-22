@@ -41,6 +41,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
@@ -214,19 +215,20 @@ class Compiler {
         + "The default encoding in this environment is \"" + Charset.defaultCharset().toString() + "\"."
     );
 
-    private final ResourceFinder        classFileFinder;
     /** Special value for "classFileResourceFinder". */
-    public static final ResourceFinder  FIND_NEXT_TO_SOURCE_FILE = null;
-    private final ResourceCreator       classFileCreator;
+    @Nullable public static final ResourceFinder  FIND_NEXT_TO_SOURCE_FILE = null;
     /** Special value for "classFileResourceCreator". */
-    public static final ResourceCreator CREATE_NEXT_TO_SOURCE_FILE = null;
-    private final String                optionalCharacterEncoding;
-    private final Benchmark             benchmark;
-    private final boolean               debugSource;
-    private final boolean               debugLines;
-    private final boolean               debugVars;
-    private WarningHandler              optionalWarningHandler;
-    private ErrorHandler                optionalCompileErrorHandler;
+    @Nullable public static final ResourceCreator CREATE_NEXT_TO_SOURCE_FILE = null;
+
+    private final ResourceCreator    classFileCreator;
+    private final ResourceFinder     classFileFinder;
+    @Nullable private final String   optionalCharacterEncoding;
+    private final Benchmark          benchmark;
+    private final boolean            debugSource;
+    private final boolean            debugLines;
+    private final boolean            debugVars;
+    @Nullable private WarningHandler optionalWarningHandler;
+    @Nullable private ErrorHandler   optionalCompileErrorHandler;
 
     private final IClassLoader       iClassLoader;
     private final List<UnitCompiler> parsedCompilationUnits = new ArrayList();
@@ -276,18 +278,18 @@ class Compiler {
      */
     public
     Compiler(
-        final File[]    optionalSourcePath,
-        final File[]    classPath,
-        final File[]    optionalExtDirs,
-        final File[]    optionalBootClassPath,
-        final File      destinationDirectory,
-        final String    optionalCharacterEncoding,
-        boolean         verbose,
-        boolean         debugSource,
-        boolean         debugLines,
-        boolean         debugVars,
-        StringPattern[] warningHandlePatterns,
-        boolean         rebuild
+        @Nullable final File[] optionalSourcePath,
+        final File[]           classPath,
+        @Nullable final File[] optionalExtDirs,
+        @Nullable final File[] optionalBootClassPath,
+        @Nullable final File   destinationDirectory,
+        @Nullable final String optionalCharacterEncoding,
+        boolean                verbose,
+        boolean                debugSource,
+        boolean                debugLines,
+        boolean                debugVars,
+        StringPattern[]        warningHandlePatterns,
+        boolean                rebuild
     ) {
         this(
             new PathResourceFinder(                       // sourceFinder
@@ -301,12 +303,12 @@ class Compiler {
             (                                             // classFileFinder
                 rebuild
                 ? ResourceFinder.EMPTY_RESOURCE_FINDER
-                : destinationDirectory == Compiler.NO_DESTINATION_DIRECTORY
+                : destinationDirectory == null // Compiler.NO_DESTINATION_DIRECTORY
                 ? Compiler.FIND_NEXT_TO_SOURCE_FILE
                 : new DirectoryResourceFinder(destinationDirectory)
             ),
             (                                             // classFileCreator
-                destinationDirectory == Compiler.NO_DESTINATION_DIRECTORY
+                destinationDirectory == null // Compiler.NO_DESTINATION_DIRECTORY
                 ? Compiler.CREATE_NEXT_TO_SOURCE_FILE
                 : new DirectoryResourceCreator(destinationDirectory)
             ),
@@ -337,18 +339,29 @@ class Compiler {
         this.benchmark.report("Warning handle patterns", warningHandlePatterns);
         this.benchmark.report("Rebuild",                 new Boolean(rebuild));
     }
+
     /** Backwards compatibility -- previously, "null" was officially documented. */
-    public static final File NO_DESTINATION_DIRECTORY = null;
+    @Nullable public static final File NO_DESTINATION_DIRECTORY = null;
 
     /** Prints warnings to STDERR. */
     public static
     class SimpleWarningHandler implements WarningHandler {
 
         @Override public void
-        handleWarning(String handle, String message, Location optionalLocation) {
+        handleWarning(@Nullable String handle, String message, @Nullable Location optionalLocation) {
+
             StringBuilder sb = new StringBuilder();
+
             if (optionalLocation != null) sb.append(optionalLocation).append(": ");
-            sb.append("Warning ").append(handle).append(": ").append(message);
+
+            if (handle == null) {
+                sb.append("Warning: ");
+            } else {
+                sb.append("Warning ").append(handle).append(": ");
+            }
+
+            sb.append(message);
+
             System.err.println(sb.toString());
         }
     }
@@ -378,16 +391,16 @@ class Compiler {
      */
     public
     Compiler(
-        ResourceFinder  sourceFinder,
-        IClassLoader    iClassLoader,
-        ResourceFinder  classFileFinder,
-        ResourceCreator classFileCreator,
-        final String    optionalCharacterEncoding,
-        boolean         verbose,
-        boolean         debugSource,
-        boolean         debugLines,
-        boolean         debugVars,
-        WarningHandler  optionalWarningHandler
+        ResourceFinder           sourceFinder,
+        IClassLoader             iClassLoader,
+        ResourceFinder           classFileFinder,
+        ResourceCreator          classFileCreator,
+        @Nullable final String   optionalCharacterEncoding,
+        boolean                  verbose,
+        boolean                  debugSource,
+        boolean                  debugLines,
+        boolean                  debugVars,
+        @Nullable WarningHandler optionalWarningHandler
     ) {
         this.classFileFinder           = classFileFinder;
         this.classFileCreator          = classFileCreator;
@@ -416,7 +429,7 @@ class Compiler {
      * ErrorHandler} is called; all other error conditions cause a {@link CompileException} to be thrown.
      */
     public void
-    setCompileErrorHandler(ErrorHandler optionalCompileErrorHandler) {
+    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
@@ -426,7 +439,7 @@ class Compiler {
      * @param optionalWarningHandler {@code null} to indicate that no warnings be issued
      */
     public void
-    setWarningHandler(WarningHandler optionalWarningHandler) {
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
@@ -489,7 +502,7 @@ class Compiler {
                 int compileErrorCount;
 
                 @Override public void
-                handleError(String message, Location optionalLocation) throws CompileException {
+                handleError(String message, @Nullable Location optionalLocation) throws CompileException {
                     CompileException ex = new CompileException(message, optionalLocation);
                     if (++this.compileErrorCount >= 20) throw ex;
                     System.err.println(ex.getMessage());
@@ -565,9 +578,9 @@ class Compiler {
      */
     private Java.CompilationUnit
     parseCompilationUnit(
-        String      fileName,
-        InputStream inputStream,
-        String      optionalCharacterEncoding
+        String           fileName,
+        InputStream      inputStream,
+        @Nullable String optionalCharacterEncoding
     ) throws CompileException, IOException {
         try {
             Scanner scanner = new Scanner(fileName, inputStream, optionalCharacterEncoding);
@@ -603,7 +616,7 @@ class Compiler {
      * @param optionalDestinationDirectory E.g. "destdir"
      */
     public static File
-    getClassFile(String className, File sourceFile, File optionalDestinationDirectory) {
+    getClassFile(String className, File sourceFile, @Nullable File optionalDestinationDirectory) {
         if (optionalDestinationDirectory != null) {
             return new File(optionalDestinationDirectory, ClassFile.getClassFileResourceName(className));
         } else {
@@ -685,7 +698,7 @@ class Compiler {
          * @param sourceFinder Where to look for source files
          * @param optionalParentIClassLoader {@link IClassLoader} through which {@link IClass}es are to be loaded
          */
-        CompilerIClassLoader(ResourceFinder sourceFinder, IClassLoader optionalParentIClassLoader) {
+        CompilerIClassLoader(ResourceFinder sourceFinder, @Nullable IClassLoader optionalParentIClassLoader) {
             super(optionalParentIClassLoader);
             this.sourceFinder = sourceFinder;
             super.postConstruct();
@@ -696,7 +709,7 @@ class Compiler {
          * @return {@code null} if a the type could not be found
          * @throws ClassNotFoundException if an exception was raised while loading the {@link IClass}
          */
-        @Override protected IClass
+        @Override protected @Nullable IClass
         findIClass(final String type) throws ClassNotFoundException {
             Compiler.LOGGER.entering(null, "findIClass", type);
 

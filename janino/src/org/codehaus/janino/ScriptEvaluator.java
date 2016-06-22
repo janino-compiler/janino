@@ -44,6 +44,7 @@ import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BasicType;
 import org.codehaus.janino.Java.BlockStatement;
@@ -77,18 +78,18 @@ import org.codehaus.janino.util.Traverser;
 class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     /** Whether methods override a method declared by a supertype; {@code null} means "none". */
-    protected boolean[] optionalOverrideMethod;
+    @Nullable protected boolean[] optionalOverrideMethod;
 
     /** Whether methods are static; {@code null} means "all". */
-    protected boolean[] optionalStaticMethod;
+    @Nullable protected boolean[] optionalStaticMethod;
 
     /** The methods' return types; {@code null} means "none". */
-    protected Class[] optionalReturnTypes;
+    @Nullable protected Class[] optionalReturnTypes;
 
-    private String[]   optionalMethodNames;
-    private String[][] optionalParameterNames;
-    private Class[][]  optionalParameterTypes;
-    private Class[][]  optionalThrownExceptions;
+    @Nullable private String[]   optionalMethodNames;
+    @Nullable private String[][] optionalParameterNames;
+    @Nullable private Class[][]  optionalParameterTypes;
+    @Nullable private Class[][]  optionalThrownExceptions;
 
     private Method[]     result; // null=uncooked
 
@@ -187,13 +188,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     public
     ScriptEvaluator(
-        String      optionalFileName,
-        InputStream is,
-        Class       returnType,
-        String[]    parameterNames,
-        Class[]     parameterTypes,
-        Class[]     thrownExceptions,
-        ClassLoader optionalParentClassLoader // null = use current thread's context class loader
+        @Nullable String      optionalFileName,
+        InputStream           is,
+        Class                 returnType,
+        String[]              parameterNames,
+        Class[]               parameterTypes,
+        Class[]               thrownExceptions,
+        @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
@@ -220,13 +221,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     public
     ScriptEvaluator(
-        String      optionalFileName,
-        Reader      reader,
-        Class       returnType,
-        String[]    parameterNames,
-        Class[]     parameterTypes,
-        Class[]     thrownExceptions,
-        ClassLoader optionalParentClassLoader // null = use current thread's context class loader
+        @Nullable String      optionalFileName,
+        Reader                reader,
+        Class                 returnType,
+        String[]              parameterNames,
+        Class[]               parameterTypes,
+        Class[]               thrownExceptions,
+        @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
@@ -253,12 +254,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     public
     ScriptEvaluator(
-        Scanner     scanner,
-        Class       returnType,
-        String[]    parameterNames,
-        Class[]     parameterTypes,
-        Class[]     thrownExceptions,
-        ClassLoader optionalParentClassLoader // null = use current thread's context class loader
+        Scanner               scanner,
+        Class                 returnType,
+        String[]              parameterNames,
+        Class[]               parameterTypes,
+        Class[]               thrownExceptions,
+        @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
@@ -289,14 +290,14 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     public
     ScriptEvaluator(
-        Scanner     scanner,
-        Class       optionalExtendedType,
-        Class[]     implementedTypes,
-        Class       returnType,
-        String[]    parameterNames,
-        Class[]     parameterTypes,
-        Class[]     thrownExceptions,
-        ClassLoader optionalParentClassLoader // null = use current thread's context class loader
+        Scanner               scanner,
+        @Nullable Class       optionalExtendedType,
+        Class[]               implementedTypes,
+        Class                 returnType,
+        String[]              parameterNames,
+        Class[]               parameterTypes,
+        Class[]               thrownExceptions,
+        @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
         this.setExtendedClass(optionalExtendedType);
         this.setImplementedInterfaces(implementedTypes);
@@ -335,17 +336,17 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     public
     ScriptEvaluator(
-        Scanner     scanner,
-        String      className,
-        Class       optionalExtendedType,
-        Class[]     implementedTypes,
-        boolean     staticMethod,
-        Class       returnType,
-        String      methodName,
-        String[]    parameterNames,
-        Class[]     parameterTypes,
-        Class[]     thrownExceptions,
-        ClassLoader optionalParentClassLoader // null = use current thread's context class loader
+        Scanner               scanner,
+        String                className,
+        @Nullable Class       optionalExtendedType,
+        Class[]               implementedTypes,
+        boolean               staticMethod,
+        Class                 returnType,
+        String                methodName,
+        String[]              parameterNames,
+        Class[]               parameterTypes,
+        Class[]               thrownExceptions,
+        @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
         this.setClassName(className);
         this.setExtendedClass(optionalExtendedType);
@@ -500,30 +501,37 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public final void
     cook(Parser[] parsers) throws CompileException, IOException {
 
+        Class[]    orts = this.optionalReturnTypes;
+        String[][] opns = this.optionalParameterNames;
+        Class[][]  opts = this.optionalParameterTypes;
+        boolean[]  osm  = this.optionalStaticMethod;
+        Class[][]  otes = this.optionalThrownExceptions;
+        String[]   omns = this.optionalMethodNames;
+
         // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
         // time.
         int count = parsers.length;
 
         // Check array sizes.
-        if (this.optionalMethodNames != null && this.optionalMethodNames.length != count) {
+        if (omns != null && omns.length != count) {
             throw new IllegalStateException("methodName count");
         }
-        if (this.optionalParameterNames != null && this.optionalParameterNames.length != count) {
+        if (opns != null && opns.length != count) {
             throw new IllegalStateException("parameterNames count");
         }
-        if (this.optionalParameterTypes != null && this.optionalParameterTypes.length != count) {
+        if (opts != null && opts.length != count) {
             throw new IllegalStateException("parameterTypes count");
         }
         if (this.optionalOverrideMethod != null && this.optionalOverrideMethod.length != count) {
             throw new IllegalStateException("overrideMethod count");
         }
-        if (this.optionalReturnTypes != null && this.optionalReturnTypes.length != count) {
+        if (orts != null && orts.length != count) {
             throw new IllegalStateException("returnTypes count");
         }
-        if (this.optionalStaticMethod != null && this.optionalStaticMethod.length != count) {
+        if (osm != null && osm.length != count) {
             throw new IllegalStateException("staticMethod count");
         }
-        if (this.optionalThrownExceptions != null && this.optionalThrownExceptions.length != count) {
+        if (otes != null && otes.length != count) {
             throw new IllegalStateException("thrownExceptions count");
         }
 
@@ -535,12 +543,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
         // Determine method names.
         String[] methodNames;
-        if (this.optionalMethodNames == null) {
+        if (omns == null) {
             methodNames = new String[count];
             for (int i = 0; i < count; ++i) methodNames[i] = "eval" + i;
         } else
         {
-            methodNames = this.optionalMethodNames;
+            methodNames = omns;
         }
 
         // Create methods with one block each.
@@ -559,29 +567,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
             // Determine the following script properties AFTER the call to "makeBlock()",
             // because "makeBlock()" may modify these script properties on-the-fly.
-            boolean staticMethod   = this.optionalStaticMethod   == null || this.optionalStaticMethod[i];
+            boolean staticMethod   = osm   == null || osm[i];
             boolean overrideMethod = this.optionalOverrideMethod != null && this.optionalOverrideMethod[i];
 
-            Class returnType = (
-                this.optionalReturnTypes == null
-                ? this.getDefaultReturnType()
-                : this.optionalReturnTypes[i]
-            );
-            String[] parameterNames = (
-                this.optionalParameterNames == null
-                ? new String[0]
-                : this.optionalParameterNames[i]
-            );
-            Class[] parameterTypes = (
-                this.optionalParameterTypes == null
-                ? new Class[0]
-                : this.optionalParameterTypes[i]
-            );
-            Class[] thrownExceptions = (
-                this.optionalThrownExceptions == null
-                ? new Class[0]
-                : this.optionalThrownExceptions[i]
-            );
+            Class    returnType       = orts == null ? this.getDefaultReturnType() : orts[i];
+            String[] parameterNames   = opns == null ? new String[0] : opns[i];
+            Class[]  parameterTypes   = opts == null ? new Class[0] : opts[i];
+            Class[]  thrownExceptions = otes == null ? new Class[0] : otes[i];
 
             // If the method is non-static, assume that it overrides a method in a supertype.
             Location loc = parser.location();
@@ -616,7 +608,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 try {
                     this.result[i] = c.getDeclaredMethod(
                         methodNames[i],
-                        this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]
+                        opts == null ? new Class[0] : opts[i]
                     );
                 } catch (NoSuchMethodException ex) {
                     throw new JaninoRuntimeException((
@@ -639,7 +631,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 }
 
                 @Override public boolean
-                equals(Object o) {
+                equals(@Nullable Object o) {
                     if (!(o instanceof MethodWrapper)) return false;
                     MethodWrapper that = (MethodWrapper) o;
                     if (!this.name.equals(that.name)) return false;
@@ -664,7 +656,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             for (int i = 0; i < count; ++i) {
                 Method m = (Method) dms.get(new MethodWrapper(
                     methodNames[i],
-                    this.optionalParameterTypes == null ? new Class[0] : this.optionalParameterTypes[i]
+                    opts == null ? new Class[0] : opts[i]
                 ));
                 if (m == null) {
                     throw new JaninoRuntimeException(
@@ -695,7 +687,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * you can define at best 32K (very simple) scripts.
      */
     @Override public final void
-    cook(String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
+    cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
         Scanner[] scanners = new Scanner[readers.length];
         for (int i = 0; i < readers.length; ++i) {
             scanners[i] = new Scanner(optionalFileNames == null ? null : optionalFileNames[i], readers[i]);
@@ -707,7 +699,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     cook(String[] strings) throws CompileException { this.cook(null, strings); }
 
     @Override public final void
-    cook(String[] optionalFileNames, String[] strings) throws CompileException {
+    cook(@Nullable String[] optionalFileNames, String[] strings) throws CompileException {
         Reader[] readers = new Reader[strings.length];
         for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
         try {
@@ -953,10 +945,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     @Deprecated public static Object
     createFastScriptEvaluator(
-        Scanner     scanner,
-        Class       interfaceToImplement,
-        String[]    parameterNames,
-        ClassLoader optionalParentClassLoader
+        Scanner               scanner,
+        Class                 interfaceToImplement,
+        String[]              parameterNames,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setParentClassLoader(optionalParentClassLoader);
@@ -969,12 +961,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     @Deprecated public static Object
     createFastScriptEvaluator(
-        Scanner     scanner,
-        String      className,
-        Class       optionalExtendedType,
-        Class       interfaceToImplement,
-        String[]    parameterNames,
-        ClassLoader optionalParentClassLoader
+        Scanner               scanner,
+        String                className,
+        @Nullable Class       optionalExtendedType,
+        Class                 interfaceToImplement,
+        String[]              parameterNames,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setClassName(className);
@@ -998,13 +990,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     @Deprecated public static Object
     createFastScriptEvaluator(
-        Scanner     scanner,
-        String[]    optionalDefaultImports,
-        String      className,
-        Class       optionalExtendedClass,
-        Class       interfaceToImplement,
-        String[]    parameterNames,
-        ClassLoader optionalParentClassLoader
+        Scanner               scanner,
+        @Nullable String[]    optionalDefaultImports,
+        String                className,
+        @Nullable Class       optionalExtendedClass,
+        Class                 interfaceToImplement,
+        String[]              parameterNames,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setDefaultImports(optionalDefaultImports);

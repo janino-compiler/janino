@@ -25,4 +25,7 @@
  */
 
 /** Helper classes for bug #63. */
+@NotNullByDefault
 package org.codehaus.commons.compiler.tests.bug63;
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

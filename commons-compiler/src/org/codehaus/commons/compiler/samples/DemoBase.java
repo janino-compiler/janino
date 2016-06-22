@@ -26,7 +26,6 @@
 
 package org.codehaus.commons.compiler.samples;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -136,27 +135,5 @@ class DemoBase {
         Class[] res = new Class[l.size()];
         l.toArray(res);
         return res;
-    }
-
-    /** A version of {@link Object#toString()} that pretty-prints arrays. */
-    public static String
-    toString(Object o) {
-
-        if (o == null) return "(null)";
-
-        // Pretty-print array.
-        Class clazz = o.getClass();
-        if (clazz.isArray()) {
-            StringBuilder sb = new StringBuilder(clazz.getComponentType().toString()).append("[] { ");
-            for (int i = 0; i < Array.getLength(o); ++i) {
-                if (i > 0) sb.append(", ");
-                sb.append(DemoBase.toString(Array.get(o, i)));
-            }
-            sb.append(" }");
-            return sb.toString();
-        }
-
-        // Apply default "toString()" method.
-        return o.toString();
     }
 }

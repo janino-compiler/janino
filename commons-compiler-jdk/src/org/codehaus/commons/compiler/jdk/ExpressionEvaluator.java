@@ -36,6 +36,7 @@ import java.io.StringWriter;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * This {@link IExpressionEvaluator} is implemented by creating and compiling a temporary compilation unit defining one
@@ -78,7 +79,7 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
 public
 class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
 
-    private Class<?>[] optionalExpressionTypes;
+    @Nullable private Class<?>[] optionalExpressionTypes;
 
     /**
      * Equivalent to<pre>
@@ -122,12 +123,12 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      */
     public
     ExpressionEvaluator(
-        String      expression,
-        Class<?>    expressionType,
-        String[]    parameterNames,
-        Class<?>[]  parameterTypes,
-        Class<?>[]  thrownExceptions,
-        ClassLoader optionalParentClassLoader
+        String                expression,
+        Class<?>              expressionType,
+        String[]              parameterNames,
+        Class<?>[]            parameterTypes,
+        Class<?>[]            thrownExceptions,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
@@ -158,14 +159,14 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      */
     public
     ExpressionEvaluator(
-        String      expression,
-        Class<?>    expressionType,
-        String[]    parameterNames,
-        Class<?>[]  parameterTypes,
-        Class<?>[]  thrownExceptions,
-        Class<?>    optionalExtendedType,
-        Class<?>[]  implementedTypes,
-        ClassLoader optionalParentClassLoader
+        String                expression,
+        Class<?>              expressionType,
+        String[]              parameterNames,
+        Class<?>[]            parameterTypes,
+        Class<?>[]            thrownExceptions,
+        @Nullable Class<?>    optionalExtendedType,
+        Class<?>[]            implementedTypes,
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
@@ -179,7 +180,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     public ExpressionEvaluator() {}
 
     @Override public void
-    setExpressionType(@SuppressWarnings("rawtypes") Class expressionType) {
+    setExpressionType(@SuppressWarnings("rawtypes") @Nullable Class expressionType) {
         this.setExpressionTypes(new Class[] { expressionType });
     }
 
@@ -213,7 +214,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     getDefaultReturnType() { return Object.class; }
 
     @Override public void
-    cook(String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
+    cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
 
         readers = readers.clone(); // Don't modify the argument array.
 
@@ -226,21 +227,19 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
             imports = new String[0];
         }
 
+        Class<?>[] oets        = this.optionalExpressionTypes;
         Class<?>[] returnTypes = new Class[readers.length];
         for (int i = 0; i < readers.length; ++i) {
             StringWriter sw = new StringWriter();
             PrintWriter  pw = new PrintWriter(sw);
 
-            if (
-                this.optionalExpressionTypes == null
-                || this.optionalExpressionTypes[i] == IExpressionEvaluator.ANY_TYPE
-            ) {
+            if (oets == null || oets[i] == IExpressionEvaluator.ANY_TYPE) {
                 returnTypes[i] = Object.class;
                 pw.print("return org.codehaus.commons.compiler.PrimitiveWrapper.wrap(");
                 pw.write(Cookable.readString(readers[i]));
                 pw.println(");");
             } else {
-                returnTypes[i] = this.optionalExpressionTypes[i];
+                returnTypes[i] = oets[i];
                 if (returnTypes[i] != void.class && returnTypes[i] != Void.class) {
                     pw.print("return ");
                 }

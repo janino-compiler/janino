@@ -34,6 +34,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * A {@link java.io.FilterWriter} that automatically indents lines by looking at
  * trailing opening braces ('{') and leading closing braces ('}').
@@ -62,12 +64,14 @@ class AutoIndentWriter extends FilterWriter {
     AutoIndentWriter(Writer out) { super(out); }
 
     @Override public void
-    write(char[] cbuf, int off, int len) throws IOException {
+    write(@Nullable char[] cbuf, int off, int len) throws IOException {
+        assert cbuf != null;
         for (; len > 0; --len) this.write(cbuf[off++]);
     }
 
     @Override public void
-    write(String str, int off, int len) throws IOException {
+    write(@Nullable String str, int off, int len) throws IOException {
+        assert str != null;
         for (; len > 0; --len) this.write(str.charAt(off++));
     }
 

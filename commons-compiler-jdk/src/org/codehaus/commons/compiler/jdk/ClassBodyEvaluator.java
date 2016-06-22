@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.io.MultiReader;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * To set up a {@link ClassBodyEvaluator} object, proceed as described for {@link
@@ -59,12 +60,13 @@ import org.codehaus.commons.io.MultiReader;
 public
 class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
-    private String[]   optionalDefaultImports;
-    private String     className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
-    private Class<?>   optionalExtendedType;
-    private Class<?>[] implementedTypes = new Class[0];
+    @Nullable private String[] optionalDefaultImports;
+    private String             className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
+    @Nullable private Class<?> optionalExtendedType;
+    private Class<?>[]         implementedTypes = new Class[0];
 
-    private Class<?> result;
+    /* {@code null} means "not yet cooked". */
+    @Nullable private Class<?> result;
 
     @Override public void
     setClassName(String className) {
@@ -73,20 +75,20 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     @Override public void
-    setDefaultImports(String[] optionalDefaultImports) {
+    setDefaultImports(@Nullable String[] optionalDefaultImports) {
         this.assertNotCooked();
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
     @Override public void
-    setExtendedClass(@SuppressWarnings("rawtypes") Class optionalExtendedType) {
+    setExtendedClass(@SuppressWarnings("rawtypes") @Nullable Class optionalExtendedType) {
         this.assertNotCooked();
         this.optionalExtendedType = optionalExtendedType;
     }
 
     /** @deprecated */
     @Deprecated @Override public void
-    setExtendedType(@SuppressWarnings("rawtypes") Class optionalExtendedClass) {
+    setExtendedType(@SuppressWarnings("rawtypes") @Nullable Class optionalExtendedClass) {
         this.setExtendedClass(optionalExtendedClass);
     }
 
@@ -103,7 +105,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     @Override public void
-    cook(String optionalFileName, Reader r) throws CompileException, IOException {
+    cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException {
         if (!r.markSupported()) r = new BufferedReader(r);
         this.cook(optionalFileName, ClassBodyEvaluator.parseImportDeclarations(r), r);
     }
@@ -113,7 +115,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * @param r The class body to cook, without leading IMPORT declarations
      */
     protected void
-    cook(String optionalFileName, String[] imports, Reader r) throws CompileException, IOException {
+    cook(@Nullable String optionalFileName, String[] imports, Reader r) throws CompileException, IOException {
 
         // Wrap the class body in a compilation unit.
         {
@@ -163,10 +165,15 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
                 // Print the class declaration.
                 pw.print("public class ");
                 pw.print(simpleClassName);
-                if (this.optionalExtendedType != null) {
-                    pw.print(" extends ");
-                    pw.print(this.optionalExtendedType.getCanonicalName());
+
+                {
+                    Class<?> oet = this.optionalExtendedType;
+                    if (oet != null) {
+                        pw.print(" extends ");
+                        pw.print(oet.getCanonicalName());
+                    }
                 }
+
                 if (this.implementedTypes.length > 0) {
                     pw.print(" implements ");
                     pw.print(this.implementedTypes[0].getName());
@@ -209,7 +216,10 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     /** @return The {@link Class} created by the preceding call to {@link #cook(Reader)} */
     @Override public Class<?>
-    getClazz() { return this.result; }
+    getClazz() {
+        assert this.result != null;
+        return this.result;
+    }
 
     /**
      * Heuristically parse IMPORT declarations at the beginning of the character stream produced

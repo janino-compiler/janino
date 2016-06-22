@@ -24,3 +24,4 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+package de.unkrig.jdisasm.test;

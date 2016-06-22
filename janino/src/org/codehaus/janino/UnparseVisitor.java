@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.janino.Java.Annotation;
+import org.codehaus.janino.Java.BlockStatement;
+import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.util.AutoIndentWriter;
 
@@ -103,14 +105,18 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     /** @param cu The compilation unit to unparse */
     public void
     unparseCompilationUnit(Java.CompilationUnit cu) {
-        if (cu.optionalPackageDeclaration != null) {
+
+        PackageDeclaration opd = cu.optionalPackageDeclaration;
+        if (opd != null) {
             this.pw.println();
-            this.pw.println("package " + cu.optionalPackageDeclaration.packageName + ';');
+            this.pw.println("package " + opd.packageName + ';');
         }
+
         if (!cu.importDeclarations.isEmpty()) {
             this.pw.println();
             for (Java.CompilationUnit.ImportDeclaration id : cu.importDeclarations) id.accept(this);
         }
+
         for (Java.PackageMemberTypeDeclaration pmtd : cu.packageMemberTypeDeclarations) {
             this.pw.println();
             this.unparseTypeDeclaration(pmtd);
@@ -174,6 +180,9 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
 
     @Override public Void
     visitConstructorDeclarator(Java.ConstructorDeclarator cd) {
+
+        List<? extends BlockStatement> oss = cd.optionalStatements;
+
         this.unparseDocComment(cd);
         this.unparseAnnotations(cd.modifiers.annotations);
         this.unparseModifiers(cd.modifiers.flags);
@@ -184,6 +193,12 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             : "UNNAMED"
         );
         this.unparseFunctionDeclaratorRest(cd);
+
+        if (oss == null) {
+            this.pw.print(';');
+            return null;
+        }
+
         this.pw.print(' ');
         if (cd.optionalConstructorInvocation != null) {
             this.pw.println('{');
@@ -191,19 +206,19 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             this.unparseBlockStatement(cd.optionalConstructorInvocation);
             this.pw.println(';');
 
-            if (!cd.optionalStatements.isEmpty()) {
+            if (!oss.isEmpty()) {
                 this.pw.println();
-                this.unparseStatements(cd.optionalStatements);
+                this.unparseStatements(oss);
             }
             this.pw.print(AutoIndentWriter.UNINDENT + "}");
         } else
-        if (cd.optionalStatements.isEmpty()) {
+        if (oss.isEmpty()) {
             this.pw.print("{}");
         } else
         {
             this.pw.println('{');
             this.pw.print(AutoIndentWriter.INDENT);
-            this.unparseStatements(cd.optionalStatements);
+            this.unparseStatements(oss);
             this.pw.print(AutoIndentWriter.UNINDENT + "}");
         }
         return null;
@@ -211,22 +226,25 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
 
     @Override public Void
     visitMethodDeclarator(Java.MethodDeclarator md) {
+
+        final List<? extends BlockStatement> oss = md.optionalStatements;
+
         this.unparseDocComment(md);
         this.unparseAnnotations(md.modifiers.annotations);
         this.unparseModifiers(md.modifiers.flags);
         this.unparseType(md.type);
         this.pw.print(' ' + md.name);
         this.unparseFunctionDeclaratorRest(md);
-        if (md.optionalStatements == null) {
+        if (oss == null) {
             this.pw.print(';');
         } else
-        if (md.optionalStatements.isEmpty()) {
+        if (oss.isEmpty()) {
             this.pw.print(" {}");
         } else
         {
             this.pw.println(" {");
             this.pw.print(AutoIndentWriter.INDENT);
-            this.unparseStatements(md.optionalStatements);
+            this.unparseStatements(oss);
             this.pw.print(AutoIndentWriter.UNINDENT);
             this.pw.print('}');
         }
@@ -352,13 +370,16 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             this.unparse(fs.optionalCondition);
         }
         this.pw.print(';');
-        if (fs.optionalUpdate != null) {
+
+        Rvalue[] ou = fs.optionalUpdate;
+        if (ou != null) {
             this.pw.print(' ');
-            for (int i = 0; i < fs.optionalUpdate.length; ++i) {
+            for (int i = 0; i < ou.length; ++i) {
                 if (i > 0) this.pw.print(", ");
-                this.unparse(fs.optionalUpdate[i]);
+                this.unparse(ou[i]);
             }
         }
+
         this.pw.print(") ");
         this.unparseBlockStatement(fs.body);
         return null;

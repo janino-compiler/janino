@@ -40,6 +40,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.TeeReader;
 
 /**
@@ -110,7 +111,7 @@ class Scanner {
      * @deprecated // SUPPRESS CHECKSTYLE MissingDeprecated
      */
     @Deprecated public
-    Scanner(File file, String optionalEncoding) throws CompileException, IOException {
+    Scanner(File file, @Nullable String optionalEncoding) throws CompileException, IOException {
         this(
             file.getAbsolutePath(),    // optionalFileName
             new FileInputStream(file), // is
@@ -128,7 +129,7 @@ class Scanner {
      * exceptions.
      */
     public
-    Scanner(String optionalFileName, InputStream is) throws CompileException, IOException {
+    Scanner(@Nullable String optionalFileName, InputStream is) throws CompileException, IOException {
         this(
             optionalFileName,
             new InputStreamReader(is), // in
@@ -151,7 +152,8 @@ class Scanner {
      * available to a debugger.
      */
     public
-    Scanner(String optionalFileName, InputStream is, String optionalEncoding) throws CompileException, IOException {
+    Scanner(@Nullable String optionalFileName, InputStream is, @Nullable String optionalEncoding)
+    throws CompileException, IOException {
         this(
             optionalFileName,                  // optionalFileName
             (                                  // in
@@ -179,7 +181,7 @@ class Scanner {
      * available to a debugger.
      */
     public
-    Scanner(String optionalFileName, Reader in) throws CompileException, IOException {
+    Scanner(@Nullable String optionalFileName, Reader in) throws CompileException, IOException {
         this(
             optionalFileName, // optionalFileName
             in,               // in
@@ -191,10 +193,10 @@ class Scanner {
     /** Creates a {@link Scanner} that counts lines and columns from non-default initial values. */
     public
     Scanner(
-        String optionalFileName,
-        Reader in,
-        short  initialLineNumber,        // "1" is a good idea
-        short  initialColumnNumber       // "0" is a good idea
+        @Nullable String optionalFileName,
+        Reader           in,
+        short            initialLineNumber,        // "1" is a good idea
+        short            initialColumnNumber       // "0" is a good idea
     ) throws CompileException, IOException {
 
         // Debugging on source code level is only possible if the code comes from
@@ -250,8 +252,8 @@ class Scanner {
      */
     public String
     doc() {
-        String s = this.docComment;
-        this.docComment = null;
+        String s = this.optionalDocComment;
+        this.optionalDocComment = null;
         return s;
     }
 
@@ -264,10 +266,11 @@ class Scanner {
     /** Representation of a Java&trade; token. */
     public final
     class Token {
-        private final String optionalFileName;
-        private final short  lineNumber;
-        private final short  columnNumber;
-        private Location     location;
+
+        @Nullable private final String optionalFileName;
+        private final short            lineNumber;
+        private final short            columnNumber;
+        private Location               location;
 
         /** The type of this token; legal values are the various public constant declared in this class. */
         public final int type;
@@ -348,9 +351,9 @@ class Scanner {
      */
     public Token
     produce() throws CompileException, IOException {
-        if (this.docComment != null) {
+        if (this.optionalDocComment != null) {
             this.warning("MDC", "Misplaced doc comment", this.location());
-            this.docComment = null;
+            this.optionalDocComment = null;
         }
 
         // Skip whitespace and process comments.
@@ -427,7 +430,7 @@ class Scanner {
                     state = 0;
                 } else
                 {
-                    if (this.docComment != null) {
+                    if (this.optionalDocComment != null) {
                         this.warning(
                             "MDC",
                             "Multiple doc comments",
@@ -489,8 +492,8 @@ class Scanner {
                     ;
                 } else
                 if (this.nextChar == '/') {
-                    this.docComment = dcsb.toString();
-                    state           = 0;
+                    this.optionalDocComment = dcsb.toString();
+                    state                   = 0;
                 } else
                 {
                     dcsb.append((char) this.nextChar);
@@ -504,8 +507,8 @@ class Scanner {
                     throw new CompileException("EOF in doc comment", this.location());
                 } else
                 if (this.nextChar == '/') {
-                    this.docComment = dcsb.toString();
-                    state           = 0;
+                    this.optionalDocComment = dcsb.toString();
+                    state                   = 0;
                 } else
                 if (this.nextChar == '*') {
                     dcsb.append('*');
@@ -942,12 +945,12 @@ class Scanner {
 //System.out.println("'" + (char) nextChar + "' = " + (int) nextChar);
     }
 
-    private final String optionalFileName;
-    private final Reader in;
-    private int          nextChar = -1; // Always valid (one character read-ahead).
-    private boolean      crLfPending;
-    private short        nextCharLineNumber;
-    private short        nextCharColumnNumber;
+    @Nullable private final String optionalFileName;
+    private final Reader           in;
+    private int                    nextChar = -1; // Always valid (one character read-ahead).
+    private boolean                crLfPending;
+    private short                  nextCharLineNumber;
+    private short                  nextCharColumnNumber;
 
     /** Line number of the previously produced token (typically starting at one). */
     private short tokenLineNumber;
@@ -959,7 +962,7 @@ class Scanner {
     private short tokenColumnNumber;
 
     /** The optional JAVADOC comment preceding the {@link #nextToken}. */
-    private String docComment;
+    @Nullable private String optionalDocComment;
 
     /**
      * Whether the scanner is in 'expect greater' mode: If so, it parses character sequences like ">>>=" as
@@ -1008,12 +1011,12 @@ class Scanner {
      * @param optionalWarningHandler <code>null</code> to indicate that no warnings be issued
      */
     public void
-    setWarningHandler(WarningHandler optionalWarningHandler) {
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
     // Used for elaborate warning handling.
-    private WarningHandler optionalWarningHandler;
+    @Nullable private WarningHandler optionalWarningHandler;
 
     /**
      * Issues a warning with the given message and location and returns. This is done through
@@ -1025,7 +1028,7 @@ class Scanner {
      * @throws CompileException
      */
     private void
-    warning(String handle, String message, Location optionalLocation) throws CompileException {
+    warning(String handle, String message, @Nullable Location optionalLocation) throws CompileException {
         if (this.optionalWarningHandler != null) {
             this.optionalWarningHandler.handleWarning(handle, message, optionalLocation);
         }

@@ -38,6 +38,7 @@ import java.util.TreeMap;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
@@ -115,10 +116,10 @@ class Java {
     class CompilationUnit implements Scope {
 
         /** A string that explains the 'file' (or similar resource) where this CU was loaded from. */
-        public final String optionalFileName;
+        @Nullable public final String optionalFileName;
 
         /** The package declaration at the very top of this CU (if any). */
-        public PackageDeclaration optionalPackageDeclaration;
+        @Nullable public PackageDeclaration optionalPackageDeclaration;
 
         /** The IMPORT declarations in this CU. */
         public final List<ImportDeclaration> importDeclarations = new ArrayList();
@@ -127,7 +128,7 @@ class Java {
         public final List<PackageMemberTypeDeclaration> packageMemberTypeDeclarations = new ArrayList();
 
         public
-        CompilationUnit(String optionalFileName) { this.optionalFileName = optionalFileName; }
+        CompilationUnit(@Nullable String optionalFileName) { this.optionalFileName = optionalFileName; }
 
         // Implement "Scope".
 
@@ -702,7 +703,7 @@ class Java {
     class AbstractTypeDeclaration implements TypeDeclaration {
         private final Location                    location;
         private final Modifiers                   modifiers;
-        private final TypeParameter[]             optionalTypeParameters;
+        @Nullable private final TypeParameter[]   optionalTypeParameters;
         private final List<MethodDeclarator>      declaredMethods              = new ArrayList();
         private final List<MemberTypeDeclaration> declaredClassesAndInterfaces = new ArrayList();
         private Scope                             enclosingScope;
@@ -711,7 +712,11 @@ class Java {
         IClass resolvedType;
 
         public
-        AbstractTypeDeclaration(Location location, Modifiers modifiers, TypeParameter[] optionalTypeParameters) {
+        AbstractTypeDeclaration(
+            Location                  location,
+            Modifiers                 modifiers,
+            @Nullable TypeParameter[] optionalTypeParameters
+        ) {
             this.location               = location;
             this.modifiers              = modifiers;
             this.optionalTypeParameters = optionalTypeParameters;
@@ -856,7 +861,7 @@ class Java {
         public final List<BlockStatement> variableDeclaratorsAndInitializers = new ArrayList();
 
         public
-        ClassDeclaration(Location location, Modifiers modifiers, TypeParameter[] optionalTypeParameters) {
+        ClassDeclaration(Location location, Modifiers modifiers, @Nullable TypeParameter[] optionalTypeParameters) {
             super(location, modifiers, optionalTypeParameters);
         }
 
@@ -973,26 +978,26 @@ class Java {
     public abstract static
     class NamedClassDeclaration extends ClassDeclaration implements NamedTypeDeclaration, DocCommentable {
 
-        private final String optionalDocComment;
+        @Nullable private final String optionalDocComment;
 
         /** The simple name of this class. */
         public final String  name;
 
         /** The type of the extended class. */
-        public final Type optionalExtendedType;
+        @Nullable public final Type optionalExtendedType;
 
         /** The types of the implemented interfaces. */
         public final Type[] implementedTypes;
 
         public
         NamedClassDeclaration(
-            Location        location,
-            String          optionalDocComment,
-            Modifiers       modifiers,
-            String          name,
-            TypeParameter[] optionalTypeParameters,
-            Type            optionalExtendedType,
-            Type[]          implementedTypes
+            Location                  location,
+            @Nullable String          optionalDocComment,
+            Modifiers                 modifiers,
+            String                    name,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            @Nullable Type            optionalExtendedType,
+            Type[]                    implementedTypes
         ) {
             super(location, modifiers, optionalTypeParameters);
             this.optionalDocComment     = optionalDocComment;
@@ -1048,13 +1053,13 @@ class Java {
     class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
         public
         MemberClassDeclaration(
-            Location        location,
-            String          optionalDocComment,
-            Modifiers       modifiers,
-            String          name,
-            TypeParameter[] optionalTypeParameters,
-            Type            optionalExtendedType,
-            Type[]          implementedTypes
+            Location                  location,
+            @Nullable String          optionalDocComment,
+            Modifiers                 modifiers,
+            String                    name,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            @Nullable Type            optionalExtendedType,
+            Type[]                    implementedTypes
         ) {
             super(
                 location,               // location
@@ -1094,13 +1099,13 @@ class Java {
 
         public
         LocalClassDeclaration(
-            Location        location,
-            String          optionalDocComment,
-            Modifiers       modifiers,
-            String          name,
-            TypeParameter[] optionalTypeParameters,
-            Type            optionalExtendedType,
-            Type[]          implementedTypes
+            Location                  location,
+            @Nullable String          optionalDocComment,
+            Modifiers                 modifiers,
+            String                    name,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            @Nullable Type            optionalExtendedType,
+            Type[]                    implementedTypes
         ) {
             super(
                 location,               // location
@@ -1136,13 +1141,13 @@ class Java {
 
         public
         PackageMemberClassDeclaration(
-            Location        location,
-            String          optionalDocComment,
-            Modifiers       modifiers,
-            String          name,
-            TypeParameter[] optionalTypeParameters,
-            Type            optionalExtendedType,
-            Type[]          implementedTypes
+            Location                  location,
+            @Nullable String          optionalDocComment,
+            Modifiers                 modifiers,
+            String                    name,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            @Nullable Type            optionalExtendedType,
+            Type[]                    implementedTypes
         ) throws CompileException {
             super(
                 location,               // location
@@ -1180,9 +1185,9 @@ class Java {
             String className = this.getName();
 
             CompilationUnit compilationUnit = (CompilationUnit) this.getEnclosingScope();
-            if (compilationUnit.optionalPackageDeclaration != null) {
-                className = compilationUnit.optionalPackageDeclaration.packageName + '.' + className;
-            }
+
+            PackageDeclaration opd = compilationUnit.optionalPackageDeclaration;
+            if (opd != null) className = opd.packageName + '.' + className;
 
             return className;
         }
@@ -1197,19 +1202,19 @@ class Java {
     public abstract static
     class InterfaceDeclaration extends AbstractTypeDeclaration implements NamedTypeDeclaration, DocCommentable {
 
-        private final String optionalDocComment;
+        @Nullable private final String optionalDocComment;
 
         /** The simple name of the interface. */
         public final String name;
 
         protected
         InterfaceDeclaration(
-            Location        location,
-            String          optionalDocComment,
-            Modifiers       modifiers,
-            String          name,
-            TypeParameter[] optionalTypeParameters,
-            Type[]          extendedTypes
+            Location                  location,
+            @Nullable String          optionalDocComment,
+            Modifiers                 modifiers,
+            String                    name,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            Type[]                    extendedTypes
         ) {
             super(location, modifiers, optionalTypeParameters);
             this.optionalDocComment = optionalDocComment;
@@ -1267,12 +1272,12 @@ class Java {
 
         public
         MemberInterfaceDeclaration(
-            Location        location,
-            String          optionalDocComment,
-            Modifiers       modifiers,
-            String          name,
-            TypeParameter[] optionalTypeParameters,
-            Type[]          extendedTypes
+            Location                  location,
+            @Nullable String          optionalDocComment,
+            Modifiers                 modifiers,
+            String                    name,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            Type[]                    extendedTypes
         ) {
             super(
                 location,               // location
@@ -1318,12 +1323,12 @@ class Java {
 
         public
         PackageMemberInterfaceDeclaration(
-            Location        location,
-            String          optionalDocComment,
-            Modifiers       modifiers,
-            String          name,
-            TypeParameter[] optionalTypeParameters,
-            Type[]          extendedTypes
+            Location                  location,
+            @Nullable String          optionalDocComment,
+            Modifiers                 modifiers,
+            String                    name,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            Type[]                    extendedTypes
         ) throws CompileException {
             super(
                 location,               // location
@@ -1360,9 +1365,9 @@ class Java {
             String className = this.getName();
 
             CompilationUnit compilationUnit = (CompilationUnit) this.getEnclosingScope();
-            if (compilationUnit.optionalPackageDeclaration != null) {
-                className = compilationUnit.optionalPackageDeclaration.packageName + '.' + className;
-            }
+
+            PackageDeclaration opd = compilationUnit.optionalPackageDeclaration;
+            if (opd != null) className = opd.packageName + '.' + className;
 
             return className;
         }
@@ -1381,10 +1386,10 @@ class Java {
         public final String name;
 
         /** The optional bound of the type parameter. */
-        public final ReferenceType[] optionalBound;
+        @Nullable public final ReferenceType[] optionalBound;
 
         public
-        TypeParameter(String name, ReferenceType[] optionalBound) {
+        TypeParameter(String name, @Nullable ReferenceType[] optionalBound) {
             assert name != null;
             this.name          = name;
             this.optionalBound = optionalBound;
@@ -1507,7 +1512,7 @@ class Java {
     public abstract static
     class FunctionDeclarator extends AbstractTypeBodyDeclaration implements DocCommentable {
 
-        private final String optionalDocComment;
+        @Nullable private final String optionalDocComment;
 
         /** The {@link Modifiers} of this declarator. */
         public final Modifiers modifiers;
@@ -1525,18 +1530,18 @@ class Java {
         public final Type[] thrownExceptions;
 
         /** The statements that comprise the function; {@code null} for abstract method declarations. */
-        public final List<? extends BlockStatement> optionalStatements;
+        @Nullable public final List<? extends BlockStatement> optionalStatements;
 
         public
         FunctionDeclarator(
-            Location                       location,
-            String                         optionalDocComment,
-            Modifiers                      modifiers,
-            Type                           type,
-            String                         name,
-            FormalParameters               parameters,
-            Type[]                         thrownExceptions,
-            List<? extends BlockStatement> optionalStatements
+            Location                                 location,
+            @Nullable String                         optionalDocComment,
+            Modifiers                                modifiers,
+            Type                                     type,
+            String                                   name,
+            FormalParameters                         parameters,
+            Type[]                                   thrownExceptions,
+            @Nullable List<? extends BlockStatement> optionalStatements
         ) {
             super(location, Mod.isStatic(modifiers.flags));
             this.optionalDocComment = optionalDocComment;
@@ -1675,9 +1680,8 @@ class Java {
 
             // Compile time members.
 
-
             /** The local variable associated with this parameter. */
-            public Java.LocalVariable localVariable;
+            @Nullable public Java.LocalVariable localVariable;
         }
 
         // Compile time members
@@ -1694,17 +1698,17 @@ class Java {
         IClass.IConstructor iConstructor;
 
         /** The {@link AlternateConstructorInvocation} or {@link SuperConstructorInvocation}, if any. */
-        public final ConstructorInvocation optionalConstructorInvocation;
+        @Nullable public final ConstructorInvocation optionalConstructorInvocation;
 
         public
         ConstructorDeclarator(
-            Location              location,
-            String                optionalDocComment,
-            Modifiers             modifiers,
-            FormalParameters      parameters,
-            Type[]                thrownExceptions,
-            ConstructorInvocation optionalConstructorInvocation,
-            List<BlockStatement>  statements
+            Location                        location,
+            @Nullable String                optionalDocComment,
+            Modifiers                       modifiers,
+            FormalParameters                parameters,
+            Type[]                          thrownExceptions,
+            @Nullable ConstructorInvocation optionalConstructorInvocation,
+            List<BlockStatement>            statements
         ) {
             super(
                 location,                                // location
@@ -1755,15 +1759,15 @@ class Java {
 
         public
         MethodDeclarator(
-            Location                       location,
-            String                         optionalDocComment,
-            Java.Modifiers                 modifiers,
-            TypeParameter[]                optionalTypeParameters,
-            Type                           type,
-            String                         name,
-            FormalParameters               parameters,
-            Type[]                         thrownExceptions,
-            List<? extends BlockStatement> optionalStatements
+            Location                                 location,
+            @Nullable String                         optionalDocComment,
+            Java.Modifiers                           modifiers,
+            @Nullable TypeParameter[]                optionalTypeParameters,
+            Type                                     type,
+            String                                   name,
+            FormalParameters                         parameters,
+            Type[]                                   thrownExceptions,
+            @Nullable List<? extends BlockStatement> optionalStatements
         ) {
             super(
                 location,           // location
@@ -1826,7 +1830,7 @@ class Java {
         @Override public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMethodDeclarator(this); }
         @Override public <R, EX extends Throwable> R accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX  { return visitor.visitMethodDeclarator(this); }
 
-        private final TypeParameter[] optionalTypeParameters;
+        @Nullable private final TypeParameter[] optionalTypeParameters;
 
         /** The resolved {@link IMethod}. */
         IClass.IMethod iMethod;
@@ -1840,7 +1844,7 @@ class Java {
     public static final
     class FieldDeclaration extends Statement implements TypeBodyDeclaration, DocCommentable {
 
-        private final String optionalDocComment;
+        @Nullable private final String optionalDocComment;
 
         /** The modifiers of this field declaration. */
         public final Modifiers modifiers;
@@ -1854,7 +1858,7 @@ class Java {
         public
         FieldDeclaration(
             Location             location,
-            String               optionalDocComment,
+            @Nullable String     optionalDocComment,
             Modifiers            modifiers,
             Type                 type,
             VariableDeclarator[] variableDeclarators
@@ -1944,10 +1948,15 @@ class Java {
         public final int brackets;
 
         /** The initializer for the variable, if any. */
-        public final ArrayInitializerOrRvalue optionalInitializer;
+        @Nullable public final ArrayInitializerOrRvalue optionalInitializer;
 
         public
-        VariableDeclarator(Location location, String name, int brackets, ArrayInitializerOrRvalue optionalInitializer) {
+        VariableDeclarator(
+            Location                           location,
+            String                             name,
+            int                                brackets,
+            @Nullable ArrayInitializerOrRvalue optionalInitializer
+        ) {
             super(location);
             this.name                = name;
             this.brackets            = brackets;
@@ -1968,7 +1977,7 @@ class Java {
         // Compile time members.
 
         /** Used only if the variable declarator declares a local variable. */
-        public LocalVariable localVariable;
+        @Nullable public LocalVariable localVariable;
     }
 
     /**
@@ -1994,6 +2003,7 @@ class Java {
         accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX;
 
         /** @return The local variable with the given {@code name} */
+        @Nullable
         Java.LocalVariable
         findLocalVariable(String name);
     }
@@ -2032,12 +2042,15 @@ class Java {
         // Compile time members
 
         /** The map of currently visible local variables. */
-        public Map<String /*name*/, Java.LocalVariable> localVariables;
+        @Nullable public Map<String /*name*/, Java.LocalVariable> localVariables;
 
-        @Override public Java.LocalVariable
+        @Override public @Nullable Java.LocalVariable
         findLocalVariable(String name) {
-            if (this.localVariables == null) { return null; }
-            return (LocalVariable) this.localVariables.get(name);
+
+            Map<String, LocalVariable> lvs = this.localVariables;
+            if (lvs == null) { return null; }
+
+            return (LocalVariable) lvs.get(name);
         }
     }
 
@@ -2128,7 +2141,7 @@ class Java {
         /**
          * This one's filled in by the first BREAK statement, and is {@link Offset#set()} by this breakable statement.
          */
-        CodeContext.Offset whereToBreak;
+        @Nullable CodeContext.Offset whereToBreak;
     }
 
     /**
@@ -2148,7 +2161,8 @@ class Java {
          * This one's filled in by the first CONTINUE statement, and is {@link Offset#set()} by this continuable
          * statement.
          */
-        protected CodeContext.Offset whereToContinue;
+        @Nullable protected CodeContext.Offset whereToContinue;
+
         /** The body of this continuable statement. */
         public final BlockStatement body;
     }
@@ -2226,7 +2240,7 @@ class Java {
         public final BlockStatement thenStatement;
 
         /** The optional ELSE statement, which is executed iff the condition evaluates to FALSE. */
-        public final BlockStatement optionalElseStatement;
+        @Nullable public final BlockStatement optionalElseStatement;
 
         /**
          * Notice that the <code>elseStatement</code> is mandatory; for an if statement without
@@ -2234,10 +2248,10 @@ class Java {
          */
         public
         IfStatement(
-            Location       location,
-            Rvalue         condition,
-            BlockStatement thenStatement,
-            BlockStatement optionalElseStatement
+            Location                 location,
+            Rvalue                   condition,
+            BlockStatement           thenStatement,
+            @Nullable BlockStatement optionalElseStatement
         ) {
             super(location);
             (this.condition             = condition).setEnclosingScope(this);
@@ -2260,21 +2274,21 @@ class Java {
     class ForStatement extends ContinuableStatement {
 
         /** The optional 'init' part of the 'basic FOR statement'. */
-        public final BlockStatement optionalInit;
+        @Nullable public final BlockStatement optionalInit;
 
         /** The optional 'condition' part of the 'basic FOR statement'. */
-        public final Rvalue optionalCondition;
+        @Nullable public final Rvalue optionalCondition;
 
         /** The optional 'update' part of the 'basic FOR statement'. */
-        public final Rvalue[] optionalUpdate;
+        @Nullable public final Rvalue[] optionalUpdate;
 
         public
         ForStatement(
-            Location       location,
-            BlockStatement optionalInit,
-            Rvalue         optionalCondition,
-            Rvalue[]       optionalUpdate,
-            BlockStatement body
+            Location                 location,
+            @Nullable BlockStatement optionalInit,
+            @Nullable Rvalue         optionalCondition,
+            @Nullable Rvalue[]       optionalUpdate,
+            BlockStatement           body
         ) {
             super(location, body);
             this.optionalInit = optionalInit;
@@ -2353,14 +2367,14 @@ class Java {
         public final List<Java.CatchClause> catchClauses;
 
         /** The optional 'finally' block of the TRY statement. */
-        public final Block optionalFinally;
+        @Nullable public final Block optionalFinally;
 
         public
         TryStatement(
             Location          location,
             BlockStatement    body,
             List<CatchClause> catchClauses,
-            Block             optionalFinally
+            @Nullable Block   optionalFinally
         ) {
             super(location);
             (this.body = body).setEnclosingScope(this);
@@ -2627,10 +2641,10 @@ class Java {
     class ReturnStatement extends Statement {
 
         /** The optional rvalue that is returned. */
-        public final Rvalue optionalReturnValue;
+        @Nullable public final Rvalue optionalReturnValue;
 
         public
-        ReturnStatement(Location location, Rvalue optionalReturnValue) {
+        ReturnStatement(Location location, @Nullable Rvalue optionalReturnValue) {
             super(location);
             this.optionalReturnValue = optionalReturnValue;
             if (optionalReturnValue != null) optionalReturnValue.setEnclosingScope(this);
@@ -2672,10 +2686,10 @@ class Java {
     class BreakStatement extends Statement {
 
         /** The optional label that this BREAK statement refers to. */
-        public final String optionalLabel;
+        @Nullable public final String optionalLabel;
 
         public
-        BreakStatement(Location location, String optionalLabel) {
+        BreakStatement(Location location, @Nullable String optionalLabel) {
             super(location);
             this.optionalLabel = optionalLabel;
         }
@@ -2694,10 +2708,10 @@ class Java {
     class ContinueStatement extends Statement {
 
         /** The optional label that this CONTINUE statement refers to. */
-        public final String optionalLabel;
+        @Nullable public final String optionalLabel;
 
         public
-        ContinueStatement(Location location, String optionalLabel) {
+        ContinueStatement(Location location, @Nullable String optionalLabel) {
             super(location);
             this.optionalLabel = optionalLabel;
         }
@@ -2719,10 +2733,10 @@ class Java {
         public final Rvalue expression1;
 
         /** The optional right-hand-side expression of this ASSERT statement. */
-        public final Rvalue optionalExpression2;
+        @Nullable public final Rvalue optionalExpression2;
 
         public
-        AssertStatement(Location location, Rvalue expression1, Rvalue optionalExpression2) {
+        AssertStatement(Location location, Rvalue expression1, @Nullable Rvalue optionalExpression2) {
             super(location);
             this.expression1         = expression1;
             this.optionalExpression2 = optionalExpression2;
@@ -2766,7 +2780,7 @@ class Java {
         Atom(Location location) { super(location); }
 
         /** @return This atom, converted to {@link Type}, or {@code null} if this atom is not a type */
-        public Type toType() { return null; }
+        @Nullable public Type toType() { return null; }
 
         /** @return This atom, converted to {@link Rvalue}, or {@code null} if this atom is not an rvalue */
         public Rvalue toRvalue() { return null; }
@@ -2957,10 +2971,10 @@ class Java {
         public final String[] identifiers;
 
         /** The optional type arguments of the reference type. */
-        public final TypeArgument[] optionalTypeArguments;
+        @Nullable public final TypeArgument[] optionalTypeArguments;
 
         public
-        ReferenceType(Location location, String[] identifiers, TypeArgument[] optionalTypeArguments) {
+        ReferenceType(Location location, String[] identifiers, @Nullable TypeArgument[] optionalTypeArguments) {
             super(location);
             assert identifiers != null;
             this.identifiers           = identifiers;
@@ -3607,13 +3621,13 @@ class Java {
     class SuperclassFieldAccessExpression extends Lvalue {
 
         /** The optional qualification before '.super.fld'. */
-        public final Type optionalQualification;
+        @Nullable public final Type optionalQualification;
 
         /** The name of the field to access. */
         public final String fieldName;
 
         public
-        SuperclassFieldAccessExpression(Location location, Type optionalQualification, String fieldName) {
+        SuperclassFieldAccessExpression(Location location, @Nullable Type optionalQualification, String fieldName) {
             super(location);
             this.optionalQualification = optionalQualification;
             this.fieldName             = fieldName;
@@ -3626,9 +3640,9 @@ class Java {
         @Override public String
         toString() {
             return (
-                this.optionalQualification == null
-                ? "super."
-                : this.optionalQualification.toString() + ".super."
+                this.optionalQualification != null
+                ? this.optionalQualification.toString() + ".super."
+                : "super."
             ) + this.fieldName;
         }
 
@@ -3910,10 +3924,10 @@ class Java {
          * The qualification for this 'qualified superclass constructor invocation', or {@code null} iff this is an
          * 'unqualified superclass constructor invocation'.
          */
-        public final Rvalue optionalQualification;
+        @Nullable public final Rvalue optionalQualification;
 
         public
-        SuperConstructorInvocation(Location location, Rvalue optionalQualification, Rvalue[] arguments) {
+        SuperConstructorInvocation(Location location, @Nullable Rvalue optionalQualification, Rvalue[] arguments) {
             super(location, arguments);
             this.optionalQualification = optionalQualification;
             if (optionalQualification != null) optionalQualification.setEnclosingScope(this);
@@ -3934,10 +3948,10 @@ class Java {
     class MethodInvocation extends Invocation {
 
         /** The optional type or rvalue that qualifies this method invocation. */
-        public final Atom optionalTarget;
+        @Nullable public final Atom optionalTarget;
 
         public
-        MethodInvocation(Location location, Atom optionalTarget, String methodName, Rvalue[] arguments) {
+        MethodInvocation(Location location, @Nullable Atom optionalTarget, String methodName, Rvalue[] arguments) {
             super(location, methodName, arguments);
             this.optionalTarget = optionalTarget;
         }
@@ -4009,7 +4023,7 @@ class Java {
     class NewClassInstance extends Rvalue {
 
         /** The qualification of this 'qualified class instance creation expression'. */
-        public final Rvalue optionalQualification;
+        @Nullable public final Rvalue optionalQualification;
 
         /** The type to instantiate. */
         public final Type type;
@@ -4018,7 +4032,7 @@ class Java {
         public final Rvalue[] arguments;
 
         public
-        NewClassInstance(Location location, Rvalue optionalQualification, Type type, Rvalue[] arguments) {
+        NewClassInstance(Location location, @Nullable Rvalue optionalQualification, Type type, Rvalue[] arguments) {
             super(location);
             this.optionalQualification = optionalQualification;
             this.type                  = type;
@@ -4031,7 +4045,7 @@ class Java {
         protected IClass iClass;
 
         public
-        NewClassInstance(Location location, Rvalue optionalQualification, IClass iClass, Rvalue[] arguments) {
+        NewClassInstance(Location location, @Nullable Rvalue optionalQualification, IClass iClass, Rvalue[] arguments) {
             super(location);
             this.optionalQualification = optionalQualification;
             this.type                  = null;
@@ -4074,7 +4088,7 @@ class Java {
     class NewAnonymousClassInstance extends Rvalue {
 
         /** The qualification iff this a 'qualified anonymous class instance creation expression'. */
-        public final Rvalue optionalQualification;
+        @Nullable public final Rvalue optionalQualification;
 
         /** The declaration of the anonymous class to instantiate. */
         public final AnonymousClassDeclaration anonymousClassDeclaration;
@@ -4085,7 +4099,7 @@ class Java {
         public
         NewAnonymousClassInstance(
             Location                  location,
-            Rvalue                    optionalQualification,
+            @Nullable Rvalue          optionalQualification,
             AnonymousClassDeclaration anonymousClassDeclaration,
             Rvalue[]                  arguments
         ) {
@@ -4199,7 +4213,7 @@ class Java {
         public final ArrayInitializer arrayInitializer;
 
         /** The resolved {@link #arrayType}. */
-        public final IClass arrayIClass;
+        @Nullable public final IClass arrayIClass;
 
         public
         NewInitializedArray(Location location, ArrayType arrayType, ArrayInitializer arrayInitializer) {
@@ -4417,13 +4431,13 @@ class Java {
     public static
     class LocalVariableSlot {
 
-        private short        slotIndex = -1;
-        private String       name;
-        private final IClass type;
-        private Offset       start, end;
+        private short                  slotIndex = -1;
+        @Nullable private String       name;
+        @Nullable private final IClass type;
+        @Nullable private Offset       start, end;
 
         public
-        LocalVariableSlot(String name, short slotNumber, IClass type) {
+        LocalVariableSlot(@Nullable String name, short slotNumber, @Nullable IClass type) {
             this.name      = name;
             this.slotIndex = slotNumber;
             this.type      = type;
@@ -4431,12 +4445,18 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuilder buf = new StringBuilder("local var(").append(this.name).append(", ").append(this.slotIndex);
-            if (this.name != null) {
-                buf.append(", ").append(this.type);
-                buf.append(", ").append(this.start.offset);
-                buf.append(", ").append(this.end.offset);
-            }
+            StringBuilder buf = new StringBuilder();
+
+            buf.append("local var(").append(this.name);
+            buf.append(", ").append(this.slotIndex);
+            if (this.type != null) buf.append(", ").append(this.type);
+
+            Offset s = this.start;
+            if (s != null) buf.append(", ").append(s.offset);
+
+            Offset e = this.end;
+            if (e != null) buf.append(", ").append(e.offset);
+
             buf.append(")");
 
             return buf.toString();
@@ -4448,7 +4468,7 @@ class Java {
         public void setSlotIndex(short slotIndex) { this.slotIndex = slotIndex; }
 
         /** @return The name of this local variable */
-        public String getName() { return this.name; }
+        @Nullable public String getName() { return this.name; }
         /** @param name The name of this local variable */
         public void setName(String name) { this.name = name; }
 

@@ -28,6 +28,8 @@ package org.codehaus.janino;
 
 import java.util.Map;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /** This {@link ClassLoader} allows for the loading of a set of Java&trade; classes provided in class file format. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class ByteArrayClassLoader extends ClassLoader {
@@ -55,7 +57,9 @@ class ByteArrayClassLoader extends ClassLoader {
      * <code>synchronized</code>.
      */
     @Override protected Class
-    findClass(String name) throws ClassNotFoundException {
+    findClass(@Nullable String name) throws ClassNotFoundException {
+        assert name != null;
+
         byte[] data = (byte[]) this.classes.get(name);
         if (data == null) throw new ClassNotFoundException(name);
 

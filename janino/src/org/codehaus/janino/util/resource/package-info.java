@@ -28,4 +28,7 @@
  * Classes related to loading "resources" ({@link org.codehaus.janino.util.resource.ResourceFinder}) and creating
  * resources ({@link org.codehaus.janino.util.resource.ResourceCreator}).
  */
+@NotNullByDefault
 package org.codehaus.janino.util.resource;
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * Example for object allocation statistics:
  *
@@ -152,7 +154,11 @@ class HprofScrubber {
         Arrays.sort(ss, new Comparator() {
 
             @Override public int
-            compare(Object o1, Object o2) { return ((Site) o2).allocatedBytes - ((Site) o1).allocatedBytes; }
+            compare(@Nullable Object o1, @Nullable Object o2) {
+                assert o1 != null;
+                assert o2 != null;
+                return ((Site) o2).allocatedBytes - ((Site) o1).allocatedBytes;
+            }
         });
 
         int totalAllocatedBytes = 0, totalAllocatedObjects = 0;

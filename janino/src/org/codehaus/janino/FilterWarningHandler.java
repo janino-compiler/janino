@@ -29,6 +29,7 @@ package org.codehaus.janino;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.StringPattern;
 
 /** Invokes a delegate iff the handle of the warning matches one or more of a set of {@link StringPattern}s. */
@@ -48,8 +49,9 @@ class FilterWarningHandler implements WarningHandler {
     }
 
     @Override public void
-    handleWarning(String handle, String message, Location optionalLocation) throws CompileException {
-        if (StringPattern.matches(this.handlePatterns, handle)) {
+    handleWarning(@Nullable String handle, String message, @Nullable Location optionalLocation)
+    throws CompileException {
+        if (handle == null || StringPattern.matches(this.handlePatterns, handle)) {
             this.delegate.handleWarning(handle, message, optionalLocation);
         }
     }

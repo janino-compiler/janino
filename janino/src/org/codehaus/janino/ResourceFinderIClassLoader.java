@@ -29,6 +29,7 @@ package org.codehaus.janino;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.resource.Resource;
 import org.codehaus.janino.util.resource.ResourceFinder;
@@ -44,13 +45,13 @@ class ResourceFinderIClassLoader extends IClassLoader {
     private final ResourceFinder resourceFinder;
 
     public
-    ResourceFinderIClassLoader(ResourceFinder resourceFinder, IClassLoader optionalParentIClassLoader) {
+    ResourceFinderIClassLoader(ResourceFinder resourceFinder, @Nullable IClassLoader optionalParentIClassLoader) {
         super(optionalParentIClassLoader);
         this.resourceFinder = resourceFinder;
         this.postConstruct();
     }
 
-    @Override protected IClass
+    @Override protected @Nullable IClass
     findIClass(String descriptor) throws ClassNotFoundException {
         String className = Descriptor.toClassName(descriptor);
 

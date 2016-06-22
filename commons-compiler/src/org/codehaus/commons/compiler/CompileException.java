@@ -26,17 +26,19 @@
 
 package org.codehaus.commons.compiler;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /** An exception that reflects an error during compilation. */
 public
 class CompileException extends LocatedException {
 
     public
-    CompileException(String message, Location optionalLocation) {
+    CompileException(String message, @Nullable Location optionalLocation) {
         super(message, optionalLocation);
     }
 
     public
-    CompileException(String message, Location optionalLocation, Throwable cause) {
+    CompileException(String message, @Nullable Location optionalLocation, Throwable cause) {
         super(message, optionalLocation, cause);
     }
 }

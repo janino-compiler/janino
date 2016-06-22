@@ -151,7 +151,7 @@ class Jsh extends DemoBase {
 
         // Print script return value.
         if (returnType != void.class) {
-            System.out.println(DemoBase.toString(res));
+            System.out.println(res instanceof Object[] ? Arrays.toString((Object[]) res) : String.valueOf(res));
         }
     }
 

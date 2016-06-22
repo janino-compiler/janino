@@ -26,6 +26,8 @@
 
 package org.codehaus.commons.compiler;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /** Processes a warning issued by the compiler. */
 public
 interface WarningHandler {
@@ -33,7 +35,12 @@ interface WarningHandler {
     /**
      * May or may not choose to throw a {@link CompileException}.
      *
-     * @param handle A string describing the category of the warning
+     * @param handle            A string describing the category of the warning; used for filtering iff non-{@code
+     *                          null}
+     * @throws CompileException This {@link WarningHandler} wishes to terminate compilation, e.g. because "too many"
+     *                          warnings have been reported
      */
-    void handleWarning(String handle, String message, Location optionalLocation) throws CompileException;
+    void
+    handleWarning(@Nullable String handle, String message, @Nullable Location optionalLocation)
+    throws CompileException;
 }
