@@ -1300,9 +1300,8 @@ class CodeContext {
             Offset o = from.next;
 
             for (; o != to;) {
-                if (o == null) {
-                    System.currentTimeMillis();
-                }
+                assert o != null;
+
                 invalidOffsets.add(o);
 
                 // Invalidate the offset for fast failure.

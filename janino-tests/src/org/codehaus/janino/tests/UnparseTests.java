@@ -572,7 +572,7 @@ class UnparseTests {
     private void
     find(File directory, FileFilter fileFilter) {
         File[] subDirectories = directory.listFiles(fileFilter);
-        if (subDirectories == null) Assert.fail(directory + " is not a directory");
+        if (subDirectories == null) throw new AssertionError(directory + " is not a directory");
         for (File subDirectorie : subDirectories) this.find(subDirectorie, fileFilter);
     }
 }

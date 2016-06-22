@@ -28,5 +28,5 @@
 @NotNullByDefault
 package org.codehaus.commons.compiler.jdk;
 
-import de.unkrig.commons.nullanalysis.NotNullByDefault;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
 

@@ -28,5 +28,5 @@
 @NotNullByDefault
 package org.codehaus.commons.io;
 
-import de.unkrig.commons.nullanalysis.NotNullByDefault;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
 

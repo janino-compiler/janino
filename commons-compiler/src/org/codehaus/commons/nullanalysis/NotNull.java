@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2013, Arno Unkrig
+ * Copyright (c) 2016, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,15 +24,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * The classes in this package pose the core of the Janino Java<sup>TM</sup> compiler.
- * <p>
- * The package comprises a scanner ({@link org.codehaus.janino.Scanner}, a parser ({@link org.codehaus.janino.Parser})
- * and a class file library. The parser builds a syntax tree from the "Java.*" classes that represents the parsed code.
- * The {@link org.codehaus.janino.UnitCompiler#compileUnit} method compiles this syntax tree into a {@link
- * org.codehaus.janino.util.ClassFile} object, which can write Java<sup>TM</sup> bytecode to an "OutputStream".
- */
-@NotNullByDefault
-package org.codehaus.janino;
+package org.codehaus.commons.nullanalysis;
 
-import org.codehaus.commons.nullanalysis.NotNullByDefault;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/** Designates that a field, return value, argument, or variable is guaranteed to be non-null. */
+@Target({
+    ElementType.FIELD,
+    ElementType.METHOD,
+    ElementType.PARAMETER,
+    ElementType.LOCAL_VARIABLE
+}) @Documented @Retention(RetentionPolicy.CLASS) public
+@interface NotNull {}

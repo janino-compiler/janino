@@ -47,4 +47,7 @@
  * "bogus" expression text. The documentation of each implementation should state clearly whether or not it is prone to
  * Java injection.
  */
+@NotNullByDefault
 package org.codehaus.commons.compiler;
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

@@ -5436,9 +5436,6 @@ class UnitCompiler {
         MethodDeclarator scopeMethodDeclarator = null;
         CompilationUnit  scopeCompilationUnit;
         for (Scope s = scope;; s = s.getEnclosingScope()) {
-if (s == null) {
-    System.currentTimeMillis();
-}
             if (s instanceof BlockStatement && scopeBlockStatement == null) {
                 scopeBlockStatement = (BlockStatement) s;
             }
@@ -6148,7 +6145,7 @@ if (s == null) {
         // At this point, the member is DEFAULT or PROTECTED accessible.
 
         // Check whether the member and the context block statement are declared in the same package.
-        if (Descriptor.areInSamePackage(
+        if (iClassDeclaringContext != null && Descriptor.areInSamePackage(
             iClassDeclaringMember.getDescriptor(),
             iClassDeclaringContext.getDescriptor()
         )) return null;
@@ -6170,6 +6167,7 @@ if (s == null) {
         {
             IClass parentClass = iClassDeclaringContext;
             do {
+                assert parentClass != null;
                 if (iClassDeclaringMember.isAssignableFrom(parentClass)) {
                     return null;
                 }
@@ -7258,6 +7256,9 @@ if (s == null) {
                             + "\")"
                         ), location);
                     }
+
+                    assert scopeTypeDeclaration != null;
+                    assert scopeTbd != null;
 
                     SimpleType ct = new SimpleType(scopeTypeDeclaration.getLocation(), etd);
                     Atom       lhs;
