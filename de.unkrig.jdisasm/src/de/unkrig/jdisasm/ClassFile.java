@@ -33,11 +33,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import de.unkrig.commons.nullanalysis.Nullable;
 import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantNameAndTypeInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantUtf8Info;
 import de.unkrig.jdisasm.SignatureParser.SignatureException;
+import de.unkrig.jdisasm.commons.nullanalysis.Nullable;
 
 /** Representation of a Java&trade; class file. */
 public

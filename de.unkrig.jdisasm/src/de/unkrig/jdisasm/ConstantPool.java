@@ -30,8 +30,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import de.unkrig.commons.nullanalysis.Nullable;
 import de.unkrig.jdisasm.SignatureParser.SignatureException;
+import de.unkrig.jdisasm.commons.nullanalysis.Nullable;
 
 /** Representation of the "constant pool" in a Java&trade; class file. */
 public

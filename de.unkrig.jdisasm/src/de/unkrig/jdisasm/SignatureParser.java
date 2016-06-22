@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import de.unkrig.commons.nullanalysis.Nullable;
+import de.unkrig.jdisasm.commons.nullanalysis.Nullable;
 import de.unkrig.jdisasm.io.charstream.StringCharStream;
 import de.unkrig.jdisasm.io.charstream.UnexpectedCharacterException;
 

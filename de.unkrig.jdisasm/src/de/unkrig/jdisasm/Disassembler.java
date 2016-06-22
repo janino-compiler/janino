@@ -58,8 +58,6 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-import de.unkrig.commons.nullanalysis.NotNullByDefault;
-import de.unkrig.commons.nullanalysis.Nullable;
 import de.unkrig.jdisasm.ClassFile.Annotation;
 import de.unkrig.jdisasm.ClassFile.AnnotationDefaultAttribute;
 import de.unkrig.jdisasm.ClassFile.Attribute;
@@ -101,6 +99,8 @@ import de.unkrig.jdisasm.SignatureParser.MethodTypeSignature;
 import de.unkrig.jdisasm.SignatureParser.SignatureException;
 import de.unkrig.jdisasm.SignatureParser.ThrowsSignature;
 import de.unkrig.jdisasm.SignatureParser.TypeSignature;
+import de.unkrig.jdisasm.commons.nullanalysis.NotNullByDefault;
+import de.unkrig.jdisasm.commons.nullanalysis.Nullable;
 
 /**
  * A Java bytecode disassembler, comparable to JAVAP, which is part of ORACLE's JDK.

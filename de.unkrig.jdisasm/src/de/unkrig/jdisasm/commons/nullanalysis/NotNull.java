@@ -2,7 +2,7 @@
 /*
  * JDISASM - A Java[TM] class file disassembler
  *
- * Copyright (c) 2015, Arno Unkrig
+ * Copyright (c) 2016, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,11 +24,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Custom {@link java.net.URLStreamHandler}s.
- */
-@NotNullByDefault
-package de.unkrig.jdisasm.protocol.zip;
+package de.unkrig.jdisasm.commons.nullanalysis;
 
-import de.unkrig.jdisasm.commons.nullanalysis.NotNullByDefault;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
+/** Designates that a field, return value, argument, or variable is guaranteed to be non-null. */
+@Target({
+    ElementType.FIELD,
+    ElementType.METHOD,
+    ElementType.PARAMETER,
+    ElementType.LOCAL_VARIABLE
+}) @Documented @Retention(RetentionPolicy.CLASS) public
+@interface NotNull {}

@@ -36,7 +36,7 @@ import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import de.unkrig.commons.nullanalysis.Nullable;
+import de.unkrig.jdisasm.commons.nullanalysis.Nullable;
 
 /**
  * A {@link URLStreamHandler} for the protocol "{@code zip}".
