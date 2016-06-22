@@ -152,16 +152,49 @@ class Parser {
      */
     public CompilationUnit
     parseCompilationUnit() throws CompileException, IOException {
+
         CompilationUnit compilationUnit = new CompilationUnit(this.location().getFileName());
 
+        String    docComment = this.scanner.doc();
+        Modifiers modifiers  = this.parseModifiers();
+
         if (this.peek("package")) {
+            if (modifiers.flags != 0) {
+                this.warning("package.modifiers", "No modifiers allowed on package declarations", this.location());
+            }
+
+            // Ignore doc comment and annotations.
+
             compilationUnit.setPackageDeclaration(this.parsePackageDeclaration());
+
+            docComment = this.scanner.doc();
+            modifiers  = this.parseModifiers();
         }
 
         while (this.peek("import")) {
+            if (modifiers.flags != 0) {
+                this.warning("import.modifiers", "No modifiers allowed on import declarations", this.location());
+            }
+            if (modifiers.annotations.length > 0) {
+                this.warning("import.annotations", "No annotations allowed on import declarations", this.location());
+            }
+            if (docComment != null) {
+                this.warning("import.doc_comment", "Doc comment on import declaration", this.location());
+            }
             compilationUnit.addImportDeclaration(this.parseImportDeclaration());
+
+            docComment = this.scanner.doc();
+            modifiers  = this.parseModifiers();
         }
 
+        if (this.peekEof()) return compilationUnit;
+
+        // Parse the first package-member type declaration.
+        compilationUnit.addPackageMemberTypeDeclaration(
+            this.parsePackageMemberTypeDeclarationRest(docComment, modifiers)
+        );
+
+        // Parse the second, third, ... package-member type declaration.
         while (!this.peekEof()) {
             if (this.peekRead(";")) continue;
 
@@ -252,18 +285,28 @@ class Parser {
 
     /**
      * <pre>
-     *   PackageMemberTypeDeclaration :=
-     *             ModifiersOpt 'class' ClassDeclarationRest |
-     *             ModifiersOpt 'interface' InterfaceDeclarationRest
+     *   PackageMemberTypeDeclaration := ModifiersOpt PackageMemberTypeDeclarationRest
      * </pre>
      */
     public PackageMemberTypeDeclaration
     parsePackageMemberTypeDeclaration() throws CompileException, IOException {
-        String optionalDocComment = this.scanner.doc();
 
-        Modifiers modifiers = this.parseModifiers();
+        return this.parsePackageMemberTypeDeclarationRest(this.scanner.doc(), this.parseModifiers());
+    }
+
+    /**
+     * <pre>
+     *   PackageMemberTypeDeclarationRest :=
+     *             'class' ClassDeclarationRest |
+     *             'interface' InterfaceDeclarationRest
+     * </pre>
+     */
+    private PackageMemberTypeDeclaration
+    parsePackageMemberTypeDeclarationRest(String optionalDocComment, Modifiers modifiers)
+    throws CompileException, IOException {
 
         switch (this.read(new String[] { "class", "interface" })) {
+
         case 0:
             if (optionalDocComment == null) this.warning("CDCM", "Class doc comment missing", this.location());
             return (PackageMemberClassDeclaration) this.parseClassDeclarationRest(
@@ -271,6 +314,7 @@ class Parser {
                 modifiers,                               // modifiers
                 ClassDeclarationContext.COMPILATION_UNIT // context
             );
+
         case 1:
             if (optionalDocComment == null) this.warning("IDCM", "Interface doc comment missing", this.location());
             return (PackageMemberInterfaceDeclaration) this.parseInterfaceDeclarationRest(
@@ -278,6 +322,7 @@ class Parser {
                 modifiers,                                   // modifiers
                 InterfaceDeclarationContext.COMPILATION_UNIT // context
             );
+
         default:
             throw new IllegalStateException();
         }
@@ -3170,7 +3215,7 @@ class Parser {
      * a {@link WarningHandler} that was installed through
      * {@link #setWarningHandler(WarningHandler)}.
      * <p>
-     * The <code>handle</code> argument qulifies the warning and is typically used by
+     * The <code>handle</code> argument qualifies the warning and is typically used by
      * the {@link WarningHandler} to suppress individual warnings.
      *
      * @throws CompileException The optionally installed {@link WarningHandler} decided to throw a {@link
