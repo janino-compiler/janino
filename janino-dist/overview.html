@@ -1,9 +1,38 @@
 <body>
-  <p>
-    <i>Janino</i>, an embedded compiler for the Java<sup>TM</sup>
-    programming language.
-  </p>
-  <p>
-    For download, documentation and contact see <a href="http://janino.codehaus.org">http://janino.net</a>.
-  </p>
+  <i>Janino</i>, an embedded compiler for the Java<sup>TM</sup> programming language.
+
+  <h1>Architectural Overview</h1>
+
+  <h2>(Fictitious) utmost simplified version of {@link org.codehaus.janino.Compiler}</h2>
+
+  <pre><font size="-2">
+              +-----------------+                                          +-----------------+
+              | .java files     |\                                         | .class files    |\
+              | on command line +-+                                        | in dest dir     +-+
+              | and sourcepath    |                                        |                   |
+              +-------------------+                                        +-------------------+
+                       |                                                            ^
+                   parsed by                                                        |
+                   o.c.j.Parser                                                     |
+                      into                                                     written to
+                       |                                                            |
+                       v                                                            |
+      +-------------------------------------+                         +----------------------------+
+      | Java.CompilationUnit                |                         | o.c.j.util.ClassFile       |
+      +-------------------------------------+                         +----------------------------+
+      | Java.PackageMemberTypeDeclaration[] |                         | ClassFile.AttributeInfo[]  |
+      |  Java.Annotation[]                  |                         | ClassFile.FieldInfo[]      |
+      |  Java.TypeParameter[]               |                         |  ClassFile.AttributeInfo[] |
+      |  Java.FieldDeclaration[]            |                         | ClassFile.MethodInfo[]     |
+      |   Java.Annotation[]                 |      compiled by        |  ClassFile.AttributeInfo[] |
+      |  Java.MemberTypeDeclaration[]       |-- o.c.j.UnitCompiler -->|                            |
+      |   ...                               |        into             |                            |
+      |  Java.ConstructorDeclarator[]       |                         |                            |
+      |   ...                               |                         |                            |
+      |  Java.MethodDeclarator[]            |                         |                            |
+      |   Java.Annotation[]                 |                         |                            |
+      |   Java.TypeParameter[]              |                         |                            |
+      |   Java.BlockStatements[]            |                         |                            |
+      +-------------------------------------+                         +----------------------------+
+  </font></pre>
 </body>
