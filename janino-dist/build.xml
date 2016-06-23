@@ -119,22 +119,6 @@
 		/>
 
 		<!-- Build 'build/commons-compiler-jdk.jar'. -->
-		<delete dir="build/bin-de.unkrig.commons.nullanalysis"/>
-		<mkdir dir="build/bin-de.unkrig.commons.nullanalysis"/>
-		<eclipse.convertPath resourcepath="/de.unkrig.commons.nullanalysis" property="de.unkrig.commons.nullanalysis" />
-		<javac
-			fork="yes"
-			source="1.6"
-			target="1.6"
-			srcdir="${de.unkrig.commons.nullanalysis}/src"
-			destdir="build/bin-de.unkrig.commons.nullanalysis"
-			debug="true"
-			debuglevel="lines,vars,source"
-			includeantruntime="false"
-		>
-			<compilerarg value="-Xlint:none"/>
-			<compilerarg value="-Xlint:deprecation"/>
-		</javac>
 		<delete dir="build/bin-commons-compiler-jdk"/>
 		<mkdir dir="build/bin-commons-compiler-jdk"/>
 		<javac
@@ -143,7 +127,7 @@
 			target="1.6"
 			srcdir="../commons-compiler-jdk/src"
 			destdir="build/bin-commons-compiler-jdk"
-			classpath="build/bin-commons-compiler:build/bin-de.unkrig.commons.nullanalysis"
+			classpath="build/bin-commons-compiler"
 			debug="true"
 			debuglevel="lines,vars,source"
 			includeantruntime="false"
@@ -169,7 +153,6 @@
 				<attribute name="Require-Bundle"         value="org.codehaus.janino.commons-compiler"/>
 			</manifest>
 			<fileset dir="build/bin-commons-compiler-jdk"/>
-			<fileset dir="build/bin-de.unkrig.commons.nullanalysis"/>
 		</jar>
 		<signjar
 			keystore="dummy-keystore"
@@ -223,7 +206,7 @@
 			doctitle="Janino ${version}"
 			windowtitle="Janino ${version}"
 			overview="overview.html"
-			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src;${de.unkrig.commons.nullanalysis}/src"
+			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src"
 			classpath="${ant.jar}"
 			destdir="mirror/javadoc"
 			packagenames="${javadoc-packages}"
@@ -441,12 +424,10 @@
 			<copy srcpath="../janino-tests"           desturl="${d1}"/>
 		</de.unkrig.subclipse.svn>
 		<property name="d2" value="https://svn.code.sf.net/p/loggifier/code/tags/${tag}"/>
-		<eclipse.convertPath resourcepath="/de.unkrig.commons.nullanalysis"     property="de.unkrig.commons.nullanalysis"     />
 		<eclipse.convertPath resourcepath="/de.unkrig.checkstyle-configuration" property="de.unkrig.checkstyle-configuration" />
 		<de.unkrig.subclipse.svn>
 			<mkdir                                                url="${d2}"/>
 			<copy srcpath="${de.unkrig.checkstyle-configuration}" desturl="${d2}"/>
-			<copy srcpath="${de.unkrig.commons.nullanalysis}"     desturl="${d2}"/>
 		</de.unkrig.subclipse.svn>
 
 		<echo message="*** The next step is to officially release the new version on" />
