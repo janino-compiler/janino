@@ -26,12 +26,19 @@
 		uri=""
 	/>
 
-	<target name="build" description="Creates and populates a directory './mirror' for later upload to the web site.">
+	<target
+		name="build" description="Creates and populates a directory './mirror' for later upload to the web site."
+		depends="clean, build.jars, build.mirror, build.javadoc"
+	>
+		<echo message="*** The next step is to execute target 'publish', which uploads the artifacts to the JANINO web site." />
+	</target>
 
-		<fail unless="eclipse.running" message="Please run this ANT build configuration with 'Runtime JRE: Run in the same JRE as the workspace." />
+	<target name="clean">
+		<delete dir="build" />
+		<delete dir="mirror" />
+	</target>
 
-		<delete dir="mirror"/>
-		<mkdir dir="mirror/download"/>
+	<target name="build.jars" description="Creates 'build/(*.jar|*-src.zip)'">
 
 		<!-- Build 'build/commons-compiler.jar'. -->
 		<delete dir="build/bin-commons-compiler"/>
@@ -172,6 +179,11 @@
 		<zip destfile="build/commons-compiler-jdk-src.zip" filesonly="true">
 			<zipfileset dir="../commons-compiler-jdk/src"/>
 		</zip>
+	</target>
+
+	<target name="build.mirror" description="Creates 'mirror/(download/*|samples/*.java|*.*">
+
+		<mkdir dir="mirror/download"/>
 
 		<!-- Build 'mirror/download/janino-VERSION.zip' file. -->
 		<zip destfile="mirror/download/janino-${version}.zip" filesonly="true">
@@ -197,6 +209,19 @@
 			</filterchain>
 		</copy>
 
+		<!-- Copy auxiliary files to 'mirror/'. -->
+		<copy todir="mirror">
+			<fileset file="favicon.ico"/>
+			<fileset file="new_bsd_license.txt"/>
+			<fileset file="changelog.html"/>
+			<fileset file="README.txt"/>
+			<fileset dir="../janino/src/org/codehaus/janino" includes="samples/*.java"/>
+			<fileset dir="../commons-compiler/src/org/codehaus/commons/compiler" includes="samples/*.java"/>
+		</copy>
+	</target>
+
+	<target name="build.javadoc" description="Creates 'mirror/javadoc/**'">
+
 		<!-- Build 'mirror/javadoc/'. -->
 		<delete dir="mirror/javadoc"/>
 		<mkdir dir="mirror/javadoc"/>
@@ -214,18 +239,6 @@
 			<link offline="true" href="${javadoc-jdk-href}" packagelistloc="${javadoc-jdk-packagelistloc}"/>
 			<link offline="true" href="${javadoc-ant-href}" packagelistloc="${javadoc-ant-packagelistloc}"/>
 		</javadoc>
-
-		<!-- Copy auxiliary files to 'mirror/'. -->
-		<copy todir="mirror">
-			<fileset file="favicon.ico"/>
-			<fileset file="new_bsd_license.txt"/>
-			<fileset file="changelog.html"/>
-			<fileset file="README.txt"/>
-			<fileset dir="../janino/src/org/codehaus/janino" includes="samples/*.java"/>
-			<fileset dir="../commons-compiler/src/org/codehaus/commons/compiler" includes="samples/*.java"/>
-		</copy>
-
-		<echo message="*** The next step is to execute target 'publish', which uploads the artefacts to the JANINO web site." />
 	</target>
 
 	<target name="publish" description="Uploads './mirror' to 'unkrig.de/janino'">
@@ -395,16 +408,13 @@
 		<echo message="*** content, then hit 'Close' and afterwards 'Release'." />
 	</target>
 
-	<target name="tag" description="Tags all projects as 'janino_${version}'">
-
-		<fail unless="eclipse.running" message="Please run this ANT build configuration with 'Runtime JRE: Run in the same JRE as the workspace." />
+	<target name="tag" depends="assert.eclipse.running" description="Tags all projects as 'janino_${version}'">
 
 		<!-- Compose the tag name from the feature name and the version. -->
 
 		<property name="tag" value="janino_${version}"/>
 		<echo message="Tagging relevant projects as '${tag}'..."/>
 
-		<fail unless="eclipse.running" message="Please select the ECLIPSE external tool configuration option 'Run in the same JRE as the workspace'."/>
 		<condition property="de.unkrig.subclipse.svn.exists"><typefound name="de.unkrig.subclipse.svn"/></condition>
 		<fail unless="de.unkrig.subclipse.svn.exists" message="Please install the 'de.unkrig.subclipse' feature from 'http://subclipse.unkrig.de/update'."/>
 
@@ -430,8 +440,13 @@
 			<copy srcpath="${de.unkrig.checkstyle-configuration}" desturl="${d2}"/>
 		</de.unkrig.subclipse.svn>
 
-		<echo message="*** The next step is to officially release the new version on" />
-		<echo message="***    https://jira.codehaus.org/plugins/servlet/project-config/JANINO/versions" />
-		<echo message="*** Execute target 'stage' to stage the release on codehaus's NEXUS." />
+		<echo message="*** The next step is to deploy the release version to Maven staging repository." />
+		<echo message="*** Therefore, execute the 'stage' ANT target." />
+	</target>
+
+	<target name="assert.eclipse.running">
+		<fail unless="eclipse.running">
+			Please run this ANT build configuration with with the ECLIPSE option "Runtime JRE: Run in the same JRE as the workspace".
+		</fail>
 	</target>
 </project>
