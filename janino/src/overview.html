@@ -1,0 +1,275 @@
+<body>
+  <i>Janino</i>, an embedded compiler for the Java<sup>TM</sup> programming language.
+
+  <hr>
+
+  <h1>Architectural Overview</h1>
+
+  <p>
+    JANINO is a non-trivial piece of software, so I'll depict its data model in several steps in order to explain
+    the various aspects.
+  </p>
+
+  <h2>(Fictitious) utmost simplified version of {@link org.codehaus.janino.Compiler org.codehaus.janino.Compiler}</h2>
+
+  <p>
+    This compiler reads .java files, compiles them, and creates .class files.
+  </p>
+
+  <pre><font size="-2">
+              +-----------------+                                          +-----------------+
+              |                 |\                                         |                 |\
+              |   .java files   +-+                                        |   .class files  +-+
+              |  on command line  |                                        |   in dest dir     |
+              |                   |                                        |                   |
+              +-------------------+                                        +-------------------+
+                       |                                                            ^
+                   parsed by                                                        |
+                  o.c.j.Parser                                                      |
+                     into                                                      written to
+                       |                                                            |
+                       v                                                            |
+      +-------------------------------------+                         +----------------------------+
+      | Java.CompilationUnit                |                         | o.c.j.util.ClassFile       |
+      +-------------------------------------+                         +----------------------------+
+      | Java.PackageMemberTypeDeclaration[] |                         | ClassFile.AttributeInfo[]  |
+      |  Java.Annotation[]                  |                         | ClassFile.FieldInfo[]      |
+      |  Java.TypeParameter[]               |                         |  ClassFile.AttributeInfo[] |
+      |  Java.FieldDeclaration[]            |                         | ClassFile.MethodInfo[]     |
+      |   Java.Annotation[]                 |      compiled by        |  ClassFile.AttributeInfo[] |
+      |  Java.MemberTypeDeclaration[]       |-- o.c.j.UnitCompiler -->|                            |
+      |   ...                               |        into             |                            |
+      |  Java.ConstructorDeclarator[]       |                         |                            |
+      |   ...                               |                         |                            |
+      |  Java.MethodDeclarator[]            |                         |                            |
+      |   Java.Annotation[]                 |                         |                            |
+      |   Java.TypeParameter[]              |                         |                            |
+      |   Java.BlockStatements[]            |                         |                            |
+      +-------------------------------------+                         +----------------------------+
+  </font></pre>
+
+  <p>
+    As you know, a ".java" source file can contain <em>multiple</em> type declarations (exactly one of which must be
+    PUBLIC), so that's why the <a href="https://docs.oracle.com/javase/specs/jls/se8/html/index.html">Java Language
+    Specification</a> (JLS) calls a ".java" file a "compilation unit".
+  </p>
+  <p>
+    The {@link org.codehaus.janino.Parser org.codehaus.janino.Parser} (abbreviated as "{@code o.c.j.Parser}" in the
+    figure above) parses the compilation unit, understands the Java grammar, and creates a tree of objects <em>that
+    exactly reflects the contents of the compilation unit</em> (except some irrelevant aspects like
+    (non-JAVADOC) comments and the ordering of access flags). The classes names of the objects of the syntax tree are
+    all "{@code org.codehaus.janino.Java.*}".
+  </p>
+  <p>
+    Like the {@link org.codehaus.janino.Java.CompilationUnit} structure is a one-to-one representation of the parsed
+    compilation unit, the {@link org.codehaus.janino.util.ClassFile org.codehaus.janino.util.ClassFile.MethodInfo}
+    structure on the bottom right of the figure is a one-to-one representation of a class file. (If you're not familiar
+    with the Java class file format, read <a href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html">the
+    respective section in the "Java Virtual Machine Specification"</a>.)
+  </p>
+  <p>
+    The {@link org.codehaus.janino.UnitCompiler}'s job is to translate the compilation unit into class files. For
+    example, a {@link org.codehaus.janino.Java.MethodDeclarator} is transformed into a {@link
+    org.codehaus.janino.util.ClassFile.MethodInfo}, the {@link org.codehaus.janino.Java.BlockStatement}s of the method
+    declarator into a {@link org.codehaus.janino.util.ClassFile.CodeAttribute} of the {@code
+    org.codehaus.janino.util.ClassFile.MethodInfo} object, and so forth.
+  </p>
+  <p>
+    After processing all input files this way, we have a set of class files that are ready to be loaded into a JVM.
+  </p>
+  <p>
+    Job done? No. This compiler would be very limited, for two reasons:
+  </p>
+  <ol>
+    <li>
+      It cannot "see" classes outside the compilation unit (not even {@link java.lang.Object java.lang.Object} and
+      {@link java.lang.String java.lang.String}). Not good.
+    </li>
+    <li>
+      Java allows references between classes, and even <em>circular</em> ones! Because our compiler "compiles classes
+      one after another", such references are not possible.
+    </li>
+  </ol>
+  <p>
+    Effectively, this compiler is not of much use. It could only compile fields and methods that use <em>primitive</em>
+    types ({@code boolean}, {@code int}, ...). So we must do better!
+  </p>
+
+  <h2>Enhanced compiler version that uses "resolved classes"</h2>
+
+  <p>
+    First we address the problem of arbitrary references within one compilation unit. The trick is, while compiling one
+    type declaration, to look at the other type declarations in the same compilation unit (whether they are already
+    compiled or not).
+    But because the "other" type declaration is not yet compiled, its superclass name, implemented interfaces names,
+    fields types, method return types, method parameter types asf. are not yet "resolved". E.g. for
+  <p>
+  <pre>
+    package my.package;
+
+    import com.acme.Person;
+
+    class Class1 {
+        public void
+        myMethod(String s, Person p, Car c) {
+            // ...
+        }
+    }
+
+    class Car { ... }
+  </pre>
+  <p>
+    , the type names "{@code String}", "{@code Person}" and "{@code Car}" have not yet been resolved into "{@code
+    java.lang.String}", "{@code com.acme.Person}" and "{@code my.package.Car}".
+  </p>
+  <p>
+    Therefore, a <em>third</em> representation of a class/interface must be introduced, which (for JANINO) is the
+    {@link org.codehaus.janino.IClass} hierarchy:
+  </p>
+  <pre><font size="-2">
+       +-----------------+                              +-----------------+
+       |                 |\                             |                 |\
+       |   .java files   +-+                            |   .class files  +-+
+       |  on command line  |                            |   in dest dir     |
+       |                   |                            |                   |
+       +-------------------+                            +-------------------+
+                 |                                               ^
+             parsed by                                           |
+            o.c.j.Parser                                         |
+               into                                         written to
+                 |                                               |
+                 v                                               |
+      +----------------------+                         +----------------------+
+      |                      |      compiled by        |                      |
+      | Java.CompilationUnit |-- o.c.j.UnitCompiler -->| o.c.j.util.ClassFile |
+      |                      |         into   |        |                      |
+      +----------------------+                |        +----------------------+
+                                            uses
+                                              |
+                                              v
+                               +----------------------------+
+                               | o.c.j.IClass               |
+                               +----------------------------+
+                               | IAnnotation[]              |
+                               | IField[]                   |
+                               |  ...                       |
+                               | IConstructor[]             |
+                               |  ...                       |
+                               | IMethod[]                  |
+                               |  IAnnotation[]             |
+                               |  IClass returnType         |
+                               |  IClass[] parameterTypes   |
+                               |  IClass[] thrownExceptions |
+                               |  ...                       |
+                               | ...                        |
+                               +----------------------------+
+  </font></pre>
+  <p>
+    An {@code IClass} represents the "outside" of a usable class or interface, which JANINO needs when that class or
+    interface is "used".
+  </p>
+  <p>
+    Now where do we get the {@code IClass}es from? A complete implementation requires three different sources:
+  </p>
+  <pre><font size="-2">
+       +-----------------+      +-----------------+            +-----------------+      +-----------------+
+       |                 |\     |                 |\           |                 |\     |                 |\
+       |   .java files   +-+    |   .java files   +-+          |   .class files  +-+    |   .class files  +-+
+       |  on command line  |    |   on sourcepath   |          |   in dest dir     |    |   on classpath    |
+       |                   |    |                   |          |                   |    |                   |
+       +-------------------+    +-------------------+          +-------------------+    +-------------------+
+                 |                              ^                        ^                        |
+             parsed by                          |                        |                        |
+            o.c.j.Parser <----------------------|                        |                   parsed into
+               into                             |                    written to                   |
+                 |                            finds                      |                        |
+                 v                              |                        |                        v
+      +----------------------+                  |            +----------------------+   +----------------------+
+      |                      |      compiled by |            |                      |   |                      |
+      | Java.CompilationUnit |-- o.c.j.UnitCompiler -------->| o.c.j.util.ClassFile |   | o.c.j.util.ClassFile |
+      |                      |         into   |              |                      |   |                      |
+      +----------------------+                |              +----------------------+   +----------------------+
+                 |                          uses                                                    |
+             wrapped by                       |                                                 wrapped by
+    o.c.j.UnitCompiler.resolve()              v                                      o.c.j.ResourceFinderIClassLoader
+               as a                  +----------------+             +-----------------------+     as a
+                 |                   |                |             |                       |       |
+                 +------------------>|  o.c.j.IClass  |<-implements-| o.c.j.ClassFileIClass |<------+
+                                     |                |             |                       |
+                                     +----------------+             +-----------------------+
+  </font></pre>
+  <ol>
+    <li>
+      To resove "{@code Car}" (declared in the same compilation unit), the {@code UnitCompiler} uses its "{@link
+      org.codehaus.janino.UnitCompiler#resolve}" method (bottom left), which wraps a parsed type declaration as an
+      {@link org.codehaus.janino.IClass}.
+    </li>
+    <li>
+      To resolve "{@code java.lang.String}" (found on the compilation classpath), the {@code UnitCompiler} uses an
+      animal called the "{@link org.codehaus.janino.ResourceFinderIClassLoader
+      org.codehaus.janino.ResourceFinderIClassLoader}", which searches the classpath for a resource named "{@code
+      java/lang/String.class}", loads it via "{@link org.codehaus.janino.util.ClassFile#ClassFile(java.io.InputStream)}"
+      and wraps it as an {@link org.codehaus.janino.IClass} (bottom right).
+    </li>
+    <li>
+      To resolve "{@code com.acme.Person}" (declared in a <em>different</em> compilation unit), the {@code
+      UnitCompiler} searches and finds a resource "{@code com/acme/Person.java}" on the sourcepath, parses it (center)
+      and uses "{@link org.codehaus.janino.UnitCompiler#resolve}" to wrap the type declaration "{@code Person}" as an
+      {@link org.codehaus.janino.IClass}.
+    </li>
+  </ol>
+  <p>
+    And Bob's your uncle! That is everything that {@link org.codehaus.janino.Compiler org.codehaus.janino.Compiler}
+    does.
+  </p>
+
+  <h2>Using <em>loaded</em> classes instead of parsing class files</h2>
+
+  <p>
+    Typically, to compile a small set of compilation units, <em>many</em> other required classes have to be loaded and
+    parsed via the compilation classpath. This costs a considerable amount of time and memory.
+  </p>
+  <p>
+    For "embedded" applications, i.e. when you want to compile and load classes <em>in the same running JVM</em>, it
+    is much more efficient to use the <em>loaded</em> required classes, instead of parsing class files. Basically that
+    is what the {@link org.codehaus.janino.SimpleCompiler org.codehaus.janino.SimpleCompiler} does:
+  </p>
+  <pre><font size="-2">
+       +-----------------+                                   +-------------------------------------+
+       |                 |\                                  |                                     |
+       |   .java file    +-+                                 |          The running JVM's          |
+       |  or code snippet  |                                 |        java.lang.ClassLoader        |
+       |                   |                                 |                                     |
+       +-------------------+                                 +-------------------------------------+
+                 |                                               ^                              |
+             parsed by                                           |                          finds via
+            o.c.j.Parser                                    loaded via                 ClassLoader.loadClass()
+               into                               java.lang.ClassLoader.defineClass()          the
+                 |                                             into                             |
+                 v                                               |                              v
+      +----------------------+                         +----------------------+      +----------------------+
+      |                      |      compiled by        |                      |      |                      |
+      | Java.CompilationUnit |-- o.c.j.UnitCompiler -->| o.c.j.util.ClassFile |      |    java.lang.Class   |
+      |                      |         into  |         |                      |      |                      |
+      +----------------------+               |         +----------------------+      +----------------------+
+                 |                         uses                                                  |
+             wrapped by                      |                                               wrapped by
+    o.c.j.UnitCompiler.resolve()             v                                    o.c.j.ResourceFinderIClassLoader
+               as a              +----------------+             +------------------------+     as a
+                 |               |                |             |                        |       |
+                 +-------------->|  o.c.j.IClass  |<-implements-| o.c.j.ReflectionIClass |<------+
+                                 |                |             |                        |
+                                 +----------------+             +------------------------+
+  </font></pre>
+  <p>
+    The
+    {@link org.codehaus.janino.ClassBodyEvaluator org.codehaus.janino.ClassBodyEvaluator},
+    {@link org.codehaus.janino.ScriptEvaluator org.codehaus.janino.ScriptEvaluator} and the
+    {@link org.codehaus.janino.ExpressionEvaluator org.codehaus.janino.ExpressionEvaluator}
+    are merely variants of the {@code SimpleCompiler} that call, instead of
+    {@link org.codehaus.janino.Parser#parseCompilationUnit()}, the
+    {@link org.codehaus.janino.Parser#parseClassBody(ClassDeclaration)} method, resp.
+    {@link org.codehaus.janino.Parser#parseMethodBody()}, resp.
+    {@link org.codehaus.janino.Parser#parseExpression()}.
+  </p>
+</body>
