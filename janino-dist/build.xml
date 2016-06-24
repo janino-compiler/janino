@@ -230,7 +230,7 @@
 			splitindex="true"
 			doctitle="Janino ${version}"
 			windowtitle="Janino ${version}"
-			overview="overview.html"
+			overview="../janino/src/overview.html"
 			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src"
 			classpath="${ant.jar}"
 			destdir="mirror/javadoc"
