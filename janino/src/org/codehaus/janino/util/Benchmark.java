@@ -141,13 +141,10 @@ class Benchmark {
     }
 
     /**
-     * Report the <code>title</code>, a colon, a space, and the pretty-printed
-     * {@link Object}.
-     * @param optionalTitle
-     * @param o
+     * Report the <code>title</code>, a colon, a space, and the pretty-printed {@link Object}.
      */
     public void
-    report(@Nullable String optionalTitle, Object o) {
+    report(@Nullable String optionalTitle, @Nullable Object o) {
         if (!this.reportingEnabled) return;
 
         String prefix = optionalTitle == null ? "" : (

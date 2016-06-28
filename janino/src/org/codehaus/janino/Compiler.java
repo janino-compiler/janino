@@ -220,15 +220,15 @@ class Compiler {
     /** Special value for "classFileResourceCreator". */
     @Nullable public static final ResourceCreator CREATE_NEXT_TO_SOURCE_FILE = null;
 
-    private final ResourceCreator    classFileCreator;
-    private final ResourceFinder     classFileFinder;
-    @Nullable private final String   optionalCharacterEncoding;
-    private final Benchmark          benchmark;
-    private final boolean            debugSource;
-    private final boolean            debugLines;
-    private final boolean            debugVars;
-    @Nullable private WarningHandler optionalWarningHandler;
-    @Nullable private ErrorHandler   optionalCompileErrorHandler;
+    @Nullable private final ResourceCreator classFileCreator;
+    @Nullable private final ResourceFinder  classFileFinder;
+    @Nullable private final String          optionalCharacterEncoding;
+    private final Benchmark                 benchmark;
+    private final boolean                   debugSource;
+    private final boolean                   debugLines;
+    private final boolean                   debugVars;
+    @Nullable private WarningHandler        optionalWarningHandler;
+    @Nullable private ErrorHandler          optionalCompileErrorHandler;
 
     private final IClassLoader       iClassLoader;
     private final List<UnitCompiler> parsedCompilationUnits = new ArrayList();
@@ -391,16 +391,16 @@ class Compiler {
      */
     public
     Compiler(
-        ResourceFinder           sourceFinder,
-        IClassLoader             iClassLoader,
-        ResourceFinder           classFileFinder,
-        ResourceCreator          classFileCreator,
-        @Nullable final String   optionalCharacterEncoding,
-        boolean                  verbose,
-        boolean                  debugSource,
-        boolean                  debugLines,
-        boolean                  debugVars,
-        @Nullable WarningHandler optionalWarningHandler
+        ResourceFinder            sourceFinder,
+        IClassLoader              iClassLoader,
+        @Nullable ResourceFinder  classFileFinder,
+        @Nullable ResourceCreator classFileCreator,
+        @Nullable final String    optionalCharacterEncoding,
+        boolean                   verbose,
+        boolean                   debugSource,
+        boolean                   debugLines,
+        boolean                   debugVars,
+        @Nullable WarningHandler  optionalWarningHandler
     ) {
         this.classFileFinder           = classFileFinder;
         this.classFileCreator          = classFileCreator;
@@ -642,6 +642,7 @@ class Compiler {
         ResourceCreator rc;
         if (this.classFileCreator != Compiler.CREATE_NEXT_TO_SOURCE_FILE) {
             rc = this.classFileCreator;
+            assert rc != null;
         } else {
 
             // If the JAVAC option "-d" is given, place the class file next
@@ -709,7 +710,7 @@ class Compiler {
          * @return {@code null} if a the type could not be found
          * @throws ClassNotFoundException if an exception was raised while loading the {@link IClass}
          */
-        @Override protected @Nullable IClass
+        @Override @Nullable protected IClass
         findIClass(final String type) throws ClassNotFoundException {
             Compiler.LOGGER.entering(null, "findIClass", type);
 
@@ -746,9 +747,12 @@ class Compiler {
             if (sourceResource == null) return null;
 
             // Find an existing class file.
+            ResourceFinder cff = Compiler.this.classFileFinder;
+
             Resource classFileResource;
-            if (Compiler.this.classFileFinder != Compiler.FIND_NEXT_TO_SOURCE_FILE) {
-                classFileResource = Compiler.this.classFileFinder.findResource(
+            if (cff != Compiler.FIND_NEXT_TO_SOURCE_FILE) {
+                assert cff != null;
+                classFileResource = cff.findResource(
                     ClassFile.getClassFileResourceName(className)
                 );
             } else {
@@ -810,7 +814,7 @@ class Compiler {
                 // for, but doesn't. This is possible if the underlying file system has
                 // case-insensitive file names and/or file names that are limited in length
                 // (e.g. DOS 8.3).
-                return null;
+                throw new ClassNotFoundException("\"" + sourceResource + "\" does not declare \"" + className + "\"");
             }
             this.defineIClass(res);
             return res;

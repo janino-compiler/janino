@@ -29,6 +29,7 @@ package org.codehaus.janino.util.iterator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.Producer;
 
 /**
@@ -42,9 +43,10 @@ class ProducerIterator<T> implements Iterator<T> {
 
     private final Producer<T> producer;
 
-    private static final Object UNKNOWN     = new Object();
-    private static final Object AT_END      = null;
-    private Object              nextElement = ProducerIterator.UNKNOWN;
+    private static final Object           UNKNOWN     = new Object();
+    @Nullable private static final Object AT_END      = null;
+
+    @Nullable private Object nextElement = ProducerIterator.UNKNOWN;
 
     public
     ProducerIterator(Producer<T> producer) { this.producer = producer; }

@@ -48,6 +48,6 @@ class FileResourceFinder extends ResourceFinder {
     }
 
     /** Converts a given resource resource name into a {@link File}. */
-    protected abstract @Nullable File
+    @Nullable protected abstract File
     findResourceAsFile(String resourceName);
 }

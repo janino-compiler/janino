@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * A {@link java.util.Collection} that lazily reads its elements from an
  * {@link java.util.Iterator}.
@@ -56,12 +58,13 @@ class IteratorCollection<T> extends AbstractCollection<T> {
     iterator() {
         return new Iterator/*<T>*/() {
 
-            private Iterator/*<T>*/ elementsIterator = IteratorCollection.this.elements.iterator();
+            @Nullable private Iterator/*<T>*/ elementsIterator = IteratorCollection.this.elements.iterator();
 
             @Override public Object
             next() {
-                if (this.elementsIterator != null) {
-                    if (this.elementsIterator.hasNext()) return this.elementsIterator.next();
+                Iterator ei = this.elementsIterator;
+                if (ei != null) {
+                    if (ei.hasNext()) return ei.next();
                     this.elementsIterator = null;
                 }
                 Object o = IteratorCollection.this.iterator.next();

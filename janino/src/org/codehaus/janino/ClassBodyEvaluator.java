@@ -59,7 +59,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     private String             className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
     @Nullable private Class    optionalExtendedType;
     private Class[]            implementedTypes = ClassBodyEvaluator.ZERO_CLASSES;
-    private Class              result; // null=uncooked
+    @Nullable private Class    result; // null=uncooked
 
     /**
      * Equivalent to<pre>
@@ -183,7 +183,6 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     @Override public void
     setClassName(String className) {
-        if (className == null) throw new NullPointerException();
         this.assertNotCooked();
         this.className = className;
     }
@@ -202,11 +201,6 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     @Override public void
     setImplementedInterfaces(Class[] implementedTypes) {
-        if (implementedTypes == null) {
-            throw new NullPointerException(
-                "Zero implemented types must be specified as 'new Class[0]', not 'null'"
-            );
-        }
         this.assertNotCooked();
         this.implementedTypes = implementedTypes;
     }
@@ -292,13 +286,13 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
             cn = cn.substring(idx + 1);
         }
         Java.PackageMemberClassDeclaration tlcd = new Java.PackageMemberClassDeclaration(
-            location,                                              // location
-            null,                                                  // optionalDocComment
-            new Java.Modifiers(Mod.PUBLIC),                        // modifiers
-            cn,                                                    // name
-            null,                                                  // optionalTypeParameters
-            this.classToType(location, this.optionalExtendedType), // optionalExtendedType
-            this.classesToTypes(location, this.implementedTypes)   // implementedTypes
+            location,                                                      // location
+            null,                                                          // optionalDocComment
+            new Java.Modifiers(Mod.PUBLIC),                                // modifiers
+            cn,                                                            // name
+            null,                                                          // optionalTypeParameters
+            this.optionalClassToType(location, this.optionalExtendedType), // optionalExtendedType
+            this.classesToTypes(location, this.implementedTypes)           // implementedTypes
         );
         compilationUnit.addPackageMemberTypeDeclaration(tlcd);
         return tlcd;
@@ -330,11 +324,20 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     @Override public Class
     getClazz() {
+
         if (this.getClass() != ClassBodyEvaluator.class) {
             throw new IllegalStateException("Must not be called on derived instances");
         }
-        if (this.result == null) throw new IllegalStateException("Must only be called after 'cook()'");
-        return this.result;
+
+        return this.assertCooked();
+    }
+
+    private Class
+    assertCooked() {
+
+        if (this.result != null) return this.result;
+
+        throw new IllegalStateException("Must only be called after 'cook()'");
     }
 
     @Override public Object

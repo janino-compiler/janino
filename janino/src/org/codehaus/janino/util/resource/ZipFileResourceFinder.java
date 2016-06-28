@@ -31,6 +31,8 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /** A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds resources in a ZIP file. */
 public
 class ZipFileResourceFinder extends ResourceFinder {
@@ -45,7 +47,7 @@ class ZipFileResourceFinder extends ResourceFinder {
 
     // Implement ResourceFinder.
 
-    @Override public final Resource
+    @Override @Nullable public final Resource
     findResource(final String resourceName) {
         final ZipEntry ze = this.zipFile.getEntry(resourceName);
         if (ze == null) return null;

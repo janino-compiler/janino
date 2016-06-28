@@ -29,6 +29,8 @@ package org.codehaus.janino.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * Implementation of a UNIX shell-like string pattern algorithm.
  * <p>
@@ -44,8 +46,8 @@ class StringPattern {
     /** @see #matches(StringPattern[], String) */
     public static final int EXCLUDE = 1;
 
-    private final int    mode;
-    private final String pattern;
+    private final int              mode;
+    @Nullable private final String pattern;
 
     /** @param mode {@link #INCLUDE} or {@link #EXCLUDE} */
     public
@@ -55,7 +57,7 @@ class StringPattern {
     }
 
     public
-    StringPattern(String pattern) {
+    StringPattern(@Nullable String pattern) {
         this.mode    = StringPattern.INCLUDE;
         this.pattern = pattern;
     }
@@ -139,15 +141,19 @@ class StringPattern {
      * For backwards compatibility, <code>null</code> patterns are treated like
      * {@link #PATTERNS_NONE}.
      */
+    @SuppressWarnings({ "unused", "null" })
     public static boolean
     matches(StringPattern[] patterns, String text) {
-        if (patterns == null) return false; // Backwards compatibility -- previously, "null" was officially documented.
+
+        // Backwards compatibility -- previously, "null" was officially documented.
+        if (patterns == null) return false;
 
         for (int i = patterns.length - 1; i >= 0; --i) {
             if (patterns[i].matches(text)) {
                 return patterns[i].getMode() == StringPattern.INCLUDE;
             }
         }
+
         return false; // No patterns defined or no pattern matches.
     }
 
@@ -166,7 +172,10 @@ class StringPattern {
     }
 
     private static boolean
-    wildmatch(String pattern, String text) {
+    wildmatch(@Nullable String pattern, String text) {
+
+        if (pattern == null) return true;
+
         int i;
         for (i = 0; i < pattern.length(); ++i) {
             char c = pattern.charAt(i);

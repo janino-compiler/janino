@@ -55,10 +55,10 @@ class AutoIndentWriter extends FilterWriter {
     /** Special character that inserts a line break and unindents the following text by one position. */
     public static final char UNINDENT = 0xfffc;
 
-    private final StringBuilder  lineBuffer = new StringBuilder();
-    private int                  indentation;
-    private List<StringBuilder>  tabulatorBuffer;
-    private int                  tabulatorIndentation;
+    private final StringBuilder           lineBuffer = new StringBuilder();
+    private int                           indentation;
+    @Nullable private List<StringBuilder> tabulatorBuffer;
+    private int                           tabulatorIndentation;
 
     public
     AutoIndentWriter(Writer out) { super(out); }
@@ -125,7 +125,9 @@ class AutoIndentWriter extends FilterWriter {
         List<List<StringBuilder>> lineGroups = new ArrayList();
         lineGroups.add(new ArrayList<StringBuilder>());
 
-        for (StringBuilder line : this.tabulatorBuffer) {
+        List<StringBuilder> tb = this.tabulatorBuffer;
+        assert tb != null;
+        for (StringBuilder line : tb) {
 
             int idx = 0;
             if (line.charAt(0) == AutoIndentWriter.INDENT) {
@@ -150,7 +152,7 @@ class AutoIndentWriter extends FilterWriter {
         }
         for (List<StringBuilder> lg : lineGroups) AutoIndentWriter.resolveTabs(lg);
         int ind = this.tabulatorIndentation;
-        for (StringBuilder sb : this.tabulatorBuffer) {
+        for (StringBuilder sb : tb) {
             String line = sb.toString();
             if (line.charAt(0) == AutoIndentWriter.INDENT) {
                 ++ind;

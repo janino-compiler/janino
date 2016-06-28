@@ -38,15 +38,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.JaninoRuntimeException;
-import org.codehaus.janino.Java;
 import org.codehaus.janino.Mod;
+import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.Annotation;
 import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ElementValue;
 
 /**
@@ -129,20 +128,34 @@ class ClassFile implements Annotatable {
 
     /**
      * Find the "InnerClasses" attribute of this class file
+     *
      * @return <code>null</code> if this class has no "InnerClasses" attribute
      */
     @Nullable public InnerClassesAttribute
     getInnerClassesAttribute() {
-        Short ni = (Short) this.constantPoolMap.get(new ConstantUtf8Info("InnerClasses"));
-        if (ni == null) return null;
+        return (InnerClassesAttribute) this.findAttribute(this.attributes, "InnerClasses");
+    }
 
-        for (Iterator<AttributeInfo> it = this.attributes.iterator(); it.hasNext();) {
-            AttributeInfo ai = (AttributeInfo) it.next();
-            if (ai.nameIndex == ni.shortValue() && ai instanceof InnerClassesAttribute) {
-                return (InnerClassesAttribute) ai;
+    /**
+     * Finds the named attribute in the <var>attributes</var>.
+     *
+     * @return                  <code>null</code> iff <var>attributes</var> constains no attribute with that name
+     * @throws ClassFormatError <var>attributes</var> contains <em>more than one</em> attribute with that name
+     */
+    @Nullable private AttributeInfo
+    findAttribute(List<AttributeInfo> attributes, String attributeName) throws ClassFormatError {
+
+        Short nameIndex = (Short) this.constantPoolMap.get(new ConstantUtf8Info(attributeName));
+        if (nameIndex == null) return null;
+
+        AttributeInfo result = null;
+        for (AttributeInfo ai : attributes) {
+            if (ai.nameIndex == nameIndex) {
+                if (result != null) throw new ClassFormatError("Duplicate \"" + attributeName + "\" attribute");
+                result = ai;
             }
         }
-        return null;
+        return result;
     }
 
     /**
@@ -161,23 +174,25 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * Finds the "Runtime[In]visibleAnnotations" attribute of this class file.
+     * Finds the "Runtime[In]visibleAnnotations" attribute in the <var>attributes</var>.
      *
-     * @return <code>null</code> if this class has no such attribute
+     * @return <code>null</code> if <var>attributes</var> constains no such attribute
      */
-    @Nullable public AnnotationsAttribute
-    getAnnotationsAttribute(String attributeName, List<AttributeInfo> attributes) {
-        assert "RuntimeVisibleAnnotations".equals(attributeName) || "RuntimeInvisibleAnnotations".equals(attributeName);
-        Short ni = (Short) this.constantPoolMap.get(new ConstantUtf8Info(attributeName));
-        if (ni == null) return null;
+    @Nullable private AnnotationsAttribute
+    getAnnotationsAttribute(boolean runtimeVisible, List<AttributeInfo> attributes) {
+        String attributeName = runtimeVisible ? "RuntimeVisibleAnnotations" : "RuntimeInvisibleAnnotations";
+        return (AnnotationsAttribute) this.findAttribute(attributes, attributeName);
+    }
 
-        for (Iterator<AttributeInfo> it = attributes.iterator(); it.hasNext();) {
-            AttributeInfo ai = (AttributeInfo) it.next();
-            if (ai.nameIndex == ni.shortValue() && ai instanceof AnnotationsAttribute) {
-                return (AnnotationsAttribute) ai;
-            }
-        }
-        return null;
+    @Override public ClassFile.AnnotationsAttribute.Annotation[]
+    getAnnotations(boolean runtimeVisible) {
+
+        AnnotationsAttribute aa = this.getAnnotationsAttribute(runtimeVisible, this.attributes);
+        if (aa == null) return new Annotation[0];
+
+        return (ClassFile.AnnotationsAttribute.Annotation[]) aa.annotations.toArray(
+            new Annotation[aa.annotations.size()]
+        );
     }
 
     /**
@@ -208,16 +223,16 @@ class ClassFile implements Annotatable {
         Map<Short, ElementValue> elementValuePairs,
         List<AttributeInfo>      target
     ) {
-        String attributeName = runtimeVisible ? "RuntimeVisibleAnnotations" : "RuntimeInvisibleAnnotations";
 
         // Find or create the "Runtime[In]visibleAnnotations" attribute.
-        AnnotationsAttribute aa = this.getAnnotationsAttribute(attributeName, target);
+        AnnotationsAttribute aa = this.getAnnotationsAttribute(runtimeVisible, target);
         if (aa == null) {
+            String attributeName = runtimeVisible ? "RuntimeVisibleAnnotations" : "RuntimeInvisibleAnnotations";
             aa = new AnnotationsAttribute(this.addConstantUtf8Info(attributeName));
             target.add(aa);
         }
 
-        // Add the new annotation
+        // Add the new annotation.
         aa.getAnnotations().add(
             new AnnotationsAttribute.Annotation(this.addConstantUtf8Info(fieldDescriptor), elementValuePairs)
         );
@@ -500,7 +515,7 @@ class ClassFile implements Annotatable {
      */
     public FieldInfo
     addFieldInfo(
-        Java.Modifiers   modifiers,
+        short            accessFlags,
         String           fieldName,
         String           fieldTypeFd,
         @Nullable Object optionalConstantValue
@@ -513,7 +528,7 @@ class ClassFile implements Annotatable {
             ));
         }
         FieldInfo fi = new FieldInfo(
-            modifiers,                             // modifierAndAnnotations
+            accessFlags,                           // accessFlags
             this.addConstantUtf8Info(fieldName),   // nameIndex
             this.addConstantUtf8Info(fieldTypeFd), // descriptorIndex
             attributes                             // attributes
@@ -527,9 +542,9 @@ class ClassFile implements Annotatable {
      * ({@code Code}, {@code Deprecated}, {@code Exceptions}, ...) to the method.
      */
     public MethodInfo
-    addMethodInfo(Java.Modifiers modifiers, String methodName, String methodMd) {
+    addMethodInfo(short accessFlags, String methodName, String methodMd) {
         MethodInfo mi = new MethodInfo(
-            modifiers,                            // modifiers
+            accessFlags,                          // accessFlags
             this.addConstantUtf8Info(methodName), // nameIndex
             this.addConstantUtf8Info(methodMd),   // desriptorIndex
             new ArrayList()                       // attributes
@@ -541,6 +556,10 @@ class ClassFile implements Annotatable {
     /** @return The (read-only) constant pool entry indexed by {@code index} */
     public ConstantPoolInfo
     getConstantPoolInfo(short index) { return (ConstantPoolInfo) this.constantPool.get(0xffff & index); }
+
+    /** @return The (read-only) constant value pool entry indexed by {@code index} */
+    public ConstantValuePoolInfo
+    getConstantValuePoolInfo(short index) { return (ConstantValuePoolInfo) this.getConstantPoolInfo(index); }
 
     /** @return The size of the constant pool */
     public int
@@ -595,33 +614,19 @@ class ClassFile implements Annotatable {
     /** u2 fields_count, fields[fields_count] */
     private List<FieldInfo>
     loadFields(DataInputStream dis) throws IOException {
-        short           fieldsCount = dis.readShort();
-        List<FieldInfo> fields      = new ArrayList(fieldsCount);
-        for (int i = 0; i < fieldsCount; ++i) {
-            short               mods      = dis.readShort();
-            short               nameIndex = dis.readShort();
-            short               descIndex = dis.readShort();
-            List<AttributeInfo> atts      = this.loadAttributes(dis);
-            fields.add(new FieldInfo(
-                ClassFile.buildModsAndAnns(mods, atts),
-                nameIndex,
-                descIndex,
-                atts
+
+        List<FieldInfo> result = new ArrayList();
+
+        for (int i = dis.readShort(); i > 0; i--) { // fields_count
+            result.add(new FieldInfo(               // fields[field_count]
+                dis.readShort(),         // access_flags
+                dis.readShort(),         // name_index
+                dis.readShort(),         // descriptor_index
+                this.loadAttributes(dis) // attributes_count, attributes[attributes_count]
             ));
         }
-        return fields;
-    }
 
-    /**
-     * Extract annotations from list of attributes
-     * and build a ModifiersAndAnnotations object
-     * @param mods
-     * @param attributes
-     */
-    private static Java.Modifiers
-    buildModsAndAnns(short mods, List attributes) {
-        //TODO: extract the annotations
-        return new Java.Modifiers(mods);
+        return result;
     }
 
     /** u2 methods_count, methods[methods_count] */
@@ -656,17 +661,17 @@ class ClassFile implements Annotatable {
     store(OutputStream os) throws IOException {
         DataOutputStream dos = os instanceof DataOutputStream ? (DataOutputStream) os : new DataOutputStream(os);
 
-        dos.writeInt(ClassFile.CLASS_FILE_MAGIC);              // magic
-        dos.writeShort(this.minorVersion);                     // minor_version
-        dos.writeShort(this.majorVersion);                     // major_version
-        ClassFile.storeConstantPool(dos, this.constantPool);   // constant_pool_count, constant_pool
-        dos.writeShort(this.accessFlags);                      // access_flags
-        dos.writeShort(this.thisClass);                        // this_class
-        dos.writeShort(this.superclass);                       // super_class
-        ClassFile.storeShortArray(dos, this.interfaces);       // interfaces_count, interfaces
-        ClassFile.storeFields(dos, this.fieldInfos);           // fields_count, fields
-        ClassFile.storeMethods(dos, this.methodInfos);         // methods_count, methods
-        ClassFile.storeAttributes(dos, this.attributes, null); // attributes_count, attributes
+        dos.writeInt(ClassFile.CLASS_FILE_MAGIC);            // magic
+        dos.writeShort(this.minorVersion);                   // minor_version
+        dos.writeShort(this.majorVersion);                   // major_version
+        ClassFile.storeConstantPool(dos, this.constantPool); // constant_pool_count, constant_pool[constant_pool_count]
+        dos.writeShort(this.accessFlags);                    // access_flags
+        dos.writeShort(this.thisClass);                      // this_class
+        dos.writeShort(this.superclass);                     // super_class
+        ClassFile.storeShortArray(dos, this.interfaces);     // interfaces_count, interfaces[interfaces_count]
+        ClassFile.storeFields(dos, this.fieldInfos);         // fields_count, fields[fields_count]
+        ClassFile.storeMethods(dos, this.methodInfos);       // methods_count, methods[methods_count]
+        ClassFile.storeAttributes(dos, this.attributes);     // attributes_count, attributes[attributes_count]
     }
 
     /** u2 constant_pool_count, constant_pool[constant_pool_count - 1] */
@@ -703,9 +708,8 @@ class ClassFile implements Annotatable {
 
     /** u2 attributes_count, attributes[attributes_count] */
     private static void
-    storeAttributes(DataOutputStream dos, List<AttributeInfo> attributeInfos, Java.Annotation[] annotations)
+    storeAttributes(DataOutputStream dos, List<AttributeInfo> attributeInfos)
     throws IOException {
-        //TODO: write annotation attributes
         dos.writeShort(attributeInfos.size());
         for (AttributeInfo attributeInfo : attributeInfos) attributeInfo.store(dos);
     }
@@ -1253,7 +1257,7 @@ class ClassFile implements Annotatable {
 
         public
         ConstantUtf8Info(String s) {
-            if (s == null) throw new JaninoRuntimeException();
+            assert s != null;
             this.s = s;
         }
 
@@ -1290,7 +1294,7 @@ class ClassFile implements Annotatable {
     public
     class MethodInfo implements Annotatable {
 
-        private final Java.Modifiers      modifiers;
+        private final short               accessFlags;
         private final short               nameIndex;
         private final short               descriptorIndex;
         private final List<AttributeInfo> attributes;
@@ -1298,12 +1302,12 @@ class ClassFile implements Annotatable {
         /** Initializes the "method_info" structure. */
         public
         MethodInfo(
-            Java.Modifiers      modifiers,
+            short               accessFlags,
             short               nameIndex,
             short               descriptorIndex,
             List<AttributeInfo> attributes
         ) {
-            this.modifiers       = modifiers;
+            this.accessFlags     = accessFlags;
             this.nameIndex       = nameIndex;
             this.descriptorIndex = descriptorIndex;
             this.attributes      = attributes;
@@ -1313,11 +1317,20 @@ class ClassFile implements Annotatable {
         public ClassFile
         getClassFile() { return ClassFile.this; }
 
-        /** @return The modifier flags of this method; or'ed values are the constants declared in {@link Mod}. */
-        public short getModifierFlags() { return this.modifiers.flags; }
+        /** @return The access flags of this method; or'ed values are the constants declared in {@link Mod}. */
+        public short getAccessFlags() { return this.accessFlags; }
 
         /** @return The annotations of this method */
-        public Java.Annotation[] getAnnotations() { return this.modifiers.annotations; }
+        @Override public AnnotationsAttribute.Annotation[]
+        getAnnotations(boolean runtimeVisible) {
+
+            AnnotationsAttribute aa = ClassFile.this.getAnnotationsAttribute(runtimeVisible, this.attributes);
+            if (aa == null) return new AnnotationsAttribute.Annotation[0];
+
+            return (AnnotationsAttribute.Annotation[]) aa.annotations.toArray(
+                new AnnotationsAttribute.Annotation[aa.annotations.size()]
+            );
+        }
 
         /** @return The method's name */
         public String
@@ -1354,28 +1367,20 @@ class ClassFile implements Annotatable {
         /** Writes this object to a {@link DataOutputStream}, in the format described inJVMS7 4.6. */
         public void
         store(DataOutputStream dos) throws IOException {
-            dos.writeShort(this.modifiers.flags); // access_flags
-            dos.writeShort(this.nameIndex);       // name_index
-            dos.writeShort(this.descriptorIndex); // descriptor_index
-            ClassFile.storeAttributes(            // attributes_count, attributes
-                dos,
-                this.attributes,
-                this.modifiers.annotations
-            );
+            dos.writeShort(this.accessFlags);                // access_flags
+            dos.writeShort(this.nameIndex);                  // name_index
+            dos.writeShort(this.descriptorIndex);            // descriptor_index
+            ClassFile.storeAttributes(dos, this.attributes); // attributes_count, attributes[attributes_count]
         }
     }
 
     private MethodInfo
     loadMethodInfo(DataInputStream dis) throws IOException {
-        short               mods       = dis.readShort();
-        short               nameIndex  = dis.readShort();
-        short               descIndex  = dis.readShort();
-        List<AttributeInfo> attributes = this.loadAttributes(dis);
         return new MethodInfo(
-            ClassFile.buildModsAndAnns(mods, attributes),
-            nameIndex,
-            descIndex,
-            attributes
+            dis.readShort(),         // access_flags
+            dis.readShort(),         // name_index
+            dis.readShort(),         // descriptor_index
+            this.loadAttributes(dis) // attributes_count, attributes[attributes_count]
         );
     }
 
@@ -1385,22 +1390,31 @@ class ClassFile implements Annotatable {
 
         public
         FieldInfo(
-            Java.Modifiers      modifiers,
+            short               accessFlags,
             short               nameIndex,
             short               descriptorIndex,
             List<AttributeInfo> attributes
         ) {
-            this.modifiers       = modifiers;
+            this.accessFlags     = accessFlags;
             this.nameIndex       = nameIndex;
             this.descriptorIndex = descriptorIndex;
             this.attributes      = attributes;
         }
 
         /** @return The modifier flags of the field; or'ed values are the constants declared in {@link Mod} */
-        public short getModifierFlags() { return this.modifiers.flags; }
+        public short getAccessFlags() { return this.accessFlags; }
 
         /** @return The annotations of this field */
-        public Java.Annotation[] getAnnotations() { return this.modifiers.annotations; }
+        @Override public AnnotationsAttribute.Annotation[]
+        getAnnotations(boolean runtimeVisible) {
+
+            AnnotationsAttribute aa = ClassFile.this.getAnnotationsAttribute(runtimeVisible, this.attributes);
+            if (aa == null) return new AnnotationsAttribute.Annotation[0];
+
+            return (AnnotationsAttribute.Annotation[]) aa.annotations.toArray(
+                new AnnotationsAttribute.Annotation[aa.annotations.size()]
+            );
+        }
 
         /** @return The field's name */
         public String
@@ -1437,17 +1451,13 @@ class ClassFile implements Annotatable {
         /** Writes this object to a {@link DataOutputStream}, in the format described inJVMS7 4.5. */
         public void
         store(DataOutputStream dos) throws IOException {
-            dos.writeShort(this.modifiers.flags); // access_flags
-            dos.writeShort(this.nameIndex);       // name_index
-            dos.writeShort(this.descriptorIndex); // descriptor_index
-            ClassFile.storeAttributes(            // attibutes_count, attributes
-                dos,
-                this.attributes,
-                this.modifiers.annotations
-            );
+            dos.writeShort(this.accessFlags);                // access_flags
+            dos.writeShort(this.nameIndex);                  // name_index
+            dos.writeShort(this.descriptorIndex);            // descriptor_index
+            ClassFile.storeAttributes(dos, this.attributes); // attibutes_count, attributes
         }
 
-        private final Java.Modifiers      modifiers;
+        private final short               accessFlags;
         private final short               nameIndex;
         private final short               descriptorIndex;
         private final List<AttributeInfo> attributes;
@@ -1792,6 +1802,17 @@ class ClassFile implements Annotatable {
              * The "tag" byte is <em>not</em> part of this writing!
              */
             void store(DataOutputStream dos) throws IOException;
+
+            @Nullable <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX;
+
+            public
+            interface Visitor<R, EX extends Throwable> extends ConstantElementValue.Visitor<R, EX> {
+
+                // SUPPRESS CHECKSTYLE JavadocMethod:3
+                R visitAnnotation(Annotation subject) throws EX;
+                R visitArrayElementValue(ArrayElementValue subject) throws EX;
+                R visitEnumConstValue(EnumConstValue subject) throws EX;
+            }
         }
 
         /**
@@ -1817,19 +1838,91 @@ class ClassFile implements Annotatable {
             store(DataOutputStream dos) throws IOException {
                 dos.writeShort(this.constantValueIndex); // const_value_index
             }
+
+            @Override @Nullable public <R, EX extends Throwable> R
+            accept(ElementValue.Visitor<R, EX> visitor) throws EX {
+                return this.accept((ConstantElementValue.Visitor<R, EX>) visitor);
+            }
+
+            @Nullable protected abstract <R, EX extends Throwable> R
+            accept(ConstantElementValue.Visitor<R, EX> visitor) throws EX;
+
+            public
+            interface Visitor<R, EX extends Throwable> {
+
+                // SUPPRESS CHECKSTYLE JavadocMethod:10
+                R visitBooleanElementValue(BooleanElementValue subject) throws EX;
+                R visitByteElementValue(ByteElementValue subject) throws EX;
+                R visitCharElementValue(CharElementValue subject) throws EX;
+                R visitClassElementValue(ClassElementValue subject) throws EX;
+                R visitDoubleElementValue(DoubleElementValue subject) throws EX;
+                R visitFloatElementValue(FloatElementValue subject) throws EX;
+                R visitIntElementValue(IntElementValue subject) throws EX;
+                R visitLongElementValue(LongElementValue subject) throws EX;
+                R visitShortElementValue(ShortElementValue subject) throws EX;
+                R visitStringElementValue(StringElementValue subject) throws EX;
+            }
         }
 
-        // SUPPRESS CHECKSTYLE LineLength|JavadocType:10
-        public static final class ByteElementValue    extends ConstantElementValue { public ByteElementValue(short constantValueIndex)    { super((byte) 'B', constantValueIndex); } }
-        public static final class CharElementValue    extends ConstantElementValue { public CharElementValue(short constantValueIndex)    { super((byte) 'C', constantValueIndex); } }
-        public static final class DoubleElementValue  extends ConstantElementValue { public DoubleElementValue(short constantValueIndex)  { super((byte) 'D', constantValueIndex); } }
-        public static final class FloatElementValue   extends ConstantElementValue { public FloatElementValue(short constantValueIndex)   { super((byte) 'F', constantValueIndex); } }
-        public static final class IntElementValue     extends ConstantElementValue { public IntElementValue(short constantValueIndex)     { super((byte) 'I', constantValueIndex); } }
-        public static final class LongElementValue    extends ConstantElementValue { public LongElementValue(short constantValueIndex)    { super((byte) 'J', constantValueIndex); } }
-        public static final class ShortElementValue   extends ConstantElementValue { public ShortElementValue(short constantValueIndex)   { super((byte) 'S', constantValueIndex); } }
-        public static final class BooleanElementValue extends ConstantElementValue { public BooleanElementValue(short constantValueIndex) { super((byte) 'Z', constantValueIndex); } }
-        public static final class StringElementValue  extends ConstantElementValue { public StringElementValue(short constantValueIndex)  { super((byte) 's', constantValueIndex); } }
-        public static final class ClassElementValue   extends ConstantElementValue { public ClassElementValue(short constantValueIndex)   { super((byte) 'c', constantValueIndex); } }
+        // SUPPRESS CHECKSTYLE LineLength|JavadocType:50
+        public static final
+        class ByteElementValue extends ConstantElementValue {
+            public                                          ByteElementValue(short constantValueIndex) { super((byte) 'B', constantValueIndex); }
+            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitByteElementValue(this); }
+        }
+        public static final
+        class CharElementValue extends ConstantElementValue {
+            public                                          CharElementValue(short constantValueIndex) { super((byte) 'C', constantValueIndex); }
+            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitCharElementValue(this); }
+        }
+        public static final
+        class DoubleElementValue extends ConstantElementValue {
+            public                                          DoubleElementValue(short constantValueIndex) { super((byte) 'D', constantValueIndex); }
+            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX     { return visitor.visitDoubleElementValue(this); }
+        }
+        public static final
+        class FloatElementValue extends ConstantElementValue {
+            public                                          FloatElementValue(short constantValueIndex) { super((byte) 'F', constantValueIndex); }
+            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX    { return visitor.visitFloatElementValue(this); }
+        }
+        public static final
+        class IntElementValue extends ConstantElementValue {
+            public                                          IntElementValue(short constantValueIndex) { super((byte) 'I', constantValueIndex); }
+            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX  { return visitor.visitIntElementValue(this); }
+        }
+        public static final
+        class LongElementValue extends ConstantElementValue {
+            public                                          LongElementValue(short constantValueIndex) { super((byte) 'J', constantValueIndex); }
+            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitLongElementValue(this); }
+        }
+        public static final
+        class ShortElementValue extends ConstantElementValue {
+            public                                          ShortElementValue(short constantValueIndex) { super((byte) 'S', constantValueIndex); }
+            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX    { return visitor.visitShortElementValue(this); }
+        }
+        public static final
+        class BooleanElementValue extends ConstantElementValue {
+            public                                          BooleanElementValue(short constantValueIndex) { super((byte) 'Z', constantValueIndex); }
+            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX      { return visitor.visitBooleanElementValue(this); }
+        }
+        public static final
+        class StringElementValue extends ConstantElementValue {
+            public                                          StringElementValue(short constantValueIndex) { super((byte) 's', constantValueIndex); }
+            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX     { return visitor.visitStringElementValue(this); }
+        }
+        public static final
+        class ClassElementValue extends ConstantElementValue {
+
+            /**
+             * @param constantValueIndex Index of a constant pool entry that is a CONSTANT_Utf8_info structure
+             *                           representing a return descriptor
+             */
+            public
+            ClassElementValue(short constantValueIndex) { super((byte) 'c', constantValueIndex); }
+
+            @Override protected <R, EX extends Throwable> R
+            accept(Visitor<R, EX> visitor) throws EX { return visitor.visitClassElementValue(this); }
+        }
 
         /**
          * Representation of the "enum_const_value" element in the "element_value" structure.
@@ -1837,7 +1930,16 @@ class ClassFile implements Annotatable {
         public static final
         class EnumConstValue implements ElementValue {
 
-            public final short typeNameIndex, constNameIndex;
+            /**
+             * {@code type_name_index}; index of a {@link ConstantUtf8Info} representing a field descriptor.
+             */
+            public final short typeNameIndex;
+
+            /**
+             * {@code const_name_index}; index of a {@link ConstantUtf8Info} giveing the simple name of the enum
+             * constant represented by this {@code element_value} structure.
+             */
+public final short constNameIndex;
 
             /**
              * @param typeNameIndex  {@code type_name_index}; index of a {@link ConstantUtf8Info} representing a field
@@ -1859,6 +1961,9 @@ class ClassFile implements Annotatable {
                 dos.writeShort(this.typeNameIndex);  // type_name_index
                 dos.writeShort(this.constNameIndex); // const_name_index
             }
+
+            @Override @Nullable public <R, EX extends Throwable> R
+            accept(ElementValue.Visitor<R, EX> visitor) throws EX { return visitor.visitEnumConstValue(this); }
         }
 
         /** Representation of the "array_value" structure. */
@@ -1881,6 +1986,9 @@ class ClassFile implements Annotatable {
                     ev.store(dos);              // value
                 }
             }
+
+            @Override @Nullable public <R, EX extends Throwable> R
+            accept(ElementValue.Visitor<R, EX> visitor) throws EX { return visitor.visitArrayElementValue(this); }
         }
 
         // Implement "AttributeInfo".
@@ -1897,13 +2005,21 @@ class ClassFile implements Annotatable {
         public static
         class Annotation implements ElementValue {
 
-            /** The "type_index" field of the {@code annotation} type as described in JVMS8 4.7.16. */
-            public final short              typeIndex;
+            /**
+             * The "type_index" field of the {@code annotation} type as described in JVMS8 4.7.16. The constant pool
+             * entry at that index must be a CONSTANT_Utf8_info structure representing a field descriptor.
+             */
+            public final short typeIndex;
 
-            /** The "element_value_pairs" field of the {@code annotation} type as described in JVMS8 4.7.16. */
+            /**
+             * The "element_value_pairs" field of the {@code annotation} type as described in JVMS8 4.7.16.
+             * Key is the "{@code element_name_index}" (a constant pool index to a {@link ConstantUtf8Info});
+             * value is an {@link ElementValue}.
+             */
             public final Map<Short, ElementValue> elementValuePairs;
 
             /**
+             * @param typeIndex         UTF 8 constant pool entry index; field descriptor
              * @param elementValuePairs Maps element name index ({@link ConstantUtf8Info}) to {@link ElementValue}s
              */
             public
@@ -1930,6 +2046,9 @@ class ClassFile implements Annotatable {
                     elementValue.store(dos);              // value.value
                 }
             }
+
+            @Override @Nullable public <R, EX extends Throwable> R
+            accept(ElementValue.Visitor<R, EX> visitor) throws EX { return visitor.visitAnnotation(this); }
         }
     }
 

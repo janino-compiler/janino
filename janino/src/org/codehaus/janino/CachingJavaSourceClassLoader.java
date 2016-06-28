@@ -131,7 +131,7 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      *                                found
      * @throws ClassNotFoundException Compilation problems or class file cache I/O problems
      */
-    @Override protected Map<String /*name*/, byte[] /*bytecode*/>
+    @Override @Nullable protected Map<String /*name*/, byte[] /*bytecode*/>
     generateBytecodes(String className) throws ClassNotFoundException {
         // Check whether a class file resource exists in the cache.
         {

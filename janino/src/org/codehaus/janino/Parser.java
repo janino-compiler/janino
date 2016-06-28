@@ -160,7 +160,7 @@ class Parser {
         Modifiers modifiers  = this.parseModifiers();
 
         if (this.peek("package")) {
-            if (modifiers.flags != 0) {
+            if (modifiers.accessFlags != 0) {
                 this.warning("package.modifiers", "No modifiers allowed on package declarations", this.location());
             }
 
@@ -173,7 +173,7 @@ class Parser {
         }
 
         while (this.peek("import")) {
-            if (modifiers.flags != 0) {
+            if (modifiers.accessFlags != 0) {
                 this.warning("import.modifiers", "No modifiers allowed on import declarations", this.location());
             }
             if (modifiers.annotations.length > 0) {
@@ -414,7 +414,7 @@ class Parser {
     private Java.Annotation
     parseAnnotation() throws CompileException, IOException {
         this.read("@");
-        ReferenceType type = this.parseReferenceType();
+        ReferenceType type = new ReferenceType(this.location(), this.parseQualifiedIdentifier(), null);
 
         // Marker annotation?
         if (!this.peekRead("(")) return new Java.MarkerAnnotation(type);
@@ -479,12 +479,16 @@ class Parser {
     private ElementValue
     parseElementValueArrayInitializer() throws CompileException, IOException {
         this.read("{");
+        Location                loc = this.location();
         List<Java.ElementValue> evs = new ArrayList();
         while (!this.peekRead("}")) {
             if (this.peekRead(",")) continue;
             evs.add(this.parseElementValue());
         }
-        return new Java.ElementValueArrayInitializer((ElementValue[]) evs.toArray(new Java.ElementValue[evs.size()]));
+        return new Java.ElementValueArrayInitializer(
+            (ElementValue[]) evs.toArray(new Java.ElementValue[evs.size()]),
+            loc
+        );
     }
 
     /**
@@ -618,14 +622,14 @@ class Parser {
 
         // Initializer?
         if (this.peek("{")) {
-            if ((modifiers.flags & ~Mod.STATIC) != 0) {
+            if ((modifiers.accessFlags & ~Mod.STATIC) != 0) {
                 throw this.compileException("Only modifier \"static\" allowed on initializer");
             }
 
             Initializer initializer = new Initializer(
-                this.location(),               // location
-                Mod.isStatic(modifiers.flags), // statiC
-                this.parseBlock()              // block
+                this.location(),                     // location
+                Mod.isStatic(modifiers.accessFlags), // statiC
+                this.parseBlock()                    // block
             );
 
             classDeclaration.addInitializer(initializer);
@@ -1044,12 +1048,12 @@ class Parser {
 
         List<BlockStatement> optionalStatements;
         if (this.peekRead(";")) {
-            if (!Mod.isAbstract(modifiers.flags) && !Mod.isNative(modifiers.flags)) {
+            if (!Mod.isAbstract(modifiers.accessFlags) && !Mod.isNative(modifiers.accessFlags)) {
                 throw this.compileException("Non-abstract, non-native method must have a body");
             }
             optionalStatements = null;
         } else {
-            if (Mod.isAbstract(modifiers.flags) || Mod.isNative(modifiers.flags)) {
+            if (Mod.isAbstract(modifiers.accessFlags) || Mod.isNative(modifiers.accessFlags)) {
                 throw this.compileException("Abstract or native method must not have a body");
             }
             this.read("{");
@@ -1117,7 +1121,7 @@ class Parser {
     public FormalParameters
     parseFormalParameters() throws CompileException, IOException {
         this.read("(");
-        if (this.peekRead(")")) return new FormalParameters();
+        if (this.peekRead(")")) return new FormalParameters(this.location());
 
         List<FormalParameter> l           = new ArrayList();
         final boolean[]       hasEllipsis = new boolean[1];
@@ -1141,7 +1145,7 @@ class Parser {
     parseFormalParameter(boolean[] hasEllipsis) throws CompileException, IOException {
 
         Modifiers modifiers = this.parseModifiers();
-        if ((modifiers.flags & ~Mod.FINAL) != 0) {
+        if ((modifiers.accessFlags & ~Mod.FINAL) != 0) {
             this.warning(
                 "OFAAAOPD",
                 "Only \"final\" and annotations allowed on parameter declaration",
@@ -1149,7 +1153,7 @@ class Parser {
             );
         }
 
-        final boolean finaL = (modifiers.flags & Mod.FINAL) != 0;
+        final boolean finaL = (modifiers.accessFlags & Mod.FINAL) != 0;
 
         // Ignore annotations.
 
@@ -1409,7 +1413,6 @@ class Parser {
             this.peek(";")            ? this.parseEmptyStatement() :
             this.parseExpressionStatement()
         );
-        if (stmt == null) throw this.compileException("'" + this.peek().value + "' NYI");
 
         return stmt;
     }
@@ -1496,13 +1499,13 @@ class Parser {
                     final String   name         = this.readIdentifier();
                     final Location nameLocation = this.location();
                     this.read(":");
-                    Rvalue expression = this.parseExpression().toRvalue();
+                    Rvalue expression = this.parseExpression().toRvalueOrCompileException();
                     this.read(")");
                     return new ForEachStatement(
                         forLocation,          // location
                         new FormalParameter(  // currentElement
                             nameLocation,
-                            Mod.isFinal(modifiers.flags),
+                            Mod.isFinal(modifiers.accessFlags),
                             type,
                             name
                         ),
@@ -1530,7 +1533,7 @@ class Parser {
                     final String   name         = this.readIdentifier();
                     final Location nameLocation = this.location();
                     this.read(":");
-                    Rvalue expression = this.parseExpression().toRvalue();
+                    Rvalue expression = this.parseExpression().toRvalueOrCompileException();
                     this.read(")");
                     return new ForEachStatement(
                         forLocation,          // location
@@ -1915,9 +1918,11 @@ class Parser {
      *   TypeParameters := '<' TypeParameter { ',' TypeParameter } '>'
      * </pre>
      */
-    private TypeParameter[]
+    @Nullable private TypeParameter[]
     parseTypeParametersOpt() throws CompileException, IOException {
+
         if (!this.peekRead("<")) return null;
+
         List<TypeParameter> l = new ArrayList<TypeParameter>();
         l.add(this.parseTypeParameter());
         while (this.read(new String[] { ",", ">" }) == 0) {
@@ -1950,8 +1955,9 @@ class Parser {
      *
      * @return {@code null} iff there are no type arguments
      */
-    private TypeArgument[]
+    @Nullable private TypeArgument[]
     parseTypeArgumentsOpt() throws CompileException, IOException {
+
         if (!this.peekRead("<")) return null;
 
         // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators starting
@@ -2725,7 +2731,7 @@ class Parser {
             }
             if (this.peekRead("new")) {
                 // '.' 'new' Identifier Arguments [ ClassBody ]
-                Rvalue   lhs        = atom.toRvalue();
+                Rvalue   lhs        = atom.toRvalueOrCompileException();
                 Location location   = this.location();
                 String   identifier = this.readIdentifier();
                 Type     type       = new RvalueMemberType(
@@ -2877,7 +2883,7 @@ class Parser {
     public Location
     location() { return this.scanner.location(); }
 
-    private Token nextToken, nextButOneToken;
+    @Nullable private Token nextToken, nextButOneToken;
 
     // Token-level methods.
 
@@ -2885,6 +2891,7 @@ class Parser {
     public Token
     peek() throws CompileException, IOException {
         if (this.nextToken == null) this.nextToken = this.scanner.produce();
+        assert this.nextToken != null;
         return this.nextToken;
     }
 
@@ -2893,14 +2900,19 @@ class Parser {
     peekNextButOne() throws CompileException, IOException {
         if (this.nextToken == null) this.nextToken = this.scanner.produce();
         if (this.nextButOneToken == null) this.nextButOneToken = this.scanner.produce();
+        assert this.nextButOneToken != null;
         return this.nextButOneToken;
     }
 
     /** @return The next and also consumes it, or {@code null} iff the scanner is at end-of-input */
     public Token
     read() throws CompileException, IOException {
+
         if (this.nextToken == null) return this.scanner.produce();
+
         final Token result = this.nextToken;
+        assert result != null;
+
         this.nextToken       = this.nextButOneToken;
         this.nextButOneToken = null;
         return result;
@@ -2984,33 +2996,35 @@ class Parser {
      */
     public boolean
     peekRead(String suspected) throws CompileException, IOException {
-        if (this.nextToken == null) {
-            Token t = this.scanner.produce();
-            if (t.value.equals(suspected)) return true;
-            this.nextToken = t;
-            return false;
+
+        if (this.nextToken != null) {
+            if (!this.nextToken.value.equals(suspected)) return false;
+            this.nextToken       = this.nextButOneToken;
+            this.nextButOneToken = null;
+            return true;
         }
-        if (!this.nextToken.value.equals(suspected)) return false;
-        this.nextToken       = this.nextButOneToken;
-        this.nextButOneToken = null;
-        return true;
+
+        Token t = this.scanner.produce();
+        if (t.value.equals(suspected)) return true;
+        this.nextToken = t;
+        return false;
     }
 
     /** @return -1 iff the next token is none of <code>values</code> */
     public int
     peekRead(String[] values) throws CompileException, IOException {
-        if (this.nextToken == null) {
-            Token t   = this.scanner.produce();
-            int   idx = Parser.indexOf(values, t.value);
-            if (idx != -1) return idx;
-            this.nextToken = t;
-            return -1;
+        if (this.nextToken != null) {
+            int idx = Parser.indexOf(values, this.nextToken.value);
+            if (idx == -1) return -1;
+            this.nextToken       = this.nextButOneToken;
+            this.nextButOneToken = null;
+            return idx;
         }
-        int idx = Parser.indexOf(values, this.nextToken.value);
-        if (idx == -1) return -1;
-        this.nextToken       = this.nextButOneToken;
-        this.nextButOneToken = null;
-        return idx;
+        Token t   = this.scanner.produce();
+        int   idx = Parser.indexOf(values, t.value);
+        if (idx != -1) return idx;
+        this.nextToken = t;
+        return -1;
     }
 
     /** @return Whether the scanner is at end-of-input */
@@ -3020,7 +3034,7 @@ class Parser {
     }
 
     /** @return {@code null} iff the next token is not an identifier, otherwise the value of the identifier token */
-    public String
+    @Nullable public String
     peekIdentifier() throws CompileException, IOException {
         Token t = this.peek();
         return t.type == Token.IDENTIFIER ? t.value : null;
@@ -3262,8 +3276,10 @@ class Parser {
     }
 
     private static String
-    join(String[] sa, String separator) {
+    join(@Nullable String[] sa, String separator) {
+
         if (sa == null) return ("(null)");
+
         if (sa.length == 0) return ("(zero length array)");
         StringBuilder sb = new StringBuilder(sa[0]);
         for (int i = 1; i < sa.length; ++i) {

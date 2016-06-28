@@ -38,6 +38,13 @@ public
 interface Annotatable {
 
     /**
+     * @param runtimeVisible TODO
+     * @return The annotations on this element; an empty array iff there are no annotations
+     */
+    ClassFile.AnnotationsAttribute.Annotation[]
+    getAnnotations(boolean runtimeVisible);
+
+    /**
      * Adds a "Runtime[In]visibleAnnotations" attribute to {@code this} object (if that annotation does not yet exist)
      * and adds an entry to it.
      *

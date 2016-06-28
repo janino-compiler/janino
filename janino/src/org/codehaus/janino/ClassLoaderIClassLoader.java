@@ -43,10 +43,8 @@ class ClassLoaderIClassLoader extends IClassLoader {
         super(
             null   // optionalParentIClassLoader
         );
-
-        if (classLoader == null) throw new NullPointerException();
-
         this.classLoader = classLoader;
+
         super.postConstruct();
     }
 
@@ -63,7 +61,7 @@ class ClassLoaderIClassLoader extends IClassLoader {
     public ClassLoader
     getClassLoader() { return this.classLoader; }
 
-    @Override protected @Nullable IClass
+    @Override @Nullable protected IClass
     findIClass(String descriptor) throws ClassNotFoundException {
         ClassLoaderIClassLoader.LOGGER.entering(null, "findIClass", descriptor);
 

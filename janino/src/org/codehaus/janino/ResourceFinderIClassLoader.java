@@ -51,7 +51,7 @@ class ResourceFinderIClassLoader extends IClassLoader {
         this.postConstruct();
     }
 
-    @Override protected @Nullable IClass
+    @Override @Nullable protected IClass
     findIClass(String descriptor) throws ClassNotFoundException {
         String className = Descriptor.toClassName(descriptor);
 

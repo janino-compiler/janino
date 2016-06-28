@@ -25,4 +25,7 @@
  */
 
 /***/
+@NotNullByDefault
 package org.codehaus.janino.tests;
+
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

@@ -232,7 +232,7 @@ class Scanner {
     }
 
     /** @return The file name optionally passed to the constructor */
-    public String
+    @Nullable public String
     getFileName() { return this.optionalFileName; }
 
     /**
@@ -250,7 +250,7 @@ class Scanner {
      * the next token.
      * @return <code>null</code> if the next token is not preceeded by a doc comment
      */
-    public String
+    @Nullable public String
     doc() {
         String s = this.optionalDocComment;
         this.optionalDocComment = null;
@@ -270,7 +270,7 @@ class Scanner {
         @Nullable private final String optionalFileName;
         private final short            lineNumber;
         private final short            columnNumber;
-        private Location               location;
+        @Nullable private Location     location; // Created lazily.
 
         /** The type of this token; legal values are the various public constant declared in this class. */
         public final int type;
@@ -335,10 +335,10 @@ class Scanner {
         /** @return The location of the first character of this token */
         public Location
         getLocation() {
-            if (this.location == null) {
-                this.location = new Location(this.optionalFileName, this.lineNumber, this.columnNumber);
-            }
-            return this.location;
+
+            if (this.location != null) return this.location;
+
+            return (this.location = new Location(this.optionalFileName, this.lineNumber, this.columnNumber));
         }
 
         @Override public String

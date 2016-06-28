@@ -26,13 +26,15 @@
 
 package org.codehaus.janino;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * All Janino components that throw {@link RuntimeException} throw this subclass
  * to allow for client libraries to intercept them more easily.
  */
 public
 class JaninoRuntimeException extends RuntimeException {
-    public JaninoRuntimeException()                            {}
-    public JaninoRuntimeException(String message)              { super(message); }
-    public JaninoRuntimeException(String message, Throwable t) { super(message, t); }
+    public JaninoRuntimeException()                                      {}
+    public JaninoRuntimeException(@Nullable String message)              { super(message); }
+    public JaninoRuntimeException(@Nullable String message, Throwable t) { super(message, t); }
 }

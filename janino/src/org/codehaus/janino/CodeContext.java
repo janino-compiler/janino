@@ -126,18 +126,17 @@ class CodeContext {
     allocateLocalVariable(short size) { return this.allocateLocalVariable(size, null, null).getSlotIndex(); }
 
     /**
-     * Allocate space for a local variable of the given size (1 or 2)
-     * on the local variable array.
+     * Allocate space for a local variable of the given size (1 or 2) on the local variable array. As a side effect,
+     * the "max_locals" field of the "Code" attribute is updated.
+     * <p>
+     *   The only way to deallocate local variables is to {@link #saveLocalVariables()} and later {@link
+     *   #restoreLocalVariables()}.
+     * </p>
      *
-     * As a side effect, the "max_locals" field of the "Code" attribute
-     * is updated.
-     *
-     * The only way to deallocate local variables is to
-     * {@link #saveLocalVariables()} and later {@link
-     * #restoreLocalVariables()}.
      * @param size Number of slots to use (1 or 2)
-     * @param name The variable name, if it's null, the variable won't be written to the localvariabletable
-     * @param type The variable type. if the name isn't null, the type is needed to write to the localvariabletable
+     * @param name The variable name; if {@code null}, then the variable won't be written to the localvariabletable
+     * @param type The variable type; if the <var>name</var> is not null, then the type is needed to write to the
+     *             localvariabletable
      */
     public Java.LocalVariableSlot
     allocateLocalVariable(short size, @Nullable String name, @Nullable IClass type) {
@@ -262,17 +261,22 @@ class CodeContext {
 
         for (Java.LocalVariableSlot slot : this.getAllLocalVars()) {
 
-            if (slot.getName() != null) {
-                String typeName    = slot.getType().getDescriptor();
-                short  classSlot   = cf.addConstantUtf8Info(typeName);
-                short  varNameSlot = cf.addConstantUtf8Info(slot.getName());
+            String localVariableName = slot.getName();
+            if (localVariableName != null) {
 
-//                System.out.println("slot: " + slot + ", typeSlot: " + classSlot + ", varSlot: " + varNameSlot);
+                String      typeName    = slot.getType().getDescriptor();
+                final short classSlot   = cf.addConstantUtf8Info(typeName);
+                final short varNameSlot = cf.addConstantUtf8Info(localVariableName);
 
+                Offset start = slot.getStart();
+                Offset end2  = slot.getEnd();
+
+                assert start != null;
+                assert end2 != null;
 
                 ClassFile.LocalVariableTableAttribute.Entry entry = new ClassFile.LocalVariableTableAttribute.Entry(
-                    (short) slot.getStart().offset,
-                    (short) (slot.getEnd().offset - slot.getStart().offset),
+                    (short) start.offset,
+                    (short) (end2.offset - start.offset),
                     varNameSlot,
                     classSlot,
                     slot.getSlotIndex()
@@ -1213,7 +1217,7 @@ class CodeContext {
      * @param catchTypeFd null == "finally" clause
      */
     public void
-    addExceptionTableEntry(Offset startPc, Offset endPc, Offset handlerPc, String catchTypeFd) {
+    addExceptionTableEntry(Offset startPc, Offset endPc, Offset handlerPc, @Nullable String catchTypeFd) {
         this.exceptionTableEntries.add(new ExceptionTableEntry(
             startPc,
             endPc,
@@ -1314,7 +1318,7 @@ class CodeContext {
                 invalidOffsets.add(o);
 
                 // Invalidate the offset for fast failure.
-                Offset n = o.next;
+                final Offset n = o.next;
                 o.offset    = -77;
                 o.prev      = null;
                 o.next      = null;

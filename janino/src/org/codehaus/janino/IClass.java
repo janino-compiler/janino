@@ -38,7 +38,6 @@ import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.Java.Annotation;
 
 /**
  * A simplified equivalent to "java.lang.reflect".
@@ -84,16 +83,16 @@ class IClass {
 
         PrimitiveIClass(String fieldDescriptor) { this.fieldDescriptor = fieldDescriptor; }
 
-        @Override protected @Nullable IClass getComponentType2()         { return null; }
+        @Override @Nullable protected IClass getComponentType2()         { return null; }
         @Override protected IClass[]         getDeclaredIClasses2()      { return new IClass[0]; }
         @Override protected IConstructor[]   getDeclaredIConstructors2() { return new IConstructor[0]; }
         @Override protected IField[]         getDeclaredIFields2()       { return new IField[0]; }
         @Override protected IMethod[]        getDeclaredIMethods2()      { return new IMethod[0]; }
-        @Override protected @Nullable IClass getDeclaringIClass2()       { return null; }
+        @Override @Nullable protected IClass getDeclaringIClass2()       { return null; }
         @Override protected String           getDescriptor2()            { return this.fieldDescriptor; }
         @Override protected IClass[]         getInterfaces2()            { return new IClass[0]; }
-        @Override protected @Nullable IClass getOuterIClass2()           { return null; }
-        @Override protected @Nullable IClass getSuperclass2()            { return null; }
+        @Override @Nullable protected IClass getOuterIClass2()           { return null; }
+        @Override @Nullable protected IClass getSuperclass2()            { return null; }
         @Override public boolean             isAbstract()                { return false; }
         @Override public boolean             isArray()                   { return false; }
         @Override public boolean             isFinal()                   { return true; }
@@ -242,7 +241,7 @@ class IClass {
      * @return The {@link IMethod} declared in this {@link IClass} (or its superclass or the interfaces it implements)
      *         with the given name and parameter types, or {@code null} if an applicable method could not be found
      */
-    public final @Nullable IMethod
+    @Nullable public final IMethod
     findIMethod(String methodName, IClass[] parameterTypes) throws CompileException {
         {
             IMethod result = null;
@@ -278,7 +277,7 @@ class IClass {
      * @return The {@link IConstructor} declared in this {@link IClass} with the given parameter types, or {@code null}
      *         if an applicable constrcutor could not be found
      */
-    public final @Nullable IConstructor
+    @Nullable public final IConstructor
     findIConstructor(IClass[] parameterTypes) throws CompileException {
         IConstructor[] ics = this.getDeclaredIConstructors();
         for (IConstructor ic : ics) {
@@ -316,7 +315,7 @@ class IClass {
      *
      * @return <code>null</code> iff this {@link IClass} does not declare an {@link IField} with that name
      */
-    public final IField
+    @Nullable public final IField
     getDeclaredIField(String name) { return (IField) this.getDeclaredIFieldsCache().get(name); }
 
     /**
@@ -366,7 +365,7 @@ class IClass {
     @Nullable private IClass declaringIClassCache;
 
     /** @return If this class is a member class, the declaring class, otherwise {@code null} */
-    protected abstract @Nullable IClass
+    @Nullable protected abstract IClass
     getDeclaringIClass2() throws CompileException;
 
     /**
@@ -379,7 +378,7 @@ class IClass {
      *
      * @return The outer class of this type, or {@code null}
      */
-    public final @Nullable IClass
+    @Nullable public final IClass
     getOuterIClass() throws CompileException {
         if (this.outerIClassIsCached) return this.outerIClassCache;
 
@@ -390,7 +389,7 @@ class IClass {
     @Nullable private IClass outerIClassCache;
 
     /** @see #getOuterIClass() */
-    protected abstract @Nullable IClass
+    @Nullable protected abstract IClass
     getOuterIClass2() throws CompileException;
 
     /**
@@ -416,7 +415,7 @@ class IClass {
     @Nullable private IClass superclassCache;
 
     /** @see #getSuperclass() */
-    protected abstract @Nullable IClass
+    @Nullable protected abstract IClass
     getSuperclass2() throws CompileException;
 
     /** @return The accessibility of this type */
@@ -498,7 +497,7 @@ class IClass {
      * @return The component type of the array, or {@code null} for classes, interfaces, primitive types and {@code
      *         void}
      */
-    public final @Nullable IClass
+    @Nullable public final IClass
     getComponentType() {
         if (this.componentTypeIsCached) return this.componentTypeCache;
 
@@ -509,7 +508,7 @@ class IClass {
     @Nullable private IClass componentTypeCache;
 
     /** @see #getComponentType() */
-    protected abstract @Nullable IClass
+    @Nullable protected abstract IClass
     getComponentType2();
 
     @Override public String
@@ -675,15 +674,15 @@ class IClass {
             getDeclaredIMethods2() {
                 return new IClass.IMethod[] {
                     new IMethod() {
-                        @Override public String       getName()              { return "clone"; }
-                        @Override public IClass       getReturnType()        { return objectType; }
-                        @Override public boolean      isAbstract()           { return false; }
-                        @Override public boolean      isStatic()             { return false; }
-                        @Override public Access       getAccess()            { return Access.PUBLIC; }
-                        @Override public boolean      isVarargs()            { return false; }
-                        @Override public IClass[]     getParameterTypes2()   { return new IClass[0]; }
-                        @Override public IClass[]     getThrownExceptions2() { return new IClass[0]; }
-                        @Override public Annotation[] getAnnotations()       { return new Annotation[0]; }
+                        @Override public String        getName()              { return "clone"; }
+                        @Override public IClass        getReturnType()        { return objectType; }
+                        @Override public boolean       isAbstract()           { return false; }
+                        @Override public boolean       isStatic()             { return false; }
+                        @Override public Access        getAccess()            { return Access.PUBLIC; }
+                        @Override public boolean       isVarargs()            { return false; }
+                        @Override public IClass[]      getParameterTypes2()   { return new IClass[0]; }
+                        @Override public IClass[]      getThrownExceptions2() { return new IClass[0]; }
+                        @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
                     }
                 };
             }
@@ -691,8 +690,8 @@ class IClass {
             // CHECKSTYLE LineLength:OFF
             @Override public IClass.IField[]       getDeclaredIFields2()  { return new IClass.IField[0]; }
             @Override public IClass[]              getDeclaredIClasses2() { return new IClass[0]; }
-            @Override public @Nullable IClass      getDeclaringIClass2()  { return null; }
-            @Override public @Nullable IClass      getOuterIClass2()      { return null; }
+            @Override @Nullable public IClass      getDeclaringIClass2()  { return null; }
+            @Override @Nullable public IClass      getOuterIClass2()      { return null; }
             @Override public IClass                getSuperclass2()       { return objectType; }
             @Override public IClass[]              getInterfaces2()       { return new IClass[0]; }
             @Override public String                getDescriptor2()       { return '[' + componentType.getDescriptor(); }
@@ -816,7 +815,7 @@ class IClass {
         Access getAccess();
 
         /** @return Modifiers and/or annotations of this member */
-        Annotation[] getAnnotations();
+        IAnnotation[] getAnnotations();
 
         /** @return The {@link IClass} that declares this {@link IClass.IMember} */
         IClass getDeclaringIClass();
@@ -1150,7 +1149,7 @@ class IClass {
          * Returns the value of the field if it is a compile-time constant value, i.e. the field is FINAL and its
          * initializer is a constant expression (JLS7 15.28, bullet 12).
          */
-        public abstract Object getConstantValue() throws CompileException;
+        @Nullable public abstract Object getConstantValue() throws CompileException;
 
         @Override public String
         toString() { return this.getDeclaringIClass().toString() + "." + this.getName(); }
@@ -1165,10 +1164,46 @@ class IClass {
         /**
          * @return The type of the annotation
          */
-        IClass getAnnotationType();
+        IClass getAnnotationType() throws CompileException;
 
         /**
-         * @return {@link String}, {@link Integer}, {@link Short} etc.
+         * Returns the value of the <var>name</var>ed element:
+         * <dl>
+         *   <dt>{@link Boolean}</dt>
+         *   <dt>{@link Byte}</dt>
+         *   <dt>{@link Character}</dt>
+         *   <dt>{@link Double}</dt>
+         *   <dt>{@link Float}</dt>
+         *   <dt>{@link Integer}</dt>
+         *   <dt>{@link Long}</dt>
+         *   <dt>{@link Short}</dt>
+         *   <dd>
+         *     A primitive value
+         *   </dd>
+         *   <dt>{@link String}</dt>
+         *   <dd>
+         *     A string value
+         *   </dd>
+         *   <dt>{@link IField}</dt>
+         *   <dd>
+         *     An enum constant
+         *   </dd>
+         *   <dt>{@link IClass}</dt>
+         *   <dd>
+         *     A class literal
+         *   </dd>
+         *   <dt>{@link IAnnotation}</dt>
+         *   <dd>
+         *     An annotation
+         *   </dd>
+         *   <dt>{@link Object}{@code []}</dt>
+         *   <dd>
+         *     An array value
+         *   </dd>
+         * </dl>
+         * <p>
+         *   Notice that {@code null} is <em>not</em> a valid return value.
+         * </p>
          */
         Object getElementValue(String name) throws CompileException;
     }

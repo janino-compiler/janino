@@ -254,10 +254,10 @@ class Mod {
         "final",        new Short(Mod.FINAL),
         "synchronized", new Short(Mod.SYNCHRONIZED), // Has the same value as SUPER
 //      "super",        new Short(Mod.SUPER),        // Has the same value as SYNCHRONIZED
-        "volatile",     new Short(Mod.VOLATILE), // Has the same value as BRIDGE
-//      "bridge",       new Short(Mod.BRIDGE),   // Has the same value as VOLATILE
-        "transient",    new Short(Mod.TRANSIENT), // Has the same value as VARARGS
-//      "varargs",      new Short(Mod.VARARGS),   // Has the same value as TRANSIENT
+        "volatile",     new Short(Mod.VOLATILE),     // Has the same value as BRIDGE
+//      "bridge",       new Short(Mod.BRIDGE),       // Has the same value as VOLATILE
+        "transient",    new Short(Mod.TRANSIENT),    // Has the same value as VARARGS
+//      "varargs",      new Short(Mod.VARARGS),      // Has the same value as TRANSIENT
         "native",       new Short(Mod.NATIVE),
         "interface",    new Short(Mod.INTERFACE),
         "abstract",     new Short(Mod.ABSTRACT),

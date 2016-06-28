@@ -26,6 +26,8 @@
 
 package org.codehaus.janino.util;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * An object that produces some {@link java.lang.Object} each time the
  * {@link #produce()} method is invoked. This behavior is similar to the
@@ -47,5 +49,5 @@ interface Producer<T> {
      *
      * @return the next object or <code>null</code> to indicate that no more objects can be produced
      */
-    T produce();
+    @Nullable T produce();
 }

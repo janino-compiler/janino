@@ -143,7 +143,7 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      *
      * @param arguments The actual parameter values.
      */
-    @Override @Nullable Object evaluate(Object[] arguments) throws InvocationTargetException;
+    @Override @Nullable Object evaluate(@Nullable Object[] arguments) throws InvocationTargetException;
 
     /**
      * If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator

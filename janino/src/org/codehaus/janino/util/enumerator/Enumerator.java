@@ -72,7 +72,6 @@ class Enumerator {
     /** Initialize the enumerator to the given value. */
     protected
     Enumerator(String name) {
-        if (name == null) throw new NullPointerException();
         this.name = name;
 
         ((Map<String /*name*/, Enumerator>) Enumerator.getInstances(this.getClass())).put(name, this);

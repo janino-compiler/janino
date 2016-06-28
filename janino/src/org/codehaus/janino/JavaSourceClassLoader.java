@@ -211,7 +211,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @return String name =&gt; byte[] bytecode, or <code>null</code> if no source code could be found
      * @throws ClassNotFoundException on compilation problems
      */
-    protected Map<String /*name*/, byte[] /*bytecode*/>
+    @Nullable protected Map<String /*name*/, byte[] /*bytecode*/>
     generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 

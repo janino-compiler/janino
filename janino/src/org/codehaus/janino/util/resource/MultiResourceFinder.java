@@ -28,6 +28,8 @@ package org.codehaus.janino.util.resource;
 
 import java.util.Collection;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds its resources through a collection of
  * other {@link org.codehaus.janino.util.resource.ResourceFinder}s.
@@ -43,7 +45,7 @@ class MultiResourceFinder extends ResourceFinder {
 
     // Implement ResourceFinder.
 
-    @Override public final Resource
+    @Override @Nullable public final Resource
     findResource(String resourceName) {
         for (ResourceFinder rf : this.resourceFinders) {
             Resource resource = rf.findResource(resourceName);

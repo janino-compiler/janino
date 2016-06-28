@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Stack;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * An {@link java.util.Iterator} that iterates over a delegate, and while it encounters an array, a {@link
  * java.util.Collection}, an {@link java.util.Enumeration} or a {@link java.util.Iterator} element, it iterates over it
@@ -42,9 +44,10 @@ import java.util.Stack;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class TraversingIterator implements Iterator {
-    private final Stack nest = new Stack(); // Iterator
-    private Object      nextElement;
-    private boolean     nextElementRead; // Have we read ahead?
+
+    private final Stack      nest = new Stack(); // Iterator
+    @Nullable private Object nextElement;
+    private boolean          nextElementRead;    // Have we read ahead?
 
     public
     TraversingIterator(Iterator delegate) { this.nest.push(delegate); }
@@ -56,6 +59,7 @@ class TraversingIterator implements Iterator {
     next() {
         if (!this.nextElementRead && !this.readNext()) throw new NoSuchElementException();
         this.nextElementRead = false;
+        assert this.nextElement != null;
         return this.nextElement;
     }
 

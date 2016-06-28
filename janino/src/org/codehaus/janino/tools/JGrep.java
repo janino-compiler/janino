@@ -61,7 +61,6 @@ import org.codehaus.janino.util.enumerator.Enumerator;
 import org.codehaus.janino.util.iterator.DirectoryIterator;
 import org.codehaus.janino.util.resource.PathResourceFinder;
 
-
 /**
  * Reads a set of compilation units from the file system and searches it for specific
  * Java&trade; constructs, e.g. invocations of a particular method.
@@ -343,7 +342,7 @@ class JGrep {
     class MethodInvocationTarget {
 
         @Nullable String                optionalClassNamePattern;
-        String                          methodNamePattern;
+        @Nullable String                methodNamePattern;
         @Nullable String[]              optionalArgumentTypeNamePatterns;
         List<MethodInvocationPredicate> predicates = new ArrayList();
         List<MethodInvocationAction>    actions    = new ArrayList();
@@ -411,8 +410,8 @@ class JGrep {
      *         contain a period, the simple type name of {@code typeName} matches the {@code pattern}
      */
     static boolean
-    typeMatches(String pattern, String typeName) {
-        return new StringPattern(pattern).matches(
+    typeMatches(@Nullable String pattern, String typeName) {
+        return pattern == null || new StringPattern(pattern).matches(
             pattern.indexOf('.') == -1
             ? typeName.substring(typeName.lastIndexOf('.') + 1)
             : typeName
@@ -688,7 +687,7 @@ class JGrep {
         }
 
         /** @param type Field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;" */
-        @Override protected @Nullable IClass
+        @Override @Nullable protected IClass
         findIClass(final String type) {
             JGrep.LOGGER.entering(null, "findIClass", type);
 

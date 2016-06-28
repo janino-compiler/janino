@@ -157,7 +157,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      *
      * @param arguments The actual parameter values
      */
-    @Nullable Object evaluate(Object[] arguments) throws InvocationTargetException;
+    @Nullable Object evaluate(@Nullable Object[] arguments) throws InvocationTargetException;
 
     /**
      * Returns the loaded {@link java.lang.reflect.Method}.
@@ -222,7 +222,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     void cook(@Nullable String[] optionalFileNames, String[] strings) throws CompileException;
 
     /** Same as {@link #evaluate(Object[])}, but for multiple scripts. */
-    Object evaluate(int idx, Object[] arguments) throws InvocationTargetException;
+    Object evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException;
 
     /** Same as {@link #getMethod()}, but for multiple scripts. */
     Method getMethod(int idx);

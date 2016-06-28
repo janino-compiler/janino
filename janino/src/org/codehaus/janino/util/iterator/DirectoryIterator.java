@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.util.Producer;
 
@@ -62,7 +63,7 @@ class DirectoryIterator extends ProducerIterator<File> {
         super(new Producer() {
             private final List<State> stateStack = DirectoryIterator.newArrayList(new State(rootDirectory));
 
-            @Override public Object
+            @Override @Nullable public Object
             produce() {
                 while (!this.stateStack.isEmpty()) {
                     State state = (State) this.stateStack.get(this.stateStack.size() - 1);

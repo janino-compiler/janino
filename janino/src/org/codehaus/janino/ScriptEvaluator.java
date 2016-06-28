@@ -91,7 +91,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Nullable private Class[][]  optionalParameterTypes;
     @Nullable private Class[][]  optionalThrownExceptions;
 
-    private Method[]     result; // null=uncooked
+    @Nullable private Method[] result; // null=uncooked
 
     /**
      * Equivalent to<pre>
@@ -410,7 +410,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     @Override public Object
-    evaluate(Object[] arguments) throws InvocationTargetException {
+    evaluate(@Nullable Object[] arguments) throws InvocationTargetException {
         return this.evaluate(0, arguments);
     }
 
@@ -488,7 +488,6 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     public final void
     cook(Scanner[] scanners) throws CompileException, IOException {
-        if (scanners == null) throw new NullPointerException();
 
         Parser[] parsers = new Parser[scanners.length];
         for (int i = 0; i < scanners.length; ++i) {
@@ -501,12 +500,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public final void
     cook(Parser[] parsers) throws CompileException, IOException {
 
-        Class[]    orts = this.optionalReturnTypes;
-        String[][] opns = this.optionalParameterNames;
-        Class[][]  opts = this.optionalParameterTypes;
-        boolean[]  osm  = this.optionalStaticMethod;
-        Class[][]  otes = this.optionalThrownExceptions;
-        String[]   omns = this.optionalMethodNames;
+        final Class[]    orts = this.optionalReturnTypes;
+        final String[][] opns = this.optionalParameterNames;
+        final Class[][]  opts = this.optionalParameterTypes;
+        final boolean[]  osm  = this.optionalStaticMethod;
+        final Class[][]  otes = this.optionalThrownExceptions;
+        final String[]   omns = this.optionalMethodNames;
 
         // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
         // time.
@@ -602,11 +601,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         Class c = this.compileToClass(compilationUnit);
 
         // Find the script methods by name.
-        this.result = new Method[count];
+        Method[] methods = new Method[count];
         if (count <= 10) {
             for (int i = 0; i < count; ++i) {
                 try {
-                    this.result[i] = c.getDeclaredMethod(
+                    methods[i] = c.getDeclaredMethod(
                         methodNames[i],
                         opts == null ? new Class[0] : opts[i]
                     );
@@ -665,9 +664,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                         + "\""
                     );
                 }
-                this.result[i] = m;
+                methods[i] = m;
             }
         }
+
+        this.result = methods;
     }
 
     @Override public final void
@@ -720,7 +721,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @throws CompileException
      * @throws IOException
      */
-    protected List<BlockStatement>
+    @Nullable protected List<BlockStatement>
     makeStatements(int idx, Parser parser) throws CompileException, IOException {
         return null;
     }
@@ -1144,18 +1145,22 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     @Override public Object
-    evaluate(int idx, Object[] arguments) throws InvocationTargetException {
-        if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
+    evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException {
         try {
-            return this.result[idx].invoke(null, arguments);
+            return this.assertCooked()[idx].invoke(null, arguments);
         } catch (IllegalAccessException ex) {
             throw new JaninoRuntimeException(ex.toString(), ex);
         }
     }
 
-    @Override public Method
-    getMethod(int idx) {
-        if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
-        return this.result[idx];
+    private Method[]
+    assertCooked() {
+
+        if (this.result != null) return this.result;
+
+        throw new IllegalStateException("Must only be called after \"cook()\"");
     }
+
+    @Override public Method
+    getMethod(int idx) { return this.assertCooked()[idx]; }
 }

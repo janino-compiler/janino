@@ -30,6 +30,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * Helper class that defines useful methods for handling "field descriptors"
  * (JVMS 4.3.2) and "method descriptors" (JVMS 4.3.3).<p>
@@ -234,11 +236,10 @@ class Descriptor {
     isPrimitiveNumeric(String d) { return d.length() == 1 && "BDFIJSC".indexOf(d.charAt(0)) != -1; }
 
     /**
-     * Returns the package name of a class or interface reference descriptor,
-     * or <code>null</code> if the class or interface is declared in the
-     * default package.
+     * Returns the package name of a class or interface reference descriptor, or {@code null} iff the class or
+     * interface is declared in the default package.
      */
-    public static String
+    @Nullable public static String
     getPackageName(String d) {
         if (d.charAt(0) != 'L') {
             throw new JaninoRuntimeException("Attempt to get package name of non-class descriptor \"" + d + "\"");

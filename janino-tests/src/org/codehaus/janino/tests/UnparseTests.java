@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AmbiguousName;
@@ -131,6 +133,11 @@ class UnparseTests {
         return res;
     }
 
+    @Nullable private static Java.Atom
+    stripUnnecessaryParenExprsOpt(@Nullable Java.Atom atom) {
+        return atom == null ? null : UnparseTests.stripUnnecessaryParenExprs(atom);
+    }
+
     private static Java.Atom
     stripUnnecessaryParenExprs(Java.Atom atom) {
         if (atom instanceof Java.Rvalue) {
@@ -144,12 +151,15 @@ class UnparseTests {
         return (Java.Lvalue) UnparseTests.stripUnnecessaryParenExprs((Java.Rvalue) lvalue);
     }
 
+    @Nullable private static Java.Rvalue
+    stripUnnecessaryParenExprsOpt(@Nullable Java.Rvalue rvalue) {
+        return rvalue == null ? null : UnparseTests.stripUnnecessaryParenExprs(rvalue);
+    }
+
     private static Java.Rvalue
     stripUnnecessaryParenExprs(Java.Rvalue rvalue) {
 
-        if (rvalue == null) return null;
-
-        return rvalue.accept(new Visitor.RvalueVisitor<Rvalue, RuntimeException>() {
+        Java.Rvalue result = rvalue.accept(new Visitor.RvalueVisitor<Rvalue, RuntimeException>() {
 
             @Override public Rvalue
             visitArrayLength(ArrayLength al) {
@@ -242,7 +252,7 @@ class UnparseTests {
             visitMethodInvocation(MethodInvocation mi) {
                 return new Java.MethodInvocation(
                     mi.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprs(mi.optionalTarget),
+                    UnparseTests.stripUnnecessaryParenExprsOpt(mi.optionalTarget),
                     mi.methodName,
                     UnparseTests.stripUnnecessaryParenExprs(mi.arguments)
                 );
@@ -265,10 +275,12 @@ class UnparseTests {
 
             @Override public Rvalue
             visitNewClassInstance(NewClassInstance nci) {
+                Type type = nci.type;
+                assert type != null;
                 return new Java.NewClassInstance(
                     nci.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprs(nci.optionalQualification),
-                    nci.type,
+                    UnparseTests.stripUnnecessaryParenExprsOpt(nci.optionalQualification),
+                    type,
                     UnparseTests.stripUnnecessaryParenExprs(nci.arguments)
                 );
             }
@@ -347,6 +359,9 @@ class UnparseTests {
             visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return scfae; }
 
         });
+
+        assert result != null;
+        return result;
     }
 
     @Test public void
@@ -360,7 +375,7 @@ class UnparseTests {
         Java.Modifiers maas = new Java.Modifiers(Mod.PUBLIC);
         if (interfaceMod) maas = maas.add(Mod.INTERFACE);
         Java.PackageMemberInterfaceDeclaration decl = new Java.PackageMemberInterfaceDeclaration(
-            null,
+            Location.NOWHERE,
             "foo",
             maas,
             "Foo",
@@ -379,8 +394,8 @@ class UnparseTests {
     @Test public void
     testLiterals() throws Exception {
         Object[][] tests = new Object[][] {
-            { new FloatingPointLiteral(null, "-0.0D"), "-0.0D" },
-            { new FloatingPointLiteral(null, "-0.0F"), "-0.0F" },
+            { new FloatingPointLiteral(Location.NOWHERE, "-0.0D"), "-0.0D" },
+            { new FloatingPointLiteral(Location.NOWHERE, "-0.0F"), "-0.0F" },
         };
         for (Object[] test : tests) {
             final Atom   expr     = (Atom)   test[0];
@@ -472,7 +487,9 @@ class UnparseTests {
         this.find(new File("../janino/src"), new FileFilter() {
 
             @Override public boolean
-            accept(File f) {
+            accept(@Nullable File f) {
+                assert f != null;
+
                 if (f.isDirectory()) return true;
 
                 if (f.getName().endsWith(".java") && f.isFile()) {

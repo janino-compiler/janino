@@ -65,9 +65,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
 
     // Set when "cook()"ing.
-    private ClassLoaderIClassLoader classLoaderIClassLoader;
+    @Nullable private ClassLoaderIClassLoader classLoaderIClassLoader;
 
-    private ClassLoader              result;
+    @Nullable private ClassLoader    result;
     @Nullable private ErrorHandler   optionalCompileErrorHandler;
     @Nullable private WarningHandler optionalWarningHandler;
 
@@ -222,8 +222,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         if (this.getClass() != SimpleCompiler.class) {
             throw new IllegalStateException("Must not be called on derived instances");
         }
-        if (this.result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
-        return this.result;
+        return this.assertCooked();
     }
 
     /**
@@ -235,13 +234,14 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      */
     @Override public boolean
     equals(@Nullable Object o) {
+
         if (!(o instanceof SimpleCompiler)) return false;
+
         SimpleCompiler that = (SimpleCompiler) o;
+
         if (this.getClass() != that.getClass()) return false;
-        if (this.result == null || that.result == null) {
-            throw new IllegalStateException("Equality can only be checked after cooking");
-        }
-        return this.result.equals(that.result);
+
+        return this.assertCooked().equals(that.assertCooked());
     }
 
     @Override public int
@@ -258,9 +258,15 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     /** Wraps a reflection {@link Class} in a {@link Java.Type} object. */
-    protected Java.Type
-    classToType(final Location location, @Nullable final Class clazz) {
+    @Nullable protected Java.Type
+    optionalClassToType(final Location location, @Nullable final Class clazz) {
         if (clazz == null) return null;
+        return this.classToType(location, clazz);
+    }
+
+    /** Wraps a reflection {@link Class} in a {@link Java.Type} object. */
+    protected Java.Type
+    classToType(final Location location, final Class clazz) {
 
 //        IClass iClass;
 //        synchronized (this.classes) {
@@ -302,9 +308,12 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
                 if (this.delegate != null) return this.delegate;
 
+                ClassLoaderIClassLoader icl = SimpleCompiler.this.classLoaderIClassLoader;
+                assert icl != null;
+
                 IClass iClass;
                 try {
-                    iClass = SimpleCompiler.this.classLoaderIClassLoader.loadIClass(
+                    iClass = icl.loadIClass(
                         Descriptor.fromClassName(clazz.getName())
                     );
                 } catch (ClassNotFoundException ex) {
@@ -389,21 +398,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         // Convert the class files to bytes and store them in a Map.
         final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap();
         for (ClassFile cf : classFiles) {
+
             byte[] contents = cf.toByteArray();
-            if (SimpleCompiler.LOGGER.isLoggable(Level.FINEST)) {
-                try {
-                    Class disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
-                    disassemblerClass.getMethod(
-                        "disasm",
-                        new Class[] { InputStream.class }
-                    ).invoke(
-                        disassemblerClass.newInstance(),
-                        new Object[] { new ByteArrayInputStream(contents) }
-                    );
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+
+            if (SimpleCompiler.LOGGER.isLoggable(Level.FINEST)) SimpleCompiler.disassembleToStdout(contents);
+
             classes.put(cf.getThisClassName(), contents);
         }
 
@@ -418,7 +417,32 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 );
             }
         });
-        return this.result;
+        return this.assertCooked();
+    }
+
+    public static void
+    disassembleToStdout(byte[] contents) {
+        try {
+            Class disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
+            disassemblerClass.getMethod(
+                "disasm",
+                new Class[] { InputStream.class }
+            ).invoke(
+                disassemblerClass.newInstance(),
+                new Object[] { new ByteArrayInputStream(contents) }
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * @return The class loader created when this {@link SimpleCompiler} was {@link #cook(Reader)}ed
+     */
+    private ClassLoader
+    assertCooked() {
+        if (this.result != null) return this.result;
+        throw new IllegalStateException("Must only be called after \"cook()\"");
     }
 
     /** @throws IllegalStateException This {@link Cookable} is already cooked */

@@ -115,7 +115,7 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @param fieldDescriptor         Field descriptor of the {@link IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
      * @throws ClassNotFoundException An exception was raised while loading the {@link IClass}
      */
-    @Override public @Nullable IClass
+    @Override @Nullable public IClass
     findIClass(final String fieldDescriptor) throws ClassNotFoundException {
         JavaSourceIClassLoader.LOGGER.entering(null, "findIClass", fieldDescriptor);
 
@@ -183,7 +183,7 @@ class JavaSourceIClassLoader extends IClassLoader {
      *
      * @return {@code null} iff the source file could not be found
      */
-    protected CompilationUnit
+    @Nullable protected CompilationUnit
     findCompilationUnit(String className) throws IOException, CompileException {
 
         // Find source file.

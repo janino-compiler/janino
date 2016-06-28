@@ -135,16 +135,15 @@ class IClassLoader {
     // CHECKSTYLE AbbreviationAsWordInName:ON
     // CHECKSTYLE MemberName:ON
 
+    @SuppressWarnings("null")
     public
     IClassLoader(@Nullable IClassLoader optionalParentIClassLoader) {
         this.optionalParentIClassLoader = optionalParentIClassLoader;
     }
 
     /**
-     * This method must be called by the constructor of the directly derived
-     * class. (The reason being is that this method invokes abstract
-     * {@link #loadIClass(String)} which will not work until the implementing
-     * class is constructed.)
+     * This method must be called by the constructor of the <em>derived</em> class. (The reason being is that this
+     * method invokes abstract {@link #loadIClass(String)} which will not work until the derived class is constructed.)
      */
     protected final void
     postConstruct() {
@@ -354,7 +353,7 @@ class IClassLoader {
      * @return <code>null</code> if a class with that descriptor could not be found
      * @throws ClassNotFoundException if an exception was raised while loading the class
      */
-    protected abstract @Nullable IClass
+    @Nullable protected abstract IClass
     findIClass(String descriptor) throws ClassNotFoundException;
 
     /**
@@ -395,8 +394,8 @@ class IClassLoader {
      */
     public static IClassLoader
     createJavacLikePathIClassLoader(
-        final @Nullable File[] optionalBootClassPath,
-        final @Nullable File[] optionalExtDirs,
+        @Nullable final File[] optionalBootClassPath,
+        @Nullable final File[] optionalExtDirs,
         final File[]           classPath
     ) {
         ResourceFinder bootClassPathResourceFinder = new PathResourceFinder(

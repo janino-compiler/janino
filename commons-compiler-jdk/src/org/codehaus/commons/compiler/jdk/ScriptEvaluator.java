@@ -257,7 +257,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     @Override public Object
-    evaluate(Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
+    evaluate(@Nullable Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
 
     @Override public Method
     getMethod() { return this.getMethod(0); }
@@ -550,7 +550,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     @Override public Object
-    evaluate(int idx, Object[] arguments) throws InvocationTargetException {
+    evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException {
         try {
             return this.getMethods()[idx].invoke(null, arguments);
         } catch (IllegalAccessException ex) {

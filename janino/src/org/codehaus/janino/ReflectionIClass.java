@@ -64,15 +64,15 @@ class ReflectionIClass extends IClass {
 
         if (methods.length == 0 && this.clazz.isArray()) {
             return new IMethod[] { new IMethod() {
-                @Override public String            getName()              { return "clone"; }
-                @Override public IClass            getReturnType()        { return ReflectionIClass.this.iClassLoader.TYPE_java_lang_Object; } // SUPPRESS CHECKSTYLE LineLength
-                @Override public boolean           isAbstract()           { return false; }
-                @Override public boolean           isStatic()             { return false; }
-                @Override public Access            getAccess()            { return Access.PUBLIC; }
-                @Override public boolean           isVarargs()            { return false; }
-                @Override public IClass[]          getParameterTypes2()   { return new IClass[0]; }
-                @Override public IClass[]          getThrownExceptions2() { return new IClass[0]; }
-                @Override public Java.Annotation[] getAnnotations()       { return new Java.Annotation[0]; }
+                @Override public String        getName()              { return "clone"; }
+                @Override public IClass        getReturnType()        { return ReflectionIClass.this.iClassLoader.TYPE_java_lang_Object; } // SUPPRESS CHECKSTYLE LineLength
+                @Override public boolean       isAbstract()           { return false; }
+                @Override public boolean       isStatic()             { return false; }
+                @Override public Access        getAccess()            { return Access.PUBLIC; }
+                @Override public boolean       isVarargs()            { return false; }
+                @Override public IClass[]      getParameterTypes2()   { return new IClass[0]; }
+                @Override public IClass[]      getThrownExceptions2() { return new IClass[0]; }
+                @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
             } };
         }
 
@@ -94,20 +94,20 @@ class ReflectionIClass extends IClass {
     @Override protected IClass[]
     getDeclaredIClasses2() { return this.classesToIClasses(this.clazz.getDeclaredClasses()); }
 
-    @Override protected @Nullable IClass
+    @Override @Nullable protected IClass
     getDeclaringIClass2() {
         Class declaringClass = this.clazz.getDeclaringClass();
         if (declaringClass == null) return null;
         return this.classToIClass(declaringClass);
     }
 
-    @Override protected @Nullable IClass
+    @Override @Nullable protected IClass
     getOuterIClass2() throws CompileException {
         if (Modifier.isStatic(this.clazz.getModifiers())) return null;
         return this.getDeclaringIClass();
     }
 
-    @Override protected @Nullable IClass
+    @Override @Nullable protected IClass
     getSuperclass2() {
         Class superclass = this.clazz.getSuperclass();
         return superclass == null ? null : this.classToIClass(superclass);
@@ -129,7 +129,7 @@ class ReflectionIClass extends IClass {
     @Override public boolean isAbstract()  { return Modifier.isAbstract(this.clazz.getModifiers()); }
     @Override public boolean isArray()     { return this.clazz.isArray(); }
 
-    @Override protected @Nullable IClass
+    @Override @Nullable protected IClass
     getComponentType2() {
         Class componentType = this.clazz.getComponentType();
         return componentType == null ? null : this.classToIClass(componentType);
@@ -187,7 +187,27 @@ class ReflectionIClass extends IClass {
                 @Override public Object
                 getElementValue(String name) throws CompileException {
                     try {
-                        return a.getClass().getMethod(name).invoke(a);
+                        Object v = a.getClass().getMethod(name).invoke(a);
+
+                        if (!Enum.class.isAssignableFrom(v.getClass())) return v;
+
+                        Class<?> enumClass = v.getClass();
+
+                        String enumConstantName = (String) enumClass.getMethod("name").invoke(v);
+
+                        IClass enumIClass = ReflectionIClass.this.classToIClass(enumClass);
+
+                        IField enumConstField = enumIClass.getDeclaredIField(enumConstantName);
+                        if (enumConstField == null) {
+                            throw new CompileException((
+                                "Enum \""
+                                + enumIClass
+                                + "\" has no constant \""
+                                + enumConstantName
+                                + ""
+                            ), null);
+                        }
+                        return enumConstField;
                     } catch (NoSuchMethodException e) {
                         throw new CompileException(
                             "Annotation \"" + annotationType.getName() + "\" has no element \"" + name + "\"",
@@ -235,8 +255,8 @@ class ReflectionIClass extends IClass {
             return ReflectionIClass.modifiers2Access(mod);
         }
 
-        @Override public Java.Annotation[]
-        getAnnotations() { return new Java.Annotation[0]; }
+        @Override public IAnnotation[]
+        getAnnotations() { return new IAnnotation[0]; }
 
         @Override public boolean
         isVarargs() {
@@ -304,8 +324,8 @@ class ReflectionIClass extends IClass {
         @Override public Access
         getAccess() { return ReflectionIClass.modifiers2Access(this.method.getModifiers()); }
 
-        @Override public Java.Annotation[]
-        getAnnotations() { return new Java.Annotation[0]; }
+        @Override public IAnnotation[]
+        getAnnotations() { return new IAnnotation[0]; }
 
         // Implement "IMethod".
         @Override public String
@@ -345,8 +365,8 @@ class ReflectionIClass extends IClass {
         @Override public Access
         getAccess() { return ReflectionIClass.modifiers2Access(this.field.getModifiers()); }
 
-        @Override public Java.Annotation[]
-        getAnnotations() { return new Java.Annotation[0]; }
+        @Override public IAnnotation[]
+        getAnnotations() { return new IAnnotation[0]; }
 
         // Implement "IField".
 

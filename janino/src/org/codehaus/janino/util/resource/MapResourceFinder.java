@@ -30,6 +30,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 /**
  * A {@link org.codehaus.janino.util.resource.ResourceFinder} that provides access
  * to resource stored as byte arrays in a {@link java.util.Map}.
@@ -46,7 +48,7 @@ class MapResourceFinder extends ResourceFinder {
     public final void
     setLastModified(long lastModified) { this.lastModified = lastModified; }
 
-    @Override public final Resource
+    @Override @Nullable public final Resource
     findResource(final String resourceName) {
         final byte[] ba = (byte[]) this.map.get(resourceName);
         if (ba == null) return null;
