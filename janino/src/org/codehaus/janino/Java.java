@@ -3167,7 +3167,7 @@ class Java {
         }
 
         /**
-         * @return The enclosing scope, as set with {@link #setEnclosingScope(Scope)}
+         * @return The enclosing scope, as set with {@link #setEnclosingScope(Java.Scope)}
          */
         public Java.Scope
         getEnclosingScope() {
@@ -3176,7 +3176,7 @@ class Java {
         }
 
         /**
-         * @return The enclosing scope, as set with {@link #setEnclosingScope(Scope)}
+         * @return The enclosing scope, as set with {@link #setEnclosingScope(Java.Scope)}
          */
         @Nullable public Java.Scope
         getEnclosingScopeOrNull() { return this.enclosingScope; }
