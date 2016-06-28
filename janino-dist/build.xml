@@ -223,8 +223,8 @@
 	<target name="build.javadoc" description="Creates 'mirror/javadoc/**'">
 
 		<!-- Build 'mirror/javadoc/'. -->
-		<delete dir="mirror/javadoc"/>
-		<mkdir dir="mirror/javadoc"/>
+		<delete dir="mirror/javadoc" />
+		<mkdir dir="mirror/javadoc" />
 		<javadoc
 			header="&lt;a href=&quot;http://janino.net/&quot; target=&quot;_top&quot;&gt;janino.net&lt;/a&gt;"
 			splitindex="true"
@@ -236,8 +236,9 @@
 			destdir="mirror/javadoc"
 			packagenames="${javadoc-packages}"
 		>
-			<link offline="true" href="${javadoc-jdk-href}" packagelistloc="${javadoc-jdk-packagelistloc}"/>
-			<link offline="true" href="${javadoc-ant-href}" packagelistloc="${javadoc-ant-packagelistloc}"/>
+			<link offline="true" href="${javadoc-jdk-href}" packagelistloc="${javadoc-jdk-packagelistloc}" />
+			<link offline="true" href="${javadoc-ant-href}" packagelistloc="${javadoc-ant-packagelistloc}" />
+			<arg value="-Xdoclint:none" />
 		</javadoc>
 	</target>
 
