@@ -521,13 +521,13 @@ class UnparseTests {
     @Test public void
     testParseUnparseAnnotationTypeDeclaration() throws Exception {
         final String[][] cus = new String[][] {
-//          input:                                                          expected output (if different from input):
-            { "@interface Foo { }",                                         null },
-            { "public @interface Foo { }",                                  null },
-            { "@Deprecated @interface Foo { }",                             null },
-            { "@interface Foo { public abstract int value(); }",            null },
-            { "@interface Foo { public abstract int[] value(); }",          null },
-//            { "@interface Foo { public abstract int value() default 99; }", null },  NYI
+//          input:                                                 expected output (if different from input):
+            { "@interface Foo { }",                                null },
+            { "public @interface Foo { }",                         null },
+            { "@Deprecated @interface Foo { }",                    null },
+            { "@interface Foo { int value(); }",            null },
+            { "@interface Foo { int[] value(); }",          null },
+//            { "@interface Foo { int value() default 99; }", null },  NYI
         };
 
         for (String[] expr : cus) {

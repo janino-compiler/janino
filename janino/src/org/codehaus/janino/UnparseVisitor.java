@@ -251,11 +251,16 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     @Override @Nullable public Void
     visitMethodDeclarator(Java.MethodDeclarator md) {
 
+        // For methods declared as members of an *interface*, the default access flags are "public abstract".
+        boolean declaringTypeIsInterface = md.getDeclaringType() instanceof Java.InterfaceDeclaration;
+
         final List<? extends BlockStatement> oss = md.optionalStatements;
 
         this.unparseDocComment(md);
         this.unparseAnnotations(md.modifiers.annotations);
-        this.unparseModifiers(md.modifiers.accessFlags);
+        this.unparseModifiers(
+            md.modifiers.remove(declaringTypeIsInterface ? Mod.PUBLIC | Mod.ABSTRACT : 0).accessFlags
+        );
         this.unparseType(md.type);
         this.pw.print(' ' + md.name);
         this.unparseFunctionDeclaratorRest(md);
