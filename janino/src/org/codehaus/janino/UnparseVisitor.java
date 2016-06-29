@@ -36,6 +36,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +48,10 @@ import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.ConstructorInvocation;
+import org.codehaus.janino.Java.EnumConstant;
+import org.codehaus.janino.Java.MemberEnumDeclaration;
 import org.codehaus.janino.Java.PackageDeclaration;
+import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.util.AutoIndentWriter;
@@ -131,12 +135,12 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     }
 
     @Override @Nullable public Void
-    visitRvalue(Rvalue rv) throws RuntimeException {
+    visitRvalue(Rvalue rv) {
         return rv.accept((Visitor.RvalueVisitor<Void, RuntimeException>) this);
     }
 
     @Override @Nullable public Void
-    visitAnnotation(Annotation a) throws RuntimeException {
+    visitAnnotation(Annotation a) {
         return a.accept((Visitor.AnnotationVisitor<Void, RuntimeException>) this);
     }
 
@@ -1076,6 +1080,16 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             this.pw.println();
         }
     }
+    /** @return Whether {@link #unparseClassDeclarationBody(Java.ClassDeclaration)} will produce <em>no</em> output */
+    private static boolean
+    classDeclarationBodyIsEmpty(Java.ClassDeclaration cd) {
+        return (
+            cd.constructors.isEmpty()
+            && cd.getMethodDeclarations().isEmpty()
+            && cd.getMemberTypeDeclarations().isEmpty()
+            && cd.variableDeclaratorsAndInitializers.isEmpty()
+        );
+    }
     private void
     unparseInterfaceDeclaration(Java.InterfaceDeclaration id) {
         this.unparseDocComment(id);
@@ -1195,8 +1209,13 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     @Override @Nullable public Void
     visitNormalAnnotation(Java.NormalAnnotation na) {
         this.pw.append('@').append(na.type.toString()).append('(');
-        for (Java.ElementValuePair evp : na.elementValuePairs) {
+        for (int i = 0; i < na.elementValuePairs.length; i++) {
+            Java.ElementValuePair evp = na.elementValuePairs[i];
+
+            if (i > 0) this.pw.print(", ");
+
             this.pw.append(evp.identifier).append(" = ");
+
             evp.elementValue.accept(this);
         }
         this.pw.append(") ");
@@ -1226,5 +1245,66 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         }
         this.pw.append(" }");
         return null;
+    }
+
+    @Override @Nullable public Void
+    visitEnumConstant(EnumConstant ec) {
+
+        this.unparseAnnotations(ec.getAnnotations());
+
+        this.pw.append(ec.name);
+
+        if (ec.optionalArguments != null) {
+            this.unparseFunctionInvocationArguments(ec.optionalArguments);
+        }
+
+        if (!UnparseVisitor.classDeclarationBodyIsEmpty(ec)) {
+            this.pw.println(" {");
+            this.pw.print(AutoIndentWriter.INDENT);
+            this.unparseClassDeclarationBody(ec);
+            this.pw.print(AutoIndentWriter.UNINDENT + "}");
+        }
+
+        return null;
+    }
+
+    @Override @Nullable public Void
+    visitMemberEnumDeclaration(MemberEnumDeclaration med) {
+        this.unparseEnumDeclaration(med);
+        return null;
+    }
+
+    @Override @Nullable public Void
+    visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed) {
+        this.unparseEnumDeclaration(pmed);
+        return null;
+    }
+
+    private void
+    unparseEnumDeclaration(Java.EnumDeclaration ed) {
+
+        this.unparseDocComment(ed);
+        this.unparseAnnotations(ed.getAnnotations());
+        this.unparseModifiers(ed.getModifierFlags());
+        this.pw.print("enum " + ed.getName());
+
+        Type[] its = ed.getImplementedTypes();
+        if (its.length > 0) this.pw.print(" implements " + Java.join(its, ", "));
+
+        this.pw.println(" {");
+        this.pw.print(AutoIndentWriter.INDENT);
+        Iterator<EnumConstant> it = ed.getConstants().iterator();
+        if (it.hasNext()) {
+            for (;;) {
+                this.visitEnumConstant(it.next());
+
+                if (!it.hasNext()) break;
+                this.pw.print(", ");
+            }
+        }
+        this.pw.println();
+        this.pw.println(';');
+        this.unparseClassDeclarationBody((Java.ClassDeclaration) ed);
+        this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
 }

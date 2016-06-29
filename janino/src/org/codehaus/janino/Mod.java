@@ -262,9 +262,9 @@ class Mod {
         "interface",    new Short(Mod.INTERFACE),
         "abstract",     new Short(Mod.ABSTRACT),
         "strictfp",     new Short(Mod.STRICTFP),
-        "enum",         new Short(Mod.ENUM),
+//      "enum",         new Short(Mod.ENUM),         // Not a "real" modifier
         "synthetic",    new Short(Mod.SYNTHETIC),
-        "@",            new Short(Mod.ANNOTATION),
+//      "@",            new Short(Mod.ANNOTATION),   // Not a "real" modifier
     };
 }
 

@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -432,6 +433,33 @@ class JlsTests extends JaninoTestSuite {
             + "    new KidClone().clone();\n"
             + "}\n"
         );
+    }
+
+    @Ignore // CompileException: Line 2, Column 5: Compilation of package member enum declaration NYI
+    @Test public void
+    test_8_9__Enums() throws Exception {
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "public\n"
+            + "enum Color { RED, GREEN, BLACK }\n"
+            + "\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "        return (\n"
+            + "            Color.RED.ordinal() == 0\n"
+            + "            && Color.GREEN.ordinal() == 1\n"
+            + "            && Color.BLACK.ordinal() == 2\n"
+            + "            && \"RED\".equals(Color.RED.toString())\n"
+            + "            && \"GREEN\".equals(Color.GREEN.toString())\n"
+            + "            && \"BLACK\".equals(Color.BLACK.toString())\n"
+            + "        );\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
     }
 
     @Test public void

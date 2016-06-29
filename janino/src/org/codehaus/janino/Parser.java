@@ -306,9 +306,9 @@ class Parser {
     parsePackageMemberTypeDeclarationRest(@Nullable String optionalDocComment, Modifiers modifiers)
     throws CompileException, IOException {
 
-        switch (this.read(new String[] { "class", "interface", "@" })) {
+        switch (this.read(new String[] { "class", "enum", "interface", "@" })) {
 
-        case 0:
+        case 0: // "class"
             if (optionalDocComment == null) this.warning("CDCM", "Class doc comment missing", this.location());
             return (PackageMemberClassDeclaration) this.parseClassDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
@@ -316,7 +316,15 @@ class Parser {
                 ClassDeclarationContext.COMPILATION_UNIT // context
             );
 
-        case 1:
+        case 1: // "enum"
+            if (optionalDocComment == null) this.warning("EDCM", "Enum doc comment missing", this.location());
+            return (PackageMemberClassDeclaration) this.parseEnumDeclarationRest(
+                optionalDocComment,                      // optionalDocComment
+                modifiers,                               // modifiers
+                ClassDeclarationContext.COMPILATION_UNIT // context
+            );
+
+        case 2: // "interface"
             if (optionalDocComment == null) this.warning("IDCM", "Interface doc comment missing", this.location());
             return (PackageMemberInterfaceDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                          // optionalDocComment
@@ -324,16 +332,16 @@ class Parser {
                 InterfaceDeclarationContext.COMPILATION_UNIT // context
             );
 
-        case 2:
+        case 3: // "@"
+            this.read("interface");
             if (optionalDocComment == null) {
                 this.warning("ATDCM", "Annotation type doc comment missing", this.location());
             }
-            this.read("interface");
             return (PackageMemberInterfaceDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                          // optionalDocComment
-                modifiers,                                   // modifiers
+                modifiers.add(Mod.ANNOTATION),               // modifiers
                 InterfaceDeclarationContext.COMPILATION_UNIT // context
-                );
+            );
 
         default:
             throw new IllegalStateException();
@@ -564,6 +572,62 @@ class Parser {
         return namedClassDeclaration;
     }
 
+    /**
+     * <pre>
+     *   EnumDeclarationRest := Identifier [ 'implements' ReferenceTypeList ] EnumBody
+     * </pre>
+     */
+    public Java.EnumDeclaration
+    parseEnumDeclarationRest(
+        @Nullable String        optionalDocComment,
+        Modifiers               modifiers,
+        ClassDeclarationContext context
+    ) throws CompileException, IOException {
+        Location location = this.location();
+        String   enumName = this.readIdentifier();
+        this.verifyIdentifierIsConventionalClassOrInterfaceName(enumName, location);
+
+        if (this.peekRead("<")) {
+            throw new CompileException("Enum declaration must not have type parameters", this.location());
+        }
+
+        if (this.peekRead("extends")) {
+            throw new CompileException("Enum declaration must not have an EXTENDS clause", this.location());
+        }
+
+        ReferenceType[] implementedTypes = new ReferenceType[0];
+        if (this.peekRead("implements")) {
+            implementedTypes = this.parseReferenceTypeList();
+        }
+
+        Java.EnumDeclaration enumDeclaration;
+        if (context == ClassDeclarationContext.COMPILATION_UNIT) {
+            enumDeclaration = new Java.PackageMemberEnumDeclaration(
+                location,           // location
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                enumName,           // name
+                implementedTypes    // implementedTypes
+            );
+        } else
+        if (context == ClassDeclarationContext.TYPE_DECLARATION) {
+            enumDeclaration = new Java.MemberEnumDeclaration(
+                location,           // location
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                enumName,           // name
+                implementedTypes    // implementedTypes
+            );
+        } else
+        {
+            throw new JaninoRuntimeException("SNO: Enum declaration in unexpected context " + context);
+        }
+
+        this.parseEnumBody(enumDeclaration);
+
+        return enumDeclaration;
+    }
+
     /** Enumerator for the kinds of context where a class declaration can occur. */
     public static final
     class ClassDeclarationContext extends Enumerator {
@@ -596,6 +660,51 @@ class Parser {
 
             this.parseClassBodyDeclaration(classDeclaration);
         }
+    }
+
+    /**
+     * <pre>
+     *   EnumBody := '{' [ EnumConstant { ',' EnumConstant } [ ',' ] [ ';' ] { ClassBodyDeclaration } '}'
+     * </pre>
+     */
+    public void
+    parseEnumBody(Java.EnumDeclaration enumDeclaration) throws CompileException, IOException {
+        this.read("{");
+
+        while (this.peek(new String[] { ";", "}" }) == -1) {
+            enumDeclaration.addConstant(this.parseEnumConstant());
+            if (!this.peekRead(",")) break;
+        }
+
+        while (!this.peekRead("}")) {
+            this.parseClassBodyDeclaration((ClassDeclaration) enumDeclaration);
+        }
+    }
+
+    /**
+     * <pre>
+     *   EnumConstant := [ Annotations ] Identifier [ Arguments ] [ ClassBody ]
+     * </pre>
+     */
+    public Java.EnumConstant
+    parseEnumConstant() throws CompileException, IOException {
+
+        List<Java.Annotation> annotations = new ArrayList<Java.Annotation>();
+        while (this.peek("@")) {
+            annotations.add(this.parseAnnotation());
+        }
+
+        String name = this.readIdentifier();
+
+        Rvalue[] arguments = this.peek("(") ? this.parseArguments() : null;
+
+        Java.EnumConstant result = new Java.EnumConstant(this.location(), annotations, name, arguments);
+
+        if (this.peek("{")) {
+            this.parseClassBody(result);
+        }
+
+        return result;
     }
 
     /**
@@ -662,6 +771,17 @@ class Parser {
             return;
         }
 
+        // Member enum.
+        if (this.peekRead("enum")) {
+            if (optionalDocComment == null) this.warning("MEDCM", "Member enum doc comment missing", this.location());
+            classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseClassDeclarationRest(
+                optionalDocComment,                      // optionalDocComment
+                modifiers.add(Mod.ENUM),                 // modifiers
+                ClassDeclarationContext.TYPE_DECLARATION // context
+            ));
+            return;
+        }
+
         // Member interface.
         if (this.peekRead("interface")) {
             if (optionalDocComment == null) {
@@ -670,6 +790,21 @@ class Parser {
             classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                                // optionalDocComment
                 modifiers.add(Mod.STATIC),                         // modifiers
+                InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
+            ));
+            return;
+        }
+
+        // Member annotation type.
+        if (this.peek("@") && this.peekNextButOne("interface")) {
+            this.read();
+            this.read();
+            if (optionalDocComment == null) {
+                this.warning("MATDCM", "Member annotation type doc comment missing", this.location());
+            }
+            classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
+                optionalDocComment,                                // optionalDocComment
+                modifiers.add(Mod.STATIC | Mod.ANNOTATION),        // modifiers
                 InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
             ));
             return;
@@ -865,6 +1000,21 @@ class Parser {
                 continue;
             }
 
+            // Member enum.
+            if (this.peekRead("enum")) {
+                if (optionalDocComment == null) {
+                    this.warning("MEDCM", "Member enum doc comment missing", this.location());
+                }
+                interfaceDeclaration.addMemberTypeDeclaration(
+                    (MemberTypeDeclaration) this.parseClassDeclarationRest(
+                        optionalDocComment,                                // optionalDocComment
+                        modifiers.add(Mod.STATIC | Mod.PUBLIC | Mod.ENUM), // ModifiersAndAnnotations
+                        ClassDeclarationContext.TYPE_DECLARATION           // context
+                    )
+                );
+                continue;
+            }
+
             // Member interface.
             if (this.peekRead("interface")) {
                 if (optionalDocComment == null) {
@@ -875,6 +1025,23 @@ class Parser {
                         optionalDocComment,                                // optionalDocComment
                         modifiers.add(Mod.STATIC | Mod.PUBLIC),            // ModifiersAndAnnotations
                         InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
+                    )
+                );
+                continue;
+            }
+
+            // Member annotation type.
+            if (this.peek("@") && this.peekNextButOne("interface")) {
+                this.read();
+                this.read();
+                if (optionalDocComment == null) {
+                    this.warning("MATDCM", "Member annotation type doc comment missing", this.location());
+                }
+                interfaceDeclaration.addMemberTypeDeclaration(
+                    (MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
+                        optionalDocComment,                                      // optionalDocComment
+                        modifiers.add(Mod.STATIC | Mod.PUBLIC | Mod.ANNOTATION), // ModifiersAndAnnotations
+                        InterfaceDeclarationContext.NAMED_TYPE_DECLARATION       // context
                     )
                 );
                 continue;

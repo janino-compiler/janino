@@ -101,6 +101,7 @@ import org.codehaus.janino.Java.ElementValueArrayInitializer;
 import org.codehaus.janino.Java.ElementValuePair;
 import org.codehaus.janino.Java.EmptyStatement;
 import org.codehaus.janino.Java.EnclosingScopeOfTypeDeclaration;
+import org.codehaus.janino.Java.EnumConstant;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
@@ -131,6 +132,7 @@ import org.codehaus.janino.Java.Located;
 import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MarkerAnnotation;
 import org.codehaus.janino.Java.MemberClassDeclaration;
+import org.codehaus.janino.Java.MemberEnumDeclaration;
 import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.MemberTypeDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
@@ -147,6 +149,7 @@ import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.Package;
 import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
+import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.PackageMemberInterfaceDeclaration;
 import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
 import org.codehaus.janino.Java.Padder;
@@ -361,13 +364,16 @@ class UnitCompiler {
 
         td.accept(new TypeDeclarationVisitor<Void, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:6
-            @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd) throws CompileException                  { UnitCompiler.this.compile2(acd);                                 return null; }
-            @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd) throws CompileException                          { UnitCompiler.this.compile2(lcd);                                 return null; }
-            @Override @Nullable public Void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd) throws CompileException         { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmcd); return null; }
-            @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid) throws CompileException                { UnitCompiler.this.compile2(mid);                                 return null; }
-            @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid) throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid); return null; }
-            @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd) throws CompileException                        { UnitCompiler.this.compile2(mcd);                                 return null; }
+            // SUPPRESS CHECKSTYLE LineLength:9
+            @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd) throws CompileException                  { UnitCompiler.this.compile2(acd);                                                                          return null; }
+            @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd) throws CompileException                          { UnitCompiler.this.compile2(lcd);                                                                          return null; }
+            @Override @Nullable public Void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd) throws CompileException         { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmcd);                                          return null; }
+            @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid) throws CompileException                { UnitCompiler.this.compile2(mid);                                                                          return null; }
+            @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid) throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid);                                          return null; }
+            @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd) throws CompileException                        { UnitCompiler.this.compile2(mcd);                                                                          return null; }
+            @Override @Nullable public Void visitEnumConstant(EnumConstant ec) throws CompileException                                             { UnitCompiler.this.compileError("Compilation of enum constant NYI", ec.getLocation());                     return null; }
+            @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med) throws CompileException                          { UnitCompiler.this.compileError("Compilation of member enum declaration NYI", med.getLocation());          return null; }
+            @Override @Nullable public Void visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed) throws CompileException           { UnitCompiler.this.compileError("Compilation of package member enum declaration NYI", pmed.getLocation()); return null; }
         });
     }
     private void
@@ -6432,7 +6438,7 @@ class UnitCompiler {
             this.compileError("Expression \"" + a.toString() + "\" is not an lvalue", a.getLocation());
             return new Lvalue(a.getLocation()) {
 
-                @Override public <R, EX extends Throwable> R
+                @Override @Nullable public <R, EX extends Throwable> R
                 accept(Visitor.LvalueVisitor<R, EX> visitor) { return null; }
 
                 @Override public String
@@ -7366,9 +7372,12 @@ class UnitCompiler {
             location
         );
         return new Atom(location) {
-            @Override public <R, EX extends Throwable> R  accept(AtomVisitor<R, EX> visitor) { return null; }
 
-            @Override public String toString() { return Java.join(identifiers, "."); }
+            @Override @Nullable public <R, EX extends Throwable> R
+            accept(AtomVisitor<R, EX> visitor) { return null; }
+
+            @Override public String
+            toString() { return Java.join(identifiers, "."); }
         };
     }
 
@@ -7739,7 +7748,7 @@ class UnitCompiler {
                 );
                 value = new Rvalue(fae.getLocation()) {
 
-                    @Override public <R, EX extends Throwable> R
+                    @Override @Nullable public <R, EX extends Throwable> R
                     accept(RvalueVisitor<R, EX> visitor) { return null; }
 
                     @Override public String
@@ -7791,7 +7800,7 @@ class UnitCompiler {
             this.compileError("Class has no field \"" + scfae.fieldName + "\"", scfae.getLocation());
             value = new Rvalue(scfae.getLocation()) {
 
-                @Override public <R, EX extends Throwable> R
+                @Override @Nullable public <R, EX extends Throwable> R
                 accept(RvalueVisitor<R, EX> visitor) { return null; }
 
                 @Override public String

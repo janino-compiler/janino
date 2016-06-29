@@ -96,6 +96,12 @@ class Visitor {
         @Nullable R visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) throws EX;
         /** Invoked by {@link Java.MemberClassDeclaration#accept(Visitor.TypeDeclarationVisitor)} */
         @Nullable R visitMemberClassDeclaration(Java.MemberClassDeclaration mcd) throws EX;
+        /** Invoked by {@link Java.EnumConstant#accept(Visitor.TypeDeclarationVisitor)} */
+        @Nullable R visitEnumConstant(Java.EnumConstant ec) throws EX;
+        /** Invoked by {@link Java.MemberEnumDeclaration#accept(Visitor.TypeDeclarationVisitor)} */
+        @Nullable R visitMemberEnumDeclaration(Java.MemberEnumDeclaration med) throws EX;
+        /** Invoked by {@link Java.PackageMemberEnumDeclaration#accept(Visitor.TypeDeclarationVisitor)} */
+        @Nullable R visitPackageMemberEnumDeclaration(Java.PackageMemberEnumDeclaration pmed) throws EX;
     }
 
     /**
@@ -129,6 +135,10 @@ class Visitor {
         @Nullable R visitInitializer(Java.Initializer i) throws EX;
         /** Invoked by {@link Java.FieldDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)} */
         @Nullable R visitFieldDeclaration(Java.FieldDeclaration fd) throws EX;
+        /** Invoked by {@link Java.MemberEnumDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)} */
+        @Nullable R visitMemberEnumDeclaration(Java.MemberEnumDeclaration med) throws EX;
+        /** Invoked by {@link Java.PackageMemberEnumDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)} */
+        @Nullable R visitPackageMemberEnumDeclaration(Java.PackageMemberEnumDeclaration pmed) throws EX;
     }
 
     /**
