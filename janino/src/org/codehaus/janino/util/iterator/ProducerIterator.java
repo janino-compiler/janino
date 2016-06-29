@@ -63,6 +63,8 @@ class ProducerIterator<T> implements Iterator<T> {
         if (this.nextElement == ProducerIterator.AT_END) throw new NoSuchElementException();
         @SuppressWarnings("unchecked") T result = (T) this.nextElement;
         this.nextElement = ProducerIterator.UNKNOWN;
+
+        assert result != null;
         return result;
     }
 
