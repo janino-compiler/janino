@@ -94,7 +94,7 @@ public
 class UnparseTests {
 
     private static void
-    helpTestExpr(String input, String expect, boolean simplify) throws Exception {
+    helpTestExpr(String input, String expected, boolean simplify) throws Exception {
         Parser p    = new Parser(new Scanner(null, new StringReader(input)));
         Atom   expr = p.parseExpression();
         if (simplify) {
@@ -108,7 +108,22 @@ class UnparseTests {
         String s = sw.toString();
         s = UnparseTests.replace(s, "((( ", "(");
         s = UnparseTests.replace(s, " )))", ")");
-        Assert.assertEquals(expect, s);
+        Assert.assertEquals(expected, s);
+    }
+
+    private static void
+    helpTestCu(String input, String expected) throws Exception {
+
+        Parser          p  = new Parser(new Scanner(null, new StringReader(input)));
+        CompilationUnit cu = p.parseCompilationUnit();
+
+        StringWriter   sw = new StringWriter();
+        UnparseVisitor uv = new UnparseVisitor(sw);
+        uv.unparseCompilationUnit(cu);
+        uv.close();
+
+        String actual = sw.toString().trim().replaceAll("\\s+", " ");
+        Assert.assertEquals(expected, actual);
     }
 
     private static String
@@ -477,6 +492,30 @@ class UnparseTests {
             UnparseTests.helpTestExpr(input, expectSimplify, true);
             UnparseTests.helpTestExpr(input, expectNoSimplify, false);
         }
+    }
+
+    @Test public void
+    testParseUnparseEnumDeclaration() throws Exception {
+        final String[][] cus = new String[][] {
+//          input:                                                      expected output (if different from input):
+          { "enum Foo { A, B ; }",                                      null },
+          { "public enum Foo { A, B ; }",                               null },
+          { "public enum Foo implements Serializable { A, B ; }",       null },
+          { "enum Foo { A, B ; int meth() { return 0; } }",             null },
+          { "enum Foo { @Deprecated A ; }",                             null },
+          { "enum Foo { @Bar(foo = \"bar\", cls = String.class) A ; }", null },
+          { "enum Foo { A(1, 2, 3) ; }",                                null },
+          { "enum Foo { A { void meth() {} } ; }",                      null },
+      };
+
+      for (String[] expr : cus) {
+
+          String input = expr[0];
+
+          String expect = expr.length >= 2 && expr[1] != null ? expr[1] : input;
+
+          UnparseTests.helpTestCu(input, expect);
+      }
     }
 
     @Test public void
