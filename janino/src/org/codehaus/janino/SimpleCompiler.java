@@ -298,8 +298,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             @Nullable private Java.SimpleType delegate;
 
             // SUPPRESS CHECKSTYLE LineLength:2
-            @Override public <R, EX extends Throwable> R accept(AtomVisitor<R, EX> visitor) throws EX { return this.getDelegate().accept((TypeVisitor<R, EX>) visitor); }
-            @Override public <R, EX extends Throwable> R accept(TypeVisitor<R, EX> visitor) throws EX { return this.getDelegate().accept(visitor); }
+            @Override @Nullable public <R, EX extends Throwable> R accept(AtomVisitor<R, EX> visitor) throws EX { return this.getDelegate().accept((TypeVisitor<R, EX>) visitor); }
+            @Override @Nullable public <R, EX extends Throwable> R accept(TypeVisitor<R, EX> visitor) throws EX { return this.getDelegate().accept(visitor); }
 
             @Override public String toString() { return this.getDelegate().toString(); }
 
@@ -420,6 +420,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         return this.assertCooked();
     }
 
+    /**
+     * Loads a "{@code de.unkrig.jdisasm.Disassembler}" through reflection (to avoid a compile-time dependency) and
+     * uses it to disassemble the given bytes to @{code System.out}..
+     */
     public static void
     disassembleToStdout(byte[] contents) {
         try {
