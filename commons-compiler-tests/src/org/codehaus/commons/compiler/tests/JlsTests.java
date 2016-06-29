@@ -463,6 +463,28 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
+    test_9_6_Annotation_Types() throws Exception {
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "public\n"
+            + "@interface MyAnno {\n"
+            + "}\n"
+            + "\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() throws Exception {\n"
+            + "        Class c = Main.class.getClassLoader().loadClass(\"MyAnno\");\n"
+            + "        System.out.println(c.getModifiers());\n"
+            + "        return c.getModifiers() == 0x2601;\n" // 2000=ANNOTATION, 400=ABSTRACT, 200=INTERFACE, 1=PUBLIC
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
     test_9_7_2_Marker_Annotations() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((

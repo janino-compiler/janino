@@ -30,6 +30,8 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.Annotation;
+import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
+import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Visitor;
 import org.codehaus.janino.Visitor.ComprehensiveVisitor;
@@ -138,6 +140,8 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitEnumConstant(Java.EnumConstant ec) throws EX                                                          { Traverser.this.traverseEnumConstant(ec); return null; }
         @Override @Nullable public Void visitMemberEnumDeclaration(Java.MemberEnumDeclaration med) throws EX                                       { Traverser.this.traverseMemberEnumDeclaration(med); return null; }
         @Override @Nullable public Void visitPackageMemberEnumDeclaration(Java.PackageMemberEnumDeclaration pmed) throws EX                        { Traverser.this.traversePackageMemberEnumDeclaration(pmed); return null; }
+        @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(Java.MemberAnnotationTypeDeclaration matd) throws EX                  { Traverser.this.traverseMemberAnnotationTypeDeclaration(matd); return null; }
+        @Override @Nullable public Void visitPackageMemberAnnotationTypeDeclaration(Java.PackageMemberAnnotationTypeDeclaration pmatd) throws EX   { Traverser.this.traversePackageMemberAnnotationTypeDeclaration(pmatd); return null; }
         // CHECKSTYLE LineLengthCheck:ON
     };
 
@@ -829,14 +833,26 @@ class Traverser<EX extends Throwable> {
 
     /** @see Traverser */
     public void
+    traversePackageMemberEnumDeclaration(Java.PackageMemberEnumDeclaration pmed) throws EX {
+        this.traversePackageMemberClassDeclaration(pmed);
+    }
+
+    /** @see Traverser */
+    public void
     traverseMemberEnumDeclaration(Java.MemberEnumDeclaration med) throws EX {
         this.traverseMemberClassDeclaration(med);
     }
 
     /** @see Traverser */
     public void
-    traversePackageMemberEnumDeclaration(Java.PackageMemberEnumDeclaration pmed) throws EX {
-        this.traversePackageMemberClassDeclaration(pmed);
+    traversePackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) throws EX {
+        this.traversePackageMemberInterfaceDeclaration(pmatd);
+    }
+
+    /** @see Traverser */
+    public void
+    traverseMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws EX {
+        this.traverseMemberInterfaceDeclaration(matd);
     }
 
     /** @see Traverser */

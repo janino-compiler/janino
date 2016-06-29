@@ -49,8 +49,10 @@ import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.ConstructorInvocation;
 import org.codehaus.janino.Java.EnumConstant;
+import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.MemberEnumDeclaration;
 import org.codehaus.janino.Java.PackageDeclaration;
+import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
@@ -1073,7 +1075,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             ctord.accept(this);
             this.pw.println();
         }
-        this.unparseAbstractTypeDeclarationBody(cd);
+        this.unparseTypeDeclarationBody(cd);
         for (Java.BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
             this.pw.println();
             vdoi.accept(this);
@@ -1095,13 +1097,12 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         this.unparseDocComment(id);
         this.unparseAnnotations(id.getAnnotations());
         this.unparseModifiers(id.getModifierFlags());
-        //make sure we print "interface", even if it wasn't in the modifiers
-        if (!Mod.isInterface(id.getModifierFlags())) this.pw.print("interface ");
+        this.pw.print("interface ");
         this.pw.print(id.name);
         if (id.extendedTypes.length > 0) this.pw.print(" extends " + Java.join(id.extendedTypes, ", "));
         this.pw.println(" {");
         this.pw.print(AutoIndentWriter.INDENT);
-        this.unparseAbstractTypeDeclarationBody(id);
+        this.unparseTypeDeclarationBody(id);
         for (Java.TypeBodyDeclaration cnstd : id.constantDeclarations) {
             cnstd.accept(this);
             this.pw.println();
@@ -1111,13 +1112,13 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
 
     // Multi-line!
     private void
-    unparseAbstractTypeDeclarationBody(Java.AbstractTypeDeclaration atd) {
-        for (Java.MethodDeclarator md : atd.getMethodDeclarations()) {
+    unparseTypeDeclarationBody(Java.TypeDeclaration td) {
+        for (Java.MethodDeclarator md : td.getMethodDeclarations()) {
             this.pw.println();
             md.accept(this);
             this.pw.println();
         }
-        for (Java.MemberTypeDeclaration mtd : atd.getMemberTypeDeclarations()) {
+        for (Java.MemberTypeDeclaration mtd : td.getMemberTypeDeclarations()) {
             this.pw.println();
             ((Java.TypeBodyDeclaration) mtd).accept(this);
             this.pw.println();
@@ -1305,6 +1306,32 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         this.pw.println();
         this.pw.println(';');
         this.unparseClassDeclarationBody((Java.ClassDeclaration) ed);
+        this.pw.print(AutoIndentWriter.UNINDENT + "}");
+    }
+
+    @Override @Nullable public Void
+    visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) {
+        this.unparseAnnotationTypeDeclaration(matd);
+        return null;
+    }
+
+    @Override @Nullable public Void
+    visitPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) {
+        this.unparseAnnotationTypeDeclaration(pmatd);
+        return null;
+    }
+
+    private void
+    unparseAnnotationTypeDeclaration(Java.AnnotationTypeDeclaration atd) {
+        this.unparseDocComment(atd);
+        this.unparseAnnotations(atd.getAnnotations());
+        this.unparseModifiers(atd.getModifierFlags());
+        this.pw.print("@interface ");
+        this.pw.print(atd.getName());
+
+        this.pw.println(" {");
+        this.pw.print(AutoIndentWriter.INDENT);
+        this.unparseTypeDeclarationBody(atd);
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
 }

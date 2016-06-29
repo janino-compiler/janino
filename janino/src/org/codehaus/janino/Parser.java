@@ -37,6 +37,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Annotation;
+import org.codehaus.janino.Java.AnnotationTypeDeclaration;
 import org.codehaus.janino.Java.AnonymousClassDeclaration;
 import org.codehaus.janino.Java.ArrayAccessExpression;
 import org.codehaus.janino.Java.ArrayInitializer;
@@ -85,6 +86,7 @@ import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Java.Lvalue;
+import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.MemberClassDeclaration;
 import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.MemberTypeDeclaration;
@@ -98,6 +100,7 @@ import org.codehaus.janino.Java.NewClassInstance;
 import org.codehaus.janino.Java.NewInitializedArray;
 import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.PackageDeclaration;
+import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.PackageMemberInterfaceDeclaration;
 import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
@@ -299,7 +302,9 @@ class Parser {
      * <pre>
      *   PackageMemberTypeDeclarationRest :=
      *             'class' ClassDeclarationRest |
+     *             'enum' EnumDeclarationRest |
      *             'interface' InterfaceDeclarationRest
+     *             '@' 'interface' AnnotationTypeDeclarationRest
      * </pre>
      */
     private PackageMemberTypeDeclaration
@@ -337,9 +342,9 @@ class Parser {
             if (optionalDocComment == null) {
                 this.warning("ATDCM", "Annotation type doc comment missing", this.location());
             }
-            return (PackageMemberInterfaceDeclaration) this.parseInterfaceDeclarationRest(
+            return (PackageMemberAnnotationTypeDeclaration) this.parseAnnotationTypeDeclarationRest(
                 optionalDocComment,                          // optionalDocComment
-                modifiers.add(Mod.ANNOTATION),               // modifiers
+                modifiers,                                   // modifiers
                 InterfaceDeclarationContext.COMPILATION_UNIT // context
             );
 
@@ -899,9 +904,9 @@ class Parser {
             extendedTypes = this.parseReferenceTypeList();
         }
 
-        InterfaceDeclaration interfaceDeclaration;
+        InterfaceDeclaration id;
         if (context == InterfaceDeclarationContext.COMPILATION_UNIT) {
-            interfaceDeclaration = new PackageMemberInterfaceDeclaration(
+            id = new PackageMemberInterfaceDeclaration(
                 location,               // location
                 optionalDocComment,     // optionalDocComment
                 modifiers,              // modifiers
@@ -911,7 +916,7 @@ class Parser {
             );
         } else
         if (context == InterfaceDeclarationContext.NAMED_TYPE_DECLARATION) {
-            interfaceDeclaration = new MemberInterfaceDeclaration(
+            id = new MemberInterfaceDeclaration(
                 location,               // location
                 optionalDocComment,     // optionalDocComment
                 modifiers,              // modifiers
@@ -924,8 +929,49 @@ class Parser {
             throw new JaninoRuntimeException("SNO: Interface declaration in unexpected context " + context);
         }
 
-        this.parseInterfaceBody(interfaceDeclaration);
-        return interfaceDeclaration;
+        this.parseInterfaceBody(id);
+        return id;
+    }
+
+    /**
+     * <pre>
+     *   AnnotationTypeDeclarationRest := Identifier AnnotationTypeBody
+     * </pre>
+     */
+    public AnnotationTypeDeclaration
+    parseAnnotationTypeDeclarationRest(
+        @Nullable String            optionalDocComment,
+        Modifiers                   modifiers,
+        InterfaceDeclarationContext context
+    ) throws CompileException, IOException {
+        Location location           = this.location();
+        String   annotationTypeName = this.readIdentifier();
+        this.verifyIdentifierIsConventionalClassOrInterfaceName(annotationTypeName, location);
+
+        AnnotationTypeDeclaration atd;
+        if (context == InterfaceDeclarationContext.COMPILATION_UNIT) {
+            atd = new PackageMemberAnnotationTypeDeclaration(
+                location,           // location
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                annotationTypeName  // name
+            );
+        } else
+        if (context == InterfaceDeclarationContext.NAMED_TYPE_DECLARATION) {
+            atd = new MemberAnnotationTypeDeclaration(
+                location,           // location
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                annotationTypeName  // name
+            );
+        } else
+        {
+            throw new JaninoRuntimeException("SNO: Interface declaration in unexpected context " + context);
+        }
+
+        this.parseInterfaceBody((InterfaceDeclaration) atd);
+
+        return atd;
     }
 
     /** Enumerator for the kinds of context where an interface declaration can occur. */

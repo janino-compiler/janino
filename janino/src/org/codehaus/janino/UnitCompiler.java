@@ -131,6 +131,7 @@ import org.codehaus.janino.Java.Locatable;
 import org.codehaus.janino.Java.Located;
 import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MarkerAnnotation;
+import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.MemberClassDeclaration;
 import org.codehaus.janino.Java.MemberEnumDeclaration;
 import org.codehaus.janino.Java.MemberInterfaceDeclaration;
@@ -148,6 +149,7 @@ import org.codehaus.janino.Java.NormalAnnotation;
 import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.Package;
 import org.codehaus.janino.Java.PackageDeclaration;
+import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.PackageMemberInterfaceDeclaration;
@@ -364,16 +366,18 @@ class UnitCompiler {
 
         td.accept(new TypeDeclarationVisitor<Void, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:9
-            @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd) throws CompileException                  { UnitCompiler.this.compile2(acd);                                                                          return null; }
-            @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd) throws CompileException                          { UnitCompiler.this.compile2(lcd);                                                                          return null; }
-            @Override @Nullable public Void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd) throws CompileException         { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmcd);                                          return null; }
-            @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid) throws CompileException                { UnitCompiler.this.compile2(mid);                                                                          return null; }
-            @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid) throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid);                                          return null; }
-            @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd) throws CompileException                        { UnitCompiler.this.compile2(mcd);                                                                          return null; }
-            @Override @Nullable public Void visitEnumConstant(EnumConstant ec) throws CompileException                                             { UnitCompiler.this.compileError("Compilation of enum constant NYI", ec.getLocation());                     return null; }
-            @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med) throws CompileException                          { UnitCompiler.this.compileError("Compilation of member enum declaration NYI", med.getLocation());          return null; }
-            @Override @Nullable public Void visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed) throws CompileException           { UnitCompiler.this.compileError("Compilation of package member enum declaration NYI", pmed.getLocation()); return null; }
+            // SUPPRESS CHECKSTYLE LineLength:11
+            @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd) throws CompileException                             { UnitCompiler.this.compile2(acd);                                                                             return null; }
+            @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd) throws CompileException                                     { UnitCompiler.this.compile2(lcd);                                                                             return null; }
+            @Override @Nullable public Void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd) throws CompileException                    { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmcd);                                             return null; }
+            @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid) throws CompileException                           { UnitCompiler.this.compile2(mid);                                                                             return null; }
+            @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid) throws CompileException            { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid);                                             return null; }
+            @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd) throws CompileException                                   { UnitCompiler.this.compile2(mcd);                                                                             return null; }
+            @Override @Nullable public Void visitEnumConstant(EnumConstant ec) throws CompileException                                                        { UnitCompiler.this.compileError("Compilation of enum constant NYI", ec.getLocation());                        return null; }
+            @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med) throws CompileException                                     { UnitCompiler.this.compileError("Compilation of member enum declaration NYI", med.getLocation());             return null; }
+            @Override @Nullable public Void visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed) throws CompileException                      { UnitCompiler.this.compileError("Compilation of package member enum declaration NYI", pmed.getLocation());    return null; }
+            @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws CompileException                { UnitCompiler.this.compileError("Compilation of member annotation type declaration NYI", matd.getLocation()); return null; }
+            @Override @Nullable public Void visitPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmatd);                                            return null; }
         });
     }
     private void

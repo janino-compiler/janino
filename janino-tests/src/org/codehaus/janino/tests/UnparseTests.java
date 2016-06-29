@@ -122,7 +122,7 @@ class UnparseTests {
         uv.unparseCompilationUnit(cu);
         uv.close();
 
-        String actual = sw.toString().trim().replaceAll("\\s+", " ");
+        String actual = UnparseTests.normalizeWhitespace(sw.toString());
         Assert.assertEquals(expected, actual);
     }
 
@@ -497,25 +497,47 @@ class UnparseTests {
     @Test public void
     testParseUnparseEnumDeclaration() throws Exception {
         final String[][] cus = new String[][] {
-//          input:                                                      expected output (if different from input):
-          { "enum Foo { A, B ; }",                                      null },
-          { "public enum Foo { A, B ; }",                               null },
-          { "public enum Foo implements Serializable { A, B ; }",       null },
-          { "enum Foo { A, B ; int meth() { return 0; } }",             null },
-          { "enum Foo { @Deprecated A ; }",                             null },
-          { "enum Foo { @Bar(foo = \"bar\", cls = String.class) A ; }", null },
-          { "enum Foo { A(1, 2, 3) ; }",                                null },
-          { "enum Foo { A { void meth() {} } ; }",                      null },
-      };
+//            input:                                                      expected output (if different from input):
+            { "enum Foo { A, B ; }",                                      null },
+            { "public enum Foo { A, B ; }",                               null },
+            { "public enum Foo implements Serializable { A, B ; }",       null },
+            { "enum Foo { A, B ; int meth() { return 0; } }",             null },
+            { "enum Foo { @Deprecated A ; }",                             null },
+            { "enum Foo { @Bar(foo = \"bar\", cls = String.class) A ; }", null },
+            { "enum Foo { A(1, 2, 3) ; }",                                null },
+            { "enum Foo { A { void meth() {} } ; }",                      null },
+        };
 
-      for (String[] expr : cus) {
+        for (String[] expr : cus) {
 
-          String input = expr[0];
+            String input = expr[0];
 
-          String expect = expr.length >= 2 && expr[1] != null ? expr[1] : input;
+            String expect = expr.length >= 2 && expr[1] != null ? expr[1] : input;
 
-          UnparseTests.helpTestCu(input, expect);
-      }
+            UnparseTests.helpTestCu(input, expect);
+        }
+    }
+
+    @Test public void
+    testParseUnparseAnnotationTypeDeclaration() throws Exception {
+        final String[][] cus = new String[][] {
+//          input:                                                          expected output (if different from input):
+            { "@interface Foo { }",                                         null },
+            { "public @interface Foo { }",                                  null },
+            { "@Deprecated @interface Foo { }",                             null },
+            { "@interface Foo { public abstract int value(); }",            null },
+            { "@interface Foo { public abstract int[] value(); }",          null },
+//            { "@interface Foo { public abstract int value() default 99; }", null },  NYI
+        };
+
+        for (String[] expr : cus) {
+
+            String input = expr[0];
+
+            String expect = expr.length >= 2 && expr[1] != null ? expr[1] : input;
+
+            UnparseTests.helpTestCu(input, expect);
+        }
     }
 
     @Test public void

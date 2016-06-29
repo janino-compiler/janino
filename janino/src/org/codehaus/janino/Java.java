@@ -1415,8 +1415,10 @@ class Java {
      * Representation of a 'member interface declaration', i.e. an interface declaration that appears inside another
      * class or interface declaration.
      */
-    public static final
-    class MemberInterfaceDeclaration extends InterfaceDeclaration implements MemberTypeDeclaration {
+    public static
+    class MemberInterfaceDeclaration
+    extends InterfaceDeclaration
+    implements MemberTypeDeclaration, AnnotationTypeDeclaration {
 
         public
         MemberInterfaceDeclaration(
@@ -1465,9 +1467,36 @@ class Java {
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberInterfaceDeclaration(this); }
     }
 
+    public static
+    class MemberAnnotationTypeDeclaration extends MemberInterfaceDeclaration {
+
+        public MemberAnnotationTypeDeclaration(
+            Location         location,
+            @Nullable String optionalDocComment,
+            Modifiers        modifiers,
+            String           name
+        ) {
+            super(
+                location,
+                optionalDocComment,
+                modifiers.add(Mod.ANNOTATION),
+                name,
+                null,       // optionalTypeParameters
+                new Type[0] // extendedTypes
+            );
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
+            return visitor.visitMemberAnnotationTypeDeclaration(this);
+        }
+    }
+
     /** Representation of a 'package member interface declaration', a.k.a. 'top-level interface declaration'. */
-    public static final
-    class PackageMemberInterfaceDeclaration extends InterfaceDeclaration implements PackageMemberTypeDeclaration {
+    public static
+    class PackageMemberInterfaceDeclaration
+    extends InterfaceDeclaration
+    implements PackageMemberTypeDeclaration, AnnotationTypeDeclaration {
 
         public
         PackageMemberInterfaceDeclaration(
@@ -1524,6 +1553,38 @@ class Java {
         accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
             return visitor.visitPackageMemberInterfaceDeclaration(this);
         }
+    }
+
+    public static final
+    class PackageMemberAnnotationTypeDeclaration
+    extends PackageMemberInterfaceDeclaration
+    implements AnnotationTypeDeclaration {
+
+        public
+        PackageMemberAnnotationTypeDeclaration(
+            Location         location,
+            @Nullable String optionalDocComment,
+            Modifiers        modifiers,
+            String           name
+        ) throws CompileException {
+            super(
+                location,
+                optionalDocComment,
+                modifiers.add(Mod.ANNOTATION),
+                name,
+                null,       // optionalTypeParameters
+                new Type[0] // extendedTypes
+            );
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
+            return visitor.visitPackageMemberAnnotationTypeDeclaration(this);
+        }
+    }
+
+    public
+    interface AnnotationTypeDeclaration extends NamedTypeDeclaration, DocCommentable {
     }
 
     /** Representation of a type parameter (which declares a type variable). */

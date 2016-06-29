@@ -102,6 +102,10 @@ class Visitor {
         @Nullable R visitMemberEnumDeclaration(Java.MemberEnumDeclaration med) throws EX;
         /** Invoked by {@link Java.PackageMemberEnumDeclaration#accept(Visitor.TypeDeclarationVisitor)} */
         @Nullable R visitPackageMemberEnumDeclaration(Java.PackageMemberEnumDeclaration pmed) throws EX;
+        /** Invoked by {@link Java.MemberAnnotationTypeDeclaration.accept(TypeDeclarationVisitor)} */
+        @Nullable R visitMemberAnnotationTypeDeclaration(Java.MemberAnnotationTypeDeclaration matd) throws EX;
+        /** Invoked by {@link Java.packageMemberAnnotationTypeDeclaration.accept(TypeDeclarationVisitor)} */
+        @Nullable R visitPackageMemberAnnotationTypeDeclaration(Java.PackageMemberAnnotationTypeDeclaration pmatd) throws EX;
     }
 
     /**
