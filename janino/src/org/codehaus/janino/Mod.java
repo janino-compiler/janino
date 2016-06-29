@@ -259,7 +259,7 @@ class Mod {
         "transient",    new Short(Mod.TRANSIENT),    // Has the same value as VARARGS
 //      "varargs",      new Short(Mod.VARARGS),      // Has the same value as TRANSIENT
         "native",       new Short(Mod.NATIVE),
-        "interface",    new Short(Mod.INTERFACE),
+//      "interface",    new Short(Mod.INTERFACE),    // Not a "real" modifier
         "abstract",     new Short(Mod.ABSTRACT),
         "strictfp",     new Short(Mod.STRICTFP),
 //      "enum",         new Short(Mod.ENUM),         // Not a "real" modifier
