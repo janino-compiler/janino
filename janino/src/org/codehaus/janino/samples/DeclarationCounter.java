@@ -69,7 +69,7 @@ class DeclarationCounter extends Traverser<RuntimeException> {
 
     // Count class declarations.
     @Override public void
-    traverseClassDeclaration(Java.ClassDeclaration cd) {
+    traverseClassDeclaration(Java.AbstractClassDeclaration cd) {
         ++this.classDeclarationCount;
         super.traverseClassDeclaration(cd);
     }

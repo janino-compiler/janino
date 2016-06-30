@@ -1996,7 +1996,7 @@ class ClassFile implements Annotatable {
 
             @Override public void
             store(DataOutputStream dos) throws IOException {
-                dos.writeShort(this.values.length);   // num_values
+                dos.writeShort(this.values.length);                        // num_values
                 for (AnnotationsAttribute.ElementValue ev : this.values) { // values[num_values]
                     dos.writeByte(ev.getTag()); // tag
                     ev.store(dos);              // value

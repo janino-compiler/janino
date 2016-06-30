@@ -57,6 +57,8 @@ import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
+import org.codehaus.janino.Java.AbstractClassDeclaration;
+import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
@@ -81,7 +83,6 @@ import org.codehaus.janino.Java.BreakableStatement;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CatchClause;
 import org.codehaus.janino.Java.CharacterLiteral;
-import org.codehaus.janino.Java.ClassDeclaration;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
@@ -102,6 +103,7 @@ import org.codehaus.janino.Java.ElementValuePair;
 import org.codehaus.janino.Java.EmptyStatement;
 import org.codehaus.janino.Java.EnclosingScopeOfTypeDeclaration;
 import org.codehaus.janino.Java.EnumConstant;
+import org.codehaus.janino.Java.EnumDeclaration;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
@@ -369,17 +371,18 @@ class UnitCompiler {
             // SUPPRESS CHECKSTYLE LineLength:11
             @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd) throws CompileException                             { UnitCompiler.this.compile2(acd);                                                                             return null; }
             @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd) throws CompileException                                     { UnitCompiler.this.compile2(lcd);                                                                             return null; }
-            @Override @Nullable public Void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd) throws CompileException                    { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmcd);                                             return null; }
+            @Override @Nullable public Void visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd) throws CompileException           { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) apmcd);                                            return null; }
             @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid) throws CompileException                           { UnitCompiler.this.compile2(mid);                                                                             return null; }
             @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid) throws CompileException            { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid);                                             return null; }
             @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd) throws CompileException                                   { UnitCompiler.this.compile2(mcd);                                                                             return null; }
             @Override @Nullable public Void visitEnumConstant(EnumConstant ec) throws CompileException                                                        { UnitCompiler.this.compileError("Compilation of enum constant NYI", ec.getLocation());                        return null; }
             @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med) throws CompileException                                     { UnitCompiler.this.compileError("Compilation of member enum declaration NYI", med.getLocation());             return null; }
-            @Override @Nullable public Void visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed) throws CompileException                      { UnitCompiler.this.compileError("Compilation of package member enum declaration NYI", pmed.getLocation());    return null; }
+            @Override @Nullable public Void visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed) throws CompileException                      { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmed);                                             return null; }
             @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws CompileException                { UnitCompiler.this.compileError("Compilation of member annotation type declaration NYI", matd.getLocation()); return null; }
             @Override @Nullable public Void visitPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmatd);                                            return null; }
         });
     }
+
     private void
     compile2(PackageMemberTypeDeclaration pmtd) throws CompileException {
         CompilationUnit declaringCompilationUnit = pmtd.getDeclaringCompilationUnit();
@@ -413,8 +416,11 @@ class UnitCompiler {
             }
         }
 
-        if (pmtd instanceof NamedClassDeclaration) {
+        if (pmtd instanceof PackageMemberClassDeclaration) {
             this.compile2((NamedClassDeclaration) pmtd);
+        } else
+        if (pmtd instanceof EnumDeclaration) {
+            this.compile2((EnumDeclaration) pmtd);
         } else
         if (pmtd instanceof InterfaceDeclaration) {
             this.compile2((InterfaceDeclaration) pmtd);
@@ -425,7 +431,7 @@ class UnitCompiler {
     }
 
     private void
-    compile2(ClassDeclaration cd) throws CompileException {
+    compile2(AbstractClassDeclaration cd) throws CompileException {
         IClass iClass = this.resolve(cd);
 
         // Check that all methods of the non-abstract class are implemented.
@@ -580,12 +586,205 @@ class UnitCompiler {
         }
 
         // Class and instance variables.
-        for (BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
+        for (BlockStatement vdoi : cd.getVariableDeclaratorsAndInitializers()) {
             if (vdoi instanceof FieldDeclaration) this.addFields((FieldDeclaration) vdoi, cf);
         }
 
         // Synthetic fields.
-        for (IField f : cd.syntheticFields.values()) {
+        for (IField f : cd.getSyntheticFields().values()) {
+            cf.addFieldInfo(
+                Mod.PACKAGE,                 // accessFlags
+                f.getName(),                 // fieldName
+                f.getType().getDescriptor(), // fieldTypeFD
+                null                         // optionalConstantValue
+            );
+        }
+
+
+        // Add the generated class file to a thread-local store.
+        this.addClassFile(cf);
+    }
+
+    private void
+    compile2(EnumDeclaration ed) throws CompileException {
+        IClass iClass = this.resolve(ed);
+
+        // Create "ClassFile" object.
+        ClassFile cf;
+        cf = new ClassFile(
+            (short) (ed.getModifierFlags() | Mod.SUPER | Mod.ENUM), // accessFlags
+            iClass.getDescriptor(),                                 // thisClassFD
+            Descriptor.JAVA_LANG_ENUM,                              // superclassFD
+            IClass.getDescriptors(iClass.getInterfaces())           // interfaceFDs
+        );
+
+        // Add class annotations with retention != SOURCE.
+        this.compileAnnotations(ed.getAnnotations(), cf, cf);
+
+        // Add InnerClasses attribute entry for this class declaration.
+        if (ed.getEnclosingScope() instanceof CompilationUnit) {
+            ;
+        } else
+        if (ed.getEnclosingScope() instanceof TypeDeclaration) {
+            short innerClassInfoIndex = cf.addConstantClassInfo(iClass.getDescriptor());
+            short outerClassInfoIndex = cf.addConstantClassInfo(
+                this.resolve(((TypeDeclaration) ed.getEnclosingScope())).getDescriptor()
+            );
+            short innerNameIndex = cf.addConstantUtf8Info(((MemberTypeDeclaration) ed).getName());
+            assert ed.getAnnotations().length == 0 : "NYI";
+            cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
+                innerClassInfoIndex,  // innerClassInfoIndex
+                outerClassInfoIndex,  // outerClassInfoIndex
+                innerNameIndex,       // innerNameIndex
+                ed.getModifierFlags() // innerClassAccessFlags
+            ));
+        }
+
+        // Set "SourceFile" attribute.
+        if (this.debugSource) {
+            String sourceFileName;
+            {
+                String s = ed.getLocation().getFileName();
+                if (s != null) {
+                    sourceFileName = new File(s).getName();
+                } else if (ed instanceof NamedTypeDeclaration) {
+                    sourceFileName = ((NamedTypeDeclaration) ed).getName() + ".java";
+                } else {
+                    sourceFileName = "ANONYMOUS.java";
+                }
+            }
+            cf.addSourceFileAttribute(sourceFileName);
+        }
+
+        // Add "Deprecated" attribute (JVMS 4.7.10).
+        if (ed instanceof DocCommentable) {
+            if (((DocCommentable) ed).hasDeprecatedDocTag()) cf.addDeprecatedAttribute();
+        }
+
+        // Create fields for enum constants and synthesize class initialization method.
+        {
+            List<BlockStatement> statements = new ArrayList();
+
+            // Create fields for each constant.
+            int ordinal = 0;
+            for (EnumConstant ec : ed.getConstants()) {
+
+                VariableDeclarator variableDeclarator = new VariableDeclarator(
+                    ec.getLocation(),     // location
+                    ec.name,              // name
+                    0,                    // brackets
+                    new NewClassInstance( // optionalInitializer
+                        ec.getLocation(),   // location
+                        null,               // optionalQualification
+                        iClass,             // iClass
+                        new Rvalue[] {      // arguments
+                            new StringLiteral(ec.getLocation(), ec.name),
+                            new IntegerLiteral(ec.getLocation(), String.valueOf(ordinal++)),
+                        }
+                    )
+                );
+
+                FieldDeclaration fd = new FieldDeclaration(
+                    ec.getLocation(),                                             // location
+                    ec.getDocComment(),                                           // optionalDocComment
+                    new Modifiers((short) (Mod.PUBLIC | Mod.STATIC | Mod.FINAL)), // modifiers
+                    new SimpleType(ec.getLocation(), iClass),                     // type
+                    new VariableDeclarator[] { variableDeclarator }               // variableDeclarators
+                );
+
+                fd.setDeclaringType(ed);
+
+                this.addFields(fd, cf);
+
+                statements.add(fd);
+            }
+
+            // Add static initializers.
+            for (BlockStatement vdoi : ed.getVariableDeclaratorsAndInitializers()) {
+                if (((TypeBodyDeclaration) vdoi).isStatic()) statements.add(vdoi);
+            }
+
+            this.maybeCreateInitMethod(ed, cf, statements);
+        }
+
+        // Compile enum's methods.
+        this.compileDeclaredMethods(ed, cf);
+
+        // Synthesize the constructor "MyEnum(String name, int ordinal) { super(name, ordinal); }".
+        FormalParameter nameFormalParameter = new FormalParameter(
+            ed.getLocation(),                                                          // location
+            false,                                                                     // finaL
+            new SimpleType(ed.getLocation(), this.iClassLoader.TYPE_java_lang_String), // type
+            "name"                                                                     // name
+        );
+        LocalVariable nameLocalVariable = (
+            nameFormalParameter.localVariable = new LocalVariable(false, this.iClassLoader.TYPE_java_lang_String)
+        );
+
+        FormalParameter ordinalFormalParameter = new FormalParameter(
+            ed.getLocation(),                               // location
+            false,                                          // finaL
+            new BasicType(ed.getLocation(), BasicType.INT), // type
+            "ordinal"                                       // name
+        );
+        LocalVariable ordinalLocalVariable = (
+            ordinalFormalParameter.localVariable = new LocalVariable(false, IClass.INT)
+        );
+
+        ConstructorDeclarator ctord = new ConstructorDeclarator(
+            ed.getLocation(),                       // location
+            null,                                   // optionalDocComment
+            new Modifiers(Mod.PRIVATE),             // modifiers
+            new FormalParameters(                   // parameters
+                ed.getLocation(),                                                       // location
+                new FormalParameter[] { nameFormalParameter, ordinalFormalParameter, }, // parameters
+                false                                                                   // variableArity
+            ),
+            new Type[0],                            // thrownExceptions
+            new SuperConstructorInvocation(         // optionalConstructorInvocation
+                ed.getLocation(), // location
+                null,             // optionalQualification
+                new Rvalue[] {    // arguments
+                    new LocalVariableAccess(ed.getLocation(), nameLocalVariable),
+                    new LocalVariableAccess(ed.getLocation(), ordinalLocalVariable),
+                }
+            ),
+            Collections.<BlockStatement>emptyList() // statements
+        );
+
+        ctord.setEnclosingScope(ed);
+
+        this.compile(ctord, cf);
+
+        // A side effect of this call may create synthetic functions to access protected parent variables.
+        this.compileDeclaredMemberTypes(ed, cf);
+
+        {
+            // for every method look for bridge methods that need to be supplied this is used to correctly dispatch
+            // into covariant return types from existing code.
+            IMethod[] ms = iClass.getIMethods();
+            for (IMethod base : ms) {
+                if (!base.isStatic()) {
+                    IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
+
+                    // If we overrode the method but with a DIFFERENT return type.
+                    if (
+                        override != null
+                        && !base.getReturnType().equals(override.getReturnType())
+                        ) {
+                        this.compileBridgeMethod(cf, base, override);
+                    }
+                }
+            }
+        }
+
+        // Class and instance variables.
+        for (BlockStatement vdoi : ed.getVariableDeclaratorsAndInitializers()) {
+            if (vdoi instanceof FieldDeclaration) this.addFields((FieldDeclaration) vdoi, cf);
+        }
+
+        // Synthetic fields.
+        for (IField f : ed.getSyntheticFields().values()) {
             cf.addFieldInfo(
                 Mod.PACKAGE,                 // accessFlags
                 f.getName(),                 // fieldName
@@ -678,7 +877,7 @@ class UnitCompiler {
 
         // For classes that enclose surrounding scopes, trawl their field initializers looking for synthetic fields.
         if (icd instanceof AnonymousClassDeclaration || icd instanceof LocalClassDeclaration) {
-            ClassDeclaration cd = (ClassDeclaration) icd;
+            AbstractClassDeclaration cd = (AbstractClassDeclaration) icd;
 
             // Compilation of field declarations can create synthetic variables, so we must not use an iterator.
             List<BlockStatement> vdais = cd.variableDeclaratorsAndInitializers;
@@ -688,7 +887,7 @@ class UnitCompiler {
             }
         }
 
-        this.compile2((ClassDeclaration) icd);
+        this.compile2((AbstractClassDeclaration) icd);
     }
 
     private void
@@ -967,34 +1166,34 @@ class UnitCompiler {
     }
 
     /**
-     * Create class initialization method iff there is any initialization code.
+     * Create class/interface initialization method iff there is any initialization code.
      *
-     * @param decl              The type declaration
-     * @param cf                The class file into which to put the method
-     * @param b                 The block for the method (possibly empty)
+     * @param td         The type declaration
+     * @param cf         The class file into which to put the method
+     * @param statements The statements for the method (possibly empty)
      * @throws CompileException
      */
     private void
     maybeCreateInitMethod(
-        AbstractTypeDeclaration decl,
-        ClassFile               cf,
-        List<BlockStatement>    statements
+        TypeDeclaration      td,
+        ClassFile            cf,
+        List<BlockStatement> statements
     ) throws CompileException {
 
-        // Create interface initialization method iff there is any initialization code.
+        // Create class/interface initialization method iff there is any initialization code.
         if (this.generatesCode2(statements)) {
             MethodDeclarator md = new MethodDeclarator(
-                decl.getLocation(),                                // location
-                null,                                              // optionalDocComment
-                new Modifiers((short) (Mod.STATIC | Mod.PUBLIC)),  // modifiers
-                null,                                              // optionalTypeParameters
-                new BasicType(decl.getLocation(), BasicType.VOID), // type
-                "<clinit>",                                        // name
-                new FormalParameters(decl.getLocation()),          // formalParameters
-                new ReferenceType[0],                              // thrownExceptions
-                statements                                         // optionalStatements
+                td.getLocation(),                                 // location
+                null,                                             // optionalDocComment
+                new Modifiers((short) (Mod.STATIC | Mod.PUBLIC)), // modifiers
+                null,                                             // optionalTypeParameters
+                new BasicType(td.getLocation(), BasicType.VOID),  // type
+                "<clinit>",                                       // name
+                new FormalParameters(td.getLocation()),           // formalParameters
+                new ReferenceType[0],                             // thrownExceptions
+                statements                                        // optionalStatements
             );
-            md.setDeclaringType(decl);
+            md.setDeclaringType(td);
             this.compile(md, cf);
         }
     }
@@ -1031,7 +1230,7 @@ class UnitCompiler {
      * @throws CompileException
      */
     private void
-    compileDeclaredMethods(AbstractTypeDeclaration typeDeclaration, ClassFile cf) throws CompileException {
+    compileDeclaredMethods(TypeDeclaration typeDeclaration, ClassFile cf) throws CompileException {
         this.compileDeclaredMethods(typeDeclaration, cf, 0);
     }
 
@@ -1954,7 +2153,7 @@ class UnitCompiler {
 //            assert fd.modifiers.annotations.length == 0;
 
             IField iField = this.resolve(fd.getDeclaringType()).getDeclaredIField(vd.name);
-            assert iField != null;
+            assert iField != null : fd.getDeclaringType() + " has no field " + vd.name;
             this.putfield(fd, iField);
         }
         return true;
@@ -3080,8 +3279,8 @@ class UnitCompiler {
     compile2(SuperConstructorInvocation sci) throws CompileException {
         ConstructorDeclarator declaringConstructor = (ConstructorDeclarator) sci.getEnclosingScope();
         this.writeOpcode(sci, Opcode.ALOAD_0);
-        ClassDeclaration declaringClass = declaringConstructor.getDeclaringClass();
-        IClass           superclass     = this.resolve(declaringClass).getSuperclass();
+        AbstractClassDeclaration declaringClass = declaringConstructor.getDeclaringClass();
+        IClass                   superclass     = this.resolve(declaringClass).getSuperclass();
 
         if (superclass == null) throw new CompileException("Class has no superclass", sci.getLocation());
 
@@ -3703,8 +3902,8 @@ class UnitCompiler {
 
         // Determine the statics of the declaring class (this is where static fields declarations are found).
         List<? extends BlockStatement> statics;
-        if (declaringType instanceof ClassDeclaration) {
-            statics = ((ClassDeclaration) declaringType).variableDeclaratorsAndInitializers;
+        if (declaringType instanceof AbstractClassDeclaration) {
+            statics = ((AbstractClassDeclaration) declaringType).variableDeclaratorsAndInitializers;
         } else
         if (declaringType instanceof InterfaceDeclaration) {
             statics = ((InterfaceDeclaration) declaringType).constantDeclarations;
@@ -3765,8 +3964,8 @@ class UnitCompiler {
                     )
                 }
             );
-            if (declaringType instanceof ClassDeclaration) {
-                ((ClassDeclaration) declaringType).addFieldDeclaration(fd);
+            if (declaringType instanceof AbstractClassDeclaration) {
+                ((AbstractClassDeclaration) declaringType).addFieldDeclaration(fd);
             } else
             if (declaringType instanceof InterfaceDeclaration) {
                 ((InterfaceDeclaration) declaringType).addConstantDeclaration(fd);
@@ -4225,8 +4424,8 @@ class UnitCompiler {
         if (ot == null) {
 
             // JLS7 6.5.7.1, 15.12.4.1.1.1
-            TypeBodyDeclaration scopeTbd;
-            ClassDeclaration    scopeClassDeclaration;
+            TypeBodyDeclaration      scopeTbd;
+            AbstractClassDeclaration scopeClassDeclaration;
             {
                 Scope s;
                 for (
@@ -4235,8 +4434,8 @@ class UnitCompiler {
                     s = s.getEnclosingScope()
                 );
                 scopeTbd = (TypeBodyDeclaration) s;
-                if (!(s instanceof ClassDeclaration)) s = s.getEnclosingScope();
-                scopeClassDeclaration = (ClassDeclaration) s;
+                if (!(s instanceof AbstractClassDeclaration)) s = s.getEnclosingScope();
+                scopeClassDeclaration = (AbstractClassDeclaration) s;
             }
             if (iMethod.isStatic()) {
                 this.warning(
@@ -4436,10 +4635,15 @@ class UnitCompiler {
             Scope s = nci.getEnclosingScope();
             for (; !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope());
             TypeBodyDeclaration enclosingTypeBodyDeclaration = (TypeBodyDeclaration) s;
+
+if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
+    System.currentTimeMillis();
+}
+
             TypeDeclaration     enclosingTypeDeclaration     = (TypeDeclaration) s.getEnclosingScope();
 
             if (
-                !(enclosingTypeDeclaration instanceof ClassDeclaration)
+                !(enclosingTypeDeclaration instanceof AbstractClassDeclaration)
                 || enclosingTypeBodyDeclaration.isStatic()
             ) {
 
@@ -6944,14 +7148,14 @@ class UnitCompiler {
                 scopeTypeDeclaration = scopeTbd.getDeclaringType();
             }
 
-            if (!(scopeTypeDeclaration instanceof ClassDeclaration)) {
+            if (!(scopeTypeDeclaration instanceof AbstractClassDeclaration)) {
                 if (syntheticFields.length > 0) {
                     throw new JaninoRuntimeException("SNO: Target class has synthetic fields");
                 }
                 return;
             }
 
-            ClassDeclaration scopeClassDeclaration = (ClassDeclaration) scopeTypeDeclaration;
+            AbstractClassDeclaration scopeClassDeclaration = (AbstractClassDeclaration) scopeTypeDeclaration;
             for (IClass.IField sf : syntheticFields) {
                 if (!sf.getName().startsWith("val$")) continue;
                 IClass.IField eisf = (IClass.IField) scopeClassDeclaration.syntheticFields.get(sf.getName());
@@ -7265,27 +7469,6 @@ class UnitCompiler {
 
                             @Override public Object
                             visitRvalue(Rvalue rv) throws CompileException {
-
-                                if (rv instanceof AmbiguousName) {
-                                    rv = UnitCompiler.this.reclassify((AmbiguousName) rv).toRvalueOrCompileException();
-                                }
-
-                                // Enum constant?
-                                ENUM_CONSTANT:
-                                if (rv instanceof Java.FieldAccess) {
-                                    Java.FieldAccess fa = (FieldAccess) rv;
-
-                                    Type enumType = fa.lhs.toType();
-                                    if (enumType == null) break ENUM_CONSTANT;
-
-                                    IClass enumIClass = UnitCompiler.this.getType(enumType);
-                                    if (
-                                        enumIClass.getSuperclass()
-                                        == UnitCompiler.this.iClassLoader.TYPE_java_lang_Enum
-                                    ) return fa.field;
-                                }
-
-                                // Constant expression?
                                 Object result = UnitCompiler.this.getConstantValue(rv);
                                 if (result == null) {
                                     UnitCompiler.this.compileError(
@@ -8029,7 +8212,7 @@ class UnitCompiler {
     /** @return The {@link IClass.IMethod} that implements the {@code superclassMethodInvocation} */
     public IClass.IMethod
     findIMethod(SuperclassMethodInvocation superclassMethodInvocation) throws CompileException {
-        ClassDeclaration declaringClass;
+        AbstractClassDeclaration declaringClass;
         for (Scope s = superclassMethodInvocation.getEnclosingScope();; s = s.getEnclosingScope()) {
             if (s instanceof FunctionDeclarator) {
                 FunctionDeclarator fd = (FunctionDeclarator) s;
@@ -8040,8 +8223,8 @@ class UnitCompiler {
                     );
                 }
             }
-            if (s instanceof ClassDeclaration) {
-                declaringClass = (ClassDeclaration) s;
+            if (s instanceof AbstractClassDeclaration) {
+                declaringClass = (AbstractClassDeclaration) s;
                 break;
             }
         }
@@ -8626,9 +8809,6 @@ class UnitCompiler {
                 return res;
             }
 
-            @Override protected IAnnotation[]
-            getIAnnotations2() { return ias; }
-
             @Nullable private IClass[] declaredClasses;
 
             @Override protected IClass[]
@@ -8678,8 +8858,8 @@ class UnitCompiler {
 
             @Override protected IConstructor[]
             getDeclaredIConstructors2() {
-                if (atd instanceof ClassDeclaration) {
-                    ConstructorDeclarator[] cs = ((ClassDeclaration) atd).getConstructors();
+                if (atd instanceof AbstractClassDeclaration) {
+                    ConstructorDeclarator[] cs = ((AbstractClassDeclaration) atd).getConstructors();
 
                     IClass.IConstructor[] res = new IClass.IConstructor[cs.length];
                     for (int i = 0; i < cs.length; ++i) res[i] = UnitCompiler.this.toIConstructor(cs[i]);
@@ -8690,9 +8870,9 @@ class UnitCompiler {
 
             @Override protected IField[]
             getDeclaredIFields2() {
-                if (atd instanceof ClassDeclaration) {
-                    ClassDeclaration    cd = (ClassDeclaration) atd;
-                    List<IClass.IField> l  = new ArrayList();
+                if (atd instanceof AbstractClassDeclaration) {
+                    AbstractClassDeclaration cd = (AbstractClassDeclaration) atd;
+                    List<IClass.IField>      l  = new ArrayList();
 
                     // Determine variable declarators of type declaration.
                     for (BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
@@ -8726,8 +8906,8 @@ class UnitCompiler {
 
             @Override public IField[]
             getSyntheticIFields() {
-                if (atd instanceof ClassDeclaration) {
-                    Collection<IClass.IField> c = ((ClassDeclaration) atd).syntheticFields.values();
+                if (atd instanceof AbstractClassDeclaration) {
+                    Collection<IClass.IField> c = ((AbstractClassDeclaration) atd).syntheticFields.values();
                     return (IField[]) c.toArray(new IField[c.size()]);
                 }
                 return new IField[0];
@@ -8735,10 +8915,14 @@ class UnitCompiler {
 
             @Override @Nullable protected IClass
             getSuperclass2() throws CompileException {
+
+                if (atd instanceof EnumDeclaration) return UnitCompiler.this.iClassLoader.TYPE_java_lang_Enum;
+
                 if (atd instanceof AnonymousClassDeclaration) {
                     IClass bt = UnitCompiler.this.getType(((AnonymousClassDeclaration) atd).baseType);
                     return bt.isInterface() ? UnitCompiler.this.iClassLoader.TYPE_java_lang_Object : bt;
                 }
+
                 if (atd instanceof NamedClassDeclaration) {
                     NamedClassDeclaration ncd = (NamedClassDeclaration) atd;
                     Type                  oet = ncd.optionalExtendedType;
@@ -8752,6 +8936,7 @@ class UnitCompiler {
                     }
                     return superclass;
                 }
+
                 return null;
             }
 
@@ -8813,10 +8998,10 @@ class UnitCompiler {
 
     private void
     referenceThis(
-        Locatable           locatable,
-        ClassDeclaration    declaringClass,
-        TypeBodyDeclaration declaringTypeBodyDeclaration,
-        IClass              targetIClass
+        Locatable                locatable,
+        AbstractClassDeclaration declaringClass,
+        TypeBodyDeclaration      declaringTypeBodyDeclaration,
+        IClass                   targetIClass
     ) throws CompileException {
         List<TypeDeclaration> path = UnitCompiler.getOuterClasses(declaringClass);
 
@@ -8915,7 +9100,7 @@ class UnitCompiler {
             for (; !(s instanceof TypeDeclaration); s = s.getEnclosingScope());
             TypeDeclaration immediatelyEnclosingTypeDeclaration = (TypeDeclaration) s;
             return (
-                immediatelyEnclosingTypeDeclaration instanceof ClassDeclaration
+                immediatelyEnclosingTypeDeclaration instanceof AbstractClassDeclaration
             ) ? immediatelyEnclosingTypeDeclaration : null;
         }
 
@@ -8959,11 +9144,11 @@ class UnitCompiler {
         while (!(s instanceof TypeDeclaration)) {
             s = s.getEnclosingScope();
         }
-        if (!(s instanceof ClassDeclaration)) {
+        if (!(s instanceof AbstractClassDeclaration)) {
             this.compileError("Only methods of classes can have a current instance", tr.getLocation());
         }
 
-        return (tr.iClass = this.resolve((ClassDeclaration) s));
+        return (tr.iClass = this.resolve((AbstractClassDeclaration) s));
     }
 
     private IClass
@@ -10992,12 +11177,12 @@ class UnitCompiler {
         }
 
         // Determine declaring type.
-        qtr.declaringClass = (ClassDeclaration) result.getDeclaringType();
+        qtr.declaringClass = (AbstractClassDeclaration) result.getDeclaringType();
 
         return (qtr.declaringTypeBodyDeclaration = result);
     }
 
-    private ClassDeclaration
+    private AbstractClassDeclaration
     getDeclaringClass(QualifiedThisReference qtr) throws CompileException {
 
         if (qtr.declaringClass != null) return qtr.declaringClass;

@@ -34,6 +34,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.Java.AbstractClassDeclaration;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Annotation;
@@ -55,7 +56,6 @@ import org.codehaus.janino.Java.BreakStatement;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CatchClause;
 import org.codehaus.janino.Java.CharacterLiteral;
-import org.codehaus.janino.Java.ClassDeclaration;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
@@ -102,6 +102,7 @@ import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
+import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.PackageMemberInterfaceDeclaration;
 import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
 import org.codehaus.janino.Java.ParenthesizedExpression;
@@ -323,7 +324,7 @@ class Parser {
 
         case 1: // "enum"
             if (optionalDocComment == null) this.warning("EDCM", "Enum doc comment missing", this.location());
-            return (PackageMemberClassDeclaration) this.parseEnumDeclarationRest(
+            return (PackageMemberEnumDeclaration) this.parseEnumDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
                 modifiers,                               // modifiers
                 ClassDeclarationContext.COMPILATION_UNIT // context
@@ -657,7 +658,7 @@ class Parser {
      * </pre>
      */
     public void
-    parseClassBody(ClassDeclaration classDeclaration) throws CompileException, IOException {
+    parseClassBody(AbstractClassDeclaration classDeclaration) throws CompileException, IOException {
         this.read("{");
 
         for (;;) {
@@ -682,7 +683,7 @@ class Parser {
         }
 
         while (!this.peekRead("}")) {
-            this.parseClassBodyDeclaration((ClassDeclaration) enumDeclaration);
+            this.parseClassBodyDeclaration((AbstractClassDeclaration) enumDeclaration);
         }
     }
 
@@ -703,7 +704,13 @@ class Parser {
 
         Rvalue[] arguments = this.peek("(") ? this.parseArguments() : null;
 
-        Java.EnumConstant result = new Java.EnumConstant(this.location(), annotations, name, arguments);
+        Java.EnumConstant result = new Java.EnumConstant(
+            this.location(),    // location
+            this.scanner.doc(), // optionalDocComment
+            annotations,        // annotations
+            name,               // name
+            arguments           // optionalArguments
+        );
 
         if (this.peek("{")) {
             this.parseClassBody(result);
@@ -728,7 +735,7 @@ class Parser {
      * </pre>
      */
     public void
-    parseClassBodyDeclaration(ClassDeclaration classDeclaration) throws CompileException, IOException {
+    parseClassBodyDeclaration(AbstractClassDeclaration classDeclaration) throws CompileException, IOException {
         if (this.peekRead(";")) return;
 
         String    optionalDocComment = this.scanner.doc();
@@ -2870,20 +2877,32 @@ class Parser {
     /**
      * <pre>
      *   Selector :=
-     *     '.' Identifier |                               // FieldAccess 15.11.1
-     *     '.' Identifier Arguments |                     // MethodInvocation
-     *     '.' 'this'                                     // QualifiedThis 15.8.4
-     *     '.' 'super' Arguments                          // Qualified superclass constructor invocation (JLS7 8.8.7.1)
-     *     '.' 'super' '.' Identifier |                   // SuperclassFieldReference (JLS7 15.11.2)
-     *     '.' 'super' '.' Identifier Arguments |         // SuperclassMethodInvocation (JLS7 15.12.3)
-     *     '.' 'new' Identifier Arguments [ ClassBody ] | // QualifiedClassInstanceCreationExpression  15.9
+     *     '.' Identifier |                                // FieldAccess 15.11.1
+     *     '.' Identifier Arguments |                      // MethodInvocation
+     *     '.' '&lt;' TypeList '&gt;' 'super' Arguments                  // Superconstructor invocation (?)
+     *     '.' '&lt;' TypeList '&gt;' 'super' '.' . Identifier           // ???
+     *     '.' '&lt;' TypeList '&gt;' 'super' '.' . Identifier Arguments // Supermethod invocation
+     *     '.' '&lt;' TypeList '&gt;' Identifier Arguments // ExplicitGenericInvocation
+     *     '.' 'this'                                      // QualifiedThis 15.8.4
+     *     '.' 'super' Arguments                           // Qualified superclass constructor invocation (JLS7 8.8.7.1)
+     *     '.' 'super' '.' Identifier |                    // SuperclassFieldReference (JLS7 15.11.2)
+     *     '.' 'super' '.' Identifier Arguments |          // SuperclassMethodInvocation (JLS7 15.12.3)
+     *     '.' 'new' Identifier Arguments [ ClassBody ] |  // QualifiedClassInstanceCreationExpression  15.9
      *     '.' 'class'
-     *     '[' Expression ']'                             // ArrayAccessExpression 15.13
+     *     '[' Expression ']'                              // ArrayAccessExpression 15.13
+     *
+     *   ExplicitGenericInvocationSuffix :=
+     *     'super' SuperSuffix
+     *     | Identifier Arguments
      * </pre>
      */
     public Atom
     parseSelector(Atom atom) throws CompileException, IOException {
         if (this.peekRead(".")) {
+
+            // Parse and ignore type arguments.
+            this.parseTypeArgumentsOpt();
+
             if (this.peek().type == Token.IDENTIFIER) {
                 String identifier = this.readIdentifier();
                 if (this.peek("(")) {

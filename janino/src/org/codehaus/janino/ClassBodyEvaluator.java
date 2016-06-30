@@ -218,7 +218,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(parser);
 
         // Add class declaration.
-        Java.ClassDeclaration cd = this.addPackageMemberClassDeclaration(scanner.location(), compilationUnit);
+        Java.AbstractClassDeclaration cd = this.addPackageMemberClassDeclaration(scanner.location(), compilationUnit);
 
         // Parse class body declarations (member declarations) until EOF.
         while (!parser.peekEof()) {
@@ -275,7 +275,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      *   <li>A method declaration with the given return type, name, parameter names and values and thrown exceptions
      * </ul>
      *
-     * @return The created {@link Java.ClassDeclaration} object
+     * @return The created {@link Java.AbstractClassDeclaration} object
      */
     protected Java.PackageMemberClassDeclaration
     addPackageMemberClassDeclaration(Location location, Java.CompilationUnit compilationUnit) throws CompileException {

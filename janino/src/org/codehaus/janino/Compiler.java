@@ -178,7 +178,13 @@ class Compiler {
         try {
             compiler.compile(sourceFiles);
         } catch (Exception e) {
-            System.err.println(e.toString());
+
+            if (verbose) {
+                e.printStackTrace();
+            } else {
+                System.err.println(e.toString());
+            }
+
             System.exit(1);
         }
     }

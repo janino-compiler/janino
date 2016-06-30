@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
 import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayType;
@@ -189,8 +190,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     }
 
     @Override @Nullable public Void
-    visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd) {
-        this.unparseNamedClassDeclaration(pmcd);
+    visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd) {
+        this.unparseNamedClassDeclaration(apmcd);
         return null;
     }
 
@@ -206,7 +207,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         this.unparseDocComment(cd);
         this.unparseAnnotations(cd.modifiers.annotations);
         this.unparseModifiers(cd.modifiers.accessFlags);
-        Java.ClassDeclaration declaringClass = cd.getDeclaringClass();
+        Java.AbstractClassDeclaration declaringClass = cd.getDeclaringClass();
         this.pw.print(
             declaringClass instanceof Java.NamedClassDeclaration
             ? ((Java.NamedClassDeclaration) declaringClass).name
@@ -1074,7 +1075,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     }
     // Multi-line!
     private void
-    unparseClassDeclarationBody(Java.ClassDeclaration cd) {
+    unparseClassDeclarationBody(Java.AbstractClassDeclaration cd) {
         for (Java.ConstructorDeclarator ctord : cd.constructors) {
             this.pw.println();
             ctord.accept(this);
@@ -1087,9 +1088,13 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             this.pw.println();
         }
     }
-    /** @return Whether {@link #unparseClassDeclarationBody(Java.ClassDeclaration)} will produce <em>no</em> output */
+
+    /**
+     * @return Whether {@link #unparseClassDeclarationBody(Java.AbstractClassDeclaration)} will produce <em>no</em>
+     *         output
+     */
     private static boolean
-    classDeclarationBodyIsEmpty(Java.ClassDeclaration cd) {
+    classDeclarationBodyIsEmpty(Java.AbstractClassDeclaration cd) {
         return (
             cd.constructors.isEmpty()
             && cd.getMethodDeclarations().isEmpty()
@@ -1310,7 +1315,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         }
         this.pw.println();
         this.pw.println(';');
-        this.unparseClassDeclarationBody((Java.ClassDeclaration) ed);
+        this.unparseClassDeclarationBody((Java.AbstractClassDeclaration) ed);
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
     }
 

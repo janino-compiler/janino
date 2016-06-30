@@ -569,6 +569,14 @@ class Java {
         }
     }
 
+    public
+    interface ClassDeclaration extends TypeDeclaration {
+
+        List<BlockStatement> getVariableDeclaratorsAndInitializers();
+
+        SortedMap<String, IClass.IField> getSyntheticFields();
+    }
+
     /** Base for the various kinds of type declarations, e.g. top-level class, member interface, local class. */
     public
     interface TypeDeclaration extends Annotatable, Locatable, Scope {
@@ -854,7 +862,7 @@ class Java {
 
     /** Base for the various class declaration kinds. */
     public abstract static
-    class ClassDeclaration extends AbstractTypeDeclaration {
+    class AbstractClassDeclaration extends AbstractTypeDeclaration implements ClassDeclaration {
 
         /** List of {@link ConstructorDeclarator}s of this class. */
         public final List<ConstructorDeclarator> constructors = new ArrayList();
@@ -866,7 +874,11 @@ class Java {
         public final List<BlockStatement> variableDeclaratorsAndInitializers = new ArrayList();
 
         public
-        ClassDeclaration(Location location, Modifiers modifiers, @Nullable TypeParameter[] optionalTypeParameters) {
+        AbstractClassDeclaration(
+            Location                  location,
+            Modifiers                 modifiers,
+            @Nullable TypeParameter[] optionalTypeParameters
+        ) {
             super(location, modifiers, optionalTypeParameters);
         }
 
@@ -914,6 +926,11 @@ class Java {
             this.syntheticFields.put(iField.getName(), iField);
         }
 
+        @Override public List<BlockStatement>
+        getVariableDeclaratorsAndInitializers() {
+            return this.variableDeclaratorsAndInitializers;
+        }
+
         /** @return The declared constructors, or the default constructor */
         ConstructorDeclarator[]
         getConstructors() {
@@ -936,13 +953,16 @@ class Java {
             );
         }
 
+        @Override public SortedMap<String, IClass.IField>
+        getSyntheticFields() { return this.syntheticFields; }
+
         /** All field names start with "this$" or "val$". */
         final SortedMap<String, IClass.IField> syntheticFields = new TreeMap();
     }
 
     /** Representation of a JLS7 15.9.5 'anonymous class declaration'. */
     public static final
-    class AnonymousClassDeclaration extends ClassDeclaration implements InnerClassDeclaration {
+    class AnonymousClassDeclaration extends AbstractClassDeclaration implements InnerClassDeclaration {
 
         /** Base class or interface. */
         public final Type baseType;
@@ -980,7 +1000,7 @@ class Java {
 
     /** Base for the various named class declarations. */
     public abstract static
-    class NamedClassDeclaration extends ClassDeclaration implements NamedTypeDeclaration, DocCommentable {
+    class NamedClassDeclaration extends AbstractClassDeclaration implements NamedTypeDeclaration, DocCommentable {
 
         @Nullable private final String optionalDocComment;
 
@@ -1189,10 +1209,35 @@ class Java {
 
     /** Implementation of a 'package member class declaration', a.k.a. 'top-level class declaration'. */
     public static
-    class PackageMemberClassDeclaration extends NamedClassDeclaration implements PackageMemberTypeDeclaration {
+    class PackageMemberClassDeclaration extends AbstractPackageMemberClassDeclaration {
 
         public
         PackageMemberClassDeclaration(
+            Location                  location,
+            @Nullable String          optionalDocComment,
+            Modifiers                 modifiers,
+            String                    name,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            @Nullable Type            optionalExtendedType,
+            Type[]                    implementedTypes
+        ) throws CompileException {
+            super(
+                location,
+                optionalDocComment,
+                modifiers,
+                name,
+                optionalTypeParameters,
+                optionalExtendedType,
+                implementedTypes
+            );
+        }
+    }
+
+    public abstract static
+    class AbstractPackageMemberClassDeclaration extends NamedClassDeclaration implements PackageMemberTypeDeclaration {
+
+        public
+        AbstractPackageMemberClassDeclaration(
             Location                  location,
             @Nullable String          optionalDocComment,
             Modifiers                 modifiers,
@@ -1251,7 +1296,7 @@ class Java {
     }
 
     public
-    interface EnumDeclaration extends NamedTypeDeclaration, DocCommentable {
+    interface EnumDeclaration extends ClassDeclaration, NamedTypeDeclaration, DocCommentable {
 
         @Override String getName();
 
@@ -1266,8 +1311,9 @@ class Java {
     }
 
     public static final
-    class EnumConstant extends ClassDeclaration {
+    class EnumConstant extends AbstractClassDeclaration implements DocCommentable {
 
+        @Nullable public final String   optionalDocComment;
         public final List<Annotation>   annotations;
         public final String             name;
         @Nullable public final Rvalue[] optionalArguments;
@@ -1275,6 +1321,7 @@ class Java {
         public
         EnumConstant(
             Location           location,
+            @Nullable String   optionalDocComment,
             List<Annotation>   annotations,
             String             name,
             @Nullable Rvalue[] optionalArguments
@@ -1284,9 +1331,10 @@ class Java {
                 new Modifiers(), // modifiers
                 null             // optionalTypeParameters
             );
-            this.annotations       = annotations;
-            this.name              = name;
-            this.optionalArguments = optionalArguments;
+            this.optionalDocComment = optionalDocComment;
+            this.annotations        = annotations;
+            this.name               = name;
+            this.optionalArguments  = optionalArguments;
         }
 
         @Override public String
@@ -1295,6 +1343,14 @@ class Java {
         @Override public Annotation[]
         getAnnotations() {
             return (Annotation[]) this.annotations.toArray(new Java.Annotation[this.annotations.size()]);
+        }
+
+        @Override @Nullable public String
+        getDocComment() { return this.optionalDocComment; }
+
+        @Override public boolean
+        hasDeprecatedDocTag() {
+            return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
 
         @Override @Nullable public <R, EX extends Throwable> R
@@ -1308,7 +1364,7 @@ class Java {
 
     /** Implementation of a 'package member enum declaration', a.k.a. 'top-level enum declaration'. */
     public static final
-    class PackageMemberEnumDeclaration extends PackageMemberClassDeclaration implements EnumDeclaration {
+    class PackageMemberEnumDeclaration extends AbstractPackageMemberClassDeclaration implements EnumDeclaration {
 
         private final List<EnumConstant> constants = new ArrayList<EnumConstant>();
 
@@ -1951,9 +2007,9 @@ class Java {
             if (optionalConstructorInvocation != null) optionalConstructorInvocation.setEnclosingScope(this);
         }
 
-        /** @return The {@link ClassDeclaration} where this {@link ConstructorDeclarator} appears */
-        public ClassDeclaration
-        getDeclaringClass() { return (ClassDeclaration) this.getEnclosingScope(); }
+        /** @return The {@link AbstractClassDeclaration} where this {@link ConstructorDeclarator} appears */
+        public AbstractClassDeclaration
+        getDeclaringClass() { return (AbstractClassDeclaration) this.getEnclosingScope(); }
 
         // Compile time members.
 
@@ -3667,7 +3723,7 @@ class Java {
         // Compile time members.
 
         /** The innermost enclosing class declaration. */
-        @Nullable ClassDeclaration declaringClass;
+        @Nullable AbstractClassDeclaration declaringClass;
 
         /**
          * The innermost 'type body declaration' enclosing this 'qualified this reference', i.e. the method,

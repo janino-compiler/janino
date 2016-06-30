@@ -29,6 +29,7 @@ package org.codehaus.janino.util;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Java;
+import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
 import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
@@ -65,7 +66,7 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd) throws EX { Traverser.this.traverseStaticImportOnDemandDeclaration(siodd); return null; }
         @Override @Nullable public Void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) throws EX                               { Traverser.this.traverseAnonymousClassDeclaration(acd); return null; }
         @Override @Nullable public Void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) throws EX                                       { Traverser.this.traverseLocalClassDeclaration(lcd); return null; }
-        @Override @Nullable public Void visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd) throws EX                      { Traverser.this.traversePackageMemberClassDeclaration(pmcd); return null; }
+        @Override @Nullable public Void visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd) throws EX                  { Traverser.this.traversePackageMemberClassDeclaration(apmcd); return null; }
         @Override @Nullable public Void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid) throws EX                             { Traverser.this.traverseMemberInterfaceDeclaration(mid); return null; }
         @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) throws EX              { Traverser.this.traversePackageMemberInterfaceDeclaration(pmid); return null; }
         @Override @Nullable public Void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd) throws EX                                     { Traverser.this.traverseMemberClassDeclaration(mcd); return null; }
@@ -203,7 +204,7 @@ class Traverser<EX extends Throwable> {
 
     /** @see Traverser */
     public void
-    traversePackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd) throws EX {
+    traversePackageMemberClassDeclaration(Java.AbstractPackageMemberClassDeclaration pmcd) throws EX {
         this.traverseNamedClassDeclaration(pmcd);
     }
 
@@ -725,7 +726,7 @@ class Traverser<EX extends Throwable> {
 
     /** @see Traverser */
     public void
-    traverseClassDeclaration(Java.ClassDeclaration cd) throws EX {
+    traverseClassDeclaration(Java.AbstractClassDeclaration cd) throws EX {
         for (Java.ConstructorDeclarator ctord : cd.constructors) ctord.accept(this.cv);
         for (Java.BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) vdoi.accept(this.cv);
         this.traverseAbstractTypeDeclaration(cd);

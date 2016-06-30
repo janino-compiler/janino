@@ -27,6 +27,7 @@
 package org.codehaus.janino;
 
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
 
 /**
  * The basis for the "visitor" pattern as described in "Gamma, Helm, Johnson, Vlissides: Design Patterns".
@@ -84,12 +85,14 @@ class Visitor {
      */
     public
     interface TypeDeclarationVisitor<R, EX extends Throwable> {
+
+        // SUPPRESS CHECKSTYLE LineLength:22
         /** Invoked by {@link Java.AnonymousClassDeclaration#accept(Visitor.TypeDeclarationVisitor)} */
         @Nullable R visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) throws EX;
         /** Invoked by {@link Java.LocalClassDeclaration#accept(Visitor.TypeDeclarationVisitor)} */
         @Nullable R visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) throws EX;
         /** Invoked by {@link Java.PackageMemberClassDeclaration#accept(Visitor.TypeDeclarationVisitor)} */
-        @Nullable R visitPackageMemberClassDeclaration(Java.PackageMemberClassDeclaration pmcd) throws EX;
+        @Nullable R visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd) throws EX;
         /** Invoked by {@link Java.MemberInterfaceDeclaration#accept(Visitor.TypeDeclarationVisitor)} */
         @Nullable R visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid) throws EX;
         /** Invoked by {@link Java.PackageMemberInterfaceDeclaration#accept(Visitor.TypeDeclarationVisitor)} */
