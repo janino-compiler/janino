@@ -1470,7 +1470,8 @@ class Java {
     public static
     class MemberAnnotationTypeDeclaration extends MemberInterfaceDeclaration {
 
-        public MemberAnnotationTypeDeclaration(
+        public
+        MemberAnnotationTypeDeclaration(
             Location         location,
             @Nullable String optionalDocComment,
             Modifiers        modifiers,
@@ -1481,8 +1482,12 @@ class Java {
                 optionalDocComment,
                 modifiers.add(Mod.ANNOTATION),
                 name,
-                null,       // optionalTypeParameters
-                new Type[0] // extendedTypes
+                null,                           // optionalTypeParameters
+                new Type[] { new ReferenceType( // extendedTypes
+                    location,
+                    new String[] { "java", "lang", "annotation", "Annotation" },
+                    null // optionalTypeArguments
+                )}
             );
         }
 
@@ -1572,8 +1577,12 @@ class Java {
                 optionalDocComment,
                 modifiers.add(Mod.ANNOTATION),
                 name,
-                null,       // optionalTypeParameters
-                new Type[0] // extendedTypes
+                null,                           // optionalTypeParameters
+                new Type[] { new ReferenceType( // extendedTypes
+                    location,
+                    new String[] { "java", "lang", "annotation", "Annotation" },
+                    null // optionalTypeArguments
+                )}
             );
         }
 
