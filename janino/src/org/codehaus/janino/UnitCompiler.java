@@ -7461,6 +7461,11 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                     };
                 }
 
+                /**
+                 * @return A primitive value, a {@link String}, a {@link Java.ClassLiteral} (representing a class
+                 *         literal), a {@link Code.FieldAccess} (representing an enum constant), or an {@link Object}[]
+                 *         array containing any of the previously described
+                 */
                 private Object
                 toObject(Java.ElementValue ev) {
 
@@ -7469,6 +7474,20 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
                             @Override public Object
                             visitRvalue(Rvalue rv) throws CompileException {
+
+                                if (rv instanceof Java.AmbiguousName) {
+                                    Java.AmbiguousName an = (Java.AmbiguousName) rv;
+                                    rv = UnitCompiler.this.reclassify(an).toRvalueOrCompileException();
+                                }
+
+                                // Class literal?
+                                if (rv instanceof Java.ClassLiteral) {
+                                    return rv;
+                                }
+
+                                // Enum constant?
+                                if (rv instanceof Java.FieldAccess) return ((Java.FieldAccess) rv);
+
                                 Object result = UnitCompiler.this.getConstantValue(rv);
                                 if (result == null) {
                                     UnitCompiler.this.compileError(
@@ -7502,7 +7521,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                         assert result != null;
                         return result;
                     } catch (/*CompileException*/ Exception ce) {
-                        return "???";
+                        throw new IllegalStateException(ce);
                     }
                 }
             }
