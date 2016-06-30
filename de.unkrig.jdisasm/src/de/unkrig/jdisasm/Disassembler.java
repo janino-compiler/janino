@@ -423,12 +423,16 @@ class Disassembler {
                     if (scn != null && !"java.lang.Object".equals(scn)) this.print(" extends " + this.beautify(scn));
                 }
                 List<String> ifs = cf.interfaceNames;
-                if (
-                    (cf.accessFlags & ClassFile.ACC_ANNOTATION) != 0
-                    && ifs.contains("java.lang.annotation.Annotation")
-                ) {
-                    ifs = new ArrayList<String>(ifs);
-                    ifs.remove("java.lang.annotation.Annotation");
+                if ((cf.accessFlags & ClassFile.ACC_ANNOTATION) != 0) {
+                    if (ifs.contains("java.lang.annotation.Annotation")) {
+                        ifs = new ArrayList<String>(ifs);
+                        ifs.remove("java.lang.annotation.Annotation");
+                    } else {
+                        this.print(
+                            " /* WARNING: "
+                            + "This annotation type does not implement \"java.lang.annotation.Annotation\"! */"
+                        );
+                    }
                 }
                 if (!ifs.isEmpty()) {
                     Iterator<String> it = ifs.iterator();
