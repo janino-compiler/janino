@@ -7265,6 +7265,27 @@ class UnitCompiler {
 
                             @Override public Object
                             visitRvalue(Rvalue rv) throws CompileException {
+
+                                if (rv instanceof AmbiguousName) {
+                                    rv = UnitCompiler.this.reclassify((AmbiguousName) rv).toRvalueOrCompileException();
+                                }
+
+                                // Enum constant?
+                                ENUM_CONSTANT:
+                                if (rv instanceof Java.FieldAccess) {
+                                    Java.FieldAccess fa = (FieldAccess) rv;
+
+                                    Type enumType = fa.lhs.toType();
+                                    if (enumType == null) break ENUM_CONSTANT;
+
+                                    IClass enumIClass = UnitCompiler.this.getType(enumType);
+                                    if (
+                                        enumIClass.getSuperclass()
+                                        == UnitCompiler.this.iClassLoader.TYPE_java_lang_Enum
+                                    ) return fa.field;
+                                }
+
+                                // Constant expression?
                                 Object result = UnitCompiler.this.getConstantValue(rv);
                                 if (result == null) {
                                     UnitCompiler.this.compileError(
@@ -8585,6 +8606,8 @@ class UnitCompiler {
 
         if (atd.resolvedType != null) return atd.resolvedType;
 
+        final IAnnotation[] ias = UnitCompiler.this.toIAnnotations(td);
+
         return (atd.resolvedType = new IClass() {
 
 //            final TypeParameter[] optionalTypeParameters = (
@@ -8602,6 +8625,9 @@ class UnitCompiler {
                 }
                 return res;
             }
+
+            @Override protected IAnnotation[]
+            getIAnnotations2() { return ias; }
 
             @Nullable private IClass[] declaredClasses;
 
