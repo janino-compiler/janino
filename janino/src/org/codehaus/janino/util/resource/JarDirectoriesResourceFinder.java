@@ -57,7 +57,9 @@ class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
 
                     // Iterate over the JAR files in the given directory.
                     File[] jarFiles = directory.listFiles(new FilenameFilter() {
-                        @Override public boolean accept(@Nullable File dir, @Nullable String name) {
+
+                        @Override public boolean
+                        accept(@Nullable File dir, @Nullable String name) {
                             assert dir != null;
                             assert name != null;
                             return name.endsWith(".jar");
