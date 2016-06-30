@@ -771,6 +771,12 @@ class ClassFile implements Annotatable {
     public static final short MINOR_VERSION_JDK_1_4 = 0;
     public static final short MAJOR_VERSION_JDK_1_5 = 49;
     public static final short MINOR_VERSION_JDK_1_5 = 0;
+    public static final short MAJOR_VERSION_JDK_1_6 = 50;
+    public static final short MINOR_VERSION_JDK_1_6 = 0;
+    public static final short MAJOR_VERSION_JDK_1_7 = 51;
+    public static final short MINOR_VERSION_JDK_1_7 = 0;
+    public static final short MAJOR_VERSION_JDK_1_8 = 52;
+    public static final short MINOR_VERSION_JDK_1_8 = 0;
     // CHECKSTYLE JavadocVariable:ON
 
     private short                        majorVersion;
