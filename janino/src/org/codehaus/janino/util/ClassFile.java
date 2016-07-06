@@ -45,6 +45,8 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Mod;
+import org.codehaus.janino.util.ClassFile.AnnotationsAttribute;
+import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ConstantElementValue;
 
 /**
  * An object that represents the Java&trade; "class file" format.
@@ -2249,7 +2251,7 @@ class ClassFile implements Annotatable {
     }
 
     /** Representation of an unmodifiable "Code" attribute, as read from a class file. */
-    private static
+    public static
     class CodeAttribute extends AttributeInfo {
 
         private final short                 maxStack;
