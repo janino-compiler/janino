@@ -2736,7 +2736,7 @@ class UnitCompiler {
         if (Mod.isAbstract(fd.modifiers.accessFlags) || Mod.isNative(fd.modifiers.accessFlags)) return;
 
         // Create CodeContext.
-        final CodeContext codeContext = new CodeContext(mi.getClassFile(), mi.getDescriptor());
+        final CodeContext codeContext = new CodeContext(mi.getClassFile(), mi.getName() + mi.getDescriptor());
 
         CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
         try {
