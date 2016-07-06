@@ -8808,8 +8808,6 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
         if (atd.resolvedType != null) return atd.resolvedType;
 
-        final IAnnotation[] ias = UnitCompiler.this.toIAnnotations(td);
-
         return (atd.resolvedType = new IClass() {
 
 //            final TypeParameter[] optionalTypeParameters = (
