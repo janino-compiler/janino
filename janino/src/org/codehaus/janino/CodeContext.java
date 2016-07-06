@@ -207,7 +207,7 @@ class CodeContext {
         short            lineNumberTableAttributeNameIndex,
         short            localVariableTableAttributeNameIndex
     ) throws IOException {
-        dos.writeShort((short)(this.maxStack & 0xffff));                             // max_stack
+        dos.writeShort((short) this.maxStack);                                       // max_stack
         dos.writeShort(this.maxLocals);                                              // max_locals
         dos.writeInt(this.end.offset);                                               // code_length
         dos.write(this.code, 0, this.end.offset);                                    // code
@@ -315,7 +315,7 @@ class CodeContext {
             this.code,       // code
             this.end.offset, // codeSize
             0,               // offset
-            (int) 0,         // stackSize
+            0,               // stackSize
             stackSizes       // stackSizes
         );
 
@@ -326,11 +326,11 @@ class CodeContext {
                 if (stackSizes[exceptionTableEntry.startPC.offset] != CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
                         functionName,
-                        this.code,                                                    // code
-                        this.end.offset,                                              // codeSize
-                        exceptionTableEntry.handlerPC.offset,                         // offset
-                        (int) (stackSizes[exceptionTableEntry.startPC.offset] + 1),   // stackSize
-                        stackSizes                                                    // stackSizes
+                        this.code,                                          // code
+                        this.end.offset,                                    // codeSize
+                        exceptionTableEntry.handlerPC.offset,               // offset
+                        stackSizes[exceptionTableEntry.startPC.offset] + 1, // stackSize
+                        stackSizes                                          // stackSizes
                     );
                     ++analyzedExceptionHandlers;
                 }
@@ -359,12 +359,12 @@ class CodeContext {
 
     private void
     flowAnalysis(
-        String  functionName,
-        byte[]  code,      // Bytecode
-        int     codeSize,  // Size
-        int     offset,    // Current PC
-        int     stackSize, // Stack size on entry
-        int[]   stackSizes // Stack sizes in code
+        String functionName,
+        byte[] code,      // Bytecode
+        int    codeSize,  // Size
+        int    offset,    // Current PC
+        int    stackSize, // Stack size on entry
+        int[]  stackSizes // Stack sizes in code
     ) {
         for (;;) {
             CodeContext.LOGGER.entering(
@@ -555,9 +555,10 @@ class CodeContext {
                 if (stackSizes[targetOffset] == CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
                         functionName,
-                        code, codeSize,
+                        code,
+                        codeSize,
                         targetOffset,
-                        (int) (stackSize + 1),
+                        stackSize + 1,
                         stackSizes
                     );
                 }
