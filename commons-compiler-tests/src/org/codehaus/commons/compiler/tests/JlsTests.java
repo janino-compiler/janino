@@ -63,12 +63,13 @@ class JlsTests extends JaninoTestSuite {
         super(compilerFactory);
     }
 
+    @SuppressWarnings("unused")
     @Before
     public void
     setUp() throws Exception {
 
         // Enable this code snippet to print class file disassemblies to the console.
-        if (true) {
+        if (false) {
             Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
             for (Handler h : scl.getHandlers()) {
                 h.setLevel(Level.FINEST);
