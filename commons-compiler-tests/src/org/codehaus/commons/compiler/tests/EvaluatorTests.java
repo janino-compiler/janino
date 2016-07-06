@@ -34,6 +34,9 @@ import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
@@ -42,6 +45,7 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -64,6 +68,21 @@ class EvaluatorTests extends JaninoTestSuite {
 
     public
     EvaluatorTests(ICompilerFactory compilerFactory) { super(compilerFactory); }
+
+    @SuppressWarnings("unused")
+    @Before
+    public void
+    setUp() throws Exception {
+
+        // Enable this code snippet to print class file disassemblies to the console.
+        if (false) {
+            Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
+            for (Handler h : scl.getHandlers()) {
+                h.setLevel(Level.FINEST);
+            }
+            scl.setLevel(Level.FINEST);
+        }
+    }
 
     @Test public void
     testMultiScriptEvaluator() throws Exception {
@@ -583,33 +602,34 @@ class EvaluatorTests extends JaninoTestSuite {
             + "public class Test {\n"
             + "    public double run() {\n"
             + "      double d = 1;\n"
-            + "      double r = 0 \n"
+            + "      double r = "
         );
-        final String postamble = (
-            ""
-            + "      ;\n"
+        final String epilog = (
+            ";\n"
             + "      return r;\n"
             + "    }\n"
             + "}"
         );
 
-        int[] repetitionss = new int[] { 1, 256, 32700 };  // 32767 make a method more than 64KB
-        for (int repetitions : repetitionss) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(preamble);
-            for (int j = 0; j < repetitions; ++j) {
-                sb.append("+ d");
-            }
-            sb.append(postamble);
+        // If more than 500, then we'd have to increase the JVM stack size.
+        for (int repetitions : new int[] { 5, 50, 500 }) {
+
+            StringBuilder sb = new StringBuilder().append(preamble);
+
+            for (int j = 0; j < repetitions; ++j) sb.append("+ (d");
+
+            for (int j = 0; j < repetitions; ++j) sb.append(")");
+
+            sb.append(epilog);
 
             ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
             sc.cook(sb.toString());
 
-            Class<?> c = sc.getClassLoader().loadClass("test.Test");
+            Class<?> c   = sc.getClassLoader().loadClass("test.Test");
             Method   m   = c.getDeclaredMethod("run", new Class[0]);
             Object   o   = c.newInstance();
-            Object   res = m.invoke(o, new Object[0]);
-            Assert.assertEquals((double)repetitions, res);
+            Object   res = m.invoke(o);
+            Assert.assertEquals((double) repetitions, res);
         }
     }
 
