@@ -1,1 +1,1 @@
-Please visit the [project homepage](http://janino-compiler.github.io/janino/),
+Please visit the [project homepage](http://janino-compiler.github.io/janino/).
