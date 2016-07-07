@@ -344,44 +344,41 @@
 					<filterchain><replacestring from="@VERSION@" to="${version}" /></filterchain>
 				</copy>
 
-					<echo message="*** Sign and deploy the main artifact." />
+				<echo message="*** Sign and deploy the main artifact." />
 				<echo message="Notice: If you get a 401, check '~/.m2/settings.xml'." />
 				<mvn failonerror="true">
-				<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
-					<arg value="-Durl=${maven-staging-repository-url}" />
-					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
-					<arg value="-DpomFile=${versioned.pom.file}" />
-					<arg value="-Dfile=build/@{artifactId}.jar" />
-					<arg value="-Dgpg.passp					<arg va				<echo message="*** Sign and deploy the sources artifact." />
-				<mvn failonerror="true">
-e=${gpg.passphrase}" />
-					<arg value="-Dgpg.executable=${gpg.executable}" />
-					<arg value="-Pgpg" />
-				</mvn>
-
-				<!-- Sign and deploy the sources artifact. -->
-				<mvn>
 					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
 					<arg value="-Durl=${maven-staging-repository-url}" />
 					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
 					<arg value="-DpomFile=${versioned.pom.file}" />
-					<arg value="-Dfile=build/@{ar				<echo message="*** Sign and deploy the javadoc artifact." />
-				<mvn failonerror="true">
-/>
+					<arg value="-Dfile=build/@{artifactId}.jar" />
 					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
 					<arg value="-Dgpg.executable=${gpg.executable}" />
 					<arg value="-Pgpg" />
 				</mvn>
 
-				<!-- Sign and deploy the javadoc artifact. -->
-				<mvn>
+				<echo message="*** Sign and deploy the sources artifact." />
+				<mvn failonerror="true">
+					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+					<arg value="-Durl=${maven-staging-repository-url}" />
+					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+					<arg value="-DpomFile=${versioned.pom.file}" />
+					<arg value="-Dfile=build/@{artifactId}-src.zip" />
+					<arg value="-Dclassifier=sources" />
+					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+					<arg value="-Dgpg.executable=${gpg.executable}" />
+					<arg value="-Pgpg" />
+				</mvn>
+
+				<echo message="*** Sign and deploy the javadoc artifact." />
+				<mvn failonerror="true">
 					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
 					<arg value="-Durl=${maven-staging-repository-url}" />
 					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
 					<arg value="-DpomFile=${versioned.pom.file}" />
 					<arg value="-Dfile=build/janino-javadoc.jar" />
-					<arg value="-D		<echo message="*** Sign and deploy the janino-parent artifact." />
-{gpg.passphrase}" />
+					<arg value="-Dclassifier=javadoc" />
+					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
 					<arg value="-Dgpg.executable=${gpg.executable}" />
 					<arg value="-Pgpg" />
 				</mvn>
@@ -392,28 +389,30 @@ e=${gpg.passphrase}" />
 
 		<!-- Sign and deploy the 'janino-parent' artifact. -->
 
-		<var 		<mvn failonerror="true">
-rsioned.pom.file" unset="true" />
+		<echo message="*** Sign and deploy the janino-parent artifact." />
+		<var name="versioned.pom.file" unset="true" />
 		<tempfile property="versioned.pom.file" suffix=".pom"/>
 		<copy file="poms/janino-parent.pom" tofile="${versioned.pom.file}">
 			<filterchain><replacestring from="@VERSION@" to="${version}" /></filterchain>
 		</copy>
-		<mvn>
+		<mvn failonerror="true">
 			<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
 			<arg value="-Durl=${maven-staging-repository-url}" />
 			<arg value="-DrepositoryId=${maven-staging-repository-id}" />
-			<		<echo level="error" message="*** Now open 'https://oss.sonatype.org/#stagingRepositories', select repository 'orgcodehausjanino-*', check its" />
+			<arg value="-DpomFile=${versioned.pom.file}" />
+			<arg value="-Dfile=${versioned.pom.file}" />
+			<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+			<arg value="-Dgpg.executable=${gpg.executable}" />
+			<arg value="-Pgpg" />
+		</mvn>
+		<delete file="${versioned.pom.file}" />
+
+		<echo level="error" message="*** Now open 'https://oss.sonatype.org/#stagingRepositories', select repository 'orgcodehausjanino-*', check its" />
 		<echo level="error" message="*** content, then hit 'Close' and afterwards 'Release'." />
 		<echo level="error" message="***" />
 		<echo level="error" message="*** Eventually, you should see the released artifacts on" />
 		<echo level="error" message="*** 'https://oss.sonatype.org/content/groups/public/org/codehaus/org-codehaus-janino/' and" />
 		<echo level="error" message="*** 'https://repo1.maven.org/maven2/org/codehaus/org-codehaus-janino/'." />
-lue="-Pgpg" />
-		</mvn>
-		<delete file="${versioned.pom.file}" />
-
-		<echo message="*** Now open 'https://nexus.codehaus.org/#stagingRepositories', select repository 'orgcodehausjanino-*', check its" />
-		<echo message="*** content, then hit 'Close' and afterwards 'Release'." />
 	</target>
 
 	<target name="tag" depends="assert.eclipse.running" description="Tags all projects as 'janino_${version}'">
