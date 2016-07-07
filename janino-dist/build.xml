@@ -387,8 +387,6 @@
 			</sequential>
 		</forEach2>
 
-		<!-- Sign and deploy the 'janino-parent' artifact. -->
-
 		<echo message="*** Sign and deploy the janino-parent artifact." />
 		<var name="versioned.pom.file" unset="true" />
 		<tempfile property="versioned.pom.file" suffix=".pom"/>
