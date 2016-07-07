@@ -320,7 +320,7 @@
 			<fileset dir="mirror"/>
 		</ftp2>
 
-		<echo message="*** The next step is to execute target 'tag', which creates a tag for the new version in SVN." />
+		<echo message="*** The next step is to execute target 'stage', which publishes the artifacts for MAVEN." />
 	</target>
 
 	<target name="stage" description="Deploy release version to Maven staging repository.">
@@ -344,7 +344,7 @@
 					<filterchain><replacestring from="@VERSION@" to="${version}" /></filterchain>
 				</copy>
 
-				<echo message="*** Sign and deploy the main artifact." />
+				<echo message="*** Sign and deploy the main artifact for @{artifactId}." />
 				<echo message="Notice: If you get a 401, check '~/.m2/settings.xml'." />
 				<mvn failonerror="true">
 					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
@@ -357,7 +357,7 @@
 					<arg value="-Pgpg" />
 				</mvn>
 
-				<echo message="*** Sign and deploy the sources artifact." />
+				<echo message="*** Sign and deploy the sources artifact for @{artifactId}." />
 				<mvn failonerror="true">
 					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
 					<arg value="-Durl=${maven-staging-repository-url}" />
@@ -370,7 +370,7 @@
 					<arg value="-Pgpg" />
 				</mvn>
 
-				<echo message="*** Sign and deploy the javadoc artifact." />
+				<echo message="*** Sign and deploy the javadoc artifact for @{artifactId}." />
 				<mvn failonerror="true">
 					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
 					<arg value="-Durl=${maven-staging-repository-url}" />
@@ -409,49 +409,7 @@
 		<echo level="error" message="*** content, then hit 'Close' and afterwards 'Release'." />
 		<echo level="error" message="***" />
 		<echo level="error" message="*** Eventually, you should see the released artifacts on" />
-		<echo level="error" message="*** 'https://oss.sonatype.org/content/groups/public/org/codehaus/org-codehaus-janino/' and" />
-		<echo level="error" message="*** 'https://repo1.maven.org/maven2/org/codehaus/org-codehaus-janino/'." />
-	</target>
-
-	<target name="tag" depends="assert.eclipse.running" description="Tags all projects as 'janino_${version}'">
-
-		<!-- Compose the tag name from the feature name and the version. -->
-
-		<property name="tag" value="janino_${version}"/>
-		<echo message="Tagging relevant projects as '${tag}'..."/>
-
-		<condition property="de.unkrig.subclipse.svn.exists"><typefound name="de.unkrig.subclipse.svn"/></condition>
-		<fail unless="de.unkrig.subclipse.svn.exists" message="Please install the 'de.unkrig.subclipse' feature from 'http://subclipse.unkrig.de/update'."/>
-
-		<!--
-			Currently it is only possible to copy the WORKING COPY, and not the BASE version - due to a limitation in
-			svnClientAdapter. See http://subclipse.tigris.org/issues/show_bug.cgi?id=1505
-		-->
-		<property name="d1" value="https://svn.codehaus.org/janino/tags/${tag}"/>
-		<de.unkrig.subclipse.svn>
-			<mkdir                                    url="${d1}"/>
-			<copy srcpath="../commons-compiler"       desturl="${d1}"/>
-			<copy srcpath="../commons-compiler-jdk"   desturl="${d1}"/>
-			<copy srcpath="../commons-compiler-tests" desturl="${d1}"/>
-			<copy srcpath="../de.unkrig.jdisasm"      desturl="${d1}"/>
-			<copy srcpath="../janino"                 desturl="${d1}"/>
-			<copy srcpath="../janino-dist"            desturl="${d1}"/>
-			<copy srcpath="../janino-tests"           desturl="${d1}"/>
-		</de.unkrig.subclipse.svn>
-		<property name="d2" value="https://svn.code.sf.net/p/loggifier/code/tags/${tag}"/>
-		<eclipse.convertPath resourcepath="/de.unkrig.checkstyle-configuration" property="de.unkrig.checkstyle-configuration" />
-		<de.unkrig.subclipse.svn>
-			<mkdir                                                url="${d2}"/>
-			<copy srcpath="${de.unkrig.checkstyle-configuration}" desturl="${d2}"/>
-		</de.unkrig.subclipse.svn>
-
-		<echo message="*** The next step is to deploy the release version to Maven staging repository." />
-		<echo message="*** Therefore, execute the 'stage' ANT target." />
-	</target>
-
-	<target name="assert.eclipse.running">
-		<fail unless="eclipse.running">
-			Please run this ANT build configuration with with the ECLIPSE option "Runtime JRE: Run in the same JRE as the workspace".
-		</fail>
+		<echo level="error" message="*** 'https://oss.sonatype.org/content/groups/public/org/codehaus/janino/' and" />
+		<echo level="error" message="*** 'https://repo1.maven.org/maven2/org/codehaus/janino/'." />
 	</target>
 </project>
