@@ -364,7 +364,7 @@ class Scanner {
         for (;;) {
             switch (state) {
 
-            case 0: // Outside any comment
+            case 0:  // Outside any comment
                 if (this.nextChar == -1) {
                     return new Token(Token.EOF, "EOF");
                 } else
@@ -398,7 +398,7 @@ class Scanner {
                 }
                 break;
 
-            case 2: // After "//..."
+            case 2:  // After "//..."
                 if (this.nextChar == -1) {
                     return new Token(Token.EOF, "EOF");
                 } else
@@ -410,7 +410,7 @@ class Scanner {
                 }
                 break;
 
-            case 3: // After "/*"
+            case 3:  // After "/*"
                 if (this.nextChar == -1) {
                     throw new CompileException("EOF in traditional comment", this.location());
                 } else
@@ -422,7 +422,7 @@ class Scanner {
                 }
                 break;
 
-            case 4: // After "/**"
+            case 4:  // After "/**"
                 if (this.nextChar == -1) {
                     throw new CompileException("EOF in doc comment", this.location());
                 } else
@@ -446,7 +446,7 @@ class Scanner {
                 }
                 break;
 
-            case 5: // After "/**..."
+            case 5:  // After "/**..."
                 assert dcsb != null;
                 if (this.nextChar == -1) {
                     throw new CompileException("EOF in doc comment", this.location());
@@ -463,7 +463,7 @@ class Scanner {
                 }
                 break;
 
-            case 6: // After "/**...\n"
+            case 6:  // After "/**...\n"
                 assert dcsb != null;
                 if (this.nextChar == -1) {
                     throw new CompileException("EOF in doc comment", this.location());
@@ -483,7 +483,7 @@ class Scanner {
                 }
                 break;
 
-            case 7: // After "/**...\n *"
+            case 7:  // After "/**...\n *"
                 assert dcsb != null;
                 if (this.nextChar == -1) {
                     throw new CompileException("EOF in doc comment", this.location());
@@ -501,7 +501,7 @@ class Scanner {
                 }
                 break;
 
-            case 8: // After "/**...*"
+            case 8:  // After "/**...*"
                 assert dcsb != null;
                 if (this.nextChar == -1) {
                     throw new CompileException("EOF in doc comment", this.location());
@@ -520,7 +520,7 @@ class Scanner {
                 }
                 break;
 
-            case 9: // After "/*..."
+            case 9:  // After "/*..."
                 if (this.nextChar == -1) {
                     throw new CompileException("EOF in traditional comment", this.location());
                 } else
