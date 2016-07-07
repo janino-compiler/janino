@@ -957,9 +957,9 @@ class UnitCompiler {
      * Converts and adds the <var>annotations</var> to the <var>target</var>.
      */
     private void
-    compileAnnotations(Java.Annotation[] annotations, Annotatable target, final ClassFile cf) throws CompileException {
+    compileAnnotations(Annotation[] annotations, Annotatable target, final ClassFile cf) throws CompileException {
 
-        ANNOTATIONS: for (final Java.Annotation a : annotations) {
+        ANNOTATIONS: for (final Annotation a : annotations) {
             Type          annotationType        = a.getType();
             IClass        annotationIClass      = this.getType(annotationType);
             IAnnotation[] annotationAnnotations = annotationIClass.getIAnnotations();
@@ -968,7 +968,7 @@ class UnitCompiler {
             boolean runtimeVisible = false;
             for (IAnnotation aa : annotationAnnotations) {
 
-                if (aa.getAnnotationType() != this.iClassLoader.ANNO_java_lang_annotation_Retention) continue;
+                if (aa.getAnnotationType() != this.iClassLoader.TYPE_java_lang_annotation_Retention) continue;
 
                 Object rev = aa.getElementValue("value");
 
@@ -1039,11 +1039,11 @@ class UnitCompiler {
 
                     // Enum constant?
                     ENUM_CONSTANT:
-                    if (rv instanceof Java.AmbiguousName) {
+                    if (rv instanceof AmbiguousName) {
 
-                        Rvalue enumConstant = UnitCompiler.this.reclassify((Java.AmbiguousName) rv).toRvalue();
-                        if (!(enumConstant instanceof Java.FieldAccess)) break ENUM_CONSTANT; // Not a field access.
-                        Java.FieldAccess enumConstantFieldAccess = (Java.FieldAccess) enumConstant;
+                        Rvalue enumConstant = UnitCompiler.this.reclassify((AmbiguousName) rv).toRvalue();
+                        if (!(enumConstant instanceof FieldAccess)) break ENUM_CONSTANT; // Not a field access.
+                        FieldAccess enumConstantFieldAccess = (FieldAccess) enumConstant;
 
                         Type enumType = enumConstantFieldAccess.lhs.toType();
                         if (enumType == null) break ENUM_CONSTANT; // LHS is not a type.
@@ -1072,9 +1072,9 @@ class UnitCompiler {
                     }
 
                     // Class literal?
-                    if (rv instanceof Java.ClassLiteral) {
+                    if (rv instanceof ClassLiteral) {
                         return new ClassFile.AnnotationsAttribute.ClassElementValue(cf.addConstantUtf8Info(
-                            UnitCompiler.this.getType(((Java.ClassLiteral) rv).type).getDescriptor()
+                            UnitCompiler.this.getType(((ClassLiteral) rv).type).getDescriptor()
                         ));
                     }
 
@@ -1251,7 +1251,7 @@ class UnitCompiler {
 
             IMethod m                     = this.toIMethod(md);
             boolean overrides             = this.overridesMethodFromSupertype(m, this.resolve(md.getDeclaringType()));
-            boolean hasOverrideAnnotation = this.hasAnnotation(md, this.iClassLoader.ANNO_java_lang_Override);
+            boolean hasOverrideAnnotation = this.hasAnnotation(md, this.iClassLoader.TYPE_java_lang_Override);
             if (overrides && !hasOverrideAnnotation && !(typeDeclaration instanceof InterfaceDeclaration)) {
                 this.warning("MO", "Missing @Override", md.getLocation());
             } else
@@ -6955,19 +6955,13 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         this.stringConversion(locatable, type);
 
         // Compute list of operands and merge consecutive constant operands.
-        List<Compilable> tmp = new ArrayList();
+        List<Rvalue> tmp = new ArrayList();
         for (Rvalue nextOperand = secondOperand; nextOperand != null;) {
             Object cv = this.getConstantValue(nextOperand);
             if (cv == UnitCompiler.NOT_CONSTANT) {
-                // Non-constant operand.
-                final Rvalue finalOperand = nextOperand;
-                tmp.add(new Compilable() {
 
-                    @Override public void
-                    compile() throws CompileException {
-                        UnitCompiler.this.stringConversion(locatable, UnitCompiler.this.compileGetValue(finalOperand));
-                    }
-                });
+                // Non-constant operand.
+                tmp.add(nextOperand);
 
                 nextOperand = operands.hasNext() ? (Rvalue) operands.next() : null;
             } else
@@ -6994,13 +6988,10 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                 {
                     nextOperand = null;
                 }
+
                 // Break long string constants up into UTF8-able chunks.
-                final String[] ss = UnitCompiler.makeUtf8Able(String.valueOf(cv));
-                for (final String s : ss) {
-                    tmp.add(new Compilable() {
-                        @Override public void
-                        compile() throws CompileException { UnitCompiler.this.pushConstant(locatable, s); }
-                    });
+                for (final String s : UnitCompiler.makeUtf8Able(String.valueOf(cv))) {
+                    tmp.add(new SimpleConstant(locatable.getLocation(), s));
                 }
             }
         }
@@ -7011,10 +7002,10 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         if (tmp.size() <= UnitCompiler.STRING_CONCAT_LIMIT - 1) {
 
             // String concatenation through "a.concat(b).concat(c)".
-            for (Compilable c : tmp) {
-                c.compile();
+            for (Rvalue operand : tmp) {
 
-                // Concatenate.
+                // "s.concat(String.valueOf(operand))"
+                UnitCompiler.this.stringConversion(operand, UnitCompiler.this.compileGetValue(operand));
                 this.invoke(locatable, this.iClassLoader.METH_java_lang_String__concat__java_lang_String);
             }
             return this.iClassLoader.TYPE_java_lang_String;
@@ -7031,11 +7022,22 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         assert ctor != null;
         this.invoke(locatable, ctor);
 
-        for (Iterator<Compilable> it = tmp.iterator(); it.hasNext();) {
+        for (Iterator<Rvalue> it = tmp.iterator(); it.hasNext();) {
+            Rvalue operand = (Rvalue) it.next();
 
-            // "StringBuilder.append(String.valueOf(operand))":
-            ((Compilable) it.next()).compile();
-            this.invoke(locatable, this.iClassLoader.METH_java_lang_StringBuilder__append__java_lang_String);
+            // "sb.append(operand)"
+            IClass t = UnitCompiler.this.compileGetValue(operand);
+            this.invoke(locatable, (
+                t == IClass.BYTE    ? this.iClassLoader.METH_java_lang_StringBuilder__append__int :
+                t == IClass.SHORT   ? this.iClassLoader.METH_java_lang_StringBuilder__append__int :
+                t == IClass.INT     ? this.iClassLoader.METH_java_lang_StringBuilder__append__int :
+                t == IClass.LONG    ? this.iClassLoader.METH_java_lang_StringBuilder__append__long :
+                t == IClass.FLOAT   ? this.iClassLoader.METH_java_lang_StringBuilder__append__float :
+                t == IClass.DOUBLE  ? this.iClassLoader.METH_java_lang_StringBuilder__append__double :
+                t == IClass.CHAR    ? this.iClassLoader.METH_java_lang_StringBuilder__append__char :
+                t == IClass.BOOLEAN ? this.iClassLoader.METH_java_lang_StringBuilder__append__boolean :
+                this.iClassLoader.METH_java_lang_StringBuilder__append__java_lang_Object
+            ));
         }
 
         // "StringBuilder.toString()":
@@ -7405,14 +7407,14 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
                 @Override public IAnnotation
                 visitMarkerAnnotation(final MarkerAnnotation ma) {
-                    return this.toIAnnotation(ma.type, new Java.ElementValuePair[0]);
+                    return this.toIAnnotation(ma.type, new ElementValuePair[0]);
                 }
 
                 @Override public IAnnotation
                 visitSingleElementAnnotation(SingleElementAnnotation sea) {
                     return this.toIAnnotation(
                         sea.type,
-                        new Java.ElementValuePair[] { new Java.ElementValuePair("value", sea.elementValue) }
+                        new ElementValuePair[] { new ElementValuePair("value", sea.elementValue) }
                     );
                 }
 
@@ -7422,10 +7424,10 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                 }
 
                 private IAnnotation
-                toIAnnotation(final Type type, Java.ElementValuePair[] elementValuePairs) {
+                toIAnnotation(final Type type, ElementValuePair[] elementValuePairs) {
 
                     final Map<String, Object> m = new HashMap<String, Object>();
-                    for (Java.ElementValuePair evp : elementValuePairs) {
+                    for (ElementValuePair evp : elementValuePairs) {
                         m.put(evp.identifier, this.toObject(evp.elementValue));
                     }
 
@@ -7455,18 +7457,18 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                             @Override public Object
                             visitRvalue(Rvalue rv) throws CompileException {
 
-                                if (rv instanceof Java.AmbiguousName) {
-                                    Java.AmbiguousName an = (Java.AmbiguousName) rv;
+                                if (rv instanceof AmbiguousName) {
+                                    AmbiguousName an = (AmbiguousName) rv;
                                     rv = UnitCompiler.this.reclassify(an).toRvalueOrCompileException();
                                 }
 
                                 // Class literal?
-                                if (rv instanceof Java.ClassLiteral) {
+                                if (rv instanceof ClassLiteral) {
                                     return rv;
                                 }
 
                                 // Enum constant?
-                                if (rv instanceof Java.FieldAccess) return ((Java.FieldAccess) rv);
+                                if (rv instanceof FieldAccess) return ((FieldAccess) rv);
 
                                 Object result = UnitCompiler.this.getConstantValue(rv);
                                 if (result == null) {
@@ -7943,7 +7945,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
         IClass lhsType = this.getType(fae.lhs);
 
-        Java.Rvalue value;
+        Rvalue value;
         if (fae.fieldName.equals("length") && lhsType.isArray()) {
             value = new ArrayLength(
                 fae.getLocation(),
@@ -9822,7 +9824,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
      * Only strings that can be UTF8-encoded into 65535 bytes can be stored as a constant string info.
      *
      * @param s The string to split into suitable chunks
-     * @return  The chunks that can be UTF8-encoded into 65535 bytes
+     * @return  Strings that can be UTF8-encoded into 65535 bytes
      */
     private static String[]
     makeUtf8Able(String s) {
@@ -9859,6 +9861,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         return (String[]) l.toArray(new String[l.size()]);
 
     }
+
     private void
     writeLdc(Locatable locatable, short index) {
         if (0 <= index && index <= 255) {

@@ -53,85 +53,60 @@ class IClassLoader {
 
     // CHECKSTYLE MemberName:OFF
     // CHECKSTYLE AbbreviationAsWordInName:OFF
-    /** Representation of the {@link java.lang.annotation.Retention} annotation. */
-    public IClass ANNO_java_lang_annotation_Retention;
-    /** Representation of the {@link java.lang.Override} annotation. */
-    public IClass ANNO_java_lang_Override;
+    // CHECKSTYLE JavadocVariable:OFF
 
-    /** Representation of the {@link java.lang.AssertionError} type. */
+    // Representations of commonly used classes.
+    public IClass TYPE_java_lang_annotation_Retention;
     public IClass TYPE_java_lang_AssertionError;
-    /** Representation of the {@link java.lang.Boolean} type. */
     public IClass TYPE_java_lang_Boolean;
-    /** Representation of the {@link java.lang.Byte} type. */
     public IClass TYPE_java_lang_Byte;
-    /** Representation of the {@link java.lang.Character} type. */
     public IClass TYPE_java_lang_Character;
-    /** Representation of the {@link java.lang.Class} type. */
     public IClass TYPE_java_lang_Class;
-    /** Representation of the {@link java.lang.Cloneable} type. */
     public IClass TYPE_java_lang_Cloneable;
-    /** Representation of the {@link java.lang.Double} type. */
     public IClass TYPE_java_lang_Double;
-    /** Representation of the {@link java.lang.Enum} type. */
     public IClass TYPE_java_lang_Enum;
-    /** Representation of the {@link java.lang.Error} type. */
     public IClass TYPE_java_lang_Error;
-    /** Representation of the {@link java.lang.Exception} type. */
     public IClass TYPE_java_lang_Exception;
-    /** Representation of the {@link java.lang.Float} type. */
     public IClass TYPE_java_lang_Float;
-    /** Representation of the {@link java.lang.Integer} type. */
     public IClass TYPE_java_lang_Integer;
-    /** Representation of the {@link java.lang.Iterable} type. */
     public IClass TYPE_java_lang_Iterable;
-    /** Representation of the {@link java.lang.Long} type. */
     public IClass TYPE_java_lang_Long;
-    /** Representation of the {@link java.lang.Object} type. */
     public IClass TYPE_java_lang_Object;
-    /** Representation of the {@link java.lang.RuntimeException} type. */
+    public IClass TYPE_java_lang_Override;
     public IClass TYPE_java_lang_RuntimeException;
-    /** Representation of the {@link java.lang.Short} type. */
     public IClass TYPE_java_lang_Short;
-    /** Representation of the {@link java.lang.String} type. */
     public IClass TYPE_java_lang_String;
-    /** Representation of the {@link java.lang.StringBuilder} type. */
     public IClass TYPE_java_lang_StringBuilder;
-    /** Representation of the {@link java.lang.Throwable} type. */
     public IClass TYPE_java_lang_Throwable;
-    /** Representation of the {@link java.io.Serializable} type. */
     public IClass TYPE_java_io_Serializable;
-    /** Representation of the {@link java.util.Iterator} type. */
     public IClass TYPE_java_util_Iterator;
 
-    /** Representation of the {@link Iterable#iterator()} method. */
+    // Representations of commonly used methods.
     public IMethod METH_java_lang_Iterable__iterator;
-    /** Representation of the {@link String#concat(String)} method. */
     public IMethod METH_java_lang_String__concat__java_lang_String;
-    /** Representation of the {@link String#valueOf(int)} method. */
     public IMethod METH_java_lang_String__valueOf__int;
-    /** Representation of the {@link String#valueOf(long)} method. */
     public IMethod METH_java_lang_String__valueOf__long;
-    /** Representation of the {@link String#valueOf(float)} method. */
     public IMethod METH_java_lang_String__valueOf__float;
-    /** Representation of the {@link String#valueOf(double)} method. */
     public IMethod METH_java_lang_String__valueOf__double;
-    /** Representation of the {@link String#valueOf(char)} method. */
     public IMethod METH_java_lang_String__valueOf__char;
-    /** Representation of the {@link String#valueOf(boolean)} method. */
     public IMethod METH_java_lang_String__valueOf__boolean;
-    /** Representation of the {@link String#valueOf(Object)} method. */
     public IMethod METH_java_lang_String__valueOf__java_lang_Object;
-    /** Representation of the {@link StringBuilder#append(String)} method. */
+    public IMethod METH_java_lang_StringBuilder__append__int;
+    public IMethod METH_java_lang_StringBuilder__append__long;
+    public IMethod METH_java_lang_StringBuilder__append__float;
+    public IMethod METH_java_lang_StringBuilder__append__double;
+    public IMethod METH_java_lang_StringBuilder__append__char;
+    public IMethod METH_java_lang_StringBuilder__append__boolean;
+    public IMethod METH_java_lang_StringBuilder__append__java_lang_Object;
     public IMethod METH_java_lang_StringBuilder__append__java_lang_String;
-    /** Representation of the {@link StringBuilder#toString()} method. */
     public IMethod METH_java_lang_StringBuilder__toString;
-    /** Representation of the {@link java.util.Iterator#hasNext()} method. */
     public IMethod METH_java_util_Iterator__hasNext;
-    /** Representation of the {@link java.util.Iterator#next()} method. */
     public IMethod METH_java_util_Iterator__next;
 
-    /** Representation of the {@link StringBuilder#StringBuilder(String)} constructor. */
+    // Representations of commonly used constrcutors.
     @Nullable public IConstructor CTOR_java_lang_StringBuilder__java_lang_String;
+
+    // CHECKSTYLE JavadocVariable:ON
     // CHECKSTYLE AbbreviationAsWordInName:ON
     // CHECKSTYLE MemberName:ON
 
@@ -148,33 +123,32 @@ class IClassLoader {
     protected final void
     postConstruct() {
         try {
-            this.ANNO_java_lang_annotation_Retention = this.requireType(Descriptor.JAVA_LANG_ANNOTATION_RETENTION);
-            this.ANNO_java_lang_Override             = this.requireType(Descriptor.JAVA_LANG_OVERRIDE);
+            this.TYPE_java_lang_annotation_Retention = this.requireType(Descriptor.JAVA_LANG_ANNOTATION_RETENTION);
+            this.TYPE_java_lang_AssertionError       = this.requireType(Descriptor.JAVA_LANG_ASSERTIONERROR);
+            this.TYPE_java_lang_Boolean              = this.requireType(Descriptor.JAVA_LANG_BOOLEAN);
+            this.TYPE_java_lang_Byte                 = this.requireType(Descriptor.JAVA_LANG_BYTE);
+            this.TYPE_java_lang_Character            = this.requireType(Descriptor.JAVA_LANG_CHARACTER);
+            this.TYPE_java_lang_Class                = this.requireType(Descriptor.JAVA_LANG_CLASS);
+            this.TYPE_java_lang_Cloneable            = this.requireType(Descriptor.JAVA_LANG_CLONEABLE);
+            this.TYPE_java_lang_Double               = this.requireType(Descriptor.JAVA_LANG_DOUBLE);
+            this.TYPE_java_lang_Enum                 = this.requireType(Descriptor.JAVA_LANG_ENUM);
+            this.TYPE_java_lang_Error                = this.requireType(Descriptor.JAVA_LANG_ERROR);
+            this.TYPE_java_lang_Exception            = this.requireType(Descriptor.JAVA_LANG_EXCEPTION);
+            this.TYPE_java_lang_Float                = this.requireType(Descriptor.JAVA_LANG_FLOAT);
+            this.TYPE_java_lang_Integer              = this.requireType(Descriptor.JAVA_LANG_INTEGER);
+            this.TYPE_java_lang_Iterable             = this.requireType(Descriptor.JAVA_LANG_ITERABLE);
+            this.TYPE_java_lang_Long                 = this.requireType(Descriptor.JAVA_LANG_LONG);
+            this.TYPE_java_lang_Object               = this.requireType(Descriptor.JAVA_LANG_OBJECT);
+            this.TYPE_java_lang_Override             = this.requireType(Descriptor.JAVA_LANG_OVERRIDE);
+            this.TYPE_java_lang_RuntimeException     = this.requireType(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
+            this.TYPE_java_lang_Short                = this.requireType(Descriptor.JAVA_LANG_SHORT);
+            this.TYPE_java_lang_String               = this.requireType(Descriptor.JAVA_LANG_STRING);
+            this.TYPE_java_lang_StringBuilder        = this.requireType(Descriptor.JAVA_LANG_STRINGBUILDER);
+            this.TYPE_java_lang_Throwable            = this.requireType(Descriptor.JAVA_LANG_THROWABLE);
+            this.TYPE_java_io_Serializable           = this.requireType(Descriptor.JAVA_IO_SERIALIZABLE);
+            this.TYPE_java_util_Iterator             = this.requireType(Descriptor.JAVA_UTIL_ITERATOR);
 
-            this.TYPE_java_lang_AssertionError   = this.requireType(Descriptor.JAVA_LANG_ASSERTIONERROR);
-            this.TYPE_java_lang_Boolean          = this.requireType(Descriptor.JAVA_LANG_BOOLEAN);
-            this.TYPE_java_lang_Byte             = this.requireType(Descriptor.JAVA_LANG_BYTE);
-            this.TYPE_java_lang_Character        = this.requireType(Descriptor.JAVA_LANG_CHARACTER);
-            this.TYPE_java_lang_Class            = this.requireType(Descriptor.JAVA_LANG_CLASS);
-            this.TYPE_java_lang_Cloneable        = this.requireType(Descriptor.JAVA_LANG_CLONEABLE);
-            this.TYPE_java_lang_Double           = this.requireType(Descriptor.JAVA_LANG_DOUBLE);
-            this.TYPE_java_lang_Enum             = this.requireType(Descriptor.JAVA_LANG_ENUM);
-            this.TYPE_java_lang_Error            = this.requireType(Descriptor.JAVA_LANG_ERROR);
-            this.TYPE_java_lang_Exception        = this.requireType(Descriptor.JAVA_LANG_EXCEPTION);
-            this.TYPE_java_lang_Float            = this.requireType(Descriptor.JAVA_LANG_FLOAT);
-            this.TYPE_java_lang_Integer          = this.requireType(Descriptor.JAVA_LANG_INTEGER);
-            this.TYPE_java_lang_Iterable         = this.requireType(Descriptor.JAVA_LANG_ITERABLE);
-            this.TYPE_java_lang_Long             = this.requireType(Descriptor.JAVA_LANG_LONG);
-            this.TYPE_java_lang_Object           = this.requireType(Descriptor.JAVA_LANG_OBJECT);
-            this.TYPE_java_lang_RuntimeException = this.requireType(Descriptor.JAVA_LANG_RUNTIMEEXCEPTION);
-            this.TYPE_java_lang_Short            = this.requireType(Descriptor.JAVA_LANG_SHORT);
-            this.TYPE_java_lang_String           = this.requireType(Descriptor.JAVA_LANG_STRING);
-            this.TYPE_java_lang_StringBuilder    = this.requireType(Descriptor.JAVA_LANG_STRINGBUILDER);
-            this.TYPE_java_lang_Throwable        = this.requireType(Descriptor.JAVA_LANG_THROWABLE);
-            this.TYPE_java_io_Serializable       = this.requireType(Descriptor.JAVA_IO_SERIALIZABLE);
-            this.TYPE_java_util_Iterator         = this.requireType(Descriptor.JAVA_UTIL_ITERATOR);
-
-            // SUPPRESS CHECKSTYLE LineLength:13
+            // SUPPRESS CHECKSTYLE LineLength:20
             this.METH_java_lang_Iterable__iterator                      = IClassLoader.requireMethod(this.TYPE_java_lang_Iterable,      "iterator");
             this.METH_java_lang_String__concat__java_lang_String        = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "concat",   this.TYPE_java_lang_String);
             this.METH_java_lang_String__valueOf__int                    = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.INT);
@@ -184,6 +158,13 @@ class IClassLoader {
             this.METH_java_lang_String__valueOf__char                   = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.CHAR);
             this.METH_java_lang_String__valueOf__boolean                = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.BOOLEAN);
             this.METH_java_lang_String__valueOf__java_lang_Object       = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  this.TYPE_java_lang_Object);
+            this.METH_java_lang_StringBuilder__append__int              = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   IClass.INT);
+            this.METH_java_lang_StringBuilder__append__long             = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   IClass.LONG);
+            this.METH_java_lang_StringBuilder__append__float            = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   IClass.FLOAT);
+            this.METH_java_lang_StringBuilder__append__double           = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   IClass.DOUBLE);
+            this.METH_java_lang_StringBuilder__append__char             = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   IClass.CHAR);
+            this.METH_java_lang_StringBuilder__append__boolean          = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   IClass.BOOLEAN);
+            this.METH_java_lang_StringBuilder__append__java_lang_Object = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   this.TYPE_java_lang_Object);
             this.METH_java_lang_StringBuilder__append__java_lang_String = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   this.TYPE_java_lang_String);
             this.METH_java_lang_StringBuilder__toString                 = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "toString");
             this.METH_java_util_Iterator__hasNext                       = IClassLoader.requireMethod(this.TYPE_java_util_Iterator,      "hasNext");
