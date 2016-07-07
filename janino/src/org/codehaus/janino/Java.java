@@ -569,11 +569,23 @@ class Java {
         }
     }
 
+    /**
+     * Base for the various class declarations (top-level class, local class, anonymous class, nested class, top-level
+     * enum, nested enum).
+     */
     public
     interface ClassDeclaration extends TypeDeclaration {
 
+        /**
+         * Returns the initializers for class variables (JLS7 8.3.2.1) and instance variables (JLS7 8.3.2.2), and
+         * the instance initializers (JLS7 8.6) and static initializers (JLS7 8.7) <em>in the order as they appear in
+         * the type declaration</em>.
+         */
         List<BlockStatement> getVariableDeclaratorsAndInitializers();
 
+        /**
+         * @return The synthetic fields that were created while this type declaration was compiled
+         */
         SortedMap<String, IClass.IField> getSyntheticFields();
     }
 
@@ -1233,6 +1245,9 @@ class Java {
         }
     }
 
+    /**
+     * Base for the various package member (a.k.a. "top-level") class declarations (top-level class, top-level enum).
+     */
     public abstract static
     class AbstractPackageMemberClassDeclaration extends NamedClassDeclaration implements PackageMemberTypeDeclaration {
 
@@ -1295,6 +1310,9 @@ class Java {
         }
     }
 
+    /**
+     * Base for package member (a.k.a. "top-level") enum declarations and nested enum declarations.
+     */
     public
     interface EnumDeclaration extends ClassDeclaration, NamedTypeDeclaration, DocCommentable {
 
@@ -1310,12 +1328,32 @@ class Java {
         void addConstant(Java.EnumConstant ec);
     }
 
+    /**
+     * Representation of an "enum constant", see JLS7 8.9.1.
+     */
     public static final
     class EnumConstant extends AbstractClassDeclaration implements DocCommentable {
 
-        @Nullable public final String   optionalDocComment;
-        public final List<Annotation>   annotations;
-        public final String             name;
+        /**
+         * The optional "doc comment" that appeared in the compilation unit immediately before this enum constant
+         * declaration.
+         */
+        @Nullable public final String optionalDocComment;
+
+        /**
+         * The (often empty) list of annotations on this enum constant declaration.
+         */
+        public final List<Annotation> annotations;
+
+        /**
+         * The name of the declared enum constant.
+         */
+        public final String name;
+
+        /**
+         * The optional arguments that appear after the enum constant name iff the enum declares constructors with
+         * one or more parameters.
+         */
         @Nullable public final Rvalue[] optionalArguments;
 
         public
@@ -1523,6 +1561,9 @@ class Java {
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberInterfaceDeclaration(this); }
     }
 
+    /**
+     * Representation of a member annotation type declaration, a.k.a. "nested annotation type declaration".
+     */
     public static
     class MemberAnnotationTypeDeclaration extends MemberInterfaceDeclaration {
 
@@ -1616,6 +1657,9 @@ class Java {
         }
     }
 
+    /**
+     * Representation of a package member annotation type declaration, a.k.a. "top-level annotation type declaration".
+     */
     public static final
     class PackageMemberAnnotationTypeDeclaration
     extends PackageMemberInterfaceDeclaration
@@ -1648,6 +1692,9 @@ class Java {
         }
     }
 
+    /**
+     * Base for package member ("top-level") and member ("nested") annotation type declarations.
+     */
     public
     interface AnnotationTypeDeclaration extends NamedTypeDeclaration, DocCommentable {
     }

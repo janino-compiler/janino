@@ -45,8 +45,6 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Mod;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ConstantElementValue;
 
 /**
  * An object that represents the Java&trade; "class file" format.
@@ -1819,6 +1817,12 @@ class ClassFile implements Annotatable {
              */
             @Nullable <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX;
 
+            /**
+             * The visitor interface for the implementation of the "visitor" pattern.
+             *
+             * @param <R>  The type of the object that the "{@code visit*()}" methods return
+             * @param <EX> The type of the exception that the "{@code visit*()}" methods may throw
+             */
             public
             interface Visitor<R, EX extends Throwable> extends ConstantElementValue.Visitor<R, EX> {
 
@@ -1837,6 +1841,10 @@ class ClassFile implements Annotatable {
         class ConstantElementValue implements AnnotationsAttribute.ElementValue {
 
             private final byte tag;
+
+            /**
+             * The index of the constant pool entry that holds the constant value for this annotation element.
+             */
             public final short constantValueIndex;
 
             public
@@ -1864,6 +1872,12 @@ class ClassFile implements Annotatable {
             @Nullable protected abstract <R, EX extends Throwable> R
             accept(ConstantElementValue.Visitor<R, EX> visitor) throws EX;
 
+            /**
+             * The visitor interface for the implementation of the "visitor" pattern.
+             *
+             * @param <R>  The type of the object that the "{@code visit*()}" methods return
+             * @param <EX> The type of the exception that the "{@code visit*()}" methods may throw
+             */
             public
             interface Visitor<R, EX extends Throwable> {
 
@@ -1988,6 +2002,9 @@ class ClassFile implements Annotatable {
         public static final
         class ArrayElementValue implements AnnotationsAttribute.ElementValue {
 
+            /**
+             * The values of the elements of this array element value.
+             */
             public final AnnotationsAttribute.ElementValue[] values;
 
             public
@@ -2276,7 +2293,7 @@ class ClassFile implements Annotatable {
             this.attributes            = attributes;
         }
 
-        public static AttributeInfo
+        private static AttributeInfo
         loadBody(short attributeNameIndex, ClassFile classFile, DataInputStream dis) throws IOException {
 
             final short  maxStack  = dis.readShort();                              // max_stack
