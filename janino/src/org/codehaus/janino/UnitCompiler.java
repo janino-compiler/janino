@@ -223,14 +223,14 @@ class UnitCompiler {
     private static final int STRING_CONCAT_LIMIT = 3;
 
     /**
-     * Special value for the {@code orientation} parameter of the {@link #compileBoolean(Java.Rvalue,
+     * Special value for the <var>orientation</var> parameter of the {@link #compileBoolean(Java.Rvalue,
      * CodeContext.Offset, boolean)} methods, indicating that the code should be generated such that execution branches
      * if the value on top of the operand stack is TRUE.
      */
     public static final boolean JUMP_IF_TRUE  = true;
 
     /**
-     * Special value for the {@code orientation} parameter of the {@link #compileBoolean(Java.Rvalue,
+     * Special value for the <var>orientation</var> parameter of the {@link #compileBoolean(Java.Rvalue,
      * CodeContext.Offset, boolean)} methods, indicating that the code should be generated such that execution branches
      * if the value on top of the operand stack is FALSE.
      */
@@ -1235,7 +1235,7 @@ class UnitCompiler {
     }
 
     /**
-     * Compile methods for this declaration starting at {@code startPos}.
+     * Compile methods for this declaration starting at <var>startPos</var>.
      *
      * @param startPos          Starting parameter to fill in
      * @throws CompileException
@@ -1296,7 +1296,7 @@ class UnitCompiler {
         return false;
     }
 
-    /** @return Whether {@code method} overrides a method of {@code type} or any of its supertypes */
+    /** @return Whether <var>method</var> overrides a method of <var>type</var> or any of its supertypes */
     private boolean
     overridesMethod(IMethod method, IClass type) throws CompileException {
 
@@ -2917,7 +2917,7 @@ class UnitCompiler {
         }
     }
 
-    /** Computes and fills in the 'local variable map' for the given {@code blockStatement}. */
+    /** Computes and fills in the 'local variable map' for the given <var>blockStatement</var>. */
     private Map<String, LocalVariable>
     buildLocalVariableMap(BlockStatement blockStatement, final Map<String, LocalVariable> localVars)
     throws CompileException {
@@ -3081,7 +3081,7 @@ class UnitCompiler {
         return newVars;
     }
 
-    /** Adds the given {@code localVars} to the 'local variable map' of the given {@code catchClause}. */
+    /** Adds the given <var>localVars</var> to the 'local variable map' of the given <var>catchClause</var>. */
     protected void
     buildLocalVariableMap(CatchClause catchClause, Map<String, LocalVariable> localVars) throws CompileException {
         Map<String, LocalVariable> vars = new HashMap();
@@ -3091,16 +3091,16 @@ class UnitCompiler {
         this.buildLocalVariableMap(catchClause.body, vars);
     }
 
-    /** @return The {@link LocalVariable} corresponding with the {@code parameter} */
+    /** @return The {@link LocalVariable} corresponding with the <var>parameter</var> */
     public LocalVariable
     getLocalVariable(FormalParameter parameter) throws CompileException {
         return this.getLocalVariable(parameter, false);
     }
 
     /**
-     * @param isVariableArityParameter Whether the {@code parameter} is the last parameter of a 'variable arity'
+     * @param isVariableArityParameter Whether the <var>parameter</var> is the last parameter of a 'variable arity'
      *                                 (a.k.a. 'varargs') method declaration
-     * @return                         The {@link LocalVariable} corresponding with the {@code parameter}
+     * @return                         The {@link LocalVariable} corresponding with the <var>parameter</var>
      */
     public LocalVariable
     getLocalVariable(FormalParameter parameter, boolean isVariableArityParameter)
@@ -3312,7 +3312,7 @@ class UnitCompiler {
     /**
      * Some {@link Rvalue}s compile more efficiently when their value is the condition for a branch.
      * <p>
-     * Notice that if "this" is a constant, then either {@code dst} is never branched to, or it is unconditionally
+     * Notice that if "this" is a constant, then either <var>dst</var> is never branched to, or it is unconditionally
      * branched to. "Unexamined code" errors may result during bytecode validation.
      *
      * @param dst         Where to jump
@@ -5524,7 +5524,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
      * <p>
      * Statements like "return", "break", "continue" must call this method for all the statements they terminate.
      * <p>
-     * Notice: If {@code optionalStackValueType} is {@code null}, then the operand stack is empty; otherwise
+     * Notice: If <var>optionalStackValueType</var> is {@code null}, then the operand stack is empty; otherwise
      * exactly one operand with that type is on the stack. This information is vital to implementations of {@link
      * #leave(BlockStatement, IClass)} that require a specific operand stack state (e.g. an empty operand stack for
      * JSR).
@@ -6238,7 +6238,10 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         return this.iClassLoader.TYPE_java_lang_Object;
     }
 
-    /** @return Iff {@code type} is a primitive wrapper type, the unwrapped {@code type}, otherwise {@code type} */
+    /**
+     * @return Iff <var>type</var> is a primitive wrapper type, the unwrapped <var>type</var>, otherwise
+     *         <var>type</var>
+     */
     private IClass
     getUnboxedType(IClass type) {
         IClass c = this.isUnboxingConvertible(type);
@@ -6723,9 +6726,10 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /**
-     * The LHS operand of type {@code lhsType} is expected on the stack.
+     * The LHS operand of type <var>lhsType</var> is expected on the stack.
      * <p>
-     * The following operators are supported: {@code &nbsp;&nbsp;| ^ & * / % + - &lt;&lt; &gt;&gt; &gt;&gt;&gt;}
+     *   The following operators are supported: {@code | ^ & * / % + - << >> >>>}
+     * </p>
      */
     private IClass
     compileArithmeticBinaryOperation(
@@ -6743,76 +6747,49 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /**
-     * Execute an arithmetic operation on a sequence of {@code operands}. If {@code type} is non-null, the first
-     * operand with that type is already on the stack.
+     * Execute an arithmetic operation on a sequence of <var>operands</var>. If <var>type</var> is non-{@code null},
+     * then the first operand with that type is already on the stack.
      * <p>
-     * The following operators are supported: {@code &nbsp;&nbsp;| ^ &amp; * / % + - &lt;&lt; &gt;&gt; &gt;&gt;&gt;}
+     *   The following operators are supported: {@code | ^ & * / % + - << >> >>>}
+     * </p>
      */
     private IClass
     compileArithmeticOperation(
         final Locatable  locatable,
-        @Nullable IClass type,
+        @Nullable IClass firstOperandType,
         Iterator<Rvalue> operands,
         String           operator
     ) throws CompileException {
-        if (operator == "|" || operator == "^" || operator == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+
+        // A very special case.
+        if (operator == "+" && firstOperandType == this.iClassLoader.TYPE_java_lang_String) { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
+            return this.compileStringConcatenation(locatable, firstOperandType, (Rvalue) operands.next(), operands);
+        }
+
+        IClass type = firstOperandType == null ? this.compileGetValue((Rvalue) operands.next()) : firstOperandType;
+
+        // Operator which is allowed for BYTE, SHORT, INT, LONG and BOOLEAN operands?
+        if (operator == "|" || operator == "^" || operator == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality:5
             final int iopcode = (
-                // CHECKSTYLE StringLiteralEquality:OFF
                 operator == "&" ? Opcode.IAND :
                 operator == "|" ? Opcode.IOR  :
                 operator == "^" ? Opcode.IXOR :
-                // CHECKSTYLE StringLiteralEquality:OFF
                 Integer.MAX_VALUE
             );
 
-            do {
+            while (operands.hasNext()) {
                 Rvalue operand = (Rvalue) operands.next();
 
-                if (type == null) {
-                    type = this.compileGetValue(operand);
-                } else {
-                    CodeContext.Inserter convertLhsInserter = this.getCodeContext().newInserter();
-                    IClass               rhsType            = this.compileGetValue(operand);
+                CodeContext.Inserter convertLhsInserter = this.getCodeContext().newInserter();
+                IClass               rhsType            = this.compileGetValue(operand);
 
-                    if (type.isPrimitiveNumeric() && rhsType.isPrimitiveNumeric()) {
-                        IClass promotedType = this.binaryNumericPromotion(locatable, type, convertLhsInserter, rhsType);
-                        if (promotedType == IClass.INT) {
-                            this.writeOpcode(locatable, iopcode);
-                        } else
-                        if (promotedType == IClass.LONG) {
-                            this.writeOpcode(locatable, iopcode + 1);
-                        } else
-                        {
-                            this.compileError((
-                                "Operator \""
-                                + operator
-                                + "\" not defined on types \""
-                                + type
-                                + "\" and \""
-                                + rhsType
-                                + "\""
-                            ), locatable.getLocation());
-                        }
-                        type = promotedType;
-                    } else
-                    if (
-                        (type == IClass.BOOLEAN || this.getUnboxedType(type) == IClass.BOOLEAN)
-                        && (rhsType == IClass.BOOLEAN || this.getUnboxedType(rhsType) == IClass.BOOLEAN)
-                    ) {
-                        IClassLoader icl = this.iClassLoader;
-                        if (type == icl.TYPE_java_lang_Boolean) {
-                            this.getCodeContext().pushInserter(convertLhsInserter);
-                            try {
-                                this.unboxingConversion(locatable, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
-                            } finally {
-                                this.getCodeContext().popInserter();
-                            }
-                        }
-                        if (rhsType == icl.TYPE_java_lang_Boolean) {
-                            this.unboxingConversion(locatable, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
-                        }
+                if (type.isPrimitiveNumeric() && rhsType.isPrimitiveNumeric()) {
+                    IClass promotedType = this.binaryNumericPromotion(locatable, type, convertLhsInserter, rhsType);
+                    if (promotedType == IClass.INT) {
                         this.writeOpcode(locatable, iopcode);
-                        type = IClass.BOOLEAN;
+                    } else
+                    if (promotedType == IClass.LONG) {
+                        this.writeOpcode(locatable, iopcode + 1);
                     } else
                     {
                         this.compileError((
@@ -6824,113 +6801,137 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                             + rhsType
                             + "\""
                         ), locatable.getLocation());
-                        type = IClass.INT;
                     }
+                    type = promotedType;
+                } else
+                if (
+                    (type == IClass.BOOLEAN || this.getUnboxedType(type) == IClass.BOOLEAN)
+                    && (rhsType == IClass.BOOLEAN || this.getUnboxedType(rhsType) == IClass.BOOLEAN)
+                ) {
+                    IClassLoader icl = this.iClassLoader;
+                    if (type == icl.TYPE_java_lang_Boolean) {
+                        this.getCodeContext().pushInserter(convertLhsInserter);
+                        try {
+                            this.unboxingConversion(locatable, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
+                        } finally {
+                            this.getCodeContext().popInserter();
+                        }
+                    }
+                    if (rhsType == icl.TYPE_java_lang_Boolean) {
+                        this.unboxingConversion(locatable, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
+                    }
+                    this.writeOpcode(locatable, iopcode);
+                    type = IClass.BOOLEAN;
+                } else
+                {
+                    this.compileError((
+                        "Operator \""
+                        + operator
+                        + "\" not defined on types \""
+                        + type
+                        + "\" and \""
+                        + rhsType
+                        + "\""
+                    ), locatable.getLocation());
+                    type = IClass.INT;
                 }
-            } while (operands.hasNext());
+            }
             return type;
         }
 
-        // SUPPRESS CHECKSTYLE StringLiteralEquality
-        if (operator == "*" || operator == "/" || operator == "%" || operator == "+" || operator == "-") {
+        // Operator which is allowed for INT, LONG, FLOAT, DOUBLE and (for operator '+') STRING operands?
+        if (operator == "*" || operator == "/" || operator == "%" || operator == "+" || operator == "-") { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength:6
             final int iopcode = (
-                operator == "*"   ? Opcode.IMUL  :
-                operator == "/"   ? Opcode.IDIV  :
-                operator == "%"   ? Opcode.IREM  :
-                operator == "+"   ? Opcode.IADD  :
-                operator == "-"   ? Opcode.ISUB  : Integer.MAX_VALUE
+                operator == "*"   ? Opcode.IMUL :
+                operator == "/"   ? Opcode.IDIV :
+                operator == "%"   ? Opcode.IREM :
+                operator == "+"   ? Opcode.IADD :
+                operator == "-"   ? Opcode.ISUB :
+                Integer.MAX_VALUE
             );
 
-            do {
+            while (operands.hasNext()) {
                 Rvalue operand = (Rvalue) operands.next();
 
-                IClass       operandType = this.getType(operand);
-                IClassLoader icl         = this.iClassLoader;
-
                 // String concatenation?
-                // SUPPRESS CHECKSTYLE StringLiteralEquality
-                if (
-                    operator == "+"
-                    && (type == icl.TYPE_java_lang_String || operandType == icl.TYPE_java_lang_String)
-                ) {
-                    return this.compileStringConcatenation(locatable, type, operand, operands);
+                if (operator == "+" && ( // SUPPRESS CHECKSTYLE StringLiteralEquality
+                    type == this.iClassLoader.TYPE_java_lang_String
+                    || this.getType(operand) == this.iClassLoader.TYPE_java_lang_String
+                )) return this.compileStringConcatenation(locatable, type, operand, operands);
+
+                CodeContext.Inserter convertLhsInserter = this.getCodeContext().newInserter();
+                IClass               rhsType            = this.compileGetValue(operand);
+
+                type = this.binaryNumericPromotion(locatable, type, convertLhsInserter, rhsType);
+
+                int opcode;
+                if (type == IClass.INT) {
+                    opcode = iopcode;
+                } else
+                if (type == IClass.LONG) {
+                    opcode = iopcode + 1;
+                } else
+                if (type == IClass.FLOAT) {
+                    opcode = iopcode + 2;
+                } else
+                if (type == IClass.DOUBLE) {
+                    opcode = iopcode + 3;
+                } else
+                {
+                    this.compileError("Unexpected promoted type \"" + type + "\"", locatable.getLocation());
+                    opcode = iopcode;
                 }
+                this.writeOpcode(locatable, opcode);
+            }
 
-                if (type == null) {
-                    type = this.compileGetValue(operand);
-                } else {
-                    CodeContext.Inserter convertLhsInserter = this.getCodeContext().newInserter();
-                    IClass               rhsType            = this.compileGetValue(operand);
-
-                    type = this.binaryNumericPromotion(locatable, type, convertLhsInserter, rhsType);
-
-                    int opcode;
-                    if (type == IClass.INT) {
-                        opcode = iopcode;
-                    } else
-                    if (type == IClass.LONG) {
-                        opcode = iopcode + 1;
-                    } else
-                    if (type == IClass.FLOAT) {
-                        opcode = iopcode + 2;
-                    } else
-                    if (type == IClass.DOUBLE) {
-                        opcode = iopcode + 3;
-                    } else
-                    {
-                        this.compileError("Unexpected promoted type \"" + type + "\"", locatable.getLocation());
-                        opcode = iopcode;
-                    }
-                    this.writeOpcode(locatable, opcode);
-                }
-            } while (operands.hasNext());
             return type;
         }
 
-        if (operator == "<<"  || operator == ">>"  || operator == ">>>") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+        // Operator which is allowed for BYTE, SHORT, INT and LONG lhs operand and BYTE, SHORT, INT or LONG rhs operand?
+        if (operator == "<<" || operator == ">>" || operator == ">>>") { // SUPPRESS CHECKSTYLE StringLiteralEquality:4
             final int iopcode = (
                 operator == "<<"  ? Opcode.ISHL  :
                 operator == ">>"  ? Opcode.ISHR  :
-                operator == ">>>" ? Opcode.IUSHR : Integer.MAX_VALUE
+                operator == ">>>" ? Opcode.IUSHR :
+                Integer.MAX_VALUE
             );
 
-            do {
-                Rvalue operand = (Rvalue) operands.next();
+            while (operands.hasNext()) {
+                type = this.unaryNumericPromotion(locatable, type);
 
-                if (type == null) {
-                    type = this.compileGetValue(operand);
-                } else {
-                    CodeContext.Inserter convertLhsInserter = this.getCodeContext().newInserter();
-                    final IClass         rhsType            = this.compileGetValue(operand);
-
-                    IClass promotedLhsType;
-                    this.getCodeContext().pushInserter(convertLhsInserter);
-                    try {
-                        promotedLhsType = this.unaryNumericPromotion(locatable, type);
-                    } finally {
-                        this.getCodeContext().popInserter();
-                    }
-                    if (promotedLhsType != IClass.INT && promotedLhsType != IClass.LONG) {
-                        this.compileError(
-                            "Shift operation not allowed on operand type \"" + type + "\"",
-                            locatable.getLocation()
-                        );
-                    }
-
-                    IClass promotedRhsType = this.unaryNumericPromotion(locatable, rhsType);
-                    if (promotedRhsType != IClass.INT && promotedRhsType != IClass.LONG) {
-                        this.compileError(
-                            "Shift distance of type \"" + rhsType + "\" is not allowed",
-                            locatable.getLocation()
-                        );
-                    }
-
-                    if (promotedRhsType == IClass.LONG) this.writeOpcode(locatable, Opcode.L2I);
-
-                    this.writeOpcode(locatable, promotedLhsType == IClass.LONG ? iopcode + 1 : iopcode);
-                    type = promotedLhsType;
+                int opcode;
+                if (type == IClass.INT) {
+                    opcode = iopcode;
+                } else
+                if (type == IClass.LONG) {
+                    opcode = iopcode + 1;
+                } else
+                {
+                    this.compileError(
+                        "Shift operation not allowed on operand type \"" + type + "\"",
+                        locatable.getLocation()
+                    );
+                    opcode = iopcode;
                 }
-            } while (operands.hasNext());
+
+                IClass rhsType         = this.compileGetValue((Rvalue) operands.next());
+                IClass promotedRhsType = this.unaryNumericPromotion(locatable, rhsType);
+                if (promotedRhsType == IClass.INT) {
+                    ;
+                } else
+                if (promotedRhsType == IClass.LONG) {
+                    this.writeOpcode(locatable, Opcode.L2I);
+                } else
+                {
+                    this.compileError(
+                        "Shift distance of type \"" + rhsType + "\" is not allowed",
+                        locatable.getLocation()
+                    );
+                }
+
+                this.writeOpcode(locatable, opcode);
+            }
+
             return type;
         }
 
@@ -6938,34 +6939,28 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /**
-     * @param type     If non-null, the first operand with that type is already on the stack
-     * @param operand  The next operand
-     * @param operands All following operands ({@link Iterator} over {@link Rvalue}s)
+     * @param type          The type of the first operand, which is already on the stack
+     * @param secondOperand The second operand
+     * @param operands      All following operands
      */
     private IClass
     compileStringConcatenation(
         final Locatable  locatable,
-        @Nullable IClass type,
-        final Rvalue     operand,
+        IClass           type,
+        final Rvalue     secondOperand,
         Iterator<Rvalue> operands
     ) throws CompileException {
-        Rvalue  operand2 = operand;
-        boolean operandOnStack;
-        if (type != null) {
-            this.stringConversion(locatable, type);
-            operandOnStack = true;
-        } else
-        {
-            operandOnStack = false;
-        }
+
+        // Convert the first operand (which is already on the operand stack) to "String".
+        this.stringConversion(locatable, type);
 
         // Compute list of operands and merge consecutive constant operands.
         List<Compilable> tmp = new ArrayList();
-        do {
-            Object cv = this.getConstantValue(operand2);
+        for (Rvalue nextOperand = secondOperand; nextOperand != null;) {
+            Object cv = this.getConstantValue(nextOperand);
             if (cv == UnitCompiler.NOT_CONSTANT) {
                 // Non-constant operand.
-                final Rvalue finalOperand = operand2;
+                final Rvalue finalOperand = nextOperand;
                 tmp.add(new Compilable() {
 
                     @Override public void
@@ -6974,22 +6969,22 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                     }
                 });
 
-                operand2 = operands.hasNext() ? (Rvalue) operands.next() : null;
+                nextOperand = operands.hasNext() ? (Rvalue) operands.next() : null;
             } else
             {
                 // Constant operand. Check to see whether the next operand is also constant.
                 if (operands.hasNext()) {
-                    operand2 = (Rvalue) operands.next();
-                    Object cv2 = this.getConstantValue(operand2);
+                    nextOperand = (Rvalue) operands.next();
+                    Object cv2 = this.getConstantValue(nextOperand);
                     if (cv2 != UnitCompiler.NOT_CONSTANT) {
                         StringBuilder sb = new StringBuilder(String.valueOf(cv)).append(cv2);
                         for (;;) {
                             if (!operands.hasNext()) {
-                                operand2 = null;
+                                nextOperand = null;
                                 break;
                             }
-                            operand2 = (Rvalue) operands.next();
-                            Object cv3 = this.getConstantValue(operand2);
+                            nextOperand = (Rvalue) operands.next();
+                            Object cv3 = this.getConstantValue(nextOperand);
                             if (cv3 == UnitCompiler.NOT_CONSTANT) break;
                             sb.append(cv3);
                         }
@@ -6997,7 +6992,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                     }
                 } else
                 {
-                    operand2 = null;
+                    nextOperand = null;
                 }
                 // Break long string constants up into UTF8-able chunks.
                 final String[] ss = UnitCompiler.makeUtf8Able(String.valueOf(cv));
@@ -7008,53 +7003,38 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                     });
                 }
             }
-        } while (operand2 != null);
+        }
 
         // At this point "tmp" contains an optimized sequence of Strings (representing constant portions) and Rvalues
         // (non-constant portions).
 
-        if (tmp.size() <= (operandOnStack ? UnitCompiler.STRING_CONCAT_LIMIT - 1 : UnitCompiler.STRING_CONCAT_LIMIT)) {
+        if (tmp.size() <= UnitCompiler.STRING_CONCAT_LIMIT - 1) {
 
             // String concatenation through "a.concat(b).concat(c)".
             for (Compilable c : tmp) {
                 c.compile();
 
                 // Concatenate.
-                if (operandOnStack) {
-                    this.invoke(locatable, this.iClassLoader.METH_java_lang_String__concat__java_lang_String);
-                } else
-                {
-                    operandOnStack = true;
-                }
+                this.invoke(locatable, this.iClassLoader.METH_java_lang_String__concat__java_lang_String);
             }
             return this.iClassLoader.TYPE_java_lang_String;
         }
 
         // String concatenation through "new StringBuilder(a).append(b).append(c).append(d).toString()".
-        Iterator<Compilable> it = tmp.iterator();
-
         // "new StringBuilder(String a)":
-        if (operandOnStack) {
-            this.writeOpcode(locatable, Opcode.NEW);
-            this.writeConstantClassInfo(Descriptor.JAVA_LANG_STRINGBUILDER);
-            this.writeOpcode(locatable, Opcode.DUP_X1);
-            this.writeOpcode(locatable, Opcode.SWAP);
-        } else
-        {
-            this.writeOpcode(locatable, Opcode.NEW);
-            this.writeConstantClassInfo(Descriptor.JAVA_LANG_STRINGBUILDER);
-            this.writeOpcode(locatable, Opcode.DUP);
-            ((Compilable) it.next()).compile();
-        }
+        this.writeOpcode(locatable, Opcode.NEW);
+        this.writeConstantClassInfo(Descriptor.JAVA_LANG_STRINGBUILDER);
+        this.writeOpcode(locatable, Opcode.DUP_X1);
+        this.writeOpcode(locatable, Opcode.SWAP);
 
         IConstructor ctor = this.iClassLoader.CTOR_java_lang_StringBuilder__java_lang_String;
         assert ctor != null;
         this.invoke(locatable, ctor);
 
-        while (it.hasNext()) {
-            ((Compilable) it.next()).compile();
+        for (Iterator<Compilable> it = tmp.iterator(); it.hasNext();) {
 
-            // "StringBuilder.append(String b)":
+            // "StringBuilder.append(String.valueOf(operand))":
+            ((Compilable) it.next()).compile();
             this.invoke(locatable, this.iClassLoader.METH_java_lang_StringBuilder__append__java_lang_String);
         }
 
@@ -7299,7 +7279,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /*
-     * @return The {@link IField}s that are declared by the {@code fieldDeclaration}
+     * @return The {@link IField}s that are declared by the <var>fieldDeclaration</var>
      */
     private IClass.IField[]
     getIFields(final FieldDeclaration fieldDeclaration) {
@@ -7531,7 +7511,10 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         return result;
     }
 
-    /** Reclassifies the ambiguous name consisting of the first {@code n} of the {@code identifiers} (JLS7 6.5.2.2). */
+    /**
+     * Reclassifies the ambiguous name consisting of the first <var>n</var> of the <var>identifiers</var> (JLS7
+     * 6.5.2.2).
+     */
     private Atom
     reclassifyName(Location location, Scope scope, final String[] identifiers, int n) throws CompileException {
 
@@ -7612,7 +7595,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
      * Find the named {@link IClass} in this compilation unit, or through the {@link #iClassLoader}.
      *
      * @param className         Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner".
-     * @return                  {@code null} iff an {@code IClass} with that name could not be loaded
+     * @return                  {@code null} iff an {@link IClass} with that name could not be loaded
      * @throws CompileException An exception was raised while loading the {@link IClass}
      */
     @Nullable private IClass
@@ -8157,8 +8140,8 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /**
-     * Find a {@link IClass.IMethod} in the given {@code targetType}, its superclasses or superinterfaces with the
-     * given {@code name} and for the given {@code arguments}. If more than one such method exists, choose the most
+     * Finds a {@link IClass.IMethod} in the given <var>targetType</var>, its superclasses or superinterfaces which is
+     * applicable with the given <var>invocation</var>. If more than one such method exists, chooses the most
      * specific one (JLS7 15.11.2).
      *
      * @return {@code null} if no appropriate method could be found
@@ -8207,8 +8190,8 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /**
-     * Add all methods with the given {@code methodName} that are declared by the {@code type}, its superclasses and
-     * all their superinterfaces to the result list {@code v}.
+     * Adds all methods with the given <var>methodName</var> that are declared by the <var>type</var>, its superclasses
+     * and all their superinterfaces to the result list <var>v</var>.
      */
     public void
     getIMethods(IClass type, String methodName, List<IMethod> v) throws CompileException {
@@ -8228,7 +8211,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         for (IClass interfacE : interfaces) this.getIMethods(interfacE, methodName, v);
     }
 
-    /** @return The {@link IClass.IMethod} that implements the {@code superclassMethodInvocation} */
+    /** @return The {@link IClass.IMethod} that implements the <var>superclassMethodInvocation</var> */
     public IClass.IMethod
     findIMethod(SuperclassMethodInvocation superclassMethodInvocation) throws CompileException {
         AbstractClassDeclaration declaringClass;
@@ -8691,7 +8674,8 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /**
-     * @throws CompileException The exception with the given {@code type} must not be thrown in the given {@code scope}
+     * @throws CompileException The exception with the given <var>type</var> must not be thrown in the given
+     *                          <var>scope</var>
      */
     private void
     checkThrownException(Locatable locatable, IClass type, Scope scope) throws CompileException {
@@ -9088,7 +9072,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /**
-     * Return a list consisting of the given {@code inner} class and all its outer classes.
+     * Return a list consisting of the given <var>inner</var> class and all its outer classes.
      *
      * @return {@link List} of {@link TypeDeclaration}
      */
@@ -9099,7 +9083,9 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         return path;
     }
 
-    /** @return The {@link TypeDeclaration} that immediately encloses the {@code typeDeclaration}, or {@code null} */
+    /**
+     * @return The {@link TypeDeclaration} that immediately encloses the <var>typeDeclaration</var>, or {@code null}
+     */
     @Nullable static TypeDeclaration
     getOuterClass(TypeDeclaration typeDeclaration) {
 
@@ -9177,7 +9163,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /**
-     * @return the {@link IConstructor} that implements the {@code constructorDeclarator}
+     * @return the {@link IConstructor} that implements the <var>constructorDeclarator</var>
      */
     IClass.IConstructor
     toIConstructor(final ConstructorDeclarator constructorDeclarator) {
@@ -9294,7 +9280,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /**
-     * @return The {@link IMethod} that implements the {@code methodDeclarator}
+     * @return The {@link IMethod} that implements the <var>methodDeclarator</var>
      */
     public IClass.IMethod
     toIMethod(final MethodDeclarator methodDeclarator) {
@@ -9424,7 +9410,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     /**
      * Check if the given simple name was imported through a single type import.
      *
-     * @param name The simple type name, e.g. {@code Inner}
+     * @param name The simple type name, e.g. {@code "Inner"}
      * @return     The fully qualified name, e.g. <code>{ "pkg", "Outer", "Inner" }</code>, or {@code null}
      */
     @Nullable public String[]
@@ -9483,7 +9469,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
      * 6.5.2.BL1.B1.B5, 6.5.2.BL1.B1.B6 Type-import-on-demand.<br>
      * 6.5.5.1.6 Type-import-on-demand declaration.
      *
-     * @return {@code null} if the given {@code simpleTypeName} cannot be resolved through any of the
+     * @return {@code null} if the given <var>simpleTypeName</var> cannot be resolved through any of the
      *         import-on-demand directives
      */
     @Nullable public IClass
@@ -10636,7 +10622,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         );
     }
 
-    /** @return Iff {@code sourceType} is a primitive wrapper type, the unboxed type, otherwise {@code null} */
+    /** @return Iff <var>sourceType</var> is a primitive wrapper type, the unboxed type, otherwise {@code null} */
     @Nullable private IClass
     isUnboxingConvertible(IClass sourceType) {
         IClassLoader icl = this.iClassLoader;
@@ -10652,7 +10638,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     }
 
     /**
-     * @return Whether the {@code sourceType} is a primitive numeric type, or a wrapper type of a primitive numeric
+     * @return Whether the <var>sourceType</var> is a primitive numeric type, or a wrapper type of a primitive numeric
      *         type
      */
     private boolean
@@ -11020,7 +11006,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
      * Issues a warning with the given message an location an returns. This is done through a {@link WarningHandler}
      * that was installed through {@link #setWarningHandler(WarningHandler)}.
      * <p>
-     * The {@code handle} argument qualifies the warning and is typically used by the {@link WarningHandler} to
+     * The <var>handle</var> argument qualifies the warning and is typically used by the {@link WarningHandler} to
      * suppress individual warnings.
      */
     private void
@@ -11213,8 +11199,8 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     referenceThis(Locatable locatable) { this.writeOpcode(locatable, Opcode.ALOAD_0); }
 
     /**
-     * Expects {@code dimExprCount} values of type {@code int} on the operand stack. Creates an array of {@code
-     * dimExprCount + dims} dimensions of {@code componentType}.
+     * Expects <var>dimExprCount</var> values of type {@code int} on the operand stack. Creates an array of
+     * <var>dimExprCount</var> {@code +} <var>dims</var> dimensions of <var>componentType</var>.
      *
      * @return The type of the created array
      */
