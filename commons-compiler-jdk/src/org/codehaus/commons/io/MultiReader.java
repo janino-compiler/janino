@@ -89,7 +89,7 @@ class MultiReader extends Reader {
     }
 
     @Override public int
-    read(final @Nullable char[] cbuf, final int off, final int len) throws IOException {
+    read(@Nullable final char[] cbuf, final int off, final int len) throws IOException {
         int read = 0;
         for (;;) {
             long result = this.currentDelegate.read(cbuf, off + read, len - read);

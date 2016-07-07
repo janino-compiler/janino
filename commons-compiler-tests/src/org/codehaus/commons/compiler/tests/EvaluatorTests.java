@@ -545,17 +545,17 @@ class EvaluatorTests extends JaninoTestSuite {
     }
     @Test public void
     testManyArgumentsCall() throws Exception {
-        String preamble = (
+        final String preamble = (
             ""
             + "package test;\n"
             + "public class Test {\n"
             + "    double test(\n"
         );
-        String middle1 = (
+        final String middle1 = (
             ""
             + "      double d_{0,number,#},\n"
         );
-        String middle2 = (
+        final String middle2 = (
             ""
             + "    public double run() {\n"
             + "      boolean b = false;\n"
@@ -573,12 +573,12 @@ class EvaluatorTests extends JaninoTestSuite {
         for (int repetitions : repetitionss) {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
-            for (int j = 0; j < repetitions-1; ++j) {
+            for (int j = 0; j < repetitions - 1; ++j) {
                 sb.append(MessageFormat.format(middle1, new Object[] { j }));
             }
-            sb.append("double d_"+(repetitions-1)+") { return 1.2D; }\n");
+            sb.append("double d_" + (repetitions - 1) + ") { return 1.2D; }\n");
             sb.append(middle2);
-            for (int j = 0; j < repetitions-1; ++j) {
+            for (int j = 0; j < repetitions - 1; ++j) {
                 sb.append("0, ");
             }
             sb.append("0");
@@ -587,7 +587,7 @@ class EvaluatorTests extends JaninoTestSuite {
             ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
             sc.cook(sb.toString());
 
-            Class<?> c = sc.getClassLoader().loadClass("test.Test");
+            Class<?> c   = sc.getClassLoader().loadClass("test.Test");
             Method   m   = c.getDeclaredMethod("run", new Class[0]);
             Object   o   = c.newInstance();
             Object   res = m.invoke(o, new Object[0]);

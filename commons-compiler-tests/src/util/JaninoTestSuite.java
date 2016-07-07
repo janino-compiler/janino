@@ -321,7 +321,7 @@ class JaninoTestSuite {
         protected abstract void compile() throws Exception;
 
         /** @see CompileAndExecuteTest */
-        protected abstract @Nullable Object execute() throws Exception;
+        @Nullable protected abstract Object execute() throws Exception;
 
         /**
          * Assert that cooking issues an error.

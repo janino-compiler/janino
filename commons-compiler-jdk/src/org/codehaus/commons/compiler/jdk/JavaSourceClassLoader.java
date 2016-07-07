@@ -200,7 +200,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                     new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
                         @Override public void
-                        report(final @Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
+                        report(@Nullable final Diagnostic<? extends JavaFileObject> diagnostic) {
                             assert diagnostic != null;
 
                             if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
