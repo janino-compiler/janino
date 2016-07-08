@@ -200,22 +200,11 @@
 			<zipfileset file="new_bsd_license.txt"                prefix="janino-${version}"/>
 		</zip>
 
-		<!-- Build 'mirror/pad_file.xml'. -->
-		<length file="mirror/download/janino-${version}.zip" property="janino-zip-size"/>
-		<copy file="pad_file-template.xml" tofile="mirror/pad_file.xml" encoding="ISO-8859-1">
-			<filterchain>
-				<replacestring from="@VERSION@" to="${version}"/>
-				<replacestring from="@SIZE@"    to="${janino-zip-size}"/>
-			</filterchain>
-		</copy>
-
 		<!-- Copy auxiliary files to 'mirror/'. -->
 		<copy todir="mirror">
 			<fileset file="favicon.ico"/>
 			<fileset file="new_bsd_license.txt"/>
-			<fileset file="changelog.html"/>
-			<fileset file="README.txt"/>
-			<fileset dir="../janino/src/org/codehaus/janino" includes="samples/*.java"/>
+			<fileset dir="../janino/src/org/codehaus/janino"                     includes="samples/*.java"/>
 			<fileset dir="../commons-compiler/src/org/codehaus/commons/compiler" includes="samples/*.java"/>
 		</copy>
 	</target>
