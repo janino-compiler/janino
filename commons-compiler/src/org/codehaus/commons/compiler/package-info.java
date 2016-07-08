@@ -34,12 +34,12 @@
  * There are (at least) two implementations of these interfaces available:
  * <ul>
  *   <li>
- *     <code>org.codehaus.janino</code>: A lightweight, stand-alone implementation that implements Java 1.4 and most
- *     of Java 5. Runs on all JREs starting at version 1.3.
+ *     {@link org.codehaus.janino}: A lightweight, stand-alone implementation that implements Java 1.4 and most of Java
+ *     5. Runs on all JREs starting at version 1.3.
  *   </li>
  *   <li>
- *     <code>org.codehaus.commons.compiler.jdk</code>: Uses the <code>javax.tools.JavaCompiler</code> API that is
- *     available since Java 1.6. Requires a JDK (not just a JRE).
+ *     {@link org.codehaus.commons.compiler.jdk}: Uses the <code>javax.tools.JavaCompiler</code> API that is available
+ *     since Java 1.6. Requires a JDK (not just a JRE).
  *   </li>
  * </ul>
  *

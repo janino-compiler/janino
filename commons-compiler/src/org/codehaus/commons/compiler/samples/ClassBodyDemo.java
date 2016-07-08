@@ -35,7 +35,7 @@ import java.util.Arrays;
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
 
-/** A test program that allows you to play with the {@link ClassBodyEvaluator} API. */
+/** A test program that allows you to play with the {@link IClassBodyEvaluator} API. */
 @SuppressWarnings({ "rawtypes", "unchecked" }) public final
 class ClassBodyDemo {
 

@@ -148,7 +148,7 @@
 		<jar jarfile="build/commons-compiler-jdk.jar" filesonly="true">
 			<manifest>
 				<attribute name="Implementation-Version" value="${version}"/>
-				<attribute name="Implementation-URL"     value="http://janino.net"/>
+				<attribute name="Implementation-URL"     value="http://janino-compiler.github.io/janino/"/>
 				<!-- OSGI info, see JANINO-181. -->
 				<attribute name="Bundle-Name"            value="Commons-Compiler-Jdk"/>
 				<attribute name="Bundle-SymbolicName"    value="org.codehaus.janino.commons-compiler-jdk;singleton:=true"/>
@@ -226,7 +226,7 @@
 		<delete dir="mirror/javadoc" />
 		<mkdir dir="mirror/javadoc" />
 		<javadoc
-			header="&lt;a href=&quot;http://janino.net/&quot; target=&quot;_top&quot;&gt;janino.net&lt;/a&gt;"
+			header="&lt;a href=&quot;http://janino-compiler.github.io/janino/&quot; target=&quot;_top&quot;&gt;Project home page&lt;/a&gt;"
 			splitindex="true"
 			doctitle="Janino ${version}"
 			windowtitle="Janino ${version}"
