@@ -46,17 +46,23 @@ import org.codehaus.janino.util.iterator.TransformingIterator;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class PathResourceFinder extends LazyMultiResourceFinder {
 
-    /** @param entries The entries of the "path" */
+    /**
+     * @param entries The entries of the "path"
+     */
     public
     PathResourceFinder(final File[] entries) {
         super(PathResourceFinder.createIterator(Arrays.asList(entries).iterator()));
     }
 
-    /** @param entries The entries of the "path" (type must be {@link File}) */
+    /**
+     * @param entries The entries of the "path"
+     */
     public
     PathResourceFinder(Iterator<ResourceFinder> entries) { super(entries); }
 
-    /** @param path A java-like path, i.e. a "path separator"-separated list of entries. */
+    /**
+     * @param path A java-like path, i.e. a "path separator"-separated list of entries.
+     */
     public
     PathResourceFinder(String path) { this(PathResourceFinder.parsePath(path)); }
 
@@ -72,8 +78,9 @@ class PathResourceFinder extends LazyMultiResourceFinder {
      * this character is ':'; on Microsoft Windows systems it is ';'). Empty components are
      * ignored.
      * <p>
-     * UNIX Examples:
-     * <dl>
+     *   UNIX Examples:
+     * </p>
+     * <dl style="border: 1px solid; padding: 6px">
      *   <dt>A:B:C          <dd>A, B, C
      *   <dt>::B:           <dd>B
      *   <dt>:A             <dd>A

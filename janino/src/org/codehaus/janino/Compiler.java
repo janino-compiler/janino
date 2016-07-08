@@ -242,42 +242,39 @@ class Compiler {
     /**
      * Initialize a Java&trade; compiler with the given parameters.
      * <p>
-     * Classes are searched in the following order:
+     *   Classes are searched in the following order:
+     * <p>
      * <ul>
-     *   <li>If {@code optionalBootClassPath} is {@code null}:
-     *   <ul>
-     *     <li>Through the system class loader of the JVM that runs JANINO
-     *   </ul>
-     *   <li>If {@code optionalBootClassPath} is not {@code null}:
-     *   <ul>
-     *     <li>Through the {@code optionalBootClassPath}
-     *   </ul>
-     *   <li>If {@code optionalExtDirs} is not {@code null}:
-     *   <ul>
-     *     <li>Through the {@code optionalExtDirs}
-     *   </ul>
-     *   <li>Through the {@code classPath}
-     *   <li>If {@code optionalSourcePath} is {@code null}:
-     *   <ul>
-     *     <li>Through source files found on the {@code classPath}
-     *   </ul>
-     *   <li>If {@code optionalSourcePath} is not {@code null}:
-     *   <ul>
-     *     <li>Through source files found on the {@code sourcePath}
-     *   </ul>
+     *   <li>
+     *     <b>If {@code optionalBootClassPath} is {@code null}:</b> Through the system class loader of the JVM that
+     *     runs JANINO
+     *   </li>
+     *   <li>
+     *     <b>If {@code optionalBootClassPath} is not {@code null}:</b> Through the {@code optionalBootClassPath}
+     *   </li>
+     *   <li><b>If {@code optionalExtDirs} is not {@code null}:</b> Through the {@code optionalExtDirs}</li>
+     *   <li>Through the {@code classPath}</li>
+     *   <li>
+     *     <b>If {@code optionalSourcePath} is {@code null}:</b> Through source files found on the {@code classPath}
+     *   </li>
+     *   <li>
+     *     <b>If {@code optionalSourcePath} is not {@code null}:</b> Through source files found on the {@code
+     *     sourcePath}
+     *   </li>
      * </ul>
      * <p>
-     * The file name of a class file that represents class "pkg.Example"
-     * is determined as follows:
+     *   The file name of a class file that represents class "pkg.Example" is determined as follows:
+     * </p>
      * <ul>
      *   <li>
-     *   If {@code optionalDestinationDirectory} is not {@link #NO_DESTINATION_DIRECTORY}:
-     *   {@code <i>optionalDestinationDirectory</i>/pkg/Example.class}
+     *     <b>If {@code optionalDestinationDirectory} is not {@link #NO_DESTINATION_DIRECTORY}:</b>
+     *     <var>optionalDestinationDirectory</var>{@code /pkg/Example.class}
+     *   </li>
      *   <li>
-     *   If {@code optionalDestinationDirectory} is {@link #NO_DESTINATION_DIRECTORY}:
-     *   {@code dir1/dir2/Example.class} (Assuming that the file name of the
-     *   source file that declares the class was
-     *   {@code dir1/dir2/Any.java}.)
+     *     <b>If {@code optionalDestinationDirectory} is {@link #NO_DESTINATION_DIRECTORY}:</b> {@code
+     *     dir1/dir2/Example.class} (Assuming that the file name of the source file that declares the class was {@code
+     *     dir1/dir2/Any.java}.)
+     *   </li>
      * </ul>
      *
      * @see #DEFAULT_WARNING_HANDLE_PATTERNS

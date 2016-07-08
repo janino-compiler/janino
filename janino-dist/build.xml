@@ -224,6 +224,7 @@
 			classpath="${ant.jar}"
 			destdir="mirror/javadoc"
 			packagenames="${javadoc-packages}"
+			stylesheetfile="javadoc8-stylesheet.css"
 		>
 			<link offline="true" href="${javadoc-jdk-href}" packagelistloc="${javadoc-jdk-packagelistloc}" />
 			<link offline="true" href="${javadoc-ant-href}" packagelistloc="${javadoc-ant-packagelistloc}" />
