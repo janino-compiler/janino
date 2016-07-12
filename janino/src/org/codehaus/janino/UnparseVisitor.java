@@ -46,6 +46,7 @@ import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
 import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayType;
+import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
@@ -510,6 +511,41 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         return null;
     }
 
+    private final Visitor.AtomVisitor<Void, RuntimeException>
+    atomUnparser = new Visitor.AtomVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitArrayType(Java.ArrayType at) {
+            UnparseVisitor.this.unparseType(at.componentType);
+            UnparseVisitor.this.pw.print("[]");
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitPrimitiveType(Java.PrimitiveType bt) { UnparseVisitor.this.pw.print(bt.toString()); return null; }
+
+        @Override @Nullable public Void
+        visitPackage(Java.Package p) { UnparseVisitor.this.pw.print(p.toString()); return null; }
+
+        @Override @Nullable public Void
+        visitReferenceType(Java.ReferenceType rt) { UnparseVisitor.this.pw.print(rt.toString()); return null; }
+
+        @Override @Nullable public Void
+        visitRvalueMemberType(Java.RvalueMemberType rmt) { UnparseVisitor.this.pw.print(rmt.toString()); return null; }
+
+        @Override @Nullable public Void
+        visitSimpleType(Java.SimpleType st) { UnparseVisitor.this.pw.print(st.toString()); return null; }
+
+        @Override @Nullable public Void
+        visitRvalue(Rvalue rv) { return UnparseVisitor.this.visitRvalue(rv); }
+    };
+
+    @Override @Nullable public Void
+    visitAtom(Atom a) {
+        a.accept(this.atomUnparser);
+        return null;
+    }
+
     private void
     unparseInitializer(Java.Initializer i) {
         if (i.statiC) UnparseVisitor.this.pw.print("static ");
@@ -961,28 +997,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         return null;
     }
 
-    @Override @Nullable public Void
-    visitArrayType(Java.ArrayType at) {
-        this.unparseType(at.componentType);
-        this.pw.print("[]");
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitPrimitiveType(Java.PrimitiveType bt) { this.pw.print(bt.toString()); return null; }
-
-    @Override @Nullable public Void
-    visitPackage(Java.Package p) { this.pw.print(p.toString()); return null; }
-
-    @Override @Nullable public Void
-    visitReferenceType(Java.ReferenceType rt) { this.pw.print(rt.toString()); return null; }
-
-    @Override @Nullable public Void
-    visitRvalueMemberType(Java.RvalueMemberType rmt) { this.pw.print(rmt.toString()); return null; }
-
-    @Override @Nullable public Void
-    visitSimpleType(Java.SimpleType st) { this.pw.print(st.toString()); return null; }
-
     // Helpers
 
     private void
@@ -992,10 +1006,10 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     unparseTypeDeclaration(Java.TypeDeclaration td) { td.accept(this.typeDeclarationUnparser); }
 
     private void
-    unparseType(Java.Type type) { ((Java.Atom) type).accept(this); }
+    unparseType(Java.Type type) { type.accept(this.atomUnparser); }
 
     private void
-    unparse(Java.Atom operand) { operand.accept(this); }
+    unparse(Java.Atom operand) { operand.accept(this.atomUnparser); }
 
     /**
      * Iff the <code>operand</code> is unnatural for the <code>unaryOperator</code>, enclose the
