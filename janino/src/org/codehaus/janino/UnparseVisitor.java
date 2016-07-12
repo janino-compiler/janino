@@ -227,14 +227,307 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public Void visitInitializer(Initializer i)            { return UnparseVisitor.this.visitInitializer(i); }
-        @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd) { return UnparseVisitor.this.visitFieldDeclaration(fd); }
+        @Override @Nullable public Void visitInitializer(Initializer i)            { UnparseVisitor.this.unparseInitializer(i);       return null; }
+        @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd) { UnparseVisitor.this.unparseFieldDeclaration(fd); return null; }
     };
 
     @Override @Nullable public Void
     visitTypeBodyDeclaration(TypeBodyDeclaration tbd) {
         tbd.accept(this.typeBodyDeclarationUnparser);
         return null;
+    }
+
+    private final Visitor.BlockStatementVisitor<Void, RuntimeException>
+    blockStatementUnparser = new Visitor.BlockStatementVisitor<Void, RuntimeException>() {
+
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public Void visitFieldDeclaration(Java.FieldDeclaration fd) { UnparseVisitor.this.unparseFieldDeclaration(fd); return null; }
+        @Override @Nullable public Void visitInitializer(Java.Initializer i)            { UnparseVisitor.this.unparseInitializer(i);       return null; }
+
+        @Override @Nullable public Void
+        visitBlock(Java.Block b) {
+            if (b.statements.isEmpty()) {
+                UnparseVisitor.this.pw.print("{}");
+                return null;
+            }
+            UnparseVisitor.this.pw.println('{');
+            UnparseVisitor.this.pw.print(AutoIndentWriter.INDENT);
+            UnparseVisitor.this.unparseStatements(b.statements);
+            UnparseVisitor.this.pw.print(AutoIndentWriter.UNINDENT + "}");
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitBreakStatement(Java.BreakStatement bs) {
+            UnparseVisitor.this.pw.print("break");
+            if (bs.optionalLabel != null) UnparseVisitor.this.pw.print(' ' + bs.optionalLabel);
+            UnparseVisitor.this.pw.print(';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitContinueStatement(Java.ContinueStatement cs) {
+            UnparseVisitor.this.pw.print("continue");
+            if (cs.optionalLabel != null) UnparseVisitor.this.pw.print(' ' + cs.optionalLabel);
+            UnparseVisitor.this.pw.print(';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitAssertStatement(Java.AssertStatement as) {
+
+            UnparseVisitor.this.pw.print("assert ");
+            UnparseVisitor.this.unparse(as.expression1);
+
+            Rvalue oe2 = as.optionalExpression2;
+            if (oe2 != null) {
+                UnparseVisitor.this.pw.print(" : ");
+                UnparseVisitor.this.unparse(oe2);
+            }
+            UnparseVisitor.this.pw.print(';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitDoStatement(Java.DoStatement ds) {
+            UnparseVisitor.this.pw.print("do ");
+            UnparseVisitor.this.unparseBlockStatement(ds.body);
+            UnparseVisitor.this.pw.print("while (");
+            UnparseVisitor.this.unparse(ds.condition);
+            UnparseVisitor.this.pw.print(");");
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitEmptyStatement(Java.EmptyStatement es) {
+            UnparseVisitor.this.pw.print(';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitExpressionStatement(Java.ExpressionStatement es) {
+            UnparseVisitor.this.unparse(es.rvalue);
+            UnparseVisitor.this.pw.print(';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitForStatement(Java.ForStatement fs) {
+            UnparseVisitor.this.pw.print("for (");
+            if (fs.optionalInit != null) {
+                UnparseVisitor.this.unparseBlockStatement(fs.optionalInit);
+            } else {
+                UnparseVisitor.this.pw.print(';');
+            }
+
+            Rvalue oc = fs.optionalCondition;
+            if (oc != null) {
+                UnparseVisitor.this.pw.print(' ');
+                UnparseVisitor.this.unparse(oc);
+            }
+
+            UnparseVisitor.this.pw.print(';');
+
+            Rvalue[] ou = fs.optionalUpdate;
+            if (ou != null) {
+                UnparseVisitor.this.pw.print(' ');
+                for (int i = 0; i < ou.length; ++i) {
+                    if (i > 0) UnparseVisitor.this.pw.print(", ");
+                    UnparseVisitor.this.unparse(ou[i]);
+                }
+            }
+
+            UnparseVisitor.this.pw.print(") ");
+            UnparseVisitor.this.unparseBlockStatement(fs.body);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitForEachStatement(Java.ForEachStatement fes) {
+            UnparseVisitor.this.pw.print("for (");
+            UnparseVisitor.this.unparseFormalParameter(fes.currentElement, false);
+            UnparseVisitor.this.pw.print(" : ");
+            UnparseVisitor.this.unparse(fes.expression);
+            UnparseVisitor.this.pw.print(") ");
+            UnparseVisitor.this.unparseBlockStatement(fes.body);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitIfStatement(Java.IfStatement is) {
+            UnparseVisitor.this.pw.print("if (");
+            UnparseVisitor.this.unparse(is.condition);
+            UnparseVisitor.this.pw.print(") ");
+            UnparseVisitor.this.unparseBlockStatement(is.thenStatement);
+
+            BlockStatement oes = is.optionalElseStatement;
+            if (oes != null) {
+                UnparseVisitor.this.pw.println(" else");
+                UnparseVisitor.this.unparseBlockStatement(oes);
+            }
+
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitLabeledStatement(Java.LabeledStatement ls) {
+            UnparseVisitor.this.pw.println(ls.label + ':');
+            UnparseVisitor.this.unparseBlockStatement(ls.body);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds) {
+            UnparseVisitor.this.unparseTypeDeclaration(lcds.lcd);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
+            UnparseVisitor.this.unparseAnnotations(lvds.modifiers.annotations);
+            UnparseVisitor.this.unparseModifiers(lvds.modifiers.accessFlags);
+            UnparseVisitor.this.unparseType(lvds.type);
+            UnparseVisitor.this.pw.print(' ');
+            UnparseVisitor.this.pw.print(AutoIndentWriter.TABULATOR);
+            UnparseVisitor.this.unparseVariableDeclarator(lvds.variableDeclarators[0]);
+            for (int i = 1; i < lvds.variableDeclarators.length; ++i) {
+                UnparseVisitor.this.pw.print(", ");
+                UnparseVisitor.this.unparseVariableDeclarator(lvds.variableDeclarators[i]);
+            }
+            UnparseVisitor.this.pw.print(';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitReturnStatement(Java.ReturnStatement rs) {
+
+            UnparseVisitor.this.pw.print("return");
+
+            Rvalue orv = rs.optionalReturnValue;
+            if (orv != null) {
+                UnparseVisitor.this.pw.print(' ');
+                UnparseVisitor.this.unparse(orv);
+            }
+
+            UnparseVisitor.this.pw.print(';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitSwitchStatement(Java.SwitchStatement ss) {
+            UnparseVisitor.this.pw.print("switch (");
+            UnparseVisitor.this.unparse(ss.condition);
+            UnparseVisitor.this.pw.println(") {");
+            for (Java.SwitchStatement.SwitchBlockStatementGroup sbsg : ss.sbsgs) {
+                UnparseVisitor.this.pw.print(AutoIndentWriter.UNINDENT);
+                try {
+                    for (Java.Rvalue rv : sbsg.caseLabels) {
+                        UnparseVisitor.this.pw.print("case ");
+                        UnparseVisitor.this.unparse(rv);
+                        UnparseVisitor.this.pw.println(':');
+                    }
+                    if (sbsg.hasDefaultLabel) UnparseVisitor.this.pw.println("default:");
+                } finally {
+                    UnparseVisitor.this.pw.print(AutoIndentWriter.INDENT);
+                }
+                for (Java.BlockStatement bs : sbsg.blockStatements) {
+                    UnparseVisitor.this.unparseBlockStatement(bs);
+                    UnparseVisitor.this.pw.println();
+                }
+            }
+            UnparseVisitor.this.pw.print('}');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitSynchronizedStatement(Java.SynchronizedStatement ss) {
+            UnparseVisitor.this.pw.print("synchronized (");
+            UnparseVisitor.this.unparse(ss.expression);
+            UnparseVisitor.this.pw.print(") ");
+            UnparseVisitor.this.unparseBlockStatement(ss.body);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitThrowStatement(Java.ThrowStatement ts) {
+            UnparseVisitor.this.pw.print("throw ");
+            UnparseVisitor.this.unparse(ts.expression);
+            UnparseVisitor.this.pw.print(';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitTryStatement(Java.TryStatement ts) {
+            UnparseVisitor.this.pw.print("try ");
+            UnparseVisitor.this.unparseBlockStatement(ts.body);
+            for (Java.CatchClause cc : ts.catchClauses) {
+                UnparseVisitor.this.pw.print(" catch (");
+                UnparseVisitor.this.unparseFormalParameter(cc.caughtException, false);
+                UnparseVisitor.this.pw.print(") ");
+                UnparseVisitor.this.unparseBlockStatement(cc.body);
+            }
+
+            Block of = ts.optionalFinally;
+            if (of != null) {
+                UnparseVisitor.this.pw.print(" finally ");
+                UnparseVisitor.this.unparseBlockStatement(of);
+            }
+
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitWhileStatement(Java.WhileStatement ws) {
+            UnparseVisitor.this.pw.print("while (");
+            UnparseVisitor.this.unparse(ws.condition);
+            UnparseVisitor.this.pw.print(") ");
+            UnparseVisitor.this.unparseBlockStatement(ws.body);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci) {
+            UnparseVisitor.this.pw.print("this");
+            UnparseVisitor.this.unparseFunctionInvocationArguments(aci.arguments);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci) {
+            if (sci.optionalQualification != null) {
+                UnparseVisitor.this.unparseLhs(sci.optionalQualification, ".");
+                UnparseVisitor.this.pw.print('.');
+            }
+            UnparseVisitor.this.pw.print("super");
+            UnparseVisitor.this.unparseFunctionInvocationArguments(sci.arguments);
+            return null;
+        }
+    };
+
+    @Override @Nullable public Void
+    visitBlockStatement(BlockStatement bs) {
+        bs.accept(this.blockStatementUnparser);
+        return null;
+    }
+
+    private void
+    unparseInitializer(Java.Initializer i) {
+        if (i.statiC) UnparseVisitor.this.pw.print("static ");
+        UnparseVisitor.this.unparseBlockStatement(i.block);
+    }
+
+    private void
+    unparseFieldDeclaration(Java.FieldDeclaration fd) {
+        UnparseVisitor.this.unparseDocComment(fd);
+        UnparseVisitor.this.unparseAnnotations(fd.modifiers.annotations);
+        UnparseVisitor.this.unparseModifiers(fd.modifiers.accessFlags);
+        UnparseVisitor.this.unparseType(fd.type);
+        UnparseVisitor.this.pw.print(' ');
+        for (int i = 0; i < fd.variableDeclarators.length; ++i) {
+            if (i > 0) UnparseVisitor.this.pw.print(", ");
+            UnparseVisitor.this.unparseVariableDeclarator(fd.variableDeclarators[i]);
+        }
+        UnparseVisitor.this.pw.print(';');
     }
 
     /**
@@ -396,41 +689,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         }
     }
 
-    @Override @Nullable public Void
-    visitFieldDeclaration(Java.FieldDeclaration fd) {
-        this.unparseDocComment(fd);
-        this.unparseAnnotations(fd.modifiers.annotations);
-        this.unparseModifiers(fd.modifiers.accessFlags);
-        this.unparseType(fd.type);
-        this.pw.print(' ');
-        for (int i = 0; i < fd.variableDeclarators.length; ++i) {
-            if (i > 0) this.pw.print(", ");
-            this.unparseVariableDeclarator(fd.variableDeclarators[i]);
-        }
-        this.pw.print(';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitInitializer(Java.Initializer i) {
-        if (i.statiC) this.pw.print("static ");
-        this.unparseBlockStatement(i.block);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitBlock(Java.Block b) {
-        if (b.statements.isEmpty()) {
-            this.pw.print("{}");
-            return null;
-        }
-        this.pw.println('{');
-        this.pw.print(AutoIndentWriter.INDENT);
-        this.unparseStatements(b.statements);
-        this.pw.print(AutoIndentWriter.UNINDENT + "}");
-        return null;
-    }
-
     private void
     unparseStatements(List<? extends Java.BlockStatement> statements) {
 
@@ -451,234 +709,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         }
     }
 
-    @Override @Nullable public Void
-    visitBreakStatement(Java.BreakStatement bs) {
-        this.pw.print("break");
-        if (bs.optionalLabel != null) this.pw.print(' ' + bs.optionalLabel);
-        this.pw.print(';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitContinueStatement(Java.ContinueStatement cs) {
-        this.pw.print("continue");
-        if (cs.optionalLabel != null) this.pw.print(' ' + cs.optionalLabel);
-        this.pw.print(';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitAssertStatement(Java.AssertStatement as) {
-
-        this.pw.print("assert ");
-        this.unparse(as.expression1);
-
-        Rvalue oe2 = as.optionalExpression2;
-        if (oe2 != null) {
-            this.pw.print(" : ");
-            this.unparse(oe2);
-        }
-        this.pw.print(';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitDoStatement(Java.DoStatement ds) {
-        this.pw.print("do ");
-        this.unparseBlockStatement(ds.body);
-        this.pw.print("while (");
-        this.unparse(ds.condition);
-        this.pw.print(");");
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitEmptyStatement(Java.EmptyStatement es) {
-        this.pw.print(';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitExpressionStatement(Java.ExpressionStatement es) {
-        this.unparse(es.rvalue);
-        this.pw.print(';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitForStatement(Java.ForStatement fs) {
-        this.pw.print("for (");
-        if (fs.optionalInit != null) {
-            this.unparseBlockStatement(fs.optionalInit);
-        } else {
-            this.pw.print(';');
-        }
-
-        Rvalue oc = fs.optionalCondition;
-        if (oc != null) {
-            this.pw.print(' ');
-            this.unparse(oc);
-        }
-
-        this.pw.print(';');
-
-        Rvalue[] ou = fs.optionalUpdate;
-        if (ou != null) {
-            this.pw.print(' ');
-            for (int i = 0; i < ou.length; ++i) {
-                if (i > 0) this.pw.print(", ");
-                this.unparse(ou[i]);
-            }
-        }
-
-        this.pw.print(") ");
-        this.unparseBlockStatement(fs.body);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitForEachStatement(Java.ForEachStatement fes) {
-        this.pw.print("for (");
-        this.unparseFormalParameter(fes.currentElement, false);
-        this.pw.print(" : ");
-        this.unparse(fes.expression);
-        this.pw.print(") ");
-        this.unparseBlockStatement(fes.body);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitIfStatement(Java.IfStatement is) {
-        this.pw.print("if (");
-        this.unparse(is.condition);
-        this.pw.print(") ");
-        this.unparseBlockStatement(is.thenStatement);
-
-        BlockStatement oes = is.optionalElseStatement;
-        if (oes != null) {
-            this.pw.println(" else");
-            this.unparseBlockStatement(oes);
-        }
-
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitLabeledStatement(Java.LabeledStatement ls) {
-        this.pw.println(ls.label + ':');
-        this.unparseBlockStatement(ls.body);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds) {
-        this.unparseTypeDeclaration(lcds.lcd);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {
-        this.unparseAnnotations(lvds.modifiers.annotations);
-        this.unparseModifiers(lvds.modifiers.accessFlags);
-        this.unparseType(lvds.type);
-        this.pw.print(' ');
-        this.pw.print(AutoIndentWriter.TABULATOR);
-        this.unparseVariableDeclarator(lvds.variableDeclarators[0]);
-        for (int i = 1; i < lvds.variableDeclarators.length; ++i) {
-            this.pw.print(", ");
-            this.unparseVariableDeclarator(lvds.variableDeclarators[i]);
-        }
-        this.pw.print(';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitReturnStatement(Java.ReturnStatement rs) {
-
-        this.pw.print("return");
-
-        Rvalue orv = rs.optionalReturnValue;
-        if (orv != null) {
-            this.pw.print(' ');
-            this.unparse(orv);
-        }
-
-        this.pw.print(';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitSwitchStatement(Java.SwitchStatement ss) {
-        this.pw.print("switch (");
-        this.unparse(ss.condition);
-        this.pw.println(") {");
-        for (Java.SwitchStatement.SwitchBlockStatementGroup sbsg : ss.sbsgs) {
-            this.pw.print(AutoIndentWriter.UNINDENT);
-            try {
-                for (Java.Rvalue rv : sbsg.caseLabels) {
-                    this.pw.print("case ");
-                    this.unparse(rv);
-                    this.pw.println(':');
-                }
-                if (sbsg.hasDefaultLabel) this.pw.println("default:");
-            } finally {
-                this.pw.print(AutoIndentWriter.INDENT);
-            }
-            for (Java.BlockStatement bs : sbsg.blockStatements) {
-                this.unparseBlockStatement(bs);
-                this.pw.println();
-            }
-        }
-        this.pw.print('}');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitSynchronizedStatement(Java.SynchronizedStatement ss) {
-        this.pw.print("synchronized (");
-        this.unparse(ss.expression);
-        this.pw.print(") ");
-        this.unparseBlockStatement(ss.body);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitThrowStatement(Java.ThrowStatement ts) {
-        this.pw.print("throw ");
-        this.unparse(ts.expression);
-        this.pw.print(';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitTryStatement(Java.TryStatement ts) {
-        this.pw.print("try ");
-        this.unparseBlockStatement(ts.body);
-        for (Java.CatchClause cc : ts.catchClauses) {
-            this.pw.print(" catch (");
-            this.unparseFormalParameter(cc.caughtException, false);
-            this.pw.print(") ");
-            this.unparseBlockStatement(cc.body);
-        }
-
-        Block of = ts.optionalFinally;
-        if (of != null) {
-            this.pw.print(" finally ");
-            this.unparseBlockStatement(of);
-        }
-
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitWhileStatement(Java.WhileStatement ws) {
-        this.pw.print("while (");
-        this.unparse(ws.condition);
-        this.pw.print(") ");
-        this.unparseBlockStatement(ws.body);
-        return null;
-    }
-
     private void
     unparseVariableDeclarator(Java.VariableDeclarator vd) {
         this.pw.print(vd.name);
@@ -697,24 +727,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         this.unparseType(fp.type);
         if (hasEllipsis) this.pw.write("...");
         this.pw.print(" " + AutoIndentWriter.TABULATOR + fp.name);
-    }
-
-    @Override @Nullable public Void
-    visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci) {
-        this.pw.print("this");
-        this.unparseFunctionInvocationArguments(aci.arguments);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci) {
-        if (sci.optionalQualification != null) {
-            this.unparseLhs(sci.optionalQualification, ".");
-            this.pw.print('.');
-        }
-        this.pw.print("super");
-        this.unparseFunctionInvocationArguments(sci.arguments);
-        return null;
     }
 
     @Override @Nullable public Void
@@ -974,7 +986,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     // Helpers
 
     private void
-    unparseBlockStatement(Java.BlockStatement blockStatement) { blockStatement.accept(this); }
+    unparseBlockStatement(Java.BlockStatement blockStatement) { blockStatement.accept(this.blockStatementUnparser); }
 
     private void
     unparseTypeDeclaration(Java.TypeDeclaration td) { td.accept(this.typeDeclarationUnparser); }
@@ -1198,7 +1210,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         this.unparseTypeDeclarationBody(cd);
         for (Java.BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
             this.pw.println();
-            vdoi.accept(this);
+            vdoi.accept(this.blockStatementUnparser);
             this.pw.println();
         }
     }

@@ -36,7 +36,6 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayType;
-import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ExpressionStatement;
@@ -46,6 +45,7 @@ import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
+import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
@@ -319,10 +319,7 @@ class AstTests {
         ExpressionStatement es = new Java.ExpressionStatement(
             new Java.Assignment(
                 AstTests.getLocation(),
-                new Java.AmbiguousName(
-                    AstTests.getLocation(),
-                    new String[] { "x" }
-                ),
+                new Java.AmbiguousName(AstTests.getLocation(), new String[] { "x" }),
                 "=",
                 AstTests.createOp(
                     AstTests.createIntegerLiteral("1"),
@@ -334,7 +331,7 @@ class AstTests {
 
         StringWriter   sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
-        uv.visitExpressionStatement(es);
+        uv.visitBlockStatement(es);
         uv.close();
         Assert.assertEquals("x = 1 * ((( 2 + 3 )));", sw.toString());
     }

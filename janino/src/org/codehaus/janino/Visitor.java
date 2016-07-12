@@ -47,10 +47,7 @@ class Visitor {
     // SUPPRESS CHECKSTYLE WrapAndIndent:4
     public
     interface ComprehensiveVisitor<R, EX extends Throwable>
-    extends
-    BlockStatementVisitor<R, EX>, AtomVisitor<R, EX>,
-    ElementValueVisitor<R, EX>,
-    AnnotationVisitor<R, EX> {
+    extends AtomVisitor<R, EX>, ElementValueVisitor<R, EX>, AnnotationVisitor<R, EX> {
 
         /** Invoked by {@link Java.CompilationUnit.ImportDeclaration#accept(ImportVisitor)}. */
         @Nullable R
@@ -63,6 +60,10 @@ class Visitor {
         /** Invoked by {@link Java.TypeBodyDeclaration#accept(TypeBodyDeclarationVisitor)}. */
         @Nullable R
         visitTypeBodyDeclaration(Java.TypeBodyDeclaration tbd) throws EX;
+
+        /** Invoked by {@link Java.BlockStatement#accept(BlockStatementVisitor)}. */
+        @Nullable R
+        visitBlockStatement(Java.BlockStatement bs) throws EX;
     }
 
     /**
