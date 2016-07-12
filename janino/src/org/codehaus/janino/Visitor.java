@@ -48,7 +48,6 @@ class Visitor {
     public
     interface ComprehensiveVisitor<R, EX extends Throwable>
     extends
-    TypeBodyDeclarationVisitor<R, EX>,
     BlockStatementVisitor<R, EX>, AtomVisitor<R, EX>,
     ElementValueVisitor<R, EX>,
     AnnotationVisitor<R, EX> {
@@ -60,6 +59,10 @@ class Visitor {
         /** Invoked by {@link Java.CompilationUnit.TypeDeclaration#accept(TypeDeclarationVisitor)}. */
         @Nullable R
         visitTypeDeclaration(Java.TypeDeclaration td) throws EX;
+
+        /** Invoked by {@link Java.TypeBodyDeclaration#accept(TypeBodyDeclarationVisitor)}. */
+        @Nullable R
+        visitTypeBodyDeclaration(Java.TypeBodyDeclaration tbd) throws EX;
     }
 
     /**

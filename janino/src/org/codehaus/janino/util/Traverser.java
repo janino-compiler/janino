@@ -32,12 +32,15 @@ import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
 import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
+import org.codehaus.janino.Java.FieldDeclaration;
+import org.codehaus.janino.Java.Initializer;
 import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.MemberClassDeclaration;
 import org.codehaus.janino.Java.MemberEnumDeclaration;
 import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.Rvalue;
+import org.codehaus.janino.Java.TypeBodyDeclaration;
 import org.codehaus.janino.Java.TypeDeclaration;
 import org.codehaus.janino.Visitor;
 import org.codehaus.janino.Visitor.ComprehensiveVisitor;
@@ -126,13 +129,8 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitParenthesizedExpression(Java.ParenthesizedExpression pe) throws EX                    { Traverser.this.traverseParenthesizedExpression(pe);            return null; }
     };
 
-    private final Visitor.ComprehensiveVisitor<Void, EX> cv = new Visitor.ComprehensiveVisitor<Void, EX>() {
-
-        @Override @Nullable public Void
-        visitRvalue(Rvalue rv) throws EX {
-            rv.accept(Traverser.this.rvalueTraverser);
-            return null;
-        }
+    private final Visitor.TypeBodyDeclarationVisitor<Void, EX>
+    typeBodyDeclarationTraverser = new Visitor.TypeBodyDeclarationVisitor<Void, EX>() {
 
         @Override @Nullable public Void
         visitFunctionDeclarator(Java.FunctionDeclarator fd) throws EX {
@@ -142,6 +140,24 @@ class Traverser<EX extends Throwable> {
                 @Override @Nullable public Void visitConstructorDeclarator(Java.ConstructorDeclarator cd) throws EX { Traverser.this.traverseConstructorDeclarator(cd); return null; }
                 @Override @Nullable public Void visitMethodDeclarator(Java.MethodDeclarator md)           throws EX { Traverser.this.traverseMethodDeclarator(md);      return null; }
             });
+            return null;
+        }
+
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid) throws EX { Traverser.this.traverseMemberInterfaceDeclaration(mid); return null; }
+        @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd)         throws EX { Traverser.this.traverseMemberClassDeclaration(mcd);     return null; }
+        @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med)           throws EX { Traverser.this.traverseMemberEnumDeclaration(med);      return null; }
+
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public Void visitInitializer(Initializer i)            throws EX { Traverser.this.traverseInitializer(i);       return null; }
+        @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd) throws EX { Traverser.this.traverseFieldDeclaration(fd); return null; }
+    };
+
+    private final Visitor.ComprehensiveVisitor<Void, EX> cv = new Visitor.ComprehensiveVisitor<Void, EX>() {
+
+        @Override @Nullable public Void
+        visitRvalue(Rvalue rv) throws EX {
+            rv.accept(Traverser.this.rvalueTraverser);
             return null;
         }
 
@@ -156,10 +172,11 @@ class Traverser<EX extends Throwable> {
             return null;
         }
 
-        // SUPPRESS CHECKSTYLE LineLength:3
-        @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid) throws EX { Traverser.this.traverseMemberInterfaceDeclaration(mid); return null; }
-        @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd)         throws EX { Traverser.this.traverseMemberClassDeclaration(mcd);     return null; }
-        @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med)           throws EX { Traverser.this.traverseMemberEnumDeclaration(med);      return null; }
+        @Override @Nullable public Void
+        visitTypeBodyDeclaration(TypeBodyDeclaration tbd) throws EX {
+            tbd.accept(Traverser.this.typeBodyDeclarationTraverser);
+            return null;
+        }
 
         // SUPPRESS CHECKSTYLE LineLength:35
         @Override @Nullable public Void visitInitializer(Java.Initializer i) throws EX                                                           { Traverser.this.traverseInitializer(i); return null; }
@@ -784,7 +801,7 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseClassDeclaration(Java.AbstractClassDeclaration cd) throws EX {
-        for (Java.ConstructorDeclarator ctord : cd.constructors) ctord.accept(this.cv);
+        for (Java.ConstructorDeclarator ctord : cd.constructors) ctord.accept(this.typeBodyDeclarationTraverser);
         for (Java.BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) vdoi.accept(this.cv);
         this.traverseAbstractTypeDeclaration(cd);
     }
@@ -810,7 +827,7 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseInterfaceDeclaration(Java.InterfaceDeclaration id) throws EX {
-        for (Java.TypeBodyDeclaration cd : id.constantDeclarations) cd.accept(this.cv);
+        for (Java.TypeBodyDeclaration cd : id.constantDeclarations) cd.accept(this.typeBodyDeclarationTraverser);
         for (Java.Type extendedType : id.extendedTypes) extendedType.accept((Visitor.TypeVisitor<Void, EX>) this.cv);
         this.traverseAbstractTypeDeclaration(id);
     }
