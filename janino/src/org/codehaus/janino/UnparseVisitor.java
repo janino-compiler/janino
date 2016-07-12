@@ -48,6 +48,7 @@ import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
+import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.ConstructorInvocation;
 import org.codehaus.janino.Java.EnumConstant;
 import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
@@ -65,6 +66,33 @@ import org.codehaus.janino.util.AutoIndentWriter;
 @SuppressWarnings({ "rawtypes", "unchecked" }) public
 class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeException> {
 
+    private final Visitor.ImportVisitor<Void, RuntimeException>
+    importVisitor = new Visitor.ImportVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid) {
+            UnparseVisitor.this.pw.println("import " + Java.join(stid.identifiers, ".") + ';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
+            UnparseVisitor.this.pw.println("import " + Java.join(tiodd.identifiers, ".") + ".*;");
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitSingleStaticImportDeclaration(Java.CompilationUnit.SingleStaticImportDeclaration ssid) {
+            UnparseVisitor.this.pw.println("import static " + Java.join(ssid.identifiers, ".") + ';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd) {
+            UnparseVisitor.this.pw.println("import static " + Java.join(siodd.identifiers, ".") + ".*;");
+            return null;
+        }
+    };
     /**
      * Where the {@code visit...()} methods print their text. Noice that this {@link PrintWriter} does not print to
      * the output directly, but through an {@link AutoIndentWriter}.
@@ -127,7 +155,9 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
 
         if (!cu.importDeclarations.isEmpty()) {
             this.pw.println();
-            for (Java.CompilationUnit.ImportDeclaration id : cu.importDeclarations) id.accept(this);
+            for (Java.CompilationUnit.ImportDeclaration id : cu.importDeclarations) {
+                id.accept(this.importVisitor);
+            }
         }
 
         for (Java.PackageMemberTypeDeclaration pmtd : cu.packageMemberTypeDeclarations) {
@@ -138,6 +168,9 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     }
 
     @Override @Nullable public Void
+    visitImportDeclaration(ImportDeclaration id) { return id.accept(this.importVisitor); }
+
+    @Override @Nullable public Void
     visitRvalue(Rvalue rv) {
         return rv.accept((Visitor.RvalueVisitor<Void, RuntimeException>) this);
     }
@@ -145,30 +178,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     @Override @Nullable public Void
     visitAnnotation(Annotation a) {
         return a.accept((Visitor.AnnotationVisitor<Void, RuntimeException>) this);
-    }
-
-    @Override @Nullable public Void
-    visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid) {
-        this.pw.println("import " + Java.join(stid.identifiers, ".") + ';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitTypeImportOnDemandDeclaration(Java.CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
-        this.pw.println("import " + Java.join(tiodd.identifiers, ".") + ".*;");
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitSingleStaticImportDeclaration(Java.CompilationUnit.SingleStaticImportDeclaration ssid) {
-        this.pw.println("import static " + Java.join(ssid.identifiers, ".") + ';');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd) {
-        this.pw.println("import static " + Java.join(siodd.identifiers, ".") + ".*;");
-        return null;
     }
 
     @Override @Nullable public Void

@@ -72,7 +72,6 @@ import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.AssertStatement;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
-import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.BinaryOperation;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
@@ -159,6 +158,7 @@ import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
 import org.codehaus.janino.Java.Padder;
 import org.codehaus.janino.Java.ParameterAccess;
 import org.codehaus.janino.Java.ParenthesizedExpression;
+import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.ReferenceType;
 import org.codehaus.janino.Java.ReturnStatement;
@@ -5664,7 +5664,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
             @Override public IClass visitPackage(Package p) throws CompileException { return UnitCompiler.this.getType2(p); }
             // TypeVisitor
             @Override public IClass visitArrayType(ArrayType at) throws CompileException                { return UnitCompiler.this.getType2(at);  }
-            @Override public IClass visitPrimitiveType(PrimitiveType bt)                                        { return UnitCompiler.this.getType2(bt);  }
+            @Override public IClass visitPrimitiveType(PrimitiveType bt)                                { return UnitCompiler.this.getType2(bt);  }
             @Override public IClass visitReferenceType(ReferenceType rt) throws CompileException        { return UnitCompiler.this.getType2(rt);  }
             @Override public IClass visitRvalueMemberType(RvalueMemberType rmt) throws CompileException { return UnitCompiler.this.getType2(rmt); }
             @Override public IClass visitSimpleType(SimpleType st)                                      { return UnitCompiler.this.getType2(st);  }
@@ -5722,7 +5722,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         case PrimitiveType.FLOAT:   return IClass.FLOAT;
         case PrimitiveType.DOUBLE:  return IClass.DOUBLE;
         case PrimitiveType.BOOLEAN: return IClass.BOOLEAN;
-        default:                throw new JaninoRuntimeException("Invalid index " + bt.index);
+        default:                    throw new JaninoRuntimeException("Invalid index " + bt.index);
         }
     }
     private IClass
@@ -6363,7 +6363,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
             @Override public Boolean visitPackage(Package p) { return UnitCompiler.this.isType2(p); }
             // TypeVisitor
             @Override public Boolean visitArrayType(ArrayType at)                { return UnitCompiler.this.isType2(at);  }
-            @Override public Boolean visitPrimitiveType(PrimitiveType bt)                { return UnitCompiler.this.isType2(bt);  }
+            @Override public Boolean visitPrimitiveType(PrimitiveType bt)        { return UnitCompiler.this.isType2(bt);  }
             @Override public Boolean visitReferenceType(ReferenceType rt)        { return UnitCompiler.this.isType2(rt);  }
             @Override public Boolean visitRvalueMemberType(RvalueMemberType rmt) { return UnitCompiler.this.isType2(rmt); }
             @Override public Boolean visitSimpleType(SimpleType st)              { return UnitCompiler.this.isType2(st);  }
