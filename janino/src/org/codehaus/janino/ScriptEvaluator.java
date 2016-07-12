@@ -46,7 +46,7 @@ import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.Atom;
-import org.codehaus.janino.Java.BasicType;
+import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.LocalClassDeclaration;
@@ -799,7 +799,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 null,                                             // optionalDocComment
                 modifiers,                                        // modifiers
                 null,                                             // optionalTypeParameters
-                new BasicType(parser.location(), BasicType.VOID), // type
+                new PrimitiveType(parser.location(), PrimitiveType.VOID), // type
                 name                                              // name
             ));
             return;

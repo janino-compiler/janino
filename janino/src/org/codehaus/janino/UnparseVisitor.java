@@ -660,7 +660,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     }
 
     @Override @Nullable public Void
-    visitBasicType(Java.BasicType bt) { this.pw.print(bt.toString()); return null; }
+    visitPrimitiveType(Java.PrimitiveType bt) { this.pw.print(bt.toString()); return null; }
 
     @Override @Nullable public Void
     visitBinaryOperation(Java.BinaryOperation bo) {

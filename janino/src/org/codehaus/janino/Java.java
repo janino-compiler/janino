@@ -2044,7 +2044,7 @@ class Java {
                 location,                                // location
                 optionalDocComment,                      // optionalDocComment
                 modifiers,                               // modifiers
-                new BasicType(location, BasicType.VOID), // type
+                new PrimitiveType(location, PrimitiveType.VOID), // type
                 "<init>",                                // name
                 parameters,                              // parameters
                 thrownExceptions,                        // thrownExceptions
@@ -3256,15 +3256,17 @@ class Java {
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitSimpleType(this); }
     }
 
-    /** Representation of a JLS7 18 "basic type" (obviously equivalent to a JLS7 4.2 "primitive type"). */
+    /**
+     * Representation of a JLS7 4.2 "primitive type".
+     */
     public static final
-    class BasicType extends Type {
+    class PrimitiveType extends Type {
 
         /** One of {@link #VOID}, {@link #BYTE} and consorts. */
         public final int index;
 
         public
-        BasicType(Location location, int index) {
+        PrimitiveType(Location location, int index) {
             super(location);
             this.index = index;
         }
@@ -3272,23 +3274,23 @@ class Java {
         @Override public String
         toString() {
             switch (this.index) {
-            case BasicType.VOID:
+            case PrimitiveType.VOID:
                 return "void";
-            case BasicType.BYTE:
+            case PrimitiveType.BYTE:
                 return "byte";
-            case BasicType.SHORT:
+            case PrimitiveType.SHORT:
                 return "short";
-            case BasicType.CHAR:
+            case PrimitiveType.CHAR:
                 return "char";
-            case BasicType.INT:
+            case PrimitiveType.INT:
                 return "int";
-            case BasicType.LONG:
+            case PrimitiveType.LONG:
                 return "long";
-            case BasicType.FLOAT:
+            case PrimitiveType.FLOAT:
                 return "float";
-            case BasicType.DOUBLE:
+            case PrimitiveType.DOUBLE:
                 return "double";
-            case BasicType.BOOLEAN:
+            case PrimitiveType.BOOLEAN:
                 return "boolean";
             default:
                 throw new JaninoRuntimeException("Invalid index " + this.index);
@@ -3296,8 +3298,8 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitBasicType(this); }
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitBasicType(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitPrimitiveType(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitPrimitiveType(this); }
 
         /** Value representing the VOID type. */
         public static final int VOID = 0;
@@ -4512,7 +4514,7 @@ class Java {
          * <pre>
          *     new NewArray(
          *         null,
-         *         Java.BasicType(NULL, Java.BasicType.BYTE),
+         *         Java.PrimitiveType(NULL, Java.PrimitiveType.BYTE),
          *         new Rvalue[] { new Java.Literal(null, Integer.valueOf(12) },
          *         2
          *     )

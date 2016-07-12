@@ -224,8 +224,8 @@ class Visitor {
     interface TypeVisitor<R, EX extends Throwable> {
         /** Invoked by {@link Java.ArrayType#accept(Visitor.TypeVisitor)} */
         @Nullable R visitArrayType(Java.ArrayType at) throws EX;
-        /** Invoked by {@link Java.BasicType#accept(Visitor.TypeVisitor)} */
-        @Nullable R visitBasicType(Java.BasicType bt) throws EX;
+        /** Invoked by {@link Java.PrimitiveType#accept(Visitor.TypeVisitor)} */
+        @Nullable R visitPrimitiveType(Java.PrimitiveType bt) throws EX;
         /** Invoked by {@link Java.ReferenceType#accept(Visitor.TypeVisitor)} */
         @Nullable R visitReferenceType(Java.ReferenceType rt) throws EX;
         /** Invoked by {@link Java.RvalueMemberType#accept(Visitor.TypeVisitor)} */

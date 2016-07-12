@@ -120,7 +120,7 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitQualifiedThisReference(Java.QualifiedThisReference qtr) throws EX                                     { Traverser.this.traverseQualifiedThisReference(qtr); return null; }
         @Override @Nullable public Void visitThisReference(Java.ThisReference tr) throws EX                                                        { Traverser.this.traverseThisReference(tr); return null; }
         @Override @Nullable public Void visitArrayType(Java.ArrayType at) throws EX                                                                { Traverser.this.traverseArrayType(at); return null; }
-        @Override @Nullable public Void visitBasicType(Java.BasicType bt) throws EX                                                                { Traverser.this.traverseBasicType(bt); return null; }
+        @Override @Nullable public Void visitPrimitiveType(Java.PrimitiveType bt) throws EX                                                        { Traverser.this.traversePrimitiveType(bt); return null; }
         @Override @Nullable public Void visitReferenceType(Java.ReferenceType rt) throws EX                                                        { Traverser.this.traverseReferenceType(rt); return null; }
         @Override @Nullable public Void visitRvalueMemberType(Java.RvalueMemberType rmt) throws EX                                                 { Traverser.this.traverseRvalueMemberType(rmt); return null; }
         @Override @Nullable public Void visitSimpleType(Java.SimpleType st) throws EX                                                              { Traverser.this.traverseSimpleType(st); return null; }
@@ -600,7 +600,7 @@ class Traverser<EX extends Throwable> {
 
     /** @see Traverser */
     public void
-    traverseBasicType(Java.BasicType bt) throws EX { this.traverseType(bt); }
+    traversePrimitiveType(Java.PrimitiveType bt) throws EX { this.traverseType(bt); }
 
     /** @see Traverser */
     public void

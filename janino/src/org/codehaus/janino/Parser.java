@@ -47,7 +47,6 @@ import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.AssertStatement;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
-import org.codehaus.janino.Java.BasicType;
 import org.codehaus.janino.Java.BinaryOperation;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
@@ -106,6 +105,7 @@ import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.PackageMemberInterfaceDeclaration;
 import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
 import org.codehaus.janino.Java.ParenthesizedExpression;
+import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.ReferenceType;
 import org.codehaus.janino.Java.ReturnStatement;
@@ -766,7 +766,7 @@ class Parser {
                 optionalDocComment,                      // optionalDocComment
                 modifiers,                               // modifiers
                 null,                                    // optionalTypeParameters
-                new BasicType(location, BasicType.VOID), // type
+                new PrimitiveType(location, PrimitiveType.VOID), // type
                 name                                     // name
             ));
             return;
@@ -847,7 +847,7 @@ class Parser {
                 optionalDocComment,                             // optionalDocComment
                 modifiers,                                      // modifiers
                 optionalTypeParameters,                         // optionalTypeParameters
-                new BasicType(this.location(), BasicType.VOID), // type
+                new PrimitiveType(this.location(), PrimitiveType.VOID), // type
                 name                                            // name
             ));
             return;
@@ -1032,7 +1032,7 @@ class Parser {
                     optionalDocComment,                       // optionalDocComment
                     modifiers.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiers
                     null,                                     // optionalTypeParameters
-                    new BasicType(location, BasicType.VOID),  // type
+                    new PrimitiveType(location, PrimitiveType.VOID),  // type
                     name                                      // name
                 ));
                 continue;
@@ -1113,7 +1113,7 @@ class Parser {
                     optionalDocComment,                       // optionalDocComment
                     modifiers.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiers
                     optionalTypeParameters,                   // optionalTypeParameters
-                    new BasicType(location, BasicType.VOID),  // type
+                    new PrimitiveType(location, PrimitiveType.VOID),  // type
                     name                                      // name
                 ));
                 continue;
@@ -1689,7 +1689,7 @@ class Parser {
      *
      *   ForInit :=
      *     Modifiers Type VariableDeclarators
-     *     | ModifiersOpt BasicType VariableDeclarators
+     *     | ModifiersOpt PrimitiveType VariableDeclarators
      *     | Expression VariableDeclarators              (1)
      *     | Expression { ',' Expression }
      * </pre>
@@ -1707,7 +1707,7 @@ class Parser {
         if (!this.peek(";")) {
 
             // 'for' '(' Modifiers Type VariableDeclarators
-            // 'for' '(' [ Modifiers ] BasicType VariableDeclarators
+            // 'for' '(' [ Modifiers ] PrimitiveType VariableDeclarators
             if (this.peek(new String[] {
                 "final", "@", "byte", "short", "char", "int", "long", "float", "double", "boolean"
             }) != -1) {
@@ -2105,22 +2105,22 @@ class Parser {
      */
     public Type
     parseType() throws CompileException, IOException {
-        int  idx = this.peekRead(Parser.BASIC_TYPE_NAMES);
+        int  idx = this.peekRead(Parser.PRIMITIVE_TYPE_NAMES);
         Type res = (
             idx != -1
-            ? (Type) new BasicType(this.location(), Parser.BASIC_TYPE_CODES[idx])
+            ? (Type) new PrimitiveType(this.location(), Parser.PRIMITIVE_TYPE_CODES[idx])
             : this.parseReferenceType()
         );
         for (int i = this.parseBracketsOpt(); i > 0; --i) res = new ArrayType(res);
         return res;
     }
-    private static final String[] BASIC_TYPE_NAMES = {
-        "byte", "short", "char", "int", "long", "float",
-        "double", "boolean"
+    private static final String[] PRIMITIVE_TYPE_NAMES = {
+        "byte", "short", "char", "int", "long",
+        "float", "double", "boolean"
     };
-    private static final int[] BASIC_TYPE_CODES = {
-        BasicType.BYTE, BasicType.SHORT, BasicType.CHAR, BasicType.INT, BasicType.LONG, BasicType.FLOAT,
-        BasicType.DOUBLE, BasicType.BOOLEAN
+    private static final int[] PRIMITIVE_TYPE_CODES = {
+        PrimitiveType.BYTE, PrimitiveType.SHORT, PrimitiveType.CHAR, PrimitiveType.INT, PrimitiveType.LONG,
+        PrimitiveType.FLOAT, PrimitiveType.DOUBLE, PrimitiveType.BOOLEAN
     };
 
     /**
@@ -2200,7 +2200,7 @@ class Parser {
      * <pre>
      *   TypeArgument :=
      *     ReferenceType { '[' ']' }    &lt;= The optional brackets are mising in JLS7, section 18!?
-     *     | BasicType '[' ']' { '[' ']' }
+     *     | PrimitiveType '[' ']' { '[' ']' }
      *     | '?' extends ReferenceType
      *     | '?' super ReferenceType
      * </pre>
@@ -2647,8 +2647,8 @@ class Parser {
      *     NewAnonymousClassInstance |             // ClassInstanceCreationExpression 15.9
      *     NewArray |                              // ArrayCreationExpression 15.10
      *     NewInitializedArray |                   // ArrayInitializer 10.6
-     *     BasicType { '[]' } |                    // Type
-     *     BasicType { '[]' } '.' 'class' |        // ClassLiteral 15.8.2
+     *     PrimitiveType { '[]' } |                // Type
+     *     PrimitiveType { '[]' } '.' 'class' |    // ClassLiteral 15.8.2
      *     'void' '.' 'class'                      // ClassLiteral 15.8.2
      *
      *   CastExpression :=
@@ -2843,19 +2843,19 @@ class Parser {
             );
         }
 
-        // BasicType
+        // PrimitiveType
         if (this.peek(new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double" }) != -1) {
             Type res      = this.parseType();
             int  brackets = this.parseBracketsOpt();
             for (int i = 0; i < brackets; ++i) res = new ArrayType(res);
             if (this.peek(".") && this.peekNextButOne("class")) {
-                // BasicType { '[]' } '.' 'class'
+                // PrimitiveType { '[]' } '.' 'class'
                 this.read();
                 Location location = this.location();
                 this.read();
                 return new ClassLiteral(location, res);
             }
-            // BasicType { '[]' }
+            // PrimitiveType { '[]' }
             return res;
         }
 
@@ -2866,7 +2866,7 @@ class Parser {
                 this.read();
                 Location location = this.location();
                 this.read();
-                return new ClassLiteral(location, new BasicType(location, BasicType.VOID));
+                return new ClassLiteral(location, new PrimitiveType(location, PrimitiveType.VOID));
             }
             throw this.compileException("\"void\" encountered in wrong context");
         }
