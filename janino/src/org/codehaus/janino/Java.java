@@ -3485,7 +3485,7 @@ class Java {
 //                    t.setEnclosingScope(enclosingScope);
                     super.traverseType(t);
                 }
-            }.comprehensiveVisitor().visitRvalue(this);
+            }.comprehensiveVisitor().visitAtom(this);
         }
 
         /**

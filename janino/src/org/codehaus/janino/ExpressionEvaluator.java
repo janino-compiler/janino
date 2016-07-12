@@ -440,7 +440,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
                 // It's most probably a parameter name (although it could be a field name as well).
                 parameterNames.add(an.identifiers[0]);
             }
-        }.comprehensiveVisitor().visitRvalue(rvalue);
+        }.comprehensiveVisitor().visitAtom(rvalue);
 
         return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
     }

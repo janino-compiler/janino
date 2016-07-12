@@ -29,24 +29,10 @@ package org.codehaus.janino.util;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Java;
-import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
-import org.codehaus.janino.Java.Annotation;
-import org.codehaus.janino.Java.Atom;
-import org.codehaus.janino.Java.BlockStatement;
-import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
-import org.codehaus.janino.Java.FieldDeclaration;
-import org.codehaus.janino.Java.Initializer;
-import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
-import org.codehaus.janino.Java.MemberClassDeclaration;
-import org.codehaus.janino.Java.MemberEnumDeclaration;
-import org.codehaus.janino.Java.MemberInterfaceDeclaration;
-import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
-import org.codehaus.janino.Java.Rvalue;
-import org.codehaus.janino.Java.TypeBodyDeclaration;
-import org.codehaus.janino.Java.TypeDeclaration;
 import org.codehaus.janino.Visitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ComprehensiveVisitor;
+import org.codehaus.janino.Visitor.ElementValueVisitor;
 
 /**
  * This class traverses the subnodes of an AST. Derived classes may override individual methods to process specific
@@ -83,7 +69,7 @@ class Traverser<EX extends Throwable> {
         // SUPPRESS CHECKSTYLE LineLength:11
         @Override @Nullable public Void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) throws EX                             { Traverser.this.traverseAnonymousClassDeclaration(acd); return null; }
         @Override @Nullable public Void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) throws EX                                     { Traverser.this.traverseLocalClassDeclaration(lcd); return null; }
-        @Override @Nullable public Void visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd) throws EX                { Traverser.this.traversePackageMemberClassDeclaration(apmcd); return null; }
+        @Override @Nullable public Void visitPackageMemberClassDeclaration(Java.AbstractPackageMemberClassDeclaration apmcd) throws EX                { Traverser.this.traversePackageMemberClassDeclaration(apmcd); return null; }
         @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) throws EX            { Traverser.this.traversePackageMemberInterfaceDeclaration(pmid); return null; }
         @Override @Nullable public Void visitEnumConstant(Java.EnumConstant ec) throws EX                                                        { Traverser.this.traverseEnumConstant(ec); return null; }
         @Override @Nullable public Void visitPackageMemberEnumDeclaration(Java.PackageMemberEnumDeclaration pmed) throws EX                      { Traverser.this.traversePackageMemberEnumDeclaration(pmed); return null; }
@@ -147,13 +133,13 @@ class Traverser<EX extends Throwable> {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid) throws EX { Traverser.this.traverseMemberInterfaceDeclaration(mid); return null; }
-        @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd)         throws EX { Traverser.this.traverseMemberClassDeclaration(mcd);     return null; }
-        @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med)           throws EX { Traverser.this.traverseMemberEnumDeclaration(med);      return null; }
+        @Override @Nullable public Void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid) throws EX { Traverser.this.traverseMemberInterfaceDeclaration(mid); return null; }
+        @Override @Nullable public Void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd)         throws EX { Traverser.this.traverseMemberClassDeclaration(mcd);     return null; }
+        @Override @Nullable public Void visitMemberEnumDeclaration(Java.MemberEnumDeclaration med)           throws EX { Traverser.this.traverseMemberEnumDeclaration(med);      return null; }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public Void visitInitializer(Initializer i)            throws EX { Traverser.this.traverseInitializer(i);       return null; }
-        @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd) throws EX { Traverser.this.traverseFieldDeclaration(fd); return null; }
+        @Override @Nullable public Void visitInitializer(Java.Initializer i)            throws EX { Traverser.this.traverseInitializer(i);       return null; }
+        @Override @Nullable public Void visitFieldDeclaration(Java.FieldDeclaration fd) throws EX { Traverser.this.traverseFieldDeclaration(fd); return null; }
     };
 
     private final Visitor.BlockStatementVisitor<Void, EX>
@@ -189,7 +175,7 @@ class Traverser<EX extends Throwable> {
     atomTraverser = new Visitor.AtomVisitor<Void, EX>() {
 
         @Override @Nullable public Void
-        visitRvalue(Rvalue rv) throws EX { rv.accept(Traverser.this.rvalueTraverser); return null; }
+        visitRvalue(Java.Rvalue rv) throws EX { rv.accept(Traverser.this.rvalueTraverser); return null; }
 
         // SUPPRESS CHECKSTYLE LineLength:6
         @Override @Nullable public Void visitPackage(Java.Package p)                     throws EX { Traverser.this.traversePackage(p);            return null; }
@@ -200,49 +186,61 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitSimpleType(Java.SimpleType st)              throws EX { Traverser.this.traverseSimpleType(st);        return null; }
     };
 
-    private final Visitor.ComprehensiveVisitor<Void, EX> cv = new Visitor.ComprehensiveVisitor<Void, EX>() {
+    private final ElementValueVisitor<Void, EX>
+    elementValueVisitor = new ElementValueVisitor<Void, EX>() {
 
         @Override @Nullable public Void
-        visitRvalue(Rvalue rv) throws EX {
+        visitRvalue(Java.Rvalue rv) throws EX {
             rv.accept(Traverser.this.rvalueTraverser);
             return null;
         }
 
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public Void visitElementValueArrayInitializer(Java.ElementValueArrayInitializer evai) throws EX { Traverser.this.traverseElementValueArrayInitializer(evai); return null; }
+        @Override @Nullable public Void visitAnnotation(Java.Annotation a)                                        throws EX { Traverser.this.traverseAnnotation(a);                      return null; }
+    };
+
+    private final Visitor.ComprehensiveVisitor<Void, EX> cv = new Visitor.ComprehensiveVisitor<Void, EX>() {
+
         @Override @Nullable public Void
-        visitImportDeclaration(ImportDeclaration id) throws EX {
+        visitImportDeclaration(Java.CompilationUnit.ImportDeclaration id) throws EX {
             return (Void) id.accept(Traverser.this.importTraverser);
         }
 
         @Override @Nullable public Void
-        visitTypeDeclaration(TypeDeclaration td) throws EX {
+        visitTypeDeclaration(Java.TypeDeclaration td) throws EX {
             td.accept(Traverser.this.typeDeclarationTraverser);
             return null;
         }
 
         @Override @Nullable public Void
-        visitTypeBodyDeclaration(TypeBodyDeclaration tbd) throws EX {
+        visitTypeBodyDeclaration(Java.TypeBodyDeclaration tbd) throws EX {
             tbd.accept(Traverser.this.typeBodyDeclarationTraverser);
             return null;
         }
 
         @Override @Nullable public Void
-        visitBlockStatement(BlockStatement bs) throws EX {
+        visitBlockStatement(Java.BlockStatement bs) throws EX {
             bs.accept(Traverser.this.blockStatementTraverser);
             return null;
         }
 
         @Override @Nullable public Void
-        visitAtom(Atom a) throws EX {
+        visitAtom(Java.Atom a) throws EX {
             a.accept(Traverser.this.atomTraverser);
             return null;
         }
 
-        // SUPPRESS CHECKSTYLE LineLength:5
-        @Override @Nullable public Void visitMarkerAnnotation(Java.MarkerAnnotation ma)                           throws EX { Traverser.this.traverseMarkerAnnotation(ma);               return null; }
-        @Override @Nullable public Void visitNormalAnnotation(Java.NormalAnnotation na)                           throws EX { Traverser.this.traverseNormalAnnotation(na);               return null; }
-        @Override @Nullable public Void visitSingleElementAnnotation(Java.SingleElementAnnotation sea)            throws EX { Traverser.this.traverseSingleElementAnnotation(sea);       return null; }
-        @Override @Nullable public Void visitElementValueArrayInitializer(Java.ElementValueArrayInitializer evai) throws EX { Traverser.this.traverseElementValueArrayInitializer(evai); return null; }
-        @Override @Nullable public Void visitAnnotation(Annotation a)                                             throws EX { Traverser.this.traverseAnnotation(a);                      return null; }
+        @Override @Nullable public Void
+        visitElementValue(Java.ElementValue ev) throws EX {
+            ev.accept(Traverser.this.elementValueVisitor);
+            return null;
+        }
+
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override @Nullable public Void visitMarkerAnnotation(Java.MarkerAnnotation ma)                throws EX { Traverser.this.traverseMarkerAnnotation(ma);         return null; }
+        @Override @Nullable public Void visitNormalAnnotation(Java.NormalAnnotation na)                throws EX { Traverser.this.traverseNormalAnnotation(na);         return null; }
+        @Override @Nullable public Void visitSingleElementAnnotation(Java.SingleElementAnnotation sea) throws EX { Traverser.this.traverseSingleElementAnnotation(sea); return null; }
     };
 
     /** @see Traverser */
@@ -640,7 +638,7 @@ class Traverser<EX extends Throwable> {
     public void
     traverseNewArray(Java.NewArray na) throws EX {
         na.type.accept(this.atomTraverser);
-        for (Rvalue dimExpr : na.dimExprs) dimExpr.accept(this.rvalueTraverser);
+        for (Java.Rvalue dimExpr : na.dimExprs) dimExpr.accept(this.rvalueTraverser);
         this.traverseRvalue(na);
     }
 
@@ -785,7 +783,7 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseElementValueArrayInitializer(Java.ElementValueArrayInitializer evai) throws EX {
-        for (Java.ElementValue elementValue : evai.elementValues) elementValue.accept(this.cv);
+        for (Java.ElementValue elementValue : evai.elementValues) elementValue.accept(this.elementValueVisitor);
         this.traverseElementValue(evai);
     }
 
@@ -800,7 +798,7 @@ class Traverser<EX extends Throwable> {
     public void
     traverseSingleElementAnnotation(Java.SingleElementAnnotation sea) throws EX {
         sea.type.accept(this.atomTraverser);
-        sea.elementValue.accept(this.cv);
+        sea.elementValue.accept(this.elementValueVisitor);
         this.traverseAnnotation(sea);
     }
 
@@ -816,7 +814,7 @@ class Traverser<EX extends Throwable> {
     traverseNormalAnnotation(Java.NormalAnnotation na) throws EX {
         na.type.accept(this.atomTraverser);
         for (Java.ElementValuePair elementValuePair : na.elementValuePairs) {
-            elementValuePair.elementValue.accept(this.cv);
+            elementValuePair.elementValue.accept(this.elementValueVisitor);
         }
         this.traverseAnnotation(na);
     }
@@ -932,7 +930,7 @@ class Traverser<EX extends Throwable> {
         for (Java.ConstructorDeclarator cd : ec.constructors) this.traverseConstructorDeclarator(cd);
 
         if (ec.optionalArguments != null) {
-            for (Rvalue a : ec.optionalArguments) this.traverseRvalue(a);
+            for (Java.Rvalue a : ec.optionalArguments) this.traverseRvalue(a);
         }
 
         this.traverseAbstractTypeDeclaration(ec);
@@ -952,13 +950,13 @@ class Traverser<EX extends Throwable> {
 
     /** @see Traverser */
     public void
-    traversePackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) throws EX {
+    traversePackageMemberAnnotationTypeDeclaration(Java.PackageMemberAnnotationTypeDeclaration pmatd) throws EX {
         this.traversePackageMemberInterfaceDeclaration(pmatd);
     }
 
     /** @see Traverser */
     public void
-    traverseMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws EX {
+    traverseMemberAnnotationTypeDeclaration(Java.MemberAnnotationTypeDeclaration matd) throws EX {
         this.traverseMemberInterfaceDeclaration(matd);
     }
 
