@@ -271,7 +271,9 @@ class Visitor {
      * @param <EX> The exception that the {@code visit*()} methods may throw
      */
     public
-    interface RvalueVisitor<R, EX extends Throwable> extends LvalueVisitor<R, EX> {
+    interface RvalueVisitor<R, EX extends Throwable> {
+        /** Invoked by {@link Java.Lvalue#accept(Visitor.RvalueVisitor)} */
+        @Nullable R visitLvalue(Java.Lvalue lv) throws EX;
         /** Invoked by {@link Java.ArrayLength#accept(Visitor.RvalueVisitor)} */
         @Nullable R visitArrayLength(Java.ArrayLength al) throws EX;
         /** Invoked by {@link Java.Assignment#accept(Visitor.RvalueVisitor)} */

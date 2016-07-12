@@ -3562,9 +3562,8 @@ class Java {
 
         @Override @Nullable public final <R, EX extends Throwable> R
         accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX {
-            return this.accept((Visitor.LvalueVisitor<R, EX>) visitor);
+            return visitor.visitLvalue(this);
         }
-
     }
 
     /**

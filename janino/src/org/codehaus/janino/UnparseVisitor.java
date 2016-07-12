@@ -57,6 +57,7 @@ import org.codehaus.janino.Java.EnumConstant;
 import org.codehaus.janino.Java.FieldDeclaration;
 import org.codehaus.janino.Java.FunctionDeclarator;
 import org.codehaus.janino.Java.Initializer;
+import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.MemberEnumDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
@@ -543,6 +544,68 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             rv.accept(new Visitor.RvalueVisitor<Void, RuntimeException>() {
 
                 @Override @Nullable public Void
+                visitLvalue(Lvalue lv) {
+                    lv.accept(new Visitor.LvalueVisitor<Void, RuntimeException>() {
+
+                        @Override @Nullable public Void
+                        visitAmbiguousName(Java.AmbiguousName an) {
+                            UnparseVisitor.this.pw.print(an.toString());
+                            return null;
+                        }
+
+                        @Override @Nullable public Void
+                        visitArrayAccessExpression(Java.ArrayAccessExpression aae) {
+                            UnparseVisitor.this.unparseLhs(aae.lhs, "[ ]");
+                            UnparseVisitor.this.pw.print('[');
+                            UnparseVisitor.this.unparse(aae.index);
+                            UnparseVisitor.this.pw.print(']');
+                            return null;
+                        }
+
+                        @Override @Nullable public Void
+                        visitFieldAccess(Java.FieldAccess fa) {
+                            UnparseVisitor.this.unparseLhs(fa.lhs, ".");
+                            UnparseVisitor.this.pw.print('.' + fa.field.getName());
+                            return null;
+                        }
+
+                        @Override @Nullable public Void
+                        visitFieldAccessExpression(Java.FieldAccessExpression fae) {
+                            UnparseVisitor.this.unparseLhs(fae.lhs, ".");
+                            UnparseVisitor.this.pw.print('.' + fae.fieldName);
+                            return null;
+                        }
+
+                        @Override @Nullable public Void
+                        visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {
+                            if (scfae.optionalQualification != null) {
+                                UnparseVisitor.this.unparseType(scfae.optionalQualification);
+                                UnparseVisitor.this.pw.print(".super." + scfae.fieldName);
+                            } else
+                            {
+                                UnparseVisitor.this.pw.print("super." + scfae.fieldName);
+                            }
+                            return null;
+                        }
+
+                        @Override @Nullable public Void
+                        visitLocalVariableAccess(Java.LocalVariableAccess lva) {
+                            UnparseVisitor.this.pw.print(lva.toString());
+                            return null;
+                        }
+
+                        @Override @Nullable public Void
+                        visitParenthesizedExpression(Java.ParenthesizedExpression pe) {
+                            UnparseVisitor.this.pw.print('(');
+                            UnparseVisitor.this.unparse(pe.value);
+                            UnparseVisitor.this.pw.print(')');
+                            return null;
+                        }
+                    });
+                    return null;
+                }
+
+                @Override @Nullable public Void
                 visitMethodInvocation(Java.MethodInvocation mi) {
                     if (mi.optionalTarget != null) {
                         UnparseVisitor.this.unparseLhs(mi.optionalTarget, ".");
@@ -570,18 +633,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
                     UnparseVisitor.this.unparseLhs(a.lhs, a.operator);
                     UnparseVisitor.this.pw.print(' ' + a.operator + ' ');
                     UnparseVisitor.this.unparseRhs(a.rhs, a.operator);
-                    return null;
-                }
-
-                @Override @Nullable public Void
-                visitAmbiguousName(Java.AmbiguousName an) { UnparseVisitor.this.pw.print(an.toString()); return null; }
-
-                @Override @Nullable public Void
-                visitArrayAccessExpression(Java.ArrayAccessExpression aae) {
-                    UnparseVisitor.this.unparseLhs(aae.lhs, "[ ]");
-                    UnparseVisitor.this.pw.print('[');
-                    UnparseVisitor.this.unparse(aae.index);
-                    UnparseVisitor.this.pw.print(']');
                     return null;
                 }
 
@@ -640,32 +691,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
                 }
 
                 @Override @Nullable public Void
-                visitFieldAccess(Java.FieldAccess fa) {
-                    UnparseVisitor.this.unparseLhs(fa.lhs, ".");
-                    UnparseVisitor.this.pw.print('.' + fa.field.getName());
-                    return null;
-                }
-
-                @Override @Nullable public Void
-                visitFieldAccessExpression(Java.FieldAccessExpression fae) {
-                    UnparseVisitor.this.unparseLhs(fae.lhs, ".");
-                    UnparseVisitor.this.pw.print('.' + fae.fieldName);
-                    return null;
-                }
-
-                @Override @Nullable public Void
-                visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {
-                    if (scfae.optionalQualification != null) {
-                        UnparseVisitor.this.unparseType(scfae.optionalQualification);
-                        UnparseVisitor.this.pw.print(".super." + scfae.fieldName);
-                    } else
-                    {
-                        UnparseVisitor.this.pw.print("super." + scfae.fieldName);
-                    }
-                    return null;
-                }
-
-                @Override @Nullable public Void
                 visitInstanceof(Java.Instanceof io) {
                     UnparseVisitor.this.unparseLhs(io.lhs, "instanceof");
                     UnparseVisitor.this.pw.print(" instanceof ");
@@ -681,7 +706,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
                 @Override @Nullable public Void visitStringLiteral(Java.StringLiteral sl)                { UnparseVisitor.this.pw.print(sl.value);             return null; }
                 @Override @Nullable public Void visitNullLiteral(Java.NullLiteral nl)                    { UnparseVisitor.this.pw.print(nl.value);             return null; }
                 @Override @Nullable public Void visitSimpleConstant(Java.SimpleConstant sl)              { UnparseVisitor.this.pw.print("[" + sl.value + ']'); return null; }
-                @Override @Nullable public Void visitLocalVariableAccess(Java.LocalVariableAccess lva)   { UnparseVisitor.this.pw.print(lva.toString());       return null; }
 
                 @Override @Nullable public Void
                 visitNewArray(Java.NewArray na) {
@@ -741,14 +765,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
                 visitUnaryOperation(Java.UnaryOperation uo) {
                     UnparseVisitor.this.pw.print(uo.operator);
                     UnparseVisitor.this.unparseUnaryOperation(uo.operand, uo.operator + "x");
-                    return null;
-                }
-
-                @Override @Nullable public Void
-                visitParenthesizedExpression(Java.ParenthesizedExpression pe) {
-                    UnparseVisitor.this.pw.print('(');
-                    UnparseVisitor.this.unparse(pe.value);
-                    UnparseVisitor.this.pw.print(')');
                     return null;
                 }
 

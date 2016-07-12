@@ -3138,7 +3138,23 @@ class UnitCompiler {
 
         rv.accept(new RvalueVisitor<Void, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:33
+            @Override @Nullable public Void
+            visitLvalue(Lvalue lv) throws CompileException {
+                lv.accept(new Visitor.LvalueVisitor<Void, CompileException>() {
+
+                    // SUPPRESS CHECKSTYLE LineLength:7
+                    @Override @Nullable public Void visitAmbiguousName(AmbiguousName an) throws CompileException                                        { UnitCompiler.this.compile2(an);    return null; }
+                    @Override @Nullable public Void visitArrayAccessExpression(ArrayAccessExpression aae) throws CompileException                       { UnitCompiler.this.compile2(aae);   return null; }
+                    @Override @Nullable public Void visitFieldAccess(FieldAccess fa) throws CompileException                                            { UnitCompiler.this.compile2(fa);    return null; }
+                    @Override @Nullable public Void visitFieldAccessExpression(FieldAccessExpression fae) throws CompileException                       { UnitCompiler.this.compile2(fae);   return null; }
+                    @Override @Nullable public Void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { UnitCompiler.this.compile2(scfae); return null; }
+                    @Override @Nullable public Void visitLocalVariableAccess(LocalVariableAccess lva) throws CompileException                           { UnitCompiler.this.compile2(lva);   return null; }
+                    @Override @Nullable public Void visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException                    { UnitCompiler.this.compile2(pe);    return null; }
+                });
+                return null;
+            }
+
+            // SUPPRESS CHECKSTYLE LineLength:25
             @Override @Nullable public Void visitArrayLength(ArrayLength al) throws CompileException                                            { UnitCompiler.this.compile2(al);    return null; }
             @Override @Nullable public Void visitAssignment(Assignment a) throws CompileException                                               { UnitCompiler.this.compile2(a);     return null; }
             @Override @Nullable public Void visitUnaryOperation(UnaryOperation uo) throws CompileException                                      { UnitCompiler.this.compile2(uo);    return null; }
@@ -3164,14 +3180,6 @@ class UnitCompiler {
             @Override @Nullable public Void visitParameterAccess(ParameterAccess pa) throws CompileException                                    { UnitCompiler.this.compile2(pa);    return null; }
             @Override @Nullable public Void visitQualifiedThisReference(QualifiedThisReference qtr) throws CompileException                     { UnitCompiler.this.compile2(qtr);   return null; }
             @Override @Nullable public Void visitThisReference(ThisReference tr) throws CompileException                                        { UnitCompiler.this.compile2(tr);    return null; }
-
-            @Override @Nullable public Void visitAmbiguousName(AmbiguousName an) throws CompileException                                        { UnitCompiler.this.compile2(an);    return null; }
-            @Override @Nullable public Void visitArrayAccessExpression(ArrayAccessExpression aae) throws CompileException                       { UnitCompiler.this.compile2(aae);   return null; }
-            @Override @Nullable public Void visitFieldAccess(FieldAccess fa) throws CompileException                                            { UnitCompiler.this.compile2(fa);    return null; }
-            @Override @Nullable public Void visitFieldAccessExpression(FieldAccessExpression fae) throws CompileException                       { UnitCompiler.this.compile2(fae);   return null; }
-            @Override @Nullable public Void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { UnitCompiler.this.compile2(scfae); return null; }
-            @Override @Nullable public Void visitLocalVariableAccess(LocalVariableAccess lva) throws CompileException                           { UnitCompiler.this.compile2(lva);   return null; }
-            @Override @Nullable public Void visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException                    { UnitCompiler.this.compile2(pe);    return null; }
         });
     }
 
@@ -3323,7 +3331,23 @@ class UnitCompiler {
 
         rv.accept(new RvalueVisitor<Void, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:33
+            @Override @Nullable public Void
+            visitLvalue(Lvalue lv) throws CompileException {
+                lv.accept(new Visitor.LvalueVisitor<Void, CompileException>() {
+
+                    // SUPPRESS CHECKSTYLE LineLength:7
+                    @Override @Nullable public Void visitAmbiguousName(AmbiguousName an)                                        throws CompileException { UnitCompiler.this.compileBoolean2(an,    dst, orientation); return null; }
+                    @Override @Nullable public Void visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { UnitCompiler.this.compileBoolean2(aae,   dst, orientation); return null; }
+                    @Override @Nullable public Void visitFieldAccess(FieldAccess fa)                                            throws CompileException { UnitCompiler.this.compileBoolean2(fa,    dst, orientation); return null; }
+                    @Override @Nullable public Void visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { UnitCompiler.this.compileBoolean2(fae,   dst, orientation); return null; }
+                    @Override @Nullable public Void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { UnitCompiler.this.compileBoolean2(scfae, dst, orientation); return null; }
+                    @Override @Nullable public Void visitLocalVariableAccess(LocalVariableAccess lva)                           throws CompileException { UnitCompiler.this.compileBoolean2(lva,   dst, orientation); return null; }
+                    @Override @Nullable public Void visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { UnitCompiler.this.compileBoolean2(pe,    dst, orientation); return null; }
+                });
+                return null;
+            }
+
+            // SUPPRESS CHECKSTYLE LineLength:25
             @Override @Nullable public Void visitArrayLength(ArrayLength al) throws CompileException                                { UnitCompiler.this.compileBoolean2(al,   dst, orientation); return null; }
             @Override @Nullable public Void visitAssignment(Assignment a) throws CompileException                                   { UnitCompiler.this.compileBoolean2(a,    dst, orientation); return null; }
             @Override @Nullable public Void visitUnaryOperation(UnaryOperation uo) throws CompileException                          { UnitCompiler.this.compileBoolean2(uo,   dst, orientation); return null; }
@@ -3349,14 +3373,6 @@ class UnitCompiler {
             @Override @Nullable public Void visitParameterAccess(ParameterAccess pa) throws CompileException                        { UnitCompiler.this.compileBoolean2(pa,   dst, orientation); return null; }
             @Override @Nullable public Void visitQualifiedThisReference(QualifiedThisReference qtr) throws CompileException         { UnitCompiler.this.compileBoolean2(qtr,  dst, orientation); return null; }
             @Override @Nullable public Void visitThisReference(ThisReference tr) throws CompileException                            { UnitCompiler.this.compileBoolean2(tr,   dst, orientation); return null; }
-
-            @Override @Nullable public Void visitAmbiguousName(AmbiguousName an) throws CompileException                                        { UnitCompiler.this.compileBoolean2(an,    dst, orientation); return null; }
-            @Override @Nullable public Void visitArrayAccessExpression(ArrayAccessExpression aae) throws CompileException                       { UnitCompiler.this.compileBoolean2(aae,   dst, orientation); return null; }
-            @Override @Nullable public Void visitFieldAccess(FieldAccess fa) throws CompileException                                            { UnitCompiler.this.compileBoolean2(fa,    dst, orientation); return null; }
-            @Override @Nullable public Void visitFieldAccessExpression(FieldAccessExpression fae) throws CompileException                       { UnitCompiler.this.compileBoolean2(fae,   dst, orientation); return null; }
-            @Override @Nullable public Void visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { UnitCompiler.this.compileBoolean2(scfae, dst, orientation); return null; }
-            @Override @Nullable public Void visitLocalVariableAccess(LocalVariableAccess lva) throws CompileException                           { UnitCompiler.this.compileBoolean2(lva,   dst, orientation); return null; }
-            @Override @Nullable public Void visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException                    { UnitCompiler.this.compileBoolean2(pe,    dst, orientation); return null; }
         });
     }
 
@@ -3636,7 +3652,22 @@ class UnitCompiler {
 
         Integer result = (Integer) rv.accept(new RvalueVisitor<Integer, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:33
+            @Override @Nullable public Integer
+            visitLvalue(Lvalue lv) throws CompileException {
+                return (Integer) lv.accept(new Visitor.LvalueVisitor<Integer, CompileException>() {
+
+                    // SUPPRESS CHECKSTYLE LineLength:7
+                    @Override public Integer visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.compileContext2(an);    }
+                    @Override public Integer visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.compileContext2(aae);   }
+                    @Override public Integer visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.compileContext2(fa);    }
+                    @Override public Integer visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.compileContext2(fae);   }
+                    @Override public Integer visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.compileContext2(scfae); }
+                    @Override public Integer visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.compileContext2(lva);   }
+                    @Override public Integer visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.compileContext2(pe);    }
+                });
+            }
+
+            // SUPPRESS CHECKSTYLE LineLength:25
             @Override public Integer visitArrayLength(ArrayLength al) throws CompileException        { return UnitCompiler.this.compileContext2(al);   }
             @Override public Integer visitAssignment(Assignment a)                                   { return UnitCompiler.this.compileContext2(a);    }
             @Override public Integer visitUnaryOperation(UnaryOperation uo)                          { return UnitCompiler.this.compileContext2(uo);   }
@@ -3662,14 +3693,6 @@ class UnitCompiler {
             @Override public Integer visitParameterAccess(ParameterAccess pa)                        { return UnitCompiler.this.compileContext2(pa);   }
             @Override public Integer visitQualifiedThisReference(QualifiedThisReference qtr)         { return UnitCompiler.this.compileContext2(qtr);  }
             @Override public Integer visitThisReference(ThisReference tr)                            { return UnitCompiler.this.compileContext2(tr);   }
-
-            @Override public Integer visitAmbiguousName(AmbiguousName an) throws CompileException                                        { return UnitCompiler.this.compileContext2(an);    }
-            @Override public Integer visitArrayAccessExpression(ArrayAccessExpression aae) throws CompileException                       { return UnitCompiler.this.compileContext2(aae);   }
-            @Override public Integer visitFieldAccess(FieldAccess fa) throws CompileException                                            { return UnitCompiler.this.compileContext2(fa);    }
-            @Override public Integer visitFieldAccessExpression(FieldAccessExpression fae) throws CompileException                       { return UnitCompiler.this.compileContext2(fae);   }
-            @Override public Integer visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.compileContext2(scfae); }
-            @Override public Integer visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.compileContext2(lva);   }
-            @Override public Integer visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException                    { return UnitCompiler.this.compileContext2(pe);    }
         });
 
         assert result != null;
@@ -3761,7 +3784,22 @@ class UnitCompiler {
 
         IClass result = (IClass) rv.accept(new RvalueVisitor<IClass, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:33
+            @Override @Nullable public IClass
+            visitLvalue(Lvalue lv) throws CompileException {
+                return (IClass) lv.accept(new Visitor.LvalueVisitor<IClass, CompileException>() {
+
+                    // SUPPRESS CHECKSTYLE LineLength:7
+                    @Override public IClass visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.compileGet2(an);    }
+                    @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.compileGet2(aae);   }
+                    @Override public IClass visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.compileGet2(fa);    }
+                    @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.compileGet2(fae);   }
+                    @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.compileGet2(scfae); }
+                    @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.compileGet2(lva);   }
+                    @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.compileGet2(pe);    }
+                });
+            }
+
+            // SUPPRESS CHECKSTYLE LineLength:25
             @Override public IClass visitArrayLength(ArrayLength al)                                                        { return UnitCompiler.this.compileGet2(al);   }
             @Override public IClass visitAssignment(Assignment a) throws CompileException                                   { return UnitCompiler.this.compileGet2(a);    }
             @Override public IClass visitUnaryOperation(UnaryOperation uo) throws CompileException                          { return UnitCompiler.this.compileGet2(uo);   }
@@ -3787,14 +3825,6 @@ class UnitCompiler {
             @Override public IClass visitParameterAccess(ParameterAccess pa) throws CompileException                        { return UnitCompiler.this.compileGet2(pa);   }
             @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr) throws CompileException         { return UnitCompiler.this.compileGet2(qtr);  }
             @Override public IClass visitThisReference(ThisReference tr) throws CompileException                            { return UnitCompiler.this.compileGet2(tr);   }
-
-            @Override public IClass visitAmbiguousName(AmbiguousName an) throws CompileException                                        { return UnitCompiler.this.compileGet2(an);    }
-            @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae) throws CompileException                       { return UnitCompiler.this.compileGet2(aae);   }
-            @Override public IClass visitFieldAccess(FieldAccess fa) throws CompileException                                            { return UnitCompiler.this.compileGet2(fa);    }
-            @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae) throws CompileException                       { return UnitCompiler.this.compileGet2(fae);   }
-            @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.compileGet2(scfae); }
-            @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.compileGet2(lva);   }
-            @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException                    { return UnitCompiler.this.compileGet2(pe);    }
         });
 
         assert result != null;
@@ -4954,7 +4984,23 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         if (rv.constantValue != Rvalue.CONSTANT_VALUE_UNKNOWN) return rv.constantValue;
 
         return (rv.constantValue = rv.accept(new RvalueVisitor<Object, CompileException>() {
-            // CHECKSTYLE LineLengthCheck:OFF
+
+            @Override @Nullable public Object
+            visitLvalue(Lvalue lv) throws CompileException {
+                return lv.accept(new Visitor.LvalueVisitor<Object, CompileException>() {
+
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:7
+                    @Override @Nullable public Object visitAmbiguousName(AmbiguousName an)                     throws CompileException { return UnitCompiler.this.getConstantValue2(an);    }
+                    @Override @Nullable public Object visitArrayAccessExpression(ArrayAccessExpression aae)                            { return UnitCompiler.this.getConstantValue2(aae);   }
+                    @Override @Nullable public Object visitFieldAccess(FieldAccess fa)                         throws CompileException { return UnitCompiler.this.getConstantValue2(fa);    }
+                    @Override @Nullable public Object visitFieldAccessExpression(FieldAccessExpression fae)                            { return UnitCompiler.this.getConstantValue2(fae);   }
+                    @Override @Nullable public Object visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae)      { return UnitCompiler.this.getConstantValue2(scfae); }
+                    @Override @Nullable public Object visitLocalVariableAccess(LocalVariableAccess lva)                                { return UnitCompiler.this.getConstantValue2(lva);   }
+                    @Override @Nullable public Object visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException { return UnitCompiler.this.getConstantValue2(pe);    }
+                });
+            }
+
+            // SUPPRESS CHECKSTYLE LineLengthCheck:25
             @Override @Nullable public Object visitArrayLength(ArrayLength al)                                             { return UnitCompiler.this.getConstantValue2(al);   }
             @Override @Nullable public Object visitAssignment(Assignment a)                                                { return UnitCompiler.this.getConstantValue2(a);    }
             @Override @Nullable public Object visitUnaryOperation(UnaryOperation uo) throws CompileException               { return UnitCompiler.this.getConstantValue2(uo);   }
@@ -4980,15 +5026,6 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
             @Override @Nullable public Object visitParameterAccess(ParameterAccess pa)                                     { return UnitCompiler.this.getConstantValue2(pa);   }
             @Override @Nullable public Object visitQualifiedThisReference(QualifiedThisReference qtr)                      { return UnitCompiler.this.getConstantValue2(qtr);  }
             @Override @Nullable public Object visitThisReference(ThisReference tr)                                         { return UnitCompiler.this.getConstantValue2(tr);   }
-
-            @Override @Nullable public Object visitAmbiguousName(AmbiguousName an) throws CompileException                     { return UnitCompiler.this.getConstantValue2(an);    }
-            @Override @Nullable public Object visitArrayAccessExpression(ArrayAccessExpression aae)                            { return UnitCompiler.this.getConstantValue2(aae);   }
-            @Override @Nullable public Object visitFieldAccess(FieldAccess fa) throws CompileException                         { return UnitCompiler.this.getConstantValue2(fa);    }
-            @Override @Nullable public Object visitFieldAccessExpression(FieldAccessExpression fae)                            { return UnitCompiler.this.getConstantValue2(fae);   }
-            @Override @Nullable public Object visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae)      { return UnitCompiler.this.getConstantValue2(scfae); }
-            @Override @Nullable public Object visitLocalVariableAccess(LocalVariableAccess lva)                                { return UnitCompiler.this.getConstantValue2(lva);   }
-            @Override @Nullable public Object visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException { return UnitCompiler.this.getConstantValue2(pe);    }
-            // CHECKSTYLE LineLengthCheck:ON
         }));
     }
 
@@ -5370,7 +5407,22 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
         return rv.accept(new RvalueVisitor<Object, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:33
+            @Override @Nullable public Object
+            visitLvalue(Lvalue lv) throws CompileException {
+                return lv.accept(new Visitor.LvalueVisitor<Object, CompileException>() {
+
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:7
+                    @Override @Nullable public Object visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(an);    }
+                    @Override @Nullable public Object visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(aae);   }
+                    @Override @Nullable public Object visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(fa);    }
+                    @Override @Nullable public Object visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(fae);   }
+                    @Override @Nullable public Object visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(scfae); }
+                    @Override @Nullable public Object visitLocalVariableAccess(LocalVariableAccess lva)                           throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(lva);   }
+                    @Override @Nullable public Object visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(pe);    }
+                });
+            }
+
+            // SUPPRESS CHECKSTYLE LineLength:25
             @Override @Nullable public Object visitArrayLength(ArrayLength al) throws CompileException                                { return UnitCompiler.this.getNegatedConstantValue2(al);   }
             @Override @Nullable public Object visitAssignment(Assignment a) throws CompileException                                   { return UnitCompiler.this.getNegatedConstantValue2(a);    }
             @Override @Nullable public Object visitUnaryOperation(UnaryOperation uo) throws CompileException                          { return UnitCompiler.this.getNegatedConstantValue2(uo);   }
@@ -5396,14 +5448,6 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
             @Override @Nullable public Object visitParameterAccess(ParameterAccess pa) throws CompileException                        { return UnitCompiler.this.getNegatedConstantValue2(pa);   }
             @Override @Nullable public Object visitQualifiedThisReference(QualifiedThisReference qtr) throws CompileException         { return UnitCompiler.this.getNegatedConstantValue2(qtr);  }
             @Override @Nullable public Object visitThisReference(ThisReference tr) throws CompileException                            { return UnitCompiler.this.getNegatedConstantValue2(tr);   }
-
-            @Override @Nullable public Object visitAmbiguousName(AmbiguousName an) throws CompileException                                        { return UnitCompiler.this.getNegatedConstantValue2(an);    }
-            @Override @Nullable public Object visitArrayAccessExpression(ArrayAccessExpression aae) throws CompileException                       { return UnitCompiler.this.getNegatedConstantValue2(aae);   }
-            @Override @Nullable public Object visitFieldAccess(FieldAccess fa) throws CompileException                                            { return UnitCompiler.this.getNegatedConstantValue2(fa);    }
-            @Override @Nullable public Object visitFieldAccessExpression(FieldAccessExpression fae) throws CompileException                       { return UnitCompiler.this.getNegatedConstantValue2(fae);   }
-            @Override @Nullable public Object visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(scfae); }
-            @Override @Nullable public Object visitLocalVariableAccess(LocalVariableAccess lva) throws CompileException                           { return UnitCompiler.this.getNegatedConstantValue2(lva);   }
-            @Override @Nullable public Object visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException                    { return UnitCompiler.this.getNegatedConstantValue2(pe);    }
         });
     }
     @Nullable private Object
@@ -5671,8 +5715,25 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
             @Override @Nullable public IClass
             visitRvalue(Rvalue rv) throws CompileException {
+
                 return (IClass) rv.accept(new Visitor.RvalueVisitor<IClass, CompileException>() {
-                    // RvalueVisitor
+
+                    @Override @Nullable public IClass
+                    visitLvalue(Lvalue lv) throws CompileException {
+                        return (IClass) lv.accept(new Visitor.LvalueVisitor<IClass, CompileException>() {
+
+                            // SUPPRESS CHECKSTYLE LineLengthCheck:7
+                            @Override public IClass visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.getType2(an);    }
+                            @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.getType2(aae);   }
+                            @Override public IClass visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.getType2(fa);    }
+                            @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.getType2(fae);   }
+                            @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getType2(scfae); }
+                            @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.getType2(lva);   }
+                            @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.getType2(pe);    }
+                        });
+                    }
+
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:25
                     @Override public IClass visitArrayLength(ArrayLength al)                                                        { return UnitCompiler.this.getType2(al);   }
                     @Override public IClass visitAssignment(Assignment a) throws CompileException                                   { return UnitCompiler.this.getType2(a);    }
                     @Override public IClass visitUnaryOperation(UnaryOperation uo) throws CompileException                          { return UnitCompiler.this.getType2(uo);   }
@@ -5698,14 +5759,6 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                     @Override public IClass visitParameterAccess(ParameterAccess pa) throws CompileException                        { return UnitCompiler.this.getType2(pa);   }
                     @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr) throws CompileException         { return UnitCompiler.this.getType2(qtr);  }
                     @Override public IClass visitThisReference(ThisReference tr) throws CompileException                            { return UnitCompiler.this.getType2(tr);   }
-                    // LvalueVisitor
-                    @Override public IClass visitAmbiguousName(AmbiguousName an) throws CompileException                                        { return UnitCompiler.this.getType2(an);    }
-                    @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae) throws CompileException                       { return UnitCompiler.this.getType2(aae);   }
-                    @Override public IClass visitFieldAccess(FieldAccess fa) throws CompileException                                            { return UnitCompiler.this.getType2(fa);    }
-                    @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae) throws CompileException                       { return UnitCompiler.this.getType2(fae);   }
-                    @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getType2(scfae); }
-                    @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.getType2(lva);   }
-                    @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException                    { return UnitCompiler.this.getType2(pe);    }
                 });
             }
         });
@@ -6377,7 +6430,23 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
             @Override @Nullable public Boolean
             visitRvalue(Rvalue rv) throws CompileException {
                 return (Boolean) rv.accept(new Visitor.RvalueVisitor<Boolean, CompileException>() {
-                    // RvalueVisitor
+
+                    @Override @Nullable public Boolean
+                    visitLvalue(Lvalue lv) throws CompileException {
+                        return (Boolean) lv.accept(new Visitor.LvalueVisitor<Boolean, CompileException>() {
+
+                            // SUPPRESS CHECKSTYLE LineLengthCheck:7
+                            @Override public Boolean visitAmbiguousName(AmbiguousName an)                throws CompileException { return UnitCompiler.this.isType2(an);    }
+                            @Override public Boolean visitArrayAccessExpression(ArrayAccessExpression aae)                       { return UnitCompiler.this.isType2(aae);   }
+                            @Override public Boolean visitFieldAccess(FieldAccess fa)                                            { return UnitCompiler.this.isType2(fa);    }
+                            @Override public Boolean visitFieldAccessExpression(FieldAccessExpression fae)                       { return UnitCompiler.this.isType2(fae);   }
+                            @Override public Boolean visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return UnitCompiler.this.isType2(scfae); }
+                            @Override public Boolean visitLocalVariableAccess(LocalVariableAccess lva)                           { return UnitCompiler.this.isType2(lva);   }
+                            @Override public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    { return UnitCompiler.this.isType2(pe);    }
+                        });
+                    }
+
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:25
                     @Override public Boolean visitArrayLength(ArrayLength al)                                { return UnitCompiler.this.isType2(al);   }
                     @Override public Boolean visitAssignment(Assignment a)                                   { return UnitCompiler.this.isType2(a);    }
                     @Override public Boolean visitUnaryOperation(UnaryOperation uo)                          { return UnitCompiler.this.isType2(uo);   }
@@ -6403,14 +6472,6 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                     @Override public Boolean visitParameterAccess(ParameterAccess pa)                        { return UnitCompiler.this.isType2(pa);   }
                     @Override public Boolean visitQualifiedThisReference(QualifiedThisReference qtr)         { return UnitCompiler.this.isType2(qtr);  }
                     @Override public Boolean visitThisReference(ThisReference tr)                            { return UnitCompiler.this.isType2(tr);   }
-                    // LvalueVisitor
-                    @Override public Boolean visitAmbiguousName(AmbiguousName an) throws CompileException                { return UnitCompiler.this.isType2(an);    }
-                    @Override public Boolean visitArrayAccessExpression(ArrayAccessExpression aae)                       { return UnitCompiler.this.isType2(aae);   }
-                    @Override public Boolean visitFieldAccess(FieldAccess fa)                                            { return UnitCompiler.this.isType2(fa);    }
-                    @Override public Boolean visitFieldAccessExpression(FieldAccessExpression fae)                       { return UnitCompiler.this.isType2(fae);   }
-                    @Override public Boolean visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return UnitCompiler.this.isType2(scfae); }
-                    @Override public Boolean visitLocalVariableAccess(LocalVariableAccess lva)                           { return UnitCompiler.this.isType2(lva);   }
-                    @Override public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    { return UnitCompiler.this.isType2(pe);    }
                 });
             }
         });
