@@ -399,7 +399,7 @@ class UnparseTests {
         );
         StringWriter   sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
-        decl.accept(uv);
+        uv.visitTypeDeclaration(decl);
         uv.close();
         String s             = sw.toString();
         String correctString = "/**foo */ public interface Foo { }";

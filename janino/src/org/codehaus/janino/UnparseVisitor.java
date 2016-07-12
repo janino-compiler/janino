@@ -61,6 +61,7 @@ import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
+import org.codehaus.janino.Java.TypeDeclaration;
 import org.codehaus.janino.util.AutoIndentWriter;
 
 /**
@@ -70,7 +71,7 @@ import org.codehaus.janino.util.AutoIndentWriter;
 class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeException> {
 
     private final Visitor.ImportVisitor<Void, RuntimeException>
-    importVisitor = new Visitor.ImportVisitor<Void, RuntimeException>() {
+    importUnparser = new Visitor.ImportVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitSingleTypeImportDeclaration(Java.CompilationUnit.SingleTypeImportDeclaration stid) {
@@ -96,6 +97,100 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             return null;
         }
     };
+    private final Visitor.TypeDeclarationVisitor<Void, RuntimeException>
+    typeDeclarationUnparser = new Visitor.TypeDeclarationVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) {
+            UnparseVisitor.this.unparseNamedClassDeclaration(lcd);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd) {
+            UnparseVisitor.this.unparseNamedClassDeclaration(apmcd);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) {
+            UnparseVisitor.this.unparseInterfaceDeclaration(pmid);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) {
+            UnparseVisitor.this.unparseType(acd.baseType);
+            UnparseVisitor.this.pw.println(" {");
+            UnparseVisitor.this.pw.print(AutoIndentWriter.INDENT);
+            UnparseVisitor.this.unparseClassDeclarationBody(acd);
+            UnparseVisitor.this.pw.print(AutoIndentWriter.UNINDENT + "}");
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitEnumConstant(EnumConstant ec) {
+
+            UnparseVisitor.this.unparseAnnotations(ec.getAnnotations());
+
+            UnparseVisitor.this.pw.append(ec.name);
+
+            if (ec.optionalArguments != null) {
+                UnparseVisitor.this.unparseFunctionInvocationArguments(ec.optionalArguments);
+            }
+
+            if (!UnparseVisitor.classDeclarationBodyIsEmpty(ec)) {
+                UnparseVisitor.this.pw.println(" {");
+                UnparseVisitor.this.pw.print(AutoIndentWriter.INDENT);
+                UnparseVisitor.this.unparseClassDeclarationBody(ec);
+                UnparseVisitor.this.pw.print(AutoIndentWriter.UNINDENT + "}");
+            }
+
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed) {
+            UnparseVisitor.this.unparseEnumDeclaration(pmed);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) {
+            UnparseVisitor.this.unparseAnnotationTypeDeclaration(matd);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) {
+            UnparseVisitor.this.unparseAnnotationTypeDeclaration(pmatd);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitMemberEnumDeclaration(MemberEnumDeclaration med) {
+            UnparseVisitor.this.unparseEnumDeclaration(med);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid) {
+            UnparseVisitor.this.unparseInterfaceDeclaration(mid);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitMemberClassDeclaration(Java.MemberClassDeclaration mcd) {
+            UnparseVisitor.this.unparseNamedClassDeclaration(mcd);
+            return null;
+        }
+    };
+
+    @Override @Nullable public Void
+    visitTypeDeclaration(TypeDeclaration td) {
+        td.accept(this.typeDeclarationUnparser);
+        return null;
+    }
 
     /**
      * Where the {@code visit...()} methods print their text. Noice that this {@link PrintWriter} does not print to
@@ -160,7 +255,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         if (!cu.importDeclarations.isEmpty()) {
             this.pw.println();
             for (Java.CompilationUnit.ImportDeclaration id : cu.importDeclarations) {
-                id.accept(this.importVisitor);
+                id.accept(this.importUnparser);
             }
         }
 
@@ -172,17 +267,11 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     }
 
     @Override @Nullable public Void
-    visitImportDeclaration(ImportDeclaration id) { return id.accept(this.importVisitor); }
+    visitImportDeclaration(ImportDeclaration id) { return id.accept(this.importUnparser); }
 
     @Override @Nullable public Void
     visitAnnotation(Annotation a) {
         return a.accept((Visitor.AnnotationVisitor<Void, RuntimeException>) this);
-    }
-
-    @Override @Nullable public Void
-    visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) {
-        this.unparseNamedClassDeclaration(lcd);
-        return null;
     }
 
     @Override @Nullable public Void
@@ -194,18 +283,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     @Override @Nullable public Void
     visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid) {
         this.unparseInterfaceDeclaration(mid);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd) {
-        this.unparseNamedClassDeclaration(apmcd);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) {
-        this.unparseInterfaceDeclaration(pmid);
         return null;
     }
 
@@ -877,7 +954,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     unparseBlockStatement(Java.BlockStatement blockStatement) { blockStatement.accept(this); }
 
     private void
-    unparseTypeDeclaration(Java.TypeDeclaration typeDeclaration) { typeDeclaration.accept(this); }
+    unparseTypeDeclaration(Java.TypeDeclaration td) { td.accept(this.typeDeclarationUnparser); }
 
     private void
     unparseType(Java.Type type) { ((Java.Atom) type).accept(this); }
@@ -1087,16 +1164,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         }
     }
 
-    @Override @Nullable public Void
-    visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) {
-        this.unparseType(acd.baseType);
-        this.pw.println(" {");
-        this.pw.print(AutoIndentWriter.INDENT);
-        this.unparseClassDeclarationBody(acd);
-        this.pw.print(AutoIndentWriter.UNINDENT + "}");
-        return null;
-    }
-
     // Multi-line!
     private void
     unparseClassDeclarationBody(Java.AbstractClassDeclaration cd) {
@@ -1283,35 +1350,8 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     }
 
     @Override @Nullable public Void
-    visitEnumConstant(EnumConstant ec) {
-
-        this.unparseAnnotations(ec.getAnnotations());
-
-        this.pw.append(ec.name);
-
-        if (ec.optionalArguments != null) {
-            this.unparseFunctionInvocationArguments(ec.optionalArguments);
-        }
-
-        if (!UnparseVisitor.classDeclarationBodyIsEmpty(ec)) {
-            this.pw.println(" {");
-            this.pw.print(AutoIndentWriter.INDENT);
-            this.unparseClassDeclarationBody(ec);
-            this.pw.print(AutoIndentWriter.UNINDENT + "}");
-        }
-
-        return null;
-    }
-
-    @Override @Nullable public Void
     visitMemberEnumDeclaration(MemberEnumDeclaration med) {
         this.unparseEnumDeclaration(med);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed) {
-        this.unparseEnumDeclaration(pmed);
         return null;
     }
 
@@ -1331,7 +1371,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         Iterator<EnumConstant> it = ed.getConstants().iterator();
         if (it.hasNext()) {
             for (;;) {
-                this.visitEnumConstant(it.next());
+                this.typeDeclarationUnparser.visitEnumConstant(it.next());
 
                 if (!it.hasNext()) break;
                 this.pw.print(", ");
@@ -1341,18 +1381,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         this.pw.println(';');
         this.unparseClassDeclarationBody((Java.AbstractClassDeclaration) ed);
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
-    }
-
-    @Override @Nullable public Void
-    visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) {
-        this.unparseAnnotationTypeDeclaration(matd);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) {
-        this.unparseAnnotationTypeDeclaration(pmatd);
-        return null;
     }
 
     private void
