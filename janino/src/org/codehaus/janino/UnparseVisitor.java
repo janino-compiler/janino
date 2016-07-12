@@ -49,10 +49,13 @@ import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
+import org.codehaus.janino.Java.ConstructorDeclarator;
 import org.codehaus.janino.Java.ConstructorInvocation;
 import org.codehaus.janino.Java.EnumConstant;
+import org.codehaus.janino.Java.FunctionDeclarator;
 import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.MemberEnumDeclaration;
+import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
@@ -93,6 +96,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             return null;
         }
     };
+
     /**
      * Where the {@code visit...()} methods print their text. Noice that this {@link PrintWriter} does not print to
      * the output directly, but through an {@link AutoIndentWriter}.
@@ -211,7 +215,17 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     }
 
     @Override @Nullable public Void
-    visitConstructorDeclarator(Java.ConstructorDeclarator cd) {
+    visitFunctionDeclarator(FunctionDeclarator fd) {
+        return fd.accept(new Visitor.FunctionDeclaratorVisitor<Void, RuntimeException>() {
+
+            // SUPPRESS CHECKSTYLE LineLength:2
+            @Override @Nullable public Void visitConstructorDeclarator(ConstructorDeclarator cd) { UnparseVisitor.this.unparseConstructorDeclarator(cd); return null; }
+            @Override @Nullable public Void visitMethodDeclarator(MethodDeclarator md)           { UnparseVisitor.this.unparseMethodDeclarator(md);      return null; }
+        });
+    }
+
+    private void
+    unparseConstructorDeclarator(Java.ConstructorDeclarator cd) {
 
         this.unparseDocComment(cd);
         this.unparseAnnotations(cd.modifiers.annotations);
@@ -227,7 +241,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         List<? extends BlockStatement> oss = cd.optionalStatements;
         if (oss == null) {
             this.pw.print(';');
-            return null;
+            return;
         }
 
         this.pw.print(' ');
@@ -254,12 +268,10 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             this.unparseStatements(oss);
             this.pw.print(AutoIndentWriter.UNINDENT + "}");
         }
-
-        return null;
     }
 
-    @Override @Nullable public Void
-    visitMethodDeclarator(Java.MethodDeclarator md) {
+    private void
+    unparseMethodDeclarator(Java.MethodDeclarator md) {
 
         // For methods declared as members of an *interface*, the default access flags are "public abstract".
         boolean declaringTypeIsInterface = md.getDeclaringType() instanceof Java.InterfaceDeclaration;
@@ -287,7 +299,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
             this.pw.print(AutoIndentWriter.UNINDENT);
             this.pw.print('}');
         }
-        return null;
     }
 
     @Override @Nullable public Void

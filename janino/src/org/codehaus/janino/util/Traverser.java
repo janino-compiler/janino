@@ -78,9 +78,17 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid) throws EX                           { Traverser.this.traverseMemberInterfaceDeclaration(mid); return null; }
         @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) throws EX            { Traverser.this.traversePackageMemberInterfaceDeclaration(pmid); return null; }
         @Override @Nullable public Void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd) throws EX                                   { Traverser.this.traverseMemberClassDeclaration(mcd); return null; }
-        @Override @Nullable public Void visitConstructorDeclarator(Java.ConstructorDeclarator cd) throws EX                                      { Traverser.this.traverseConstructorDeclarator(cd); return null; }
+
+        @Override @Nullable public Void
+        visitFunctionDeclarator(Java.FunctionDeclarator fd) throws EX {
+            fd.accept(new Visitor.FunctionDeclaratorVisitor<Void, EX>() {
+                @Override @Nullable public Void visitConstructorDeclarator(Java.ConstructorDeclarator cd) throws EX { Traverser.this.traverseConstructorDeclarator(cd); return null; }
+                @Override @Nullable public Void visitMethodDeclarator(Java.MethodDeclarator md)           throws EX { Traverser.this.traverseMethodDeclarator(md);      return null; }
+            });
+            return null;
+        }
+
         @Override @Nullable public Void visitInitializer(Java.Initializer i) throws EX                                                           { Traverser.this.traverseInitializer(i); return null; }
-        @Override @Nullable public Void visitMethodDeclarator(Java.MethodDeclarator md) throws EX                                                { Traverser.this.traverseMethodDeclarator(md); return null; }
         @Override @Nullable public Void visitFieldDeclaration(Java.FieldDeclaration fd) throws EX                                                { Traverser.this.traverseFieldDeclaration(fd); return null; }
         @Override @Nullable public Void visitLabeledStatement(Java.LabeledStatement ls) throws EX                                                { Traverser.this.traverseLabeledStatement(ls); return null; }
         @Override @Nullable public Void visitBlock(Java.Block b) throws EX                                                                       { Traverser.this.traverseBlock(b); return null; }

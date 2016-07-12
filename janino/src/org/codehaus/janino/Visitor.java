@@ -137,7 +137,7 @@ class Visitor {
      * @param <EX> The exception that the {@code visit*()} methods may throw
      */
     public
-    interface TypeBodyDeclarationVisitor<R, EX extends Throwable> extends FunctionDeclaratorVisitor<R, EX> {
+    interface TypeBodyDeclarationVisitor<R, EX extends Throwable> {
         /** Invoked by {@link Java.MemberInterfaceDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)} */
         @Nullable R visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid) throws EX;
         /** Invoked by {@link Java.MemberClassDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)} */
@@ -148,6 +148,8 @@ class Visitor {
         @Nullable R visitFieldDeclaration(Java.FieldDeclaration fd) throws EX;
         /** Invoked by {@link Java.MemberEnumDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)} */
         @Nullable R visitMemberEnumDeclaration(Java.MemberEnumDeclaration med) throws EX;
+        /** Invoked by {@link Java.FunctionDeclarator#accept(FunctionDeclaratorVisitor)}. */
+        @Nullable R visitFunctionDeclarator(Java.FunctionDeclarator fd) throws EX;
     }
 
     /**

@@ -2079,7 +2079,7 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitConstructorDeclarator(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitFunctionDeclarator(this);    }
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX  { return visitor.visitConstructorDeclarator(this); }
     }
 
@@ -2170,8 +2170,8 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMethodDeclarator(this); }
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX  { return visitor.visitMethodDeclarator(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitFunctionDeclarator(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX  { return visitor.visitMethodDeclarator(this);   }
 
         @Nullable private final TypeParameter[] optionalTypeParameters;
 
