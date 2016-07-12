@@ -5703,15 +5703,21 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
         IClass result = (IClass) a.accept(new AtomVisitor<IClass, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:46
-            // AtomVisitor
-            @Override public IClass visitPackage(Package p) throws CompileException { return UnitCompiler.this.getType2(p); }
-            // TypeVisitor
-            @Override public IClass visitArrayType(ArrayType at) throws CompileException                { return UnitCompiler.this.getType2(at);  }
-            @Override public IClass visitPrimitiveType(PrimitiveType bt)                                { return UnitCompiler.this.getType2(bt);  }
-            @Override public IClass visitReferenceType(ReferenceType rt) throws CompileException        { return UnitCompiler.this.getType2(rt);  }
-            @Override public IClass visitRvalueMemberType(RvalueMemberType rmt) throws CompileException { return UnitCompiler.this.getType2(rmt); }
-            @Override public IClass visitSimpleType(SimpleType st)                                      { return UnitCompiler.this.getType2(st);  }
+            @Override public IClass
+            visitPackage(Package p) throws CompileException { return UnitCompiler.this.getType2(p); }
+
+            @Override @Nullable public IClass
+            visitType(Type t) throws CompileException {
+                return (IClass) t.accept(new Visitor.TypeVisitor<IClass, CompileException>() {
+
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:5
+                    @Override public IClass visitArrayType(ArrayType at) throws CompileException                { return UnitCompiler.this.getType2(at);  }
+                    @Override public IClass visitPrimitiveType(PrimitiveType bt)                                { return UnitCompiler.this.getType2(bt);  }
+                    @Override public IClass visitReferenceType(ReferenceType rt) throws CompileException        { return UnitCompiler.this.getType2(rt);  }
+                    @Override public IClass visitRvalueMemberType(RvalueMemberType rmt) throws CompileException { return UnitCompiler.this.getType2(rmt); }
+                    @Override public IClass visitSimpleType(SimpleType st)                                      { return UnitCompiler.this.getType2(st);  }
+                });
+            }
 
             @Override @Nullable public IClass
             visitRvalue(Rvalue rv) throws CompileException {
@@ -6417,15 +6423,21 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
         Boolean result = (Boolean) a.accept(new AtomVisitor<Boolean, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:46
-            // AtomVisitor
             @Override public Boolean visitPackage(Package p) { return UnitCompiler.this.isType2(p); }
-            // TypeVisitor
-            @Override public Boolean visitArrayType(ArrayType at)                { return UnitCompiler.this.isType2(at);  }
-            @Override public Boolean visitPrimitiveType(PrimitiveType bt)        { return UnitCompiler.this.isType2(bt);  }
-            @Override public Boolean visitReferenceType(ReferenceType rt)        { return UnitCompiler.this.isType2(rt);  }
-            @Override public Boolean visitRvalueMemberType(RvalueMemberType rmt) { return UnitCompiler.this.isType2(rmt); }
-            @Override public Boolean visitSimpleType(SimpleType st)              { return UnitCompiler.this.isType2(st);  }
+
+
+            @Override @Nullable public Boolean
+            visitType(Type t) {
+                return (Boolean) t.accept(new Visitor.TypeVisitor<Boolean, RuntimeException>() {
+
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:5
+                    @Override public Boolean visitArrayType(ArrayType at)                { return UnitCompiler.this.isType2(at);  }
+                    @Override public Boolean visitPrimitiveType(PrimitiveType bt)        { return UnitCompiler.this.isType2(bt);  }
+                    @Override public Boolean visitReferenceType(ReferenceType rt)        { return UnitCompiler.this.isType2(rt);  }
+                    @Override public Boolean visitRvalueMemberType(RvalueMemberType rmt) { return UnitCompiler.this.isType2(rmt); }
+                    @Override public Boolean visitSimpleType(SimpleType st)              { return UnitCompiler.this.isType2(st);  }
+                });
+            }
 
             @Override @Nullable public Boolean
             visitRvalue(Rvalue rv) throws CompileException {

@@ -3252,7 +3252,7 @@ class Java {
         toString() { return this.iClass.toString(); }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitSimpleType(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);       }
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitSimpleType(this); }
     }
 
@@ -3299,7 +3299,7 @@ class Java {
 
         // SUPPRESS CHECKSTYLE LineLength:2
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitPrimitiveType(this); }
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitPrimitiveType(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);          }
 
         /** Value representing the VOID type. */
         public static final int VOID = 0;
@@ -3355,7 +3355,7 @@ class Java {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitReferenceType(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);          }
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitReferenceType(this); }
         @Override @Nullable public <R, EX extends Throwable> R accept(TypeArgumentVisitor<R, EX> visitor) throws EX { return visitor.visitReferenceType(this); }
     }
@@ -3397,7 +3397,7 @@ class Java {
         toString() { return this.identifier; }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitRvalueMemberType(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);             }
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitRvalueMemberType(this); }
     }
 
@@ -3424,7 +3424,7 @@ class Java {
         toString() { return this.componentType.toString() + "[]"; }
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitArrayType(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);      }
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitArrayType(this); }
         @Override @Nullable public <R, EX extends Throwable> R accept(TypeArgumentVisitor<R, EX> visitor) throws EX { return visitor.visitArrayType(this); }
     }

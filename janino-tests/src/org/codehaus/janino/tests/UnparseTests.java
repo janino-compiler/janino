@@ -61,6 +61,7 @@ import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.LocalVariableAccess;
 import org.codehaus.janino.Java.Locatable;
 import org.codehaus.janino.Java.Located;
+import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
@@ -175,6 +176,53 @@ class UnparseTests {
     stripUnnecessaryParenExprs(Java.Rvalue rvalue) {
 
         Java.Rvalue result = rvalue.accept(new Visitor.RvalueVisitor<Rvalue, RuntimeException>() {
+
+            @Override @Nullable public Rvalue
+            visitLvalue(Lvalue lv) {
+                return lv.accept(new Visitor.LvalueVisitor<Rvalue, RuntimeException>() {
+
+                    @Override public Rvalue
+                    visitAmbiguousName(AmbiguousName an) { return an; }
+
+                    @Override public Rvalue
+                    visitArrayAccessExpression(ArrayAccessExpression aae) {
+                        return new Java.ArrayAccessExpression(
+                            aae.getLocation(),
+                            UnparseTests.stripUnnecessaryParenExprs(aae.lhs),
+                            UnparseTests.stripUnnecessaryParenExprs(aae.index)
+                        );
+                    }
+
+                    @Override public Rvalue
+                    visitFieldAccess(FieldAccess fa) {
+                        return new Java.FieldAccess(
+                            fa.getLocation(),
+                            UnparseTests.stripUnnecessaryParenExprs(fa.lhs),
+                            fa.field
+                        );
+                    }
+
+                    @Override public Rvalue
+                    visitFieldAccessExpression(FieldAccessExpression fae) {
+                        return new Java.FieldAccessExpression(
+                            fae.getLocation(),
+                            UnparseTests.stripUnnecessaryParenExprs(fae.lhs),
+                            fae.fieldName
+                        );
+                    }
+
+                    @Override public Rvalue
+                    visitLocalVariableAccess(LocalVariableAccess lva) { return lva; }
+
+                    @Override public Rvalue
+                    visitParenthesizedExpression(ParenthesizedExpression pe) {
+                        return UnparseTests.stripUnnecessaryParenExprs(pe.value);
+                    }
+
+                    @Override public Rvalue
+                    visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return scfae; }
+                });
+            }
 
             @Override public Rvalue
             visitArrayLength(ArrayLength al) {
@@ -331,48 +379,6 @@ class UnparseTests {
                     UnparseTests.stripUnnecessaryParenExprs(uo.operand)
                 );
             }
-
-            @Override public Rvalue
-            visitAmbiguousName(AmbiguousName an) { return an; }
-
-            @Override public Rvalue
-            visitArrayAccessExpression(ArrayAccessExpression aae) {
-                return new Java.ArrayAccessExpression(
-                    aae.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprs(aae.lhs),
-                    UnparseTests.stripUnnecessaryParenExprs(aae.index)
-                );
-            }
-
-            @Override public Rvalue
-            visitFieldAccess(FieldAccess fa) {
-                return new Java.FieldAccess(
-                    fa.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprs(fa.lhs),
-                    fa.field
-                );
-            }
-
-            @Override public Rvalue
-            visitFieldAccessExpression(FieldAccessExpression fae) {
-                return new Java.FieldAccessExpression(
-                    fae.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprs(fae.lhs),
-                    fae.fieldName
-                );
-            }
-
-            @Override public Rvalue
-            visitLocalVariableAccess(LocalVariableAccess lva) { return lva; }
-
-            @Override public Rvalue
-            visitParenthesizedExpression(ParenthesizedExpression pe) {
-                return UnparseTests.stripUnnecessaryParenExprs(pe.value);
-            }
-
-            @Override public Rvalue
-            visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return scfae; }
-
         });
 
         assert result != null;

@@ -297,9 +297,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
             @Nullable private Java.SimpleType delegate;
 
-            // SUPPRESS CHECKSTYLE LineLength:2
-            @Override @Nullable public <R, EX extends Throwable> R accept(AtomVisitor<R, EX> visitor) throws EX { return this.getDelegate().accept((TypeVisitor<R, EX>) visitor); }
-            @Override @Nullable public <R, EX extends Throwable> R accept(TypeVisitor<R, EX> visitor) throws EX { return this.getDelegate().accept(visitor); }
+            @Override @Nullable public <R, EX extends Throwable> R
+            accept(AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this.getDelegate()); }
+
+            @Override @Nullable public <R, EX extends Throwable> R
+            accept(TypeVisitor<R, EX> visitor) throws EX { return this.getDelegate().accept(visitor); }
 
             @Override public String toString() { return this.getDelegate().toString(); }
 

@@ -31,6 +31,7 @@ import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.Lvalue;
+import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Visitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
@@ -187,15 +188,30 @@ class Traverser<EX extends Throwable> {
     atomTraverser = new Visitor.AtomVisitor<Void, EX>() {
 
         @Override @Nullable public Void
-        visitRvalue(Java.Rvalue rv) throws EX { rv.accept(Traverser.this.rvalueTraverser); return null; }
+        visitRvalue(Java.Rvalue rv) throws EX {
+            rv.accept(Traverser.this.rvalueTraverser);
+            return null;
+        }
 
-        // SUPPRESS CHECKSTYLE LineLength:6
-        @Override @Nullable public Void visitPackage(Java.Package p)                     throws EX { Traverser.this.traversePackage(p);            return null; }
-        @Override @Nullable public Void visitArrayType(Java.ArrayType at)                throws EX { Traverser.this.traverseArrayType(at);         return null; }
-        @Override @Nullable public Void visitPrimitiveType(Java.PrimitiveType bt)        throws EX { Traverser.this.traversePrimitiveType(bt);     return null; }
-        @Override @Nullable public Void visitReferenceType(Java.ReferenceType rt)        throws EX { Traverser.this.traverseReferenceType(rt);     return null; }
-        @Override @Nullable public Void visitRvalueMemberType(Java.RvalueMemberType rmt) throws EX { Traverser.this.traverseRvalueMemberType(rmt); return null; }
-        @Override @Nullable public Void visitSimpleType(Java.SimpleType st)              throws EX { Traverser.this.traverseSimpleType(st);        return null; }
+        @Override @Nullable public Void
+        visitPackage(Java.Package p) throws EX {
+            Traverser.this.traversePackage(p);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitType(Type t) throws EX {
+            t.accept(new Visitor.TypeVisitor<Void, EX>() {
+
+                // SUPPRESS CHECKSTYLE LineLength:5
+                @Override @Nullable public Void visitArrayType(Java.ArrayType at)                throws EX { Traverser.this.traverseArrayType(at);         return null; }
+                @Override @Nullable public Void visitPrimitiveType(Java.PrimitiveType bt)        throws EX { Traverser.this.traversePrimitiveType(bt);     return null; }
+                @Override @Nullable public Void visitReferenceType(Java.ReferenceType rt)        throws EX { Traverser.this.traverseReferenceType(rt);     return null; }
+                @Override @Nullable public Void visitRvalueMemberType(Java.RvalueMemberType rmt) throws EX { Traverser.this.traverseRvalueMemberType(rmt); return null; }
+                @Override @Nullable public Void visitSimpleType(Java.SimpleType st)              throws EX { Traverser.this.traverseSimpleType(st);        return null; }
+            });
+            return null;
+        }
     };
 
     private final ElementValueVisitor<Void, EX>

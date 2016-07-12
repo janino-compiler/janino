@@ -517,27 +517,47 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     private final Visitor.AtomVisitor<Void, RuntimeException>
     atomUnparser = new Visitor.AtomVisitor<Void, RuntimeException>() {
 
+
         @Override @Nullable public Void
-        visitArrayType(Java.ArrayType at) {
-            UnparseVisitor.this.unparseType(at.componentType);
-            UnparseVisitor.this.pw.print("[]");
+        visitType(Type t) {
+            t.accept(new Visitor.TypeVisitor<Void, RuntimeException>() {
+
+                @Override @Nullable public Void
+                visitArrayType(Java.ArrayType at) {
+                    UnparseVisitor.this.unparseType(at.componentType);
+                    UnparseVisitor.this.pw.print("[]");
+                    return null;
+                }
+
+                @Override @Nullable public Void
+                visitPrimitiveType(Java.PrimitiveType bt) {
+                    UnparseVisitor.this.pw.print(bt.toString());
+                    return null;
+                }
+
+                @Override @Nullable public Void
+                visitReferenceType(Java.ReferenceType rt) {
+                    UnparseVisitor.this.pw.print(rt.toString());
+                    return null;
+                }
+
+                @Override @Nullable public Void
+                visitRvalueMemberType(Java.RvalueMemberType rmt) {
+                    UnparseVisitor.this.pw.print(rmt.toString());
+                    return null;
+                }
+
+                @Override @Nullable public Void
+                visitSimpleType(Java.SimpleType st) {
+                    UnparseVisitor.this.pw.print(st.toString());
+                    return null;
+                }
+            });
             return null;
         }
 
         @Override @Nullable public Void
-        visitPrimitiveType(Java.PrimitiveType bt) { UnparseVisitor.this.pw.print(bt.toString()); return null; }
-
-        @Override @Nullable public Void
         visitPackage(Java.Package p) { UnparseVisitor.this.pw.print(p.toString()); return null; }
-
-        @Override @Nullable public Void
-        visitReferenceType(Java.ReferenceType rt) { UnparseVisitor.this.pw.print(rt.toString()); return null; }
-
-        @Override @Nullable public Void
-        visitRvalueMemberType(Java.RvalueMemberType rmt) { UnparseVisitor.this.pw.print(rmt.toString()); return null; }
-
-        @Override @Nullable public Void
-        visitSimpleType(Java.SimpleType st) { UnparseVisitor.this.pw.print(st.toString()); return null; }
 
         @Override @Nullable public Void
         visitRvalue(Java.Rvalue rv) {
