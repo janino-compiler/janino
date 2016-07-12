@@ -67,6 +67,7 @@ import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeBodyDeclaration;
 import org.codehaus.janino.Java.TypeDeclaration;
+import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.util.AutoIndentWriter;
 
 /**
@@ -773,6 +774,12 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         }
     };
 
+    @Override @Nullable public Void
+    visitAtom(Atom a) {
+        a.accept(this.atomUnparser);
+        return null;
+    }
+
     private final Visitor.ElementValueVisitor<Void, RuntimeException>
     elementValueUnparser = new Visitor.ElementValueVisitor<Void, RuntimeException>() {
 
@@ -784,7 +791,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
 
         @Override @Nullable public Void
         visitAnnotation(Annotation a) {
-            a.accept(UnparseVisitor.this);
+            a.accept(UnparseVisitor.this.annotationUnparser);
             return null;
         }
 
@@ -812,9 +819,43 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         return null;
     }
 
+    private final AnnotationVisitor<Void, RuntimeException>
+    annotationUnparser = new AnnotationVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitMarkerAnnotation(Java.MarkerAnnotation ma) {
+            UnparseVisitor.this.pw.append('@').append(ma.type.toString()).append(' ');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitNormalAnnotation(Java.NormalAnnotation na) {
+            UnparseVisitor.this.pw.append('@').append(na.type.toString()).append('(');
+            for (int i = 0; i < na.elementValuePairs.length; i++) {
+                Java.ElementValuePair evp = na.elementValuePairs[i];
+
+                if (i > 0) UnparseVisitor.this.pw.print(", ");
+
+                UnparseVisitor.this.pw.append(evp.identifier).append(" = ");
+
+                evp.elementValue.accept(UnparseVisitor.this.elementValueUnparser);
+            }
+            UnparseVisitor.this.pw.append(") ");
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitSingleElementAnnotation(Java.SingleElementAnnotation sea) {
+            UnparseVisitor.this.pw.append('@').append(sea.type.toString()).append('(');
+            sea.elementValue.accept(UnparseVisitor.this.elementValueUnparser);
+            UnparseVisitor.this.pw.append(") ");
+            return null;
+        }
+    };
+
     @Override @Nullable public Void
-    visitAtom(Atom a) {
-        a.accept(this.atomUnparser);
+    visitAnnotation(Annotation a) {
+        a.accept(this.annotationUnparser);
         return null;
     }
 
@@ -1356,7 +1397,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
 
     private void
     unparseAnnotations(Java.Annotation[] annotations) {
-        for (Annotation a : annotations) a.accept((Visitor.AnnotationVisitor<Void, RuntimeException>) this);
+        for (Annotation a : annotations) a.accept(this.annotationUnparser);
     }
 
     private void
@@ -1384,36 +1425,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         }
         if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.UNINDENT); }
         this.pw.print(')');
-    }
-
-    @Override @Nullable public Void
-    visitMarkerAnnotation(Java.MarkerAnnotation ma) {
-        this.pw.append('@').append(ma.type.toString()).append(' ');
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitNormalAnnotation(Java.NormalAnnotation na) {
-        this.pw.append('@').append(na.type.toString()).append('(');
-        for (int i = 0; i < na.elementValuePairs.length; i++) {
-            Java.ElementValuePair evp = na.elementValuePairs[i];
-
-            if (i > 0) this.pw.print(", ");
-
-            this.pw.append(evp.identifier).append(" = ");
-
-            evp.elementValue.accept(this.elementValueUnparser);
-        }
-        this.pw.append(") ");
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitSingleElementAnnotation(Java.SingleElementAnnotation sea) {
-        this.pw.append('@').append(sea.type.toString()).append('(');
-        sea.elementValue.accept(this.elementValueUnparser);
-        this.pw.append(") ");
-        return null;
     }
 
     private void

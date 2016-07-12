@@ -46,8 +46,7 @@ class Visitor {
      */
     // SUPPRESS CHECKSTYLE WrapAndIndent:4
     public
-    interface ComprehensiveVisitor<R, EX extends Throwable>
-    extends AnnotationVisitor<R, EX> {
+    interface ComprehensiveVisitor<R, EX extends Throwable> {
 
         /** Invoked by {@link Java.CompilationUnit.ImportDeclaration#accept(ImportVisitor)}. */
         @Nullable R
@@ -72,6 +71,10 @@ class Visitor {
         /** Invoked by {@link Java.ElementValue#accept(ElementValueVisitor)}. */
         @Nullable R
         visitElementValue(Java.ElementValue ev) throws EX;
+
+        /** Invoked by {@link Java.Annotation#accept(AnnotationVisitor)}. */
+        @Nullable R
+        visitAnnotation(Java.Annotation a) throws EX;
     }
 
     /**
