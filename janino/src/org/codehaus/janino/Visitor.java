@@ -215,9 +215,11 @@ class Visitor {
      * @param <EX> The exception that the {@code visit*()} methods may throw
      */
     public
-    interface AtomVisitor<R, EX extends Throwable> extends RvalueVisitor<R, EX>, TypeVisitor<R, EX> {
+    interface AtomVisitor<R, EX extends Throwable> extends TypeVisitor<R, EX> {
         /** Invoked by {@link Java.Package#accept(Visitor.AtomVisitor)}. */
         @Nullable R visitPackage(Java.Package p) throws EX;
+        /** Invoked by {@link Java.Rvalue#accept(Visitor.RvalueVisitor)}. */
+        @Nullable R visitRvalue(Java.Rvalue rv) throws EX;
     }
 
     /**

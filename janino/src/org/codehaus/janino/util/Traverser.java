@@ -67,10 +67,64 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitStaticImportOnDemandDeclaration(Java.CompilationUnit.StaticImportOnDemandDeclaration siodd) throws EX { Traverser.this.traverseStaticImportOnDemandDeclaration(siodd); return null; }
     };
 
+    private final Visitor.RvalueVisitor<Void, EX>
+    rvalueVisitor = new Visitor.RvalueVisitor<Void, EX>() {
+
+        // SUPPRESS CHECKSTYLE LineLength:32
+        @Override @Nullable public Void visitArrayLength(Java.ArrayLength al) throws EX                                            { Traverser.this.traverseArrayLength(al);                        return null; }
+        @Override @Nullable public Void visitAssignment(Java.Assignment a) throws EX                                               { Traverser.this.traverseAssignment(a);                          return null; }
+        @Override @Nullable public Void visitUnaryOperation(Java.UnaryOperation uo) throws EX                                      { Traverser.this.traverseUnaryOperation(uo);                     return null; }
+        @Override @Nullable public Void visitBinaryOperation(Java.BinaryOperation bo) throws EX                                    { Traverser.this.traverseBinaryOperation(bo);                    return null; }
+        @Override @Nullable public Void visitCast(Java.Cast c) throws EX                                                           { Traverser.this.traverseCast(c);                                return null; }
+        @Override @Nullable public Void visitClassLiteral(Java.ClassLiteral cl) throws EX                                          { Traverser.this.traverseClassLiteral(cl);                       return null; }
+        @Override @Nullable public Void visitConditionalExpression(Java.ConditionalExpression ce) throws EX                        { Traverser.this.traverseConditionalExpression(ce);              return null; }
+        @Override @Nullable public Void visitCrement(Java.Crement c) throws EX                                                     { Traverser.this.traverseCrement(c);                             return null; }
+        @Override @Nullable public Void visitInstanceof(Java.Instanceof io) throws EX                                              { Traverser.this.traverseInstanceof(io);                         return null; }
+        @Override @Nullable public Void visitMethodInvocation(Java.MethodInvocation mi) throws EX                                  { Traverser.this.traverseMethodInvocation(mi);                   return null; }
+        @Override @Nullable public Void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) throws EX             { Traverser.this.traverseSuperclassMethodInvocation(smi);        return null; }
+        @Override @Nullable public Void visitIntegerLiteral(Java.IntegerLiteral il) throws EX                                      { Traverser.this.traverseIntegerLiteral(il);                     return null; }
+        @Override @Nullable public Void visitFloatingPointLiteral(Java.FloatingPointLiteral fpl) throws EX                         { Traverser.this.traverseFloatingPointLiteral(fpl);              return null; }
+        @Override @Nullable public Void visitBooleanLiteral(Java.BooleanLiteral bl) throws EX                                      { Traverser.this.traverseBooleanLiteral(bl);                     return null; }
+        @Override @Nullable public Void visitCharacterLiteral(Java.CharacterLiteral cl) throws EX                                  { Traverser.this.traverseCharacterLiteral(cl);                   return null; }
+        @Override @Nullable public Void visitStringLiteral(Java.StringLiteral sl) throws EX                                        { Traverser.this.traverseStringLiteral(sl);                      return null; }
+        @Override @Nullable public Void visitNullLiteral(Java.NullLiteral nl) throws EX                                            { Traverser.this.traverseNullLiteral(nl);                        return null; }
+        @Override @Nullable public Void visitSimpleConstant(Java.SimpleConstant sl) throws EX                                      { Traverser.this.traverseSimpleLiteral(sl);                      return null; }
+        @Override @Nullable public Void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) throws EX              { Traverser.this.traverseNewAnonymousClassInstance(naci);        return null; }
+        @Override @Nullable public Void visitNewArray(Java.NewArray na) throws EX                                                  { Traverser.this.traverseNewArray(na);                           return null; }
+        @Override @Nullable public Void visitNewInitializedArray(Java.NewInitializedArray nia) throws EX                           { Traverser.this.traverseNewInitializedArray(nia);               return null; }
+        @Override @Nullable public Void visitNewClassInstance(Java.NewClassInstance nci) throws EX                                 { Traverser.this.traverseNewClassInstance(nci);                  return null; }
+        @Override @Nullable public Void visitParameterAccess(Java.ParameterAccess pa) throws EX                                    { Traverser.this.traverseParameterAccess(pa);                    return null; }
+        @Override @Nullable public Void visitQualifiedThisReference(Java.QualifiedThisReference qtr) throws EX                     { Traverser.this.traverseQualifiedThisReference(qtr);            return null; }
+        @Override @Nullable public Void visitThisReference(Java.ThisReference tr) throws EX                                        { Traverser.this.traverseThisReference(tr);                      return null; }
+        @Override @Nullable public Void visitAmbiguousName(Java.AmbiguousName an) throws EX                                        { Traverser.this.traverseAmbiguousName(an);                      return null; }
+        @Override @Nullable public Void visitArrayAccessExpression(Java.ArrayAccessExpression aae) throws EX                       { Traverser.this.traverseArrayAccessExpression(aae);             return null; }
+        @Override @Nullable public Void visitFieldAccess(Java.FieldAccess fa) throws EX                                            { Traverser.this.traverseFieldAccess(fa);                        return null; }
+        @Override @Nullable public Void visitFieldAccessExpression(Java.FieldAccessExpression fae) throws EX                       { Traverser.this.traverseFieldAccessExpression(fae);             return null; }
+        @Override @Nullable public Void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) throws EX { Traverser.this.traverseSuperclassFieldAccessExpression(scfae); return null; }
+        @Override @Nullable public Void visitLocalVariableAccess(Java.LocalVariableAccess lva) throws EX                           { Traverser.this.traverseLocalVariableAccess(lva);               return null; }
+        @Override @Nullable public Void visitParenthesizedExpression(Java.ParenthesizedExpression pe) throws EX                    { Traverser.this.traverseParenthesizedExpression(pe);            return null; }
+    };
+
     private final Visitor.ComprehensiveVisitor<Void, EX> cv = new Visitor.ComprehensiveVisitor<Void, EX>() {
 
-        // CHECKSTYLE LineLengthCheck:OFF
-        @Override @Nullable public Void visitRvalue(Rvalue rv) throws EX                                                                         { return (Void) rv.accept((Visitor.RvalueVisitor<Void, EX>) this); }
+        @Override @Nullable public Void
+        visitRvalue(Rvalue rv) throws EX {
+            rv.accept(Traverser.this.rvalueVisitor);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitFunctionDeclarator(Java.FunctionDeclarator fd) throws EX {
+            fd.accept(new Visitor.FunctionDeclaratorVisitor<Void, EX>() {
+
+                // SUPPRESS CHECKSTYLE LineLength:2
+                @Override @Nullable public Void visitConstructorDeclarator(Java.ConstructorDeclarator cd) throws EX { Traverser.this.traverseConstructorDeclarator(cd); return null; }
+                @Override @Nullable public Void visitMethodDeclarator(Java.MethodDeclarator md)           throws EX { Traverser.this.traverseMethodDeclarator(md);      return null; }
+            });
+            return null;
+        }
+
+        // SUPPRESS CHECKSTYLE LineLength:7
         @Override @Nullable public Void visitImportDeclaration(ImportDeclaration id) throws EX                                                   { return (Void) id.accept(Traverser.this.importTraverser); }
         @Override @Nullable public Void visitAnonymousClassDeclaration(Java.AnonymousClassDeclaration acd) throws EX                             { Traverser.this.traverseAnonymousClassDeclaration(acd); return null; }
         @Override @Nullable public Void visitLocalClassDeclaration(Java.LocalClassDeclaration lcd) throws EX                                     { Traverser.this.traverseLocalClassDeclaration(lcd); return null; }
@@ -79,15 +133,7 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(Java.PackageMemberInterfaceDeclaration pmid) throws EX            { Traverser.this.traversePackageMemberInterfaceDeclaration(pmid); return null; }
         @Override @Nullable public Void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd) throws EX                                   { Traverser.this.traverseMemberClassDeclaration(mcd); return null; }
 
-        @Override @Nullable public Void
-        visitFunctionDeclarator(Java.FunctionDeclarator fd) throws EX {
-            fd.accept(new Visitor.FunctionDeclaratorVisitor<Void, EX>() {
-                @Override @Nullable public Void visitConstructorDeclarator(Java.ConstructorDeclarator cd) throws EX { Traverser.this.traverseConstructorDeclarator(cd); return null; }
-                @Override @Nullable public Void visitMethodDeclarator(Java.MethodDeclarator md)           throws EX { Traverser.this.traverseMethodDeclarator(md);      return null; }
-            });
-            return null;
-        }
-
+        // SUPPRESS CHECKSTYLE LineLength:39
         @Override @Nullable public Void visitInitializer(Java.Initializer i) throws EX                                                           { Traverser.this.traverseInitializer(i); return null; }
         @Override @Nullable public Void visitFieldDeclaration(Java.FieldDeclaration fd) throws EX                                                { Traverser.this.traverseFieldDeclaration(fd); return null; }
         @Override @Nullable public Void visitLabeledStatement(Java.LabeledStatement ls) throws EX                                                { Traverser.this.traverseLabeledStatement(ls); return null; }
@@ -110,31 +156,6 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitEmptyStatement(Java.EmptyStatement es) throws EX                                                    { Traverser.this.traverseEmptyStatement(es); return null; }
         @Override @Nullable public Void visitLocalClassDeclarationStatement(Java.LocalClassDeclarationStatement lcds) throws EX                  { Traverser.this.traverseLocalClassDeclarationStatement(lcds); return null; }
         @Override @Nullable public Void visitPackage(Java.Package p) throws EX                                                                   { Traverser.this.traversePackage(p); return null; }
-        @Override @Nullable public Void visitArrayLength(Java.ArrayLength al) throws EX                                                          { Traverser.this.traverseArrayLength(al); return null; }
-        @Override @Nullable public Void visitAssignment(Java.Assignment a) throws EX                                                             { Traverser.this.traverseAssignment(a); return null; }
-        @Override @Nullable public Void visitUnaryOperation(Java.UnaryOperation uo) throws EX                                                    { Traverser.this.traverseUnaryOperation(uo); return null; }
-        @Override @Nullable public Void visitBinaryOperation(Java.BinaryOperation bo) throws EX                                                  { Traverser.this.traverseBinaryOperation(bo); return null; }
-        @Override @Nullable public Void visitCast(Java.Cast c) throws EX                                                                         { Traverser.this.traverseCast(c); return null; }
-        @Override @Nullable public Void visitClassLiteral(Java.ClassLiteral cl) throws EX                                                        { Traverser.this.traverseClassLiteral(cl); return null; }
-        @Override @Nullable public Void visitConditionalExpression(Java.ConditionalExpression ce) throws EX                                      { Traverser.this.traverseConditionalExpression(ce); return null; }
-        @Override @Nullable public Void visitCrement(Java.Crement c) throws EX                                                                   { Traverser.this.traverseCrement(c); return null; }
-        @Override @Nullable public Void visitInstanceof(Java.Instanceof io) throws EX                                                            { Traverser.this.traverseInstanceof(io); return null; }
-        @Override @Nullable public Void visitMethodInvocation(Java.MethodInvocation mi) throws EX                                                { Traverser.this.traverseMethodInvocation(mi); return null; }
-        @Override @Nullable public Void visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) throws EX                           { Traverser.this.traverseSuperclassMethodInvocation(smi); return null; }
-        @Override @Nullable public Void visitIntegerLiteral(Java.IntegerLiteral il) throws EX                                                    { Traverser.this.traverseIntegerLiteral(il); return null; }
-        @Override @Nullable public Void visitFloatingPointLiteral(Java.FloatingPointLiteral fpl) throws EX                                       { Traverser.this.traverseFloatingPointLiteral(fpl); return null; }
-        @Override @Nullable public Void visitBooleanLiteral(Java.BooleanLiteral bl) throws EX                                                    { Traverser.this.traverseBooleanLiteral(bl); return null; }
-        @Override @Nullable public Void visitCharacterLiteral(Java.CharacterLiteral cl) throws EX                                                { Traverser.this.traverseCharacterLiteral(cl); return null; }
-        @Override @Nullable public Void visitStringLiteral(Java.StringLiteral sl) throws EX                                                      { Traverser.this.traverseStringLiteral(sl); return null; }
-        @Override @Nullable public Void visitNullLiteral(Java.NullLiteral nl) throws EX                                                          { Traverser.this.traverseNullLiteral(nl); return null; }
-        @Override @Nullable public Void visitSimpleConstant(Java.SimpleConstant sl) throws EX                                                    { Traverser.this.traverseSimpleLiteral(sl); return null; }
-        @Override @Nullable public Void visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) throws EX                            { Traverser.this.traverseNewAnonymousClassInstance(naci); return null; }
-        @Override @Nullable public Void visitNewArray(Java.NewArray na) throws EX                                                                { Traverser.this.traverseNewArray(na); return null; }
-        @Override @Nullable public Void visitNewInitializedArray(Java.NewInitializedArray nia) throws EX                                         { Traverser.this.traverseNewInitializedArray(nia); return null; }
-        @Override @Nullable public Void visitNewClassInstance(Java.NewClassInstance nci) throws EX                                               { Traverser.this.traverseNewClassInstance(nci); return null; }
-        @Override @Nullable public Void visitParameterAccess(Java.ParameterAccess pa) throws EX                                                  { Traverser.this.traverseParameterAccess(pa); return null; }
-        @Override @Nullable public Void visitQualifiedThisReference(Java.QualifiedThisReference qtr) throws EX                                   { Traverser.this.traverseQualifiedThisReference(qtr); return null; }
-        @Override @Nullable public Void visitThisReference(Java.ThisReference tr) throws EX                                                      { Traverser.this.traverseThisReference(tr); return null; }
         @Override @Nullable public Void visitArrayType(Java.ArrayType at) throws EX                                                              { Traverser.this.traverseArrayType(at); return null; }
         @Override @Nullable public Void visitPrimitiveType(Java.PrimitiveType bt) throws EX                                                      { Traverser.this.traversePrimitiveType(bt); return null; }
         @Override @Nullable public Void visitReferenceType(Java.ReferenceType rt) throws EX                                                      { Traverser.this.traverseReferenceType(rt); return null; }
@@ -142,13 +163,6 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitSimpleType(Java.SimpleType st) throws EX                                                            { Traverser.this.traverseSimpleType(st); return null; }
         @Override @Nullable public Void visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci) throws EX                   { Traverser.this.traverseAlternateConstructorInvocation(aci); return null; }
         @Override @Nullable public Void visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci) throws EX                           { Traverser.this.traverseSuperConstructorInvocation(sci); return null; }
-        @Override @Nullable public Void visitAmbiguousName(Java.AmbiguousName an) throws EX                                                      { Traverser.this.traverseAmbiguousName(an); return null; }
-        @Override @Nullable public Void visitArrayAccessExpression(Java.ArrayAccessExpression aae) throws EX                                     { Traverser.this.traverseArrayAccessExpression(aae); return null; }
-        @Override @Nullable public Void visitFieldAccess(Java.FieldAccess fa) throws EX                                                          { Traverser.this.traverseFieldAccess(fa); return null; }
-        @Override @Nullable public Void visitFieldAccessExpression(Java.FieldAccessExpression fae) throws EX                                     { Traverser.this.traverseFieldAccessExpression(fae); return null; }
-        @Override @Nullable public Void visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) throws EX               { Traverser.this.traverseSuperclassFieldAccessExpression(scfae); return null; }
-        @Override @Nullable public Void visitLocalVariableAccess(Java.LocalVariableAccess lva) throws EX                                         { Traverser.this.traverseLocalVariableAccess(lva); return null; }
-        @Override @Nullable public Void visitParenthesizedExpression(Java.ParenthesizedExpression pe) throws EX                                  { Traverser.this.traverseParenthesizedExpression(pe); return null; }
         @Override @Nullable public Void visitMarkerAnnotation(Java.MarkerAnnotation ma) throws EX                                                { Traverser.this.traverseMarkerAnnotation(ma); return null; }
         @Override @Nullable public Void visitNormalAnnotation(Java.NormalAnnotation na) throws EX                                                { Traverser.this.traverseNormalAnnotation(na); return null; }
         @Override @Nullable public Void visitSingleElementAnnotation(Java.SingleElementAnnotation sea) throws EX                                 { Traverser.this.traverseSingleElementAnnotation(sea); return null; }
@@ -159,7 +173,6 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitPackageMemberEnumDeclaration(Java.PackageMemberEnumDeclaration pmed) throws EX                      { Traverser.this.traversePackageMemberEnumDeclaration(pmed); return null; }
         @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(Java.MemberAnnotationTypeDeclaration matd) throws EX                { Traverser.this.traverseMemberAnnotationTypeDeclaration(matd); return null; }
         @Override @Nullable public Void visitPackageMemberAnnotationTypeDeclaration(Java.PackageMemberAnnotationTypeDeclaration pmatd) throws EX { Traverser.this.traversePackageMemberAnnotationTypeDeclaration(pmatd); return null; }
-        // CHECKSTYLE LineLengthCheck:ON
     };
 
     /** @see Traverser */
@@ -290,14 +303,14 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseExpressionStatement(Java.ExpressionStatement es) throws EX {
-        es.rvalue.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        es.rvalue.accept(this.rvalueVisitor);
         this.traverseStatement(es);
     }
 
     /** @see Traverser */
     public void
     traverseIfStatement(Java.IfStatement is) throws EX {
-        is.condition.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        is.condition.accept(this.rvalueVisitor);
         is.thenStatement.accept(this.cv);
         if (is.optionalElseStatement != null) is.optionalElseStatement.accept(this.cv);
         this.traverseStatement(is);
@@ -307,9 +320,9 @@ class Traverser<EX extends Throwable> {
     public void
     traverseForStatement(Java.ForStatement fs) throws EX {
         if (fs.optionalInit != null) fs.optionalInit.accept(this.cv);
-        if (fs.optionalCondition != null) fs.optionalCondition.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        if (fs.optionalCondition != null) fs.optionalCondition.accept(this.rvalueVisitor);
         if (fs.optionalUpdate != null) {
-            for (Java.Rvalue rv : fs.optionalUpdate) rv.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+            for (Java.Rvalue rv : fs.optionalUpdate) rv.accept(this.rvalueVisitor);
         }
         fs.body.accept(this.cv);
         this.traverseContinuableStatement(fs);
@@ -319,7 +332,7 @@ class Traverser<EX extends Throwable> {
     public void
     traverseForEachStatement(Java.ForEachStatement fes) throws EX {
         this.traverseFormalParameter(fes.currentElement);
-        fes.expression.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        fes.expression.accept(this.rvalueVisitor);
         fes.body.accept(this.cv);
         this.traverseContinuableStatement(fes);
     }
@@ -327,7 +340,7 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseWhileStatement(Java.WhileStatement ws) throws EX {
-        ws.condition.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        ws.condition.accept(this.rvalueVisitor);
         ws.body.accept(this.cv);
         this.traverseContinuableStatement(ws);
     }
@@ -344,9 +357,9 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseSwitchStatement(Java.SwitchStatement ss) throws EX {
-        ss.condition.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        ss.condition.accept(this.rvalueVisitor);
         for (Java.SwitchStatement.SwitchBlockStatementGroup sbsg : ss.sbsgs) {
-            for (Java.Rvalue cl : sbsg.caseLabels) cl.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+            for (Java.Rvalue cl : sbsg.caseLabels) cl.accept(this.rvalueVisitor);
             for (Java.BlockStatement bs : sbsg.blockStatements) bs.accept(this.cv);
             this.traverseLocated(sbsg);
         }
@@ -356,7 +369,7 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseSynchronizedStatement(Java.SynchronizedStatement ss) throws EX {
-        ss.expression.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        ss.expression.accept(this.rvalueVisitor);
         ss.body.accept(this.cv);
         this.traverseStatement(ss);
     }
@@ -365,7 +378,7 @@ class Traverser<EX extends Throwable> {
     public void
     traverseDoStatement(Java.DoStatement ds) throws EX {
         ds.body.accept(this.cv);
-        ds.condition.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        ds.condition.accept(this.rvalueVisitor);
         this.traverseContinuableStatement(ds);
     }
 
@@ -383,14 +396,14 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseReturnStatement(Java.ReturnStatement rs) throws EX {
-        if (rs.optionalReturnValue != null) rs.optionalReturnValue.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        if (rs.optionalReturnValue != null) rs.optionalReturnValue.accept(this.rvalueVisitor);
         this.traverseStatement(rs);
     }
 
     /** @see Traverser */
     public void
     traverseThrowStatement(Java.ThrowStatement ts) throws EX {
-        ts.expression.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        ts.expression.accept(this.rvalueVisitor);
         this.traverseStatement(ts);
     }
 
@@ -405,8 +418,8 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseAssertStatement(Java.AssertStatement as) throws EX {
-        as.expression1.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
-        if (as.optionalExpression2 != null) as.optionalExpression2.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        as.expression1.accept(this.rvalueVisitor);
+        if (as.optionalExpression2 != null) as.optionalExpression2.accept(this.rvalueVisitor);
         this.traverseStatement(as);
     }
 
@@ -428,30 +441,30 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseArrayLength(Java.ArrayLength al) throws EX {
-        al.lhs.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        al.lhs.accept(this.rvalueVisitor);
         this.traverseRvalue(al);
     }
 
     /** @see Traverser */
     public void
     traverseAssignment(Java.Assignment a) throws EX {
-        a.lhs.accept((Visitor.LvalueVisitor<Void, EX>) this.cv);
-        a.rhs.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        a.lhs.accept(this.rvalueVisitor);
+        a.rhs.accept(this.rvalueVisitor);
         this.traverseRvalue(a);
     }
 
     /** @see Traverser */
     public void
     traverseUnaryOperation(Java.UnaryOperation uo) throws EX {
-        uo.operand.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        uo.operand.accept(this.rvalueVisitor);
         this.traverseBooleanRvalue(uo);
     }
 
     /** @see Traverser */
     public void
     traverseBinaryOperation(Java.BinaryOperation bo) throws EX {
-        bo.lhs.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
-        bo.rhs.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        bo.lhs.accept(this.rvalueVisitor);
+        bo.rhs.accept(this.rvalueVisitor);
         this.traverseBooleanRvalue(bo);
     }
 
@@ -459,7 +472,7 @@ class Traverser<EX extends Throwable> {
     public void
     traverseCast(Java.Cast c) throws EX {
         c.targetType.accept((Visitor.TypeVisitor<Void, EX>) this.cv);
-        c.value.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        c.value.accept(this.rvalueVisitor);
         this.traverseRvalue(c);
     }
 
@@ -473,23 +486,23 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseConditionalExpression(Java.ConditionalExpression ce) throws EX {
-        ce.lhs.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
-        ce.mhs.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
-        ce.rhs.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        ce.lhs.accept(this.rvalueVisitor);
+        ce.mhs.accept(this.rvalueVisitor);
+        ce.rhs.accept(this.rvalueVisitor);
         this.traverseRvalue(ce);
     }
 
     /** @see Traverser */
     public void
     traverseCrement(Java.Crement c) throws EX {
-        c.operand.accept((Visitor.LvalueVisitor<Void, EX>) this.cv);
+        c.operand.accept(this.rvalueVisitor);
         this.traverseRvalue(c);
     }
 
     /** @see Traverser */
     public void
     traverseInstanceof(Java.Instanceof io) throws EX {
-        io.lhs.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        io.lhs.accept(this.rvalueVisitor);
         io.rhs.accept((Visitor.TypeVisitor<Void, EX>) this.cv);
         this.traverseRvalue(io);
     }
@@ -541,10 +554,10 @@ class Traverser<EX extends Throwable> {
     public void
     traverseNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) throws EX {
         if (naci.optionalQualification != null) {
-            naci.optionalQualification.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+            naci.optionalQualification.accept(this.rvalueVisitor);
         }
         naci.anonymousClassDeclaration.accept(this.cv);
-        for (Java.Rvalue argument : naci.arguments) argument.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        for (Java.Rvalue argument : naci.arguments) argument.accept(this.rvalueVisitor);
         this.traverseRvalue(naci);
     }
 
@@ -552,7 +565,7 @@ class Traverser<EX extends Throwable> {
     public void
     traverseNewArray(Java.NewArray na) throws EX {
         na.type.accept((Visitor.TypeVisitor<Void, EX>) this.cv);
-        for (Rvalue dimExpr : na.dimExprs) dimExpr.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        for (Rvalue dimExpr : na.dimExprs) dimExpr.accept(this.rvalueVisitor);
         this.traverseRvalue(na);
     }
 
@@ -585,10 +598,10 @@ class Traverser<EX extends Throwable> {
     public void
     traverseNewClassInstance(Java.NewClassInstance nci) throws EX {
         if (nci.optionalQualification != null) {
-            nci.optionalQualification.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+            nci.optionalQualification.accept(this.rvalueVisitor);
         }
         if (nci.type != null) nci.type.accept((Visitor.TypeVisitor<Void, EX>) this.cv);
-        for (Java.Rvalue argument : nci.arguments) argument.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        for (Java.Rvalue argument : nci.arguments) argument.accept(this.rvalueVisitor);
         this.traverseRvalue(nci);
     }
 
@@ -625,7 +638,7 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseRvalueMemberType(Java.RvalueMemberType rmt) throws EX {
-        rmt.rvalue.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        rmt.rvalue.accept(this.rvalueVisitor);
         this.traverseType(rmt);
     }
 
@@ -643,7 +656,7 @@ class Traverser<EX extends Throwable> {
     public void
     traverseSuperConstructorInvocation(Java.SuperConstructorInvocation sci) throws EX {
         if (sci.optionalQualification != null) {
-            sci.optionalQualification.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+            sci.optionalQualification.accept(this.rvalueVisitor);
         }
         this.traverseConstructorInvocation(sci);
     }
@@ -655,7 +668,7 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseArrayAccessExpression(Java.ArrayAccessExpression aae) throws EX {
-        aae.lhs.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        aae.lhs.accept(this.rvalueVisitor);
         ((Java.Atom) aae.index).accept(this.cv);
         this.traverseLvalue(aae);
     }
@@ -690,7 +703,7 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseParenthesizedExpression(Java.ParenthesizedExpression pe) throws EX {
-        pe.value.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        pe.value.accept(this.rvalueVisitor);
         this.traverseLvalue(pe);
     }
 
@@ -824,14 +837,14 @@ class Traverser<EX extends Throwable> {
     /** @see Traverser */
     public void
     traverseInvocation(Java.Invocation i) throws EX {
-        for (Java.Rvalue argument : i.arguments) argument.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        for (Java.Rvalue argument : i.arguments) argument.accept(this.rvalueVisitor);
         this.traverseRvalue(i);
     }
 
     /** @see Traverser */
     public void
     traverseConstructorInvocation(Java.ConstructorInvocation ci) throws EX {
-        for (Java.Rvalue argument : ci.arguments) argument.accept((Visitor.RvalueVisitor<Void, EX>) this.cv);
+        for (Java.Rvalue argument : ci.arguments) argument.accept(this.rvalueVisitor);
         this.traverseAtom(ci);
     }
 

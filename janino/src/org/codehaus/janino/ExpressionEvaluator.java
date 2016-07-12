@@ -47,7 +47,6 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.Rvalue;
-import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.util.Traverser;
 
 /**
@@ -427,7 +426,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
         final Set<String> parameterNames = new HashSet();
-        rvalue.accept((RvalueVisitor<Void, RuntimeException>) new Traverser<RuntimeException>() {
+        new Traverser<RuntimeException>() {
 
             @Override public void
             traverseAmbiguousName(AmbiguousName an) {
@@ -441,7 +440,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
                 // It's most probably a parameter name (although it could be a field name as well).
                 parameterNames.add(an.identifiers[0]);
             }
-        }.comprehensiveVisitor());
+        }.comprehensiveVisitor().visitRvalue(rvalue);
 
         return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
     }

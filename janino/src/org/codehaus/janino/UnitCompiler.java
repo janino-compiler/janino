@@ -722,10 +722,10 @@ class UnitCompiler {
         );
 
         FormalParameter ordinalFormalParameter = new FormalParameter(
-            ed.getLocation(),                               // location
-            false,                                          // finaL
+            ed.getLocation(),                                       // location
+            false,                                                  // finaL
             new PrimitiveType(ed.getLocation(), PrimitiveType.INT), // type
-            "ordinal"                                       // name
+            "ordinal"                                               // name
         );
         LocalVariable ordinalLocalVariable = (
             ordinalFormalParameter.localVariable = new LocalVariable(false, IClass.INT)
@@ -1183,15 +1183,15 @@ class UnitCompiler {
         // Create class/interface initialization method iff there is any initialization code.
         if (this.generatesCode2(statements)) {
             MethodDeclarator md = new MethodDeclarator(
-                td.getLocation(),                                 // location
-                null,                                             // optionalDocComment
-                new Modifiers((short) (Mod.STATIC | Mod.PUBLIC)), // modifiers
-                null,                                             // optionalTypeParameters
-                new PrimitiveType(td.getLocation(), PrimitiveType.VOID),  // type
-                "<clinit>",                                       // name
-                new FormalParameters(td.getLocation()),           // formalParameters
-                new ReferenceType[0],                             // thrownExceptions
-                statements                                        // optionalStatements
+                td.getLocation(),                                        // location
+                null,                                                    // optionalDocComment
+                new Modifiers((short) (Mod.STATIC | Mod.PUBLIC)),        // modifiers
+                null,                                                    // optionalTypeParameters
+                new PrimitiveType(td.getLocation(), PrimitiveType.VOID), // type
+                "<clinit>",                                              // name
+                new FormalParameters(td.getLocation()),                  // formalParameters
+                new ReferenceType[0],                                    // thrownExceptions
+                statements                                               // optionalStatements
             );
             md.setDeclaringType(td);
             this.compile(md, cf);
@@ -5659,7 +5659,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
         IClass result = (IClass) a.accept(new AtomVisitor<IClass, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:42
+            // SUPPRESS CHECKSTYLE LineLength:46
             // AtomVisitor
             @Override public IClass visitPackage(Package p) throws CompileException { return UnitCompiler.this.getType2(p); }
             // TypeVisitor
@@ -5668,40 +5668,46 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
             @Override public IClass visitReferenceType(ReferenceType rt) throws CompileException        { return UnitCompiler.this.getType2(rt);  }
             @Override public IClass visitRvalueMemberType(RvalueMemberType rmt) throws CompileException { return UnitCompiler.this.getType2(rmt); }
             @Override public IClass visitSimpleType(SimpleType st)                                      { return UnitCompiler.this.getType2(st);  }
-            // RvalueVisitor
-            @Override public IClass visitArrayLength(ArrayLength al)                                                        { return UnitCompiler.this.getType2(al);   }
-            @Override public IClass visitAssignment(Assignment a) throws CompileException                                   { return UnitCompiler.this.getType2(a);    }
-            @Override public IClass visitUnaryOperation(UnaryOperation uo) throws CompileException                          { return UnitCompiler.this.getType2(uo);   }
-            @Override public IClass visitBinaryOperation(BinaryOperation bo) throws CompileException                        { return UnitCompiler.this.getType2(bo);   }
-            @Override public IClass visitCast(Cast c) throws CompileException                                               { return UnitCompiler.this.getType2(c);    }
-            @Override public IClass visitClassLiteral(ClassLiteral cl)                                                      { return UnitCompiler.this.getType2(cl);   }
-            @Override public IClass visitConditionalExpression(ConditionalExpression ce) throws CompileException            { return UnitCompiler.this.getType2(ce);   }
-            @Override public IClass visitCrement(Crement c) throws CompileException                                         { return UnitCompiler.this.getType2(c);    }
-            @Override public IClass visitInstanceof(Instanceof io)                                                          { return UnitCompiler.this.getType2(io);   }
-            @Override public IClass visitMethodInvocation(MethodInvocation mi) throws CompileException                      { return UnitCompiler.this.getType2(mi);   }
-            @Override public IClass visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) throws CompileException { return UnitCompiler.this.getType2(smi);  }
-            @Override public IClass visitIntegerLiteral(IntegerLiteral il)                                                  { return UnitCompiler.this.getType2(il);   }
-            @Override public IClass visitFloatingPointLiteral(FloatingPointLiteral fpl)                                     { return UnitCompiler.this.getType2(fpl);  }
-            @Override public IClass visitBooleanLiteral(BooleanLiteral bl)                                                  { return UnitCompiler.this.getType2(bl);   }
-            @Override public IClass visitCharacterLiteral(CharacterLiteral cl)                                              { return UnitCompiler.this.getType2(cl);   }
-            @Override public IClass visitStringLiteral(StringLiteral sl)                                                    { return UnitCompiler.this.getType2(sl);   }
-            @Override public IClass visitNullLiteral(NullLiteral nl)                                                        { return UnitCompiler.this.getType2(nl);   }
-            @Override public IClass visitSimpleConstant(SimpleConstant sl)                                                  { return UnitCompiler.this.getType2(sl);   }
-            @Override public IClass visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)                          { return UnitCompiler.this.getType2(naci); }
-            @Override public IClass visitNewArray(NewArray na) throws CompileException                                      { return UnitCompiler.this.getType2(na);   }
-            @Override public IClass visitNewInitializedArray(NewInitializedArray nia) throws CompileException               { return UnitCompiler.this.getType2(nia);  }
-            @Override public IClass visitNewClassInstance(NewClassInstance nci) throws CompileException                     { return UnitCompiler.this.getType2(nci);  }
-            @Override public IClass visitParameterAccess(ParameterAccess pa) throws CompileException                        { return UnitCompiler.this.getType2(pa);   }
-            @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr) throws CompileException         { return UnitCompiler.this.getType2(qtr);  }
-            @Override public IClass visitThisReference(ThisReference tr) throws CompileException                            { return UnitCompiler.this.getType2(tr);   }
-            // LvalueVisitor
-            @Override public IClass visitAmbiguousName(AmbiguousName an) throws CompileException                                        { return UnitCompiler.this.getType2(an);    }
-            @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae) throws CompileException                       { return UnitCompiler.this.getType2(aae);   }
-            @Override public IClass visitFieldAccess(FieldAccess fa) throws CompileException                                            { return UnitCompiler.this.getType2(fa);    }
-            @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae) throws CompileException                       { return UnitCompiler.this.getType2(fae);   }
-            @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getType2(scfae); }
-            @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.getType2(lva);   }
-            @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException                    { return UnitCompiler.this.getType2(pe);    }
+
+            @Override @Nullable public IClass
+            visitRvalue(Rvalue rv) throws CompileException {
+                return (IClass) rv.accept(new Visitor.RvalueVisitor<IClass, CompileException>() {
+                    // RvalueVisitor
+                    @Override public IClass visitArrayLength(ArrayLength al)                                                        { return UnitCompiler.this.getType2(al);   }
+                    @Override public IClass visitAssignment(Assignment a) throws CompileException                                   { return UnitCompiler.this.getType2(a);    }
+                    @Override public IClass visitUnaryOperation(UnaryOperation uo) throws CompileException                          { return UnitCompiler.this.getType2(uo);   }
+                    @Override public IClass visitBinaryOperation(BinaryOperation bo) throws CompileException                        { return UnitCompiler.this.getType2(bo);   }
+                    @Override public IClass visitCast(Cast c) throws CompileException                                               { return UnitCompiler.this.getType2(c);    }
+                    @Override public IClass visitClassLiteral(ClassLiteral cl)                                                      { return UnitCompiler.this.getType2(cl);   }
+                    @Override public IClass visitConditionalExpression(ConditionalExpression ce) throws CompileException            { return UnitCompiler.this.getType2(ce);   }
+                    @Override public IClass visitCrement(Crement c) throws CompileException                                         { return UnitCompiler.this.getType2(c);    }
+                    @Override public IClass visitInstanceof(Instanceof io)                                                          { return UnitCompiler.this.getType2(io);   }
+                    @Override public IClass visitMethodInvocation(MethodInvocation mi) throws CompileException                      { return UnitCompiler.this.getType2(mi);   }
+                    @Override public IClass visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) throws CompileException { return UnitCompiler.this.getType2(smi);  }
+                    @Override public IClass visitIntegerLiteral(IntegerLiteral il)                                                  { return UnitCompiler.this.getType2(il);   }
+                    @Override public IClass visitFloatingPointLiteral(FloatingPointLiteral fpl)                                     { return UnitCompiler.this.getType2(fpl);  }
+                    @Override public IClass visitBooleanLiteral(BooleanLiteral bl)                                                  { return UnitCompiler.this.getType2(bl);   }
+                    @Override public IClass visitCharacterLiteral(CharacterLiteral cl)                                              { return UnitCompiler.this.getType2(cl);   }
+                    @Override public IClass visitStringLiteral(StringLiteral sl)                                                    { return UnitCompiler.this.getType2(sl);   }
+                    @Override public IClass visitNullLiteral(NullLiteral nl)                                                        { return UnitCompiler.this.getType2(nl);   }
+                    @Override public IClass visitSimpleConstant(SimpleConstant sl)                                                  { return UnitCompiler.this.getType2(sl);   }
+                    @Override public IClass visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)                          { return UnitCompiler.this.getType2(naci); }
+                    @Override public IClass visitNewArray(NewArray na) throws CompileException                                      { return UnitCompiler.this.getType2(na);   }
+                    @Override public IClass visitNewInitializedArray(NewInitializedArray nia) throws CompileException               { return UnitCompiler.this.getType2(nia);  }
+                    @Override public IClass visitNewClassInstance(NewClassInstance nci) throws CompileException                     { return UnitCompiler.this.getType2(nci);  }
+                    @Override public IClass visitParameterAccess(ParameterAccess pa) throws CompileException                        { return UnitCompiler.this.getType2(pa);   }
+                    @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr) throws CompileException         { return UnitCompiler.this.getType2(qtr);  }
+                    @Override public IClass visitThisReference(ThisReference tr) throws CompileException                            { return UnitCompiler.this.getType2(tr);   }
+                    // LvalueVisitor
+                    @Override public IClass visitAmbiguousName(AmbiguousName an) throws CompileException                                        { return UnitCompiler.this.getType2(an);    }
+                    @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae) throws CompileException                       { return UnitCompiler.this.getType2(aae);   }
+                    @Override public IClass visitFieldAccess(FieldAccess fa) throws CompileException                                            { return UnitCompiler.this.getType2(fa);    }
+                    @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae) throws CompileException                       { return UnitCompiler.this.getType2(fae);   }
+                    @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getType2(scfae); }
+                    @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.getType2(lva);   }
+                    @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException                    { return UnitCompiler.this.getType2(pe);    }
+                });
+            }
         });
 
         return result != null ? result : this.iClassLoader.TYPE_java_lang_Object;
@@ -6358,7 +6364,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
         Boolean result = (Boolean) a.accept(new AtomVisitor<Boolean, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:42
+            // SUPPRESS CHECKSTYLE LineLength:46
             // AtomVisitor
             @Override public Boolean visitPackage(Package p) { return UnitCompiler.this.isType2(p); }
             // TypeVisitor
@@ -6367,40 +6373,46 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
             @Override public Boolean visitReferenceType(ReferenceType rt)        { return UnitCompiler.this.isType2(rt);  }
             @Override public Boolean visitRvalueMemberType(RvalueMemberType rmt) { return UnitCompiler.this.isType2(rmt); }
             @Override public Boolean visitSimpleType(SimpleType st)              { return UnitCompiler.this.isType2(st);  }
-            // RvalueVisitor
-            @Override public Boolean visitArrayLength(ArrayLength al)                                { return UnitCompiler.this.isType2(al);   }
-            @Override public Boolean visitAssignment(Assignment a)                                   { return UnitCompiler.this.isType2(a);    }
-            @Override public Boolean visitUnaryOperation(UnaryOperation uo)                          { return UnitCompiler.this.isType2(uo);   }
-            @Override public Boolean visitBinaryOperation(BinaryOperation bo)                        { return UnitCompiler.this.isType2(bo);   }
-            @Override public Boolean visitCast(Cast c)                                               { return UnitCompiler.this.isType2(c);    }
-            @Override public Boolean visitClassLiteral(ClassLiteral cl)                              { return UnitCompiler.this.isType2(cl);   }
-            @Override public Boolean visitConditionalExpression(ConditionalExpression ce)            { return UnitCompiler.this.isType2(ce);   }
-            @Override public Boolean visitCrement(Crement c)                                         { return UnitCompiler.this.isType2(c);    }
-            @Override public Boolean visitInstanceof(Instanceof io)                                  { return UnitCompiler.this.isType2(io);   }
-            @Override public Boolean visitMethodInvocation(MethodInvocation mi)                      { return UnitCompiler.this.isType2(mi);   }
-            @Override public Boolean visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { return UnitCompiler.this.isType2(smi);  }
-            @Override public Boolean visitIntegerLiteral(IntegerLiteral il)                          { return UnitCompiler.this.isType2(il);   }
-            @Override public Boolean visitFloatingPointLiteral(FloatingPointLiteral fpl)             { return UnitCompiler.this.isType2(fpl);  }
-            @Override public Boolean visitBooleanLiteral(BooleanLiteral bl)                          { return UnitCompiler.this.isType2(bl);   }
-            @Override public Boolean visitCharacterLiteral(CharacterLiteral cl)                      { return UnitCompiler.this.isType2(cl);   }
-            @Override public Boolean visitStringLiteral(StringLiteral sl)                            { return UnitCompiler.this.isType2(sl);   }
-            @Override public Boolean visitNullLiteral(NullLiteral nl)                                { return UnitCompiler.this.isType2(nl);   }
-            @Override public Boolean visitSimpleConstant(SimpleConstant sl)                          { return UnitCompiler.this.isType2(sl);   }
-            @Override public Boolean visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { return UnitCompiler.this.isType2(naci); }
-            @Override public Boolean visitNewArray(NewArray na)                                      { return UnitCompiler.this.isType2(na);   }
-            @Override public Boolean visitNewInitializedArray(NewInitializedArray nia)               { return UnitCompiler.this.isType2(nia);  }
-            @Override public Boolean visitNewClassInstance(NewClassInstance nci)                     { return UnitCompiler.this.isType2(nci);  }
-            @Override public Boolean visitParameterAccess(ParameterAccess pa)                        { return UnitCompiler.this.isType2(pa);   }
-            @Override public Boolean visitQualifiedThisReference(QualifiedThisReference qtr)         { return UnitCompiler.this.isType2(qtr);  }
-            @Override public Boolean visitThisReference(ThisReference tr)                            { return UnitCompiler.this.isType2(tr);   }
-            // LvalueVisitor
-            @Override public Boolean visitAmbiguousName(AmbiguousName an) throws CompileException                { return UnitCompiler.this.isType2(an);    }
-            @Override public Boolean visitArrayAccessExpression(ArrayAccessExpression aae)                       { return UnitCompiler.this.isType2(aae);   }
-            @Override public Boolean visitFieldAccess(FieldAccess fa)                                            { return UnitCompiler.this.isType2(fa);    }
-            @Override public Boolean visitFieldAccessExpression(FieldAccessExpression fae)                       { return UnitCompiler.this.isType2(fae);   }
-            @Override public Boolean visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return UnitCompiler.this.isType2(scfae); }
-            @Override public Boolean visitLocalVariableAccess(LocalVariableAccess lva)                           { return UnitCompiler.this.isType2(lva);   }
-            @Override public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    { return UnitCompiler.this.isType2(pe);    }
+
+            @Override @Nullable public Boolean
+            visitRvalue(Rvalue rv) throws CompileException {
+                return (Boolean) rv.accept(new Visitor.RvalueVisitor<Boolean, CompileException>() {
+                    // RvalueVisitor
+                    @Override public Boolean visitArrayLength(ArrayLength al)                                { return UnitCompiler.this.isType2(al);   }
+                    @Override public Boolean visitAssignment(Assignment a)                                   { return UnitCompiler.this.isType2(a);    }
+                    @Override public Boolean visitUnaryOperation(UnaryOperation uo)                          { return UnitCompiler.this.isType2(uo);   }
+                    @Override public Boolean visitBinaryOperation(BinaryOperation bo)                        { return UnitCompiler.this.isType2(bo);   }
+                    @Override public Boolean visitCast(Cast c)                                               { return UnitCompiler.this.isType2(c);    }
+                    @Override public Boolean visitClassLiteral(ClassLiteral cl)                              { return UnitCompiler.this.isType2(cl);   }
+                    @Override public Boolean visitConditionalExpression(ConditionalExpression ce)            { return UnitCompiler.this.isType2(ce);   }
+                    @Override public Boolean visitCrement(Crement c)                                         { return UnitCompiler.this.isType2(c);    }
+                    @Override public Boolean visitInstanceof(Instanceof io)                                  { return UnitCompiler.this.isType2(io);   }
+                    @Override public Boolean visitMethodInvocation(MethodInvocation mi)                      { return UnitCompiler.this.isType2(mi);   }
+                    @Override public Boolean visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { return UnitCompiler.this.isType2(smi);  }
+                    @Override public Boolean visitIntegerLiteral(IntegerLiteral il)                          { return UnitCompiler.this.isType2(il);   }
+                    @Override public Boolean visitFloatingPointLiteral(FloatingPointLiteral fpl)             { return UnitCompiler.this.isType2(fpl);  }
+                    @Override public Boolean visitBooleanLiteral(BooleanLiteral bl)                          { return UnitCompiler.this.isType2(bl);   }
+                    @Override public Boolean visitCharacterLiteral(CharacterLiteral cl)                      { return UnitCompiler.this.isType2(cl);   }
+                    @Override public Boolean visitStringLiteral(StringLiteral sl)                            { return UnitCompiler.this.isType2(sl);   }
+                    @Override public Boolean visitNullLiteral(NullLiteral nl)                                { return UnitCompiler.this.isType2(nl);   }
+                    @Override public Boolean visitSimpleConstant(SimpleConstant sl)                          { return UnitCompiler.this.isType2(sl);   }
+                    @Override public Boolean visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { return UnitCompiler.this.isType2(naci); }
+                    @Override public Boolean visitNewArray(NewArray na)                                      { return UnitCompiler.this.isType2(na);   }
+                    @Override public Boolean visitNewInitializedArray(NewInitializedArray nia)               { return UnitCompiler.this.isType2(nia);  }
+                    @Override public Boolean visitNewClassInstance(NewClassInstance nci)                     { return UnitCompiler.this.isType2(nci);  }
+                    @Override public Boolean visitParameterAccess(ParameterAccess pa)                        { return UnitCompiler.this.isType2(pa);   }
+                    @Override public Boolean visitQualifiedThisReference(QualifiedThisReference qtr)         { return UnitCompiler.this.isType2(qtr);  }
+                    @Override public Boolean visitThisReference(ThisReference tr)                            { return UnitCompiler.this.isType2(tr);   }
+                    // LvalueVisitor
+                    @Override public Boolean visitAmbiguousName(AmbiguousName an) throws CompileException                { return UnitCompiler.this.isType2(an);    }
+                    @Override public Boolean visitArrayAccessExpression(ArrayAccessExpression aae)                       { return UnitCompiler.this.isType2(aae);   }
+                    @Override public Boolean visitFieldAccess(FieldAccess fa)                                            { return UnitCompiler.this.isType2(fa);    }
+                    @Override public Boolean visitFieldAccessExpression(FieldAccessExpression fae)                       { return UnitCompiler.this.isType2(fae);   }
+                    @Override public Boolean visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return UnitCompiler.this.isType2(scfae); }
+                    @Override public Boolean visitLocalVariableAccess(LocalVariableAccess lva)                           { return UnitCompiler.this.isType2(lva);   }
+                    @Override public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    { return UnitCompiler.this.isType2(pe);    }
+                });
+            }
         });
 
         assert result != null;

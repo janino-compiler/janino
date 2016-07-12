@@ -763,11 +763,11 @@ class Parser {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", location);
             String name = this.readIdentifier();
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                optionalDocComment,                      // optionalDocComment
-                modifiers,                               // modifiers
-                null,                                    // optionalTypeParameters
+                optionalDocComment,                              // optionalDocComment
+                modifiers,                                       // modifiers
+                null,                                            // optionalTypeParameters
                 new PrimitiveType(location, PrimitiveType.VOID), // type
-                name                                     // name
+                name                                             // name
             ));
             return;
         }
@@ -844,11 +844,11 @@ class Parser {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
             String name = this.readIdentifier();
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                optionalDocComment,                             // optionalDocComment
-                modifiers,                                      // modifiers
-                optionalTypeParameters,                         // optionalTypeParameters
+                optionalDocComment,                                     // optionalDocComment
+                modifiers,                                              // modifiers
+                optionalTypeParameters,                                 // optionalTypeParameters
                 new PrimitiveType(this.location(), PrimitiveType.VOID), // type
-                name                                            // name
+                name                                                    // name
             ));
             return;
         }
@@ -1029,11 +1029,11 @@ class Parser {
                 Location location = this.location();
                 String   name     = this.readIdentifier();
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                    optionalDocComment,                       // optionalDocComment
-                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiers
-                    null,                                     // optionalTypeParameters
-                    new PrimitiveType(location, PrimitiveType.VOID),  // type
-                    name                                      // name
+                    optionalDocComment,                              // optionalDocComment
+                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC),        // modifiers
+                    null,                                            // optionalTypeParameters
+                    new PrimitiveType(location, PrimitiveType.VOID), // type
+                    name                                             // name
                 ));
                 continue;
             }
@@ -1110,11 +1110,11 @@ class Parser {
                 Location location = this.location();
                 String   name     = this.readIdentifier();
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                    optionalDocComment,                       // optionalDocComment
-                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiers
-                    optionalTypeParameters,                   // optionalTypeParameters
-                    new PrimitiveType(location, PrimitiveType.VOID),  // type
-                    name                                      // name
+                    optionalDocComment,                              // optionalDocComment
+                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC),        // modifiers
+                    optionalTypeParameters,                          // optionalTypeParameters
+                    new PrimitiveType(location, PrimitiveType.VOID), // type
+                    name                                             // name
                 ));
                 continue;
             }

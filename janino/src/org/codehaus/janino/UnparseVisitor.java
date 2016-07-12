@@ -175,11 +175,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     visitImportDeclaration(ImportDeclaration id) { return id.accept(this.importVisitor); }
 
     @Override @Nullable public Void
-    visitRvalue(Rvalue rv) {
-        return rv.accept((Visitor.RvalueVisitor<Void, RuntimeException>) this);
-    }
-
-    @Override @Nullable public Void
     visitAnnotation(Annotation a) {
         return a.accept((Visitor.AnnotationVisitor<Void, RuntimeException>) this);
     }
@@ -605,17 +600,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     }
 
     @Override @Nullable public Void
-    visitMethodInvocation(Java.MethodInvocation mi) {
-        if (mi.optionalTarget != null) {
-            this.unparseLhs(mi.optionalTarget, ".");
-            this.pw.print('.');
-        }
-        this.pw.print(mi.methodName);
-        this.unparseFunctionInvocationArguments(mi.arguments);
-        return null;
-    }
-
-    @Override @Nullable public Void
     visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci) {
         this.pw.print("this");
         this.unparseFunctionInvocationArguments(aci.arguments);
@@ -634,41 +618,234 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     }
 
     @Override @Nullable public Void
-    visitNewClassInstance(Java.NewClassInstance nci) {
-        if (nci.optionalQualification != null) {
-            this.unparseLhs(nci.optionalQualification, ".");
-            this.pw.print('.');
-        }
-        assert nci.type != null;
-        this.pw.print("new " + nci.type.toString());
-        this.unparseFunctionInvocationArguments(nci.arguments);
-        return null;
-    }
+    visitRvalue(Java.Rvalue rv) {
+        rv.accept(new Visitor.RvalueVisitor<Void, RuntimeException>() {
 
-    @Override @Nullable public Void
-    visitAssignment(Java.Assignment a) {
-        this.unparseLhs(a.lhs, a.operator);
-        this.pw.print(' ' + a.operator + ' ');
-        this.unparseRhs(a.rhs, a.operator);
-        return null;
-    }
+            @Override @Nullable public Void
+            visitMethodInvocation(Java.MethodInvocation mi) {
+                if (mi.optionalTarget != null) {
+                    UnparseVisitor.this.unparseLhs(mi.optionalTarget, ".");
+                    UnparseVisitor.this.pw.print('.');
+                }
+                UnparseVisitor.this.pw.print(mi.methodName);
+                UnparseVisitor.this.unparseFunctionInvocationArguments(mi.arguments);
+                return null;
+            }
 
-    @Override @Nullable public Void
-    visitAmbiguousName(Java.AmbiguousName an) { this.pw.print(an.toString()); return null; }
+            @Override @Nullable public Void
+            visitNewClassInstance(Java.NewClassInstance nci) {
+                if (nci.optionalQualification != null) {
+                    UnparseVisitor.this.unparseLhs(nci.optionalQualification, ".");
+                    UnparseVisitor.this.pw.print('.');
+                }
+                assert nci.type != null;
+                UnparseVisitor.this.pw.print("new " + nci.type.toString());
+                UnparseVisitor.this.unparseFunctionInvocationArguments(nci.arguments);
+                return null;
+            }
 
-    @Override @Nullable public Void
-    visitArrayAccessExpression(Java.ArrayAccessExpression aae) {
-        this.unparseLhs(aae.lhs, "[ ]");
-        this.pw.print('[');
-        this.unparse(aae.index);
-        this.pw.print(']');
-        return null;
-    }
+            @Override @Nullable public Void
+            visitAssignment(Java.Assignment a) {
+                UnparseVisitor.this.unparseLhs(a.lhs, a.operator);
+                UnparseVisitor.this.pw.print(' ' + a.operator + ' ');
+                UnparseVisitor.this.unparseRhs(a.rhs, a.operator);
+                return null;
+            }
 
-    @Override @Nullable public Void
-    visitArrayLength(Java.ArrayLength al) {
-        this.unparseLhs(al.lhs, ".");
-        this.pw.print(".length");
+            @Override @Nullable public Void
+            visitAmbiguousName(Java.AmbiguousName an) { UnparseVisitor.this.pw.print(an.toString()); return null; }
+
+            @Override @Nullable public Void
+            visitArrayAccessExpression(Java.ArrayAccessExpression aae) {
+                UnparseVisitor.this.unparseLhs(aae.lhs, "[ ]");
+                UnparseVisitor.this.pw.print('[');
+                UnparseVisitor.this.unparse(aae.index);
+                UnparseVisitor.this.pw.print(']');
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitArrayLength(Java.ArrayLength al) {
+                UnparseVisitor.this.unparseLhs(al.lhs, ".");
+                UnparseVisitor.this.pw.print(".length");
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitBinaryOperation(Java.BinaryOperation bo) {
+                UnparseVisitor.this.unparseLhs(bo.lhs, bo.op);
+                UnparseVisitor.this.pw.print(' ' + bo.op + ' ');
+                UnparseVisitor.this.unparseRhs(bo.rhs, bo.op);
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitCast(Java.Cast c) {
+                UnparseVisitor.this.pw.print('(');
+                UnparseVisitor.this.unparseType(c.targetType);
+                UnparseVisitor.this.pw.print(") ");
+                UnparseVisitor.this.unparseRhs(c.value, "cast");
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitClassLiteral(Java.ClassLiteral cl) {
+                UnparseVisitor.this.unparseType(cl.type);
+                UnparseVisitor.this.pw.print(".class");
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitConditionalExpression(Java.ConditionalExpression ce) {
+                UnparseVisitor.this.unparseLhs(ce.lhs, "?:");
+                UnparseVisitor.this.pw.print(" ? ");
+                UnparseVisitor.this.unparseLhs(ce.mhs, "?:");
+                UnparseVisitor.this.pw.print(" : ");
+                UnparseVisitor.this.unparseRhs(ce.rhs, "?:");
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitCrement(Java.Crement c) {
+                if (c.pre) {
+                    UnparseVisitor.this.pw.print(c.operator);
+                    UnparseVisitor.this.unparseUnaryOperation(c.operand, c.operator + "x");
+                } else
+                {
+                    UnparseVisitor.this.unparseUnaryOperation(c.operand, "x" + c.operator);
+                    UnparseVisitor.this.pw.print(c.operator);
+                }
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitFieldAccess(Java.FieldAccess fa) {
+                UnparseVisitor.this.unparseLhs(fa.lhs, ".");
+                UnparseVisitor.this.pw.print('.' + fa.field.getName());
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitFieldAccessExpression(Java.FieldAccessExpression fae) {
+                UnparseVisitor.this.unparseLhs(fae.lhs, ".");
+                UnparseVisitor.this.pw.print('.' + fae.fieldName);
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {
+                if (scfae.optionalQualification != null) {
+                    UnparseVisitor.this.unparseType(scfae.optionalQualification);
+                    UnparseVisitor.this.pw.print(".super." + scfae.fieldName);
+                } else
+                {
+                    UnparseVisitor.this.pw.print("super." + scfae.fieldName);
+                }
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitInstanceof(Java.Instanceof io) {
+                UnparseVisitor.this.unparseLhs(io.lhs, "instanceof");
+                UnparseVisitor.this.pw.print(" instanceof ");
+                UnparseVisitor.this.unparseType(io.rhs);
+                return null;
+            }
+
+            // SUPPRESS CHECKSTYLE LineLength:8
+            @Override @Nullable public Void visitIntegerLiteral(Java.IntegerLiteral il)              { UnparseVisitor.this.pw.print(il.value);             return null; }
+            @Override @Nullable public Void visitFloatingPointLiteral(Java.FloatingPointLiteral fpl) { UnparseVisitor.this.pw.print(fpl.value);            return null; }
+            @Override @Nullable public Void visitBooleanLiteral(Java.BooleanLiteral bl)              { UnparseVisitor.this.pw.print(bl.value);             return null; }
+            @Override @Nullable public Void visitCharacterLiteral(Java.CharacterLiteral cl)          { UnparseVisitor.this.pw.print(cl.value);             return null; }
+            @Override @Nullable public Void visitStringLiteral(Java.StringLiteral sl)                { UnparseVisitor.this.pw.print(sl.value);             return null; }
+            @Override @Nullable public Void visitNullLiteral(Java.NullLiteral nl)                    { UnparseVisitor.this.pw.print(nl.value);             return null; }
+            @Override @Nullable public Void visitSimpleConstant(Java.SimpleConstant sl)              { UnparseVisitor.this.pw.print("[" + sl.value + ']'); return null; }
+            @Override @Nullable public Void visitLocalVariableAccess(Java.LocalVariableAccess lva)   { UnparseVisitor.this.pw.print(lva.toString());       return null; }
+
+            @Override @Nullable public Void
+            visitNewArray(Java.NewArray na) {
+                UnparseVisitor.this.pw.print("new ");
+                UnparseVisitor.this.unparseType(na.type);
+                for (Rvalue dimExpr : na.dimExprs) {
+                    UnparseVisitor.this.pw.print('[');
+                    UnparseVisitor.this.unparse(dimExpr);
+                    UnparseVisitor.this.pw.print(']');
+                }
+                for (int i = 0; i < na.dims; ++i) {
+                    UnparseVisitor.this.pw.print("[]");
+                }
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitNewInitializedArray(Java.NewInitializedArray nai) {
+
+                UnparseVisitor.this.pw.print("new ");
+
+                ArrayType at = nai.arrayType;
+                assert at != null;
+                UnparseVisitor.this.unparseType(at);
+
+                UnparseVisitor.this.pw.print(" ");
+
+                UnparseVisitor.this.unparseArrayInitializerOrRvalue(nai.arrayInitializer);
+
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitParameterAccess(Java.ParameterAccess pa) { UnparseVisitor.this.pw.print(pa.toString()); return null; }
+
+            @Override @Nullable public Void
+            visitQualifiedThisReference(Java.QualifiedThisReference qtr) {
+                UnparseVisitor.this.unparseType(qtr.qualification);
+                UnparseVisitor.this.pw.print(".this");
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) {
+                UnparseVisitor.this.pw.print("super." + smi.methodName);
+                UnparseVisitor.this.unparseFunctionInvocationArguments(smi.arguments);
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitThisReference(Java.ThisReference tr) { UnparseVisitor.this.pw.print("this"); return null; }
+
+            @Override @Nullable public Void
+            visitUnaryOperation(Java.UnaryOperation uo) {
+                UnparseVisitor.this.pw.print(uo.operator);
+                UnparseVisitor.this.unparseUnaryOperation(uo.operand, uo.operator + "x");
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitParenthesizedExpression(Java.ParenthesizedExpression pe) {
+                UnparseVisitor.this.pw.print('(');
+                UnparseVisitor.this.unparse(pe.value);
+                UnparseVisitor.this.pw.print(')');
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
+                if (naci.optionalQualification != null) {
+                    UnparseVisitor.this.unparseLhs(naci.optionalQualification, ".");
+                    UnparseVisitor.this.pw.print('.');
+                }
+                UnparseVisitor.this.pw.print("new " + naci.anonymousClassDeclaration.baseType.toString() + '(');
+                for (int i = 0; i < naci.arguments.length; ++i) {
+                    if (i > 0) UnparseVisitor.this.pw.print(", ");
+                    UnparseVisitor.this.unparse(naci.arguments[i]);
+                }
+                UnparseVisitor.this.pw.println(") {");
+                UnparseVisitor.this.pw.print(AutoIndentWriter.INDENT);
+                UnparseVisitor.this.unparseClassDeclarationBody(naci.anonymousClassDeclaration);
+                UnparseVisitor.this.pw.print(AutoIndentWriter.UNINDENT + "}");
+                return null;
+            }
+        });
         return null;
     }
 
@@ -683,139 +860,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
     visitPrimitiveType(Java.PrimitiveType bt) { this.pw.print(bt.toString()); return null; }
 
     @Override @Nullable public Void
-    visitBinaryOperation(Java.BinaryOperation bo) {
-        this.unparseLhs(bo.lhs, bo.op);
-        this.pw.print(' ' + bo.op + ' ');
-        this.unparseRhs(bo.rhs, bo.op);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitCast(Java.Cast c) {
-        this.pw.print('(');
-        this.unparseType(c.targetType);
-        this.pw.print(") ");
-        this.unparseRhs(c.value, "cast");
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitClassLiteral(Java.ClassLiteral cl) {
-        this.unparseType(cl.type);
-        this.pw.print(".class");
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitConditionalExpression(Java.ConditionalExpression ce) {
-        this.unparseLhs(ce.lhs, "?:");
-        this.pw.print(" ? ");
-        this.unparseLhs(ce.mhs, "?:");
-        this.pw.print(" : ");
-        this.unparseRhs(ce.rhs, "?:");
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitCrement(Java.Crement c) {
-        if (c.pre) {
-            this.pw.print(c.operator);
-            this.unparseUnaryOperation(c.operand, c.operator + "x");
-        } else
-        {
-            this.unparseUnaryOperation(c.operand, "x" + c.operator);
-            this.pw.print(c.operator);
-        }
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitFieldAccess(Java.FieldAccess fa) {
-        this.unparseLhs(fa.lhs, ".");
-        this.pw.print('.' + fa.field.getName());
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitFieldAccessExpression(Java.FieldAccessExpression fae) {
-        this.unparseLhs(fae.lhs, ".");
-        this.pw.print('.' + fae.fieldName);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitSuperclassFieldAccessExpression(Java.SuperclassFieldAccessExpression scfae) {
-        if (scfae.optionalQualification != null) {
-            this.unparseType(scfae.optionalQualification);
-            this.pw.print(".super." + scfae.fieldName);
-        } else
-        {
-            this.pw.print("super." + scfae.fieldName);
-        }
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitInstanceof(Java.Instanceof io) {
-        this.unparseLhs(io.lhs, "instanceof");
-        this.pw.print(" instanceof ");
-        this.unparseType(io.rhs);
-        return null;
-    }
-
-    // SUPPRESS CHECKSTYLE LineLength:8
-    @Override @Nullable public Void visitIntegerLiteral(Java.IntegerLiteral il)              { this.pw.print(il.value);             return null; }
-    @Override @Nullable public Void visitFloatingPointLiteral(Java.FloatingPointLiteral fpl) { this.pw.print(fpl.value);            return null; }
-    @Override @Nullable public Void visitBooleanLiteral(Java.BooleanLiteral bl)              { this.pw.print(bl.value);             return null; }
-    @Override @Nullable public Void visitCharacterLiteral(Java.CharacterLiteral cl)          { this.pw.print(cl.value);             return null; }
-    @Override @Nullable public Void visitStringLiteral(Java.StringLiteral sl)                { this.pw.print(sl.value);             return null; }
-    @Override @Nullable public Void visitNullLiteral(Java.NullLiteral nl)                    { this.pw.print(nl.value);             return null; }
-    @Override @Nullable public Void visitSimpleConstant(Java.SimpleConstant sl)              { this.pw.print("[" + sl.value + ']'); return null; }
-    @Override @Nullable public Void visitLocalVariableAccess(Java.LocalVariableAccess lva)   { this.pw.print(lva.toString());       return null; }
-
-    @Override @Nullable public Void
-    visitNewArray(Java.NewArray na) {
-        this.pw.print("new ");
-        this.unparseType(na.type);
-        for (Rvalue dimExpr : na.dimExprs) {
-            this.pw.print('[');
-            this.unparse(dimExpr);
-            this.pw.print(']');
-        }
-        for (int i = 0; i < na.dims; ++i) {
-            this.pw.print("[]");
-        }
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitNewInitializedArray(Java.NewInitializedArray nai) {
-
-        this.pw.print("new ");
-
-        ArrayType at = nai.arrayType;
-        assert at != null;
-        this.unparseType(at);
-
-        this.pw.print(" ");
-
-        this.unparseArrayInitializerOrRvalue(nai.arrayInitializer);
-
-        return null;
-    }
-
-    @Override @Nullable public Void
     visitPackage(Java.Package p) { this.pw.print(p.toString()); return null; }
-
-    @Override @Nullable public Void
-    visitParameterAccess(Java.ParameterAccess pa) { this.pw.print(pa.toString()); return null; }
-
-    @Override @Nullable public Void
-    visitQualifiedThisReference(Java.QualifiedThisReference qtr) {
-        this.unparseType(qtr.qualification);
-        this.pw.print(".this");
-        return null;
-    }
 
     @Override @Nullable public Void
     visitReferenceType(Java.ReferenceType rt) { this.pw.print(rt.toString()); return null; }
@@ -825,31 +870,6 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
 
     @Override @Nullable public Void
     visitSimpleType(Java.SimpleType st) { this.pw.print(st.toString()); return null; }
-
-    @Override @Nullable public Void
-    visitSuperclassMethodInvocation(Java.SuperclassMethodInvocation smi) {
-        this.pw.print("super." + smi.methodName);
-        this.unparseFunctionInvocationArguments(smi.arguments);
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitThisReference(Java.ThisReference tr) { this.pw.print("this"); return null; }
-
-    @Override @Nullable public Void
-    visitUnaryOperation(Java.UnaryOperation uo) {
-        this.pw.print(uo.operator);
-        this.unparseUnaryOperation(uo.operand, uo.operator + "x");
-        return null;
-    }
-
-    @Override @Nullable public Void
-    visitParenthesizedExpression(Java.ParenthesizedExpression pe) {
-        this.pw.print('(');
-        this.unparse(pe.value);
-        this.pw.print(')');
-        return null;
-    }
 
     // Helpers
 
@@ -1076,23 +1096,7 @@ class UnparseVisitor implements Visitor.ComprehensiveVisitor<Void, RuntimeExcept
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
         return null;
     }
-    @Override @Nullable public Void
-    visitNewAnonymousClassInstance(Java.NewAnonymousClassInstance naci) {
-        if (naci.optionalQualification != null) {
-            this.unparseLhs(naci.optionalQualification, ".");
-            this.pw.print('.');
-        }
-        this.pw.print("new " + naci.anonymousClassDeclaration.baseType.toString() + '(');
-        for (int i = 0; i < naci.arguments.length; ++i) {
-            if (i > 0) this.pw.print(", ");
-            this.unparse(naci.arguments[i]);
-        }
-        this.pw.println(") {");
-        this.pw.print(AutoIndentWriter.INDENT);
-        this.unparseClassDeclarationBody(naci.anonymousClassDeclaration);
-        this.pw.print(AutoIndentWriter.UNINDENT + "}");
-        return null;
-    }
+
     // Multi-line!
     private void
     unparseClassDeclarationBody(Java.AbstractClassDeclaration cd) {

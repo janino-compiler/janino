@@ -2041,14 +2041,14 @@ class Java {
             List<BlockStatement>            statements
         ) {
             super(
-                location,                                // location
-                optionalDocComment,                      // optionalDocComment
-                modifiers,                               // modifiers
+                location,                                        // location
+                optionalDocComment,                              // optionalDocComment
+                modifiers,                                       // modifiers
                 new PrimitiveType(location, PrimitiveType.VOID), // type
-                "<init>",                                // name
-                parameters,                              // parameters
-                thrownExceptions,                        // thrownExceptions
-                statements                               // optionalStatements
+                "<init>",                                        // name
+                parameters,                                      // parameters
+                thrownExceptions,                                // thrownExceptions
+                statements                                       // optionalStatements
             );
             this.optionalConstructorInvocation = optionalConstructorInvocation;
             if (optionalConstructorInvocation != null) optionalConstructorInvocation.setEnclosingScope(this);
@@ -3450,7 +3450,7 @@ class Java {
         @Override
         public final void
         setEnclosingScope(final Java.Scope enclosingScope) {
-            this.accept((Visitor.RvalueVisitor<Void, RuntimeException>) new Traverser<RuntimeException>() {
+            new Traverser<RuntimeException>() {
 
                 @Override public void
                 traverseRvalue(Java.Rvalue rv) {
@@ -3485,7 +3485,7 @@ class Java {
 //                    t.setEnclosingScope(enclosingScope);
                     super.traverseType(t);
                 }
-            }.comprehensiveVisitor());
+            }.comprehensiveVisitor().visitRvalue(this);
         }
 
         /**
@@ -3531,7 +3531,7 @@ class Java {
 
         @Override @Nullable public final <R, EX extends Throwable> R
         accept(Visitor.AtomVisitor<R, EX> visitor) throws EX {
-            return this.accept((Visitor.RvalueVisitor<R, EX>) visitor);
+            return visitor.visitRvalue(this);
         }
     }
 
