@@ -51,7 +51,7 @@ import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Mod;
 import org.codehaus.janino.SimpleCompiler;
-import org.codehaus.janino.UnparseVisitor;
+import org.codehaus.janino.Unparser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -329,10 +329,10 @@ class AstTests {
             )
         );
 
-        StringWriter   sw = new StringWriter();
-        UnparseVisitor uv = new UnparseVisitor(sw);
-        uv.unparseBlockStatement(es);
-        uv.close();
+        StringWriter sw = new StringWriter();
+        Unparser     u  = new Unparser(sw);
+        u.unparseBlockStatement(es);
+        u.close();
         Assert.assertEquals("x = 1 * ((( 2 + 3 )));", sw.toString());
     }
 

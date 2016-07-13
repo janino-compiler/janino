@@ -82,7 +82,7 @@ import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
-import org.codehaus.janino.UnparseVisitor;
+import org.codehaus.janino.Unparser;
 import org.codehaus.janino.Visitor;
 import org.codehaus.janino.util.Traverser;
 import org.junit.Assert;
@@ -90,25 +90,27 @@ import org.junit.Test;
 
 // CHECKSTYLE JavadocMethod:OFF
 
-/** Unit tests for the 'unparsing' feature. */
+/**
+ * Unit tests for the {@link Unparser}.
+ */
 public
-class UnparseTests {
+class UnparserTests {
 
     private static void
     helpTestExpr(String input, String expected, boolean simplify) throws Exception {
         Parser p    = new Parser(new Scanner(null, new StringReader(input)));
         Atom   expr = p.parseExpression();
         if (simplify) {
-            expr = UnparseTests.stripUnnecessaryParenExprs(expr);
+            expr = UnparserTests.stripUnnecessaryParenExprs(expr);
         }
 
-        StringWriter   sw = new StringWriter();
-        UnparseVisitor uv = new UnparseVisitor(sw);
-        uv.unparseAtom(expr);
-        uv.close();
+        StringWriter sw = new StringWriter();
+        Unparser     u  = new Unparser(sw);
+        u.unparseAtom(expr);
+        u.close();
         String s = sw.toString();
-        s = UnparseTests.replace(s, "((( ", "(");
-        s = UnparseTests.replace(s, " )))", ")");
+        s = UnparserTests.replace(s, "((( ", "(");
+        s = UnparserTests.replace(s, " )))", ")");
         Assert.assertEquals(expected, s);
     }
 
@@ -118,12 +120,12 @@ class UnparseTests {
         Parser          p  = new Parser(new Scanner(null, new StringReader(input)));
         CompilationUnit cu = p.parseCompilationUnit();
 
-        StringWriter   sw = new StringWriter();
-        UnparseVisitor uv = new UnparseVisitor(sw);
-        uv.unparseCompilationUnit(cu);
-        uv.close();
+        StringWriter sw = new StringWriter();
+        Unparser     u  = new Unparser(sw);
+        u.unparseCompilationUnit(cu);
+        u.close();
 
-        String actual = UnparseTests.normalizeWhitespace(sw.toString());
+        String actual = UnparserTests.normalizeWhitespace(sw.toString());
         Assert.assertEquals(expected, actual);
     }
 
@@ -144,32 +146,32 @@ class UnparseTests {
     stripUnnecessaryParenExprs(Java.Rvalue[] rvalues) {
         Java.Rvalue[] res = new Java.Rvalue[rvalues.length];
         for (int i = 0; i < res.length; ++i) {
-            res[i] = UnparseTests.stripUnnecessaryParenExprs(rvalues[i]);
+            res[i] = UnparserTests.stripUnnecessaryParenExprs(rvalues[i]);
         }
         return res;
     }
 
     @Nullable private static Java.Atom
     stripUnnecessaryParenExprsOpt(@Nullable Java.Atom atom) {
-        return atom == null ? null : UnparseTests.stripUnnecessaryParenExprs(atom);
+        return atom == null ? null : UnparserTests.stripUnnecessaryParenExprs(atom);
     }
 
     private static Java.Atom
     stripUnnecessaryParenExprs(Java.Atom atom) {
         if (atom instanceof Java.Rvalue) {
-            return UnparseTests.stripUnnecessaryParenExprs((Java.Rvalue) atom);
+            return UnparserTests.stripUnnecessaryParenExprs((Java.Rvalue) atom);
         }
         return atom;
     }
 
     private static Java.Lvalue
     stripUnnecessaryParenExprs(Java.Lvalue lvalue) {
-        return (Java.Lvalue) UnparseTests.stripUnnecessaryParenExprs((Java.Rvalue) lvalue);
+        return (Java.Lvalue) UnparserTests.stripUnnecessaryParenExprs((Java.Rvalue) lvalue);
     }
 
     @Nullable private static Java.Rvalue
     stripUnnecessaryParenExprsOpt(@Nullable Java.Rvalue rvalue) {
-        return rvalue == null ? null : UnparseTests.stripUnnecessaryParenExprs(rvalue);
+        return rvalue == null ? null : UnparserTests.stripUnnecessaryParenExprs(rvalue);
     }
 
     private static Java.Rvalue
@@ -188,8 +190,8 @@ class UnparseTests {
                     visitArrayAccessExpression(ArrayAccessExpression aae) {
                         return new Java.ArrayAccessExpression(
                             aae.getLocation(),
-                            UnparseTests.stripUnnecessaryParenExprs(aae.lhs),
-                            UnparseTests.stripUnnecessaryParenExprs(aae.index)
+                            UnparserTests.stripUnnecessaryParenExprs(aae.lhs),
+                            UnparserTests.stripUnnecessaryParenExprs(aae.index)
                         );
                     }
 
@@ -197,7 +199,7 @@ class UnparseTests {
                     visitFieldAccess(FieldAccess fa) {
                         return new Java.FieldAccess(
                             fa.getLocation(),
-                            UnparseTests.stripUnnecessaryParenExprs(fa.lhs),
+                            UnparserTests.stripUnnecessaryParenExprs(fa.lhs),
                             fa.field
                         );
                     }
@@ -206,7 +208,7 @@ class UnparseTests {
                     visitFieldAccessExpression(FieldAccessExpression fae) {
                         return new Java.FieldAccessExpression(
                             fae.getLocation(),
-                            UnparseTests.stripUnnecessaryParenExprs(fae.lhs),
+                            UnparserTests.stripUnnecessaryParenExprs(fae.lhs),
                             fae.fieldName
                         );
                     }
@@ -216,7 +218,7 @@ class UnparseTests {
 
                     @Override public Rvalue
                     visitParenthesizedExpression(ParenthesizedExpression pe) {
-                        return UnparseTests.stripUnnecessaryParenExprs(pe.value);
+                        return UnparserTests.stripUnnecessaryParenExprs(pe.value);
                     }
 
                     @Override public Rvalue
@@ -228,7 +230,7 @@ class UnparseTests {
             visitArrayLength(ArrayLength al) {
                 return new Java.ArrayLength(
                     al.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprs(al.lhs)
+                    UnparserTests.stripUnnecessaryParenExprs(al.lhs)
                 );
             }
 
@@ -236,9 +238,9 @@ class UnparseTests {
             visitAssignment(Assignment a) {
                 return new Java.Assignment(
                     a.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprs(a.lhs),
+                    UnparserTests.stripUnnecessaryParenExprs(a.lhs),
                     a.operator,
-                    UnparseTests.stripUnnecessaryParenExprs(a.rhs)
+                    UnparserTests.stripUnnecessaryParenExprs(a.rhs)
                 );
             }
 
@@ -246,9 +248,9 @@ class UnparseTests {
             visitBinaryOperation(BinaryOperation bo) {
                 return new Java.BinaryOperation(
                     bo.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprs(bo.lhs),
+                    UnparserTests.stripUnnecessaryParenExprs(bo.lhs),
                     bo.op,
-                    UnparseTests.stripUnnecessaryParenExprs(bo.rhs)
+                    UnparserTests.stripUnnecessaryParenExprs(bo.rhs)
                 );
             }
 
@@ -257,7 +259,7 @@ class UnparseTests {
                 return new Java.Cast(
                     c.getLocation(),
                     c.targetType,
-                    UnparseTests.stripUnnecessaryParenExprs(c.value)
+                    UnparserTests.stripUnnecessaryParenExprs(c.value)
                 );
             }
 
@@ -270,9 +272,9 @@ class UnparseTests {
             visitConditionalExpression(ConditionalExpression ce) {
                 return new Java.ConditionalExpression(
                     ce.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprs(ce.lhs),
-                    UnparseTests.stripUnnecessaryParenExprs(ce.mhs),
-                    UnparseTests.stripUnnecessaryParenExprs(ce.rhs)
+                    UnparserTests.stripUnnecessaryParenExprs(ce.lhs),
+                    UnparserTests.stripUnnecessaryParenExprs(ce.mhs),
+                    UnparserTests.stripUnnecessaryParenExprs(ce.rhs)
                 );
             }
 
@@ -282,12 +284,12 @@ class UnparseTests {
                     return new Java.Crement(
                         c.getLocation(),
                         c.operator,
-                        UnparseTests.stripUnnecessaryParenExprs(c.operand)
+                        UnparserTests.stripUnnecessaryParenExprs(c.operand)
                     );
                 } else {
                     return new Java.Crement(
                         c.getLocation(),
-                        UnparseTests.stripUnnecessaryParenExprs(c.operand),
+                        UnparserTests.stripUnnecessaryParenExprs(c.operand),
                         c.operator
                     );
                 }
@@ -297,7 +299,7 @@ class UnparseTests {
             visitInstanceof(Instanceof io) {
                 return new Java.Instanceof(
                     io.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprs(io.lhs),
+                    UnparserTests.stripUnnecessaryParenExprs(io.lhs),
                     io.rhs
                 );
             }
@@ -315,9 +317,9 @@ class UnparseTests {
             visitMethodInvocation(MethodInvocation mi) {
                 return new Java.MethodInvocation(
                     mi.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprsOpt(mi.optionalTarget),
+                    UnparserTests.stripUnnecessaryParenExprsOpt(mi.optionalTarget),
                     mi.methodName,
-                    UnparseTests.stripUnnecessaryParenExprs(mi.arguments)
+                    UnparserTests.stripUnnecessaryParenExprs(mi.arguments)
                 );
             }
 
@@ -331,7 +333,7 @@ class UnparseTests {
                 return new Java.NewArray(
                     na.getLocation(),
                     na.type,
-                    UnparseTests.stripUnnecessaryParenExprs(na.dimExprs),
+                    UnparserTests.stripUnnecessaryParenExprs(na.dimExprs),
                     na.dims
                 );
             }
@@ -342,9 +344,9 @@ class UnparseTests {
                 assert type != null;
                 return new Java.NewClassInstance(
                     nci.getLocation(),
-                    UnparseTests.stripUnnecessaryParenExprsOpt(nci.optionalQualification),
+                    UnparserTests.stripUnnecessaryParenExprsOpt(nci.optionalQualification),
                     type,
-                    UnparseTests.stripUnnecessaryParenExprs(nci.arguments)
+                    UnparserTests.stripUnnecessaryParenExprs(nci.arguments)
                 );
             }
 
@@ -364,7 +366,7 @@ class UnparseTests {
                 return new Java.SuperclassMethodInvocation(
                     smi.getLocation(),
                     smi.methodName,
-                    UnparseTests.stripUnnecessaryParenExprs(smi.arguments)
+                    UnparserTests.stripUnnecessaryParenExprs(smi.arguments)
                 );
             }
 
@@ -376,7 +378,7 @@ class UnparseTests {
                 return new Java.UnaryOperation(
                     uo.getLocation(),
                     uo.operator,
-                    UnparseTests.stripUnnecessaryParenExprs(uo.operand)
+                    UnparserTests.stripUnnecessaryParenExprs(uo.operand)
                 );
             }
         });
@@ -403,13 +405,13 @@ class UnparseTests {
             null,       // optionalTypeParameters
             new Type[0] // extendedTypes
         );
-        StringWriter   sw = new StringWriter();
-        UnparseVisitor uv = new UnparseVisitor(sw);
-        uv.unparseTypeDeclaration(decl);
-        uv.close();
+        StringWriter sw = new StringWriter();
+        Unparser     u  = new Unparser(sw);
+        u.unparseTypeDeclaration(decl);
+        u.close();
         String s             = sw.toString();
         String correctString = "/**foo */ public interface Foo { }";
-        Assert.assertEquals(correctString, UnparseTests.normalizeWhitespace(s));
+        Assert.assertEquals(correctString, UnparserTests.normalizeWhitespace(s));
     }
 
     @Test public void
@@ -422,24 +424,24 @@ class UnparseTests {
             final Atom   expr     = (Atom)   test[0];
             final String expected = (String) test[1];
 
-            StringWriter   sw = new StringWriter();
-            UnparseVisitor uv = new UnparseVisitor(sw);
-            uv.unparseAtom(expr);
-            uv.close();
+            StringWriter sw = new StringWriter();
+            Unparser     u  = new Unparser(sw);
+            u.unparseAtom(expr);
+            u.close();
             Assert.assertEquals(expected, sw.toString());
         }
     }
 
     @Test public void
     testSimple() throws Exception {
-        UnparseTests.helpTestExpr("1 + 2*3", "1 + 2 * 3", false);
-        UnparseTests.helpTestExpr("1 + 2*3", "1 + 2 * 3", true);
+        UnparserTests.helpTestExpr("1 + 2*3", "1 + 2 * 3", false);
+        UnparserTests.helpTestExpr("1 + 2*3", "1 + 2 * 3", true);
     }
 
     @Test public void
     testParens() throws Exception {
-        UnparseTests.helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", false);
-        UnparseTests.helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", true);
+        UnparserTests.helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", false);
+        UnparserTests.helpTestExpr("(1 + 2)*3", "(1 + 2) * 3", true);
     }
 
     @Test public void
@@ -495,8 +497,8 @@ class UnparseTests {
                 expectNoSimplify = input;
             }
 
-            UnparseTests.helpTestExpr(input, expectSimplify, true);
-            UnparseTests.helpTestExpr(input, expectNoSimplify, false);
+            UnparserTests.helpTestExpr(input, expectSimplify, true);
+            UnparserTests.helpTestExpr(input, expectNoSimplify, false);
         }
     }
 
@@ -520,7 +522,7 @@ class UnparseTests {
 
             String expect = expr.length >= 2 && expr[1] != null ? expr[1] : input;
 
-            UnparseTests.helpTestCu(input, expect);
+            UnparserTests.helpTestCu(input, expect);
         }
     }
 
@@ -542,7 +544,7 @@ class UnparseTests {
 
             String expect = expr.length >= 2 && expr[1] != null ? expr[1] : input;
 
-            UnparseTests.helpTestCu(input, expect);
+            UnparserTests.helpTestCu(input, expect);
         }
     }
 
@@ -575,7 +577,7 @@ class UnparseTests {
                         String text;
                         {
                             StringWriter sw = new StringWriter();
-                            UnparseVisitor.unparse(cu1, sw);
+                            Unparser.unparse(cu1, sw);
                             text = sw.toString();
                         }
 
