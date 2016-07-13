@@ -42,7 +42,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * As with any {@link ClassLoader}, it is not possible to "update" classes after they've been loaded. The way to
  * achieve this is to give up on the {@link AbstractJavaSourceClassLoader} and create a new one.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
+public abstract
 class AbstractJavaSourceClassLoader extends ClassLoader {
 
     /** @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain) */
@@ -180,7 +180,7 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
         if (optionalSourcePath != null) ajscl.setSourcePath(optionalSourcePath);
 
         // Load the given class.
-        Class clazz = ajscl.loadClass(className);
+        Class<?> clazz = ajscl.loadClass(className);
 
         // Find its "main" method.
         Method mainMethod;
@@ -199,7 +199,7 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
     private static File[]
     splitPath(String string) {
 
-        List<File> l = new ArrayList();
+        List<File> l = new ArrayList<File>();
         for (StringTokenizer st = new StringTokenizer(string, File.pathSeparator); st.hasMoreTokens();) {
             l.add(new File(st.nextToken()));
         }

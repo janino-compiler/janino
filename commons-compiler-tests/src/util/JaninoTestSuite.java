@@ -27,7 +27,6 @@
 package util;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
@@ -227,11 +226,7 @@ class JaninoTestSuite {
 
         @Override protected Object
         execute() throws Exception {
-
-            @SuppressWarnings("unchecked") Method
-            method = this.classBodyEvaluator.getClazz().getMethod("main", new Class[0]);
-
-            return method.invoke(null, new Object[0]);
+            return this.classBodyEvaluator.getClazz().getMethod("main").invoke(null);
         }
     }
 

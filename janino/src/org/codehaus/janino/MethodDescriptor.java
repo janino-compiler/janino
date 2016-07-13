@@ -29,8 +29,10 @@ package org.codehaus.janino;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Representation of a "method descriptor" (JVMS 4.3.3). */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+/**
+ * Representation of a "method descriptor" (JVMS 4.3.3).
+ */
+public
 class MethodDescriptor {
 
     /** The field descriptors of the method parameters. */
@@ -52,7 +54,7 @@ class MethodDescriptor {
         if (s.charAt(0) != '(') throw new JaninoRuntimeException();
 
         int          from         = 1;
-        List<String> parameterFDs = new ArrayList();
+        List<String> parameterFDs = new ArrayList<String>();
         while (s.charAt(from) != ')') {
             int to = from;
             while (s.charAt(to) == '[') ++to;

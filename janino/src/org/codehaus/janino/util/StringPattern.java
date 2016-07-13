@@ -37,7 +37,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * Additionally, the concept of the "combined pattern" is supported (see
  * {@link #matches(StringPattern[], String)}.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class StringPattern {
 
     /** @see #matches(StringPattern[], String) */
@@ -101,7 +101,7 @@ class StringPattern {
      */
     public static StringPattern[]
     parseCombinedPattern(String combinedPattern) {
-        List<StringPattern> al = new ArrayList();
+        List<StringPattern> al = new ArrayList<StringPattern>();
         for (int k = 0, l; k < combinedPattern.length(); k = l) {
             int  patternMode;
             char c = combinedPattern.charAt(k);

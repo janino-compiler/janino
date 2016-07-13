@@ -43,13 +43,15 @@ import java.util.logging.Logger;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.LocalVariableSlot;
 import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.ClassFile.AttributeInfo;
+import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
 
 /**
  * The context of the compilation of a function (constructor or method). Manages generation of
  * byte code, the exception table, generation of line number tables, allocation of local variables,
  * determining of stack size and local variable table size and flow analysis.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class CodeContext {
 
     private  static final Logger LOGGER = Logger.getLogger(CodeContext.class.getName());
@@ -71,17 +73,17 @@ class CodeContext {
     private final List<ExceptionTableEntry> exceptionTableEntries;
 
     /** All the local variables that are allocated in any block in this {@link CodeContext}. */
-    private final List<Java.LocalVariableSlot> allLocalVars = new ArrayList();
+    private final List<Java.LocalVariableSlot> allLocalVars = new ArrayList<Java.LocalVariableSlot>();
 
     /**
      * List of List of Java.LocalVariableSlot objects. Each List of Java.LocalVariableSlot is
      * the local variables allocated for a block. They are pushed and poped onto the list together
      * to make allocation of the next local variable slot easy.
      */
-    private final List<List<Java.LocalVariableSlot>> scopedVars = new ArrayList();
+    private final List<List<Java.LocalVariableSlot>> scopedVars = new ArrayList<List<Java.LocalVariableSlot>>();
 
     private short                   nextLocalVariableSlot;
-    private final List<Relocatable> relocatables = new ArrayList();
+    private final List<Relocatable> relocatables = new ArrayList<Relocatable>();
 
     /** Creates an empty "Code" attribute. */
     public
@@ -95,7 +97,7 @@ class CodeContext {
         this.beginning             = new Offset();
         this.end                   = new Inserter();
         this.currentInserter       = this.end;
-        this.exceptionTableEntries = new ArrayList();
+        this.exceptionTableEntries = new ArrayList<ExceptionTableEntry>();
 
         this.beginning.offset = 0;
         this.end.offset       = 0;
@@ -170,7 +172,7 @@ class CodeContext {
     saveLocalVariables() {
 
         // Push empty list on the stack to hold a new block's local vars.
-        List<Java.LocalVariableSlot> l = new ArrayList();
+        List<Java.LocalVariableSlot> l = new ArrayList<LocalVariableSlot>();
         this.scopedVars.add(l);
 
         return l;
@@ -185,9 +187,9 @@ class CodeContext {
     restoreLocalVariables() {
 
         // Pop the list containing the current block's local vars.
-        List<Java.LocalVariableSlot> slots = (
-            (List<Java.LocalVariableSlot>) this.scopedVars.remove(this.scopedVars.size() - 1)
-        );
+        List<Java.LocalVariableSlot>
+        slots = (List<Java.LocalVariableSlot>) this.scopedVars.remove(this.scopedVars.size() - 1);
+
         for (Java.LocalVariableSlot slot : slots) {
             if (slot.getName() != null) {
                 slot.setEnd(this.newOffset());
@@ -219,11 +221,11 @@ class CodeContext {
             dos.writeShort(exceptionTableEntry.catchType);
         }
 
-        List<ClassFile.AttributeInfo> attributes = new ArrayList();
+        List<ClassFile.AttributeInfo> attributes = new ArrayList<AttributeInfo>();
 
         // Add "LineNumberTable" attribute.
         if (lineNumberTableAttributeNameIndex != 0) {
-            List<ClassFile.LineNumberTableAttribute.Entry> lnt = new ArrayList();
+            List<ClassFile.LineNumberTableAttribute.Entry> lnt = new ArrayList<Entry>();
             for (Offset o = this.beginning; o != null; o = o.next) {
                 if (o instanceof LineNumberOffset) {
                     lnt.add(new ClassFile.LineNumberTableAttribute.Entry(o.offset, ((LineNumberOffset) o).lineNumber));
@@ -256,8 +258,11 @@ class CodeContext {
      */
     @Nullable protected ClassFile.AttributeInfo
     storeLocalVariableTable(DataOutputStream dos, short localVariableTableAttributeNameIndex) {
-        ClassFile                                               cf        = this.getClassFile();
-        final List<ClassFile.LocalVariableTableAttribute.Entry> entryList = new ArrayList();
+
+        ClassFile cf = this.getClassFile();
+
+        final List<ClassFile.LocalVariableTableAttribute.Entry>
+        entryList = new ArrayList<org.codehaus.janino.util.ClassFile.LocalVariableTableAttribute.Entry>();
 
         for (Java.LocalVariableSlot slot : this.getAllLocalVars()) {
 
@@ -567,9 +572,11 @@ class CodeContext {
             case Opcode.OP1_BO4:
                 this.flowAnalysis(
                     functionName,
-                    code, codeSize,
+                    code,
+                    codeSize,
                     CodeContext.extract32BitValue(offset, operandOffset, code),
-                    stackSize, stackSizes
+                    stackSize,
+                    stackSizes
                 );
                 operandOffset += 4;
                 break;
@@ -578,9 +585,11 @@ class CodeContext {
                 while ((operandOffset & 3) != 0) ++operandOffset;
                 this.flowAnalysis(
                     functionName,
-                    code, codeSize,
+                    code,
+                    codeSize,
                     CodeContext.extract32BitValue(offset, operandOffset, code),
-                    stackSize, stackSizes
+                    stackSize,
+                    stackSizes
                 );
                 operandOffset += 4;
 
@@ -591,9 +600,11 @@ class CodeContext {
                     operandOffset += 4; //skip match value
                     this.flowAnalysis(
                         functionName,
-                        code, codeSize,
+                        code,
+                        codeSize,
                         CodeContext.extract32BitValue(offset, operandOffset, code),
-                        stackSize, stackSizes
+                        stackSize,
+                        stackSizes
                     );
                     operandOffset += 4; //advance over offset
                 }
@@ -603,9 +614,11 @@ class CodeContext {
                 while ((operandOffset & 3) != 0) ++operandOffset;
                 this.flowAnalysis(
                     functionName,
-                    code, codeSize,
+                    code,
+                    codeSize,
                     CodeContext.extract32BitValue(offset, operandOffset, code),
-                    stackSize, stackSizes
+                    stackSize,
+                    stackSizes
                 );
                 operandOffset += 4;
                 int low = CodeContext.extract32BitValue(offset, operandOffset, code);
@@ -615,9 +628,11 @@ class CodeContext {
                 for (int i = low; i <= hi; ++i) {
                     this.flowAnalysis(
                         functionName,
-                        code, codeSize,
+                        code,
+                        codeSize,
                         CodeContext.extract32BitValue(offset, operandOffset, code),
-                        stackSize, stackSizes
+                        stackSize,
+                        stackSizes
                     );
                     operandOffset += 4;
                 }
@@ -1059,14 +1074,14 @@ class CodeContext {
     /** E.g. {@link Opcode#IFLT} ("less than") inverts to {@link Opcode#IFGE} ("greater than or equal to"). */
     private static byte
     invertBranchOpcode(byte branchOpcode) {
-        return ((Byte) CodeContext.BRANCH_OPCODE_INVERSION.get(new Byte(branchOpcode))).byteValue();
+        return (Byte) CodeContext.BRANCH_OPCODE_INVERSION.get(new Byte(branchOpcode));
     }
 
     private static final Map<Byte /*branch-opcode*/, Byte /*inverted-branch-opcode*/>
     BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion();
     private static Map<Byte, Byte>
     createBranchOpcodeInversion() {
-        Map<Byte, Byte> m = new HashMap();
+        Map<Byte, Byte> m = new HashMap<Byte, Byte>();
         m.put(new Byte(Opcode.IF_ACMPEQ), new Byte(Opcode.IF_ACMPNE));
         m.put(new Byte(Opcode.IF_ACMPNE), new Byte(Opcode.IF_ACMPEQ));
         m.put(new Byte(Opcode.IF_ICMPEQ), new Byte(Opcode.IF_ICMPNE));

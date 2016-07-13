@@ -52,7 +52,7 @@ import org.codehaus.janino.util.Producer;
  *   </li>
  * </ul>
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class DirectoryIterator extends ProducerIterator<File> {
     public
     DirectoryIterator(
@@ -60,13 +60,13 @@ class DirectoryIterator extends ProducerIterator<File> {
         final FilenameFilter directoryNameFilter,
         final FilenameFilter fileNameFilter
     ) {
-        super(new Producer() {
-            private final List<State> stateStack = DirectoryIterator.newArrayList(new State(rootDirectory));
+        super(new Producer<File>() {
+            private final List<State> stateStack = DirectoryIterator.<State>newArrayList(new State(rootDirectory));
 
-            @Override @Nullable public Object
+            @Override @Nullable public File
             produce() {
                 while (!this.stateStack.isEmpty()) {
-                    State state = (State) this.stateStack.get(this.stateStack.size() - 1);
+                    State state = this.stateStack.get(this.stateStack.size() - 1);
                     if (state.directories.hasNext()) {
                         this.stateStack.add(new State((File) state.directories.next()));
                     } else
@@ -87,8 +87,8 @@ class DirectoryIterator extends ProducerIterator<File> {
                     if (entries == null) {
                         throw new JaninoRuntimeException("Directory \"" + dir + "\" could not be read");
                     }
-                    List<File> directoryList = new ArrayList();
-                    List<File> fileList      = new ArrayList();
+                    List<File> directoryList = new ArrayList<File>();
+                    List<File> fileList      = new ArrayList<File>();
                     for (File entry : entries) {
                         if (entry.isDirectory()) {
                             if (directoryNameFilter.accept(dir, entry.getName())) directoryList.add(entry);
@@ -118,16 +118,16 @@ class DirectoryIterator extends ProducerIterator<File> {
         FilenameFilter directoryNameFilter,
         FilenameFilter fileNameFilter
     ) {
-        List<Iterator<File>> result = new ArrayList();
+        List<Iterator<File>> result = new ArrayList<Iterator<File>>();
         for (File rootDirectory : rootDirectories) {
             result.add(new DirectoryIterator(rootDirectory, directoryNameFilter, fileNameFilter));
         }
-        return new MultiDimensionalIterator(result.iterator(), 2);
+        return new MultiDimensionalIterator<File>(result.iterator(), 2);
     }
 
-    private static ArrayList
-    newArrayList(Object initialElement) {
-        ArrayList result = new ArrayList();
+    private static <T> ArrayList<T>
+    newArrayList(T initialElement) {
+        ArrayList<T> result = new ArrayList<T>();
         result.add(initialElement);
         return result;
     }

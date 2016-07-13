@@ -57,7 +57,7 @@ import org.codehaus.janino.util.iterator.ReverseListIterator;
  * 'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
  * Edition</a>.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public final
+public final
 class Java {
 
     private Java() {} // Don't instantiate me.
@@ -123,10 +123,11 @@ class Java {
         @Nullable public PackageDeclaration optionalPackageDeclaration;
 
         /** The IMPORT declarations in this CU. */
-        public final List<ImportDeclaration> importDeclarations = new ArrayList();
+        public final List<ImportDeclaration> importDeclarations = new ArrayList<ImportDeclaration>();
 
         /** The top-level declarations in this CU. */
-        public final List<PackageMemberTypeDeclaration> packageMemberTypeDeclarations = new ArrayList();
+        public final List<PackageMemberTypeDeclaration>
+        packageMemberTypeDeclarations = new ArrayList<PackageMemberTypeDeclaration>();
 
         public
         CompilationUnit(@Nullable String optionalFileName) { this.optionalFileName = optionalFileName; }
@@ -729,8 +730,8 @@ class Java {
         private final Location                    location;
         private final Modifiers                   modifiers;
         @Nullable private final TypeParameter[]   optionalTypeParameters;
-        private final List<MethodDeclarator>      declaredMethods              = new ArrayList();
-        private final List<MemberTypeDeclaration> declaredClassesAndInterfaces = new ArrayList();
+        private final List<MethodDeclarator>      declaredMethods              = new ArrayList<MethodDeclarator>();
+        private final List<MemberTypeDeclaration> declaredClassesAndInterfaces = new ArrayList<MemberTypeDeclaration>();
         @Nullable private Scope                   enclosingScope;
 
         /** Holds the resolved type during compilation. */
@@ -877,13 +878,13 @@ class Java {
     class AbstractClassDeclaration extends AbstractTypeDeclaration implements ClassDeclaration {
 
         /** List of {@link ConstructorDeclarator}s of this class. */
-        public final List<ConstructorDeclarator> constructors = new ArrayList();
+        public final List<ConstructorDeclarator> constructors = new ArrayList<ConstructorDeclarator>();
 
         /**
          * List of {@link TypeBodyDeclaration}s of this class: Field declarations (both static and non-static),
          * (static and non-static) initializers (a.k.a. "class initializers" and "instance initializers").
          */
-        public final List<BlockStatement> variableDeclaratorsAndInitializers = new ArrayList();
+        public final List<BlockStatement> variableDeclaratorsAndInitializers = new ArrayList<BlockStatement>();
 
         public
         AbstractClassDeclaration(
@@ -954,7 +955,7 @@ class Java {
                     new FormalParameters(this.getLocation()), // formalParameters
                     new Type[0],                              // thrownExceptions
                     null,                                     // optionalExplicitConstructorInvocation
-                    Collections.EMPTY_LIST                    // optionalStatements
+                    Collections.<BlockStatement>emptyList()   // optionalStatements
                 );
                 defaultConstructor.setDeclaringType(this);
                 return new ConstructorDeclarator[] { defaultConstructor };
@@ -969,7 +970,7 @@ class Java {
         getSyntheticFields() { return this.syntheticFields; }
 
         /** All field names start with "this$" or "val$". */
-        final SortedMap<String, IClass.IField> syntheticFields = new TreeMap();
+        final SortedMap<String, IClass.IField> syntheticFields = new TreeMap<String, IClass.IField>();
     }
 
     /** Representation of a JLS7 15.9.5 'anonymous class declaration'. */
@@ -1484,7 +1485,7 @@ class Java {
         public final Type[] extendedTypes;
 
         /** The constants that this interface declares. */
-        public final List<FieldDeclaration> constantDeclarations = new ArrayList();
+        public final List<FieldDeclaration> constantDeclarations = new ArrayList<FieldDeclaration>();
 
         /** Set during "compile()". */
         @Nullable IClass[] interfaces;
@@ -2061,7 +2062,7 @@ class Java {
         // Compile time members.
 
         /** Synthetic parameter name to {@link Java.LocalVariable} mapping. */
-        final Map<String, LocalVariable> syntheticParameters = new HashMap();
+        final Map<String, LocalVariable> syntheticParameters = new HashMap<String, LocalVariable>();
 
         // Implement "FunctionDeclarator":
 
@@ -2441,7 +2442,7 @@ class Java {
     class Block extends Statement {
 
         /** The list of statements that comprise the body of the block. */
-        public final List<BlockStatement> statements = new ArrayList();
+        public final List<BlockStatement> statements = new ArrayList<BlockStatement>();
 
         public
         Block(Location location) { super(location); }
@@ -4137,7 +4138,7 @@ class Java {
         /** Returns an {@link Iterator} over a left-to-right sequence of {@link Java.Rvalue}s. */
         public Iterator<Rvalue>
         unrollLeftAssociation() {
-            List<Rvalue>    operands = new ArrayList();
+            List<Rvalue>    operands = new ArrayList<Rvalue>();
             BinaryOperation bo       = this;
             for (;;) {
                 operands.add(bo.rhs);
@@ -4149,7 +4150,7 @@ class Java {
                     break;
                 }
             }
-            return new ReverseListIterator(operands.listIterator(operands.size()));
+            return new ReverseListIterator<Rvalue>(operands.listIterator(operands.size()));
         }
 
         @Override @Nullable public <R, EX extends Throwable> R

@@ -45,7 +45,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * 'JLS7' means a reference to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE
  * 7 Edition</a>
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
+public abstract
 class IClass {
 
     private static final Logger LOGGER = Logger.getLogger(IClass.class.getName());
@@ -150,7 +150,7 @@ class IClass {
             IMethod[] dims = this.getDeclaredIMethods();
 
             // Fill the map with "IMethod"s and "List<IMethod>"s.
-            dimc = new HashMap();
+            dimc = new HashMap<String, Object>();
             for (IMethod dim : dims) {
                 String  mn  = dim.getName();
                 Object  o   = dimc.get(mn);
@@ -158,12 +158,13 @@ class IClass {
                     dimc.put(mn, dim);
                 } else
                 if (o instanceof IMethod) {
-                    List l = new ArrayList();
-                    l.add(o);
+                    List<IMethod> l = new ArrayList<IMethod>();
+                    l.add((IMethod) o);
                     l.add(dim);
                     dimc.put(mn, l);
                 } else {
-                    ((List) o).add(dim);
+                    @SuppressWarnings("unchecked") List<IMethod> tmp = (List<IMethod>) o;
+                    tmp.add(dim);
                 }
             }
 
@@ -173,7 +174,7 @@ class IClass {
                 if (v instanceof IMethod) {
                     me.setValue(new IMethod[] { (IMethod) v });
                 } else {
-                    List<IMethod> l = (List) v;
+                    @SuppressWarnings("unchecked") List<IMethod> l = (List<IMethod>) v;
                     me.setValue(l.toArray(new IMethod[l.size()]));
                 }
             }
@@ -196,7 +197,7 @@ class IClass {
 
         if (this.iMethodCache != null) return this.iMethodCache;
 
-        List<IMethod> iMethods = new ArrayList();
+        List<IMethod> iMethods = new ArrayList<IMethod>();
         this.getIMethods(iMethods);
         return (this.iMethodCache = (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]));
     }
@@ -573,7 +574,7 @@ class IClass {
         return false;
     }
 
-    private static final Set<String> PRIMITIVE_WIDENING_CONVERSIONS = new HashSet();
+    private static final Set<String> PRIMITIVE_WIDENING_CONVERSIONS = new HashSet<String>();
     static {
         String[] pwcs = new String[] {
             Descriptor.BYTE  + Descriptor.SHORT,
@@ -728,7 +729,7 @@ class IClass {
 
             // Notice: A type may be added multiply to the result set because we are in its scope
             // multiply. E.g. the type is a member of a superclass AND a member of an enclosing type.
-            Set<IClass> s = new HashSet();
+            Set<IClass> s = new HashSet<IClass>();
             this.findMemberType(optionalName, s);
             res = s.isEmpty() ? IClass.ZERO_ICLASSES : (IClass[]) s.toArray(new IClass[s.size()]);
 
@@ -737,7 +738,7 @@ class IClass {
 
         return res;
     }
-    private final Map<String /*name*/, IClass[]> memberTypeCache = new HashMap();
+    private final Map<String /*name*/, IClass[]> memberTypeCache = new HashMap<String, IClass[]>();
     private static final IClass[]                ZERO_ICLASSES   = new IClass[0];
     private void
     findMemberType(@Nullable String optionalName, Collection<IClass> result) throws CompileException {

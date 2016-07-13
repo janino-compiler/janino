@@ -59,8 +59,11 @@ class ProducerIterator<T> implements Iterator<T> {
 
     @Override public T
     next() {
+
         if (this.nextElement == ProducerIterator.UNKNOWN) this.nextElement = this.producer.produce();
+
         if (this.nextElement == ProducerIterator.AT_END) throw new NoSuchElementException();
+
         @SuppressWarnings("unchecked") T result = (T) this.nextElement;
         this.nextElement = ProducerIterator.UNKNOWN;
 

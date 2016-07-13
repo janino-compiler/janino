@@ -43,7 +43,7 @@ import org.codehaus.janino.util.iterator.TransformingIterator;
  * @see org.codehaus.janino.util.resource.ZipFileResourceFinder
  * @see org.codehaus.janino.util.resource.DirectoryResourceFinder
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class PathResourceFinder extends LazyMultiResourceFinder {
 
     /**
@@ -68,8 +68,11 @@ class PathResourceFinder extends LazyMultiResourceFinder {
 
     private static Iterator<ResourceFinder>
     createIterator(final Iterator<File> entries) {
-        return new TransformingIterator/*<File, ResourceFinder>*/(entries) {
-            @Override protected Object transform(Object o) { return PathResourceFinder.createResourceFinder((File) o); }
+
+        return new TransformingIterator<Object, ResourceFinder>(entries) {
+
+            @Override protected ResourceFinder
+            transform(Object o) { return PathResourceFinder.createResourceFinder((File) o); }
         };
     }
 
@@ -92,7 +95,7 @@ class PathResourceFinder extends LazyMultiResourceFinder {
     public static File[]
     parsePath(String s) {
         int        from = 0;
-        List<File> l    = new ArrayList();
+        List<File> l    = new ArrayList<File>();
         for (;;) {
             int to = s.indexOf(File.pathSeparatorChar, from);
             if (to == -1) {

@@ -50,7 +50,7 @@ import org.codehaus.janino.util.TeeReader;
  * The <code>optionalFileName</code> parameter passed to many
  * constructors should point
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class Scanner {
 
     // Public Scanners that read from a file.
@@ -970,7 +970,7 @@ class Scanner {
      */
     private boolean expectGreater;
 
-    private static final Map<String, String> JAVA_KEYWORDS = new HashMap();
+    private static final Map<String, String> JAVA_KEYWORDS = new HashMap<String, String>();
     static {
         String[] ks = {
             "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue",
@@ -981,8 +981,8 @@ class Scanner {
         };
         for (int i = 0; i < ks.length; ++i) Scanner.JAVA_KEYWORDS.put(ks[i], ks[i]);
     }
-    private static final Map<String, String> JAVA_OPERATORS                = new HashMap();
-    private static final Map<String, String> JAVA_OPERATORS_EXPECT_GREATER = new HashMap();
+    private static final Map<String, String> JAVA_OPERATORS                = new HashMap<String, String>();
+    private static final Map<String, String> JAVA_OPERATORS_EXPECT_GREATER = new HashMap<String, String>();
     static {
         String[] ops = {
             // Separators:

@@ -40,17 +40,18 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * java.util.Collection}, an {@link java.util.Enumeration} or a {@link java.util.Iterator} element, it iterates over it
  * recursively.
  * <p>
- * Be aware that {@link #hasNext()} must read ahead one element.
+ *   Be aware that {@link #hasNext()} must read ahead one element.
+ * </p>
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
-class TraversingIterator implements Iterator {
+public
+class TraversingIterator implements Iterator<Object> {
 
-    private final Stack      nest = new Stack(); // Iterator
-    @Nullable private Object nextElement;
-    private boolean          nextElementRead;    // Have we read ahead?
+    private final Stack<Iterator<?>> nest = new Stack<Iterator<?>>(); // Iterator
+    @Nullable private Object         nextElement;
+    private boolean                  nextElementRead;                 // Have we read ahead?
 
     public
-    TraversingIterator(Iterator delegate) { this.nest.push(delegate); }
+    TraversingIterator(Iterator<?> delegate) { this.nest.push(delegate); }
 
     @Override public boolean
     hasNext() { return this.nextElementRead || this.readNext(); }
@@ -70,23 +71,23 @@ class TraversingIterator implements Iterator {
     private boolean
     readNext() {
         while (!this.nest.empty()) {
-            Iterator it = (Iterator) this.nest.peek();
+            Iterator<?> it = this.nest.peek();
             if (!it.hasNext()) {
                 this.nest.pop();
                 continue;
             }
             Object o = it.next();
             if (o instanceof Iterator) {
-                this.nest.push(o);
+                this.nest.push((Iterator<?>) o);
             } else
             if (o instanceof Object[]) {
                 this.nest.push(Arrays.asList((Object[]) o).iterator());
             } else
             if (o instanceof Collection) {
-                this.nest.push(((Collection) o).iterator());
+                this.nest.push(((Collection<?>) o).iterator());
             } else
             if (o instanceof Enumeration) {
-                this.nest.push(new EnumerationIterator((Enumeration) o));
+                this.nest.push(new EnumerationIterator<Object>((Enumeration<?>) o));
             } else
             {
                 this.nextElement     = o;
@@ -103,5 +104,5 @@ class TraversingIterator implements Iterator {
      * @see Iterator#remove()
      */
     @Override public void
-    remove() { ((Iterator) this.nest.peek()).remove(); }
+    remove() { this.nest.peek().remove(); }
 }

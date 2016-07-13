@@ -40,7 +40,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * A {@link java.io.FilterWriter} that automatically indents lines by looking at
  * trailing opening braces ('{') and leading closing braces ('}').
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class AutoIndentWriter extends FilterWriter {
 
     /** Special character indicating a tabular layout of the following text. */
@@ -122,7 +122,7 @@ class AutoIndentWriter extends FilterWriter {
 
     private void
     flushTabulatorBuffer() throws IOException {
-        List<List<StringBuilder>> lineGroups = new ArrayList();
+        List<List<StringBuilder>> lineGroups = new ArrayList<List<StringBuilder>>();
         lineGroups.add(new ArrayList<StringBuilder>());
 
         List<StringBuilder> tb = this.tabulatorBuffer;

@@ -46,7 +46,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *
  *     java -Xrunhprof:heap=sites,monitor=n,cutoff=0,depth=4 MyClass
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public final
+public final
 class HprofScrubber {
     private HprofScrubber() {}
 
@@ -82,9 +82,9 @@ class HprofScrubber {
 
         BufferedReader br = new BufferedReader(new FileReader(fileName));
         try {
-            Map<Integer /*number*/, String[] /*stackFrames*/> traces  = new HashMap();
-            List<Site>                                        sites   = new ArrayList();
-            List<Sample>                                      samples = new ArrayList();
+            Map<Integer /*number*/, String[] /*stackFrames*/> traces  = new HashMap<Integer, String[]>();
+            List<Site>                                        sites   = new ArrayList<Site>();
+            List<Sample>                                      samples = new ArrayList<Sample>();
 
             String s = br.readLine();
             while (s != null) {
@@ -110,7 +110,7 @@ class HprofScrubber {
                 } else
                 if (s.startsWith("TRACE ") && s.endsWith(":")) {
                     int          traceNumber = Integer.parseInt(s.substring(6, s.length() - 1));
-                    List<String> l           = new ArrayList();
+                    List<String> l           = new ArrayList<String>();
                     for (;;) {
                         s = br.readLine();
                         if (!s.startsWith("\t")) break;
@@ -151,7 +151,7 @@ class HprofScrubber {
 
     private static void
     dumpSites(Site[] ss, Map<Integer, String[]> traces) {
-        Arrays.sort(ss, new Comparator() {
+        Arrays.sort(ss, new Comparator<Object>() {
 
             @Override public int
             compare(@Nullable Object o1, @Nullable Object o2) {

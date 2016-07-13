@@ -76,7 +76,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * java org.codehaus.janino.Compiler -help
  * </pre>
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class Compiler {
 
     private static final Logger LOGGER = Logger.getLogger(Compiler.class.getName());
@@ -237,7 +237,7 @@ class Compiler {
     @Nullable private ErrorHandler          optionalCompileErrorHandler;
 
     private final IClassLoader       iClassLoader;
-    private final List<UnitCompiler> parsedCompilationUnits = new ArrayList();
+    private final List<UnitCompiler> parsedCompilationUnits = new ArrayList<UnitCompiler>();
 
     /**
      * Initialize a Java&trade; compiler with the given parameters.

@@ -35,18 +35,18 @@ import org.codehaus.commons.compiler.IScriptEvaluator;
  * A test program that allows you to play around with the
  * {@link org.codehaus.janino.ScriptEvaluator ScriptEvaluator} class.
  */
-@SuppressWarnings("rawtypes") public final
+public final
 class ScriptDemo extends DemoBase {
 
     /***/
     public static void
     main(String[] args) throws Exception {
 
-        Class    returnType             = void.class;
-        String[] parameterNames         = {};
-        Class[]  parameterTypes         = {};
-        Class[]  thrownExceptions       = {};
-        String[] optionalDefaultImports = null;
+        Class<?>   returnType             = void.class;
+        String[]   parameterNames         = {};
+        Class<?>[] parameterTypes         = {};
+        Class<?>[] thrownExceptions       = {};
+        String[]   optionalDefaultImports = null;
 
         int i;
         for (i = 0; i < args.length; ++i) {

@@ -42,32 +42,32 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *
  * @param <T> The element type of the iterator and the collection
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class IteratorCollection<T> extends AbstractCollection<T> {
 
     /** The delegate. */
     private final Iterator<T> iterator;
 
     /** Lazily-filled collection of the elements delivered by the delegate. */
-    private final List/*<T>*/ elements = new ArrayList();
+    private final List<T> elements = new ArrayList<T>();
 
     public
-    IteratorCollection(Iterator iterator) { this.iterator = iterator; }
+    IteratorCollection(Iterator<T> iterator) { this.iterator = iterator; }
 
     @Override public Iterator<T>
     iterator() {
-        return new Iterator/*<T>*/() {
+        return new Iterator<T>() {
 
-            @Nullable private Iterator/*<T>*/ elementsIterator = IteratorCollection.this.elements.iterator();
+            @Nullable private Iterator<T> elementsIterator = IteratorCollection.this.elements.iterator();
 
-            @Override public Object
+            @Override public T
             next() {
-                Iterator ei = this.elementsIterator;
+                Iterator<T> ei = this.elementsIterator;
                 if (ei != null) {
                     if (ei.hasNext()) return ei.next();
                     this.elementsIterator = null;
                 }
-                Object o = IteratorCollection.this.iterator.next();
+                T o = IteratorCollection.this.iterator.next();
                 IteratorCollection.this.elements.add(o);
                 return o;
             }

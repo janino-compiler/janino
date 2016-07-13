@@ -59,7 +59,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * compile {@code .java} files into {@code .class} files, then don't use <i>this</i> class but {@link Compiler}
  * instead!
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     private final ResourceFinder  classFileCacheResourceFinder;
     private final ResourceCreator classFileCacheResourceCreator;
@@ -154,7 +154,7 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
                     } catch (IOException ex) {
                         throw new ClassNotFoundException("Reading class file from \"" + classFileResource + "\"", ex);
                     }
-                    Map<String /*name*/, byte[] /*bytecode*/> m = new HashMap();
+                    Map<String /*name*/, byte[] /*bytecode*/> m = new HashMap<String, byte[]>();
                     m.put(className, bytecode);
                     return m;
                 }

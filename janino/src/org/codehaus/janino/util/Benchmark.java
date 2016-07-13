@@ -61,9 +61,9 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * Reporting is only enabled if the Benchmark object was created through {@link #Benchmark(boolean)}
  * with a <code>true</code> argument.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class Benchmark {
-    private final Stack beginTimes = new Stack(); // Long
+    private final Stack<Long> beginTimes = new Stack<Long>();
 
     /** @see Benchmark */
     public void

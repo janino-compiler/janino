@@ -37,8 +37,10 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 
-/** The JANINO implementation of {@link ICompilerFactory}. */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+/**
+ * The JANINO implementation of {@link ICompilerFactory}.
+ */
+public
 class CompilerFactory extends AbstractCompilerFactory {
 
     @Override public String
@@ -64,15 +66,21 @@ class CompilerFactory extends AbstractCompilerFactory {
 
     @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader() {
-        return (AbstractJavaSourceClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
-            @Override public Object run() { return new JavaSourceClassLoader(); }
+
+        return AccessController.doPrivileged(new PrivilegedAction<AbstractJavaSourceClassLoader>() {
+
+            @Override public AbstractJavaSourceClassLoader
+            run() { return new JavaSourceClassLoader(); }
         });
     }
 
     @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader(final ClassLoader parentClassLoader) {
-        return (AbstractJavaSourceClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
-            @Override public Object run() { return new JavaSourceClassLoader(parentClassLoader); }
+
+        return AccessController.doPrivileged(new PrivilegedAction<AbstractJavaSourceClassLoader>() {
+
+            @Override public AbstractJavaSourceClassLoader
+            run() { return new JavaSourceClassLoader(parentClassLoader); }
         });
     }
 }

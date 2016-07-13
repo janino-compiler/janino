@@ -31,7 +31,7 @@ import java.util.Map;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /** This {@link ClassLoader} allows for the loading of a set of Java&trade; classes provided in class file format. */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class ByteArrayClassLoader extends ClassLoader {
 
     /**
@@ -56,7 +56,7 @@ class ByteArrayClassLoader extends ClassLoader {
      * method, because {@link ClassLoader#loadClass(java.lang.String)} is
      * <code>synchronized</code>.
      */
-    @Override protected Class
+    @Override protected Class<?>
     findClass(@Nullable String name) throws ClassNotFoundException {
         assert name != null;
 
@@ -69,7 +69,9 @@ class ByteArrayClassLoader extends ClassLoader {
         //     http://www.nabble.com/-Help-jel--java.security.AccessControlException-to13073723.html
         return super.defineClass(
             name,                                 // name
-            data, 0, data.length,                 // b, off, len
+            data,                                 // b
+            0,                                    // off
+            data.length,                          // len
             this.getClass().getProtectionDomain() // protectionDomain
         );
     }

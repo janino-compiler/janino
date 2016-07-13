@@ -53,7 +53,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * loaded. The way to achieve this is to give up on the {@link JavaSourceClassLoader} and create
  * a new one.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     public
@@ -167,7 +167,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @throws ClassNotFoundException
      */
-    @Override protected /*synchronized <- No need to synchronize, because 'loadClass()' is synchronized */ Class
+    @Override protected /*synchronized <- No need to synchronize, because 'loadClass()' is synchronized */ Class<?>
     findClass(@Nullable String name) throws ClassNotFoundException {
         assert name != null;
 
@@ -201,7 +201,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * yet defined i.e. which were not yet passed to
      * {@link ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
      */
-    private final Map<String /*name*/, byte[] /*bytecode*/> precompiledClasses = new HashMap();
+    private final Map<String /*name*/, byte[] /*bytecode*/> precompiledClasses = new HashMap<String, byte[]>();
 
     /**
      * Find, scan, parse the right compilation unit. Compile the parsed compilation unit to
@@ -215,8 +215,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
-        Map<String /*name*/, byte[] /*bytecode*/> bytecodes             = new HashMap();
-        Set<UnitCompiler>                         compiledUnitCompilers = new HashSet();
+        Map<String /*name*/, byte[] /*bytecode*/> bytecodes             = new HashMap<String, byte[]>();
+        Set<UnitCompiler>                         compiledUnitCompilers = new HashSet<UnitCompiler>();
         COMPILE_UNITS:
         for (;;) {
             for (UnitCompiler uc : this.iClassLoader.getUnitCompilers()) {
@@ -240,7 +240,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @throws ClassFormatError
      * @see #setProtectionDomainFactory
      */
-    private Class
+    private Class<?>
     defineBytecode(String className, byte[] ba) {
 
         return this.defineClass(className, ba, 0, ba.length, (

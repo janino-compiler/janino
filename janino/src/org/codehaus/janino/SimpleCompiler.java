@@ -57,7 +57,7 @@ import org.codehaus.janino.util.ClassFile;
  * Alternatively, a number of "convenience constructors" exist that execute the described steps
  * instantly.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     private static final Logger LOGGER = Logger.getLogger(SimpleCompiler.class.getName());
@@ -105,7 +105,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         ClassLoader cl = new SimpleCompiler(sourceFileName, new FileInputStream(sourceFileName)).getClassLoader();
 
         // Load the class.
-        Class c = cl.loadClass(className);
+        Class<?> c = cl.loadClass(className);
 
         // Invoke the "public static main(String[])" method.
         Method m = c.getMethod("main", new Class[] { String[].class });
@@ -259,14 +259,14 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     /** Wraps a reflection {@link Class} in a {@link Java.Type} object. */
     @Nullable protected Java.Type
-    optionalClassToType(final Location location, @Nullable final Class clazz) {
+    optionalClassToType(final Location location, @Nullable final Class<?> clazz) {
         if (clazz == null) return null;
         return this.classToType(location, clazz);
     }
 
     /** Wraps a reflection {@link Class} in a {@link Java.Type} object. */
     protected Java.Type
-    classToType(final Location location, final Class clazz) {
+    classToType(final Location location, final Class<?> clazz) {
 
 //        IClass iClass;
 //        synchronized (this.classes) {
@@ -330,8 +330,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 }
 
                 // Verify that the class loaders match.
-                IClass iClass2 = iClass;
-                Class  class2  = clazz;
+                IClass   iClass2 = iClass;
+                Class<?> class2  = clazz;
                 for (;;) {
                     IClass ct = iClass2.getComponentType();
                     if (ct == null) {
@@ -369,7 +369,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     /** Converts an array of {@link Class}es into an array of{@link Java.Type}s. */
     protected Java.Type[]
-    classesToTypes(Location location, Class[] classes) {
+    classesToTypes(Location location, Class<?>[] classes) {
         Java.Type[] types = new Java.Type[classes.length];
         for (int i = 0; i < classes.length; ++i) {
             types[i] = this.classToType(location, classes[i]);
@@ -398,7 +398,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         ClassFile[] classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
 
         // Convert the class files to bytes and store them in a Map.
-        final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap();
+        final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap<String, byte[]>();
         for (ClassFile cf : classFiles) {
 
             byte[] contents = cf.toByteArray();
@@ -409,9 +409,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         }
 
         // Create a ClassLoader that loads the generated classes.
-        this.result = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
+        this.result = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
 
-            @Override public Object
+            @Override public ClassLoader
             run() {
                 return new ByteArrayClassLoader(
                     classes,                              // classes
@@ -429,7 +429,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     public static void
     disassembleToStdout(byte[] contents) {
         try {
-            Class disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
+            Class<?> disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
             disassemblerClass.getMethod(
                 "disasm",
                 new Class[] { InputStream.class }

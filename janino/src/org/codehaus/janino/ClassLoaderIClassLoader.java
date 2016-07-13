@@ -31,8 +31,10 @@ import java.util.logging.Logger;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/** An {@link IClassLoader} that loads {@link IClass}es through a reflection {@link ClassLoader}. */
-@SuppressWarnings("rawtypes") public
+/**
+ * An {@link IClassLoader} that loads {@link IClass}es through a reflection {@link ClassLoader}.
+ */
+public
 class ClassLoaderIClassLoader extends IClassLoader {
 
     private static final Logger LOGGER = Logger.getLogger(ClassLoaderIClassLoader.class.getName());
@@ -65,7 +67,7 @@ class ClassLoaderIClassLoader extends IClassLoader {
     findIClass(String descriptor) throws ClassNotFoundException {
         ClassLoaderIClassLoader.LOGGER.entering(null, "findIClass", descriptor);
 
-        Class clazz;
+        Class<?> clazz;
         try {
 
             //

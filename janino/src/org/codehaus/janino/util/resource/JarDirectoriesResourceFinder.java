@@ -31,6 +31,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.zip.ZipFile;
 
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -42,18 +43,18 @@ public
 class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
 
     /** @param directories The set of directories to search for JAR files. */
-    @SuppressWarnings({ "unchecked", "rawtypes" }) public
+    public
     JarDirectoriesResourceFinder(final File[] directories) {
-        super(new MultiDimensionalIterator(
+        super(new MultiDimensionalIterator<ResourceFinder>(
 
             // Iterate over directories.
-            new TransformingIterator(Arrays.asList(directories).iterator()) {
+            new TransformingIterator<Object, Iterator<?>>(Arrays.asList(directories).iterator()) {
 
-                @Override protected Object/*Iterator<ResourceFinder>*/
-                transform(Object/*File*/ o) {
+                @Override protected Iterator<ResourceFinder>
+                transform(Object o) {
                     File directory = (File) o;
 
-                    if (!directory.exists()) return Collections.EMPTY_LIST.iterator();
+                    if (!directory.exists()) return Collections.<ResourceFinder>emptyList().iterator();
 
                     // Iterate over the JAR files in the given directory.
                     File[] jarFiles = directory.listFiles(new FilenameFilter() {
@@ -65,11 +66,13 @@ class JarDirectoriesResourceFinder extends LazyMultiResourceFinder {
                             return name.endsWith(".jar");
                         }
                     });
-                    return new TransformingIterator(Arrays.asList(jarFiles).iterator()) {
 
-                        @Override protected Object/*ResourceFinder*/
-                        transform(Object/*File*/ o) {
+                    return new TransformingIterator<Object, ResourceFinder>(Arrays.asList(jarFiles).iterator()) {
+
+                        @Override protected ResourceFinder
+                        transform(Object o) {
                             File jarFile = (File) o;
+
                             try {
                                 return new ZipFileResourceFinder(new ZipFile(jarFile));
                             } catch (IOException e) {

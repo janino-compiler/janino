@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /** Common base class for the "...Demo" classes that demostrate Janino. */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class DemoBase {
 
     protected DemoBase() {}
@@ -42,19 +42,19 @@ class DemoBase {
      * the {@code value} equals "", the zero-parameter constructor.
      */
     public static Object
-    createObject(Class type, String value)
+    createObject(Class<?> type, String value)
     throws NoSuchMethodException, InstantiationException, InvocationTargetException, IllegalAccessException {
 
         // Wrap primitive parameters.
         if (type.isPrimitive()) {
             type = (
-                type == boolean.class ? Boolean.class
-                : type == char.class ? Character.class
-                : type == byte.class ? Byte.class
-                : type == short.class ? Short.class
-                : type == int.class ? Integer.class
-                : type == long.class ? Long.class
-                : type == float.class ? Float.class
+                type == boolean.class  ? Boolean.class
+                : type == char.class   ? Character.class
+                : type == byte.class   ? Byte.class
+                : type == short.class  ? Short.class
+                : type == int.class    ? Integer.class
+                : type == long.class   ? Long.class
+                : type == float.class  ? Float.class
                 : type == double.class ? Double.class
                 : void.class
             );
@@ -73,13 +73,13 @@ class DemoBase {
     public static String[]
     explode(String s) {
         StringTokenizer st = new StringTokenizer(s, ",");
-        List<String>    l  = new ArrayList();
+        List<String>    l  = new ArrayList<String>();
         while (st.hasMoreTokens()) l.add(st.nextToken());
         return (String[]) l.toArray(new String[l.size()]);
     }
 
     /** @return {@code s}, converted to a Java type */
-    public static Class
+    public static Class<?>
     stringToType(String s) {
 
         int brackets = 0;
@@ -126,13 +126,13 @@ class DemoBase {
     }
 
     /** Converts the given comma-separated list of class names to an array of {@link Class}es. */
-    public static Class[]
+    public static Class<?>[]
     stringToTypes(String s) {
 
         StringTokenizer st = new StringTokenizer(s, ",");
-        List<Class>     l  = new ArrayList();
+        List<Class<?>>  l  = new ArrayList<Class<?>>();
         while (st.hasMoreTokens()) l.add(DemoBase.stringToType(st.nextToken()));
-        Class[] res = new Class[l.size()];
+        Class<?>[] res = new Class[l.size()];
         l.toArray(res);
         return res;
     }

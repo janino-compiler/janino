@@ -42,8 +42,10 @@ import org.codehaus.janino.util.resource.JarDirectoriesResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
 import org.codehaus.janino.util.resource.ResourceFinder;
 
-/** Loads an {@link IClass} by type name. */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
+/**
+ * Loads an {@link IClass} by type name.
+ */
+public abstract
 class IClassLoader {
 
     private static final Logger LOGGER = Logger.getLogger(IClassLoader.class.getName());
@@ -413,6 +415,6 @@ class IClassLoader {
     }
 
     @Nullable private final IClassLoader             optionalParentIClassLoader;
-    private final Map<String /*descriptor*/, IClass> loadedIClasses     = new HashMap();
-    private final Set<String /*descriptor*/>         unloadableIClasses = new HashSet();
+    private final Map<String /*descriptor*/, IClass> loadedIClasses     = new HashMap<String, IClass>();
+    private final Set<String /*descriptor*/>         unloadableIClasses = new HashSet<String>();
 }

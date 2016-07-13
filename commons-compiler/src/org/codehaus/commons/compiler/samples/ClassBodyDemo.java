@@ -36,7 +36,7 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
 
 /** A test program that allows you to play with the {@link IClassBodyEvaluator} API. */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public final
+public final
 class ClassBodyDemo {
 
     /***/
@@ -71,7 +71,7 @@ class ClassBodyDemo {
         // Compile the class body.
         IClassBodyEvaluator cbe = CompilerFactoryFactory.getDefaultCompilerFactory().newClassBodyEvaluator();
         cbe.cook(classBody);
-        Class c = cbe.getClazz();
+        Class<?> c = cbe.getClazz();
 
         // Invoke the "public static main(String[])" method.
         Method m           = c.getMethod("main", new Class[] { String[].class });

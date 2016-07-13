@@ -234,7 +234,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     setStaticMethod(final boolean staticMethod) { this.setStaticMethod(new boolean[] { staticMethod }); }
 
     @Override public void
-    setReturnType(@SuppressWarnings("rawtypes") Class returnType) {
+    setReturnType(Class<?> returnType) {
         this.setReturnTypes(new Class<?>[] { returnType });
     }
 
@@ -242,12 +242,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     setMethodName(String methodName) { this.setMethodNames(new String[] { methodName }); }
 
     @Override public void
-    setParameters(String[] names, @SuppressWarnings("rawtypes") Class[] types) {
+    setParameters(String[] names, Class<?>[] types) {
         this.setParameters(new String[][] { names }, new Class<?>[][] { types });
     }
 
     @Override public void
-    setThrownExceptions(@SuppressWarnings("rawtypes") Class[] thrownExceptions) {
+    setThrownExceptions(Class<?>[] thrownExceptions) {
         this.setThrownExceptions(new Class[][] { thrownExceptions });
     }
 
@@ -275,7 +275,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     @Override public void
-    setReturnTypes(@SuppressWarnings("rawtypes") Class[] returnTypes) {
+    setReturnTypes(Class<?>[] returnTypes) {
         this.assertNotCooked();
         this.optionalReturnTypes = returnTypes.clone();
     }
@@ -287,14 +287,14 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     @Override public void
-    setParameters(String[][] names, @SuppressWarnings("rawtypes") Class[][] types) {
+    setParameters(String[][] names, Class<?>[][] types) {
         this.assertNotCooked();
         this.optionalParameterNames = names.clone();
         this.optionalParameterTypes = types.clone();
     }
 
     @Override public void
-    setThrownExceptions(@SuppressWarnings("rawtypes") Class[][] thrownExceptions) {
+    setThrownExceptions(Class<?>[][] thrownExceptions) {
         this.assertNotCooked();
         this.optionalThrownExceptions = thrownExceptions.clone();
     }
@@ -491,11 +491,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @param script Contains the sequence of script tokens
      * @see #createFastEvaluator(String, Class, String[])
      */
-    @Override public Object
+    @Override public <T> Object
     createFastEvaluator(
-        String                              script,
-        @SuppressWarnings("rawtypes") Class interfaceToImplement,
-        String[]                            parameterNames
+        String   script,
+        Class<T> interfaceToImplement,
+        String[] parameterNames
     ) throws CompileException {
         try {
             return this.createFastEvaluator(new StringReader(script), interfaceToImplement, parameterNames);
@@ -508,11 +508,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Override public final Object
     createInstance(Reader reader) { throw new UnsupportedOperationException("createInstance"); }
 
-    @Override public Object
+    @Override public <T> Object
     createFastEvaluator(
-        Reader                              r,
-        @SuppressWarnings("rawtypes") Class interfaceToImplement,
-        String[]                            parameterNames
+        Reader   r,
+        Class<T> interfaceToImplement,
+        String[] parameterNames
     ) throws CompileException, IOException {
         if (!interfaceToImplement.isInterface()) {
             throw new RuntimeException("\"" + interfaceToImplement + "\" is not an interface");

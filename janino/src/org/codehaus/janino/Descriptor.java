@@ -43,7 +43,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *   <li><code>Lpkg1/pkg2/Outer$Inner;</code> Member class
  * </ul>
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public final
+public final
 class Descriptor {
     private Descriptor() {}
 
@@ -337,7 +337,7 @@ class Descriptor {
 
     private static final Map<String, String> DESCRIPTOR_TO_CLASSNAME;
     static {
-        Map<String, String> m = new HashMap();
+        Map<String, String> m = new HashMap<String, String>();
 
         m.put(Descriptor.VOID, "void");
 
@@ -385,7 +385,7 @@ class Descriptor {
     private static final Map<String, String> CLASS_NAME_TO_DESCRIPTOR;
 
     static {
-        Map<String, String> m = new HashMap();
+        Map<String, String> m = new HashMap<String, String>();
         for (Map.Entry<String, String> e : Descriptor.DESCRIPTOR_TO_CLASSNAME.entrySet()) {
             m.put(e.getValue(), e.getKey());
         }

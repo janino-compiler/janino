@@ -37,10 +37,10 @@ import java.util.Iterator;
 public abstract
 class TransformingIterator<T1, T2> implements Iterator<T2> {
 
-    private final Iterator<T1> delegate;
+    private final Iterator<? extends T1> delegate;
 
     public
-    TransformingIterator(Iterator<T1> delegate) { this.delegate = delegate; }
+    TransformingIterator(Iterator<? extends T1> delegate) { this.delegate = delegate; }
 
     @Override public boolean
     hasNext() { return this.delegate.hasNext(); }

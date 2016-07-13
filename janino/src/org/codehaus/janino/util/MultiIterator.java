@@ -28,6 +28,7 @@ package org.codehaus.janino.util;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -38,17 +39,11 @@ import org.codehaus.janino.JaninoRuntimeException;
  *
  * @param <T> The element type of the iterator
  */
-@SuppressWarnings("unchecked") public
+public
 class MultiIterator<T> implements Iterator<T> {
 
-    private static final Iterator<?> AT_END = new Iterator<Object>() {
-        @Override public boolean hasNext() { return false; }
-        @Override public Object  next()    { throw new NoSuchElementException(); }
-        @Override public void    remove()  { throw new UnsupportedOperationException(); }
-    };
-
     private final Iterator<?> outer; // Over Iterators, Collections or arrays
-    private Iterator<T>       inner = (Iterator<T>) MultiIterator.AT_END;
+    private Iterator<T>       inner = Collections.<T>emptyList().iterator();
 
     /** @param iterators An array of {@link Iterator}s */
     public
@@ -117,13 +112,16 @@ class MultiIterator<T> implements Iterator<T> {
             if (!this.outer.hasNext()) return false;
             Object o = this.outer.next();
             if (o instanceof Iterator) {
-                this.inner = (Iterator<T>) o;
+                @SuppressWarnings("unchecked") Iterator<T> tmp = (Iterator<T>) o;
+                this.inner = tmp;
             } else
             if (o instanceof Collection) {
-                this.inner = ((Collection<T>) o).iterator();
+                @SuppressWarnings("unchecked") Collection<T> tmp = (Collection<T>) o;
+                this.inner = tmp.iterator();
             } else
             if (o instanceof Object[]) {
-                this.inner = Arrays.asList((T[]) o).iterator();
+                @SuppressWarnings("unchecked") T[] tmp = (T[]) o;
+                this.inner = Arrays.asList(tmp).iterator();
             } else
             {
                 throw new JaninoRuntimeException("Unexpected element type \"" + o.getClass().getName() + "\"");

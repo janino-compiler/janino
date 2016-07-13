@@ -39,19 +39,19 @@ import org.codehaus.commons.compiler.samples.DemoBase;
  * A test program that allows you to play around with the
  * {@link org.codehaus.janino.ScriptEvaluator ScriptEvaluator} class.
  */
-@SuppressWarnings("rawtypes") public final
+public final
 class Jsh extends DemoBase {
 
     /***/
     public static void
     main(String[] args) throws Exception {
 
-        Class        returnType       = void.class;
-        List<String> parameterNames   = new ArrayList<String>();
-        List<Class>  parameterTypes   = new ArrayList<Class>();
-        List<Class>  thrownExceptions = new ArrayList<Class>();
-        List<String> defaultImports   = new ArrayList<String>();
-        String       optionalEncoding = null;
+        Class<?>       returnType       = void.class;
+        List<String>   parameterNames   = new ArrayList<String>();
+        List<Class<?>> parameterTypes   = new ArrayList<Class<?>>();
+        List<Class<?>> thrownExceptions = new ArrayList<Class<?>>();
+        List<String>   defaultImports   = new ArrayList<String>();
+        String         optionalEncoding = null;
 
         int i;
         for (i = 0; i < args.length; ++i) {

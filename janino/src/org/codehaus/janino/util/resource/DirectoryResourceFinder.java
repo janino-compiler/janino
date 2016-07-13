@@ -42,10 +42,10 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * with the resource name such that slashes in the resource name map to file
  * separators.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class DirectoryResourceFinder extends FileResourceFinder {
     private final File                                     directory;
-    private final Map<String /*directoryName*/, Set<File>> subdirectoryNameToFiles = new HashMap();
+    private final Map<String /*directoryName*/, Set<File>> subdirectoryNameToFiles = new HashMap<String, Set<File>>();
 
     /** @param directory the directory to use as the search base */
     public
@@ -65,7 +65,7 @@ class DirectoryResourceFinder extends FileResourceFinder {
         );
 
         // Determine files existing in this subdirectory.
-        Set<File> files = (Set) this.subdirectoryNameToFiles.get(subdirectoryName);
+        Set<File> files = (Set<File>) this.subdirectoryNameToFiles.get(subdirectoryName);
         if (files == null) {
             File subDirectory = (
                 subdirectoryName == null
@@ -73,7 +73,7 @@ class DirectoryResourceFinder extends FileResourceFinder {
                 : new File(this.directory, subdirectoryName)
             );
             File[] fa = subDirectory.listFiles();
-            files = (fa == null) ? Collections.EMPTY_SET : new HashSet(Arrays.asList(fa));
+            files = fa == null ? Collections.<File>emptySet() : new HashSet<File>(Arrays.asList(fa));
             this.subdirectoryNameToFiles.put(subdirectoryName, files);
         }
 

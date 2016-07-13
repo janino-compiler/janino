@@ -83,12 +83,12 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
  * <i>file-name-patterns</i> work as described in
  * {@link org.codehaus.janino.util.StringPattern#parseCombinedPattern(String)}.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
+public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
 class JGrep {
 
     private static final Logger LOGGER = Logger.getLogger(JGrep.class.getName());
 
-    private final List<UnitCompiler> parsedCompilationUnits = new ArrayList();
+    private final List<UnitCompiler> parsedCompilationUnits = new ArrayList<UnitCompiler>();
 
     /** Command line interface. */
     public static void
@@ -161,7 +161,7 @@ class JGrep {
             verbose
         );
 
-        List<MethodInvocationTarget> mits = new ArrayList();
+        List<MethodInvocationTarget> mits = new ArrayList<MethodInvocationTarget>();
         for (; idx < args.length; ++idx) {
             String arg = args[idx];
             if ("-method-invocation".equals(arg)) {
@@ -290,7 +290,7 @@ class JGrep {
             String s = JGrep.readIdentifierPattern(parser);
             if (parser.peekRead("(")) {
                 mit.methodNamePattern = s;
-                List<String> l = new ArrayList();
+                List<String> l = new ArrayList<String>();
                 if (!parser.peekRead(")")) {
                     for (;;) {
                         l.add(JGrep.readIdentifierPattern(parser));
@@ -344,8 +344,8 @@ class JGrep {
         @Nullable String                optionalClassNamePattern;
         @Nullable String                methodNamePattern;
         @Nullable String[]              optionalArgumentTypeNamePatterns;
-        List<MethodInvocationPredicate> predicates = new ArrayList();
-        List<MethodInvocationAction>    actions    = new ArrayList();
+        List<MethodInvocationPredicate> predicates = new ArrayList<MethodInvocationPredicate>();
+        List<MethodInvocationAction>    actions    = new ArrayList<MethodInvocationAction>();
 
         void
         apply(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws CompileException {

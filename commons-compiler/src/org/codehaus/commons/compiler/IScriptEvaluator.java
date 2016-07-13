@@ -111,7 +111,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </ul>
  * Notice that these methods have array parameters in contrast to their one-script brethren.
  */
-@SuppressWarnings("rawtypes") public
+public
 interface IScriptEvaluator extends IClassBodyEvaluator {
 
     /** Defines whether the generated method overrides a methods declared in a supertype. */
@@ -124,7 +124,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Defines the return type of the generated method. The meaning of a {@code null} value is implementation-dependent.
      */
-    void setReturnType(Class returnType);
+    void setReturnType(Class<?> returnType);
 
     /** Define the name of the generated method. Defaults to an unspecified name. */
     void setMethodName(String methodName);
@@ -138,10 +138,10 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      * <p>
      * The default is to have zero parameters.
      */
-    void setParameters(String[] names, Class[] types);
+    void setParameters(String[] names, Class<?>[] types);
 
     /** Define the exceptions that the generated method may throw. */
-    void setThrownExceptions(Class[] thrownExceptions);
+    void setThrownExceptions(Class<?>[] thrownExceptions);
 
     /**
      * Calls the script with concrete parameter values.
@@ -178,7 +178,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      * Defines the return types of the generated methods. The meaning of {@code null} elements is
      * implementation-dependent.
      */
-    void setReturnTypes(Class[] returnTypes);
+    void setReturnTypes(Class<?>[] returnTypes);
 
     /**
      * Same as {@link #setMethodName(String)}, but for multiple scripts.
@@ -192,10 +192,10 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     void setMethodNames(String[] methodNames);
 
     /** Same as {@link #setParameters(String[], Class[])}, but for multiple scripts. */
-    void setParameters(String[][] names, Class[][] types);
+    void setParameters(String[][] names, Class<?>[][] types);
 
     /** Same as {@link #setThrownExceptions(Class[])}, but for multiple scripts. */
-    void setThrownExceptions(Class[][] thrownExceptions);
+    void setThrownExceptions(Class<?>[][] thrownExceptions);
 
     /** Same as {@link #cook(Reader)}, but for multiple scripts. */
     void cook(Reader[] readers) throws CompileException, IOException;

@@ -37,9 +37,9 @@ import java.util.Iterator;
 public
 class EnumerationIterator<T> implements Iterator<T> {
 
-    private final Enumeration<T> e;
+    private final Enumeration<? extends T> e;
 
-    public EnumerationIterator(Enumeration<T> e) { this.e = e; }
+    public EnumerationIterator(Enumeration<? extends T> e) { this.e = e; }
 
     @Override public boolean hasNext() { return this.e.hasMoreElements(); }
     @Override public T       next()    { return this.e.nextElement(); }

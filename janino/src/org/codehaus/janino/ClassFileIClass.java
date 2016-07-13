@@ -52,8 +52,10 @@ import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ShortElementValue
 import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.StringElementValue;
 import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
 
-/** A wrapper object that turns a {@link ClassFile} object into an {@link IClass}. */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+/**
+ * A wrapper object that turns a {@link ClassFile} object into an {@link IClass}.
+ */
+public
 class ClassFileIClass extends IClass {
 
     private static final Logger LOGGER = Logger.getLogger(ClassFileIClass.class.getName());
@@ -62,7 +64,7 @@ class ClassFileIClass extends IClass {
     private final IClassLoader iClassLoader;
     private final short        accessFlags;
 
-    private final Map<ClassFile.FieldInfo, IField> resolvedFields = new HashMap();
+    private final Map<ClassFile.FieldInfo, IField> resolvedFields = new HashMap<ClassFile.FieldInfo, IField>();
 
     /**
      * @param classFile Source of data
@@ -81,7 +83,7 @@ class ClassFileIClass extends IClass {
 
     @Override protected IConstructor[]
     getDeclaredIConstructors2() {
-        List iConstructors = new ArrayList();
+        List<IInvocable> iConstructors = new ArrayList<IInvocable>();
 
         for (ClassFile.MethodInfo mi : this.classFile.methodInfos) {
             IInvocable ii;
@@ -98,7 +100,7 @@ class ClassFileIClass extends IClass {
 
     @Override protected IMethod[]
     getDeclaredIMethods2() {
-        List<IMethod> iMethods = new ArrayList();
+        List<IMethod> iMethods = new ArrayList<IMethod>();
 
         for (ClassFile.MethodInfo mi : this.classFile.methodInfos) {
 
@@ -136,7 +138,7 @@ class ClassFileIClass extends IClass {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return new IClass[0];
 
-        List<IClass> res = new ArrayList();
+        List<IClass> res = new ArrayList<IClass>();
         for (ClassFile.InnerClassesAttribute.Entry e : ica.getEntries()) {
             if (e.outerClassInfoIndex == this.classFile.thisClass) {
                 try {
@@ -406,7 +408,7 @@ class ClassFileIClass extends IClass {
         this.resolvedClasses.put(descriptor, result);
         return result;
     }
-    private final Map<String /*descriptor*/, IClass> resolvedClasses = new HashMap();
+    private final Map<String /*descriptor*/, IClass> resolvedClasses = new HashMap<String, IClass>();
 
     private IClass[]
     resolveClasses(short[] ifs) throws CompileException {
@@ -540,7 +542,9 @@ class ClassFileIClass extends IClass {
         this.resolvedMethods.put(methodInfo, result);
         return result;
     }
-    private final Map<ClassFile.MethodInfo, IInvocable> resolvedMethods = new HashMap();
+
+    private final Map<ClassFile.MethodInfo, IInvocable>
+    resolvedMethods = new HashMap<ClassFile.MethodInfo, IInvocable>();
 
     private IField
     resolveField(final ClassFile.FieldInfo fieldInfo) throws ClassNotFoundException {

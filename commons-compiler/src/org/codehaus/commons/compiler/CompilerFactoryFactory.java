@@ -35,8 +35,10 @@ import java.util.Properties;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/** Utility class that finds implementations of {@link ICompilerFactory}s. */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public final
+/**
+ * Utility class that finds implementations of {@link ICompilerFactory}s.
+ */
+public final
 class CompilerFactoryFactory {
 
     private CompilerFactoryFactory() {}
@@ -88,8 +90,8 @@ class CompilerFactoryFactory {
     public static ICompilerFactory[]
     getAllCompilerFactories() throws Exception {
         ClassLoader            cl        = Thread.currentThread().getContextClassLoader();
-        List<ICompilerFactory> factories = new ArrayList();
-        for (Enumeration en = cl.getResources("org.codehaus.commons.compiler.properties"); en.hasMoreElements();) {
+        List<ICompilerFactory> factories = new ArrayList<ICompilerFactory>();
+        for (Enumeration<URL> en = cl.getResources("org.codehaus.commons.compiler.properties"); en.hasMoreElements();) {
             URL url = (URL) en.nextElement();
 
             Properties properties;

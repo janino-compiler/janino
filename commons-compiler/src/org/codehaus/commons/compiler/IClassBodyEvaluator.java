@@ -91,7 +91,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * System.out.println("1 + 2 = " + f.bar(1, 2));
  * </pre>
  */
-@SuppressWarnings("rawtypes") public
+public
 interface IClassBodyEvaluator extends ICookable {
 
     /** Default name for the generated class. */
@@ -131,16 +131,16 @@ interface IClassBodyEvaluator extends ICookable {
      * The common reason to set a base class for an evaluator is that the generated class can
      * directly access the base superclass's (non-private) members.
      */
-    void setExtendedClass(@Nullable Class optionalExtendedClass);
+    void setExtendedClass(@Nullable Class<?> optionalExtendedClass);
 
     /** @deprecated Use {@link #setExtendedClass(Class)} instead. */
-    @Deprecated void setExtendedType(@Nullable Class optionalExtendedClass);
+    @Deprecated void setExtendedType(@Nullable Class<?> optionalExtendedClass);
 
     /** Set a particular set of interfaces that the generated class will implement. */
-    void setImplementedInterfaces(Class[] implementedInterfaces);
+    void setImplementedInterfaces(Class<?>[] implementedInterfaces);
 
     /** @deprecated Use {@link #setImplementedInterfaces(Class[])} instead. */
-    @Deprecated void setImplementedTypes(Class[] implementedInterfaces);
+    @Deprecated void setImplementedTypes(Class<?>[] implementedInterfaces);
 
     /**
      * Returns the loaded {@link Class}.
@@ -148,7 +148,7 @@ interface IClassBodyEvaluator extends ICookable {
      * This method must only be called after exactly one of the {@link #cook(String,
      * java.io.Reader)} methods was called.
      */
-    Class getClazz();
+    Class<?> getClazz();
 
     /**
      * Scans, parses and compiles a class body from the tokens delivered by the the given {@link Reader}, then creates

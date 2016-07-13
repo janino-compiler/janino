@@ -61,13 +61,13 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *
  * @see <a href="http://java.sun.com/developer/Books/effectivejava/Chapter5.pdf">Effective Java, Item 21</a>
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public abstract
+public abstract
 class Enumerator {
 
     private final String name;
 
-    private static final Map<Class /*enumeratorClass*/, Map<String /*name*/, Enumerator>>
-    INSTANCES = Collections.synchronizedMap(new HashMap());
+    private static final Map<Class<?>/*enumeratorClass*/, Map<String /*name*/, Enumerator>>
+    INSTANCES = Collections.synchronizedMap(new HashMap<Class<?>, Map<String, Enumerator>>());
 
     /** Initialize the enumerator to the given value. */
     protected
@@ -85,15 +85,16 @@ class Enumerator {
     @Override public final int
     hashCode() { return super.hashCode(); }
 
-    /** Returns a mapping of name to Enumerator for the given enumeratorClass. */
+    /** @return A mapping of name to {@link Enumerator} for the given <var>enumeratorClass</var> */
     static Map<String /*name*/, Enumerator>
-    getInstances(Class enumeratorClass) {
-        Map<String /*name*/, Enumerator> m = (Map) Enumerator.INSTANCES.get(enumeratorClass);
+    getInstances(Class<?> enumeratorClass) {
+
+        Map<String /*name*/, Enumerator> m = (Map<String, Enumerator>) Enumerator.INSTANCES.get(enumeratorClass);
         if (m != null) return m;
 
         // The map need not be synchronized because it is modified only during initialization
         // of the Enumerator.
-        m = new HashMap();
+        m = new HashMap<String, Enumerator>();
         Enumerator.INSTANCES.put(enumeratorClass, m);
         return m;
     }
@@ -115,7 +116,7 @@ class Enumerator {
      * @throws EnumeratorFormatException if the string cannot be identified
      */
     protected static final Enumerator
-    fromString(String name, Class enumeratorClass) throws EnumeratorFormatException {
+    fromString(String name, Class<?> enumeratorClass) throws EnumeratorFormatException {
         Enumerator value = (Enumerator) Enumerator.getInstances(enumeratorClass).get(name);
         if (value == null) throw new EnumeratorFormatException(name);
         return value;

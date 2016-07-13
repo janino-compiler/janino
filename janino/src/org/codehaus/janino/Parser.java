@@ -137,7 +137,7 @@ import org.codehaus.janino.util.enumerator.Enumerator;
  * 'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
  * Edition</a>.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class Parser {
     private final Scanner scanner;
 
@@ -248,7 +248,7 @@ class Parser {
 
         boolean isStatic = this.peekRead("static");
 
-        List<String> l = new ArrayList();
+        List<String> l = new ArrayList<String>();
         l.add(this.readIdentifier());
         for (;;) {
             if (!this.peek(".")) {
@@ -279,7 +279,7 @@ class Parser {
      */
     public String[]
     parseQualifiedIdentifier() throws CompileException, IOException {
-        List<String> l = new ArrayList();
+        List<String> l = new ArrayList<String>();
         l.add(this.readIdentifier());
         while (this.peek(".") && this.peekNextButOne().type == Token.IDENTIFIER) {
             this.read();
@@ -366,7 +366,7 @@ class Parser {
     public Java.Modifiers
     parseModifiers() throws CompileException, IOException {
         short                 mod = 0;
-        List<Java.Annotation> as  = new ArrayList();
+        List<Java.Annotation> as  = new ArrayList<Java.Annotation>();
         for (;;) {
             if (this.peek("@")) {
 
@@ -445,7 +445,7 @@ class Parser {
         if (this.peekRead(")")) {
             elementValuePairs = new ElementValuePair[0];
         } else {
-            List<Java.ElementValuePair> evps = new ArrayList();
+            List<Java.ElementValuePair> evps = new ArrayList<Java.ElementValuePair>();
             do {
                 evps.add(this.parseElementValuePair());
             } while (this.read(new String[] { ",", ")" }) == 0);
@@ -494,7 +494,7 @@ class Parser {
     parseElementValueArrayInitializer() throws CompileException, IOException {
         this.read("{");
         Location                loc = this.location();
-        List<Java.ElementValue> evs = new ArrayList();
+        List<Java.ElementValue> evs = new ArrayList<Java.ElementValue>();
         while (!this.peekRead("}")) {
             if (this.peekRead(",")) continue;
             evs.add(this.parseElementValue());
@@ -1188,7 +1188,7 @@ class Parser {
         // expression statement, and if it could be a "ConstructorInvocation", then parse the
         // expression and check if it IS a ConstructorInvocation.
         ConstructorInvocation optionalConstructorInvocation = null;
-        List<BlockStatement>  statements                    = new ArrayList();
+        List<BlockStatement>  statements                    = new ArrayList<BlockStatement>();
         if (
             this.peek(new String[] {
                 "this", "super", "new", "void",
@@ -1321,7 +1321,7 @@ class Parser {
     parseArrayInitializer() throws CompileException, IOException {
         final Location location = this.location();
         this.read("{");
-        List<ArrayInitializerOrRvalue> l = new ArrayList();
+        List<ArrayInitializerOrRvalue> l = new ArrayList<ArrayInitializerOrRvalue>();
         while (!this.peekRead("}")) {
             l.add(this.parseVariableInitializer());
             if (this.peekRead("}")) break;
@@ -1343,7 +1343,7 @@ class Parser {
         this.read("(");
         if (this.peekRead(")")) return new FormalParameters(this.location());
 
-        List<FormalParameter> l           = new ArrayList();
+        List<FormalParameter> l           = new ArrayList<FormalParameter>();
         final boolean[]       hasEllipsis = new boolean[1];
         do {
             if (hasEllipsis[0]) throw this.compileException("Only the last parameter may have an ellipsis");
@@ -1437,7 +1437,7 @@ class Parser {
      */
     public List<BlockStatement>
     parseBlockStatements() throws CompileException, IOException {
-        List<BlockStatement> l = new ArrayList();
+        List<BlockStatement> l = new ArrayList<BlockStatement>();
         while (!this.peek("}") && !this.peek("case") && !this.peek("default")) l.add(this.parseBlockStatement());
         return l;
     }
@@ -1445,11 +1445,11 @@ class Parser {
     /**
      * <pre>
      *   BlockStatement :=
-     *     Statement |                              (1)
-     *     'class' ... |                            (2)
+     *     Statement |                                     (1)
+     *     'class' ... |                                   (2)
      *     Modifiers Type VariableDeclarators ';' |
      *     Expression ';' |
-     *     Expression VariableDeclarators ';'       (3)
+     *     Expression BracketsOpt VariableDeclarators ';'  (3)
      * </pre>
      *
      * (1) Includes the "labeled statement".
@@ -1511,9 +1511,10 @@ class Parser {
             return new ExpressionStatement(a.toRvalueOrCompileException());
         }
 
-        // Expression VariableDeclarators ';'
-        Type                              variableType = a.toTypeOrCompileException();
-        LocalVariableDeclarationStatement lvds         = new LocalVariableDeclarationStatement(
+        // Expression BracketsOpt VariableDeclarators ';'
+        Type variableType = a.toTypeOrCompileException();
+        for (int i = this.parseBracketsOpt(); i > 0; --i) variableType = new ArrayType(variableType);
+        LocalVariableDeclarationStatement lvds = new LocalVariableDeclarationStatement(
             a.getLocation(),                // location
             new Java.Modifiers(Mod.NONE),   // modifiers
             variableType,                   // type
@@ -1530,7 +1531,7 @@ class Parser {
      */
     public VariableDeclarator[]
     parseVariableDeclarators() throws CompileException, IOException {
-        List<VariableDeclarator> l = new ArrayList();
+        List<VariableDeclarator> l = new ArrayList<VariableDeclarator>();
         do {
             VariableDeclarator vd = this.parseVariableDeclarator();
             this.verifyIdentifierIsConventionalLocalVariableOrParameterName(vd.name, vd.getLocation());
@@ -1548,7 +1549,7 @@ class Parser {
      */
     public VariableDeclarator[]
     parseFieldDeclarationRest(String name) throws CompileException, IOException {
-        List<VariableDeclarator> l = new ArrayList();
+        List<VariableDeclarator> l = new ArrayList<VariableDeclarator>();
 
         VariableDeclarator vd = this.parseVariableDeclaratorRest(name);
         this.verifyIdentifierIsConventionalFieldName(vd.name, vd.getLocation());
@@ -1787,7 +1788,7 @@ class Parser {
 
             // 'for' '(' Expression { ',' Expression }
             {
-                List<BlockStatement> l = new ArrayList();
+                List<BlockStatement> l = new ArrayList<BlockStatement>();
                 l.add(new ExpressionStatement(a.toRvalueOrCompileException()));
                 do {
                     l.add(new ExpressionStatement(this.parseExpression().toRvalueOrCompileException()));
@@ -1887,7 +1888,7 @@ class Parser {
         final Block body = this.parseBlock();
 
         // { CatchClause }
-        List<CatchClause> ccs = new ArrayList();
+        List<CatchClause> ccs = new ArrayList<CatchClause>();
         while (this.peekRead("catch")) {
             final Location loc = this.location();
             this.read("(");
@@ -1939,11 +1940,13 @@ class Parser {
         this.read(")");
 
         this.read("{");
-        List<SwitchStatement.SwitchBlockStatementGroup> sbsgs = new ArrayList();
+
+        List<SwitchStatement.SwitchBlockStatementGroup>
+        sbsgs = new ArrayList<SwitchStatement.SwitchBlockStatementGroup>();
         while (!this.peekRead("}")) {
             Location     location2       = this.location();
             boolean      hasDefaultLabel = false;
-            List<Rvalue> caseLabels      = new ArrayList();
+            List<Rvalue> caseLabels      = new ArrayList<Rvalue>();
             do {
                 if (this.peekRead("case")) {
                     caseLabels.add(this.parseExpression().toRvalueOrCompileException());
@@ -2087,7 +2090,7 @@ class Parser {
      */
     public Rvalue[]
     parseExpressionList() throws CompileException, IOException {
-        List<Rvalue> l = new ArrayList();
+        List<Rvalue> l = new ArrayList<Rvalue>();
         do {
             l.add(this.parseExpression().toRvalueOrCompileException());
         } while (this.peekRead(","));
@@ -2185,7 +2188,7 @@ class Parser {
         boolean orig = this.scanner.setExpectGreater(true);
         try {
 
-            List<TypeArgument> typeArguments = new ArrayList();
+            List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
             typeArguments.add(this.parseTypeArgument());
             while (this.read(new String[] { ">", "," }) == 1) {
                 typeArguments.add(this.parseTypeArgument());
@@ -2230,7 +2233,7 @@ class Parser {
      */
     public ReferenceType[]
     parseReferenceTypeList() throws CompileException, IOException {
-        List<ReferenceType> l = new ArrayList();
+        List<ReferenceType> l = new ArrayList<ReferenceType>();
         l.add(this.parseReferenceType());
         while (this.peekRead(",")) {
             l.add(this.parseReferenceType());
@@ -2454,7 +2457,7 @@ class Parser {
                     try {
 
                         // '<' TypeArgument [ { ',' TypeArgument } '>' ]
-                        List<TypeArgument> typeArguments = new ArrayList();
+                        List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
                         typeArguments.add(this.parseTypeArgument());
                         while (this.read(new String[] { ">", "," }) == 1) typeArguments.add(this.parseTypeArgument());
 
@@ -2491,7 +2494,7 @@ class Parser {
                                 throw this.compileException("'" + t + "' is not a valid type argument");
                             }
 
-                            List<TypeArgument> typeArguments = new ArrayList();
+                            List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
                             typeArguments.add(ta);
                             while (this.read(new String[] { ">", "," }) == 1) {
                                 typeArguments.add(this.parseTypeArgument());
@@ -3023,7 +3026,7 @@ class Parser {
      */
     public Rvalue[]
     parseDimExprs() throws CompileException, IOException {
-        List<Rvalue> l = new ArrayList();
+        List<Rvalue> l = new ArrayList<Rvalue>();
         l.add(this.parseDimExpr());
         while (this.peek("[") && !this.peekNextButOne("]")) {
             l.add(this.parseDimExpr());
@@ -3065,7 +3068,7 @@ class Parser {
      */
     public Rvalue[]
     parseArgumentList() throws CompileException, IOException {
-        List<Rvalue> l = new ArrayList();
+        List<Rvalue> l = new ArrayList<Rvalue>();
         do {
             l.add(this.parseExpression().toRvalueOrCompileException());
         } while (this.peekRead(","));

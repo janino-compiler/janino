@@ -98,11 +98,11 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * 'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
  * Edition</a>.
  */
-@SuppressWarnings("rawtypes") public
+public
 interface IExpressionEvaluator extends IScriptEvaluator {
 
     /** Special value for {@link #setExpressionType(Class)} that indicates that the expression may have any type. */
-    @Nullable Class ANY_TYPE = null;
+    @Nullable Class<?> ANY_TYPE = null;
 
     /**
      * Define the type of the expression. The special type {@link #ANY_TYPE} allows the expression
@@ -113,21 +113,21 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      * <p>
      * Defaults to {@link #ANY_TYPE}.
      */
-    void setExpressionType(@Nullable Class expressionType);
+    void setExpressionType(@Nullable Class<?> expressionType);
 
     /** Same as {@link #setExpressionType(Class)}, but for multiple expressions. */
-    void setExpressionTypes(Class[] expressionTypes);
+    void setExpressionTypes(Class<?>[] expressionTypes);
 
     /**
      * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionType(Class)} instead.
      */
-    @Override @Deprecated void setReturnType(Class returnType);
+    @Override @Deprecated void setReturnType(Class<?> returnType);
 
     /**
      * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])}
      *             instead.
      */
-    @Override @Deprecated void setReturnTypes(Class[] returnTypes);
+    @Override @Deprecated void setReturnTypes(Class<?>[] returnTypes);
 
     /**
      * Evaluates the expression with concrete parameter values.

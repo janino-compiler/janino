@@ -36,22 +36,24 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/** Wraps a {@link java.lang.Class} in an {@link org.codehaus.janino.IClass}. */
-@SuppressWarnings("rawtypes")
+/**
+ * Wraps a {@link java.lang.Class} in an {@link org.codehaus.janino.IClass}.
+ */
 class ReflectionIClass extends IClass {
-    private final Class        clazz;
+
+    private final Class<?>     clazz;
     private final IClassLoader iClassLoader;
 
     /** @param iClassLoader Required to load other {@link IClass}es on {@code get...()} */
-    ReflectionIClass(Class clazz, IClassLoader iClassLoader) {
+    ReflectionIClass(Class<?> clazz, IClassLoader iClassLoader) {
         this.clazz        = clazz;
         this.iClassLoader = iClassLoader;
     }
 
     @Override protected IConstructor[]
     getDeclaredIConstructors2() {
-        Constructor[]  constructors = this.clazz.getDeclaredConstructors();
-        IConstructor[] result       = new IConstructor[constructors.length];
+        Constructor<?>[] constructors = this.clazz.getDeclaredConstructors();
+        IConstructor[]   result       = new IConstructor[constructors.length];
         for (int i = 0; i < constructors.length; ++i) {
             result[i] = new ReflectionIConstructor(constructors[i]);
         }
@@ -96,7 +98,7 @@ class ReflectionIClass extends IClass {
 
     @Override @Nullable protected IClass
     getDeclaringIClass2() {
-        Class declaringClass = this.clazz.getDeclaringClass();
+        Class<?> declaringClass = this.clazz.getDeclaringClass();
         if (declaringClass == null) return null;
         return this.classToIClass(declaringClass);
     }
@@ -109,7 +111,7 @@ class ReflectionIClass extends IClass {
 
     @Override @Nullable protected IClass
     getSuperclass2() {
-        Class superclass = this.clazz.getSuperclass();
+        Class<?> superclass = this.clazz.getSuperclass();
         return superclass == null ? null : this.classToIClass(superclass);
     }
 
@@ -131,7 +133,7 @@ class ReflectionIClass extends IClass {
 
     @Override @Nullable protected IClass
     getComponentType2() {
-        Class componentType = this.clazz.getComponentType();
+        Class<?> componentType = this.clazz.getComponentType();
         return componentType == null ? null : this.classToIClass(componentType);
     }
 
@@ -226,14 +228,14 @@ class ReflectionIClass extends IClass {
     }
 
     /** @return The underlying {@link Class java.lang.Class} */
-    public Class
+    public Class<?>
     getClazz() { return this.clazz; }
 
     /** @return E.g. "int", "int[][]", "pkg1.pkg2.Outer$Inner[]" */
     @Override public String
     toString() {
-        int   brackets = 0;
-        Class c        = this.clazz;
+        int      brackets = 0;
+        Class<?> c        = this.clazz;
         while (c.isArray()) {
             ++brackets;
             c = c.getComponentType();
@@ -246,7 +248,7 @@ class ReflectionIClass extends IClass {
     private
     class ReflectionIConstructor extends IConstructor {
 
-        ReflectionIConstructor(Constructor constructor) { this.constructor = constructor; }
+        ReflectionIConstructor(Constructor<?> constructor) { this.constructor = constructor; }
 
         // Implement IMember.
         @Override public Access
@@ -300,8 +302,8 @@ class ReflectionIClass extends IClass {
 
         @Override public String
         getDescriptor2() {
-            Class[]  parameterTypes       = this.constructor.getParameterTypes();
-            String[] parameterDescriptors = new String[parameterTypes.length];
+            Class<?>[] parameterTypes       = this.constructor.getParameterTypes();
+            String[]   parameterDescriptors = new String[parameterTypes.length];
             for (int i = 0; i < parameterDescriptors.length; ++i) {
                 parameterDescriptors[i] = Descriptor.fromClassName(parameterTypes[i].getName());
             }
@@ -313,7 +315,7 @@ class ReflectionIClass extends IClass {
             return ReflectionIClass.this.classesToIClasses(this.constructor.getExceptionTypes());
         }
 
-        final Constructor constructor;
+        final Constructor<?> constructor;
     }
     public
     class ReflectionIMethod extends IMethod {
@@ -400,8 +402,8 @@ class ReflectionIClass extends IClass {
          */
         @Override public Object
         getConstantValue() throws CompileException {
-            int   mod   = this.field.getModifiers();
-            Class clazz = this.field.getType();
+            int      mod   = this.field.getModifiers();
+            Class<?> clazz = this.field.getType();
             if (
                 Modifier.isStatic(mod)
                 && Modifier.isFinal(mod)
@@ -424,7 +426,7 @@ class ReflectionIClass extends IClass {
 
     /** Loads {@link Class} through {@link IClassLoader} to ensure unique {@link IClass}es. */
     private IClass
-    classToIClass(Class c) {
+    classToIClass(Class<?> c) {
         IClass iClass;
         try {
             iClass = this.iClassLoader.loadIClass(Descriptor.fromClassName(c.getName()));
@@ -439,7 +441,7 @@ class ReflectionIClass extends IClass {
 
     /** @see #classToIClass(Class) */
     private IClass[]
-    classesToIClasses(Class[] cs) {
+    classesToIClasses(Class<?>[] cs) {
         IClass[] result = new IClass[cs.length];
         for (int i = 0; i < cs.length; ++i) result[i] = this.classToIClass(cs[i]);
         return result;

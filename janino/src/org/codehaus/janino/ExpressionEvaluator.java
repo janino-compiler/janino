@@ -89,10 +89,10 @@ import org.codehaus.janino.util.Traverser;
  * (How can it be that interface method invocation is slower than reflection for
  * the server JVM?)
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
 
-    @Nullable private Class[] optionalExpressionTypes;
+    @Nullable private Class<?>[] optionalExpressionTypes;
 
     /**
      * Equivalent to<pre>
@@ -107,12 +107,8 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      * @see Cookable#cook(String)
      */
     public
-    ExpressionEvaluator(
-        String   expression,
-        Class    expressionType,
-        String[] parameterNames,
-        Class[]  parameterTypes
-    ) throws CompileException {
+    ExpressionEvaluator(String expression, Class<?> expressionType, String[] parameterNames, Class<?>[] parameterTypes)
+    throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.cook(expression);
@@ -137,10 +133,10 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     public
     ExpressionEvaluator(
         String                expression,
-        Class                 expressionType,
+        Class<?>              expressionType,
         String[]              parameterNames,
-        Class[]               parameterTypes,
-        Class[]               thrownExceptions,
+        Class<?>[]            parameterTypes,
+        Class<?>[]            thrownExceptions,
         @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
@@ -173,12 +169,12 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     public
     ExpressionEvaluator(
         String                expression,
-        Class                 expressionType,
+        Class<?>              expressionType,
         String[]              parameterNames,
-        Class[]               parameterTypes,
-        Class[]               thrownExceptions,
-        @Nullable Class       optionalExtendedType,
-        Class[]               implementedTypes,
+        Class<?>[]            parameterTypes,
+        Class<?>[]            thrownExceptions,
+        @Nullable Class<?>    optionalExtendedType,
+        Class<?>[]            implementedTypes,
         @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
@@ -225,14 +221,14 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     ExpressionEvaluator(
         Scanner               scanner,
         String                className,
-        @Nullable Class       optionalExtendedType,
-        Class[]               implementedTypes,
+        @Nullable Class<?>    optionalExtendedType,
+        Class<?>[]            implementedTypes,
         boolean               staticMethod,
-        Class                 expressionType,
+        Class<?>              expressionType,
         String                methodName,
         String[]              parameterNames,
-        Class[]               parameterTypes,
-        Class[]               thrownExceptions,
+        Class<?>[]            parameterTypes,
+        Class<?>[]            thrownExceptions,
         @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         this.setClassName(className);
@@ -250,16 +246,16 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     public ExpressionEvaluator() {}
 
     @Override public void
-    setExpressionType(@Nullable Class expressionType) { this.setExpressionTypes(new Class[] { expressionType }); }
+    setExpressionType(@Nullable Class<?> expressionType) { this.setExpressionTypes(new Class[] { expressionType }); }
 
     @Override public void
-    setExpressionTypes(Class[] expressionTypes) {
+    setExpressionTypes(Class<?>[] expressionTypes) {
         this.assertNotCooked();
         this.optionalExpressionTypes = expressionTypes;
 
-        Class[] returnTypes = new Class[expressionTypes.length];
+        Class<?>[] returnTypes = new Class[expressionTypes.length];
         for (int i = 0; i < returnTypes.length; ++i) {
-            Class et = expressionTypes[i];
+            Class<?> et = expressionTypes[i];
             returnTypes[i] = et == IExpressionEvaluator.ANY_TYPE ? Object.class : et;
         }
         super.setReturnTypes(returnTypes);
@@ -267,28 +263,28 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
     /** @deprecated {@link #setExpressionType(Class)} should be called instead. */
     @Override @Deprecated public final void
-    setReturnType(Class returnType) {
+    setReturnType(Class<?> returnType) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
     }
 
     /** @deprecated {@link #setExpressionTypes(Class[])} should be called instead. */
     @Override @Deprecated public final void
-    setReturnTypes(Class[] returnTypes) {
+    setReturnTypes(Class<?>[] returnTypes) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
     }
 
-    @Override protected Class
+    @Override protected Class<?>
     getDefaultReturnType() { return Object.class; }
 
     @Override protected List<BlockStatement>
     makeStatements(int idx, Parser parser) throws CompileException, IOException {
-        List<BlockStatement> statements = new ArrayList();
+        List<BlockStatement> statements = new ArrayList<BlockStatement>();
 
         // Parse the expression.
         Rvalue value = parser.parseExpression().toRvalueOrCompileException();
 
-        Class[] oets = this.optionalExpressionTypes;
-        Class   et   = oets == null ? IExpressionEvaluator.ANY_TYPE : oets[idx];
+        Class<?>[] oets = this.optionalExpressionTypes;
+        Class<?>   et   = oets == null ? IExpressionEvaluator.ANY_TYPE : oets[idx];
         if (et == void.class) {
 
             // ExpressionEvaluator with an expression type "void" is a simple expression statement.
@@ -342,7 +338,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     @Deprecated public static Object
     createFastExpressionEvaluator(
         String                expression,
-        Class                 interfaceToImplement,
+        Class<?>              interfaceToImplement,
         String[]              parameterNames,
         @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException {
@@ -362,8 +358,8 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     createFastExpressionEvaluator(
         Scanner               scanner,
         String                className,
-        @Nullable Class       optionalExtendedType,
-        Class                 interfaceToImplement,
+        @Nullable Class<?>    optionalExtendedType,
+        Class<?>              interfaceToImplement,
         String[]              parameterNames,
         @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
@@ -386,8 +382,8 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         Scanner               scanner,
         @Nullable String[]    optionalDefaultImports,
         String                className,
-        @Nullable Class       optionalExtendedType,
-        Class                 interfaceToImplement,
+        @Nullable Class<?>    optionalExtendedType,
+        Class<?>              interfaceToImplement,
         String[]              parameterNames,
         @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
@@ -425,7 +421,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         }
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
-        final Set<String> parameterNames = new HashSet();
+        final Set<String> parameterNames = new HashSet<String>();
         new Traverser<RuntimeException>() {
 
             @Override public void

@@ -39,7 +39,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 /**
  * A {@link ClassLoader} that uses a {@link org.codehaus.janino.util.resource.ResourceFinder} to find ".class" files.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
+public
 class ResourceFinderClassLoader extends ClassLoader {
 
     private final ResourceFinder resourceFinder;
@@ -54,7 +54,7 @@ class ResourceFinderClassLoader extends ClassLoader {
     public ResourceFinder
     getResourceFinder() { return this.resourceFinder; }
 
-    @Override protected Class
+    @Override protected Class<?>
     findClass(@Nullable String className) throws ClassNotFoundException {
         assert className != null;
 
@@ -92,7 +92,7 @@ class ResourceFinderClassLoader extends ClassLoader {
         byte[] ba = baos.toByteArray();
 
         // Define the class in this ClassLoader.
-        Class clazz = super.defineClass(null, ba, 0, ba.length);
+        Class<?> clazz = super.defineClass(null, ba, 0, ba.length);
 
         if (!clazz.getName().equals(className)) {
 
