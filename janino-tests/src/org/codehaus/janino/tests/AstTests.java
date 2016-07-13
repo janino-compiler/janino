@@ -331,7 +331,7 @@ class AstTests {
 
         StringWriter   sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
-        uv.visitBlockStatement(es);
+        uv.unparseBlockStatement(es);
         uv.close();
         Assert.assertEquals("x = 1 * ((( 2 + 3 )));", sw.toString());
     }

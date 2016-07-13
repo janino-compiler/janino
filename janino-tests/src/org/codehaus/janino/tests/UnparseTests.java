@@ -104,7 +104,7 @@ class UnparseTests {
 
         StringWriter   sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
-        uv.visitAtom(expr);
+        uv.unparseAtom(expr);
         uv.close();
         String s = sw.toString();
         s = UnparseTests.replace(s, "((( ", "(");
@@ -405,7 +405,7 @@ class UnparseTests {
         );
         StringWriter   sw = new StringWriter();
         UnparseVisitor uv = new UnparseVisitor(sw);
-        uv.visitTypeDeclaration(decl);
+        uv.unparseTypeDeclaration(decl);
         uv.close();
         String s             = sw.toString();
         String correctString = "/**foo */ public interface Foo { }";
@@ -424,7 +424,7 @@ class UnparseTests {
 
             StringWriter   sw = new StringWriter();
             UnparseVisitor uv = new UnparseVisitor(sw);
-            uv.visitAtom(expr);
+            uv.unparseAtom(expr);
             uv.close();
             Assert.assertEquals(expected, sw.toString());
         }

@@ -1140,7 +1140,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 // It's most probably a parameter name (although it could be a field name as well).
                 parameterNames.add(an.identifiers[0]);
             }
-        }.traverseBlock(block);
+        }.visitBlockStatement(block);
 
         return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
     }
