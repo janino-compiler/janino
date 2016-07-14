@@ -193,37 +193,14 @@ class Unparser {
     private final Visitor.TypeBodyDeclarationVisitor<Void, RuntimeException>
     typeBodyDeclarationUnparser = new Visitor.TypeBodyDeclarationVisitor<Void, RuntimeException>() {
 
-        @Override @Nullable public Void
-        visitMemberEnumDeclaration(MemberEnumDeclaration med) {
-            Unparser.this.unparseEnumDeclaration(med);
-            return null;
-        }
-
-        @Override @Nullable public Void
-        visitMemberClassDeclaration(Java.MemberClassDeclaration mcd) {
-            Unparser.this.unparseNamedClassDeclaration(mcd);
-            return null;
-        }
-
-        @Override @Nullable public Void
-        visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid) {
-            Unparser.this.unparseInterfaceDeclaration(mid);
-            return null;
-        }
-
-        @Override @Nullable public Void
-        visitFunctionDeclarator(FunctionDeclarator fd) {
-            return fd.accept(new Visitor.FunctionDeclaratorVisitor<Void, RuntimeException>() {
-
-                // SUPPRESS CHECKSTYLE LineLength:2
-                @Override @Nullable public Void visitConstructorDeclarator(ConstructorDeclarator cd) { Unparser.this.unparseConstructorDeclarator(cd); return null; }
-                @Override @Nullable public Void visitMethodDeclarator(MethodDeclarator md)           { Unparser.this.unparseMethodDeclarator(md);      return null; }
-            });
-        }
-
-        // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public Void visitInitializer(Initializer i)            { Unparser.this.unparseInitializer(i);       return null; }
-        @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd) { Unparser.this.unparseFieldDeclaration(fd); return null; }
+        // SUPPRESS CHECKSTYLE LineLength:7
+        @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med)                      { Unparser.this.unparseEnumDeclaration(med);            return null; }
+        @Override @Nullable public Void visitMemberClassDeclaration(Java.MemberClassDeclaration mcd)               { Unparser.this.unparseNamedClassDeclaration(mcd);      return null; }
+        @Override @Nullable public Void visitMemberInterfaceDeclaration(Java.MemberInterfaceDeclaration mid)       { Unparser.this.unparseInterfaceDeclaration(mid);       return null; }
+        @Override @Nullable public Void visitFunctionDeclarator(FunctionDeclarator fd)                             { Unparser.this.unparseFunctionDeclarator(fd);          return null; }
+        @Override @Nullable public Void visitInitializer(Initializer i)                                            { Unparser.this.unparseInitializer(i);                  return null; }
+        @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd)                                 { Unparser.this.unparseFieldDeclaration(fd);            return null; }
+        @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) { Unparser.this.unparseAnnotationTypeDeclaration(matd); return null; }
     };
 
     private final Visitor.BlockStatementVisitor<Void, RuntimeException>
@@ -784,6 +761,13 @@ class Unparser {
                     return null;
                 }
             });
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitConstructorInvocation(ConstructorInvocation ci) {
+            Unparser.this.unparseBlockStatement(ci);
+            Unparser.this.pw.println(';');
             return null;
         }
     };
@@ -1464,5 +1448,16 @@ class Unparser {
         this.pw.print(AutoIndentWriter.INDENT);
         this.unparseTypeDeclarationBody(atd);
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
+    }
+
+    private void
+    unparseFunctionDeclarator(Java.FunctionDeclarator fd) {
+
+        fd.accept(new Visitor.FunctionDeclaratorVisitor<Void, RuntimeException>() {
+
+            // SUPPRESS CHECKSTYLE LineLength:2
+            @Override @Nullable public Void visitConstructorDeclarator(ConstructorDeclarator cd) { Unparser.this.unparseConstructorDeclarator(cd); return null; }
+            @Override @Nullable public Void visitMethodDeclarator(MethodDeclarator md)           { Unparser.this.unparseMethodDeclarator(md);      return null; }
+        });
     }
 }

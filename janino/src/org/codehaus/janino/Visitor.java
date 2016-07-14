@@ -147,8 +147,11 @@ class Visitor {
         /** Invoked by {@link Java.MemberEnumDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)} */
         @Nullable R visitMemberEnumDeclaration(Java.MemberEnumDeclaration med) throws EX;
 
-        /** Invoked by {@link Java.FunctionDeclarator#accept(FunctionDeclaratorVisitor)}. */
+        /** Invoked by {@link Java.FunctionDeclarator#accept(Visitor.TypeBodyDeclarationVisitor)}. */
         @Nullable R visitFunctionDeclarator(Java.FunctionDeclarator fd) throws EX;
+
+        /** Invoked by {@link Java.MemberAnnotationTypeDeclaration#accept(Visitor.TypeBodyDeclarationVisitor)}. */
+        @Nullable R visitMemberAnnotationTypeDeclaration(Java.MemberAnnotationTypeDeclaration matd) throws EX;
     }
 
     /**
@@ -242,11 +245,14 @@ class Visitor {
         /** Invoked by {@link Java.Package#accept(Visitor.AtomVisitor)}. */
         @Nullable R visitPackage(Java.Package p) throws EX;
 
-        /** Invoked by {@link Java.Rvalue#accept(Visitor.RvalueVisitor)}. */
+        /** Invoked by {@link Java.Rvalue#accept(Visitor.AtomVisitor)}. */
         @Nullable R visitRvalue(Java.Rvalue rv) throws EX;
 
-        /** Invoked by {@link Java.Type#accept(Visitor.TypeVisitor)}. */
+        /** Invoked by {@link Java.Type#accept(Visitor.AtomVisitor)}. */
         @Nullable R visitType(Java.Type t) throws EX;
+
+        /** Invoked by {@link Java.ConstructorInvocation#accept(Visitor.AtomVisitor)}. */
+        @Nullable R visitConstructorInvocation(Java.ConstructorInvocation ci) throws EX;
     }
 
     /**
@@ -391,6 +397,22 @@ class Visitor {
 
         /** Invoked by {@link Java.ParenthesizedExpression#accept(Visitor.LvalueVisitor)} */
         @Nullable R visitParenthesizedExpression(Java.ParenthesizedExpression pe) throws EX;
+    }
+
+    /**
+     * The visitor for all kinds of {@link Java.ConstructorInvocation}s.
+     *
+     * @param <R>  The type of the object returned by the {@code visit*()} methods
+     * @param <EX> The exception that the {@code visit*()} methods may throw
+     */
+    public
+    interface ConstructorInvocationVisitor<R, EX extends Throwable> {
+
+        /** Invoked by {@link Java.MarkerAnnotation#accept(Visitor.AnnotationVisitor)} */
+        @Nullable R visitAlternateConstructorInvocation(Java.AlternateConstructorInvocation aci) throws EX;
+
+        /** Invoked by {@link Java.SingleElementAnnotation#accept(Visitor.AnnotationVisitor)} */
+        @Nullable R visitSuperConstructorInvocation(Java.SuperConstructorInvocation sci) throws EX;
     }
 
     /**

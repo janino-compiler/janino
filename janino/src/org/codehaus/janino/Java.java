@@ -326,7 +326,7 @@ class Java {
         @Override public Location
         getLocation() { return this.type.getLocation(); }
 
-        @Override @Nullable public <R, EX extends Throwable> R
+        @Override @Nullable public final <R, EX extends Throwable> R
         accept(ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitAnnotation(this); }
 
         @Override public void
@@ -415,9 +415,8 @@ class Java {
             }
         }
 
-        // SUPPRESS CHECKSTYLE LineLength:2
         @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.AnnotationVisitor<R, EX> visitor) throws EX   { return visitor.visitNormalAnnotation(this); }
+        accept(Visitor.AnnotationVisitor<R, EX> visitor) throws EX { return visitor.visitNormalAnnotation(this); }
     }
 
     /** Representation of the modifier flags and annotations that are associated with a declaration. */
@@ -524,7 +523,7 @@ class Java {
      * An element value in the form of an array initializer, e.g. '<code>SuppressWarnings({ "null", "unchecked"
      * })</code>'.
      */
-    public static
+    public static final
     class ElementValueArrayInitializer extends Located implements ElementValue {
 
         /** The element values in the body of the array initializer. */
@@ -692,7 +691,7 @@ class Java {
      * zero or more "enclosing instances". These are anonymous classes, local classes and member
      * classes.
      */
-    interface InnerClassDeclaration extends TypeDeclaration {
+    interface InnerClassDeclaration extends ClassDeclaration {
 
         /**
          * Inner classes have zero or more synthetic fields that hold references to their enclosing
@@ -1134,7 +1133,7 @@ class Java {
      * Representation of a 'member enum declaration', i.e. an enum declaration that appears inside another class or
      * interface declaration.
      */
-    public static
+    public static final
     class MemberEnumDeclaration extends MemberClassDeclaration implements EnumDeclaration {
 
         private final List<EnumConstant> constants = new ArrayList<Java.EnumConstant>();
@@ -1167,15 +1166,9 @@ class Java {
         @Override public void
         addConstant(EnumConstant ec) { this.constants.add(ec); }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberEnumDeclaration(this);
-        }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberEnumDeclaration(this);
-        }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX>     visitor) throws EX { return visitor.visitMemberEnumDeclaration(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberEnumDeclaration(this); }
     }
 
     /** Representation of a 'local class declaration' i.e. a class declaration that appears inside a method body. */
@@ -1221,7 +1214,7 @@ class Java {
     }
 
     /** Implementation of a 'package member class declaration', a.k.a. 'top-level class declaration'. */
-    public static
+    public static final
     class PackageMemberClassDeclaration extends AbstractPackageMemberClassDeclaration {
 
         public
@@ -1243,6 +1236,11 @@ class Java {
                 optionalExtendedType,
                 implementedTypes
             );
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
+            return visitor.visitPackageMemberClassDeclaration(this);
         }
     }
 
@@ -1303,11 +1301,6 @@ class Java {
             if (opd != null) className = opd.packageName + '.' + className;
 
             return className;
-        }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitPackageMemberClassDeclaration(this);
         }
     }
 
@@ -1565,7 +1558,7 @@ class Java {
     /**
      * Representation of a member annotation type declaration, a.k.a. "nested annotation type declaration".
      */
-    public static
+    public static final
     class MemberAnnotationTypeDeclaration extends MemberInterfaceDeclaration {
 
         public
@@ -1589,10 +1582,9 @@ class Java {
             );
         }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberAnnotationTypeDeclaration(this);
-        }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX> visitor)     throws EX { return visitor.visitMemberAnnotationTypeDeclaration(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberAnnotationTypeDeclaration(this); }
     }
 
     /** Representation of a 'package member interface declaration', a.k.a. 'top-level interface declaration'. */
@@ -1751,7 +1743,6 @@ class Java {
         /**
          * Invokes the '{@code visit...()}' method of {@link Visitor.TypeBodyDeclarationVisitor} for the concrete
          * {@link TypeBodyDeclaration} type.
-         * @throws EX
          */
         @Nullable <R, EX extends Throwable> R
         accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX;
@@ -1902,7 +1893,10 @@ class Java {
         public Annotation[]
         getAnnotations() { return this.modifiers.annotations; }
 
-        // Implement "FunctionDeclarator".
+        @Override @Nullable public final <R, EX extends Throwable> R
+        accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX {
+            return visitor.visitFunctionDeclarator(this);
+        }
 
         /**
          * Invokes the '{@code visit...()}' method of {@link Visitor.FunctionDeclaratorVisitor} for the concrete
@@ -2079,9 +2073,10 @@ class Java {
             return sb.toString();
         }
 
-        // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitFunctionDeclarator(this);    }
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX  { return visitor.visitConstructorDeclarator(this); }
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX {
+            return visitor.visitConstructorDeclarator(this);
+        }
     }
 
     /**
@@ -2170,9 +2165,10 @@ class Java {
             return sb.toString();
         }
 
-        // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitFunctionDeclarator(this); }
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX  { return visitor.visitMethodDeclarator(this);   }
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(Visitor.FunctionDeclaratorVisitor<R, EX> visitor) throws EX {
+            return visitor.visitMethodDeclarator(this);
+        }
 
         @Nullable private final TypeParameter[] optionalTypeParameters;
 
@@ -3125,7 +3121,10 @@ class Java {
         accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitEmptyStatement(this); }
     }
 
-    /** Abstract base class for {@link Java.Type}, {@link Java.Rvalue} and {@link Java.Lvalue}. */
+    /**
+     * Abstract base class for {@link Java.Type}, {@link Java.Rvalue}, {@link Java.Package} and {@link
+     * Java.ConstructorInvocation}.
+     */
     public abstract static
     class Atom extends Located {
 
@@ -3443,7 +3442,7 @@ class Java {
         protected
         Rvalue(Location location) { super(location); }
 
-        @Override @Nullable public <R, EX extends Throwable> R
+        @Override @Nullable public final <R, EX extends Throwable> R
         accept(ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitRvalue(this); }
 
 
@@ -4249,6 +4248,16 @@ class Java {
             if (this.localVariables != null) return (LocalVariable) this.localVariables.get(name);
             return null;
         }
+
+        @Override @Nullable public final <R, EX extends Throwable> R
+        accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitConstructorInvocation(this); }
+
+        /**
+         * Invokes the '{@code visit...()}' method of {@link Visitor.ConstructorInvocationVisitor} for the concrete
+         * {@link ConstructorInvocation}.
+         */
+        @Nullable public abstract <R, EX extends Throwable> R
+        accept(Visitor.ConstructorInvocationVisitor<R, EX> visitor) throws EX;
     }
 
     /** Representation of a JLS7 8.8.7.1. 'alternate constructor invocation'. */
@@ -4264,8 +4273,8 @@ class Java {
         toString() { return "this()"; }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX           { return ((Visitor.BlockStatementVisitor<R, EX>) visitor).visitAlternateConstructorInvocation(this); }
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitAlternateConstructorInvocation(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.ConstructorInvocationVisitor<R, EX> visitor) throws EX { return visitor.visitAlternateConstructorInvocation(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor)        throws EX { return visitor.visitAlternateConstructorInvocation(this); }
     }
 
     /** Representation of a JLS7 8.8.7.1. 'superclass constructor invocation'. */
@@ -4291,8 +4300,8 @@ class Java {
         toString() { return "super()"; }
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX           { return ((Visitor.BlockStatementVisitor<R, EX>) visitor).visitSuperConstructorInvocation(this); }
-        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitSuperConstructorInvocation(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.ConstructorInvocationVisitor<R, EX> visitor) throws EX { return visitor.visitSuperConstructorInvocation(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor)        throws EX { return visitor.visitSuperConstructorInvocation(this); }
     }
 
     /** Representation of a JLS7 15.12 'method invocation expression'. */
@@ -4908,7 +4917,7 @@ class Java {
             this.referenceType = referenceType;
         }
 
-        @Override @Nullable public <R, EX extends Throwable> R
+        @Override @Nullable public final <R, EX extends Throwable> R
         accept(TypeArgumentVisitor<R, EX> visitor) throws EX { return visitor.visitWildcard(this); }
 
         @Override public String

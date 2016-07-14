@@ -5770,9 +5770,20 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                     @Override public IClass visitThisReference(ThisReference tr)                            throws CompileException { return UnitCompiler.this.getType2(tr);   }
                 });
             }
+
+            @Override @Nullable public IClass
+            visitConstructorInvocation(ConstructorInvocation ci) throws CompileException {
+                return UnitCompiler.this.getType2(ci);
+            }
         });
 
         return result != null ? result : this.iClassLoader.TYPE_java_lang_Object;
+    }
+
+    private IClass
+    getType2(ConstructorInvocation ci) throws CompileException {
+        this.compileError("Explicit constructor invocation not allowed here", ci.getLocation());
+        return this.iClassLoader.TYPE_java_lang_Object;
     }
 
     @SuppressWarnings("static-method") private IClass
@@ -6491,6 +6502,9 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                     @Override public Boolean visitThisReference(ThisReference tr)                            { return UnitCompiler.this.isType2(tr);   }
                 });
             }
+
+            @Override @Nullable public Boolean
+            visitConstructorInvocation(ConstructorInvocation ci) { return false; }
         });
 
         assert result != null;
