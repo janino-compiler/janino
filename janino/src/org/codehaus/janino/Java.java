@@ -1983,7 +1983,7 @@ class Java {
             public final Type type;
 
             /** The name of the parameter. */
-            public final String  name;
+            public final String name;
 
             public
             FormalParameter(Location location, boolean finaL, Type type, String name) {
@@ -2209,9 +2209,7 @@ class Java {
             this.variableDeclarators = variableDeclarators;
 
             this.type.setEnclosingScope(this);
-            for (VariableDeclarator vd : variableDeclarators) {
-                if (vd.optionalInitializer != null) Java.setEnclosingScope(vd.optionalInitializer, this);
-            }
+            for (VariableDeclarator vd : variableDeclarators) vd.setEnclosingScope(this);
         }
 
         // Implement TypeBodyDeclaration.
@@ -2260,21 +2258,6 @@ class Java {
         }
     }
 
-    private static void
-    setEnclosingScope(ArrayInitializerOrRvalue aiorv, Scope enclosingBlockStatement) {
-        if (aiorv instanceof Rvalue) {
-            ((Rvalue) aiorv).setEnclosingScope(enclosingBlockStatement);
-        } else
-        if (aiorv instanceof ArrayInitializer) {
-            for (ArrayInitializerOrRvalue v : ((ArrayInitializer) aiorv).values) {
-                Java.setEnclosingScope(v, enclosingBlockStatement);
-            }
-        } else
-        {
-            throw new JaninoRuntimeException("Unexpected array or initializer class " + aiorv.getClass().getName());
-        }
-    }
-
     /** Used by FieldDeclaration and LocalVariableDeclarationStatement. */
     public static final
     class VariableDeclarator extends Located {
@@ -2302,6 +2285,11 @@ class Java {
 
             // Used both by field declarations an local variable declarations, so naming conventions checking (JLS7
             // 6.4.2) cannot be done here.
+        }
+
+        public void
+        setEnclosingScope(Scope s) {
+            if (this.optionalInitializer != null) this.optionalInitializer.setEnclosingScope(s);
         }
 
         @Override public String
@@ -2959,9 +2947,7 @@ class Java {
             this.variableDeclarators = variableDeclarators;
 
             this.type.setEnclosingScope(this);
-            for (VariableDeclarator vd : variableDeclarators) {
-                if (vd.optionalInitializer != null) Java.setEnclosingScope(vd.optionalInitializer, this);
-            }
+            for (VariableDeclarator vd : variableDeclarators) vd.setEnclosingScope(this);
         }
 
         // Compile time members:
@@ -4612,6 +4598,9 @@ class Java {
             this.values = values;
         }
 
+        @Override public void
+        setEnclosingScope(Scope s) { for (ArrayInitializerOrRvalue v : this.values) v.setEnclosingScope(s); }
+
         @Override public String
         toString() { return " { (" + this.values.length + " values) }"; }
     }
@@ -4619,6 +4608,8 @@ class Java {
     /** The union of {@link ArrayInitializer} and {@link Rvalue}. */
     public
     interface ArrayInitializerOrRvalue extends Locatable {
+
+        void setEnclosingScope(Scope s);
     }
 
     /** Abstract base class for the various Java&trade; literals; see JLS7 3.10. */

@@ -535,6 +535,7 @@ class UnitCompiler {
             this.maybeCreateInitMethod(cd, cf, statements);
         }
 
+        // Compile declared methods.
         this.compileDeclaredMethods(cd, cf);
 
         // Compile declared constructors.
@@ -641,10 +642,11 @@ class UnitCompiler {
         }
 
         // Set "SourceFile" attribute.
+        Location loc = ed.getLocation();
         if (this.debugSource) {
             String sourceFileName;
             {
-                String s = ed.getLocation().getFileName();
+                String s = loc.getFileName();
                 if (s != null) {
                     sourceFileName = new File(s).getName();
                 } else if (ed instanceof NamedTypeDeclaration) {
@@ -661,45 +663,35 @@ class UnitCompiler {
             if (((DocCommentable) ed).hasDeprecatedDocTag()) cf.addDeprecatedAttribute();
         }
 
-        // Create fields for enum constants and synthesize class initialization method.
+        // Create fields for enum constants.
+        for (EnumConstant ec : ed.getConstants()) {
+
+            VariableDeclarator variableDeclarator = new VariableDeclarator(
+                ec.getLocation(),     // location
+                ec.name,              // name
+                0,                    // brackets
+                new NewClassInstance( // optionalInitializer
+                    ec.getLocation(),                                                   // location
+                    null,                                                               // optionalQualification
+                    iClass,                                                             // iClass
+                    ec.optionalArguments != null ? ec.optionalArguments : new Rvalue[0] // arguments
+                )
+            );
+
+            FieldDeclaration fd = new FieldDeclaration(
+                ec.getLocation(),                                             // location
+                ec.getDocComment(),                                           // optionalDocComment
+                new Modifiers((short) (Mod.PUBLIC | Mod.STATIC | Mod.FINAL)), // modifiers
+                new SimpleType(ec.getLocation(), iClass),                     // type
+                new VariableDeclarator[] { variableDeclarator }               // variableDeclarators
+            );
+
+            ((AbstractClassDeclaration) ed).addFieldDeclaration(fd);
+        }
+
+        // Compile static fields and static initializers.
         {
             List<BlockStatement> statements = new ArrayList<BlockStatement>();
-
-            // Create fields for each constant.
-            int ordinal = 0;
-            for (EnumConstant ec : ed.getConstants()) {
-
-                VariableDeclarator variableDeclarator = new VariableDeclarator(
-                    ec.getLocation(),     // location
-                    ec.name,              // name
-                    0,                    // brackets
-                    new NewClassInstance( // optionalInitializer
-                        ec.getLocation(),   // location
-                        null,               // optionalQualification
-                        iClass,             // iClass
-                        new Rvalue[] {      // arguments
-                            new StringLiteral(ec.getLocation(), ec.name),
-                            new IntegerLiteral(ec.getLocation(), String.valueOf(ordinal++)),
-                        }
-                    )
-                );
-
-                FieldDeclaration fd = new FieldDeclaration(
-                    ec.getLocation(),                                             // location
-                    ec.getDocComment(),                                           // optionalDocComment
-                    new Modifiers((short) (Mod.PUBLIC | Mod.STATIC | Mod.FINAL)), // modifiers
-                    new SimpleType(ec.getLocation(), iClass),                     // type
-                    new VariableDeclarator[] { variableDeclarator }               // variableDeclarators
-                );
-
-                fd.setDeclaringType(ed);
-
-                this.addFields(fd, cf);
-
-                statements.add(fd);
-            }
-
-            // Add static initializers.
             for (BlockStatement vdoi : ed.getVariableDeclaratorsAndInitializers()) {
                 if (((TypeBodyDeclaration) vdoi).isStatic()) statements.add(vdoi);
             }
@@ -710,51 +702,74 @@ class UnitCompiler {
         // Compile enum's methods.
         this.compileDeclaredMethods(ed, cf);
 
-        // Synthesize the constructor "MyEnum(String name, int ordinal) { super(name, ordinal); }".
-        FormalParameter nameFormalParameter = new FormalParameter(
-            ed.getLocation(),                                                          // location
-            false,                                                                     // finaL
-            new SimpleType(ed.getLocation(), this.iClassLoader.TYPE_java_lang_String), // type
-            "name"                                                                     // name
-        );
-        LocalVariable nameLocalVariable = (
-            nameFormalParameter.localVariable = new LocalVariable(false, this.iClassLoader.TYPE_java_lang_String)
-        );
+        // Compile declared constructors.
+        // As a side effect of compiling methods and constructors, synthetic "class-dollar" methods (which implement
+        // class literals) are generated on-the fly. We need to note how many we have here so we can compile the
+        // extras.
+//        final int declaredMethodCount = ed.getMethodDeclarations().size();
+        {
+            int                     syntheticFieldCount = ((AbstractClassDeclaration) ed).syntheticFields.size();
+            ConstructorDeclarator[] ctords              = ((AbstractClassDeclaration) ed).getConstructors();
+            for (ConstructorDeclarator ctord : ctords) {
 
-        FormalParameter ordinalFormalParameter = new FormalParameter(
-            ed.getLocation(),                                       // location
-            false,                                                  // finaL
-            new PrimitiveType(ed.getLocation(), PrimitiveType.INT), // type
-            "ordinal"                                               // name
-        );
-        LocalVariable ordinalLocalVariable = (
-            ordinalFormalParameter.localVariable = new LocalVariable(false, IClass.INT)
-        );
-
-        ConstructorDeclarator ctord = new ConstructorDeclarator(
-            ed.getLocation(),                       // location
-            null,                                   // optionalDocComment
-            new Modifiers(Mod.PRIVATE),             // modifiers
-            new FormalParameters(                   // parameters
-                ed.getLocation(),                                                       // location
-                new FormalParameter[] { nameFormalParameter, ordinalFormalParameter, }, // parameters
-                false                                                                   // variableArity
-            ),
-            new Type[0],                            // thrownExceptions
-            new SuperConstructorInvocation(         // optionalConstructorInvocation
-                ed.getLocation(), // location
-                null,             // optionalQualification
-                new Rvalue[] {    // arguments
-                    new LocalVariableAccess(ed.getLocation(), nameLocalVariable),
-                    new LocalVariableAccess(ed.getLocation(), ordinalLocalVariable),
+                this.compile(ctord, cf);
+                if (syntheticFieldCount != ((AbstractClassDeclaration) ed).syntheticFields.size()) {
+                    throw new JaninoRuntimeException(
+                        "SNO: Compilation of constructor \""
+                        + ctord
+                        + "\" ("
+                        + ctord.getLocation()
+                        + ") added synthetic fields!?"
+                    );
                 }
-            ),
-            Collections.<BlockStatement>emptyList() // statements
-        );
+            }
+        }
 
-        ctord.setEnclosingScope(ed);
-
-        this.compile(ctord, cf);
+//        // Synthesize the constructor "MyEnum(String name, int ordinal) { super(name, ordinal); }".
+//        FormalParameter nameFormalParameter = new FormalParameter(
+//            loc,                                                          // location
+//            false,                                                        // finaL
+//            new SimpleType(loc, this.iClassLoader.TYPE_java_lang_String), // type
+//            "name"                                                        // name
+//        );
+//        LocalVariable nameLocalVariable = (
+//            nameFormalParameter.localVariable = new LocalVariable(false, this.iClassLoader.TYPE_java_lang_String)
+//        );
+//
+//        FormalParameter ordinalFormalParameter = new FormalParameter(
+//            loc,                                       // location
+//            false,                                     // finaL
+//            new PrimitiveType(loc, PrimitiveType.INT), // type
+//            "ordinal"                                  // name
+//        );
+//        LocalVariable ordinalLocalVariable = (
+//            ordinalFormalParameter.localVariable = new LocalVariable(false, IClass.INT)
+//        );
+//
+//        ConstructorDeclarator ctord = new ConstructorDeclarator(
+//            loc,                                    // location
+//            null,                                   // optionalDocComment
+//            new Modifiers(Mod.PRIVATE),             // modifiers
+//            new FormalParameters(                   // parameters
+//                loc,                                                                    // location
+//                new FormalParameter[] { nameFormalParameter, ordinalFormalParameter, }, // parameters
+//                false                                                                   // variableArity
+//            ),
+//            new Type[0],                            // thrownExceptions
+//            new SuperConstructorInvocation(         // optionalConstructorInvocation
+//                loc,              // location
+//                null,             // optionalQualification
+//                new Rvalue[] {    // arguments
+//                    new LocalVariableAccess(loc, nameLocalVariable),
+//                    new LocalVariableAccess(loc, ordinalLocalVariable),
+//                }
+//            ),
+//            Collections.<BlockStatement>emptyList() // statements
+//        );
+//
+//        ctord.setEnclosingScope(ed);
+//
+//        this.compile(ctord, cf);
 
         // A side effect of this call may create synthetic functions to access protected parent variables.
         this.compileDeclaredMemberTypes(ed, cf);
@@ -792,7 +807,6 @@ class UnitCompiler {
                 null                         // optionalConstantValue
             );
         }
-
 
         // Add the generated class file to a thread-local store.
         this.addClassFile(cf);
@@ -2093,6 +2107,8 @@ class UnitCompiler {
             this.invokeConstructor(
                 as,                                              // locatable
                 as,                                              // scope
+                null,                                            // optionalEnumConstantName
+                0,                                               // optionalEnumConstantOrdinal
                 null,                                            // optionalEnclosingInstance
                 this.iClassLoader.TYPE_java_lang_AssertionError, // targetClass
                 arguments                                        // arguments
@@ -2753,6 +2769,16 @@ class UnitCompiler {
             if (fd instanceof ConstructorDeclarator) {
                 ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) fd;
 
+                if (fd.getDeclaringType() instanceof EnumDeclaration) {
+                    LocalVariable lv1 = new LocalVariable(true, this.iClassLoader.TYPE_java_lang_String);
+                    lv1.setSlot(this.getCodeContext().allocateLocalVariable((short) 1, null, null));
+                    constructorDeclarator.syntheticParameters.put("$name", lv1);
+
+                    LocalVariable lv2 = new LocalVariable(true, IClass.INT);
+                    lv2.setSlot(this.getCodeContext().allocateLocalVariable((short) 1, null, null));
+                    constructorDeclarator.syntheticParameters.put("$ordinal", lv2);
+                }
+
                 // Reserve space for synthetic parameters ("this$...", "val$...").
                 for (IField sf : constructorDeclarator.getDeclaringClass().syntheticFields.values()) {
                     LocalVariable lv = new LocalVariable(true, sf.getType());
@@ -2793,10 +2819,29 @@ class UnitCompiler {
                     }
 
                     // Invoke the superconstructor.
+                    Rvalue[] arguments;
+                    if (fd.getDeclaringType() instanceof EnumDeclaration) {
+
+                        LocalVariableAccess nameAccess = new LocalVariableAccess(
+                            cd.getLocation(),
+                            (LocalVariable) cd.syntheticParameters.get("$name")
+                        );
+                        assert nameAccess != null;
+
+                        LocalVariableAccess ordinalAccess = new LocalVariableAccess(
+                            cd.getLocation(),
+                            (LocalVariable) cd.syntheticParameters.get("$ordinal")
+                        );
+                        assert ordinalAccess != null;
+
+                        arguments = new Rvalue[] { nameAccess, ordinalAccess };
+                    } else {
+                        arguments = new Rvalue[0];
+                    }
                     SuperConstructorInvocation sci = new SuperConstructorInvocation(
                         cd.getLocation(),  // location
                         qualification,     // optionalQualification
-                        new Rvalue[0]      // arguments
+                        arguments          // arguments
                     );
                     sci.setEnclosingScope(fd);
                     this.compile(sci);
@@ -3279,6 +3324,8 @@ class UnitCompiler {
         this.invokeConstructor(
             aci,                  // locatable
             declaringConstructor, // scope
+            null,                 // optionalEnumConstantName
+            0,                    // optionalEnumConstantOrdinal
             (Rvalue) null,        // optionalEnclosingInstance
             declaringIClass,      // targetClass
             aci.arguments         // arguments
@@ -3313,6 +3360,8 @@ class UnitCompiler {
         this.invokeConstructor(
             sci,                       // locatable
             declaringConstructor,      // scope
+            null,                      // optionalEnumConstantName
+            0,                         // optionalEnumConstantOrdinal
             optionalEnclosingInstance, // optionalEnclosingInstance
             superclass,                // targetClass
             sci.arguments              // arguments
@@ -4669,10 +4718,6 @@ class UnitCompiler {
             for (; !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope());
             TypeBodyDeclaration enclosingTypeBodyDeclaration = (TypeBodyDeclaration) s;
 
-if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
-    System.currentTimeMillis();
-}
-
             TypeDeclaration     enclosingTypeDeclaration     = (TypeDeclaration) s.getEnclosingScope();
 
             if (
@@ -4716,9 +4761,33 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
             }
         }
 
+        // Check whether this field is an enum constant, and compute its name and ordinal.
+        String enumConstantName    = null;
+        int    enumConstantOrdinal = 0;
+        if (nci.getEnclosingScope() instanceof FieldDeclaration) {
+            FieldDeclaration fd = (FieldDeclaration) nci.getEnclosingScope();
+            if (fd.getEnclosingScope() instanceof EnumDeclaration) {
+                for (
+                    BlockStatement bs
+                    :
+                    ((AbstractClassDeclaration) fd.getEnclosingScope()).getVariableDeclaratorsAndInitializers()
+                ) {
+                    if (bs instanceof FieldDeclaration) {
+                        if (fd == bs) {
+                            enumConstantName = fd.variableDeclarators[0].name;
+                            break;
+                        }
+                        enumConstantOrdinal++;
+                    }
+                }
+            }
+        }
+
         this.invokeConstructor(
             nci,                       // l
             nci.getEnclosingScope(),   // scope
+            enumConstantName,          // optionalEnumConstantName
+            enumConstantOrdinal,       // optionalEnumConstantOrdinal
             optionalEnclosingInstance, // optionalEnclosingInstance
             iClass,                    // targetClass
             nci.arguments              // arguments
@@ -4734,22 +4803,25 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         IClass sc = this.resolve(acd).getSuperclass();
         assert sc != null;
 
-        IClass.IConstructor[] iConstructors = sc.getDeclaredIConstructors();
-        if (iConstructors.length == 0) throw new JaninoRuntimeException("SNO: Base class has no constructors");
+        IClass.IConstructor[] superclassIConstructors = sc.getDeclaredIConstructors();
+        if (superclassIConstructors.length == 0) {
+            throw new JaninoRuntimeException("SNO: Superclass has no constructors");
+        }
 
-        // Determine most specific constructor.
-        IClass.IConstructor iConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
-            naci,           // locatable
-            iConstructors,  // iInvocables
-            naci.arguments, // arguments
-            acd             // contextScope
+        // Determine the most specific constructor of the superclass.
+        IClass.IConstructor superclassIConstructor = (IClass.IConstructor) this.findMostSpecificIInvocable(
+            naci,                    // locatable
+            superclassIConstructors, // iInvocables
+            naci.arguments,          // arguments
+            acd                      // contextScope
         );
 
-        IClass[] pts = iConstructor.getParameterTypes();
+        Location loc = naci.getLocation();
 
-        // Determine formal parameters of anonymous constructor.
+
+        // Determine the formal parameters of the anonymous constructor.
+        IClass[]         scpts = superclassIConstructor.getParameterTypes();
         FormalParameters parameters;
-        Location         loc = naci.getLocation();
         {
             List<FormalParameter> l = new ArrayList<FormalParameter>();
 
@@ -4760,11 +4832,11 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                 new SimpleType(loc, this.getType(naci.optionalQualification)), // type
                 "this$base"                                                    // name
             ));
-            for (int i = 0; i < pts.length; ++i) l.add(new FormalParameter(
-                loc,                         // location
-                true,                        // finaL
-                new SimpleType(loc, pts[i]), // type
-                "p" + i                      // name
+            for (int i = 0; i < scpts.length; ++i) l.add(new FormalParameter(
+                loc,                           // location
+                true,                          // finaL
+                new SimpleType(loc, scpts[i]), // type
+                "p" + i                        // name
             ));
             parameters = new FormalParameters(
                 loc,
@@ -4773,10 +4845,13 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
             );
         }
 
-        // Determine thrown exceptions of anonymous constructor.
-        IClass[] tes  = iConstructor.getThrownExceptions();
-        Type[]   tets = new Type[tes.length];
-        for (int i = 0; i < tes.length; ++i) tets[i] = new SimpleType(loc, tes[i]);
+        // Determine the declared exceptions of the anonymous constructor.
+        Type[] thrownExceptions;
+        {
+            IClass[] tes = superclassIConstructor.getThrownExceptions();
+            thrownExceptions = new Type[tes.length];
+            for (int i = 0; i < tes.length; ++i) thrownExceptions[i] = new SimpleType(loc, tes[i]);
+        }
 
         // The anonymous constructor merely invokes the constructor of its superclass.
         int    j = 0;
@@ -4787,28 +4862,27 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         {
             optionalQualificationAccess = new ParameterAccess(loc, parameters.parameters[j++]);
         }
-        Rvalue[] parameterAccesses = new Rvalue[pts.length];
-        for (int i = 0; i < pts.length; ++i) {
+        Rvalue[] parameterAccesses = new Rvalue[scpts.length];
+        for (int i = 0; i < scpts.length; ++i) {
             parameterAccesses[i] = new ParameterAccess(loc, parameters.parameters[j++]);
         }
 
         // Generate the anonymous constructor for the anonymous class (JLS7 15.9.5.1).
-        ConstructorDeclarator anonymousConstructor = new ConstructorDeclarator(
+        acd.addConstructor(new ConstructorDeclarator(
             loc,                                    // location
             null,                                   // optionalDocComment
             new Modifiers(Mod.PACKAGE),             // modifiers
             parameters,                             // parameters
-            tets,                                   // thrownExceptions
+            thrownExceptions,                       // thrownExceptions
             new SuperConstructorInvocation(         // optionalConstructorInvocation
                 loc,                            // location
                 optionalQualificationAccess,    // optionalQualification
                 parameterAccesses               // arguments
             ),
             Collections.<BlockStatement>emptyList() // optionalStatements
-        );
+        ));
 
         // Compile the anonymous class.
-        acd.addConstructor(anonymousConstructor);
         try {
             this.compile(acd);
 
@@ -4852,6 +4926,8 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
             this.invokeConstructor(
                 naci,                                         // locatable
                 naci.getEnclosingScope(),                     // scope
+                null,                                         // optionalEnumConstantName
+                0,                                            // optionalEnumConstantOrdinal
                 oei,                                          // optionalEnclosingInstance
                 this.resolve(naci.anonymousClassDeclaration), // targetClass
                 arguments2                                    // arguments
@@ -7181,6 +7257,8 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     invokeConstructor(
         Locatable        locatable,
         Scope            scope,
+        @Nullable String optionalEnumConstantName,
+        int              optionalEnumConstantOrdinal,
         @Nullable Rvalue optionalEnclosingInstance,
         IClass           targetClass,
         Rvalue[]         arguments
@@ -7204,6 +7282,12 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         IClass[] thrownExceptions = iConstructor.getThrownExceptions();
         for (IClass te : thrownExceptions) {
             this.checkThrownException(locatable, te, scope);
+        }
+
+        // Enum constant: Pass constant name and ordinal as synthetic parameters.
+        if (optionalEnumConstantName != null) {
+            this.pushConstant(locatable, optionalEnumConstantName);
+            this.pushConstant(locatable, optionalEnumConstantOrdinal);
         }
 
         // Pass enclosing instance as a synthetic parameter.
@@ -9314,22 +9398,32 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                 ).getOuterIClass();
                 if (outerClass != null) parameterFds.add(outerClass.getDescriptor());
 
+                // Process synthetic parameters (e.g. the magic parameters "$name" and "$ordinal" of enum constructors).
+//                {
+//                    List<Entry<String, LocalVariable>>
+//                    tmp = new ArrayList<Entry<String, LocalVariable>>(constructorDeclarator.syntheticParameters.entrySet());
+//                    Collections.sort(tmp, new Comparator<Entry<String, LocalVariable>>() {
+//
+//                        @Override public int
+//                        compare(@Nullable Entry<String, LocalVariable> e1, @Nullable Entry<String, LocalVariable> e2) {
+//                            assert e1 != null;
+//                            assert e2 != null;
+//                            return e1.getValue().getSlotIndex() - e2.getValue().getSlotIndex();
+//                        }
+//                    });
+//                    for (Entry<String, LocalVariable> e : tmp) {
+//                        parameterFds.add(e.getValue().type.getDescriptor());
+//                    }
+//                }
+
                 // Convert synthetic fields into prepended constructor parameters.
                 for (IField sf : constructorDeclarator.getDeclaringClass().syntheticFields.values()) {
                     if (sf.getName().startsWith("val$")) parameterFds.add(sf.getType().getDescriptor());
                 }
 
                 // Process the 'normal' (declared) function parameters.
-                FormalParameter[] parameters = constructorDeclarator.formalParameters.parameters;
-                for (int i = 0; i < parameters.length; ++i) {
-                    IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
-                    if (i == parameters.length - 1 && constructorDeclarator.formalParameters.variableArity) {
-                        parameterType = parameterType.getArrayIClass(
-                            UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
-                        );
-                    }
-                    parameterFds.add(parameterType.getDescriptor());
-                }
+                for (IClass pt : this.getParameterTypes2()) parameterFds.add(pt.getDescriptor());
+
                 return new MethodDescriptor(
                     (String[]) parameterFds.toArray(new String[parameterFds.size()]), // parameterFds
                     Descriptor.VOID                                                   // returnFd

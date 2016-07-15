@@ -35,7 +35,6 @@ import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -436,7 +435,7 @@ class JlsTests extends JaninoTestSuite {
         );
     }
 
-    @Ignore // CompileException: Line 2, Column 5: Compilation of package member enum declaration NYI
+//    @Ignore // CompileException: Line 2, Column 5: Compilation of package member enum declaration NYI
     @Test public void
     test_8_9__Enums() throws Exception {
 
@@ -448,16 +447,15 @@ class JlsTests extends JaninoTestSuite {
             + "public\n"
             + "class Main {\n"
             + "\n"
-            + "    public static boolean\n"
+            + "    public static Object\n"
             + "    main() {\n"
-            + "        return (\n"
-            + "            Color.RED.ordinal() == 0\n"
-            + "            && Color.GREEN.ordinal() == 1\n"
-            + "            && Color.BLACK.ordinal() == 2\n"
-            + "            && \"RED\".equals(Color.RED.toString())\n"
-            + "            && \"GREEN\".equals(Color.GREEN.toString())\n"
-            + "            && \"BLACK\".equals(Color.BLACK.toString())\n"
-            + "        );\n"
+            + "        if (Color.RED.ordinal()   != 0) return 1;\n"
+            + "        if (Color.GREEN.ordinal() != 1) return 2;\n"
+            + "        if (Color.BLACK.ordinal() != 2) return 3;\n"
+            + "        if (!\"RED\".equals(Color.RED.toString()))     return Color.RED.toString();\n"
+            + "        if (!\"GREEN\".equals(Color.GREEN.toString())) return 5;\n"
+            + "        if (!\"BLACK\".equals(Color.BLACK.toString())) return 6;\n"
+            + "        return true;\n"
             + "    }\n"
             + "}"
         ), "Main");
