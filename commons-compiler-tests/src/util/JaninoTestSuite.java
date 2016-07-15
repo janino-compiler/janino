@@ -388,8 +388,8 @@ class JaninoTestSuite {
             this.compile();
             Object result = this.execute();
             Assert.assertNotNull("Test result not NULL", result);
-            Assert.assertSame("Test return type is BOOLEAN", Boolean.class, result.getClass());
-            Assert.assertEquals("Test result is TRUE", true, ((Boolean) result).booleanValue());
+            Assert.assertSame(String.valueOf(result), Boolean.class, result.getClass());
+            Assert.assertTrue("Test result is TRUE", (Boolean) result);
         }
     }
 }
