@@ -678,9 +678,14 @@ class IClass {
     }
     @Nullable private IClass arrayIClass;
 
+    /**
+     * @param objectType Must pass {@link IClassLoader#TYPE_java_lang_Object} here
+     */
     private IClass
     getArrayIClass2(final IClass objectType) {
+
         final IClass componentType = this;
+
         return new IClass() {
 
             @Override public IClass.IConstructor[] getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
@@ -872,7 +877,18 @@ class IClass {
         }
         @Nullable private IClass[] parameterTypesCache;
 
-        /** @return The types of the parameters of this constructor or method */
+        /**
+         * <p>
+         *   Opposed to the {@link Constructor}, there is no magic "{@code this$0}" parameter.
+         * </p>
+         * <p>
+         *   Opposed to the {@link Constructor}, {@code enum}s have no magic parameters "{@code String name}" and
+         *   "{@code int ordinal}".
+         * </p>
+         * <p>
+         *   However, the "synthetic parameters" ("{@code val$}<var>locvar</var>") <em>are</em> included.
+         * </p>
+         */
         public abstract IClass[]
         getParameterTypes2() throws CompileException;
 
@@ -1036,13 +1052,6 @@ class IClass {
 
     /**
      * Representation of a constructor of an {@link IClass}.
-     * <p>
-     *   Opposed to the {@link Constructor}, there is no magic "{@code this$0}" parameter.
-     * </p>
-     * <p>
-     *   Opposed to the {@link Constructor}, {@code enum}s have no magic parameters "{@code String name}" and "{@code
-     *   int ordinal}".
-     * </p>
      */
     public abstract
     class IConstructor extends IInvocable {
