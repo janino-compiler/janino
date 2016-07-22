@@ -66,9 +66,9 @@ class JlsTests extends JaninoTestSuite {
     public void
     setUp() throws Exception {
 
-        // Enable this code snippet to print class file disassemblies to the console.
+        // Optionally print class file disassemblies to the console.
         if (Boolean.parseBoolean(System.getProperty("disasm"))) {
-            Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
+            Logger scl = Logger.getLogger("org.codehaus.janino.UnitCompiler");
             for (Handler h : scl.getHandlers()) {
                 h.setLevel(Level.FINEST);
             }
@@ -800,7 +800,8 @@ class JlsTests extends JaninoTestSuite {
             "String x = \"A\"; String[] sa = { \"B\",\"C\" }; for (String y : sa) x += y; return x.equals(\"ABC\");"
         );
         this.assertScriptReturnsTrue(
-            "final StringBuilder sb = new StringBuilder();\n"
+            ""
+            + "final StringBuilder sb = new StringBuilder();\n"
             + "for (final String y : new String[] { \"A\", \"B\", \"C\" }) {\n"
             + "    new Runnable() {\n"
             + "        public void run() { sb.append(y); }\n"

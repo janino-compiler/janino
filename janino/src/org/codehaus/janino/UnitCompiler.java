@@ -26,9 +26,11 @@
 
 package org.codehaus.janino;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,11 +86,6 @@ import org.codehaus.janino.Java.CatchClause;
 import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
-import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.SingleStaticImportDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.SingleTypeImportDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.StaticImportOnDemandDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.TypeImportOnDemandDeclaration;
 import org.codehaus.janino.Java.ConditionalExpression;
 import org.codehaus.janino.Java.ConstructorDeclarator;
 import org.codehaus.janino.Java.ConstructorInvocation;
@@ -111,8 +108,6 @@ import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.ForEachStatement;
 import org.codehaus.janino.Java.ForStatement;
 import org.codehaus.janino.Java.FunctionDeclarator;
-import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
-import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Java.IfStatement;
 import org.codehaus.janino.Java.Initializer;
 import org.codehaus.janino.Java.InnerClassDeclaration;
@@ -186,6 +181,13 @@ import org.codehaus.janino.Java.TypeParameter;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
+import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
+import org.codehaus.janino.Java.CompilationUnit.SingleStaticImportDeclaration;
+import org.codehaus.janino.Java.CompilationUnit.SingleTypeImportDeclaration;
+import org.codehaus.janino.Java.CompilationUnit.StaticImportOnDemandDeclaration;
+import org.codehaus.janino.Java.CompilationUnit.TypeImportOnDemandDeclaration;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
@@ -376,7 +378,7 @@ class UnitCompiler {
             @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid)            throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid);                                             return null; }
             @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd)                                   throws CompileException { UnitCompiler.this.compile2(mcd);                                                                             return null; }
             @Override @Nullable public Void visitEnumConstant(EnumConstant ec)                                                        throws CompileException { UnitCompiler.this.compileError("Compilation of enum constant NYI", ec.getLocation());                        return null; }
-            @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med)                                     throws CompileException { UnitCompiler.this.compileError("Compilation of member enum declaration NYI", med.getLocation());             return null; }
+            @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med)                                     throws CompileException { UnitCompiler.this.compile2(med);                                                                             return null; }
             @Override @Nullable public Void visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed)                      throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmed);                                             return null; }
             @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd)                throws CompileException { UnitCompiler.this.compileError("Compilation of member annotation type declaration NYI", matd.getLocation()); return null; }
             @Override @Nullable public Void visitPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmatd);                                            return null; }
@@ -644,6 +646,9 @@ class UnitCompiler {
 
     private void
     addClassFile(ClassFile cf) {
+
+        if (UnitCompiler.LOGGER.isLoggable(Level.FINEST)) UnitCompiler.disassembleToStdout(cf.toByteArray());
+
         assert this.generatedClassFiles != null;
         this.generatedClassFiles.add(cf);
     }
@@ -4542,13 +4547,11 @@ class UnitCompiler {
             optionalEnclosingInstance = nci.optionalQualification;
         } else {
             Scope s = nci.getEnclosingScope();
+
             for (; !(s instanceof TypeBodyDeclaration); s = s.getEnclosingScope());
             TypeBodyDeclaration enclosingTypeBodyDeclaration = (TypeBodyDeclaration) s;
 
-if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
-    System.currentTimeMillis();
-}
-            TypeDeclaration     enclosingTypeDeclaration     = (TypeDeclaration) s.getEnclosingScope();
+            TypeDeclaration enclosingTypeDeclaration = (TypeDeclaration) s.getEnclosingScope();
 
             if (
                 !(enclosingTypeDeclaration instanceof AbstractClassDeclaration)
@@ -4560,10 +4563,11 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                 //  + static type body declaration (here: method or initializer or field declarator)
                 // context (JLS7 15.9.2.BL1.B3.B1.B1).
                 if (iClass.getOuterIClass() != null) {
-                    this.compileError(
-                        "Instantiation of \"" + nci.type + "\" requires an enclosing instance",
-                        nci.getLocation()
-                    );
+                    this.compileError((
+                        "Instantiation of \""
+                        + (nci.type != null ? nci.type.toString() : String.valueOf(nci.iClass))
+                        + "\" requires an enclosing instance"
+                    ), nci.getLocation());
                 }
                 optionalEnclosingInstance = null;
             } else
@@ -9157,6 +9161,9 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
         // Package member class declaration.
         if (typeDeclaration instanceof PackageMemberClassDeclaration) return null;
 
+        // Member enum declaration is always implicitly static (JLS8 8.9).
+        if (typeDeclaration instanceof MemberEnumDeclaration) return null;
+
         // Local class declaration.
         if (typeDeclaration instanceof LocalClassDeclaration) {
             Scope s = typeDeclaration.getEnclosingScope();
@@ -9262,7 +9269,12 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
             @Override public String
             getDescriptor2() throws CompileException {
+
                 if (!(constructorDeclarator.getDeclaringClass() instanceof InnerClassDeclaration)) {
+                    return super.getDescriptor2();
+                }
+
+                if (constructorDeclarator.getDeclaringClass() instanceof MemberEnumDeclaration) {
                     return super.getDescriptor2();
                 }
 
@@ -9293,8 +9305,10 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
 
             @Override public IClass[]
             getParameterTypes2() throws CompileException {
+
                 FormalParameter[] parameters = constructorDeclarator.formalParameters.parameters;
                 IClass[]          res        = new IClass[parameters.length];
+
                 for (int i = 0; i < parameters.length; ++i) {
                     IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
                     if (i == parameters.length - 1 && constructorDeclarator.formalParameters.variableArity) {
@@ -9304,6 +9318,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
                     }
                     res[i] = parameterType;
                 }
+
                 return res;
             }
 
@@ -11435,4 +11450,24 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     singleStaticImports = new HashMap<String, List<Object>>();
 
     private final Collection<IClass> staticImportsOnDemand = new ArrayList<IClass>();
+
+    /**
+     * Loads a "{@code de.unkrig.jdisasm.Disassembler}" through reflection (to avoid a compile-time dependency) and
+     * uses it to disassemble the given bytes to @{code System.out}..
+     */
+    public static void
+    disassembleToStdout(byte[] contents) {
+        try {
+            Class<?> disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
+            disassemblerClass.getMethod(
+                "disasm",
+                new Class[] { InputStream.class }
+            ).invoke(
+                disassemblerClass.newInstance(),
+                new Object[] { new ByteArrayInputStream(contents) }
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

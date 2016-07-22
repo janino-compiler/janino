@@ -129,7 +129,6 @@ import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Java.Wildcard;
 import org.codehaus.janino.Scanner.Token;
-import org.codehaus.janino.util.enumerator.Enumerator;
 
 /**
  * A parser for the Java&trade; programming language.
@@ -634,22 +633,20 @@ class Parser {
         return enumDeclaration;
     }
 
-    /** Enumerator for the kinds of context where a class declaration can occur. */
-    public static final
-    class ClassDeclarationContext extends Enumerator {
+    /**
+     * The kinds of context where a class declaration can occur.
+     */
+    public
+    enum ClassDeclarationContext {
 
-        /** Enumerator for the kinds of context where a class declaration can occur. */
         /** The class declaration appears inside a 'block'. */
-        /** The class declaration appears inside a 'block'. */
-        public static final ClassDeclarationContext BLOCK = new ClassDeclarationContext("block");
+        BLOCK,
 
         /** The class declaration appears (directly) inside a type declaration. */
-        public static final ClassDeclarationContext TYPE_DECLARATION = new ClassDeclarationContext("type_declaration");
+        TYPE_DECLARATION,
 
         /** The class declaration appears on the top level. */
-        public static final ClassDeclarationContext COMPILATION_UNIT = new ClassDeclarationContext("compilation_unit");
-
-        private ClassDeclarationContext(String name) { super(name); }
+        COMPILATION_UNIT,
     }
 
     /**
@@ -786,7 +783,7 @@ class Parser {
         // Member enum.
         if (this.peekRead("enum")) {
             if (optionalDocComment == null) this.warning("MEDCM", "Member enum doc comment missing", this.location());
-            classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseClassDeclarationRest(
+            classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseEnumDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
                 modifiers.add(Mod.ENUM),                 // modifiers
                 ClassDeclarationContext.TYPE_DECLARATION // context
@@ -981,19 +978,17 @@ class Parser {
         return atd;
     }
 
-    /** Enumerator for the kinds of context where an interface declaration can occur. */
-    public static final
-    class InterfaceDeclarationContext extends Enumerator {
+    /**
+     * The kinds of context where an interface declaration can occur.
+     */
+    public
+    enum InterfaceDeclarationContext {
 
         /** The interface declaration appears (directly) inside a 'named type declaration'. */
-        public static final InterfaceDeclarationContext
-        NAMED_TYPE_DECLARATION = new InterfaceDeclarationContext("named_type_declaration");
+        NAMED_TYPE_DECLARATION,
 
         /** The interface declaration appears at the top level. */
-        public static final InterfaceDeclarationContext
-        COMPILATION_UNIT = new InterfaceDeclarationContext("compilation_unit");
-
-        private InterfaceDeclarationContext(String name) { super(name); }
+        COMPILATION_UNIT,
     }
 
     /**

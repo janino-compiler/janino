@@ -37,6 +37,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
@@ -64,6 +67,7 @@ import org.codehaus.janino.util.resource.Resource;
 import org.codehaus.janino.util.resource.ResourceCreator;
 import org.codehaus.janino.util.resource.ResourceFinder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -76,6 +80,20 @@ class CompilerTests {
     private static final String JANINO_SRC           = "../janino/src";
     private static final String COMMONS_COMPILER_SRC = "../commons-compiler/src";
     private static final String RESOURCE_DIR         = "resource";
+
+    @Before
+    public void
+    setUp() throws Exception {
+
+        // Optionally print class file disassemblies to the console.
+        if (Boolean.parseBoolean(System.getProperty("disasm"))) {
+            Logger scl = Logger.getLogger(UnitCompiler.class.getName());
+            for (Handler h : scl.getHandlers()) {
+                h.setLevel(Level.FINEST);
+            }
+            scl.setLevel(Level.FINEST);
+        }
+    }
 
     @Test public void
     testSelfCompile() throws Exception {
@@ -161,7 +179,10 @@ class CompilerTests {
 
         // Set up a ClassLoader for the previously JANINO-compiled classes.
         final ClassLoader cl = new ResourceFinderClassLoader(
-            new MapResourceFinder(classFileMap1),
+            new MultiResourceFinder(Arrays.asList(
+                new MapResourceFinder(classFileMap1),
+                new DirectoryResourceFinder(new File("../de.unkrig.jdisasm/bin"))
+            )),
             bootstrapClassLoader
         );
 

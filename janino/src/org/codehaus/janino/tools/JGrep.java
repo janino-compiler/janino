@@ -57,7 +57,6 @@ import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.StringPattern;
 import org.codehaus.janino.util.Traverser;
-import org.codehaus.janino.util.enumerator.Enumerator;
 import org.codehaus.janino.util.iterator.DirectoryIterator;
 import org.codehaus.janino.util.resource.PathResourceFinder;
 
@@ -199,7 +198,7 @@ class JGrep {
                     if (arg.startsWith("action:")) {
                         String action = arg.substring(7);
                         try {
-                            mit.actions.add(Action.getMethodInvocationAction(action));
+                            mit.actions.add(JGrep.getMethodInvocationAction(action));
                         } catch (Exception ex) {
                             System.err.println(
                                 "Compiling method invocation action \""
@@ -239,44 +238,39 @@ class JGrep {
         }
     }
 
-    private static final
-    class Action extends Enumerator {
-        private Action(String name) { super(name); }
+    private static MethodInvocationAction
+    getMethodInvocationAction(String action) throws CompileException {
+        if ("print-location-and-match".equals(action)) {
+            return new MethodInvocationAction() {
 
-        static MethodInvocationAction
-        getMethodInvocationAction(String action) throws CompileException {
-            if ("print-location-and-match".equals(action)) {
-                return new MethodInvocationAction() {
-
-                    @Override public void
-                    execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) {
-                        System.out.println(invocation.getLocation() + ": " + method);
-                    }
-                };
-            } else
-            if ("print-location".equals(action)) {
-                return new MethodInvocationAction() {
-
-                    @Override public void
-                    execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) {
-                        System.out.println(invocation.getLocation());
-                    }
-                };
-            } else
-            {
-                ICompilerFactory cf;
-                try {
-                    cf = CompilerFactoryFactory.getDefaultCompilerFactory();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new RuntimeException(e.getMessage()); // SUPPRESS CHECKSTYLE AvoidHidingCause
+                @Override public void
+                execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) {
+                    System.out.println(invocation.getLocation() + ": " + method);
                 }
-                return (MethodInvocationAction) cf.newScriptEvaluator().createFastEvaluator(
-                    action,                                       // script
-                    MethodInvocationAction.class,                 // interfaceToImplement
-                    new String[] { "uc", "invocation", "method" } // parameterNames
-                );
+            };
+        } else
+        if ("print-location".equals(action)) {
+            return new MethodInvocationAction() {
+
+                @Override public void
+                execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) {
+                    System.out.println(invocation.getLocation());
+                }
+            };
+        } else
+        {
+            ICompilerFactory cf;
+            try {
+                cf = CompilerFactoryFactory.getDefaultCompilerFactory();
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new RuntimeException(e.getMessage()); // SUPPRESS CHECKSTYLE AvoidHidingCause
             }
+            return (MethodInvocationAction) cf.newScriptEvaluator().createFastEvaluator(
+                action,                                       // script
+                MethodInvocationAction.class,                 // interfaceToImplement
+                new String[] { "uc", "invocation", "method" } // parameterNames
+            );
         }
     }
 

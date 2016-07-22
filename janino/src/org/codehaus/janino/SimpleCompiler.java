@@ -26,7 +26,6 @@
 
 package org.codehaus.janino;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +35,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
@@ -400,12 +398,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         // Convert the class files to bytes and store them in a Map.
         final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap<String, byte[]>();
         for (ClassFile cf : classFiles) {
-
-            byte[] contents = cf.toByteArray();
-
-            if (SimpleCompiler.LOGGER.isLoggable(Level.FINEST)) SimpleCompiler.disassembleToStdout(contents);
-
-            classes.put(cf.getThisClassName(), contents);
+            classes.put(cf.getThisClassName(), cf.toByteArray());
         }
 
         // Create a ClassLoader that loads the generated classes.
@@ -420,26 +413,6 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             }
         });
         return this.assertCooked();
-    }
-
-    /**
-     * Loads a "{@code de.unkrig.jdisasm.Disassembler}" through reflection (to avoid a compile-time dependency) and
-     * uses it to disassemble the given bytes to @{code System.out}..
-     */
-    public static void
-    disassembleToStdout(byte[] contents) {
-        try {
-            Class<?> disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
-            disassemblerClass.getMethod(
-                "disasm",
-                new Class[] { InputStream.class }
-            ).invoke(
-                disassemblerClass.newInstance(),
-                new Object[] { new ByteArrayInputStream(contents) }
-            );
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     /**
