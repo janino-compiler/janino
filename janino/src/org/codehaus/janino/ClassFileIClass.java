@@ -224,6 +224,9 @@ class ClassFileIClass extends IClass {
     getDescriptor2() { return Descriptor.fromClassName(this.classFile.getThisClassName()); }
 
     @Override public boolean
+    isEnum() { return Mod.isEnum(this.accessFlags); }
+
+    @Override public boolean
     isInterface() { return Mod.isInterface(this.accessFlags); }
 
     @Override public boolean

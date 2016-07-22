@@ -26,6 +26,7 @@
 
 package org.codehaus.janino;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,8 +43,9 @@ import org.codehaus.commons.nullanalysis.Nullable;
 /**
  * A simplified equivalent to "java.lang.reflect".
  * <p>
- * 'JLS7' means a reference to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE
- * 7 Edition</a>
+ *   'JLS7' means a reference to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java
+ *   SE 7 Edition</a>.
+ * </p>
  */
 public abstract
 class IClass {
@@ -96,6 +98,7 @@ class IClass {
         @Override public boolean             isAbstract()                { return false; }
         @Override public boolean             isArray()                   { return false; }
         @Override public boolean             isFinal()                   { return true; }
+        @Override public boolean             isEnum()                    { return false; }
         @Override public boolean             isInterface()               { return false; }
         @Override public boolean             isPrimitive()               { return true; }
         @Override public boolean             isPrimitiveNumeric()        { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); } // SUPPRESS CHECKSTYLE LineLength
@@ -103,11 +106,11 @@ class IClass {
     }
 
     /**
-     * Returns all the constructors declared by the class represented by the
-     * type. If the class has a default constructor, it is included.
+     * Returns all the constructors declared by the class represented by the type. If the class has a default
+     * constructor, it is included.
      * <p>
-     * Returns an array with zero elements for an interface, array, primitive type or
-     * "void".
+     *   Returns an array with zero elements for an interface, array, primitive type or "void".
+     * </p>
      */
     public final IConstructor[]
     getDeclaredIConstructors() {
@@ -482,16 +485,29 @@ class IClass {
         return descriptors;
     }
 
-    /**@return Whether this type represents an interface */
+    /**
+     * @return Whether this type represents an enum
+     */
+    public abstract boolean isEnum();
+
+    /**
+     * @return Whether this type represents an interface
+     */
     public abstract boolean isInterface();
 
-    /** @return Whether  this type represents an array */
+    /**
+     * @return Whether  this type represents an array
+     */
     public abstract boolean isArray();
 
-    /** @return Whether this type represents a primitive type or "void" */
+    /**
+     * @return Whether this type represents a primitive type or "void"
+     */
     public abstract boolean isPrimitive();
 
-    /** @return Whether this type represents "byte", "short", "int", "long", "char", "float" or "double" */
+    /**
+     * @return Whether this type represents "byte", "short", "int", "long", "char", "float" or "double"
+     */
     public abstract boolean isPrimitiveNumeric();
 
     /**
@@ -698,6 +714,7 @@ class IClass {
             @Override public String                getDescriptor2()       { return '[' + componentType.getDescriptor(); }
             @Override public Access                getAccess()            { return componentType.getAccess(); }
             @Override public boolean               isFinal()              { return true; }
+            @Override public boolean               isEnum()               { return false; }
             @Override public boolean               isInterface()          { return false; }
             @Override public boolean               isAbstract()           { return false; }
             @Override public boolean               isArray()              { return true; }
@@ -859,7 +876,9 @@ class IClass {
         public abstract IClass[]
         getParameterTypes2() throws CompileException;
 
-        /** Returns the method descriptor of this constructor or method. This method is fast. */
+        /**
+         * Returns the method descriptor of this constructor or method. This method is fast.
+         */
         public final String
         getDescriptor() throws CompileException {
             if (this.descriptorCache != null) return this.descriptorCache;
@@ -1015,34 +1034,47 @@ class IClass {
         toString();
     }
 
-    /** Representation of a constructor of an {@link IClass}. */
+    /**
+     * Representation of a constructor of an {@link IClass}.
+     * <p>
+     *   Opposed to the {@link Constructor}, there is no magic "{@code this$0}" parameter.
+     * </p>
+     * <p>
+     *   Opposed to the {@link Constructor}, {@code enum}s have no magic parameters "{@code String name}" and "{@code
+     *   int ordinal}".
+     * </p>
+     */
     public abstract
     class IConstructor extends IInvocable {
 
-        /**
-         * Opposed to {@link java.lang.reflect.Constructor#getParameterTypes()}, the
-         * return value of this method does not include the optionally leading "synthetic
-         * parameters".
-         */
-        @Override public abstract IClass[] getParameterTypes2() throws CompileException;
-
-        /**
-         * Opposed to {@link #getParameterTypes()}, the method descriptor returned by this method does include the
-         * optionally leading synthetic parameters.
-         */
         @Override public String
         getDescriptor2() throws CompileException {
+
             IClass[] parameterTypes = this.getParameterTypes();
 
-            IClass outerIClass = IClass.this.getOuterIClass();
-            if (outerIClass != null) {
-                IClass[] tmp = new IClass[parameterTypes.length + 1];
-                tmp[0] = outerIClass;
-                System.arraycopy(parameterTypes, 0, tmp, 1, parameterTypes.length);
-                parameterTypes = tmp;
+            // Iff this is an inner class, prepend the magic "this$0" constructor parameter.
+            {
+                IClass outerIClass = IClass.this.getOuterIClass();
+                if (outerIClass != null) {
+                    IClass[] tmp = new IClass[parameterTypes.length + 1];
+                    tmp[0] = outerIClass;
+                    System.arraycopy(parameterTypes, 0, tmp, 1, parameterTypes.length);
+                    parameterTypes = tmp;
+                }
             }
 
-            return new MethodDescriptor(IClass.getDescriptors(parameterTypes), Descriptor.VOID).toString();
+            String[] parameterFds = IClass.getDescriptors(parameterTypes);
+
+            // Iff this is an enum, prepend the magic "String name" and "int ordinal" constructor parameters.
+            if (this.getDeclaringIClass().isEnum()) {
+                String[] tmp = new String[parameterFds.length + 2];
+                tmp[0] = Descriptor.JAVA_LANG_STRING;
+                tmp[1] = Descriptor.INT;
+                System.arraycopy(parameterFds, 0, tmp, 2, parameterFds.length);
+                parameterFds = tmp;
+            }
+
+            return new MethodDescriptor(parameterFds, Descriptor.VOID).toString();
         }
 
         @Override public String

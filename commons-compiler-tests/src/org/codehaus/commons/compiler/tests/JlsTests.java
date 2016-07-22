@@ -62,13 +62,12 @@ class JlsTests extends JaninoTestSuite {
         super(compilerFactory);
     }
 
-    @SuppressWarnings("unused")
     @Before
     public void
     setUp() throws Exception {
 
         // Enable this code snippet to print class file disassemblies to the console.
-        if (false) {
+        if (Boolean.parseBoolean(System.getProperty("disasm"))) {
             Logger scl = Logger.getLogger("org.codehaus.janino.SimpleCompiler");
             for (Handler h : scl.getHandlers()) {
                 h.setLevel(Level.FINEST);
@@ -435,9 +434,8 @@ class JlsTests extends JaninoTestSuite {
         );
     }
 
-//    @Ignore // CompileException: Line 2, Column 5: Compilation of package member enum declaration NYI
     @Test public void
-    test_8_9__Enums() throws Exception {
+    test_8_9__Enums__1() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -455,6 +453,55 @@ class JlsTests extends JaninoTestSuite {
             + "        if (!\"RED\".equals(Color.RED.toString()))     return Color.RED.toString();\n"
             + "        if (!\"GREEN\".equals(Color.GREEN.toString())) return 5;\n"
             + "        if (!\"BLACK\".equals(Color.BLACK.toString())) return 6;\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
+    test_8_9__Enums__2() throws Exception {
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "public\n"
+            + "enum Shape {\n"
+            + "\n"
+            + "    SQUARE(1, 2),\n"
+            + "    CIRCLE(3),\n"
+            + "    ;\n"
+            + "\n"
+            + "    private final int length;\n"
+            + "    private final int width;\n"
+            + "\n"
+            + "    Shape(int length, int width) {\n"
+            + "        this.length = length;\n"
+            + "        this.width = width;\n"
+            + "    }\n"
+            + "\n"
+            + "    Shape(int size) {\n"
+            + "        this.length =  this.width = size;\n"
+            + "    }\n"
+            + "    public int length() { return this.length; }\n"
+            + "    public int width() { return this.width; }\n"
+            + "}\n"
+            + "\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static Object\n"
+            + "    main() {\n"
+            + "        if (Shape.SQUARE.ordinal() != 0) return 100 + Shape.SQUARE.ordinal();\n"
+            + "        if (Shape.CIRCLE.ordinal() != 1) return 200 + Shape.CIRCLE.ordinal();\n"
+            + "\n"
+            + "        if (!\"SQUARE\".equals(Shape.SQUARE.toString())) return 3;\n"
+            + "        if (!\"CIRCLE\".equals(Shape.CIRCLE.toString())) return 4;\n"
+            + "\n"
+            + "        if (Shape.SQUARE.length() != 1) return 5;\n"
+            + "        if (Shape.SQUARE.width()  != 2) return 6;\n"
+            + "        if (Shape.CIRCLE.length() != 3) return 7;\n"
+            + "        if (Shape.CIRCLE.width()  != 3) return 8;\n"
+            + "\n"
             + "        return true;\n"
             + "    }\n"
             + "}"

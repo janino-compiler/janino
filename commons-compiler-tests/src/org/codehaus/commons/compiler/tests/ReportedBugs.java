@@ -602,7 +602,7 @@ class ReportedBugs extends JaninoTestSuite {
             + "            }\n"
             + "            System.out.println(\"xyz\");\n" // <= At least one stmt.
             + "\n"
-            + "        } catch (IOException e) {\n"  // <= "Catch clause is unreachable"
+            + "        } catch (IOException e) {\n"        // <= "Catch clause is unreachable"
             + "            throw new java.lang.RuntimeException(e);\n"
             + "        }\n"
             + "    }\n"

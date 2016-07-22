@@ -44,7 +44,9 @@ class ReflectionIClass extends IClass {
     private final Class<?>     clazz;
     private final IClassLoader iClassLoader;
 
-    /** @param iClassLoader Required to load other {@link IClass}es on {@code get...()} */
+    /**
+     * @param iClassLoader Required to load other {@link IClass}es on {@code get...()}
+     */
     ReflectionIClass(Class<?> clazz, IClassLoader iClassLoader) {
         this.clazz        = clazz;
         this.iClassLoader = iClassLoader;
@@ -65,6 +67,8 @@ class ReflectionIClass extends IClass {
         Method[] methods  = this.clazz.getDeclaredMethods();
 
         if (methods.length == 0 && this.clazz.isArray()) {
+
+            // Arrays have ONE single method: "Object clone()".
             return new IMethod[] { new IMethod() {
                 @Override public String        getName()              { return "clone"; }
                 @Override public IClass        getReturnType()        { return ReflectionIClass.this.iClassLoader.TYPE_java_lang_Object; } // SUPPRESS CHECKSTYLE LineLength
@@ -78,64 +82,52 @@ class ReflectionIClass extends IClass {
             } };
         }
 
-        IMethod[] result = new IMethod[methods.length];
-        for (int i = 0; i < result.length; i++) result[i] = new ReflectionIMethod(methods[i]);
-        return result;
+        return this.methodsToIMethods(methods);
     }
 
     @Override protected IField[]
-    getDeclaredIFields2() {
-        Field[]  fields = this.clazz.getDeclaredFields();
-        IField[] result = new IField[fields.length];
-        for (int i = 0; i < fields.length; ++i) {
-            result[i] = new ReflectionIField(fields[i]);
-        }
-        return result;
-    }
+    getDeclaredIFields2() { return this.fieldsToIFields(this.clazz.getDeclaredFields()); }
 
     @Override protected IClass[]
     getDeclaredIClasses2() { return this.classesToIClasses(this.clazz.getDeclaredClasses()); }
 
     @Override @Nullable protected IClass
     getDeclaringIClass2() {
+
         Class<?> declaringClass = this.clazz.getDeclaringClass();
-        if (declaringClass == null) return null;
-        return this.classToIClass(declaringClass);
+        return declaringClass == null ? null : this.classToIClass(declaringClass);
     }
 
     @Override @Nullable protected IClass
     getOuterIClass2() throws CompileException {
+
         if (Modifier.isStatic(this.clazz.getModifiers())) return null;
+
         return this.getDeclaringIClass();
     }
 
     @Override @Nullable protected IClass
     getSuperclass2() {
+
         Class<?> superclass = this.clazz.getSuperclass();
         return superclass == null ? null : this.classToIClass(superclass);
     }
-
-    @Override protected IClass[]
-    getInterfaces2() {
-        return this.classesToIClasses(this.clazz.getInterfaces());
-    }
-
-    @Override protected String
-    getDescriptor2() {
-        return Descriptor.fromClassName(this.clazz.getName());
-    }
-
-    @Override public Access  getAccess()   { return ReflectionIClass.modifiers2Access(this.clazz.getModifiers()); }
-    @Override public boolean isFinal()     { return Modifier.isFinal(this.clazz.getModifiers()); }
-    @Override public boolean isInterface() { return this.clazz.isInterface(); }
-    @Override public boolean isAbstract()  { return Modifier.isAbstract(this.clazz.getModifiers()); }
-    @Override public boolean isArray()     { return this.clazz.isArray(); }
 
     @Override @Nullable protected IClass
     getComponentType2() {
         Class<?> componentType = this.clazz.getComponentType();
         return componentType == null ? null : this.classToIClass(componentType);
     }
+
+    @Override protected IClass[] getInterfaces2() { return this.classesToIClasses(this.clazz.getInterfaces()); }
+    @Override protected String   getDescriptor2() { return Descriptor.fromClassName(this.clazz.getName()); }
+
+    @Override public Access  getAccess()   { return ReflectionIClass.modifiers2Access(this.clazz.getModifiers()); }
+    @Override public boolean isFinal()     { return Modifier.isFinal(this.clazz.getModifiers()); }
+    @Override public boolean isEnum()      { return this.clazz.isEnum(); }
+    @Override public boolean isInterface() { return this.clazz.isInterface(); }
+    @Override public boolean isAbstract()  { return Modifier.isAbstract(this.clazz.getModifiers()); }
+    @Override public boolean isArray()     { return this.clazz.isArray(); }
 
     @Override public boolean
     isPrimitive() { return this.clazz.isPrimitive(); }
@@ -224,14 +216,19 @@ class ReflectionIClass extends IClass {
                 toString() { return "@" + annotationTypeIClass; }
             };
         }
+
         return result;
     }
 
-    /** @return The underlying {@link Class java.lang.Class} */
+    /**
+     * @return The underlying {@link Class java.lang.Class}
+     */
     public Class<?>
     getClazz() { return this.clazz; }
 
-    /** @return E.g. "int", "int[][]", "pkg1.pkg2.Outer$Inner[]" */
+    /**
+     * @return E.g. "int", "int[][]", "pkg1.pkg2.Outer$Inner[]"
+     */
     @Override public String
     toString() {
         int      brackets = 0;
@@ -252,10 +249,7 @@ class ReflectionIClass extends IClass {
 
         // Implement IMember.
         @Override public Access
-        getAccess() {
-            int mod = this.constructor.getModifiers();
-            return ReflectionIClass.modifiers2Access(mod);
-        }
+        getAccess() { return ReflectionIClass.modifiers2Access(this.constructor.getModifiers()); }
 
         @Override public IAnnotation[]
         getAnnotations() { return new IAnnotation[0]; }
@@ -271,8 +265,8 @@ class ReflectionIClass extends IClass {
         getParameterTypes2() throws CompileException {
             IClass[] parameterTypes = ReflectionIClass.this.classesToIClasses(this.constructor.getParameterTypes());
 
-            // The JAVADOC of java.lang.reflect.Constructor does not document it, but
-            // "getParameterTypes()" includes the synthetic "enclosing instance" parameter.
+            // The JAVADOC of java.lang.reflect.Constructor does not document it, but "getParameterTypes()" includes
+            // the synthetic "enclosing instance" parameter.
             IClass outerClass = ReflectionIClass.this.getOuterIClass();
             if (outerClass != null) {
                 if (parameterTypes.length < 1) {
@@ -317,6 +311,7 @@ class ReflectionIClass extends IClass {
 
         final Constructor<?> constructor;
     }
+
     public
     class ReflectionIMethod extends IMethod {
 
@@ -424,7 +419,9 @@ class ReflectionIClass extends IClass {
         final Field field;
     }
 
-    /** Loads {@link Class} through {@link IClassLoader} to ensure unique {@link IClass}es. */
+    /**
+     * Loads {@link Class} through {@link IClassLoader} to ensure unique {@link IClass}es.
+     */
     private IClass
     classToIClass(Class<?> c) {
         IClass iClass;
@@ -442,8 +439,28 @@ class ReflectionIClass extends IClass {
     /** @see #classToIClass(Class) */
     private IClass[]
     classesToIClasses(Class<?>[] cs) {
+
         IClass[] result = new IClass[cs.length];
         for (int i = 0; i < cs.length; ++i) result[i] = this.classToIClass(cs[i]);
+
+        return result;
+    }
+
+    private IMethod[]
+    methodsToIMethods(Method[] methods) {
+
+        IMethod[] result = new IMethod[methods.length];
+        for (int i = 0; i < result.length; i++) result[i] = new ReflectionIMethod(methods[i]);
+
+        return result;
+    }
+
+    private IField[]
+    fieldsToIFields(Field[] fields) {
+
+        IField[] result = new IField[fields.length];
+        for (int i = 0; i < fields.length; ++i) result[i] = new ReflectionIField(fields[i]);
+
         return result;
     }
 
