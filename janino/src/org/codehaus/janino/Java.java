@@ -2287,6 +2287,9 @@ class Java {
             // 6.4.2) cannot be done here.
         }
 
+        /**
+         * Sets the immediately enclosing scope for the (optional) initializer.
+         */
         public void
         setEnclosingScope(Scope s) {
             if (this.optionalInitializer != null) this.optionalInitializer.setEnclosingScope(s);
@@ -4609,6 +4612,9 @@ class Java {
     public
     interface ArrayInitializerOrRvalue extends Locatable {
 
+        /**
+         * Sets the immediately enclosing scope for this array initializer or rvalue.
+         */
         void setEnclosingScope(Scope s);
     }
 
