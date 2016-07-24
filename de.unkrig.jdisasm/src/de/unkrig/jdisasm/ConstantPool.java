@@ -174,12 +174,13 @@ class ConstantPool {
     class ConstantIntegerInfo implements ConstantPoolEntry {
 
         /** {@code CONSTANT_Integer_info.bytes}, see JVMS7 4.4.4 */
-        public int bytes;
+        public final int bytes;
+
+        public
+        ConstantIntegerInfo(int bytes) { this.bytes = bytes; }
 
         @Override public String
-        toString() {
-            return Integer.toString(this.bytes);
-        }
+        toString() { return Integer.toString(this.bytes); }
     }
 
     /** Representation of a CONSTANT_Float_info entry. */
@@ -187,12 +188,13 @@ class ConstantPool {
     class ConstantFloatInfo implements ConstantPoolEntry {
 
         /** {@code CONSTANT_Float_info.bytes}, see JVMS7 4.4.4 */
-        public float bytes;
+        public final float bytes;
+
+        public
+        ConstantFloatInfo(float bytes) { this.bytes = bytes; }
 
         @Override public String
-        toString() {
-            return this.bytes + "F";
-        }
+        toString() { return this.bytes + "F"; }
     }
 
     /** Representation of a CONSTANT_Long_info entry. */
@@ -200,12 +202,12 @@ class ConstantPool {
     class ConstantLongInfo implements ConstantPoolEntry {
 
         /** {@code CONSTANT_Long_info.bytes}, see JVMS7 4.4.5 */
-        public long bytes;
+        public final long bytes;
+
+        public ConstantLongInfo(long bytes) { this.bytes = bytes; }
 
         @Override public String
-        toString() {
-            return this.bytes + "L";
-        }
+        toString() { return this.bytes + "L"; }
     }
 
     /** Representation of a CONSTANT_Double_info entry. */
@@ -213,12 +215,12 @@ class ConstantPool {
     class ConstantDoubleInfo implements ConstantPoolEntry {
 
         /** {@code CONSTANT_Double_info.bytes}, see JVMS7 4.4.5 */
-        public double bytes;
+        public final double bytes;
+
+        public ConstantDoubleInfo(double bytes) { this.bytes = bytes; }
 
         @Override public String
-        toString() {
-            return this.bytes + "D";
-        }
+        toString() { return this.bytes + "D"; }
     }
 
     /** Representation of a CONSTANT_NameAndType_info entry. */
@@ -272,7 +274,7 @@ class ConstantPool {
      * @throws ArrayIndexOutOfBoundsException An index is too small or to great
      */
     public
-    ConstantPool(DataInputStream dis) throws IOException {
+    ConstantPool(final DataInputStream dis) throws IOException {
         final int count = 0xffff & dis.readShort();
 
         // Read the entries into a temporary data structure - this is necessary because there may be forward
@@ -321,180 +323,163 @@ class ConstantPool {
         }
 
         for (int i = 1; i < count;) {
-            int      idx = i; // SUPPRESS CHECKSTYLE UsageDistance
+            final int idx = i;
+
             RawEntry re;
             byte     tag = dis.readByte();
             switch (tag) {
-            case 7: // CONSTANT_Class_info
-                {
+
+            case 7:  // CONSTANT_Class_info
+                re = new RawEntry2() {
+
                     final short nameIndex = dis.readShort();
-                    re = new RawEntry2() {
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantClassInfo(this.getConstantUtf8Info(nameIndex).bytes.replace('/', '.'));
-                        }
-                    };
-                    i++;
-                    break;
-                }
-            case 9: // CONSTANT_Fieldref_info
-                {
+                    @Override ConstantPoolEntry
+                    cook() {
+                        return new ConstantClassInfo(this.getConstantUtf8Info(this.nameIndex).bytes.replace('/', '.'));
+                    }
+                };
+                i++;
+                break;
+
+            case 9:  // CONSTANT_Fieldref_info
+                re = new RawEntry2() {
+
                     final short classIndex       = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
-                    re = new RawEntry2() {
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantFieldrefInfo(
-                                this.getConstantClassInfo(classIndex),
-                                this.getConstantNameAndTypeInfo(nameAndTypeIndex)
-                            );
-                        }
-                    };
-                    i++;
-                    break;
-                }
+                    @Override ConstantPoolEntry
+                    cook() {
+                        return new ConstantFieldrefInfo(
+                            this.getConstantClassInfo(this.classIndex),
+                            this.getConstantNameAndTypeInfo(this.nameAndTypeIndex)
+                        );
+                    }
+                };
+                i++;
+                break;
+
             case 10: // CONSTANT_Methodref_info
-                {
+                re = new RawEntry2() {
+
                     final short classIndex       = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
-                    re = new RawEntry2() {
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantMethodrefInfo(
-                                this.getConstantClassInfo(classIndex),
-                                this.getConstantNameAndTypeInfo(nameAndTypeIndex)
-                            );
-                        }
-                    };
-                    i++;
-                    break;
-                }
+                    @Override ConstantPoolEntry
+                    cook() {
+                        return new ConstantMethodrefInfo(
+                            this.getConstantClassInfo(this.classIndex),
+                            this.getConstantNameAndTypeInfo(this.nameAndTypeIndex)
+                        );
+                    }
+                };
+                i++;
+                break;
+
             case 11: // CONSTANT_InterfaceMethodref_info
-                {
+                re = new RawEntry2() {
+
                     final short classIndex       = dis.readShort();
                     final short nameAndTypeIndex = dis.readShort();
-                    re = new RawEntry2() {
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantInterfaceMethodrefInfo(
-                                this.getConstantClassInfo(classIndex),
-                                this.getConstantNameAndTypeInfo(nameAndTypeIndex)
-                            );
-                        }
-                    };
-                    i++;
-                    break;
-                }
-            case 8: // CONSTANT_String_info
-                {
+                    @Override ConstantPoolEntry
+                    cook() {
+                        return new ConstantInterfaceMethodrefInfo(
+                            this.getConstantClassInfo(this.classIndex),
+                            this.getConstantNameAndTypeInfo(this.nameAndTypeIndex)
+                        );
+                    }
+                };
+                i++;
+                break;
+
+            case 8:  // CONSTANT_String_info
+                re = new RawEntry2() {
+
                     final short stringIndex = dis.readShort();
-                    re = new RawEntry2() {
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantStringInfo(this.getConstantUtf8Info(stringIndex).bytes);
-                        }
-                    };
-                    i++;
-                    break;
-                }
-            case 3: // CONSTANT_Integer_info
-                {
+                    @Override ConstantPoolEntry
+                    cook() { return new ConstantStringInfo(this.getConstantUtf8Info(this.stringIndex).bytes); }
+                };
+                i++;
+                break;
+
+            case 3:  // CONSTANT_Integer_info
+                re = new RawEntry2() {
+
                     final int byteS = dis.readInt();
-                    re = new RawEntry2() {
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantIntegerInfo() { {
-                                this.bytes = byteS;
-                            } };
-                        }
-                    };
-                    i++;
-                    break;
-                }
-            case 4: // CONSTANT_Float_info
-                {
+                    @Override ConstantPoolEntry
+                    cook() { return new ConstantIntegerInfo(this.byteS); }
+                };
+                i++;
+                break;
+
+            case 4:  // CONSTANT_Float_info
+                re = new RawEntry2() {
+
                     final float byteS = dis.readFloat();
-                    re = new RawEntry2() {
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantFloatInfo() { {
-                                this.bytes = byteS;
-                            } };
-                        }
-                    };
-                    i++;
-                    break;
-                }
-            case 5: // CONSTANT_Long_info
-                {
-                    final long byteS = dis.readLong();
-                    re = new RawEntry2() {
+                    @Override ConstantPoolEntry
+                    cook() { return new ConstantFloatInfo(this.byteS); }
+                };
+                i++;
+                break;
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantLongInfo() { {
-                                this.bytes = byteS;
-                            } };
-                        }
-                    };
-                    i += 2;
-                    break;
-                }
-            case 6: // CONSTANT_Double_info
-                {
-                    final double byteS = dis.readDouble();
-                    re = new RawEntry2() {
+            case 5:  // CONSTANT_Long_info
+                re = new RawEntry2() {
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantDoubleInfo() { {
-                                this.bytes = byteS;
-                            } };
-                        }
-                    };
-                    i += 2;
-                    break;
-                }
+                    final long bytes = dis.readLong();
+
+                    @Override ConstantPoolEntry
+                    cook() { return new ConstantLongInfo(this.bytes); }
+                };
+                i += 2;
+                break;
+
+            case 6:  // CONSTANT_Double_info
+                re = new RawEntry2() {
+
+                    final double bytes = dis.readDouble();
+
+                    @Override ConstantPoolEntry
+                    cook() { return new ConstantDoubleInfo(this.bytes); }
+                };
+                i += 2;
+                break;
+
             case 12: // CONSTANT_NameAndType_info
-                {
+                re = new RawEntry2() {
+
                     final short nameIndex       = dis.readShort();
                     final short descriptorIndex = dis.readShort();
-                    re = new RawEntry2() {
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantNameAndTypeInfo(
-                                this.getConstantUtf8Info(nameIndex),
-                                this.getConstantUtf8Info(descriptorIndex)
-                            );
-                        }
-                    };
-                    i++;
-                    break;
-                }
-            case 1: // CONSTANT_Utf8_info
-                {
+                    @Override ConstantPoolEntry
+                    cook() {
+                        return new ConstantNameAndTypeInfo(
+                            this.getConstantUtf8Info(this.nameIndex),
+                            this.getConstantUtf8Info(this.descriptorIndex)
+                        );
+                    }
+                };
+                i++;
+                break;
+
+            case 1:  // CONSTANT_Utf8_info
+                re = new RawEntry2() {
+
                     final String bytes = dis.readUTF();
-                    re = new RawEntry2() {
 
-                        @Override ConstantPoolEntry
-                        cook() {
-                            return new ConstantUtf8Info(bytes);
-                        }
-                    };
-                    i++;
-                    break;
-                }
+                    @Override ConstantPoolEntry
+                    cook() { return new ConstantUtf8Info(this.bytes); }
+                };
+                i++;
+                break;
+
             default:
                 throw new RuntimeException("Invalid cp_info tag '" + (int) tag + "' on entry #" + i + " of " + count);
             }
+
             rawEntries[idx] = re;
         }
 
