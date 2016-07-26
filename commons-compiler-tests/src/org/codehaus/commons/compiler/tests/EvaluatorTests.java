@@ -44,7 +44,6 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
-import org.codehaus.janino.JaninoRuntimeException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -546,8 +545,8 @@ class EvaluatorTests extends JaninoTestSuite {
         [65534] ConstantUtf8Info	"_v65523"
         */
 
-        int[] repetitionss = new int[]{1, 100, 65524, 65525};
-        boolean[] cookables = new boolean[]{true, true, true, false};
+        final int[]     repetitionss = new int[]     { 1,    100,  65524, 65525 };
+        final boolean[] cookable     = new boolean[] { true, true, true,  false };
 
         for (int i = 0; i < repetitionss.length; i++) {
             StringBuilder sb = new StringBuilder();
@@ -558,20 +557,18 @@ class EvaluatorTests extends JaninoTestSuite {
             sb.append(postamble);
 
             ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
-            if (cookables[i]) {
+            if (cookable[i]) {
                 sc.cook(sb.toString());
                 Class<?> c = sc.getClassLoader().loadClass("test.Test");
-                Object o = c.newInstance();
+                Object   o = c.newInstance();
                 Assert.assertNotNull(o);
             } else {
                 try {
                     sc.cook(sb.toString());
-                } catch (JaninoRuntimeException jre) {
-                    if (jre.getMessage().contains("grown past JVM limit of 0xFFFF")) {
-                        continue;
-                    }
+                    Assert.fail("Should have issued an error, but compiled successfully");
+                } catch (RuntimeException re) {
+                    Assert.assertTrue(re.getMessage(), re.getMessage().contains("grown past JVM limit of 0xFFFF"));
                 }
-                Assert.fail("Should have issued an error, but compiled successfully");
             }
         }
     }
