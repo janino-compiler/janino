@@ -44,6 +44,7 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.janino.JaninoRuntimeException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -516,7 +517,7 @@ class EvaluatorTests extends JaninoTestSuite {
 
     }
     @Test public void
-    test32kConstantPool() throws Exception {
+    test64kConstantPool() throws Exception {
         String preamble = (
             ""
             + "package test;\n"
@@ -526,21 +527,52 @@ class EvaluatorTests extends JaninoTestSuite {
             "}"
         );
 
-        int[] repetitionss = new int[] { 1, 100, 13020 };
-        for (int repetitions : repetitionss) {
+        /* == expected contant pool ==
+        ( 0) fake entry
+        [ 1] ConstantUtf8Info			"test/Test"
+        [ 2] ConstantClassInfo			1
+        [ 3] ConstantUtf8Info			"java/lang/Object"
+        [ 4] ConstantClassInfo			3
+        [ 5] ConstantUtf8Info			"<init>"
+        [ 6] ConstantUtf8Info			"()V"
+        [ 7] ConstantNameAndTypeInfo	5
+        [ 8] ConstantMethodrefInfo		4
+        [ 9] ConstantUtf8Info			"Code"
+        [10] ConstantUtf8Info			"_v0"
+        [11] ConstantUtf8Info			"Z"
+        [12] ConstantUtf8Info			"_v1"
+        [13] ConstantUtf8Info			"_v2"
+        ...
+        [65534] ConstantUtf8Info	"_v65523"
+        */
+
+        int[] repetitionss = new int[]{1, 100, 65524, 65525};
+        boolean[] cookables = new boolean[]{true, true, true, false};
+
+        for (int i = 0; i < repetitionss.length; i++) {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
-            for (int j = 0; j < repetitions; ++j) {
-                sb.append("boolean _v").append(Integer.toString(j)).append(" = false;\n");
+            for (int j = 0; j < repetitionss[i]; ++j) {
+                sb.append("boolean _v").append(Integer.toString(j)).append(";\n");
             }
             sb.append(postamble);
 
             ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
-            sc.cook(sb.toString());
-
-            Class<?> c = sc.getClassLoader().loadClass("test.Test");
-            Object   o = c.newInstance();
-            Assert.assertNotNull(o);
+            if (cookables[i]) {
+                sc.cook(sb.toString());
+                Class<?> c = sc.getClassLoader().loadClass("test.Test");
+                Object o = c.newInstance();
+                Assert.assertNotNull(o);
+            } else {
+                try {
+                    sc.cook(sb.toString());
+                } catch (JaninoRuntimeException jre) {
+                    if (jre.getMessage().contains("grown past JVM limit of 0xFFFF")) {
+                        continue;
+                    }
+                }
+                Assert.fail("Should have issued an error, but compiled successfully");
+            }
         }
     }
     @Test public void

@@ -493,7 +493,9 @@ class ClassFile implements Annotatable {
         if (index != null) return index.shortValue();
 
         int res = this.constantPool.size();
-        if (res > 0xFFFF) {
+
+        // `res` will become the new entry's index, so `res` must be ≤ 65534, or ≤ 65533 if the entry is wide
+        if (res >= 0xFFFF || (cpi.isWide() && res >= 0xFFFF - 1)) {
             throw new JaninoRuntimeException(
                 "Constant pool for class "
                 + this.getThisClassName()
