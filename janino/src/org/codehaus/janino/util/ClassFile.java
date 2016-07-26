@@ -46,7 +46,7 @@ import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.Mod;
 
 /**
- * An object that represents the Java&trade; "class file" format.
+ * An object that implements the Java&trade; "class file" format.
  * <p>
  *   {@link #ClassFile(InputStream)} reads bytecode from an {@link InputStream} and creates a {@link ClassFile} object
  *   from it.
@@ -74,7 +74,10 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * Construct from parsed components.
+     * Constructs a class with no fields and methods.
+     * An application would typically add these through {@link ClassFile#addFieldInfo(short, String, String, Object)}
+     * and {@link ClassFile#addMethodInfo(short, String, String)} before saving it.
+     *
      * @param accessFlags as defined by {@link org.codehaus.janino.Mod}
      * @param thisClassFd the field descriptor for this class
      * @param superclassFd the field descriptor for the extended class (e.g. "Ljava/lang/Object;")
@@ -121,7 +124,8 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * Adds a "SourceFile" attribute to this class file. (Does not check whether one exists already.)
+     * Adds a {@code SourceFile} attribute to this class file. (Does not check whether one exists already.)
+     *
      * @param sourceFileName
      */
     public void
@@ -132,16 +136,16 @@ class ClassFile implements Annotatable {
         ));
     }
 
-    /** Adds the "Deprecated" attribute to this class. */
+    /** Adds the {@code Deprecated} attribute to this class. */
     public void
     addDeprecatedAttribute() {
         this.attributes.add(new DeprecatedAttribute(this.addConstantUtf8Info("Deprecated")));
     }
 
     /**
-     * Find the "InnerClasses" attribute of this class file
+     * Finds the {@code InnerClasses} attribute of this class file.
      *
-     * @return <code>null</code> if this class has no "InnerClasses" attribute
+     * @return {@code null} if this class has no "InnerClasses" attribute
      */
     @Nullable public InnerClassesAttribute
     getInnerClassesAttribute() {
@@ -171,24 +175,23 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * Create an "InnerClasses" attribute if it does not exist, then add the given entry
-     * to the "InnerClasses" attribute.
-     * @param e
+     * Creates an {@code InnerClasses} attribute if it does not exist, then adds the <var>entry</var> to the {@code
+     * InnerClasses} attribute.
      */
     public void
-    addInnerClassesAttributeEntry(InnerClassesAttribute.Entry e) {
+    addInnerClassesAttributeEntry(InnerClassesAttribute.Entry entry) {
         InnerClassesAttribute ica = this.getInnerClassesAttribute();
         if (ica == null) {
             ica = new InnerClassesAttribute(this.addConstantUtf8Info("InnerClasses"));
             this.attributes.add(ica);
         }
-        ica.getEntries().add(e);
+        ica.getEntries().add(entry);
     }
 
     /**
-     * Finds the "Runtime[In]visibleAnnotations" attribute in the <var>attributes</var>.
+     * Finds the {@code Runtime[In]visibleAnnotations} attribute in the <var>attributes</var>.
      *
-     * @return <code>null</code> if <var>attributes</var> constains no such attribute
+     * @return {@code null} if <var>attributes</var> constains no such attribute
      */
     @Nullable private AnnotationsAttribute
     getAnnotationsAttribute(boolean runtimeVisible, List<AttributeInfo> attributes) {
@@ -208,7 +211,8 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * Creates a "Runtime[In]visibleAnnotations" attribute on the class (if it does not yet exist) and adds an entry.
+     * Creates a {@code Runtime[In]visibleAnnotations} attribute on the class (if it does not yet exist) and adds an
+     * entry to it.
      *
      * @param elementValuePairs Maps element-name constant-pool-index ({@link ConstantUtf8Info}) to element value
      */
@@ -217,13 +221,11 @@ class ClassFile implements Annotatable {
         boolean                                       runtimeVisible,
         String                                        fieldDescriptor,
         Map<Short, AnnotationsAttribute.ElementValue> elementValuePairs
-    ) {
-        this.addAnnotationsAttributeEntry(runtimeVisible, fieldDescriptor, elementValuePairs, this.attributes);
-    }
+    ) { this.addAnnotationsAttributeEntry(runtimeVisible, fieldDescriptor, elementValuePairs, this.attributes); }
 
     /**
-     * Adds a "Runtime[In]visibleAnnotations" attribute to the <var>target</var> (if it does not yet exist) and adds an
-     * entry.
+     * Adds a {@code Runtime[In]visibleAnnotations} attribute to the <var>target</var> (if it does not yet exist) and
+     * adds an entry to it.
      *
      * @param elementValuePairs Maps "elemant_name_index" ({@link ConstantUtf8Info}) to "element_value", see JVMS8
      *                          4.7.16
@@ -575,11 +577,11 @@ class ClassFile implements Annotatable {
         return mi;
     }
 
-    /** @return The (read-only) constant pool entry indexed by {@code index} */
+    /** @return The (read-only) constant pool entry indexed by <var>index</var> */
     public ConstantPoolInfo
     getConstantPoolInfo(short index) { return (ConstantPoolInfo) this.constantPool.get(0xffff & index); }
 
-    /** @return The (read-only) constant value pool entry indexed by {@code index} */
+    /** @return The (read-only) constant value pool entry indexed by <var>index</var> */
     public ConstantValuePoolInfo
     getConstantValuePoolInfo(short index) { return (ConstantValuePoolInfo) this.getConstantPoolInfo(index); }
 
@@ -588,8 +590,8 @@ class ClassFile implements Annotatable {
     getConstantPoolSize() { return this.constantPool.size(); }
 
     /**
-     * @param index Index to a <code>CONSTANT_Utf8_info</code> in the constant pool
-     * @return The string represented by the structure
+     * @param index Index to a {@code CONSTANT_Utf8_info} in the constant pool
+     * @return      The string represented by the structure
      */
     public String
     getConstantUtf8(short index) {
@@ -672,12 +674,10 @@ class ClassFile implements Annotatable {
     /**
      * Write {@link ClassFile} to an {@link OutputStream}, in "class file" format.
      * <p>
-     * Notice that if an {@link IOException} is thrown, the class file is
-     * probably written incompletely and thus invalid. The calling method must take
-     * care of this situation, e.g. by closing the output stream and then deleting the
-     * file.
-     * @param os
-     * @throws IOException
+     *   Notice that if an {@link IOException} is thrown, the class file is probably written incompletely and thus
+     *   invalid. The calling method must take care of this situation, e.g. by closing the output stream and then
+     *   deleting the file.
+     * </p>
      */
     public void
     store(OutputStream os) throws IOException {
@@ -737,14 +737,14 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * Construct the name of a resource that could contain the source code of
-     * the class with the given name.
+     * Construct the name of a resource that could contain the source code of the class with the <var>className</var>.
      * <p>
-     * Notice that member types are declared inside a different type, so the relevant source file
-     * is that of the outermost declaring class.
+     *   Notice that member types are declared inside a different type, so the relevant source file is that of the
+     *   outermost declaring class.
+     * </p>
      *
-     * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
-     * @return the name of the resource, e.g. "pkg1/pkg2/Outer.java"
+     * @param className Fully qualified class name, e.g. {@code "pkg1.pkg2.Outer$Inner"}
+     * @return          the name of the resource, e.g. {@code "pkg1/pkg2/Outer.java"}
      */
     public static String
     getSourceResourceName(String className) {
@@ -760,8 +760,7 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * Construct the name of a resource that could contain the class file of the
-     * class with the given name.
+     * Construct the name of a resource that could contain the class file of the class with the <var>className</var>.
      *
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
      * @return the name of the resource, e.g. "pkg1/pkg2/Outer$Inner.class"
@@ -784,24 +783,38 @@ class ClassFile implements Annotatable {
 
     private static final int CLASS_FILE_MAGIC = 0xcafebabe;
 
-    // CHECKSTYLE JavadocVariable:OFF
+    /** Major version number of a class file that was generated by a Java 1.1-compliant compiler. */
     public static final short MAJOR_VERSION_JDK_1_1 = 45;
+    /** Minor version number of a class file that was generated by a Java 1.1-compliant compiler. */
     public static final short MINOR_VERSION_JDK_1_1 = 3;
+    /** Major version number of a class file that was generated by a Java 1.2-compliant compiler. */
     public static final short MAJOR_VERSION_JDK_1_2 = 46;
+    /** Minor version number of a class file that was generated by a Java 1.2-compliant compiler. */
     public static final short MINOR_VERSION_JDK_1_2 = 0;
+    /** Major version number of a class file that was generated by a Java 1.3-compliant compiler. */
     public static final short MAJOR_VERSION_JDK_1_3 = 47;
+    /** Minor version number of a class file that was generated by a Java 1.3-compliant compiler. */
     public static final short MINOR_VERSION_JDK_1_3 = 0;
+    /** Major version number of a class file that was generated by a Java 1.4-compliant compiler. */
     public static final short MAJOR_VERSION_JDK_1_4 = 48;
+    /** Minor version number of a class file that was generated by a Java 1.4-compliant compiler. */
     public static final short MINOR_VERSION_JDK_1_4 = 0;
+    /** Major version number of a class file that was generated by a Java 1.5-compliant compiler. */
     public static final short MAJOR_VERSION_JDK_1_5 = 49;
+    /** Minor version number of a class file that was generated by a Java 1.5-compliant compiler. */
     public static final short MINOR_VERSION_JDK_1_5 = 0;
+    /** Major version number of a class file that was generated by a Java 1.6-compliant compiler. */
     public static final short MAJOR_VERSION_JDK_1_6 = 50;
+    /** Minor version number of a class file that was generated by a Java 1.6-compliant compiler. */
     public static final short MINOR_VERSION_JDK_1_6 = 0;
+    /** Major version number of a class file that was generated by a Java 1.7-compliant compiler. */
     public static final short MAJOR_VERSION_JDK_1_7 = 51;
+    /** Minor version number of a class file that was generated by a Java 1.7-compliant compiler. */
     public static final short MINOR_VERSION_JDK_1_7 = 0;
+    /** Major version number of a class file that was generated by a Java 1.8-compliant compiler. */
     public static final short MAJOR_VERSION_JDK_1_8 = 52;
+    /** Minor version number of a class file that was generated by a Java 1.8-compliant compiler. */
     public static final short MINOR_VERSION_JDK_1_8 = 0;
-    // CHECKSTYLE JavadocVariable:ON
 
     private short                        majorVersion;
     private short                        minorVersion;
@@ -814,18 +827,18 @@ class ClassFile implements Annotatable {
      */
     public final short accessFlags;
 
-    /** The constant pool index of the {@link ConstantClassInfo} that describes THIS class. */
+    /** The constant pool index of the {@link ConstantClassInfo} that describes this class. */
     public final short thisClass;
 
     /**
-     * The constant pool index of the {@link ConstantClassInfo} that describes the superclass of THIS class. Zero
+     * The constant pool index of the {@link ConstantClassInfo} that describes the superclass of this class. Zero
      * for class {@link Object}, {@link Object} for interfaces.
      */
     public final short superclass;
 
     /**
-     * The constant pool indexes of {@link ConstantClassInfo} which describes the interfaces that this class
-     * implements, resp. that this interface extends.
+     * The constant pool indexes of {@link ConstantClassInfo} which describe the interfaces that this class implements,
+     * resp. that this interface extends.
      */
     public final short[] interfaces;
 
@@ -846,9 +859,10 @@ class ClassFile implements Annotatable {
     class ConstantPoolInfo {
 
         /**
-         * Stores this CP entry into the given {@link DataOutputStream}.
+         * Stores this CP entry into a {@link DataOutputStream}.
          * <p>
-         * See JVMS7 4.4.1 and following
+         *   See JVMS7 4.4.1 and following.
+         * </p>
          */
         protected abstract void store(DataOutputStream dos) throws IOException;
 
@@ -1374,7 +1388,7 @@ class ClassFile implements Annotatable {
             return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]);
         }
 
-        /** Adds the given {@code attribute} to this method. */
+        /** Adds the <var>attribute</var> to this method. */
         public void
         addAttribute(AttributeInfo attribute) { this.attributes.add(attribute); }
 
@@ -1458,7 +1472,7 @@ class ClassFile implements Annotatable {
             return (AttributeInfo[]) this.attributes.toArray(new AttributeInfo[this.attributes.size()]);
         }
 
-        /** Adds the given {@code attribute} to this field. */
+        /** Adds the <var>attribute</var> to this field. */
         public void
         addAttribute(AttributeInfo attribute) { this.attributes.add(attribute); }
 
@@ -1518,10 +1532,10 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * Load one class file attribute. The returned object will be of
-     * {@link AttributeInfo}-derived type, depending on the attribute's name; e.g. if the
-     * name of the attribute is "SourceFile", then the returned object will be of type
-     * {@link SourceFileAttribute}.
+     * Load one class file attribute.
+     * The returned object will be of {@link AttributeInfo}-derived type, depending on the attribute's name; e.g. if
+     * the name of the attribute is {@code "SourceFile"}, then the returned object will be of type {@link
+     * SourceFileAttribute}.
      */
     private AttributeInfo
     loadAttribute(DataInputStream dis) throws IOException {
@@ -1587,7 +1601,7 @@ class ClassFile implements Annotatable {
         return result;
     }
 
-    /** Representation of a "ConstantValue" attribute (see JVMS 4.7.2). */
+    /** Representation of a {@code ConstantValue} attribute (see JVMS 4.7.2). */
     public static
     class ConstantValueAttribute extends AttributeInfo {
 
@@ -1619,7 +1633,7 @@ class ClassFile implements Annotatable {
         }
     }
 
-    /** Representation of an "Exceptions" attribute (see JVMS 4.7.4). */
+    /** Representation of an {@code Exceptions} attribute (see JVMS 4.7.4). */
     public static
     class ExceptionsAttribute extends AttributeInfo {
 
@@ -1656,7 +1670,7 @@ class ClassFile implements Annotatable {
         }
     }
 
-    /** Representation of an "InnerClasses" attribute (see JVMS 4.7.5). */
+    /** Representation of an {@code InnerClasses} attribute (see JVMS 4.7.5). */
     public static
     class InnerClassesAttribute extends AttributeInfo {
 
@@ -1672,8 +1686,7 @@ class ClassFile implements Annotatable {
         }
 
         /**
-         * @return A {@code List<InnerClassesAttribute.Entry>}: The {@link Entry}s contained in this {@link
-         *         InnerClassesAttribute}, see JVMS7 4.7.6
+         * @return The {@link Entry}s contained in this {@link InnerClassesAttribute}, see JVMS7 4.7.6
          */
         public List<InnerClassesAttribute.Entry>
         getEntries() { return this.entries; }
@@ -1728,7 +1741,7 @@ class ClassFile implements Annotatable {
         }
     }
 
-    /** Representation of an "Runtime[In]visibleAnnotations" attribute (see JVMS8 4.7.16/17). */
+    /** Representation of a {@code Runtime[In]visibleAnnotations} attribute (see JVMS8 4.7.16/17). */
     public static
     class AnnotationsAttribute extends AttributeInfo {
 
@@ -1744,8 +1757,8 @@ class ClassFile implements Annotatable {
         }
 
         /**
-         * @return A {@code List<AnnotationsAttribute.Entry>}: The {@link AnnotationsAttribute.Annotation}s contained
-         *         in this {@link AnnotationsAttribute}, see JVMS8 4.7.16/17
+         * @return The {@link AnnotationsAttribute.Annotation}s contained in this {@link AnnotationsAttribute}, see
+         *         JVMS8 4.7.16/17
          */
         public List<AnnotationsAttribute.Annotation>
         getAnnotations() { return this.annotations; }
@@ -2056,9 +2069,7 @@ class ClassFile implements Annotatable {
         storeBody(DataOutputStream dos) throws IOException {
 
             dos.writeShort(this.annotations.size()); // num_annotations
-            for (AnnotationsAttribute.Annotation a : this.annotations) {
-                a.store(dos);
-            }
+            for (AnnotationsAttribute.Annotation a : this.annotations) a.store(dos);
         }
 
         /** The structure of the {@code classes} array as described in JVMS7 4.7.6. */
@@ -2118,7 +2129,7 @@ class ClassFile implements Annotatable {
         }
     }
 
-    /** Representation of a "Synthetic" attribute (see JVMS 4.7.6). */
+    /** Representation of a {@code Synthetic} attribute (see JVMS 4.7.6). */
     public static
     class SyntheticAttribute extends AttributeInfo {
 
@@ -2138,7 +2149,7 @@ class ClassFile implements Annotatable {
         }
     }
 
-    /** Representation of a "SourceFile" attribute (see JVMS 4.7.7). */
+    /** Representation of a {@code SourceFile} attribute (see JVMS 4.7.7). */
     public static
     class SourceFileAttribute extends AttributeInfo {
 
@@ -2163,7 +2174,7 @@ class ClassFile implements Annotatable {
         storeBody(DataOutputStream dos) throws IOException { dos.writeShort(this.sourceFileIndex); }
     }
 
-    /** Representation of a "LineNumberTable" attribute (see JVMS 4.7.8). */
+    /** Representation of a {@code LineNumberTable} attribute (see JVMS 4.7.8). */
     public static
     class LineNumberTableAttribute extends AttributeInfo {
 
@@ -2213,7 +2224,7 @@ class ClassFile implements Annotatable {
         }
     }
 
-    /** Representation of a "LocalVariableTable" attribute (see JVMS 4.7.9). */
+    /** Representation of a {@code LocalVariableTable} attribute (see JVMS 4.7.9). */
     public static
     class LocalVariableTableAttribute extends AttributeInfo {
 
@@ -2272,7 +2283,7 @@ class ClassFile implements Annotatable {
         }
     }
 
-    /** Representation of a "Deprecated" attribute (see JVMS 4.7.10). */
+    /** Representation of a {@code Deprecated} attribute (see JVMS 4.7.10). */
     public static
     class DeprecatedAttribute extends AttributeInfo {
 
@@ -2291,7 +2302,7 @@ class ClassFile implements Annotatable {
         }
     }
 
-    /** Representation of an unmodifiable "Code" attribute, as read from a class file. */
+    /** Representation of an unmodifiable {@code Code} attribute, as read from a class file. */
     public static
     class CodeAttribute extends AttributeInfo {
 
