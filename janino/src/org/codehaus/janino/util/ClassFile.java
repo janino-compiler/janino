@@ -45,6 +45,8 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Mod;
+import org.codehaus.janino.util.ClassFile.AnnotationsAttribute;
+import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ConstantElementValue;
 
 /**
  * An object that represents the Java&trade; "class file" format.
@@ -489,24 +491,31 @@ class ClassFile implements Annotatable {
      */
     private short
     addToConstantPool(ConstantPoolInfo cpi) {
+
+        // Check whether an equal entry already exists.
         Short index = (Short) this.constantPoolMap.get(cpi);
         if (index != null) return index.shortValue();
 
-        int res = this.constantPool.size();
+        // The current size of the constant pool is the index of the new entry.
+        final short res = (short) this.constantPool.size();
 
-        // `res` will become the new entry's index, so `res` must be ≤ 65534, or ≤ 65533 if the entry is wide
-        if (res >= 0xFFFF || (cpi.isWide() && res >= 0xFFFF - 1)) {
+        // Add one or two entries to the constant pool.
+        this.constantPool.add(cpi);
+        if (cpi.isWide()) this.constantPool.add(null);
+
+        // Check for constant pool overflow.
+        if (this.constantPool.size() > 0xFFFF) {
             throw new JaninoRuntimeException(
                 "Constant pool for class "
                 + this.getThisClassName()
                 + " has grown past JVM limit of 0xFFFF"
             );
         }
-        this.constantPool.add(cpi);
-        if (cpi.isWide()) this.constantPool.add(null);
 
-        this.constantPoolMap.put(cpi, new Short((short) res));
-        return (short) res;
+        // Also put the new entry into the "constantPoolMap" for fast access.
+        this.constantPoolMap.put(cpi, res);
+
+        return res;
     }
 
     /**
