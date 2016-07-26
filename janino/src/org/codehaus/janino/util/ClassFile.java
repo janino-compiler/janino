@@ -43,23 +43,35 @@ import java.util.Map;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
-import org.codehaus.janino.JaninoRuntimeException;
 import org.codehaus.janino.Mod;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ConstantElementValue;
 
 /**
  * An object that represents the Java&trade; "class file" format.
  * <p>
- * {@link #ClassFile(InputStream)} creates a {@link ClassFile} object from the bytecode
- * read from the given {@link InputStream}.
+ *   {@link #ClassFile(InputStream)} reads bytecode from an {@link InputStream} and creates a {@link ClassFile} object
+ *   from it.
+ * </p>
  * <p>
- * {@link #store(OutputStream)} generates Java&trade; bytecode
- * which is suitable for being processed by a Java&trade; virtual
- * machine.
+ *   {@link #store(OutputStream)} generates Java&trade; bytecode which is suitable for being processed by a Java&trade;
+ *   virtual machine, and writes it to an {@link OutputStream}.
+ * </p>
  */
 public
 class ClassFile implements Annotatable {
+
+    /**
+     * Unchecked exception that represents an error condition that could occur during processing of class files, e.g.
+     * reading a corrupt class file, or an overflow of the constant pool.
+     */
+    public static
+    class ClassFileException extends RuntimeException {
+
+        public
+        ClassFileException(String message) { super(message); }
+
+        public
+        ClassFileException(String message, Throwable cause) { super(message, cause); }
+    }
 
     /**
      * Construct from parsed components.
@@ -139,8 +151,8 @@ class ClassFile implements Annotatable {
     /**
      * Finds the named attribute in the <var>attributes</var>.
      *
-     * @return                  <code>null</code> iff <var>attributes</var> constains no attribute with that name
-     * @throws ClassFormatError <var>attributes</var> contains <em>more than one</em> attribute with that name
+     * @return                    {@code null} iff the <var>attributes</var> constain no attribute with that name
+     * @throws ClassFileException <var>attributes</var> contains <em>more than one</em> attribute with that name
      */
     @Nullable private AttributeInfo
     findAttribute(List<AttributeInfo> attributes, String attributeName) throws ClassFormatError {
@@ -151,7 +163,7 @@ class ClassFile implements Annotatable {
         AttributeInfo result = null;
         for (AttributeInfo ai : attributes) {
             if (ai.nameIndex == nameIndex) {
-                if (result != null) throw new ClassFormatError("Duplicate \"" + attributeName + "\" attribute");
+                if (result != null) throw new ClassFileException("Duplicate \"" + attributeName + "\" attribute");
                 result = ai;
             }
         }
@@ -239,10 +251,11 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * Read "class file" data from a {@link InputStream} and construct a {@link ClassFile} object from it.
+     * Read "class file" data from the <var>inputStream</var> and construct a {@link ClassFile} object from it.
      * <p>
-     * If the {@link ClassFile} is created with this constructor, then most modifying operations lead to a {@link
-     * UnsupportedOperationException}; only fields, methods and attributes can be added.
+     *   If the {@link ClassFile} is created with this constructor, then most modifying operations lead to a {@link
+     *   UnsupportedOperationException}; only fields, methods and attributes can be added.
+     * </p>
      */
     public
     ClassFile(InputStream inputStream) throws IOException {
@@ -253,16 +266,16 @@ class ClassFile implements Annotatable {
         );
 
         int magic = dis.readInt();                                                 // magic
-        if (magic != ClassFile.CLASS_FILE_MAGIC) throw new ClassFormatError("Invalid magic number");
+        if (magic != ClassFile.CLASS_FILE_MAGIC) throw new ClassFileException("Invalid magic number");
 
         this.minorVersion = dis.readShort();                                       // minor_version
         this.majorVersion = dis.readShort();                                       // major_version
 
-        // Explicitly DO NOT CHECK the major and minor version of the CLASS file, because SUN increase them with each
-        // platform update while keeping them backwards compatible.
+        // Explicitly DO NOT CHECK the major and minor version of the CLASS file, because ORACLE increase them with
+        // each platform update while keeping them backwards compatible.
 
 //        if (!ClassFile.isRecognizedVersion(this.majorVersion, this.minorVersion)) {
-//            throw new ClassFormatError(
+//            throw new ClassFileException(
 //                "Unrecognized class file format version "
 //                + this.majorVersion
 //                + "/"
@@ -327,7 +340,7 @@ class ClassFile implements Annotatable {
             s = typeFd;
         } else
         {
-            throw new JaninoRuntimeException("\"" + Descriptor.toString(typeFd) + "\" is neither a class nor an array");
+            throw new ClassFileException("\"" + Descriptor.toString(typeFd) + "\" is neither a class nor an array");
         }
 
         return this.addToConstantPool(new ConstantClassInfo(this.addConstantUtf8Info(s)));
@@ -481,7 +494,7 @@ class ClassFile implements Annotatable {
             return this.addConstantDoubleInfo(((Double) cv).doubleValue());
         } else
         {
-            throw new JaninoRuntimeException("Unexpected constant value type \"" + cv.getClass().getName() + "\"");
+            throw new ClassFileException("Unexpected constant value type \"" + cv.getClass().getName() + "\"");
         }
     }
 
@@ -505,7 +518,7 @@ class ClassFile implements Annotatable {
 
         // Check for constant pool overflow.
         if (this.constantPool.size() > 0xFFFF) {
-            throw new JaninoRuntimeException(
+            throw new ClassFileException(
                 "Constant pool for class "
                 + this.getThisClassName()
                 + " has grown past JVM limit of 0xFFFF"
@@ -764,7 +777,7 @@ class ClassFile implements Annotatable {
             this.store(baos);
         } catch (IOException ex) {
             // ByteArrayOutputStream should never throw IOExceptions.
-            throw new JaninoRuntimeException(ex.toString(), ex);
+            throw new ClassFileException(ex.toString(), ex);
         }
         return baos.toByteArray();
     }
@@ -883,7 +896,7 @@ class ClassFile implements Annotatable {
                 return new ConstantUtf8Info(dis.readUTF());
 
             default:
-                throw new ClassFormatError("Invalid constant pool tag " + tag);
+                throw new ClassFileException("Invalid constant pool tag " + tag);
             }
         }
     }
@@ -1292,7 +1305,7 @@ class ClassFile implements Annotatable {
                 dos.writeUTF(this.s);
             } catch (UTFDataFormatException e) {
                 // SUPPRESS CHECKSTYLE AvoidHidingCause
-                throw new ClassFormatError("String constant too long to store in class file");
+                throw new ClassFileException("String constant too long to store in class file");
             }
         }
 
@@ -1563,7 +1576,7 @@ class ClassFile implements Annotatable {
         }
 
         if (bais.available() > 0) {
-            throw new ClassFormatError(
+            throw new ClassFileException(
                 (ba.length - bais.available())
                 + " bytes of trailing garbage in body of attribute \""
                 + attributeName
@@ -1804,7 +1817,7 @@ class ClassFile implements Annotatable {
                 return new ArrayElementValue(values);
 
             default:
-                throw new ClassFormatError("Invalid element-value-pair tag '" + (char) tag + "'");
+                throw new ClassFileException("Invalid element-value-pair tag '" + (char) tag + "'");
             }
         }
 
