@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/github-dark.css">
     <script src="javascripts/scale.fix.js"></script>
+
+    <script src="syntaxhighlighter_3.0.83/scripts/shCore.js"></script>
+    <script src="syntaxhighlighter_3.0.83/scripts/shBrushBash.js"></script>
+    <script src="syntaxhighlighter_3.0.83/scripts/shBrushJava.js"></script>
+    <script src="syntaxhighlighter_3.0.83/scripts/shBrushXml.js"></script>
+    <link href="syntaxhighlighter_3.0.83/styles/shCore.css" rel="stylesheet" type="text/css">
+    <link href="syntaxhighlighter_3.0.83/styles/shThemeRDark.css" rel="stylesheet" type="text/css">
+
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
     <!--[if lt IE 9]>
@@ -19,7 +27,9 @@
       <header>
         <h1>Janino</h1>
         <p>A super-small, super-fast Java™ compiler</p>
-        <p class="view"><a href="https://github.com/janino-compiler/janino">View the Project on GitHub <small>janino-compiler/janino</small></a></p>
+        <p class="view"><a href="https://github.com/janino-compiler/janino">
+          View the Project on GitHub <small>janino-compiler/janino</small></a>
+        </p>
         <ul>
           <li><a href="changelog.html">Download <strong>ZIP File</strong></a></li>
           <li><a href="http://janino.unkrig.de/javadoc/">Browse <strong>JAVADOC</strong></a></li>
@@ -27,7 +37,12 @@
         </ul>
       </header>
       <section>
-        <div style="float:right;clear:right;position:relative;margin:0.5em 0 0.8em 1.4em"><img src="https://raw.githubusercontent.com/janino-compiler/janino/master/janino-dist/logo/logo_167x134.gif" alt="Janino Swoosh"></div>
+        <div style="float:right;clear:right;position:relative;margin:0.5em 0 0.8em 1.4em">
+          <img
+            src="https://raw.githubusercontent.com/janino-compiler/janino/master/janino-dist/logo/logo_167x134.gif"
+            alt="Janino Swoosh"
+          />
+        </div>
         <p>
           Janino is a super-small, super-fast Java™ compiler.
         </p>
@@ -38,11 +53,11 @@
           href="#janino-as-a-class-body-evaluator">class body</a> or <a href="#janino-as-a-simple-compiler">source
           file</a> in memory, load the bytecode and execute it directly in the same JVM.
         </p>
-        
+
         <p>JANINO is integrated with Apache Commons JCI ("Java Compiler Interface") and JBoss Rules / Drools.</p>
-        
+
         <p>JANINO can also be used for static code analysis or code manipulation.</p>
-        
+
         <h2>Table of Contents</h2>
         <ul>
           <li><a href="#properties">Properties</a></li>
@@ -58,6 +73,7 @@
           <li>
             <a href="#documentation">Documentation</a>
             <ul>
+              <li><a href="#change_log">Change Log</a></li>
               <li><a href="#javadoc">JAVADOC</a></li>
               <li><a href="#books">Books</a></li>
               <li><a href="#links">Links</a></li>
@@ -74,7 +90,6 @@
               <li><a href="#requesting-support">Requesting support</a></li>
               <li><a href="#requesting-new-features">Requesting new features</a></li>
               <li><a href="#feedback">Feedback</a></li>
-              <li><a href="#mailing-list">Mailing List</a></li>
             </ul>
           </li>
           <li>
@@ -82,80 +97,81 @@
             <ul>
               <li><a href="#source-code-repository">Source Code Repository</a></li>
               <li><a href="#contributing">Contributing</a></li>
-              <li><a href="#version-control">Version Control</a></li>
             </ul>
           </li>
         </ul>
-        
+
         <h2>
           <a id="properties" class="anchor" href="#properties" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Properties
         </h2>
-        
+
         <p>
           The major design goal was to keep the compiler small and simple, while providing an (almost) complete Java™
           compiler.
         </p>
-        
+
         <p>The following elements of the Java programming language are implemented:</p>
-        
+
         <ul>
-          <li><tt>package</tt> declaration, <tt>import</tt> declaration</li>
-          <li><tt>class</tt> declaration, <tt>interface</tt> declaration</li>
-          <li>Inheritance (<tt>extends</tt> and <tt>implements</tt>)</li>
+          <li><code>package</code> declaration, <code>import</code> declaration</li>
+          <li><code>class</code> declaration (including <code>enum</code> declaration)</li>
+          <li><code>interface</code> declaration (including annotation type declaration)</li>
+          <li>Inheritance (<code>extends</code> and <code>implements</code>)</li>
           <li>Static member type declaration</li>
           <li>Inner (non-static member, local, anonymous) class declaration</li>
           <li>Class initializer, instance initializer</li>
           <li>Field declaration, method declaration</li>
           <li>Local variable declaration</li>
           <li>Class variable initializer, instance variable initializer</li>
-          <li>Block statement (<tt>{...}</tt>)</li>
-          <li><tt>if ... else</tt> statement</li>
-          <li>Basic <tt>for</tt> statement</li>
-          <li>Enhanced <tt>for</tt> statement</li>
-          <li><tt>while</tt> statement</li>
-          <li><tt>do ... while</tt> statement</li>
-          <li><tt>try ... catch ... finall</tt>y statement</li>
-          <li><tt>throw</tt> statement</li>
-          <li><tt>return</tt> statement</li>
-          <li><tt>break</tt> statement</li>
-          <li><tt>continue</tt> statement</li>
-          <li><tt>switch</tt> statement</li>
-          <li><tt>synchronized</tt> statement</li>
+          <li>Block statement (<code>{...}</code>)</li>
+          <li><code>if ... else</code> statement</li>
+          <li>Basic <code>for</code> statement</li>
+          <li>Enhanced <code>for</code> statement</li>
+          <li><code>while</code> statement</li>
+          <li><code>do ... while</code> statement</li>
+          <li><code>try ... catch ... finall</code>y statement</li>
+          <li><code>throw</code> statement</li>
+          <li><code>return</code> statement</li>
+          <li><code>break</code> statement</li>
+          <li><code>continue</code> statement</li>
+          <li><code>switch</code> statement</li>
+          <li><code>synchronized</code> statement</li>
           <li>
-            All primitive types (<tt>boolean</tt>, <tt>char</tt>, <tt>byte</tt>, <tt>short</tt>, <tt>int</tt>,
-            <tt>long</tt>, <tt>float</tt>, <tt>double</tt>)
+            All primitive types (<code>boolean</code>, <code>char</code>, <code>byte</code>, <code>short</code>,
+            <code>int</code>, <code>long</code>, <code>float</code>, <code>double</code>)
           </li>
-          <li>Assignment operator <tt>=</tt></li>
+          <li>Assignment operator <code>=</code></li>
           <li>
-            Compound assignment operators <tt>+=</tt>, <tt>-=</tt>, <tt>*=</tt>, <tt>/=</tt>, <tt>&amp;=</tt>,
-            <tt>|=</tt>, <tt>^=</tt>, <tt>%=</tt>, <tt>&lt;&lt;=</tt>, <tt>&gt;&gt;=</tt>, <tt>&gt;&gt;&gt;=</tt>
+            Compound assignment operators <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>,
+            <code>&amp;=</code>, <code>|=</code>, <code>^=</code>, <code>%=</code>, <code>&lt;&lt;=</code>,
+            <code>&gt;&gt;=</code>, <code>&gt;&gt;&gt;=</code>
           </li>
-          <li>Conditional operators <tt>? ... :</tt>, <tt>&amp;&amp;</tt>, <tt>||</tt></li>
-          <li>Boolean logical operators <tt>&amp;</tt>, <tt>^</tt>, <tt>|</tt></li>
-          <li>Integer bitwise operators <tt>&amp;</tt>, <tt>^</tt>, <tt>|</tt></li>
+          <li>Conditional operators <code>? ... :</code>, <code>&amp;&amp;</code>, <code>||</code></li>
+          <li>Boolean logical operators <code>&amp;</code>, <code>^</code>, <code>|</code></li>
+          <li>Integer bitwise operators <code>&amp;</code>, <code>^</code>, <code>|</code></li>
           <li>
-            Numeric operators <tt>*</tt>, <tt>/</tt>, <tt>%</tt>, <tt>+</tt>, <tt>-</tt>, <tt>&lt;&lt;</tt>,
-            <tt>&gt;&gt;</tt>, <tt>&gt;&gt;&gt;</tt>
+            Numeric operators <code>*</code>, <code>/</code>, <code>%</code>, <code>+</code>, <code>-</code>,
+            <code>&lt;&lt;</code>, <code>&gt;&gt;</code>, <code>&gt;&gt;&gt;</code>
           </li>
-          <li>String concatenation operator <tt>+</tt></li>
-          <li>Operators <tt>++</tt> and <tt>--</tt></li>
-          <li>Type comparison operator <tt>instanceof</tt></li>
-          <li>Unary operators <tt>+</tt>, <tt>-</tt>, <tt>~</tt>, <tt>!</tt></li>
+          <li>String concatenation operator <code>+</code></li>
+          <li>Operators <code>++</code> and <code>--</code></li>
+          <li>Type comparison operator <code>instanceof</code></li>
+          <li>Unary operators <code>+</code>, <code>-</code>, <code>~</code>, <code>!</code></li>
           <li>Parenthesized expression</li>
-          <li>Field access (like <tt>System.out</tt>)</li>
-          <li>Superclass member access (<tt>super.meth()</tt>, <tt>super.field</tt>)</li>
-          <li><tt>this</tt> (reference to current instance)</li>
-          <li>Alternate constructor invocation (<tt>this(a, b, c);</tt>)</li>
-          <li>Superclass constructor invocation (<tt>super(a, b, c);</tt>)</li>
-          <li>Method invocation (<tt>System.out.println("Hello")</tt>)</li>
-          <li>Class instance creation (<tt>new Foo()</tt>)</li>
-          <li>Primitive array creation (<tt>new int[10][5][]</tt>)</li>
-          <li>Class or interface array creation (<tt>new Foo[10][5][]</tt>)</li>
-          <li>Array access (<tt>args[0]</tt>)</li>
+          <li>Field access (like <code>System.out</code>)</li>
+          <li>Superclass member access (<code>super.meth()</code>, <code>super.field</code>)</li>
+          <li><code>this</code> (reference to current instance)</li>
+          <li>Alternate constructor invocation (<code>this(a, b, c);</code>)</li>
+          <li>Superclass constructor invocation (<code>super(a, b, c);</code>)</li>
+          <li>Method invocation (<code>System.out.println("Hello")</code>)</li>
+          <li>Class instance creation (<code>new Foo()</code>)</li>
+          <li>Primitive array creation (<code>new int[10][5][]</code>)</li>
+          <li>Class or interface array creation (<code>new Foo[10][5][]</code>)</li>
+          <li>Array access (<code>args[0]</code>)</li>
           <li>Local variable access</li>
           <li>Integer, floating-point, boolean, character, string literal</li>
-          <li><tt>null</tt> literal</li>
+          <li><code>null</code> literal</li>
           <li>
             Unary numeric conversion, binary numeric conversion, widening numeric conversion, narrowing numeric
             conversion, widening reference conversion, narrowing reference conversion
@@ -165,84 +181,88 @@
           <li>String conversion (for string concatenation)</li>
           <li>Constant expression</li>
           <li>Block scope, method scope, class scope, global scope</li>
-          <li><tt>throws</tt> clause</li>
-          <li>Array initializer (<tt>String[] a = { "x", "y", "z" }</tt>)</li>
-          <li>Primitive class literals (<tt>int.class</tt>)</li>
-          <li>Non-primitive class literals (<tt>String.class</tt>)</li>
+          <li><code>throws</code> clause</li>
+          <li>Array initializer (<code>String[] a = { "x", "y", "z" }</code>)</li>
+          <li>Primitive class literals (<code>int.class</code>)</li>
+          <li>Non-primitive class literals (<code>String.class</code>)</li>
           <li>References between uncompiled compilation units</li>
-          <li>Line number tables ("<tt>-g:lines</tt>")</li>
-          <li>Source file information ("<tt>-g:source</tt>")</li>
-          <li>Local variable information information ("<tt>-g:vars</tt>")</li>
+          <li>Line number tables ("<code>-g:lines</code>")</li>
+          <li>Source file information ("<code>-g:source</code>")</li>
+          <li>Local variable information information ("<code>-g:vars</code>")</li>
           <li>
-            Handling of <tt><a href="https://github.com/deprecated" class="user-mention">@deprecated</a></tt> doc
+            Handling of <code><a href="https://github.com/deprecated" class="user-mention">@deprecated</a></code> doc
             comment tag
           </li>
-          <li>Accessibility checking (<tt>public</tt>, <tt>protected</tt>, <tt>private</tt>)</li>
+          <li>Accessibility checking (<code>public</code>, <code>protected</code>, <code>private</code>)</li>
           <li>Checking of "definite assignment" (JLS7 16)</li>
           <li>Methods that compile to more than 32 KB</li>
-          <li><tt>assert</tt> (partial: assertions are always enabled, as if "<tt>-ea</tt>" were given)</li>
+          <li><code>assert</code> (partial: assertions are always enabled, as if "<code>-ea</code>" were given)</li>
           <li>Static imports (single and on-demand; fields, types and methods)</li>
           <li>Autoboxing and unboxing</li>
-          <li><tt>StringBuilder</tt> class used for string concatenation</li>
+          <li><code>StringBuilder</code> class used for string concatenation</li>
           <li>Covariant return types</li>
-          <li>Annotations </li>
-          <li><tt><a href="https://github.com/Override" class="user-mention">@Override</a></tt> annotation</li>
+          <li>Annotations</li>
+          <li><code><a href="https://github.com/Override" class="user-mention">@Override</a></code> annotation</li>
           <li>Variable arity methods (a.k.a. "varargs")</li>
-          <li>Type arguments (<tt>List</tt>) are parsed, but otherwise ignored</li>
+          <li>Type arguments (e.g. <code>List&lt;String&gt;</code>) are parsed, but otherwise ignored</li>
         </ul>
-        
+
         <h2>
           <a id="limitations" class="anchor" href="#limitations" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Limitations
         </h2>
-        
+
         <p>The following elements of the Java programming language are not implemented:</p>
-        
+
         <ul>
-          <li>Declaration of parametrized types (type arguments, however, are (partially) implemented, see above)</li>
-          <li>Typesafe enums</li>
+          <li>Declaration of parameterized types (type arguments, however, are (partially) implemented, see above)</li>
+          <li>Type arguments (e.g. <code>List&lt;String&gt;</code>) are parsed, but otherwise ignored</li>
         </ul>
-        
+
         <h2>
           <a id="download" class="anchor" href="#download" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Download
         </h2>
-        
+
         <h3>
           <a id="packages" class="anchor" href="#packages" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Packages
         </h3>
-        
+
         <p>If you are using MAVEN, add this entry to your POM file:</p>
-        
-        <div class="highlight highlight-text-xml"><pre>
-&lt;<span class="pl-ent">dependency</span>&gt;
-    &lt;<span class="pl-ent">groupId</span>&gt;org.codehaus.janino&lt;/<span class="pl-ent">groupId</span>&gt;
-    &lt;<span class="pl-ent">artifactId</span>&gt;janino&lt;/<span class="pl-ent">artifactId</span>&gt;
-    &lt;<span class="pl-ent">version</span>&gt;2.7.5&lt;/<span class="pl-ent">version</span>&gt;
-&lt;/<span class="pl-ent">dependency</span>&gt;</pre></div>
-        
+
+        <div class="highlight highlight-text-xml"><pre class="brush: xml">
+&lt;dependency&gt;
+    &lt;groupId&gt;org.codehaus.janino&lt;/groupId&gt;
+    &lt;artifactId&gt;janino&lt;/artifactId&gt;
+    &lt;version&gt;2.7.5&lt;/version&gt;
+&lt;/dependency&gt;</pre></div>
+
         <p>(Replace '2.7.5' with the very latest version of JANINO.)</p>
-        
+
         <p>If you are not using MAVEN, do the following instead:</p>
-        
+
         <ul>
           <li>
             Download the latest distribution of Janino from the <a href="changelog.html">download page</a>.
           </li>
           <li>Unzip the distribution file you have downloaded:</li>
         </ul>
-        
-        <div class="highlight highlight-source-shell"><pre>$ jar xvf janino-<span class="pl-k">*</span>.zip</pre></div>
-        
+
+        <div class="highlight highlight-text-xml"><pre class="brush: bash">
+$ jar xvf janino-*.zip
+$ </pre></div>
+
         <ul>
           <li>Change to the Janino directory:</li>
         </ul>
-        
-        <div class="highlight highlight-source-shell">
-          <pre>$ <span class="pl-c1">cd</span> janino-<span class="pl-k">*</span></pre>
+
+        <div class="highlight highlight-text-xml">
+          <pre class="brush: bash">
+$ cd janino-*
+$</pre>
         </div>
-        
+
         <ul>
           <li>
             You will find the Janino JAR files, the source code ZIP files, the text of the BSD license, and a README
@@ -250,69 +270,96 @@
           </li>
           <li>Put "commons-compiler.jar" and "janino.jar" on your class path.</li>
         </ul>
-        
+
         <h3>
           <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Installation
         </h3>
-        
+
         <p>
           If you're using an IDE like ECLIPSE, you can optionally have "commons-compiler-src.zip" as the source
           attachment of "commons-compiler.jar", and "janino-src.zip" as the source attachment of "janino.jar". That'll
           get you tooltip JAVADOC and source level debugging into the JANINO libraries.
         </p>
-        
-        <p>Use one of the features, e.g. the "expression evaluator", in your program:</p>
-        
-        <div class="highlight highlight-source-java"><pre>
-<span class="pl-k">import</span> <span class="pl-smi">org.codehaus.janino.*</span>;
 
-<span class="pl-smi">ExpressionEvaluator</span> ee <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">ExpressionEvaluator</span>();
-ee<span class="pl-k">.</span>cook(<span class="pl-s"><span class="pl-pds">"</span>3 + 4<span class="pl-pds">"</span></span>);
-<span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(ee<span class="pl-k">.</span>evaluate(<span class="pl-c1">null</span>));</pre></div>
-        
+        <p>Use one of the features, e.g. the "expression evaluator", in your program:</p>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+import org.codehaus.janino.*;
+
+ExpressionEvaluator ee = new ExpressionEvaluator();
+ee.cook("3 + 4");
+System.out.println(ee.evaluate(null));</pre></div>
+
         <p>Compile, run, ... be happy!</p>
-        
+
         <h3>
           <a id="examples" class="anchor" href="#examples" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Examples
         </h3>
-        
-        <p>The ShippingCost class demonstrates how easy it is to use Janino as an expression evaluator.</p>
-        
-        <p>The ExpressionDemo class implements a command line-based test environment for the expression evaluator.</p>
-        
-        <p>The ScriptDemo class implements a command line-based test environment for the script evaluator.</p>
-        
-        <p>The ClassBodyDemo class implements a command line-based test environment for the class body evaluator.</p>
-        
+
         <p>
-          The DeclarationCounter class implements a command-line utility that counts class, interface, field and local
-          variable declarations in a set of Java™ source files.
+          The <a
+          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/org/codehaus/commons/compiler/samples/ShippingCost.java">ShippingCost</a>
+          class demonstrates how easy it is to use Janino as an expression evaluator.
         </p>
-        
+
+        <p>
+          The <a
+          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/org/codehaus/commons/compiler/samples/ExpressionDemo.java">ExpressionDemo</a>
+          class implements a command line-based test environment for the expression evaluator.
+        </p>
+
+        <p>
+          The <a
+          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/org/codehaus/commons/compiler/samples/ScriptDemo.java">ScriptDemo</a>
+          class implements a command line-based test environment for the script evaluator.
+        </p>
+
+        <p>
+          The <a
+          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/org/codehaus/commons/compiler/samples/ClassBodyDemo.java">ClassBodyDemo</a>
+          class implements a command line-based test environment for the class body evaluator.
+        </p>
+
+        <p>
+          The <a
+          href="https://github.com/janino-compiler/janino/blob/master/janino/src/org/codehaus/janino/samples/DeclarationCounter.java">DeclarationCounter</a>
+          class implements a command-line utility that counts class, interface, field and local variable declarations
+          in a set of Java™ source files.
+        </p>
+
         <h2>
           <a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Documentation
         </h2>
-        
+
+        <h3>
+          <a id="change_log" class="anchor" href="#change_log" aria-hidden="true"><span aria-hidden="true"
+          class="octicon octicon-link"></span></a>Change Log
+        </h3>
+
+        <p>
+          The complete version change log is available <a href="changelog.html">here</a>.
+        </p>
+
         <h3>
           <a id="javadoc" class="anchor" href="#javadoc" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>JAVADOC
         </h3>
-        
+
         <p>
           The full JAVADOC documentation for JANINO is available <a
           href="http://janino.unkrig.de/javadoc/index.html">online</a>.
         </p>
-        
+
         <h3>
           <a id="books" class="anchor" href="#books" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Books
         </h3>
-        
+
         <p>The specifications of the Java programming language:</p>
-        
+
         <ul>
           <li>
             James Gosling, Bill Joy, Guy Steele, Gilad Bracha, Alex Buckley: The Java Language Specification, Java SE 7
@@ -323,9 +370,9 @@ ee<span class="pl-k">.</span>cook(<span class="pl-s"><span class="pl-pds">"</spa
             Edition; Oracle America, Inc., 2011
           </li>
         </ul>
-        
+
         <p>Books that refer to the JANINO technology:</p>
-        
+
         <ul>
           <li>Friedrich Esser: Java 6 Core Techniken: Essentielle Techniken für Java-Apps; Oldenbourg, 2008</li>
           <li>Lars Wunderlich: Java Rules Engines. Entwicklung von regelbasierten Systemen; Entwickler.Press, 2006</li>
@@ -334,17 +381,17 @@ ee<span class="pl-k">.</span>cook(<span class="pl-s"><span class="pl-pds">"</spa
             Entwickler.Press, 2005
           </li>
         </ul>
-        
+
         <h3>
           <a id="links" class="anchor" href="#links" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Links
         </h3>
-        
+
         <h4>
           <a id="articles-about-janino" class="anchor" href="#articles-about-janino" aria-hidden="true"><span
           aria-hidden="true" class="octicon octicon-link"></span></a>Articles about JANINO
         </h4>
-        
+
         <ul>
           <li>
             Andrew Davison's Chapter <a href="http://fivedots.coe.psu.ac.th/%7Ead/jg/javaArt1/">"JavaArt. On-the-Fly
@@ -356,13 +403,13 @@ ee<span class="pl-k">.</span>cook(<span class="pl-s"><span class="pl-pds">"</spa
             Benchmark"</a>."
           </li>
         </ul>
-        
+
         <h4>
           <a id="some-open-source-projects-that-use-janino" class="anchor"
           href="#some-open-source-projects-that-use-janino" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Some open source projects that use JANINO
         </h4>
-        
+
         <ul>
           <li>
             <a href="http://logback.qos.ch/">Logback</a> - a Java™ logging framework intended as a successor to the
@@ -402,14 +449,14 @@ ee<span class="pl-k">.</span>cook(<span class="pl-s"><span class="pl-pds">"</spa
           </li>
           <li><a href="http://deimosproject.sourceforge.net/">Deimos</a> – a Java-based 3D space combat game.</li>
         </ul>
-        
+
         <h4>
           <a id="other-java-compiler-projects-and-products-that-i-know-about" class="anchor"
           href="#other-java-compiler-projects-and-products-that-i-know-about" aria-hidden="true"><span
           aria-hidden="true" class="octicon octicon-link"></span></a>Other Java™ compiler projects and products that I
           know about
         </h4>
-        
+
         <ul>
            <li><a href="http://www.embarcadero.com/products/jbuilder">Embarcadero JBuilder</a></li>
            <li><a href="https://gcc.gnu.org/java/">gcj</a> – the GNU Compiler for Java™</li>
@@ -425,37 +472,37 @@ ee<span class="pl-k">.</span>cook(<span class="pl-s"><span class="pl-pds">"</spa
            <li><a href="http://pizzacompiler.sourceforge.net/">Pizza</a></li>
            <li><a href="http://types.bu.edu/Espresso/JavaEspresso.html">Espresso</a></li>
         </ul>
-        
+
         <h3>
           <a id="basic-examples" class="anchor" href="#basic-examples" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Basic Examples
         </h3>
-        
+
         <h4>
           <a id="janino-as-an-expression-evaluator" class="anchor" href="#janino-as-an-expression-evaluator"
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as an Expression
           Evaluator
         </h4>
-        
+
         <p>
           Say you build an e-commerce system, which computes the shipping cost for the items that the user put into
           his/her shopping cart. Because you don't know the merchant's shipping cost model at implementation time, you
           could implement a set of shipping cost models that come to mind (flat charge, by weight, by number of items,
           ...) and select one of those at run-time.
         </p>
-        
+
         <p>
           In practice, you will most certainly find that the shipping cost models you implemented will rarely match
           what the merchant wants, so you must add custom models, which are merchant-specific. If the merchant's model
           changes later, you must change your code, re-compile and re-distribute your software.
         </p>
-        
+
         <p>
           Because this is so unflexible, the shipping cost expression should be specified at run-time, not at
           compile-time. This implies that the expression must be scanned, parsed and evaluated at run-time, which is
           why you need an expression evaluator.
         </p>
-        
+
         <p>
           A simple expression evaluator would parse an expression and create a "syntax tree". The expression
           "a + b * c", for example, would compile into a "Sum" object who's first operand is parameter "a" and who's
@@ -464,13 +511,13 @@ ee<span class="pl-k">.</span>cook(<span class="pl-s"><span class="pl-pds">"</spa
           "native" Java™ code executed directly by the JVM. This limits the use of such an expression evaluator to
           simple applications.
         </p>
-        
+
         <p>
           Also, you may want not only do simple arithmetics like "a + b * c % d", but take the concept further and have
           a real "scripting" language which adds flexibility to your application. Since you know the Java™ programming
           language already, you may want to have a syntax that is similar to that of the Java™ programming language.
         </p>
-        
+
         <p>
           All these considerations lead to compilation of Java™ code at run-time, like some engines (e.g. JSP engines)
           already do. However, compiling Java™ programs with ORACLE's JDK is a relatively resource-intensive process
@@ -478,78 +525,78 @@ ee<span class="pl-k">.</span>cook(<span class="pl-s"><span class="pl-pds">"</spa
           compiler that compiles simple programs in memory into Java™ bytecode which executes within the JVM of the
           running program.
         </p>
-        
+
         <p>OK, now you are curious... this is how you use the ExpressionEvaluator:</p>
-        
-        <div class="highlight highlight-source-java"><pre>
-<span class="pl-k">package</span> <span class="pl-smi">foo</span>;
 
-<span class="pl-k">import</span> <span class="pl-smi">java.lang.reflect.InvocationTargetException</span>;
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+package foo;
 
-<span class="pl-k">import</span> <span class="pl-smi">org.codehaus.commons.compiler.CompileException</span>;
-<span class="pl-k">import</span> <span class="pl-smi">org.codehaus.janino.ExpressionEvaluator</span>;
+import java.lang.reflect.InvocationTargetException;
 
-<span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">Main</span> {
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.janino.ExpressionEvaluator;
 
-    <span class="pl-k">public</span> <span class="pl-k">static</span> <span class="pl-k">void</span>
-    <span class="pl-en">main</span>(<span class="pl-k">String</span>[] <span class="pl-v">args</span>) <span class="pl-k">throws</span> <span class="pl-smi">CompileException</span>, <span class="pl-smi">InvocationTargetException</span> {
+public class Main {
 
-        <span class="pl-c">// Now here's where the story begins...</span>
-        <span class="pl-smi">ExpressionEvaluator</span> ee <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">ExpressionEvaluator</span>();
+    public static void
+    main(String[] args) throws CompileException, InvocationTargetException {
 
-        <span class="pl-c">// The expression will have two "int" parameters: "a" and "b".</span>
-        ee<span class="pl-k">.</span>setParameters(<span class="pl-k">new</span> <span class="pl-smi">String</span>[] { <span class="pl-s"><span class="pl-pds">"</span>a<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>b<span class="pl-pds">"</span></span> }, <span class="pl-k">new</span> <span class="pl-smi">Class</span>[] { <span class="pl-k">int</span><span class="pl-k">.</span>class, <span class="pl-k">int</span><span class="pl-k">.</span>class });
+        // Now here's where the story begins...
+        ExpressionEvaluator ee = new ExpressionEvaluator();
 
-        <span class="pl-c">// And the expression (i.e. "result") type is also "int".</span>
-        ee<span class="pl-k">.</span>setExpressionType(<span class="pl-k">int</span><span class="pl-k">.</span>class);
+        // The expression will have two "int" parameters: "a" and "b".
+        ee.setParameters(new String[] { "a", "b" }, new Class[] { int.class, int.class });
 
-        <span class="pl-c">// And now we "cook" (scan, parse, compile and load) the fabulous expression.</span>
-        ee<span class="pl-k">.</span>cook(<span class="pl-s"><span class="pl-pds">"</span>a + b<span class="pl-pds">"</span></span>);
+        // And the expression (i.e. "result") type is also "int".
+        ee.setExpressionType(int.class);
 
-        <span class="pl-c">// Eventually we evaluate the expression - and that goes super-fast.</span>
-        <span class="pl-k">int</span> result <span class="pl-k">=</span> (<span class="pl-smi">Integer</span>) ee<span class="pl-k">.</span>evaluate(<span class="pl-k">new</span> <span class="pl-smi">Object</span>[] { <span class="pl-c1">19</span>, <span class="pl-c1">23</span> });
-        <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(result);
+        // And now we "cook" (scan, parse, compile and load) the fabulous expression.
+        ee.cook("a + b");
+
+        // Eventually we evaluate the expression - and that goes super-fast.
+        int result = (Integer) ee.evaluate(new Object[] { 19, 23 });
+        System.out.println(result);
     }
 }</pre></div>
-        
+
         <p>
           Notice: If you pass a string literal as the expression, be sure to escape all Java™ special characters,
           especially backslashes.
         </p>
-        
+
         <p>
           The compilation of the expression takes 670 microseconds on my machine (2 GHz P4), and the evaluation 0.35
           microseconds (approx. 2000 times faster than compilation).
         </p>
-        
+
         <p>
           There is a sample program "ExpressionDemo" that you can use to play around with the ExpressionEvaluator, or
           you can study <a href="http://janino.unkrig.de/samples/ExpressionDemo.java">ExpressionDemo's source code</a>
           to learn about ExpressionEvaluator's API:
         </p>
-        
-        <div class="highlight highlight-source-shell"><pre>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: bash">
 $ java -cp janino.jar:commons-compiler.jar \
-<span class="pl-k">&gt;</span> org.codehaus.commons.compiler.samples.ExpressionDemo \
-<span class="pl-k">&gt;</span> -help
+&gt; org.codehaus.commons.compiler.samples.ExpressionDemo \
+&gt; -help
 Usage:
-  ExpressionDemo { <span class="pl-k">&lt;</span>option<span class="pl-k">&gt;</span> } <span class="pl-k">&lt;</span>expression<span class="pl-k">&gt;</span> { <span class="pl-k">&lt;</span>parameter-value<span class="pl-k">&gt;</span> }
+  ExpressionDemo { &lt;option&gt; } &lt;expression&gt; { &lt;parameter-value&gt; }
 Compiles and evaluates the given expression and prints its value.
 Valid options are
- -et <span class="pl-k">&lt;</span>expression-type<span class="pl-k">&gt;</span>                        (default: any)
- -pn <span class="pl-k">&lt;</span>comma-separated-parameter-names<span class="pl-k">&gt;</span>        (default: none)
- -pt <span class="pl-k">&lt;</span>comma-separated-parameter-types<span class="pl-k">&gt;</span>        (default: none)
- -te <span class="pl-k">&lt;</span>comma-separated-thrown-exception-types<span class="pl-k">&gt;</span> (default: none)
- -di <span class="pl-k">&lt;</span>comma-separated-default-imports<span class="pl-k">&gt;</span>        (default: none)
+ -et &lt;expression-type&gt;                        (default: any)
+ -pn &lt;comma-separated-parameter-names&gt;        (default: none)
+ -pt &lt;comma-separated-parameter-types&gt;        (default: none)
+ -te &lt;comma-separated-thrown-exception-types&gt; (default: none)
+ -di &lt;comma-separated-default-imports&gt;        (default: none)
  -help
 The number of parameter names, types and values must be identical.
 $ java -cp janino.jar:commons-compiler.jar \
-<span class="pl-k">&gt;</span> org.codehaus.commons.compiler.samples.ExpressionDemo \
-<span class="pl-k">&gt;</span> -et double \
-<span class="pl-k">&gt;</span> -pn x \
-<span class="pl-k">&gt;</span> -pt double \
-<span class="pl-k">&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Math.sqrt(x)<span class="pl-pds">"</span></span> \
-<span class="pl-k">&gt;</span> 99
+&gt; org.codehaus.commons.compiler.samples.ExpressionDemo \
+&gt; -et double \
+&gt; -pn x \
+&gt; -pt double \
+&gt; "Math.sqrt(x)" \
+&gt; 99
 Result = 9.9498743710662
 $</pre></div>
 
@@ -558,427 +605,436 @@ $</pre></div>
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a Script
           Evaluator
         </h4>
-        
+
         <p>
           Analogously to the expression evaluator, a ScriptEvaluator API exists that compiles and processes a Java™
           "block", i.e. the body of a method. If a return value other than "void" is defined, then the block must
           return a value of that type.
         </p>
-        
+
         <p>
           As a special feature, it allows methods to be declared. The place and order of the method declarations is not
           relevant.
         </p>
-        
+
         <p>Example:</p>
-        
-        <div class="highlight highlight-source-java"><pre>
-<span class="pl-k">package</span> <span class="pl-smi">foo</span>;
 
-<span class="pl-k">import</span> <span class="pl-smi">java.lang.reflect.InvocationTargetException</span>;
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+package foo;
 
-<span class="pl-k">import</span> <span class="pl-smi">org.codehaus.commons.compiler.CompileException</span>;
-<span class="pl-k">import</span> <span class="pl-smi">org.codehaus.janino.ScriptEvaluator</span>;
+import java.lang.reflect.InvocationTargetException;
 
-<span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">Main</span> {
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.janino.ScriptEvaluator;
 
-    <span class="pl-k">public</span> <span class="pl-k">static</span> <span class="pl-k">void</span>
-    <span class="pl-en">main</span>(<span class="pl-k">String</span>[] <span class="pl-v">args</span>) <span class="pl-k">throws</span> <span class="pl-smi">CompileException</span>, <span class="pl-smi">NumberFormatException</span>, <span class="pl-smi">InvocationTargetException</span> {
+public class Main {
 
-        <span class="pl-smi">ScriptEvaluator</span> se <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">ScriptEvaluator</span>();
+    public static void
+    main(String[] args) throws CompileException, NumberFormatException, InvocationTargetException {
 
-        se<span class="pl-k">.</span>cook(
-            <span class="pl-s"><span class="pl-pds">"</span><span class="pl-pds">"</span></span>
-            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>static void method1() {<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
-            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>    System.out.println(1);<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
-            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>}<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
-            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
-            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>method1();<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
-            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>method2();<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
-            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
-            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>static void method2() {<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
-            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>    System.out.println(2);<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
-            <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>}<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
+        ScriptEvaluator se = new ScriptEvaluator();
+
+        se.cook(
+            ""
+            + "static void method1() {\n"
+            + "    System.out.println(1);\n"
+            + "}\n"
+            + "\n"
+            + "method1();\n"
+            + "method2();\n"
+            + "\n"
+            + "static void method2() {\n"
+            + "    System.out.println(2);\n"
+            + "}\n"
         );
 
-        se<span class="pl-k">.</span>evaluate(<span class="pl-k">new</span> <span class="pl-smi">Object</span>[<span class="pl-c1">0</span>]);
+        se.evaluate(new Object[0]);
     }
 }</pre></div>
-        
+
         <p>
           As for the expression compiler, there is a demo program "ScriptDemo" for you to play with the ScriptEvaluator
           API:
         </p>
-        
-        <div class="highlight highlight-source-shell"><pre>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: bash">
 $ java -cp janino.jar:commons-compiler.jar \
-<span class="pl-k">&gt;</span> org.codehaus.commons.compiler.samples.ScriptDemo -help
+&gt; org.codehaus.commons.compiler.samples.ScriptDemo -help
 Usage:
-  ScriptDemo { <span class="pl-k">&lt;</span>option<span class="pl-k">&gt;</span> } <span class="pl-k">&lt;</span>script<span class="pl-k">&gt;</span> { <span class="pl-k">&lt;</span>parameter-value<span class="pl-k">&gt;</span> }
+  ScriptDemo { &lt;option&gt; } &lt;script&gt; { &lt;parameter-value&gt; }
 Valid options are
- -rt <span class="pl-k">&lt;</span>return-type<span class="pl-k">&gt;</span>                            (default: void)
- -pn <span class="pl-k">&lt;</span>comma-separated-parameter-names<span class="pl-k">&gt;</span>        (default: none)
- -pt <span class="pl-k">&lt;</span>comma-separated-parameter-types<span class="pl-k">&gt;</span>        (default: none)
- -te <span class="pl-k">&lt;</span>comma-separated-thrown-exception-types<span class="pl-k">&gt;</span> (default: none)
- -di <span class="pl-k">&lt;</span>comma-separated-default-imports<span class="pl-k">&gt;</span>        (default: none)
+ -rt &lt;return-type&gt;                            (default: void)
+ -pn &lt;comma-separated-parameter-names&gt;        (default: none)
+ -pt &lt;comma-separated-parameter-types&gt;        (default: none)
+ -te &lt;comma-separated-thrown-exception-types&gt; (default: none)
+ -di &lt;comma-separated-default-imports&gt;        (default: none)
  -help
 The number of parameter names, types and values must be identical.
 $ java -cp janino.jar:commons-compiler.jar \
-<span class="pl-k">&gt;</span> org.codehaus.commons.compiler.samples.ScriptDemo <span class="pl-s"><span class="pl-pds">'</span></span>
-<span class="pl-s">&gt; for (int i = 0; i &lt; 3; i++) {</span>
-<span class="pl-s">&gt;     System.out.println("HELLO");</span>
-<span class="pl-s">&gt; }<span class="pl-pds">'</span></span>
+&gt; org.codehaus.commons.compiler.samples.ScriptDemo '
+&gt; for (int i = 0; i &lt; 3; i++) {
+&gt;     System.out.println("HELLO");
+&gt; }'
 HELLO
 HELLO
 HELLO
 Result = (null)
 $</pre></div>
-        
+
         <p>
           Check <a href="http://janino.unkrig.de/samples/ScriptDemo.java">the source code of ScriptDemo</a> to learn
           more about the ScriptEvaluator API.
         </p>
-        
+
         <h4>
           <a id="janino-as-a-class-body-evaluator" class="anchor" href="#janino-as-a-class-body-evaluator"
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a Class Body
           Evaluator
         </h4>
-        
+
         <p>
           Analogously to the expression evaluator and the script evaluator, a ClassBodyEvaluator exists that compiles
           and processes the body of a Java™ class, i.e. a series of method and variable declarations. If you define a
           contract that the class body should define a method named "main()", then your script will look almost like a
           "C" program:
         </p>
-        
-        <div class="highlight highlight-source-java"><pre>
-<span class="pl-k">public</span> <span class="pl-k">static</span> <span class="pl-k">void</span>
-main(<span class="pl-k">String</span>[] args) {
-    <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-smi">java.util<span class="pl-k">.</span>Arrays</span><span class="pl-k">.</span>asList(args));
+
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+public static void
+main(String[] args) {
+    System.out.println(java.util.Arrays.asList(args));
 }</pre></div>
-        
+
         <p>The "ClassBodyDemo" program (source code) demonstrates this:</p>
-        
-        <div class="highlight highlight-source-shell"><pre>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: bash">
 $ java -cp janino.jar:commons-compiler.jar \
-<span class="pl-k">&gt;</span> org.codehaus.commons.compiler.samples.ClassBodyDemo -help
+&gt; org.codehaus.commons.compiler.samples.ClassBodyDemo -help
 Usage:
-  ClassBodyDemo <span class="pl-k">&lt;</span>class-body<span class="pl-k">&gt;</span> { <span class="pl-k">&lt;</span>argument<span class="pl-k">&gt;</span> }
+  ClassBodyDemo &lt;class-body&gt; { &lt;argument&gt; }
   ClassBodyDemo -help
-If <span class="pl-k">&lt;</span>class-body<span class="pl-k">&gt;</span> starts with a <span class="pl-s"><span class="pl-pds">'</span>@<span class="pl-pds">'</span></span>, <span class="pl-k">then</span> the class body is <span class="pl-c1">read</span>
+If &lt;class-body&gt; starts with a '@', then the class body is read
 from the named file.
-The <span class="pl-k">&lt;</span>class-body<span class="pl-k">&gt;</span> must <span class="pl-k">declare</span> a method <span class="pl-s"><span class="pl-pds">"</span>public static void main(String[])<span class="pl-pds">"</span></span>
-to which the <span class="pl-k">&lt;</span>argument<span class="pl-k">&gt;</span>s are passed. If the <span class="pl-k">return</span> <span class="pl-c1">type</span> of that method is
-not VOID, <span class="pl-k">then</span> the returned value is printed to STDOUT.
+The &lt;class-body&gt; must declare a method "public static void main(String[])"
+to which the &lt;argument&gt;s are passed. If the return type of that method is
+not VOID, then the returned value is printed to STDOUT.
 $ java -cp janino.jar:commons-compiler.jar \
-<span class="pl-k">&gt;</span> org.codehaus.commons.compiler.samples.ClassBodyDemo <span class="pl-s"><span class="pl-pds">'</span></span>
-<span class="pl-s">&gt; public static void</span>
-<span class="pl-s">&gt; main(String[] args) {</span>
-<span class="pl-s">&gt;     System.out.println(java.util.Arrays.asList(args));</span>
-<span class="pl-s">&gt; }<span class="pl-pds">'</span></span> \
-<span class="pl-k">&gt;</span> a b c
+&gt; org.codehaus.commons.compiler.samples.ClassBodyDemo '
+&gt; public static void
+&gt; main(String[] args) {
+&gt;     System.out.println(java.util.Arrays.asList(args));
+&gt; }' \
+&gt; a b c
 [a, b, c]
 $</pre></div>
-        
+
         <h4>
           <a id="janino-as-a-simple-compiler" class="anchor" href="#janino-as-a-simple-compiler"
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a Simple
           Compiler
         </h4>
-        
+
         <p>
           The SimpleCompiler compiles a single "compilation unit" (a.k.a. ".java" file). Opposed to to normal Java™
           compilation, that compilation unit may define more than one public class. Example:
         </p>
-        
-        <div class="highlight highlight-source-java"><pre>
-<span class="pl-c">// This is file "Hello.java", but it could have any name.</span>
 
-<span class="pl-k">public</span>
-<span class="pl-k">class</span> <span class="pl-en">Foo</span> {
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+// This is file "Hello.java", but it could have any name.
 
-    <span class="pl-k">public</span> <span class="pl-k">static</span> <span class="pl-k">void</span>
-    <span class="pl-en">main</span>(<span class="pl-k">String</span>[] <span class="pl-v">args</span>) {
-        <span class="pl-k">new</span> <span class="pl-smi">Bar</span>()<span class="pl-k">.</span>meth();
+public
+class Foo {
+
+    public static void
+    main(String[] args) {
+        new Bar().meth();
     }
 }
 
-<span class="pl-k">public</span>
-<span class="pl-k">class</span> <span class="pl-en">Bar</span> {
+public
+class Bar {
 
-    <span class="pl-k">public</span> <span class="pl-k">void</span>
-    <span class="pl-en">meth</span>() {
-        <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>HELLO!<span class="pl-pds">"</span></span>);
+    public void
+    meth() {
+        System.out.println("HELLO!");
     }
 }</pre></div>
-        
+
         <p>It returns a ClassLoader from which you can retrieve the classes that were compiled.</p>
-        
+
         <p>To run this, type:</p>
-        
-        <div class="highlight highlight-source-shell"><pre>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: bash">
 $ java -cp janino.jar:commons-compiler.jar \
-<span class="pl-k">&gt;</span> org.codehaus.janino.SimpleCompiler -help
+&gt; org.codehaus.janino.SimpleCompiler -help
 Usage:
-    org.codehaus.janino.SimpleCompiler <span class="pl-k">&lt;</span>source-file<span class="pl-k">&gt;</span> <span class="pl-k">&lt;</span>class-name<span class="pl-k">&gt;</span> { <span class="pl-k">&lt;</span>argument<span class="pl-k">&gt;</span> }
-Reads a compilation unit from the given <span class="pl-k">&lt;</span>source-file<span class="pl-k">&gt;</span> and invokes method
-<span class="pl-s"><span class="pl-pds">"</span>public static void main(String[])<span class="pl-pds">"</span></span> of class <span class="pl-k">&lt;</span>class-name<span class="pl-k">&gt;</span>, passing the
-given <span class="pl-k">&lt;</span>argument<span class="pl-k">&gt;</span>s.
+    org.codehaus.janino.SimpleCompiler &lt;source-file&gt; &lt;class-name&gt; { &lt;argument&gt; }
+Reads a compilation unit from the given &lt;source-file&gt; and invokes method
+"public static void main(String[])" of class &lt;class-name&gt;, passing the
+given &lt;argument&gt;s.
 $ java -cp janino.jar:commons-compiler.jar \
-<span class="pl-k">&gt;</span> org.codehaus.janino.SimpleCompiler \
-<span class="pl-k">&gt;</span> Hello.java Foo
-HELLO<span class="pl-k">!</span>
+&gt; org.codehaus.janino.SimpleCompiler \
+&gt; Hello.java Foo
+HELLO!
 $</pre></div>
-        
+
         <h3>
           <a id="advanced-examples" class="anchor" href="#advanced-examples" aria-hidden="true"><span
           aria-hidden="true" class="octicon octicon-link"></span></a>Advanced Examples
         </h3>
-        
+
         <h4>
           <a id="janino-as-a-source-code-classloader" class="anchor" href="#janino-as-a-source-code-classloader"
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a Source Code
           ClassLoader
         </h4>
-        
+
         <p>
           The JavaSourceClassLoader extends Java™'s java.lang.ClassLoader class with the ability to load classes
           directly from source code.
         </p>
-        
+
         <p>
           To be precise, if a class is loaded through this ClassLoader, it searches for a matching ".java" file in any
           of the directories specified by a given "source path", reads, scans, parses and compiles it and defines the
           resulting classes in the JVM. As necessary, more classes are loaded through the parent class loader and/or
           through the source path. No intermediate files are created in the file system.
         </p>
-        
+
         <p>Example:</p>
-        
-        <div class="highlight highlight-source-java"><pre>
-<span class="pl-c">// srcdir/pkg1/A.java</span>
 
-<span class="pl-k">package</span> <span class="pl-smi">pkg1</span>;
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+// srcdir/pkg1/A.java
 
-<span class="pl-k">import</span> <span class="pl-smi">pkg2.*</span>;
+package pkg1;
 
-<span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">A</span> <span class="pl-k">extends</span> <span class="pl-e">B</span> {
+import pkg2.*;
+
+public class A extends B {
 }</pre></div>
-        
-        <div class="highlight highlight-source-java"><pre>
-<span class="pl-c">// srcdir/pkg2/B.java</span>
 
-<span class="pl-k">package</span> <span class="pl-smi">pkg2</span>;
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+// srcdir/pkg2/B.java
 
-<span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">B</span> <span class="pl-k">implements</span> <span class="pl-e">Runnable</span> {
-    <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">run</span>() {
-        <span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>HELLO<span class="pl-pds">"</span></span>);
+package pkg2;
+
+public class B implements Runnable {
+    public void run() {
+        System.out.println("HELLO");
     }
 }</pre></div>
-        
-        <div class="highlight highlight-source-java"><pre>
-<span class="pl-c">// Sample code that reads, scans, parses, compiles and loads</span>
-<span class="pl-c">// "A.java" and "B.java", then instantiates an object of class</span>
-<span class="pl-c">// "A" and invokes its "run()" method.</span>
-<span class="pl-smi">ClassLoader</span> cl <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">JavaSourceClassLoader</span>(
-    <span class="pl-v">this</span><span class="pl-k">.</span>getClass()<span class="pl-k">.</span>getClassLoader(),  <span class="pl-c">// parentClassLoader</span>
-    <span class="pl-k">new</span> <span class="pl-smi">File</span>[] { <span class="pl-k">new</span> <span class="pl-smi">File</span>(<span class="pl-s"><span class="pl-pds">"</span>srcdir<span class="pl-pds">"</span></span>) }, <span class="pl-c">// optionalSourcePath</span>
-    (<span class="pl-smi">String</span>) <span class="pl-c1">null</span>,                     <span class="pl-c">// optionalCharacterEncoding</span>
-    <span class="pl-smi">DebuggingInformation</span><span class="pl-c1"><span class="pl-k">.</span>NONE</span>          <span class="pl-c">// debuggingInformation</span>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+// Sample code that reads, scans, parses, compiles and loads
+// "A.java" and "B.java", then instantiates an object of class
+// "A" and invokes its "run()" method.
+ClassLoader cl = new JavaSourceClassLoader(
+    this.getClass().getClassLoader(),  // parentClassLoader
+    new File[] { new File("srcdir") }, // optionalSourcePath
+    (String) null,                     // optionalCharacterEncoding
+    DebuggingInformation.NONE          // debuggingInformation
 );
 
-<span class="pl-c">// Load class A from "srcdir/pkg1/A.java", and also its superclass</span>
-<span class="pl-c">// B from "srcdir/pkg2/B.java":</span>
-<span class="pl-smi">Object</span> o <span class="pl-k">=</span> cl<span class="pl-k">.</span>loadClass(<span class="pl-s"><span class="pl-pds">"</span>pkg1.A<span class="pl-pds">"</span></span>)<span class="pl-k">.</span>newInstance();
+// Load class A from "srcdir/pkg1/A.java", and also its superclass
+// B from "srcdir/pkg2/B.java":
+Object o = cl.loadClass("pkg1.A").newInstance();
 
-<span class="pl-c">// Class "B" implements "Runnable", so we can cast "o" to</span>
-<span class="pl-c">// "Runnable".</span>
-((<span class="pl-smi">Runnable</span>) o)<span class="pl-k">.</span>run(); <span class="pl-c">// Prints "HELLO" to "System.out".</span></pre></div>
-        
+// Class "B" implements "Runnable", so we can cast "o" to
+// "Runnable".
+((Runnable) o).run(); // Prints "HELLO" to "System.out".</pre></div>
+
         <p>
           If the Java™ source is not available in files, but from some other storage (database, main memory, ...), you
           may specify a custom ResourceFinder instead of the directory-based source path.
         </p>
-        
+
         <p>
           If you have many source files and you want to reduce the compilation time, you may want to use the
           CachingJavaSourceClassLoader, which uses a cache provided by the application to store class files for
           repeated use.
         </p>
-        
-        <p>
-          A BASH shell script named "bin/janino" is provided that wraps the JavaSourceClassLoader in a JAVAC-like
-          command line interface:
-        </p>
-        
-        <div class="highlight highlight-source-shell"><pre>
-$ cat my/pkg/A.java
-package my.pkg<span class="pl-k">;</span>
 
-import java.util.<span class="pl-k">*</span><span class="pl-k">;</span>
+        <p>
+          A BASH shell script named "<a
+          href="https://github.com/janino-compiler/janino/blob/master/janino/bin/janino">bin/janino</a>" is provided
+          that wraps the JavaSourceClassLoader in a JAVAC-like command line interface:
+        </p>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: bash">
+$ cat my/pkg/A.java
+package my.pkg;
+
+import java.util.*;
 
 public class A {
     public static void main(String[] args) {
-        B b = new <span class="pl-en">B</span>();
-        <span class="pl-en">b.meth1</span>();
+        B b = new B();
+        b.meth1();
     }
 }
 
 class B {
-    void <span class="pl-en">meth1</span>() {
-        System.out.println(<span class="pl-s"><span class="pl-pds">"</span>Hello there.<span class="pl-pds">"</span></span>)<span class="pl-k">;</span>
+    void meth1() {
+        System.out.println("Hello there.");
     }
 }
-$ <span class="pl-c1">type</span> janino
+$ type janino
 /usr/local/bin/janino
 $ janino my.pkg.A
 Hello there.
 $</pre></div>
-        
+
         <h4>
           <a id="janino-as-a-command-line-java-compiler" class="anchor" href="#janino-as-a-command-line-java-compiler"
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a Command-Line
           Java™ Compiler
         </h4>
-        
+
         <p>
-          The Compiler class mimics the behavior of ORACLE's javac tool. It compiles a set of "compilation units" (i.e.
-          Java™ source files) into a set of class files.
+          The <a href="http://janino.unkrig.de/javadoc/org/codehaus/janino/Compiler.html">Compiler</a> class mimics the
+          behavior of ORACLE's javac tool. It compiles a set of "compilation units" (i.e. Java™ source files) into a
+          set of class files.
         </p>
-        
+
         <p>
           Using the "-warn" option, Janino emits some probably very interesting warnings which may help you to
           "clean up" the source code.
         </p>
-        
-        <p>The BASH script "bin/janinoc" implements a drop-in replacement for ORACLE's JAVAC utility:</p>
-        
-        <div class="highlight highlight-source-shell"><pre>
+
+        <p>
+          The BASH script "<a
+          href="https://github.com/janino-compiler/janino/blob/master/janino/bin/janinoc">bin/janinoc</a>" implements a
+          drop-in replacement for ORACLE's JAVAC utility:
+        </p>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: bash">
 $ janinoc -sourcepath src -d classes src/com/acme/MyClass.java
 $ janinoc -help
-A drop-in replacement <span class="pl-k">for</span> the JAVAC compiler, see the documentation <span class="pl-k">for</span> JAVAC
+A drop-in replacement for the JAVAC compiler, see the documentation for JAVAC
 Usage:
-  janinoc [ <span class="pl-k">&lt;</span>option<span class="pl-k">&gt;</span> ] ... <span class="pl-k">&lt;</span>class-name<span class="pl-k">&gt;</span> [ <span class="pl-k">&lt;</span>argument<span class="pl-k">&gt;</span> ] ...
+  janinoc [ &lt;option&gt; ] ... &lt;class-name&gt; [ &lt;argument&gt; ] ...
 Options:
-  -sourcepath <span class="pl-k">&lt;</span>dir-list<span class="pl-k">&gt;</span>    Where to look <span class="pl-k">for</span> <span class="pl-c1">source</span> files
-  -classpath <span class="pl-k">&lt;</span>dir-list<span class="pl-k">&gt;</span>     Where to look <span class="pl-k">for</span> class files
-  -cp <span class="pl-k">&lt;</span>dir-list<span class="pl-k">&gt;</span>            Synonym <span class="pl-k">for</span> <span class="pl-s"><span class="pl-pds">"</span>-classpath<span class="pl-pds">"</span></span>
-  -extdirs <span class="pl-k">&lt;</span>dir-list<span class="pl-k">&gt;</span>       Where to look <span class="pl-k">for</span> extension class files
-  -bootclasspath <span class="pl-k">&lt;</span>dir-list<span class="pl-k">&gt;</span> Where to look <span class="pl-k">for</span> boot class files
-  -encoding <span class="pl-k">&lt;</span>encoding<span class="pl-k">&gt;</span>      Encoding of <span class="pl-c1">source</span> files, default is platform-dependent
+  -sourcepath &lt;dir-list&gt;    Where to look for source files
+  -classpath &lt;dir-list&gt;     Where to look for class files
+  -cp &lt;dir-list&gt;            Synonym for "-classpath"
+  -extdirs &lt;dir-list&gt;       Where to look for extension class files
+  -bootclasspath &lt;dir-list&gt; Where to look for boot class files
+  -encoding &lt;encoding&gt;      Encoding of source files, default is platform-dependent
   -verbose                  Report about opening, parsing, compiling of files
   -g                        Generate all debugging info
   -g:none                   Generate no debugging info
-  -g:{lines,vars,<span class="pl-c1">source</span>}    Generate only some debugging info
-  -warn:<span class="pl-k">&lt;</span>pattern-list<span class="pl-k">&gt;</span>      Issue certain warnings, examples:
-    -warn:<span class="pl-k">*</span>                 Enables all warnings
+  -g:{lines,vars,source}    Generate only some debugging info
+  -warn:&lt;pattern-list&gt;      Issue certain warnings, examples:
+    -warn:*                 Enables all warnings
     -warn:IASF              Only warn against implicit access to static fields
-    -warn:<span class="pl-k">*</span>-IASF            Enables all warnings, except those against implicit
+    -warn:*-IASF            Enables all warnings, except those against implicit
                             access to static fields
-    -warn:<span class="pl-k">*</span>-IA<span class="pl-k">*</span>+IASF        Enables all warnings, except those against implicit
-                            accesses, but <span class="pl-k">do</span> warn against implicit access to
+    -warn:*-IA*+IASF        Enables all warnings, except those against implicit
+                            accesses, but do warn against implicit access to
                             static fields
-  -rebuild                  Compile all <span class="pl-c1">source</span> files, even <span class="pl-k">if</span> the class files
+  -rebuild                  Compile all source files, even if the class files
                             seems up-to-date
   -n                        Print subcommands to STDOUT instead of running them
-  (any valid command-line optipon <span class="pl-k">for</span> the JAVA tool, see <span class="pl-s"><span class="pl-pds">"</span>java -help<span class="pl-pds">"</span></span>)
+  (any valid command-line optipon for the JAVA tool, see "java -help")
 $</pre></div>
-        
+
         <h4>
           <a id="janino-as-an-ant-compiler" class="anchor" href="#janino-as-an-ant-compiler" aria-hidden="true"><span
           aria-hidden="true" class="octicon octicon-link"></span></a>Janino as an ANT Compiler
         </h4>
-        
+
         <p>
-          You can plug JANINO into the ANT utility through the AntCompilerAdapter class. Just make sure that janino.jar
-          is on the class path, then run ANT with the following command-line option:
+          You can plug JANINO into the ANT utility through the <a
+          href="http://janino.unkrig.de/javadoc/org/codehaus/janino/AntCompilerAdapter.html">AntCompilerAdapter</a>
+          class. Just make sure that janino.jar is on the class path, then run ANT with the following command-line
+          option:
         </p>
-        
-        <div class="highlight highlight-source-shell"><pre>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: bash">
 -Dbuild.compiler=org.codehaus.janino.AntCompilerAdapter</pre></div>
-        
+
         <h4>
           <a id="janino-as-a-tomcat-compiler" class="anchor" href="#janino-as-a-tomcat-compiler"
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a TOMCAT
           Compiler
         </h4>
-        
+
         <p>
           If you want to use JANINO with TOMCAT, just copy the "janino.jar" file into TOMCAT's "common/lib" directory,
           and add the follwing init parameter section to the JSP servlet definition in TOMCAT's "conf/web.xml" file:
         </p>
-        
-        <div class="highlight highlight-text-xml"><pre>
-&lt;<span class="pl-ent">init-param</span>&gt;
-    &lt;<span class="pl-ent">param-name</span>&gt;compiler&lt;/<span class="pl-ent">param-name</span>&gt;
-    &lt;<span class="pl-ent">param-value</span>&gt;org.codehaus.janino.AntCompilerAdapter&lt;/<span class="pl-ent">param-value</span>&gt;
-&lt;/<span class="pl-ent">init-param</span>&gt;</pre></div>
-        
+
+        <div class="highlight highlight-text-xml"><pre class="brush: xml">
+&lt;init-param&gt;
+    &lt;param-name&gt;compiler&lt;/param-name&gt;
+    &lt;param-value&gt;org.codehaus.janino.AntCompilerAdapter&lt;/param-value&gt;
+&lt;/init-param&gt;</pre></div>
+
         <h4>
           <a id="janino-as-a-code-analyser" class="anchor" href="#janino-as-a-code-analyser" aria-hidden="true"><span
           aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a Code Analyser
         </h4>
-        
+
         <p>
           Apart from compiling Java™ code, JANINO can be used for static code analysis: Based on the AST
-          ("abstract syntax tree") produced by the parser, the Traverser walks through all nodes of the AST, and
-          derived classes can do all kinds of analyses on them, e.g. count declarations:
+          ("abstract syntax tree") produced by the parser, the <a
+          href="http://janino.unkrig.de/javadoc/org/codehaus/janino/util/Traverser.html">Traverser</a> walks through
+          all nodes of the AST, and derived classes can do all kinds of analyses on them, e.g. count declarations:
         </p>
-        
-        <div class="highlight highlight-source-shell"><pre>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: bash">
 $ java org.codehaus.janino.samples.DeclarationCounter DeclarationCounter.java
 Class declarations:     1
 Interface declarations: 0
 Fields:                 4
 Local variables:        4
 $</pre></div>
-        
+
         <p>This is the basis for all these neat code metrics and style checking.</p>
-        
+
         <h4>
           <a id="janino-as-a-code-manipulator" class="anchor" href="#janino-as-a-code-manipulator"
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a Code
           Manipulator
         </h4>
-        
+
         <p>
           If, e.g., you want to read a Java™ compilation unit into memory, manipulate it, and then write it back to a
           file for compilation, then all you have to do is:
         </p>
-        
-        <div class="highlight highlight-source-java"><pre>
-<span class="pl-c">// Read the compilation unit from Reader "r" into memory.</span>
-<span class="pl-smi">Java</span><span class="pl-k">.</span><span class="pl-smi">CompilationUnit</span> cu <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">Parser</span>(<span class="pl-k">new</span> <span class="pl-smi">Scanner</span>(fileName, r))<span class="pl-k">.</span>parseCompilationUnit();
 
-<span class="pl-c">// Manipulate the AST in memory.</span>
-<span class="pl-c">// ...</span>
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+// Read the compilation unit from Reader "r" into memory.
+Java.CompilationUnit cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();
 
-<span class="pl-c">// Convert the AST back into text.</span>
-<span class="pl-smi">UnparseVisitor</span><span class="pl-k">.</span>unparse(cu, <span class="pl-k">new</span> <span class="pl-smi">OutputStreamWriter</span>(<span class="pl-smi">System</span><span class="pl-k">.</span>out));</pre></div>
-        
+// Manipulate the AST in memory.
+// ...
+
+// Convert the AST back into text.
+UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
+
         <p>The UnparseVisitor class demostrates how to do this.</p>
-        
+
         <h4>
           <a id="alternative-compiler-implementations" class="anchor" href="#alternative-compiler-implementations"
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Alternative Compiler
           Implementations
         </h4>
-        
+
         <p>
           JANINO can be configured to use not its own Java™ compiler, but an alternative implementation. Alternative
           implementations must basically implement the interface ICompilerFactory. One such alternative implementation
           is based on the javax.tools API, and is shipped as part of the JANINO distribution: commons-compiler-jdk.jar.
         </p>
-        
+
         <p>Basically there are two ways to switch implementations:</p>
-        
+
         <ul>
           <li>
             Use org.codehaus.commons.compiler.jdk.ExpressionEvaluator and consorts instead of
             org.codehaus.janino.ExpressionEvaluator; put commons-compiler-jdk.jar instead of janino.jar on your
             compile-time and runtime classpath. (commons-compiler.jar must always be on the classpath, because it
-            contains the basic classes that every implementation requires.)
+            contains the basic classes that all implementations require.)
           </li>
           <li>
             Use org.codehaus.commons.compiler.CompilerFactoryFactory.getDefaultFactory().newExpressionEvaluator() and
@@ -987,126 +1043,133 @@ $</pre></div>
             find it at runtime.
           </li>
         </ul>
-        
+
         <h3>
           <a id="security" class="anchor" href="#security" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Security
         </h3>
-        
+
         <p>
           Because JANINO has full access to the JRE, security problems can arise if the expression, script, class body
           or compilation being compiled and executed contains user input.
         </p>
-        
+
         <p>
           If that user is an educated system administrator, he or she can be expected to use JANINO responsibly and in
           accordance with documentation and caveats you provide; however if the user is an intranet or internet user,
           no assumtions should be made about how clumsy, frivolous, creative, single-minded or even malicious he or she
           could be.
         </p>
-        
+
         <p>
           The best you can attempt is to lock the user, or, more precise, the classes generated from his or her input,
           in a "sandbox" to prevent the worst. This approach is similar to the concept of reducing the permissions of
           Java applets in a browser to, e.g., access files on the local file system.
         </p>
-        
+
         <p>This can be achieved as follows:</p>
-        
-        <div class="highlight highlight-source-java"><pre>
-<span class="pl-k">import</span> <span class="pl-smi">java.security.Permissions</span>;
-<span class="pl-k">import</span> <span class="pl-smi">java.util.PropertyPermission</span>;
-<span class="pl-k">import</span> <span class="pl-smi">org.codehaus.janino.ScriptEvaluator</span>;
-<span class="pl-k">import</span> <span class="pl-smi">de.unkrig.commons.lang.security.Sandbox</span>;
 
-<span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">SandboxDemo</span> {
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+import java.security.Permissions;
+import java.util.PropertyPermission;
+import org.codehaus.janino.ScriptEvaluator;
+import de.unkrig.commons.lang.security.Sandbox;
 
-    <span class="pl-k">public</span> <span class="pl-k">static</span> <span class="pl-k">void</span>
-    <span class="pl-en">main</span>(<span class="pl-k">String</span>[] <span class="pl-v">args</span>) <span class="pl-k">throws</span> <span class="pl-smi">Exception</span> {
+public class SandboxDemo {
 
-        <span class="pl-c">// Create a JANINO script evaluator. The example, however, will work as fine with ExpressionEvaluators,</span>
-        <span class="pl-c">// ClassBodyEvaluators and SimpleCompilers - or with any class you do not trust, e.g. a third-party</span>
-        <span class="pl-c">// library.</span>
-        <span class="pl-smi">ScriptEvaluator</span> se <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">ScriptEvaluator</span>();
+    public static void
+    main(String[] args) throws Exception {
 
-        <span class="pl-c">// Compile a simple script which reads two system variables - 'foo' and 'bar'.</span>
-        se<span class="pl-k">.</span>cook(
-            <span class="pl-s"><span class="pl-pds">"</span>System.getProperty(<span class="pl-cce">\"</span>foo<span class="pl-cce">\"</span>);<span class="pl-cce">\n</span><span class="pl-pds">"</span></span> <span class="pl-k">+</span>
-            <span class="pl-s"><span class="pl-pds">"</span>System.getProperty(<span class="pl-cce">\"</span>bar<span class="pl-cce">\"</span>);<span class="pl-cce">\n</span><span class="pl-pds">"</span></span>
+        // Create a JANINO script evaluator. The example, however, will work as fine with ExpressionEvaluators,
+        // ClassBodyEvaluators and SimpleCompilers - or with any class you do not trust, e.g. a third-party
+        // library.
+        ScriptEvaluator se = new ScriptEvaluator();
+
+        // Compile a simple script which reads two system variables - 'foo' and 'bar'.
+        se.cook(
+            "System.getProperty(\"foo\");\n" +
+            "System.getProperty(\"bar\");\n"
         );
 
-        <span class="pl-c">// Now we create a 'Permissions' object which allows to read the system variable 'foo', and forbids</span>
-        <span class="pl-c">// everything else.</span>
-        <span class="pl-smi">Permissions</span> permissions <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">Permissions</span>();
-        permissions<span class="pl-k">.</span>add(<span class="pl-k">new</span> <span class="pl-smi">PropertyPermission</span>(<span class="pl-s"><span class="pl-pds">"</span>foo<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>read<span class="pl-pds">"</span></span>));
+        // Now we create a 'Permissions' object which allows to read the system variable 'foo', and forbids
+        // everything else.
+        Permissions permissions = new Permissions();
+        permissions.add(new PropertyPermission("foo", "read"));
 
-        <span class="pl-c">// Before we evaluate the script, we confine the permissions on all classes loaded through the</span>
-        <span class="pl-c">// ScriptEvaluator's class loader. Each *Evaluator creates a new class loader exclusively for loading the</span>
-        <span class="pl-c">// classes it generates.</span>
-        <span class="pl-smi">Sandbox</span><span class="pl-k">.</span>confine(se<span class="pl-k">.</span>getMethod()<span class="pl-k">.</span>getDeclaringClass()<span class="pl-k">.</span>getClassLoader(), permissions);
+        // Before we evaluate the script, we confine the permissions on all classes loaded through the
+        // ScriptEvaluator's class loader. Each *Evaluator creates a new class loader exclusively for loading the
+        // classes it generates.
+        Sandbox.confine(se.getMethod().getDeclaringClass().getClassLoader(), permissions);
 
-        <span class="pl-c">// Finally we evaluate the script. Getting system property 'foo' will succeed, and getting 'bar' will</span>
-        <span class="pl-c">// throw an InvocationTargetException caused by</span>
-        <span class="pl-c">//    java.security.AccessControlException: access denied (java.util.PropertyPermission bar read)</span>
-        <span class="pl-c">// Et voila!</span>
-        se<span class="pl-k">.</span>evaluate(<span class="pl-c1">null</span>);
+        // Finally we evaluate the script. Getting system property 'foo' will succeed, and getting 'bar' will
+        // throw an InvocationTargetException caused by
+        //    java.security.AccessControlException: access denied (java.util.PropertyPermission bar read)
+        // Et voila!
+        se.evaluate(null);
     }
 }</pre></div>
-        
-        <p>"de.unkrig.commons.lang.security.Sandbox" is available on "de.unkrig.commons".</p>
-        
+
+        <p>
+          "<code>de.unkrig.commons.lang.security.Sandbox</code>code>" is available on "<a
+          href="http://commons.unkrig.de">http://commons.unkrig.de</a>" (it is not part of JANINO).
+        </p>
+
         <h3>
           <a id="debugging" class="anchor" href="#debugging" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Debugging
         </h3>
-        
+
         <p>The generated classes can be debugged interactively, even though they were created on-the-fly.</p>
-        
+
         <p>All that needs to be done is set two system properties, e.g. when starting the JVM:</p>
-        
-        <div class="highlight highlight-source-shell"><pre>
-$ java -Dorg.codehaus.janino.source_debugging.<span class="pl-c1">enable</span>=<span class="pl-c1">true</span> -Dorg.codehaus.janino.source_debugging.dir=C:<span class="pl-cce">\t</span>mp</pre></div>
-        
+
+        <div class="highlight highlight-text-xml"><pre class="brush: bash">
+$ java \
+&gt; ... \
+&gt; -Dorg.codehaus.janino.source_debugging.enable=true \
+&gt; -Dorg.codehaus.janino.source_debugging.dir=C:\tmp \
+&gt; ...</pre></div>
+
         <p>
           (The second property is optional; if not set, then the temporary files will be created in the default
           temporary-file directory.)
         </p>
-        
+
         <p>
           When JANINO scans an expression, script, class body or compilation unit, it stores a copy of the source code
           in a temporary file which the debugger accesses through its source path. (The temporary file will be deleted
           when the JVM terminates.)
         </p>
-        
+
         <p>Then when you debug your program</p>
-        
+
         <p><img src="images/janino-debugging.jpg" alt="Debugging"></p>
-        
+
         <p>, you can step right into the generated code</p>
-        
+
         <p><img src="images/janino-debugging2.jpg" alt="Debugging"></p>
-        
+
         <p>, and debug it:</p>
-        
+
         <p><img src="images/janino-debugging3.jpg" alt="Debugging"></p>
-        
+
         <p>As you can see, you can even inspect and modify fields and variables - everything your debugger supports.</p>
-        
+
         <h2>
           <a id="contact" class="anchor" href="#contact" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Contact
         </h2>
-        
+
         <h3>
           <a id="reporting-bugs" class="anchor" href="#reporting-bugs" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Reporting bugs
         </h3>
-        
+
         <p>If you think you have found a bug in Janino, proceed as follows:</p>
-        
+
         <ul>
           <li>
-            If it is a compilation problem, verify that ORACLE's JavaTM compiler JAVAC also believes it is one.</p>
+            If it is a compilation problem, verify that ORACLE's JavaTM compiler JAVAC also believes it is one.
           </li>
           <li>
             Try to isolate the problem. Don't send me huge source files; attempt, if at all possible, to reproduce the
@@ -1118,67 +1181,51 @@ $ java -Dorg.codehaus.janino.source_debugging.<span class="pl-c1">enable</span>=
             actually happened.
           </li>
         </ul>
-        
+
         <h3>
           <a id="requesting-support" class="anchor" href="#requesting-support" aria-hidden="true"><span
           aria-hidden="true" class="octicon octicon-link"></span></a>Requesting support
         </h3>
-        
+
         <p>
-          If you require support, <a href="https://sourceforge.net/p/janino/support-requests/">this</a> is the place
+          If you require support, <a href="https://github.com/janino-compiler/janino/issues">this</a> is the place
           to ask for it.
         </p>
-        
+
         <h3>
           <a id="requesting-new-features" class="anchor" href="#requesting-new-features" aria-hidden="true"><span
           aria-hidden="true" class="octicon octicon-link"></span></a>Requesting new features
         </h3>
-        
+
         <p>
-          Feel free to submit feature requests <a href="https://sourceforge.net/p/janino/feature-requests/">here</a>.
+          Feel free to submit feature requests <a href="https://github.com/janino-compiler/janino/issues">here</a>.
         </p>
-        
+
         <h3>
           <a id="feedback" class="anchor" href="#feedback" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Feedback
         </h3>
-        
+
         <p>
           I appreciate your feedback. Let me know how you want to utilize Janino, if you find it useful, or why you
           cannot use it for your project.
         </p>
-        
-        <h3>
-          <a id="mailing-list" class="anchor" href="#mailing-list" aria-hidden="true"><span aria-hidden="true"
-          class="octicon octicon-link"></span></a>Mailing List
-        </h3>
-        
-        <p>
-          There is a mailing list "janino-users", which is used for general discussions and version announcements. You
-          can subscribe to it and browse the archive <a
-          href="https://sourceforge.net/p/janino/mailman/janino-users/">here</a>.
-        </p>
-        
-        <p>
-          IMPORTANT: For bug reports, support requests and feature requests, please use the ticket system as described
-          above. Tracking issues by e-mail is a nightmare!
-        </p>
-        
+
         <h2>
           <a id="developers" class="anchor" href="#developers" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Developers
         </h2>
-        
+
         <h3>
           <a id="source-code-repository" class="anchor" href="#source-code-repository" aria-hidden="true"><span
           aria-hidden="true" class="octicon octicon-link"></span></a>Source Code Repository
         </h3>
-        
+
         <p>
           The JANINO code repository is <a href="https://github.com/janino-compiler/janino">here</a>. You have to check
-          out the following ECLIPSE projects:
+          out at least the following ECLIPSE projects:
         </p>
-        
+
         <ul>
           <li>
             <a href="https://github.com/janino-compiler/janino/tree/master/commons-compiler">commons-compiler</a>
@@ -1189,9 +1236,9 @@ $ java -Dorg.codehaus.janino.source_debugging.<span class="pl-c1">enable</span>=
           </li>
           <li><a href="https://github.com/janino-compiler/janino/tree/master/janino">janino</a></li>
         </ul>
-        
+
         <p>Optional:</p>
-        
+
         <ul>
           <li>
             <a
@@ -1207,35 +1254,21 @@ $ java -Dorg.codehaus.janino.source_debugging.<span class="pl-c1">enable</span>=
           <li><a href="https://github.com/janino-compiler/janino/tree/master/janino-dist">janino-dist</a></li>
           <li><a href="https://github.com/janino-compiler/janino/tree/master/janino-tests">janino-tests</a></li>
         </ul>
-        
+
         <p>
           If these ECLIPSE projects appear without any errors, then you can build the JAR files, the source ZIP files
           and the JAVADOC by executing the "janino-dist build.xml build" external tool configuration.
         </p>
-        
+
         <h3>
           <a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Contributing
         </h3>
-        
+
         <p>
           If you want to contribute, turn to me: arno att unkrig dott de. Any support is welcome, be it bug reports,
           feature requests, documentation reviews or other work. Help building a better world with JANINO!
         </p>
-        
-        <h3>
-          <a id="version-control" class="anchor" href="#version-control" aria-hidden="true"><span aria-hidden="true"
-          class="octicon octicon-link"></span></a>Version Control
-        </h3>
-        
-        <ul>
-          <li>
-            Be careful when committing. Know GIT; know what you're doing. Commit only code that compiles and works.
-          </li>
-          <li>Never commit into the main branch; this is the despot's domain!</li>
-          <li>Write unit tests for everything you code. "tests/src/EvaluatorTests.java" is a good starting point.</li>
-          <li>Use the existing unit tests to verify that you didn't break anything - run "AllTests".</li>
-        </ul>
       </section>
     </div>
     <footer>
@@ -1243,6 +1276,7 @@ $ java -Dorg.codehaus.janino.source_debugging.<span class="pl-c1">enable</span>=
       <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
     </footer>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
+
+    <script>SyntaxHighlighter.all()</script>
   </body>
 </html>
