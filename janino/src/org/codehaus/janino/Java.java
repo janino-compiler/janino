@@ -4634,7 +4634,13 @@ class Java {
         toString() { return this.value; }
     }
 
-    /** Representation of an "integer literal" (JLS7 3.10.1) (types {@code int} and {@code long}). */
+    /**
+     * Representation of an "integer literal" (JLS7 3.10.1) (types {@code int} and {@code long}).
+     * <p>
+     *   Notice that this representation does <em>not</em> check for overflow - that is because, e.g., "2147483648" is
+     *   valid only when it is preceded by a "-" operator.
+     * </p>
+     */
     public static final
     class IntegerLiteral extends Literal {
         public IntegerLiteral(Location location, String value) { super(location, value); }
