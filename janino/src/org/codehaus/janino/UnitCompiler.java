@@ -5160,6 +5160,13 @@ class UnitCompiler {
 
         String v = il.value;
 
+        // Remove underscores in integer literal.
+        for (;;) {
+            int ui = v.indexOf('_');
+            if (ui == -1) break;
+            v = v.substring(0, ui) + v.substring(ui + 1);
+        }
+
         if (v.startsWith("0x") || v.startsWith("0X")) {
 
             // Cannot use "Integer/Long.valueOf(v, 16)" here because hex literals are UNSIGNED.
@@ -5208,6 +5215,13 @@ class UnitCompiler {
     getConstantValue2(FloatingPointLiteral fpl) throws CompileException {
 
         String v = fpl.value;
+
+        // Remove underscores in floating point literal.
+        for (;;) {
+            int ui = v.indexOf('_');
+            if (ui == -1) break;
+            v = v.substring(0, ui) + v.substring(ui + 1);
+        }
 
         char lastChar = v.charAt(v.length() - 1);
         if (lastChar == 'f' || lastChar == 'F') {

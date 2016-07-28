@@ -121,11 +121,23 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_3_10_1__IntegerLiterals() throws Exception {
+    test_3_10_1__IntegerLiterals_decimal() throws Exception {
         this.assertExpressionEvaluatesTrue("17 == 17L");
+    }
+
+    @Test public void
+    test_3_10_1__IntegerLiterals_hex() throws Exception {
         this.assertExpressionEvaluatesTrue("255 == 0xFFl");
+    }
+
+    @Test public void
+    test_3_10_1__IntegerLiterals_octal() throws Exception {
         this.assertExpressionEvaluatesTrue("17 == 021L");
         this.assertExpressionUncookable("17 == 029"); // Digit "9" not allowed in octal literal.
+    }
+
+    @Test public void
+    test_3_10_1__IntegerLiterals_int_range() throws Exception {
         this.assertExpressionEvaluatesTrue("2 * 2147483647 == -2");
         this.assertExpressionEvaluatesTrue("2 * -2147483648 == 0");
         this.assertExpressionUncookable("2147483648");
@@ -133,14 +145,20 @@ class JlsTests extends JaninoTestSuite {
         this.assertExpressionEvaluatesTrue("-1 == 0xffffffff");
         this.assertExpressionEvaluatesTrue("1 == -0xffffffff");
         this.assertExpressionEvaluatesTrue("-0xf == -15");
+    }
+
+    @Test public void
+    test_3_10_1__IntegerLiterals_long_range() throws Exception {
         this.assertExpressionEvaluatable("9223372036854775807L");
         this.assertExpressionUncookable("9223372036854775808L");
         this.assertExpressionUncookable("9223372036854775809L");
         this.assertExpressionUncookable("99999999999999999999999999999L");
         this.assertExpressionEvaluatable("-9223372036854775808L");
         this.assertExpressionUncookable("-9223372036854775809L");
+    }
 
-        // Binary integer literals:
+    @Test public void
+    test_3_10_1__IntegerLiterals_binary() throws Exception {
         this.assertExpressionEvaluatable("0b111");
         this.assertExpressionEvaluatesTrue("0b111 == 7");
         this.assertExpressionEvaluatesTrue("0b0000111 == 7");
@@ -160,7 +178,13 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
-    test_3_10_2__FloatingPointLiterals() throws Exception {
+    test_3_10_1__IntegerLiterals_underscores() throws Exception {
+        this.assertExpressionEvaluatesTrue("1_23 == 12_3");
+        this.assertExpressionEvaluatesTrue("1__3 == 13");
+    }
+
+    @Test public void
+    test_3_10_2__FloatingPointLiterals_float() throws Exception {
         this.assertExpressionEvaluatesTrue("1e1f == 10f");
         this.assertExpressionEvaluatesTrue("1E1F == 10f");
         this.assertExpressionEvaluatesTrue(".3f == 0.3f");
@@ -170,10 +194,32 @@ class JlsTests extends JaninoTestSuite {
         this.assertExpressionUncookable("3.40282357e+38f");
         this.assertExpressionEvaluatable("1.40239846e-45f");
         this.assertExpressionUncookable("7.0e-46f");
+    }
+
+    @Test public void
+    test_3_10_2__FloatingPointLiterals_double() throws Exception {
         this.assertExpressionEvaluatable("1.79769313486231570e+308D");
         this.assertExpressionUncookable("1.79769313486231581e+308d");
         this.assertExpressionEvaluatable("4.94065645841246544e-324D");
         this.assertExpressionUncookable("2e-324D");
+    }
+
+    @Test public void
+    test_3_10_2__FloatingPointLiterals_hexadecimal() throws Exception {
+        this.assertExpressionEvaluatesTrue("0x1D == 29"); // "D" is NOT a float fixxif, but a hex digit!
+        this.assertExpressionEvaluatesTrue("0x1p0D == 1");
+        this.assertExpressionEvaluatesTrue("0x.8p0 == 0.5");
+        this.assertExpressionEvaluatesTrue("0x1p0 == 1");
+        this.assertExpressionEvaluatesTrue("0xfp1 == 30");
+        this.assertExpressionEvaluatesTrue("0xfp+1 == 30");
+        this.assertExpressionEvaluatesTrue("0xfp-1 == 7.5");
+        this.assertExpressionEvaluatesTrue("0x1.0004p0F    == 0x1.0004p0");
+        this.assertExpressionEvaluatesTrue("0x1.0000004p0F != 0x1.0000004p0");
+    }
+
+    @Test public void
+    test_3_10_2__FloatingPointLiterals_underscores() throws Exception {
+        this.assertExpressionEvaluatesTrue("1___0.1___0 == 10.1");
     }
 
     @Test public void

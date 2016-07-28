@@ -581,20 +581,10 @@ class Scanner {
         }
 
         // Scan numeric literal.
-        if (Character.isDigit((char) this.nextChar)) {
-            return this.scanNumericLiteral(false);
-        }
-
-        // A "." is special: Could either be a floating-point constant like ".001", or the "."
-        // operator.
-        if (this.nextChar == '.') {
-            this.readNextChar();
-            if (Character.isDigit((char) this.nextChar)) {
-                return this.scanNumericLiteral(true);
-            } else {
-                return new Token(Token.OPERATOR, ".");
-            }
-        }
+        if (
+            Character.isDigit((char) this.nextChar)
+            || (this.nextChar == '.' && Character.isDigit(this.nextButOneChar())) // .999
+        ) return this.scanNumericLiteral();
 
         // Scan string literal.
         if (this.nextChar == '"') {
@@ -665,9 +655,9 @@ class Scanner {
     }
 
     private Token
-    scanNumericLiteral(boolean hadDecimalPoint) throws CompileException, IOException {
-        StringBuilder sb    = hadDecimalPoint ? new StringBuilder(".") : new StringBuilder();
-        int           state = hadDecimalPoint ? 2 : 0;
+    scanNumericLiteral() throws CompileException, IOException {
+        StringBuilder sb    = new StringBuilder();
+        int           state = 0;
         for (;;) {
             switch (state) {
 
@@ -676,7 +666,11 @@ class Scanner {
                     sb.append('0');
                     state = 6;
                 } else
-                if (Character.isDigit((char) this.nextChar)) {
+                if (this.nextChar == '.' && Scanner.isDecimalDigit(this.nextButOneChar())) {
+                    sb.append('.');
+                    state = 2;
+                } else
+                if (Scanner.isDecimalDigit(this.nextChar)) {
                     sb.append((char) this.nextChar);
                     state = 1;
                 } else
@@ -689,7 +683,10 @@ class Scanner {
                 break;
 
             case 1: // Decimal digits.
-                if (Character.isDigit((char) this.nextChar)) {
+                if (
+                    Scanner.isDecimalDigit(this.nextChar)
+                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isDecimalDigit(this.nextButOneChar())))
+                ) {
                     sb.append((char) this.nextChar);
                 } else
                 if (this.nextChar == 'l' || this.nextChar == 'L') {
@@ -716,7 +713,10 @@ class Scanner {
                 break;
 
             case 2: // After decimal point.
-                if (Character.isDigit((char) this.nextChar)) {
+                if (
+                    Scanner.isDecimalDigit(this.nextChar)
+                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isDecimalDigit(this.nextButOneChar())))
+                ) {
                     sb.append((char) this.nextChar);
                 } else
                 if (this.nextChar == 'e' || this.nextChar == 'E') {
@@ -733,8 +733,11 @@ class Scanner {
                 }
                 break;
 
-            case 3: // Read exponent.
-                if (Character.isDigit((char) this.nextChar)) {
+            case 3: // After 'e'.
+                if (
+                    Scanner.isDecimalDigit(this.nextChar)
+                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isDecimalDigit(this.nextButOneChar())))
+                ) {
                     sb.append((char) this.nextChar);
                     state = 5;
                 } else
@@ -748,7 +751,10 @@ class Scanner {
                 break;
 
             case 4: // After exponent sign.
-                if (Character.isDigit((char) this.nextChar)) {
+                if (
+                    Scanner.isDecimalDigit(this.nextChar)
+                    || this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isDecimalDigit(this.nextButOneChar()))
+                ) {
                     sb.append((char) this.nextChar);
                     state = 5;
                 } else
@@ -758,7 +764,10 @@ class Scanner {
                 break;
 
             case 5: // After first exponent digit.
-                if (Character.isDigit((char) this.nextChar)) {
+                if (
+                    Scanner.isDecimalDigit(this.nextChar)
+                    || this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isDecimalDigit(this.nextButOneChar()))
+                ) {
                     sb.append((char) this.nextChar);
                 } else
                 if (this.nextChar == 'f' || this.nextChar == 'F' || this.nextChar == 'd' || this.nextChar == 'D') {
@@ -771,8 +780,14 @@ class Scanner {
                 }
                 break;
 
-            case 6: // After leading zero
-                if ("01234567".indexOf(this.nextChar) != -1) {
+            case 6: // After leading zero.
+                if (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isOctalDigit(this.nextButOneChar()))) {
+                    sb.append((char) this.nextChar);
+                } else
+                if (
+                    Scanner.isOctalDigit(this.nextChar)
+                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isOctalDigit(this.nextButOneChar())))
+                ) {
                     sb.append((char) this.nextChar);
                     state = 7;
                 } else
@@ -808,7 +823,10 @@ class Scanner {
                 break;
 
             case 7: // In octal literal.
-                if ("01234567".indexOf(this.nextChar) != -1) {
+                if (
+                    Scanner.isOctalDigit(this.nextChar)
+                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isOctalDigit(this.nextButOneChar())))
+                ) {
                     sb.append((char) this.nextChar);
                 } else
                 if (this.nextChar == '8' || this.nextChar == '9') {
@@ -830,18 +848,33 @@ class Scanner {
                 break;
 
             case 8: // After '0x'.
-                if (Character.digit((char) this.nextChar, 16) != -1) {
+                if (Scanner.isHexDigit(this.nextChar)) {
                     sb.append((char) this.nextChar);
                     state = 9;
+                } else
+                if (this.nextChar == '.') {
+                    sb.append((char) this.nextChar);
+                    state = 12;
                 } else
                 {
                     throw new CompileException("Hex digit expected after \"0x\"", this.location());
                 }
                 break;
 
-            case 9: // After first hex digit.
-                if (Character.digit((char) this.nextChar, 16) != -1) {
+            case 9: // After "0x1".
+                if (
+                    Scanner.isHexDigit(this.nextChar)
+                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isHexDigit(this.nextButOneChar())))
+                ) {
                     sb.append((char) this.nextChar);
+                } else
+                if (this.nextChar == '.') {
+                    sb.append((char) this.nextChar);
+                    state = 12;
+                } else
+                if (this.nextChar == 'p' || this.nextChar == 'P') {
+                    sb.append((char) this.nextChar);
+                    state = 13;
                 } else
                 if (this.nextChar == 'l' || this.nextChar == 'L') {
                     // Hex long literal
@@ -856,37 +889,111 @@ class Scanner {
                 break;
 
             case 10: // After '0b'.
-                if (this.nextChar == '0' || this.nextChar == '1') {
-                    sb.append((char) this.nextChar);
-                    state = 11;
-                } else
-                {
+                if (!Scanner.isBinaryDigit(this.nextChar)) {
                     throw new CompileException("Binary digit expected after \"0b\"", this.location());
                 }
+                sb.append((char) this.nextChar);
+                state = 11;
                 break;
 
             case 11: // After first binary digit.
-                if (this.nextChar == '0' || this.nextChar == '1') {
+                if (
+                    Scanner.isBinaryDigit(this.nextChar)
+                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isBinaryDigit(this.nextButOneChar())))
+                ) {
                     sb.append((char) this.nextChar);
                 } else
-                    if (this.nextChar == 'l' || this.nextChar == 'L') {
-                        // Hex long literal
-                        sb.append((char) this.nextChar);
-                        this.readNextChar();
-                        return new Token(Token.INTEGER_LITERAL, sb.toString());
-                    } else
-                    {
-                        // Hex int literal
-                        return new Token(Token.INTEGER_LITERAL, sb.toString());
-                    }
+                if (this.nextChar == 'l' || this.nextChar == 'L') {
+                    // Hex long literal
+                    sb.append((char) this.nextChar);
+                    this.readNextChar();
+                    return new Token(Token.INTEGER_LITERAL, sb.toString());
+                } else
+                {
+                    // Hex int literal
+                    return new Token(Token.INTEGER_LITERAL, sb.toString());
+                }
+                break;
+
+            case 12: // After "0x." or after "0xabc.".
+                if (Scanner.isHexDigit(this.nextChar)) {
+                    sb.append((char) this.nextChar);
+                } else
+                if (this.nextChar == 'p' || this.nextChar == 'P') {
+                    sb.append((char) this.nextChar);
+                    state = 13;
+                } else
+                {
+                    throw new CompileException("\"p\" missing in hexadecimal floating-point literal", this.location());
+                }
+                break;
+
+            case 13: // After "0x111p".
+                if (this.nextChar == '-' || this.nextChar == '+') {
+                    sb.append((char) this.nextChar);
+                    state = 14;
+                } else
+                if (Scanner.isDecimalDigit(this.nextChar)) {
+                    sb.append((char) this.nextChar);
+                    state = 15;
+                } else
+                {
+                    throw new CompileException("Unexpected character \"" + (char) this.nextChar + "\" in hexadecimal floating point literal", this.location());
+                }
+                break;
+
+            case 14: // After "0x111p-".
+                if (!Scanner.isDecimalDigit(this.nextChar)) {
+                    throw new CompileException("Unexpected character \"" + (char) this.nextChar + "\" in hexadecimal floating point literal", this.location());
+                }
+                sb.append((char) this.nextChar);
+                state = 15;
+                break;
+
+            case 15: // After "0x111p-1".
+                if (
+                    Scanner.isDecimalDigit(this.nextChar) ||
+                    (this.nextChar == '_' && (Scanner.isDecimalDigit(this.nextButOneChar()) || this.nextButOneChar() == '_'))
+                ) {
+                    sb.append((char) this.nextChar);
+                } else
+                if (this.nextChar == 'f' || this.nextChar == 'F' || this.nextChar == 'd' || this.nextChar == 'D') {
+                    sb.append((char) this.nextChar);
+                    this.readNextChar();
+                    return new Token(Token.FLOATING_POINT_LITERAL, sb.toString());
+                } else
+                {
+                    return new Token(Token.FLOATING_POINT_LITERAL, sb.toString());
+                }
                 break;
 
             default:
-                throw new JaninoRuntimeException(Integer.toString(state));
+                throw new AssertionError(state);
             }
+
             this.readNextChar();
         }
     }
+
+    /**
+     * To comply with the JLS, this method does <em>not</em> allow for non-latin digit (like {@link
+     * Character#isDigit(char)} does).
+     */
+    private static boolean
+    isDecimalDigit(int c) { return c >= '0' && c <= '9'; }
+
+    /**
+     * To comply with the JLS, this method does <em>not</em> allow for non-latin digit (like {@link
+     * Character#isDigit(char)} does).
+     */
+    private static boolean
+    isHexDigit(int c) { return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'); }
+
+    private static boolean
+    isOctalDigit(int c) { return c >= '0' && c <= '7'; }
+
+    private static boolean
+    isBinaryDigit(int c) { return c == '0' || c == '1'; }
 
     /** Scans the next literal character into a {@link StringBuilder}. */
     private void
@@ -951,6 +1058,13 @@ class Scanner {
     // Read one character and store in "nextChar".
     private void
     readNextChar() throws IOException, CompileException {
+
+        if (this.nextButOneChar != -1) {
+            this.nextChar = this.nextButOneChar;
+            this.nextButOneChar = -1;
+            return;
+        }
+
         try {
             this.nextChar = this.in.read();
         } catch (UnicodeUnescapeException ex) {
@@ -975,9 +1089,20 @@ class Scanner {
 //System.out.println("'" + (char) nextChar + "' = " + (int) nextChar);
     }
 
+    private int
+    nextButOneChar() throws CompileException, IOException {
+        if (this.nextButOneChar != -1) return this.nextButOneChar;
+        try {
+            return (this.nextButOneChar = this.in.read());
+        } catch (UnicodeUnescapeException ex) {
+            throw new CompileException(ex.getMessage(), this.location(), ex);
+        }
+    }
+
     @Nullable private final String optionalFileName;
     private final Reader           in;
     private int                    nextChar = -1; // Always valid (one character read-ahead).
+    private int                    nextButOneChar = -1; // -1 == not read
     private boolean                crLfPending;
     private short                  nextCharLineNumber;
     private short                  nextCharColumnNumber;
