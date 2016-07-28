@@ -286,13 +286,13 @@ class Scanner {
 
         /**
          * The token represents an integer literal; its {@link #value} is the text of the integer literal exactly as it
-         * appears in the source code.
+         * appears in the source code (e.g. "0", "123", "123L", "03ff", "0xffff", "0b10101010").
          */
         public static final int INTEGER_LITERAL = 3;
 
         /**
          * The token represents a floating-point literal; its {@link #value} is the text of the floating-point literal
-         * exactly as it appears in the source code.
+         * exactly as it appears in the source code (e.g. "1.23", "1.23F", "1.23D", "1.", ".1", "1E13").
          */
         public static final int FLOATING_POINT_LITERAL = 4;
 
@@ -798,6 +798,10 @@ class Scanner {
                     sb.append((char) this.nextChar);
                     state = 8;
                 } else
+                if (this.nextChar == 'b' || this.nextChar == 'B') {
+                    sb.append((char) this.nextChar);
+                    state = 10;
+                } else
                 {
                     return new Token(Token.INTEGER_LITERAL, "0");
                 }
@@ -849,6 +853,32 @@ class Scanner {
                     // Hex int literal
                     return new Token(Token.INTEGER_LITERAL, sb.toString());
                 }
+                break;
+
+            case 10: // After '0b'.
+                if (this.nextChar == '0' || this.nextChar == '1') {
+                    sb.append((char) this.nextChar);
+                    state = 11;
+                } else
+                {
+                    throw new CompileException("Binary digit expected after \"0b\"", this.location());
+                }
+                break;
+
+            case 11: // After first binary digit.
+                if (this.nextChar == '0' || this.nextChar == '1') {
+                    sb.append((char) this.nextChar);
+                } else
+                    if (this.nextChar == 'l' || this.nextChar == 'L') {
+                        // Hex long literal
+                        sb.append((char) this.nextChar);
+                        this.readNextChar();
+                        return new Token(Token.INTEGER_LITERAL, sb.toString());
+                    } else
+                    {
+                        // Hex int literal
+                        return new Token(Token.INTEGER_LITERAL, sb.toString());
+                    }
                 break;
 
             default:

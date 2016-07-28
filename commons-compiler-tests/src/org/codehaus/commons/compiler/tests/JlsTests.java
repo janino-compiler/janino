@@ -139,6 +139,24 @@ class JlsTests extends JaninoTestSuite {
         this.assertExpressionUncookable("99999999999999999999999999999L");
         this.assertExpressionEvaluatable("-9223372036854775808L");
         this.assertExpressionUncookable("-9223372036854775809L");
+
+        // Binary integer literals:
+        this.assertExpressionEvaluatable("0b111");
+        this.assertExpressionEvaluatesTrue("0b111 == 7");
+        this.assertExpressionEvaluatesTrue("0b0000111 == 7");
+        this.assertExpressionEvaluatesTrue("0b00 == 0");
+        this.assertExpressionEvaluatesTrue("0b1111111111111111111111111111111 == 0x7fffffff");
+        this.assertExpressionEvaluatesTrue("0b10000000000000000000000000000000 == 0x80000000");
+        this.assertExpressionEvaluatesTrue("0b11111111111111111111111111111111 == 0xffffffff");
+        this.assertExpressionUncookable("0b100000000000000000000000000000000");
+        this.assertExpressionEvaluatesTrue("-0b1111111111111111111111111111111 == 0x80000001");
+        this.assertExpressionEvaluatesTrue("-0b10000000000000000000000000000000 == 0x80000000");
+        this.assertExpressionEvaluatesTrue("-0b11111111111111111111111111111111 == 1");
+        this.assertExpressionUncookable("-0b100000000000000000000000000000000");
+        this.assertExpressionEvaluatable("0b111111111111111111111111111111111111111111111111111111111111111L");
+        this.assertExpressionEvaluatable("0b1000000000000000000000000000000000000000000000000000000000000000L");
+        this.assertExpressionEvaluatable("0b1111111111111111111111111111111111111111111111111111111111111111L");
+        this.assertExpressionUncookable("0b10000000000000000000000000000000000000000000000000000000000000000L");
     }
 
     @Test public void

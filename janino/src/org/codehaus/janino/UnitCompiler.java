@@ -86,6 +86,11 @@ import org.codehaus.janino.Java.CatchClause;
 import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
+import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
+import org.codehaus.janino.Java.CompilationUnit.SingleStaticImportDeclaration;
+import org.codehaus.janino.Java.CompilationUnit.SingleTypeImportDeclaration;
+import org.codehaus.janino.Java.CompilationUnit.StaticImportOnDemandDeclaration;
+import org.codehaus.janino.Java.CompilationUnit.TypeImportOnDemandDeclaration;
 import org.codehaus.janino.Java.ConditionalExpression;
 import org.codehaus.janino.Java.ConstructorDeclarator;
 import org.codehaus.janino.Java.ConstructorInvocation;
@@ -108,6 +113,8 @@ import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.ForEachStatement;
 import org.codehaus.janino.Java.ForStatement;
 import org.codehaus.janino.Java.FunctionDeclarator;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Java.IfStatement;
 import org.codehaus.janino.Java.Initializer;
 import org.codehaus.janino.Java.InnerClassDeclaration;
@@ -181,13 +188,6 @@ import org.codehaus.janino.Java.TypeParameter;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
-import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.SingleStaticImportDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.SingleTypeImportDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.StaticImportOnDemandDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.TypeImportOnDemandDeclaration;
-import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
-import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
@@ -5157,30 +5157,50 @@ class UnitCompiler {
 
     @SuppressWarnings("static-method") private Object
     getConstantValue2(IntegerLiteral il) throws CompileException {
+
         String v = il.value;
-        if (v.startsWith("0x")) {
+
+        if (v.startsWith("0x") || v.startsWith("0X")) {
+
+            // Cannot use "Integer/Long.valueOf(v, 16)" here because hex literals are UNSIGNED.
             return (
                 v.endsWith("L") || v.endsWith("l")
                 ? (Object) Long.valueOf(UnitCompiler.hex2Long(il, v.substring(2, v.length() - 1)))
                 : Integer.valueOf(UnitCompiler.hex2Int(il, v.substring(2)))
             );
         }
+
+        if (v.startsWith("0b") || v.startsWith("0X")) {
+
+            // Cannot use "Integer/Long.valueOf(v, 2)" here because binary literals are UNSIGNED.
+            return (
+                v.endsWith("L") || v.endsWith("l")
+                ? (Object) Long.valueOf(UnitCompiler.bin2Long(il, v.substring(2, v.length() - 1)))
+                : Integer.valueOf(UnitCompiler.bin2Int(il, v.substring(2)))
+            );
+        }
+
         if (v.startsWith("0")) {
+
+            // Cannot use "Integer/Long.valueOf(v, 8)" here because octal literals are UNSIGNED.
             return (
                 v.endsWith("L") || v.endsWith("l")
                 ? (Object) Long.valueOf(UnitCompiler.oct2Long(il, v.substring(0, v.length() - 1)))
                 : Integer.valueOf(UnitCompiler.oct2Int(il, v))
             );
         }
+
         try {
+
+            // Decimal literals are SIGNED, so we can safely use "Integer/Long.valueOf(v)".
             return (
                 v.endsWith("L") || v.endsWith("l")
-                ? (Object) new Long(v.substring(0, v.length() - 1))
-                : new Integer(v)
+                ? (Object) Long.valueOf(v.substring(0, v.length() - 1))
+                : Integer.valueOf(v)
             );
         } catch (NumberFormatException e) {
             // SUPPRESS CHECKSTYLE AvoidHidingCause
-            throw UnitCompiler.compileException(il, "Value of decimal integer literal '" + v + "' is out of range");
+            throw UnitCompiler.compileException(il, "Invalid integer literal \"" + v + "\"");
         }
     }
 
@@ -5364,18 +5384,14 @@ class UnitCompiler {
     @Nullable private Object
     getNegatedConstantValue2(IntegerLiteral il) throws CompileException {
         String v = il.value;
-        if ("2147483648".equals(v) || "020000000000".equals(v)) {
-            return new Integer(Integer.MIN_VALUE);
-        }
-        char lastChar = v.charAt(v.length() - 1);
-        if (lastChar == 'l' || lastChar == 'L') {
-            String v2 = v.substring(0, v.length() - 1);
-            if ("9223372036854775808".equals(v2) || "01000000000000000000000".equals(v2)) {
-                return new Long(Long.MIN_VALUE);
-            }
-        }
+        if (UnitCompiler.TWO_E_31_INTEGER.matcher(v).matches()) return new Integer(Integer.MIN_VALUE);
+        if (UnitCompiler.TWO_E_63_LONG.matcher(v).matches()) return new Long(Long.MIN_VALUE);
         return this.getNegatedConstantValue2((Rvalue) il);
     }
+    private static final Pattern
+    TWO_E_31_INTEGER = Pattern.compile("2147483648|0+20000000000|0b0*10{31}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern
+    TWO_E_63_LONG = Pattern.compile("9223372036854775808L|0+10{21}L|0b0*10{63}L", Pattern.CASE_INSENSITIVE);
 
     // ------------ BlockStatement.generatesCode() -------------
 
@@ -9840,7 +9856,9 @@ class UnitCompiler {
                     "Value of hexadecimal integer literal \"" + value + "\" is out of range"
                 );
             }
-            result = (result << 4) + Character.digit(value.charAt(i), 16);
+            int digitValue = Character.digit(value.charAt(i), 16);
+            assert digitValue >= 0;
+            result = (result << 4) + digitValue;
         }
         return result;
     }
@@ -9855,7 +9873,26 @@ class UnitCompiler {
                     "Value of octal integer literal '" + value + "' is out of range"
                 );
             }
-            result = (result << 3) + Character.digit(value.charAt(i), 8);
+            int digitValue = Character.digit(value.charAt(i), 8);
+            assert digitValue >= 0;
+            result = (result << 3) + digitValue;
+        }
+        return result;
+    }
+
+    private static int
+    bin2Int(Locatable locatable, String value) throws CompileException {
+        int result = 0;
+        for (int i = 0; i < value.length(); ++i) {
+            if ((result & 0x80000000) != 0) {
+                throw UnitCompiler.compileException(
+                    locatable,
+                    "Value of binary integer literal '" + value + "' is out of range"
+                );
+            }
+            int digitValue = Character.digit(value.charAt(i), 2);
+            assert digitValue >= 0;
+            result = (result << 1) + digitValue;
         }
         return result;
     }
@@ -9870,7 +9907,9 @@ class UnitCompiler {
                     "Value of hexadecimal long literal \"" + value + "\" is out of range"
                 );
             }
-            result = (result << 4) + Character.digit(value.charAt(i), 16);
+            int digitValue = Character.digit(value.charAt(i), 16);
+            assert digitValue >= 0;
+            result = (result << 4) + digitValue;
         }
         return result;
     }
@@ -9885,7 +9924,26 @@ class UnitCompiler {
                     "Value of octal long literal '" + value + "' is out of range"
                 );
             }
-            result = (result << 3) + Character.digit(value.charAt(i), 8);
+            int digitValue = Character.digit(value.charAt(i), 8);
+            assert digitValue >= 0;
+            result = (result << 3) + digitValue;
+        }
+        return result;
+    }
+
+    private static long
+    bin2Long(Locatable locatable, String value) throws CompileException {
+        long result = 0L;
+        for (int i = 0; i < value.length(); ++i) {
+            if ((result & 0x8000000000000000L) != 0) {
+                throw UnitCompiler.compileException(
+                    locatable,
+                    "Value of binary long literal '" + value + "' is out of range"
+                );
+            }
+            int digitValue = Character.digit(value.charAt(i), 2);
+            assert digitValue >= 0;
+            result = (result << 1) + digitValue;
         }
         return result;
     }
