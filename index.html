@@ -26,7 +26,7 @@
     <div class="wrapper">
       <header>
         <h1>Janino</h1>
-        <p>A super-small, super-fast Java™ compiler</p>
+        <p>A super-small, super-fast Java compiler</p>
         <p class="view"><a href="https://github.com/janino-compiler/janino">
           View the Project on GitHub <small>janino-compiler/janino</small></a>
         </p>
@@ -44,11 +44,11 @@
           />
         </div>
         <p>
-          Janino is a super-small, super-fast Java™ compiler.
+          Janino is a super-small, super-fast Java compiler.
         </p>
         <p>
           Janino can not only <a href="#janino-as-a-command-line-java-compiler">compile a set of source files to a set
-          of class files like JAVAC</a>, but also <a href="#janino-as-an-expression-evaluator">compile a Java™
+          of class files</a> like JAVAC, but also <a href="#janino-as-an-expression-evaluator">compile a Java
           expression</a>, <a href="#janino-as-a-script-evaluator">block</a>, <a
           href="#janino-as-a-class-body-evaluator">class body</a> or <a href="#janino-as-a-simple-compiler">source
           file</a> in memory, load the bytecode and execute it directly in the same JVM.
@@ -107,104 +107,130 @@
         </h2>
 
         <p>
-          The major design goal was to keep the compiler small and simple, while providing an (almost) complete Java™
+          The major design goal was to keep the compiler small and simple, while providing an (almost) complete Java
           compiler.
         </p>
 
-        <p>The following elements of the Java programming language are implemented:</p>
+        <p>
+          The following elements of the Java programming language are implemented (or, where noted, partially
+          implemented):
+        </p>
 
         <ul>
-          <li><code>package</code> declaration, <code>import</code> declaration</li>
-          <li><code>class</code> declaration (including <code>enum</code> declaration)</li>
-          <li><code>interface</code> declaration (including annotation type declaration)</li>
-          <li>Inheritance (<code>extends</code> and <code>implements</code>)</li>
-          <li>Static member type declaration</li>
-          <li>Inner (non-static member, local, anonymous) class declaration</li>
-          <li>Class initializer, instance initializer</li>
-          <li>Field declaration, method declaration</li>
-          <li>Local variable declaration</li>
-          <li>Class variable initializer, instance variable initializer</li>
-          <li>Block statement (<code>{...}</code>)</li>
-          <li><code>if ... else</code> statement</li>
-          <li>Basic <code>for</code> statement</li>
-          <li>Enhanced <code>for</code> statement</li>
-          <li><code>while</code> statement</li>
-          <li><code>do ... while</code> statement</li>
-          <li><code>try ... catch ... finall</code>y statement</li>
-          <li><code>throw</code> statement</li>
-          <li><code>return</code> statement</li>
-          <li><code>break</code> statement</li>
-          <li><code>continue</code> statement</li>
-          <li><code>switch</code> statement</li>
-          <li><code>synchronized</code> statement</li>
           <li>
-            All primitive types (<code>boolean</code>, <code>char</code>, <code>byte</code>, <code>short</code>,
-            <code>int</code>, <code>long</code>, <code>float</code>, <code>double</code>)
+            Java 1.4 language features:
+            <ul>
+              <li><code>package</code> declaration, <code>import</code> declaration</li>
+              <li><code>class</code> declaration</li>
+              <li><code>interface</code> declaration</li>
+              <li>Inheritance (<code>extends</code> and <code>implements</code>)</li>
+              <li>Static member type declaration</li>
+              <li>Inner (non-static member, local, anonymous) class declaration</li>
+              <li>Class initializer, instance initializer</li>
+              <li>Field declaration, method declaration</li>
+              <li>Local variable declaration</li>
+              <li>Class variable initializer, instance variable initializer</li>
+              <li>Block statement (<code>{...}</code>)</li>
+              <li><code>if ... else</code> statement</li>
+              <li>Basic <code>for</code> statement</li>
+              <li><code>while</code> statement</li>
+              <li><code>do ... while</code> statement</li>
+              <li><code>try ... catch ... finall</code>y statement</li>
+              <li><code>throw</code> statement</li>
+              <li><code>return</code> statement</li>
+              <li><code>break</code> statement</li>
+              <li><code>continue</code> statement</li>
+              <li><code>switch</code> statement</li>
+              <li><code>synchronized</code> statement</li>
+              <li>
+                All primitive types (<code>boolean</code>, <code>char</code>, <code>byte</code>, <code>short</code>,
+                <code>int</code>, <code>long</code>, <code>float</code>, <code>double</code>)
+              </li>
+              <li>Assignment operator <code>=</code></li>
+              <li>
+                Compound assignment operators <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>,
+                <code>&amp;=</code>, <code>|=</code>, <code>^=</code>, <code>%=</code>, <code>&lt;&lt;=</code>,
+                <code>&gt;&gt;=</code>, <code>&gt;&gt;&gt;=</code>
+              </li>
+              <li>Conditional operators <code>? ... :</code>, <code>&amp;&amp;</code>, <code>||</code></li>
+              <li>Boolean logical operators <code>&amp;</code>, <code>^</code>, <code>|</code></li>
+              <li>Integer bitwise operators <code>&amp;</code>, <code>^</code>, <code>|</code></li>
+              <li>
+                Numeric operators <code>*</code>, <code>/</code>, <code>%</code>, <code>+</code>, <code>-</code>,
+                <code>&lt;&lt;</code>, <code>&gt;&gt;</code>, <code>&gt;&gt;&gt;</code>
+              </li>
+              <li>String concatenation operator <code>+</code></li>
+              <li>Operators <code>++</code> and <code>--</code></li>
+              <li>Type comparison operator <code>instanceof</code></li>
+              <li>Unary operators <code>+</code>, <code>-</code>, <code>~</code>, <code>!</code></li>
+              <li>Parenthesized expression</li>
+              <li>Field access (like <code>System.out</code>)</li>
+              <li>Superclass member access (<code>super.meth()</code>, <code>super.field</code>)</li>
+              <li><code>this</code> (reference to current instance)</li>
+              <li>Alternate constructor invocation (<code>this(a, b, c);</code>)</li>
+              <li>Superclass constructor invocation (<code>super(a, b, c);</code>)</li>
+              <li>Method invocation (<code>System.out.println("Hello")</code>)</li>
+              <li>Class instance creation (<code>new Foo()</code>)</li>
+              <li>Primitive array creation (<code>new int[10][5][]</code>)</li>
+              <li>Class or interface array creation (<code>new Foo[10][5][]</code>)</li>
+              <li>Array access (<code>args[0]</code>)</li>
+              <li>Local variable access</li>
+              <li>Integer, floating-point, boolean, character, string literal</li>
+              <li><code>null</code> literal</li>
+              <li>
+                Unary numeric conversion, binary numeric conversion, widening numeric conversion, narrowing numeric
+                conversion, widening reference conversion, narrowing reference conversion
+              </li>
+              <li>Cast</li>
+              <li>Assignment conversion</li>
+              <li>String conversion (for string concatenation)</li>
+              <li>Constant expression</li>
+              <li>Block scope, method scope, class scope, global scope</li>
+              <li><code>throws</code> clause</li>
+              <li>Array initializer (<code>String[] a = { "x", "y", "z" }</code>)</li>
+              <li>Primitive class literals (<code>int.class</code>)</li>
+              <li>Non-primitive class literals (<code>String.class</code>)</li>
+              <li>References between uncompiled compilation units</li>
+              <li>Line number tables ("<code>-g:lines</code>")</li>
+              <li>Source file information ("<code>-g:source</code>")</li>
+              <li>Local variable information information ("<code>-g:vars</code>")</li>
+              <li>
+                Handling of <code><a href="https://github.com/deprecated" class="user-mention">@deprecated</a></code> doc
+                comment tag
+              </li>
+              <li>
+                Accessibility checking (<code>public</code>, <code>protected</code>, <code>private</code>, default)
+              </li>
+              <li>Checking of "definite assignment"</li>
+              <li>Methods that compile to more than 32 KB</li>
+              <li>
+                <code>assert</code> (partially implemented - assertions are always enabled, as if the JVM was started
+                with the "<code>-ea</code>" command line option)
+              </li>
+              <li><code>StringBuilder</code> class used for string concatenation</li>
+              <li>Type arguments (e.g. <code>List&lt;String&gt;</code>) are parsed, but otherwise ignored</li>
+            </ul>
           </li>
-          <li>Assignment operator <code>=</code></li>
+
           <li>
-            Compound assignment operators <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>,
-            <code>&amp;=</code>, <code>|=</code>, <code>^=</code>, <code>%=</code>, <code>&lt;&lt;=</code>,
-            <code>&gt;&gt;=</code>, <code>&gt;&gt;&gt;=</code>
+            Java 5 language features:
+            <ul>
+              <li>Declaration of parameterized types</li>
+              <li>
+                Type arguments: Are parsed, but otherwise ignored. The most significant restriction that follows is
+                that you must cast return values from method invocations, e.g. "<code>(String) myMap.get(key)</code>"
+              </li>
+              <li>Enhanced <code>for</code> statement</li>
+              <li>Autoboxing and unboxing</li>
+              <li><code>enum</code> declaration</li>
+              <li>Annotation type declaration</li>
+              <li>Variable arity methods (a.k.a. "varargs")</li>
+              <li>Static imports (single and on-demand; fields, types and methods)</li>
+              <li>Annotations</li>
+              <li>Covariant return types</li>
+              <li><code><a href="https://github.com/Override" class="user-mention">@Override</a></code> annotation</li>
+            </ul>
           </li>
-          <li>Conditional operators <code>? ... :</code>, <code>&amp;&amp;</code>, <code>||</code></li>
-          <li>Boolean logical operators <code>&amp;</code>, <code>^</code>, <code>|</code></li>
-          <li>Integer bitwise operators <code>&amp;</code>, <code>^</code>, <code>|</code></li>
-          <li>
-            Numeric operators <code>*</code>, <code>/</code>, <code>%</code>, <code>+</code>, <code>-</code>,
-            <code>&lt;&lt;</code>, <code>&gt;&gt;</code>, <code>&gt;&gt;&gt;</code>
-          </li>
-          <li>String concatenation operator <code>+</code></li>
-          <li>Operators <code>++</code> and <code>--</code></li>
-          <li>Type comparison operator <code>instanceof</code></li>
-          <li>Unary operators <code>+</code>, <code>-</code>, <code>~</code>, <code>!</code></li>
-          <li>Parenthesized expression</li>
-          <li>Field access (like <code>System.out</code>)</li>
-          <li>Superclass member access (<code>super.meth()</code>, <code>super.field</code>)</li>
-          <li><code>this</code> (reference to current instance)</li>
-          <li>Alternate constructor invocation (<code>this(a, b, c);</code>)</li>
-          <li>Superclass constructor invocation (<code>super(a, b, c);</code>)</li>
-          <li>Method invocation (<code>System.out.println("Hello")</code>)</li>
-          <li>Class instance creation (<code>new Foo()</code>)</li>
-          <li>Primitive array creation (<code>new int[10][5][]</code>)</li>
-          <li>Class or interface array creation (<code>new Foo[10][5][]</code>)</li>
-          <li>Array access (<code>args[0]</code>)</li>
-          <li>Local variable access</li>
-          <li>Integer, floating-point, boolean, character, string literal</li>
-          <li><code>null</code> literal</li>
-          <li>
-            Unary numeric conversion, binary numeric conversion, widening numeric conversion, narrowing numeric
-            conversion, widening reference conversion, narrowing reference conversion
-          </li>
-          <li>Cast</li>
-          <li>Assignment conversion</li>
-          <li>String conversion (for string concatenation)</li>
-          <li>Constant expression</li>
-          <li>Block scope, method scope, class scope, global scope</li>
-          <li><code>throws</code> clause</li>
-          <li>Array initializer (<code>String[] a = { "x", "y", "z" }</code>)</li>
-          <li>Primitive class literals (<code>int.class</code>)</li>
-          <li>Non-primitive class literals (<code>String.class</code>)</li>
-          <li>References between uncompiled compilation units</li>
-          <li>Line number tables ("<code>-g:lines</code>")</li>
-          <li>Source file information ("<code>-g:source</code>")</li>
-          <li>Local variable information information ("<code>-g:vars</code>")</li>
-          <li>
-            Handling of <code><a href="https://github.com/deprecated" class="user-mention">@deprecated</a></code> doc
-            comment tag
-          </li>
-          <li>Accessibility checking (<code>public</code>, <code>protected</code>, <code>private</code>)</li>
-          <li>Checking of "definite assignment" (JLS7 16)</li>
-          <li>Methods that compile to more than 32 KB</li>
-          <li><code>assert</code> (partial: assertions are always enabled, as if "<code>-ea</code>" were given)</li>
-          <li>Static imports (single and on-demand; fields, types and methods)</li>
-          <li>Autoboxing and unboxing</li>
-          <li><code>StringBuilder</code> class used for string concatenation</li>
-          <li>Covariant return types</li>
-          <li>Annotations</li>
-          <li><code><a href="https://github.com/Override" class="user-mention">@Override</a></code> annotation</li>
-          <li>Variable arity methods (a.k.a. "varargs")</li>
-          <li>Type arguments (e.g. <code>List&lt;String&gt;</code>) are parsed, but otherwise ignored</li>
         </ul>
 
         <h2>
@@ -212,11 +238,57 @@
           class="octicon octicon-link"></span></a>Limitations
         </h2>
 
-        <p>The following elements of the Java programming language are not implemented:</p>
+        <p>
+          The following elements of the Java programming language are not implemented (or, where noted, only partially
+          implemented):
+        </p>
 
         <ul>
-          <li>Declaration of parameterized types (type arguments, however, are (partially) implemented, see above)</li>
-          <li>Type arguments (e.g. <code>List&lt;String&gt;</code>) are parsed, but otherwise ignored</li>
+          <li>
+            Java 1.4 language features:
+            <ul>
+              <li>
+                <code>assert</code>: Partially implemented - assertions are always enabled, as if the JVM was started
+                with the "<code>-ea</code>" command line option
+              </li>
+            </ul>
+          </li>
+
+          <li>
+            Java 5 language features:
+            <ul>
+              <li>
+                Type arguments: Are parsed, but otherwise ignored. The most significant restriction that follows is
+                that you must cast return values from method invocations, e.g. "<code>(String) myMap.get(key)</code>"
+              </li>
+            </ul>
+          </li>
+
+          <li>
+            Java 7 language features:
+            <ul>
+              <li>Binary literals</li>
+              <li>Strings in <code>switch</code> statement</li>
+              <li><code>try</code>-with-resources statement</li>
+              <li><code>catch</code>ing and rethrowing multiple exception types</li>
+              <li>Underscores in numeric literals</li>
+              <li>
+                Type inference for generic instance creation (e.g. "<code>Map&lt;String, Integer&gt; = new
+                HashMap&lt;&gt;();</code>")
+              </li>
+            </ul>
+          </li>
+
+          <li>
+            Java 8 language features:
+            <ul>
+              <li>Lambda expressions</li>
+              <li>Method references</li>
+              <li>Default methods</li>
+              <li>Repeating annotations</li>
+              <li>Type annotations</li>
+            </ul>
+          </li>
         </ul>
 
         <h2>
@@ -289,7 +361,7 @@ import org.codehaus.janino.*;
 
 ExpressionEvaluator ee = new ExpressionEvaluator();
 ee.cook("3 + 4");
-System.out.println(ee.evaluate(null));</pre></div>
+System.out.println(ee.evaluate(null)); // Prints "7".</pre></div>
 
         <p>Compile, run, ... be happy!</p>
 
@@ -326,7 +398,7 @@ System.out.println(ee.evaluate(null));</pre></div>
           The <a
           href="https://github.com/janino-compiler/janino/blob/master/janino/src/org/codehaus/janino/samples/DeclarationCounter.java">DeclarationCounter</a>
           class implements a command-line utility that counts class, interface, field and local variable declarations
-          in a set of Java™ source files.
+          in a set of Java source files.
         </p>
 
         <h2>
@@ -362,8 +434,8 @@ System.out.println(ee.evaluate(null));</pre></div>
 
         <ul>
           <li>
-            James Gosling, Bill Joy, Guy Steele, Gilad Bracha, Alex Buckley: The Java Language Specification, Java SE 7
-            Edition; Oracle America, Inc., 2011
+            James Gosling, Bill Joy, Guy Steele, Gilad Bracha, Alex Buckley: The Java Language Specification, Java SE
+            7 Edition; Oracle America, Inc., 2011
           </li>
           <li>
             Tim Lindholm, Frank Yellin, Gilad Bracha, Alex Buckley: The Java Virtual Machine Specification, Java SE 7
@@ -412,7 +484,7 @@ System.out.println(ee.evaluate(null));</pre></div>
 
         <ul>
           <li>
-            <a href="http://logback.qos.ch/">Logback</a> - a Java™ logging framework intended as a successor to the
+            <a href="http://logback.qos.ch/">Logback</a> - a Java logging framework intended as a successor to the
             LOG4J project
           </li>
           <li>
@@ -453,20 +525,20 @@ System.out.println(ee.evaluate(null));</pre></div>
         <h4>
           <a id="other-java-compiler-projects-and-products-that-i-know-about" class="anchor"
           href="#other-java-compiler-projects-and-products-that-i-know-about" aria-hidden="true"><span
-          aria-hidden="true" class="octicon octicon-link"></span></a>Other Java™ compiler projects and products that I
+          aria-hidden="true" class="octicon octicon-link"></span></a>Other Java compiler projects and products that I
           know about
         </h4>
 
         <ul>
            <li><a href="http://www.embarcadero.com/products/jbuilder">Embarcadero JBuilder</a></li>
-           <li><a href="https://gcc.gnu.org/java/">gcj</a> – the GNU Compiler for Java™</li>
+           <li><a href="https://gcc.gnu.org/java/">gcj</a> – the GNU Compiler for Java</li>
            <li>
-             <a href="http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html">javac</a> – the Java™
-             compiler from ORACLE™
+             <a href="http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javac.html">javac</a> – the Java
+             compiler from ORACLE
            </li>
-           <li><a href="http://jikes.sourceforge.net/">jikes – IBM's Java™ compiler</a></li>
+           <li><a href="http://jikes.sourceforge.net/">jikes – IBM's Java compiler</a></li>
            <li>
-             <a href="http://cs.gmu.edu/%7Eeclab/projects/robots/flockbots/uploads/Main/kopi.html">The Kopi Java™
+             <a href="http://cs.gmu.edu/%7Eeclab/projects/robots/flockbots/uploads/Main/kopi.html">The Kopi Java
              Compiler</a>
            </li>
            <li><a href="http://pizzacompiler.sourceforge.net/">Pizza</a></li>
@@ -508,21 +580,21 @@ System.out.println(ee.evaluate(null));</pre></div>
           "a + b * c", for example, would compile into a "Sum" object who's first operand is parameter "a" and who's
           second operand is a "Product" object who's operands are parameters "b" and "c". Such a syntax tree can
           evaluated relatively quickly. However, the run-time performance is about a factor of 100 worse than that of
-          "native" Java™ code executed directly by the JVM. This limits the use of such an expression evaluator to
+          "native" Java code executed directly by the JVM. This limits the use of such an expression evaluator to
           simple applications.
         </p>
 
         <p>
           Also, you may want not only do simple arithmetics like "a + b * c % d", but take the concept further and have
-          a real "scripting" language which adds flexibility to your application. Since you know the Java™ programming
-          language already, you may want to have a syntax that is similar to that of the Java™ programming language.
+          a real "scripting" language which adds flexibility to your application. Since you know the Java programming
+          language already, you may want to have a syntax that is similar to that of the Java programming language.
         </p>
 
         <p>
-          All these considerations lead to compilation of Java™ code at run-time, like some engines (e.g. JSP engines)
-          already do. However, compiling Java™ programs with ORACLE's JDK is a relatively resource-intensive process
-          (disk access, CPU time, ...). This is where Janino comes into play... a light-weight, "embedded" Java™
-          compiler that compiles simple programs in memory into Java™ bytecode which executes within the JVM of the
+          All these considerations lead to compilation of Java code at run-time, like some engines (e.g. JSP engines)
+          already do. However, compiling Java programs with ORACLE's JDK is a relatively resource-intensive process
+          (disk access, CPU time, ...). This is where Janino comes into play... a light-weight, "embedded" Java
+          compiler that compiles simple programs in memory into Java bytecode which executes within the JVM of the
           running program.
         </p>
 
@@ -560,7 +632,7 @@ public class Main {
 }</pre></div>
 
         <p>
-          Notice: If you pass a string literal as the expression, be sure to escape all Java™ special characters,
+          Notice: If you pass a string literal as the expression, be sure to escape all Java special characters,
           especially backslashes.
         </p>
 
@@ -607,7 +679,7 @@ $</pre></div>
         </h4>
 
         <p>
-          Analogously to the expression evaluator, a ScriptEvaluator API exists that compiles and processes a Java™
+          Analogously to the expression evaluator, a ScriptEvaluator API exists that compiles and processes a Java
           "block", i.e. the body of a method. If a return value other than "void" is defined, then the block must
           return a value of that type.
         </p>
@@ -694,7 +766,7 @@ $</pre></div>
 
         <p>
           Analogously to the expression evaluator and the script evaluator, a ClassBodyEvaluator exists that compiles
-          and processes the body of a Java™ class, i.e. a series of method and variable declarations. If you define a
+          and processes the body of a Java class, i.e. a series of method and variable declarations. If you define a
           contract that the class body should define a method named "main()", then your script will look almost like a
           "C" program:
         </p>
@@ -735,7 +807,7 @@ $</pre></div>
         </h4>
 
         <p>
-          The SimpleCompiler compiles a single "compilation unit" (a.k.a. ".java" file). Opposed to to normal Java™
+          The SimpleCompiler compiles a single "compilation unit" (a.k.a. ".java" file). Opposed to to normal Java
           compilation, that compilation unit may define more than one public class. Example:
         </p>
 
@@ -790,7 +862,7 @@ $</pre></div>
         </h4>
 
         <p>
-          The JavaSourceClassLoader extends Java™'s java.lang.ClassLoader class with the ability to load classes
+          The JavaSourceClassLoader extends Java's java.lang.ClassLoader class with the ability to load classes
           directly from source code.
         </p>
 
@@ -844,7 +916,7 @@ Object o = cl.loadClass("pkg1.A").newInstance();
 ((Runnable) o).run(); // Prints "HELLO" to "System.out".</pre></div>
 
         <p>
-          If the Java™ source is not available in files, but from some other storage (database, main memory, ...), you
+          If the Java source is not available in files, but from some other storage (database, main memory, ...), you
           may specify a custom ResourceFinder instead of the directory-based source path.
         </p>
 
@@ -887,12 +959,12 @@ $</pre></div>
         <h4>
           <a id="janino-as-a-command-line-java-compiler" class="anchor" href="#janino-as-a-command-line-java-compiler"
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a Command-Line
-          Java™ Compiler
+          Java Compiler
         </h4>
 
         <p>
           The <a href="http://janino.unkrig.de/javadoc/org/codehaus/janino/Compiler.html">Compiler</a> class mimics the
-          behavior of ORACLE's javac tool. It compiles a set of "compilation units" (i.e. Java™ source files) into a
+          behavior of ORACLE's javac tool. It compiles a set of "compilation units" (i.e. Java source files) into a
           set of class files.
         </p>
 
@@ -976,7 +1048,7 @@ $</pre></div>
         </h4>
 
         <p>
-          Apart from compiling Java™ code, JANINO can be used for static code analysis: Based on the AST
+          Apart from compiling Java code, JANINO can be used for static code analysis: Based on the AST
           ("abstract syntax tree") produced by the parser, the <a
           href="http://janino.unkrig.de/javadoc/org/codehaus/janino/util/Traverser.html">Traverser</a> walks through
           all nodes of the AST, and derived classes can do all kinds of analyses on them, e.g. count declarations:
@@ -999,7 +1071,7 @@ $</pre></div>
         </h4>
 
         <p>
-          If, e.g., you want to read a Java™ compilation unit into memory, manipulate it, and then write it back to a
+          If, e.g., you want to read a Java compilation unit into memory, manipulate it, and then write it back to a
           file for compilation, then all you have to do is:
         </p>
 
@@ -1022,7 +1094,7 @@ UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
         </h4>
 
         <p>
-          JANINO can be configured to use not its own Java™ compiler, but an alternative implementation. Alternative
+          JANINO can be configured to use not its own Java compiler, but an alternative implementation. Alternative
           implementations must basically implement the interface ICompilerFactory. One such alternative implementation
           is based on the javax.tools API, and is shipped as part of the JANINO distribution: commons-compiler-jdk.jar.
         </p>
