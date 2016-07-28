@@ -63,7 +63,7 @@ class Scanner {
      * @deprecated // SUPPRESS CHECKSTYLE MissingDeprecated
      */
     @Deprecated public
-    Scanner(String fileName) throws CompileException, IOException {
+    Scanner(String fileName) throws IOException {
         this(
             fileName,                     // optionalFileName
             new FileInputStream(fileName) // is
@@ -78,7 +78,7 @@ class Scanner {
      * @deprecated // SUPPRESS CHECKSTYLE MissingDeprecated
      */
     @Deprecated public
-    Scanner(String fileName, String encoding) throws CompileException, IOException {
+    Scanner(String fileName, String encoding) throws IOException {
         this(
             fileName,                      // optionalFileName
             new FileInputStream(fileName), // is
@@ -95,7 +95,7 @@ class Scanner {
      * @deprecated // SUPPRESS CHECKSTYLE MissingDeprecated
      */
     @Deprecated public
-    Scanner(File file) throws CompileException, IOException {
+    Scanner(File file) throws IOException {
         this(
             file.getAbsolutePath(),    // optionalFileName
             new FileInputStream(file), // is
@@ -111,7 +111,7 @@ class Scanner {
      * @deprecated // SUPPRESS CHECKSTYLE MissingDeprecated
      */
     @Deprecated public
-    Scanner(File file, @Nullable String optionalEncoding) throws CompileException, IOException {
+    Scanner(File file, @Nullable String optionalEncoding) throws IOException {
         this(
             file.getAbsolutePath(),    // optionalFileName
             new FileInputStream(file), // is
@@ -129,7 +129,7 @@ class Scanner {
      * exceptions.
      */
     public
-    Scanner(@Nullable String optionalFileName, InputStream is) throws CompileException, IOException {
+    Scanner(@Nullable String optionalFileName, InputStream is) throws IOException {
         this(
             optionalFileName,
             new InputStreamReader(is), // in
@@ -153,7 +153,7 @@ class Scanner {
      */
     public
     Scanner(@Nullable String optionalFileName, InputStream is, @Nullable String optionalEncoding)
-    throws CompileException, IOException {
+    throws IOException {
         this(
             optionalFileName,                  // optionalFileName
             (                                  // in
@@ -181,7 +181,7 @@ class Scanner {
      * available to a debugger.
      */
     public
-    Scanner(@Nullable String optionalFileName, Reader in) throws CompileException, IOException {
+    Scanner(@Nullable String optionalFileName, Reader in) throws IOException {
         this(
             optionalFileName, // optionalFileName
             in,               // in
@@ -197,7 +197,7 @@ class Scanner {
         Reader           in,
         short            initialLineNumber,        // "1" is a good idea
         short            initialColumnNumber       // "0" is a good idea
-    ) throws CompileException, IOException {
+    ) throws IOException {
 
         // Debugging on source code level is only possible if the code comes from
         // a "real" Java source file which the debugger can read. If this is not the
@@ -227,8 +227,6 @@ class Scanner {
         this.in                   = new UnicodeUnescapeReader(in);
         this.nextCharLineNumber   = initialLineNumber;
         this.nextCharColumnNumber = initialColumnNumber;
-
-        this.readNextChar();
     }
 
     /** @return The file name optionally passed to the constructor */
@@ -365,68 +363,47 @@ class Scanner {
             switch (state) {
 
             case 0:  // Outside any comment
-                if (this.nextChar == -1) {
+                if (this.peek() == -1) {
                     return new Token(Token.EOF, "EOF");
                 } else
-                if (Character.isWhitespace((char) this.nextChar)) {
-                    ;
+                if (Character.isWhitespace(this.peek())) {
+                    this.read();
                 } else
-                if (this.nextChar == '/') {
-                    state = 1;
+                if (this.peekRead('/')) {
+                    if (this.peekRead(-1)) return new Token(Token.OPERATOR, "/");
+                    if (this.peekRead('=')) return new Token(Token.OPERATOR, "/=");
+                    if (this.peekRead('/')) {
+                        state = 2;
+                        break;
+                    }
+                    if (this.peekRead('*')) {
+                        state = 3;
+                        break;
+                    }
+                    return new Token(Token.OPERATOR, "/");
                 } else
                 {
                     break PROCESS_COMMENTS;
                 }
                 break;
 
-            case 1:  // After "/"
-                if (this.nextChar == -1) {
-                    return new Token(Token.OPERATOR, "/");
-                } else
-                if (this.nextChar == '=') {
-                    this.readNextChar();
-                    return new Token(Token.OPERATOR, "/=");
-                } else
-                if (this.nextChar == '/') {
-                    state = 2;
-                } else
-                if (this.nextChar == '*') {
-                    state = 3;
-                } else
-                {
-                    return new Token(Token.OPERATOR, "/");
-                }
-                break;
-
             case 2:  // After "//..."
-                if (this.nextChar == -1) {
-                    return new Token(Token.EOF, "EOF");
-                } else
-                if (this.nextChar == '\r' || this.nextChar == '\n') {
+                if (this.peek() == -1) return new Token(Token.EOF, "EOF");
+                if (this.peek("\r\n")) {
                     state = 0;
-                } else
-                {
-                    ;
+                } else {
+                    this.read();
                 }
                 break;
 
             case 3:  // After "/*"
-                if (this.nextChar == -1) {
-                    throw new CompileException("EOF in traditional comment", this.location());
-                } else
-                if (this.nextChar == '*') {
-                    state = 4;
-                } else
-                {
-                    state = 9;
-                }
+                if (this.peek() == -1) throw new CompileException("EOF in traditional comment", this.location());
+                state = this.peek() == '*' ? 4 : 9;
                 break;
 
             case 4:  // After "/**"
-                if (this.nextChar == -1) {
-                    throw new CompileException("EOF in doc comment", this.location());
-                } else
-                if (this.nextChar == '/') {
+                if (this.peek() == -1) throw new CompileException("EOF in doc comment", this.location());
+                if (this.peekRead('/')) {
                     state = 0;
                 } else
                 {
@@ -437,10 +414,11 @@ class Scanner {
                             new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber)
                         );
                     }
-                    dcsb  = new StringBuilder().append((char) this.nextChar);
+                    int firstDocCommentChar = this.read();
+                    dcsb  = new StringBuilder().append((char) firstDocCommentChar);
                     state = (
-                        (this.nextChar == '\r' || this.nextChar == '\n') ? 6
-                        : this.nextChar == '*' ? 8
+                        firstDocCommentChar == '\r' || firstDocCommentChar == '\n' ? 6
+                        : firstDocCommentChar == '*' ? 8
                         : 5
                     );
                 }
@@ -448,98 +426,89 @@ class Scanner {
 
             case 5:  // After "/**..."
                 assert dcsb != null;
-                if (this.nextChar == -1) {
+                if (this.peek() == -1) {
                     throw new CompileException("EOF in doc comment", this.location());
                 } else
-                if (this.nextChar == '*') {
+                if (this.peekRead('*')) {
                     state = 8;
                 } else
-                if (this.nextChar == '\r' || this.nextChar == '\n') {
-                    dcsb.append((char) this.nextChar);
+                if (this.peek("\r\n")) {
+                    dcsb.append((char) this.read());
                     state = 6;
                 } else
                 {
-                    dcsb.append((char) this.nextChar);
+                    dcsb.append((char) this.read());
                 }
                 break;
 
             case 6:  // After "/**...\n"
                 assert dcsb != null;
-                if (this.nextChar == -1) {
+                if (this.peek() == -1) {
                     throw new CompileException("EOF in doc comment", this.location());
                 } else
-                if (this.nextChar == '*') {
+                if (this.peekRead('*')) {
                     state = 7;
                 } else
-                if (this.nextChar == '\r' || this.nextChar == '\n') {
-                    dcsb.append((char) this.nextChar);
+                if (this.peek("\r\n")) {
+                    dcsb.append((char) this.read());
                 } else
-                if (this.nextChar == ' ' || this.nextChar == '\t') {
-                    ;
+                if (this.peek(" \t")) {
+                    this.read();
                 } else
                 {
-                    dcsb.append((char) this.nextChar);
+                    dcsb.append((char) this.read());
                     state = 5;
                 }
                 break;
 
             case 7:  // After "/**...\n *"
                 assert dcsb != null;
-                if (this.nextChar == -1) {
+                if (this.peek() == -1) {
                     throw new CompileException("EOF in doc comment", this.location());
                 } else
-                if (this.nextChar == '*') {
+                if (this.peekRead('*')) {
                     ;
                 } else
-                if (this.nextChar == '/') {
+                if (this.peekRead('/')) {
                     this.optionalDocComment = dcsb.toString();
                     state                   = 0;
                 } else
                 {
-                    dcsb.append((char) this.nextChar);
+                    dcsb.append((char) this.peek());
                     state = 5;
                 }
                 break;
 
             case 8:  // After "/**...*"
                 assert dcsb != null;
-                if (this.nextChar == -1) {
+                if (this.peek() == -1) {
                     throw new CompileException("EOF in doc comment", this.location());
                 } else
-                if (this.nextChar == '/') {
+                if (this.peekRead('/')) {
                     this.optionalDocComment = dcsb.toString();
                     state                   = 0;
                 } else
-                if (this.nextChar == '*') {
+                if (this.peekRead('*')) {
                     dcsb.append('*');
                 } else
                 {
                     dcsb.append('*');
-                    dcsb.append((char) this.nextChar);
+                    dcsb.append((char) this.read());
                     state = 5;
                 }
                 break;
 
             case 9:  // After "/*..."
-                if (this.nextChar == -1) {
-                    throw new CompileException("EOF in traditional comment", this.location());
-                } else
-                if (this.nextChar == '*') {
-                    state = 10;
-                } else
-                {
-                    ;
-                }
+                if (this.peek() == -1) throw new CompileException("EOF in traditional comment", this.location());
+                if (this.read() == '*') state = 10;
                 break;
 
             case 10: // After "/*...*"
-                if (this.nextChar == -1) {
-                    throw new CompileException("EOF in traditional comment", this.location());
-                } else
-                if (this.nextChar == '/') {
+                if (this.peek() == -1) throw new CompileException("EOF in traditional comment", this.location());
+                if (this.peekRead('/')) {
                     state = 0;
                 } else
-                if (this.nextChar == '*') {
+                if (this.peekRead('*')) {
                     ;
                 } else
                 {
@@ -550,7 +519,6 @@ class Scanner {
             default:
                 throw new JaninoRuntimeException(Integer.toString(state));
             }
-            this.readNextChar();
         }
 
         /*
@@ -561,13 +529,12 @@ class Scanner {
         this.tokenColumnNumber = this.nextCharColumnNumber;
 
         // Scan identifier.
-        if (Character.isJavaIdentifierStart((char) this.nextChar)) {
+        if (Character.isJavaIdentifierStart((char) this.peek())) {
             StringBuilder sb = new StringBuilder();
-            sb.append((char) this.nextChar);
+            sb.append((char) this.read());
             for (;;) {
-                this.readNextChar();
-                if (this.nextChar == -1 || !Character.isJavaIdentifierPart((char) this.nextChar)) break;
-                sb.append((char) this.nextChar);
+                if (this.peek() == -1 || !Character.isJavaIdentifierPart((char) this.peek())) break;
+                sb.append((char) this.read());
             }
             String s = sb.toString();
             if ("true".equals(s))  return new Token(Token.BOOLEAN_LITERAL, "true");
@@ -582,25 +549,22 @@ class Scanner {
 
         // Scan numeric literal.
         if (
-            Character.isDigit((char) this.nextChar)
-            || (this.nextChar == '.' && Character.isDigit(this.nextButOneChar())) // .999
+            Character.isDigit((char) this.peek())
+            || (this.peek() == '.' && Character.isDigit(this.peekButOne())) // .999
         ) return this.scanNumericLiteral();
 
         // Scan string literal.
-        if (this.nextChar == '"') {
+        if (this.peekRead('"')) {
             StringBuilder sb = new StringBuilder("\"");
-            this.readNextChar();
-            while (this.nextChar != '"') {
+            while (!this.peekRead('"')) {
                 this.scanLiteralCharacter(sb);
             }
-            this.readNextChar();
             return new Token(Token.STRING_LITERAL, sb.append('"').toString());
         }
 
         // Scan character literal.
-        if (this.nextChar == '\'') {
-            this.readNextChar();
-            if (this.nextChar == '\'') {
+        if (this.peekRead('\'')) {
+            if (this.peek() == '\'') {
                 throw new CompileException(
                     "Single quote must be backslash-escaped in character literal",
                     this.location()
@@ -609,23 +573,22 @@ class Scanner {
 
             StringBuilder sb = new StringBuilder("'");
             this.scanLiteralCharacter(sb);
-            if (this.nextChar != '\'') throw new CompileException("Closing single quote missing", this.location());
-            this.readNextChar();
+            if (!this.peekRead('\'')) throw new CompileException("Closing single quote missing", this.location());
 
             return new Token(Token.CHARACTER_LITERAL, sb.append('\'').toString());
         }
 
         // Scan separator / operator.
         {
-            String v = (String) Scanner.JAVA_OPERATORS.get(new String(new char[] { (char) this.nextChar }));
+            String v = (String) Scanner.JAVA_OPERATORS.get(new String(new char[] { (char) this.peek() }));
             if (v != null) {
                 for (;;) {
-                    this.readNextChar();
+                    this.read();
                     String v2 = (String) (
                         this.expectGreater
                         ? Scanner.JAVA_OPERATORS_EXPECT_GREATER
                         : Scanner.JAVA_OPERATORS
-                    ).get(v + (char) this.nextChar);
+                    ).get(v + (char) this.peek());
                     if (v2 == null) return new Token(Token.OPERATOR, v);
                     v = v2;
                 }
@@ -633,7 +596,7 @@ class Scanner {
         }
 
         throw new CompileException(
-            "Invalid character input \"" + (char) this.nextChar + "\" (character code " + this.nextChar + ")",
+            "Invalid character input \"" + (char) this.peek() + "\" (character code " + this.peek() + ")",
             this.location()
         );
     }
@@ -662,21 +625,22 @@ class Scanner {
             switch (state) {
 
             case 0: // First character.
-                if (this.nextChar == '0') {
+                if (this.peekRead('0')) {
                     sb.append('0');
                     state = 6;
                 } else
-                if (this.nextChar == '.' && Scanner.isDecimalDigit(this.nextButOneChar())) {
+                if (this.peek() == '.' && Scanner.isDecimalDigit(this.peekButOne())) {
+                    this.read();
                     sb.append('.');
                     state = 2;
                 } else
-                if (Scanner.isDecimalDigit(this.nextChar)) {
-                    sb.append((char) this.nextChar);
+                if (Scanner.isDecimalDigit(this.peek())) {
+                    sb.append((char) this.read());
                     state = 1;
                 } else
                 {
                     throw new CompileException(
-                        "Numeric literal begins with invalid character '" + (char) this.nextChar + "'",
+                        "Numeric literal begins with invalid character '" + (char) this.peek() + "'",
                         this.location()
                     );
                 }
@@ -684,27 +648,25 @@ class Scanner {
 
             case 1: // Decimal digits.
                 if (
-                    Scanner.isDecimalDigit(this.nextChar)
-                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isDecimalDigit(this.nextButOneChar())))
+                    Scanner.isDecimalDigit(this.peek())
+                    || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isDecimalDigit(this.peekButOne())))
                 ) {
-                    sb.append((char) this.nextChar);
+                    sb.append((char) this.read());
                 } else
-                if (this.nextChar == 'l' || this.nextChar == 'L') {
-                    sb.append((char) this.nextChar);
-                    this.readNextChar();
+                if (this.peek("lL")) {
+                    sb.append((char) this.read());
                     return new Token(Token.INTEGER_LITERAL, sb.toString());
                 } else
-                if (this.nextChar == 'f' || this.nextChar == 'F' || this.nextChar == 'd' || this.nextChar == 'D') {
-                    sb.append((char) this.nextChar);
-                    this.readNextChar();
+                if (this.peek("fFdD")) {
+                    sb.append((char) this.read());
                     return new Token(Token.FLOATING_POINT_LITERAL, sb.toString());
                 } else
-                if (this.nextChar == '.') {
+                if (this.peekRead('.')) {
                     sb.append('.');
                     state = 2;
                 } else
-                if (this.nextChar == 'E' || this.nextChar == 'e') {
-                    sb.append('E');
+                if (this.peek("Ee")) {
+                    sb.append((char) this.read());
                     state = 3;
                 } else
                 {
@@ -714,18 +676,17 @@ class Scanner {
 
             case 2: // After decimal point.
                 if (
-                    Scanner.isDecimalDigit(this.nextChar)
-                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isDecimalDigit(this.nextButOneChar())))
+                    Scanner.isDecimalDigit(this.peek())
+                    || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isDecimalDigit(this.peekButOne())))
                 ) {
-                    sb.append((char) this.nextChar);
+                    sb.append((char) this.read());
                 } else
-                if (this.nextChar == 'e' || this.nextChar == 'E') {
-                    sb.append('E');
+                if (this.peek("eE")) {
+                    sb.append((char) this.read());
                     state = 3;
                 } else
-                if (this.nextChar == 'f' || this.nextChar == 'F' || this.nextChar == 'd' || this.nextChar == 'D') {
-                    sb.append((char) this.nextChar);
-                    this.readNextChar();
+                if (this.peek("fFdD")) {
+                    sb.append((char) this.read());
                     return new Token(Token.FLOATING_POINT_LITERAL, sb.toString());
                 } else
                 {
@@ -735,14 +696,14 @@ class Scanner {
 
             case 3: // After 'e'.
                 if (
-                    Scanner.isDecimalDigit(this.nextChar)
-                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isDecimalDigit(this.nextButOneChar())))
+                    Scanner.isDecimalDigit(this.peek())
+                    || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isDecimalDigit(this.peekButOne())))
                 ) {
-                    sb.append((char) this.nextChar);
+                    sb.append((char) this.read());
                     state = 5;
                 } else
-                if (this.nextChar == '-' || this.nextChar == '+') {
-                    sb.append((char) this.nextChar);
+                if (this.peek("-+")) {
+                    sb.append((char) this.read());
                     state = 4;
                 } else
                 {
@@ -752,10 +713,10 @@ class Scanner {
 
             case 4: // After exponent sign.
                 if (
-                    Scanner.isDecimalDigit(this.nextChar)
-                    || this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isDecimalDigit(this.nextButOneChar()))
+                    Scanner.isDecimalDigit(this.peek())
+                    || this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isDecimalDigit(this.peekButOne()))
                 ) {
-                    sb.append((char) this.nextChar);
+                    sb.append((char) this.read());
                     state = 5;
                 } else
                 {
@@ -765,14 +726,13 @@ class Scanner {
 
             case 5: // After first exponent digit.
                 if (
-                    Scanner.isDecimalDigit(this.nextChar)
-                    || this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isDecimalDigit(this.nextButOneChar()))
+                    Scanner.isDecimalDigit(this.peek())
+                    || this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isDecimalDigit(this.peekButOne()))
                 ) {
-                    sb.append((char) this.nextChar);
+                    sb.append((char) this.read());
                 } else
-                if (this.nextChar == 'f' || this.nextChar == 'F' || this.nextChar == 'd' || this.nextChar == 'D') {
-                    sb.append((char) this.nextChar);
-                    this.readNextChar();
+                if (this.peek("fFdD")) {
+                    sb.append((char) this.read());
                     return new Token(Token.FLOATING_POINT_LITERAL, sb.toString());
                 } else
                 {
@@ -781,40 +741,35 @@ class Scanner {
                 break;
 
             case 6: // After leading zero.
-                if (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isOctalDigit(this.nextButOneChar()))) {
-                    sb.append((char) this.nextChar);
-                } else
                 if (
-                    Scanner.isOctalDigit(this.nextChar)
-                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isOctalDigit(this.nextButOneChar())))
+                    Scanner.isOctalDigit(this.peek())
+                    || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isOctalDigit(this.peekButOne())))
                 ) {
-                    sb.append((char) this.nextChar);
+                    sb.append((char) this.read());
                     state = 7;
                 } else
-                if (this.nextChar == 'l' || this.nextChar == 'L') {
-                    sb.append((char) this.nextChar);
-                    this.readNextChar();
+                if (this.peek("lL")) {
+                    sb.append((char) this.read());
                     return new Token(Token.INTEGER_LITERAL, sb.toString());
                 } else
-                if (this.nextChar == 'f' || this.nextChar == 'F' || this.nextChar == 'd' || this.nextChar == 'D') {
-                    sb.append((char) this.nextChar);
-                    this.readNextChar();
+                if (this.peek("fFdD")) {
+                    sb.append((char) this.read());
                     return new Token(Token.FLOATING_POINT_LITERAL, sb.toString());
                 } else
-                if (this.nextChar == '.') {
+                if (this.peekRead('.')) {
                     sb.append('.');
                     state = 2;
                 } else
-                if (this.nextChar == 'E' || this.nextChar == 'e') {
-                    sb.append((char) this.nextChar);
+                if (this.peek("Ee")) {
+                    sb.append((char) this.read());
                     state = 3;
                 } else
-                if (this.nextChar == 'x' || this.nextChar == 'X') {
-                    sb.append((char) this.nextChar);
+                if (this.peek("xX")) {
+                    sb.append((char) this.read());
                     state = 8;
                 } else
-                if (this.nextChar == 'b' || this.nextChar == 'B') {
-                    sb.append((char) this.nextChar);
+                if (this.peek("bB")) {
+                    sb.append((char) this.read());
                     state = 10;
                 } else
                 {
@@ -824,21 +779,21 @@ class Scanner {
 
             case 7: // In octal literal.
                 if (
-                    Scanner.isOctalDigit(this.nextChar)
-                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isOctalDigit(this.nextButOneChar())))
+                    Scanner.isOctalDigit(this.peek())
+                    || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isOctalDigit(this.peekButOne())))
                 ) {
-                    sb.append((char) this.nextChar);
+                    sb.append((char) this.read());
                 } else
-                if (this.nextChar == '8' || this.nextChar == '9') {
+                if (this.peek("89")) {
                     throw new CompileException(
-                        "Digit '" + (char) this.nextChar + "' not allowed in octal literal",
+                        "Digit '" + (char) this.peek() + "' not allowed in octal literal",
                         this.location()
                     );
                 } else
-                if (this.nextChar == 'l' || this.nextChar == 'L') {
+                if (this.peek("lL")) {
+
                     // Octal long literal.
-                    sb.append((char) this.nextChar);
-                    this.readNextChar();
+                    sb.append((char) this.read());
                     return new Token(Token.INTEGER_LITERAL, sb.toString());
                 } else
                 {
@@ -848,12 +803,12 @@ class Scanner {
                 break;
 
             case 8: // After '0x'.
-                if (Scanner.isHexDigit(this.nextChar)) {
-                    sb.append((char) this.nextChar);
+                if (Scanner.isHexDigit(this.peek())) {
+                    sb.append((char) this.read());
                     state = 9;
                 } else
-                if (this.nextChar == '.') {
-                    sb.append((char) this.nextChar);
+                if (this.peekRead('.')) {
+                    sb.append('.');
                     state = 12;
                 } else
                 {
@@ -863,23 +818,22 @@ class Scanner {
 
             case 9: // After "0x1".
                 if (
-                    Scanner.isHexDigit(this.nextChar)
-                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isHexDigit(this.nextButOneChar())))
+                    Scanner.isHexDigit(this.peek())
+                    || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isHexDigit(this.peekButOne())))
                 ) {
-                    sb.append((char) this.nextChar);
+                    sb.append((char) this.read());
                 } else
-                if (this.nextChar == '.') {
-                    sb.append((char) this.nextChar);
+                if (this.peekRead('.')) {
+                    sb.append('.');
                     state = 12;
                 } else
-                if (this.nextChar == 'p' || this.nextChar == 'P') {
-                    sb.append((char) this.nextChar);
+                if (this.peek("pP")) {
+                    sb.append((char) this.read());
                     state = 13;
                 } else
-                if (this.nextChar == 'l' || this.nextChar == 'L') {
+                if (this.peek("lL")) {
                     // Hex long literal
-                    sb.append((char) this.nextChar);
-                    this.readNextChar();
+                    sb.append((char) this.read());
                     return new Token(Token.INTEGER_LITERAL, sb.toString());
                 } else
                 {
@@ -889,24 +843,23 @@ class Scanner {
                 break;
 
             case 10: // After '0b'.
-                if (!Scanner.isBinaryDigit(this.nextChar)) {
+                if (!Scanner.isBinaryDigit(this.peek())) {
                     throw new CompileException("Binary digit expected after \"0b\"", this.location());
                 }
-                sb.append((char) this.nextChar);
+                sb.append((char) this.read());
                 state = 11;
                 break;
 
             case 11: // After first binary digit.
                 if (
-                    Scanner.isBinaryDigit(this.nextChar)
-                    || (this.nextChar == '_' && (this.nextButOneChar() == '_' || Scanner.isBinaryDigit(this.nextButOneChar())))
+                    Scanner.isBinaryDigit(this.peek())
+                    || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isBinaryDigit(this.peekButOne())))
                 ) {
-                    sb.append((char) this.nextChar);
+                    sb.append((char) this.read());
                 } else
-                if (this.nextChar == 'l' || this.nextChar == 'L') {
+                if (this.peek("lL")) {
                     // Hex long literal
-                    sb.append((char) this.nextChar);
-                    this.readNextChar();
+                    sb.append((char) this.read());
                     return new Token(Token.INTEGER_LITERAL, sb.toString());
                 } else
                 {
@@ -916,11 +869,11 @@ class Scanner {
                 break;
 
             case 12: // After "0x." or after "0xabc.".
-                if (Scanner.isHexDigit(this.nextChar)) {
-                    sb.append((char) this.nextChar);
+                if (Scanner.isHexDigit(this.peek())) {
+                    sb.append((char) this.read());
                 } else
-                if (this.nextChar == 'p' || this.nextChar == 'P') {
-                    sb.append((char) this.nextChar);
+                if (this.peek("pP")) {
+                    sb.append((char) this.read());
                     state = 13;
                 } else
                 {
@@ -929,37 +882,42 @@ class Scanner {
                 break;
 
             case 13: // After "0x111p".
-                if (this.nextChar == '-' || this.nextChar == '+') {
-                    sb.append((char) this.nextChar);
+                if (this.peek("-+")) {
+                    sb.append((char) this.read());
                     state = 14;
                 } else
-                if (Scanner.isDecimalDigit(this.nextChar)) {
-                    sb.append((char) this.nextChar);
+                if (Scanner.isDecimalDigit(this.peek())) {
+                    sb.append((char) this.read());
                     state = 15;
                 } else
                 {
-                    throw new CompileException("Unexpected character \"" + (char) this.nextChar + "\" in hexadecimal floating point literal", this.location());
+                    throw new CompileException(
+                        "Unexpected character \"" + (char) this.peek() + "\" in hexadecimal floating point literal",
+                        this.location()
+                    );
                 }
                 break;
 
             case 14: // After "0x111p-".
-                if (!Scanner.isDecimalDigit(this.nextChar)) {
-                    throw new CompileException("Unexpected character \"" + (char) this.nextChar + "\" in hexadecimal floating point literal", this.location());
+                if (!Scanner.isDecimalDigit(this.peek())) {
+                    throw new CompileException(
+                        "Unexpected character \"" + (char) this.peek() + "\" in hexadecimal floating point literal",
+                        this.location()
+                    );
                 }
-                sb.append((char) this.nextChar);
+                sb.append((char) this.read());
                 state = 15;
                 break;
 
             case 15: // After "0x111p-1".
                 if (
-                    Scanner.isDecimalDigit(this.nextChar) ||
-                    (this.nextChar == '_' && (Scanner.isDecimalDigit(this.nextButOneChar()) || this.nextButOneChar() == '_'))
+                    Scanner.isDecimalDigit(this.peek())
+                    || (this.peek() == '_' && (Scanner.isDecimalDigit(this.peekButOne()) || this.peekButOne() == '_'))
                 ) {
-                    sb.append((char) this.nextChar);
+                    sb.append((char) this.read());
                 } else
-                if (this.nextChar == 'f' || this.nextChar == 'F' || this.nextChar == 'd' || this.nextChar == 'D') {
-                    sb.append((char) this.nextChar);
-                    this.readNextChar();
+                if (this.peek("fFdD")) {
+                    sb.append((char) this.read());
                     return new Token(Token.FLOATING_POINT_LITERAL, sb.toString());
                 } else
                 {
@@ -970,8 +928,6 @@ class Scanner {
             default:
                 throw new AssertionError(state);
             }
-
-            this.readNextChar();
         }
     }
 
@@ -998,84 +954,139 @@ class Scanner {
     /** Scans the next literal character into a {@link StringBuilder}. */
     private void
     scanLiteralCharacter(StringBuilder sb) throws CompileException, IOException {
-        if (this.nextChar == -1) throw new CompileException("EOF in literal", this.location());
+        if (this.peek() == -1) throw new CompileException("EOF in literal", this.location());
 
-        if (this.nextChar == '\r' || this.nextChar == '\n') {
+        if (this.peek() == '\r' || this.peek() == '\n') {
             throw new CompileException("Line break in literal not allowed", this.location());
         }
 
-        if (this.nextChar != '\\') {
+        if (!this.peekRead('\\')) {
 
             // Not an escape sequence.
-            sb.append((char) this.nextChar);
-            this.readNextChar();
+            sb.append((char) this.read());
             return;
         }
 
         // JLS7 3.10.6: Escape sequences for character and string literals.
         sb.append('\\');
-        this.readNextChar();
 
         {
-            int idx = "btnfr\"'\\".indexOf(this.nextChar);
+            int idx = "btnfr\"'\\".indexOf(this.peek());
             if (idx != -1) {
 
                 // "\t" and friends.
-                sb.append((char) this.nextChar);
-                this.readNextChar();
+                sb.append((char) this.read());
                 return;
             }
         }
 
-        {
-            int idx = "01234567".indexOf(this.nextChar);
-            if (idx != -1) {
+        if (this.peek("01234567")) {
 
-                // Octal escapes: "\0" through "\3ff".
-                char firstChar = (char) this.nextChar;
-                sb.append(firstChar);
-                this.readNextChar();
+            // Octal escapes: "\0" through "\3ff".
+            char firstChar = (char) this.read();
+            sb.append(firstChar);
 
-                idx = "01234567".indexOf(this.nextChar);
-                if (idx == -1) return;
-                sb.append((char) this.nextChar);
-                this.readNextChar();
+            if (!this.peek("01234567")) return;
+            sb.append((char) this.read());
 
-                idx = "01234567".indexOf(this.nextChar);
-                if (idx == -1) return;
-                if ("0123".indexOf(firstChar) == -1) {
-                    throw new CompileException("Invalid octal escape", this.location());
-                }
-                sb.append((char) this.nextChar);
-                this.readNextChar();
-                return;
+            if (!this.peek("01234567")) return;
+            sb.append((char) this.read());
+
+            if ("0123".indexOf(firstChar) == -1) {
+                throw new CompileException("Invalid octal escape", this.location());
             }
+
+            return;
         }
 
         throw new CompileException("Invalid escape sequence", this.location());
     }
 
-    // Read one character and store in "nextChar".
-    private void
-    readNextChar() throws IOException, CompileException {
-
-        if (this.nextButOneChar != -1) {
-            this.nextChar = this.nextButOneChar;
-            this.nextButOneChar = -1;
-            return;
-        }
-
+    /**
+     * Returns the next character, but does not consume it.
+     */
+    private int
+    peek() throws CompileException, IOException {
+        if (this.nextChar != -1) return this.nextChar;
         try {
-            this.nextChar = this.in.read();
+            return (this.nextChar = this.internalRead());
         } catch (UnicodeUnescapeException ex) {
             throw new CompileException(ex.getMessage(), this.location(), ex);
         }
-        if (this.nextChar == '\r') {
+    }
+
+    /**
+     * @return Whether the next character is one of the <var>expectedCharacters</var>
+     */
+    private boolean
+    peek(String expectedCharacters) throws CompileException, IOException {
+        return expectedCharacters.indexOf((char) this.peek()) != -1;
+    }
+
+    /**
+     * Returns the next-but-one character, but does not consume any characters.
+     */
+    private int
+    peekButOne() throws CompileException, IOException {
+        if (this.nextButOneChar != -1) return this.nextButOneChar;
+        this.peek();
+        try {
+            return (this.nextButOneChar = this.internalRead());
+        } catch (UnicodeUnescapeException ex) {
+            throw new CompileException(ex.getMessage(), this.location(), ex);
+        }
+    }
+
+    /**
+     * Consumes and returns the next character.
+     *
+     * @return Whether the next character equalled the <var>expected</var> character
+     */
+    private int
+    read() throws CompileException, IOException {
+
+        this.peek();
+
+        final int result = this.nextChar;
+
+        this.nextChar       = this.nextButOneChar;
+        this.nextButOneChar = -1;
+
+        return result;
+    }
+
+    /**
+     * Consumes the next character iff it equals the <var>expected</var> character.
+     *
+     * @return Whether the next character equalled the <var>expected</var> character
+     */
+    private boolean
+    peekRead(int expected) throws CompileException, IOException {
+
+        if (this.peek() == expected) {
+            this.nextChar       = this.nextButOneChar;
+            this.nextButOneChar = -1;
+            return true;
+        }
+
+        return false;
+    }
+
+    private int
+    internalRead() throws IOException, CompileException {
+
+        int result;
+        try {
+            result = this.in.read();
+        } catch (UnicodeUnescapeException ex) {
+            throw new CompileException(ex.getMessage(), this.location(), ex);
+        }
+        if (result == '\r') {
             ++this.nextCharLineNumber;
             this.nextCharColumnNumber = 0;
             this.crLfPending          = true;
         } else
-        if (this.nextChar == '\n') {
+        if (result == '\n') {
             if (this.crLfPending) {
                 this.crLfPending = false;
             } else {
@@ -1086,23 +1097,14 @@ class Scanner {
         {
             ++this.nextCharColumnNumber;
         }
-//System.out.println("'" + (char) nextChar + "' = " + (int) nextChar);
-    }
 
-    private int
-    nextButOneChar() throws CompileException, IOException {
-        if (this.nextButOneChar != -1) return this.nextButOneChar;
-        try {
-            return (this.nextButOneChar = this.in.read());
-        } catch (UnicodeUnescapeException ex) {
-            throw new CompileException(ex.getMessage(), this.location(), ex);
-        }
+        return result;
     }
 
     @Nullable private final String optionalFileName;
     private final Reader           in;
-    private int                    nextChar = -1; // Always valid (one character read-ahead).
-    private int                    nextButOneChar = -1; // -1 == not read
+    private int                    nextChar       = -1;
+    private int                    nextButOneChar = -1;
     private boolean                crLfPending;
     private short                  nextCharLineNumber;
     private short                  nextCharColumnNumber;
