@@ -194,12 +194,12 @@ class JavaSourceIClassLoader extends IClassLoader {
         // Scan and parse the source file.
         InputStream inputStream = sourceResource.open();
         try {
+
             Scanner scanner = new Scanner(
                 sourceResource.getFileName(),
                 inputStream,
                 this.optionalCharacterEncoding
             );
-            scanner.setWarningHandler(this.optionalWarningHandler);
 
             Parser parser = new Parser(scanner);
             parser.setWarningHandler(this.optionalWarningHandler);

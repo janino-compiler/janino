@@ -138,10 +138,92 @@ import org.codehaus.janino.Scanner.Token;
  */
 public
 class Parser {
+
     private final Scanner scanner;
 
     public
     Parser(Scanner scanner) { this.scanner = scanner; }
+
+    /** The optional JAVADOC comment preceding the {@link #nextToken}. */
+    @Nullable private String optionalDocComment;
+
+    /**
+     * Whether the scanner is in 'expect greater' mode: If so, it parses character sequences like ">>>=" as
+     * ">", ">", ">", "=".
+     */
+    private boolean expectGreater;
+
+    /**
+     * While the scanner is in "expect greater mode", then the char sequence ">>" is scanned into two ">" tokens.
+     *
+     * @return Whether the scanner is currently in 'expect greater' mode
+     */
+    public boolean
+    getExpectGreater() { return this.expectGreater; }
+
+    /**
+     * While the scanner is in "expect greater mode", then the char sequence ">>" is scanned into two ">" tokens.
+     *
+     * @param value Whether "expect greater mode" should be activated
+     * @return      Whether "expect greater mode" was previously active
+     */
+    public boolean
+    setExpectGreater(boolean value) {
+        boolean result = this.expectGreater;
+        this.expectGreater = value;
+        return result;
+    }
+
+    private Scanner.Token
+    produceToken() throws CompileException, IOException {
+
+        if (this.pushback != null) {
+            Token result = this.pushback;
+            this.pushback = null;
+            return result;
+        }
+
+        for (;;) {
+            Token token = this.scanner.produce();
+
+            switch (token.type) {
+
+            case Token.SPACE:
+            case Token.C_PLUS_PLUS_STYLE_COMMENT:
+                ;
+                break;
+
+            case Token.C_STYLE_COMMENT:
+                if (token.value.startsWith("/**")) {
+                    if (Parser.this.optionalDocComment != null) {
+                        Parser.this.warning("MDC", "Misplaced doc comment", this.scanner.location());
+                        Parser.this.optionalDocComment = null;
+                    }
+                }
+                break;
+
+            default:
+                if (Parser.this.expectGreater && token.type == Token.OPERATOR && token.value.startsWith(">>")) {
+                    this.pushback = this.scanner.new Token(Token.OPERATOR, token.value.substring(1));
+                    return this.scanner.new Token(Token.OPERATOR, ">");
+                }
+                return token;
+            }
+        }
+    }
+    @Nullable private Token pushback;
+
+    /**
+     * Get the text of the doc comment (a.k.a. "JAVADOC comment") preceeding
+     * the next token.
+     * @return <code>null</code> if the next token is not preceeded by a doc comment
+     */
+    @Nullable public String
+    doc() {
+        String s = this.optionalDocComment;
+        this.optionalDocComment = null;
+        return s;
+    }
 
     /** @return The scanner that produces the tokens for this parser. */
     public Scanner
@@ -159,7 +241,7 @@ class Parser {
 
         CompilationUnit compilationUnit = new CompilationUnit(this.location().getFileName());
 
-        String    docComment = this.scanner.doc();
+        String    docComment = this.doc();
         Modifiers modifiers  = this.parseModifiers();
 
         if (this.peek("package")) {
@@ -171,7 +253,7 @@ class Parser {
 
             compilationUnit.setPackageDeclaration(this.parsePackageDeclaration());
 
-            docComment = this.scanner.doc();
+            docComment = this.doc();
             modifiers  = this.parseModifiers();
         }
 
@@ -187,7 +269,7 @@ class Parser {
             }
             compilationUnit.addImportDeclaration(this.parseImportDeclaration());
 
-            docComment = this.scanner.doc();
+            docComment = this.doc();
             modifiers  = this.parseModifiers();
         }
 
@@ -295,7 +377,7 @@ class Parser {
     public PackageMemberTypeDeclaration
     parsePackageMemberTypeDeclaration() throws CompileException, IOException {
 
-        return this.parsePackageMemberTypeDeclarationRest(this.scanner.doc(), this.parseModifiers());
+        return this.parsePackageMemberTypeDeclarationRest(this.doc(), this.parseModifiers());
     }
 
     /**
@@ -702,11 +784,11 @@ class Parser {
         Rvalue[] arguments = this.peek("(") ? this.parseArguments() : null;
 
         Java.EnumConstant result = new Java.EnumConstant(
-            this.location(),    // location
-            this.scanner.doc(), // optionalDocComment
-            annotations,        // annotations
-            name,               // name
-            arguments           // optionalArguments
+            this.location(), // location
+            this.doc(),      // optionalDocComment
+            annotations,     // annotations
+            name,            // name
+            arguments        // optionalArguments
         );
 
         if (this.peek("{")) {
@@ -735,7 +817,7 @@ class Parser {
     parseClassBodyDeclaration(AbstractClassDeclaration classDeclaration) throws CompileException, IOException {
         if (this.peekRead(";")) return;
 
-        String    optionalDocComment = this.scanner.doc();
+        String    optionalDocComment = this.doc();
         Modifiers modifiers          = this.parseModifiers();
 
         // Initializer?
@@ -1015,7 +1097,7 @@ class Parser {
 
             if (this.peekRead(";")) continue;
 
-            String    optionalDocComment = this.scanner.doc();
+            String    optionalDocComment = this.doc();
             Modifiers modifiers          = this.parseModifiers();
 
             // "void" method declaration (without type parameters).
@@ -1473,7 +1555,7 @@ class Parser {
         if (this.peekRead("class")) {
             // JAVADOC[TM] ignores doc comments for local classes, but we
             // don't...
-            String optionalDocComment = this.scanner.doc();
+            String optionalDocComment = this.doc();
             if (optionalDocComment == null) this.warning("LCDCM", "Local class doc comment missing", this.location());
 
             final LocalClassDeclaration lcd = (LocalClassDeclaration) this.parseClassDeclarationRest(
@@ -2180,7 +2262,7 @@ class Parser {
 
         // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators starting
         // with '>>'.
-        boolean orig = this.scanner.setExpectGreater(true);
+        boolean orig = this.setExpectGreater(true);
         try {
 
             List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
@@ -2190,7 +2272,7 @@ class Parser {
             }
             return (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()]);
         } finally {
-            this.scanner.setExpectGreater(orig);
+            this.setExpectGreater(orig);
         }
     }
 
@@ -2448,7 +2530,7 @@ class Parser {
 
                     // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators
                     // starting with '>>'.
-                    boolean orig = this.scanner.setExpectGreater(true);
+                    boolean orig = this.setExpectGreater(true);
                     try {
 
                         // '<' TypeArgument [ { ',' TypeArgument } '>' ]
@@ -2462,7 +2544,7 @@ class Parser {
                             (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
                         );
                     } finally {
-                        this.scanner.setExpectGreater(orig);
+                        this.setExpectGreater(orig);
                     }
                 }
 
@@ -2472,7 +2554,7 @@ class Parser {
 
                     // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators
                     // starting with '>>'.
-                    boolean orig = this.scanner.setExpectGreater(true);
+                    boolean orig = this.setExpectGreater(true);
                     try {
 
                         if (this.peek(new String[] { "<", ">", "," }) != -1) {
@@ -2502,7 +2584,7 @@ class Parser {
                             );
                         }
                     } finally {
-                        this.scanner.setExpectGreater(orig);
+                        this.setExpectGreater(orig);
                     }
                 }
 
@@ -3120,7 +3202,7 @@ class Parser {
     /** @return The next token, but does not consume it */
     public Token
     peek() throws CompileException, IOException {
-        if (this.nextToken == null) this.nextToken = this.scanner.produce();
+        if (this.nextToken == null) this.nextToken = this.produceToken();
         assert this.nextToken != null;
         return this.nextToken;
     }
@@ -3128,8 +3210,8 @@ class Parser {
     /** @return The next-but-one token, but consumes neither the next nor the next-but-one token */
     public Token
     peekNextButOne() throws CompileException, IOException {
-        if (this.nextToken == null) this.nextToken = this.scanner.produce();
-        if (this.nextButOneToken == null) this.nextButOneToken = this.scanner.produce();
+        if (this.nextToken == null) this.nextToken = this.produceToken();
+        if (this.nextButOneToken == null) this.nextButOneToken = this.produceToken();
         assert this.nextButOneToken != null;
         return this.nextButOneToken;
     }
@@ -3138,7 +3220,7 @@ class Parser {
     public Token
     read() throws CompileException, IOException {
 
-        if (this.nextToken == null) return this.scanner.produce();
+        if (this.nextToken == null) return this.produceToken();
 
         final Token result = this.nextToken;
         assert result != null;
@@ -3234,7 +3316,7 @@ class Parser {
             return true;
         }
 
-        Token t = this.scanner.produce();
+        Token t = this.produceToken();
         if (t.value.equals(suspected)) return true;
         this.nextToken = t;
         return false;
@@ -3250,7 +3332,7 @@ class Parser {
             this.nextButOneToken = null;
             return idx;
         }
-        Token t   = this.scanner.produce();
+        Token t   = this.produceToken();
         int   idx = Parser.indexOf(values, t.value);
         if (idx != -1) return idx;
         this.nextToken = t;

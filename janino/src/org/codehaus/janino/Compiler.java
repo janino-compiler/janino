@@ -586,8 +586,9 @@ class Compiler {
         @Nullable String optionalCharacterEncoding
     ) throws CompileException, IOException {
         try {
+
             Scanner scanner = new Scanner(fileName, inputStream, optionalCharacterEncoding);
-            scanner.setWarningHandler(this.optionalWarningHandler);
+
             Parser parser = new Parser(scanner);
             parser.setWarningHandler(this.optionalWarningHandler);
 
