@@ -33,8 +33,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICookable;
@@ -409,7 +410,7 @@ class Scanner {
             if ("false".equals(s)) return Token.BOOLEAN_LITERAL;
             if ("null".equals(s))  return Token.NULL_LITERAL;
 
-            if (Scanner.JAVA_KEYWORDS.containsKey(s)) return Token.KEYWORD;
+            if (Scanner.JAVA_KEYWORDS.contains(s)) return Token.KEYWORD;
 
             return Token.IDENTIFIER;
         }
@@ -442,16 +443,11 @@ class Scanner {
         }
 
         // Scan operator (including what Java calls "separators").
-        {
-            String v = (String) Scanner.JAVA_OPERATORS.get(new String(new char[] { (char) this.peek() }));
-            if (v != null) {
-                for (;;) {
-                    this.read();
-                    String v2 = (String) Scanner.JAVA_OPERATORS.get(v + (char) this.peek());
-                    if (v2 == null) return Token.OPERATOR;
-                    v = v2;
-                }
-            }
+        if (Scanner.JAVA_OPERATORS.contains(String.valueOf((char) this.peek()))) {
+            do {
+                this.read();
+            } while (Scanner.JAVA_OPERATORS.contains(this.sb.toString() + (char) this.peek()));
+            return Token.OPERATOR;
         }
 
         throw new CompileException(
@@ -867,27 +863,34 @@ class Scanner {
      */
     private short tokenColumnNumber;
 
-    private static final Map<String, String> JAVA_KEYWORDS = new HashMap<String, String>();
-    static {
-        for (String keyword : new String[] {
-            "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue",
-            "default", "do", "double", "else", "extends", "final", "finally", "float", "for", "goto", "if",
-            "implements", "import", "instanceof", "int", "interface", "long", "native", "new", "package", "private",
-            "protected", "public", "return", "short", "static", "strictfp", "super", "switch", "synchronized", "this",
-            "throw", "throws", "transient", "try", "void", "volatile", "while",
-        }) Scanner.JAVA_KEYWORDS.put(keyword, keyword);
-    }
+    private static final Set<String> JAVA_KEYWORDS = new HashSet<String>(Arrays.asList(
+        "abstract", "assert",
+        "boolean", "break", "byte",
+        "case", "catch", "char", "class", "const", "continue",
+        "default", "do", "double",
+        "else", "enum", "extends",
+        "final", "finally", "float", "for",
+        "goto",
+        "if", "implements", "import", "instanceof", "int", "interface",
+        "long",
+        "native", "new",
+        "package", "private", "protected", "public",
+        "return",
+        "short", "static", "strictfp", "super", "switch", "synchronized",
+        "this", "throw", "throws", "transient", "try",
+        "void", "volatile",
+        "while"
+    ));
 
-    private static final Map<String, String> JAVA_OPERATORS = new HashMap<String, String>();
-    static {
-        for (String op : new String[] {
-            // Separators:
-            "(", ")", "{", "}", "[", "]", ";", ",", ".", "@",
-            // Operators:
-            "=",  ">",  "<",  "!",  "~",  "?",  ":",
-            "==", "<=", ">=", "!=", "&&", "||", "++", "--",
-            "+",  "-",  "*",  "/",  "&",  "|",  "^",  "%",  "<<",  ">>",  ">>>",
-            "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=",
-        }) Scanner.JAVA_OPERATORS.put(op, op);
-    }
+    private static final Set<String> JAVA_OPERATORS = new HashSet<String>(Arrays.asList(
+
+        // Separators:
+        "(", ")", "{", "}", "[", "]", ";", ",", ".", "@",
+
+        // Operators:
+        "=",  ">",  "<",  "!",  "~",  "?",  ":",
+        "==", "<=", ">=", "!=", "&&", "||", "++", "--",
+        "+",  "-",  "*",  "/",  "&",  "|",  "^",  "%",  "<<",  ">>",  ">>>",
+        "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>="
+    ));
 }
