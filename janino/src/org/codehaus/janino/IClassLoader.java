@@ -84,6 +84,7 @@ class IClassLoader {
     public IClass TYPE_java_util_Iterator;
 
     // Representations of commonly used methods.
+    public IMethod METH_java_lang_Enum__ordinal;
     public IMethod METH_java_lang_Iterable__iterator;
     public IMethod METH_java_lang_String__concat__java_lang_String;
     public IMethod METH_java_lang_String__valueOf__int;
@@ -151,6 +152,7 @@ class IClassLoader {
             this.TYPE_java_util_Iterator             = this.requireType(Descriptor.JAVA_UTIL_ITERATOR);
 
             // SUPPRESS CHECKSTYLE LineLength:20
+            this.METH_java_lang_Enum__ordinal                           = IClassLoader.requireMethod(this.TYPE_java_lang_Enum,          "ordinal");
             this.METH_java_lang_Iterable__iterator                      = IClassLoader.requireMethod(this.TYPE_java_lang_Iterable,      "iterator");
             this.METH_java_lang_String__concat__java_lang_String        = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "concat",   this.TYPE_java_lang_String);
             this.METH_java_lang_String__valueOf__int                    = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.INT);

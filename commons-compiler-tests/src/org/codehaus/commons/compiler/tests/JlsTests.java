@@ -813,6 +813,25 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
+    test_14_11__TheSwitchStatement_enum() throws Exception {
+        this.assertScriptReturnsTrue(
+            ""
+            + "import java.lang.annotation.ElementType;\n"
+            + "\n"
+            + "ElementType x = ElementType.FIELD;\n"
+            + "switch (x) {\n"
+            + "case ANNOTATION_TYPE:\n"
+            + "    return false;\n"
+            + "case FIELD:\n"
+            + "    return true;\n"
+            + "default:\n"
+            + "    break;\n"
+            + "}\n"
+            + "return false;"
+        );
+    }
+
+    @Test public void
     test_14_14_2_1__TheEnhancedForStatement_Iterable() throws Exception {
         this.assertScriptReturnsTrue(
             "String x = \"A\";\n"

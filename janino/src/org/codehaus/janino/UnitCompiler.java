@@ -1650,14 +1650,22 @@ class UnitCompiler {
     private boolean
     compile2(SwitchStatement ss) throws CompileException {
 
+        boolean isEnumSwitch;
+
         // Compute condition.
         IClass switchExpressionType = this.compileGetValue(ss.condition);
-        this.assignmentConversion(
-            ss,                   // locatable
-            switchExpressionType, // sourceType
-            IClass.INT,           // targetType
-            null                  // optionalConstantValue
-        );
+        if (this.iClassLoader.TYPE_java_lang_Enum.isAssignableFrom(switchExpressionType)) {
+            isEnumSwitch = true;
+            this.invoke(ss, this.iClassLoader.METH_java_lang_Enum__ordinal);
+        } else {
+            isEnumSwitch = false;
+            this.assignmentConversion(
+                ss,                   // locatable
+                switchExpressionType, // sourceType
+                IClass.INT,           // targetType
+                null                  // optionalConstantValue
+            );
+        }
 
         // Prepare the map of case labels to code offsets.
         TreeMap<Integer, CodeContext.Offset> caseLabelMap       = new TreeMap<Integer, CodeContext.Offset>();
@@ -1670,38 +1678,62 @@ class UnitCompiler {
             sbsgOffsets[i] = this.getCodeContext().new Offset();
             for (Rvalue caseLabel : sbsg.caseLabels) {
 
-                // Verify that case label value is a constant.
-                Object cv = this.getConstantValue(caseLabel);
-                if (cv == UnitCompiler.NOT_CONSTANT) {
-                    this.compileError("Value of 'case' label does not pose a constant value", caseLabel.getLocation());
-                    cv = new Integer(99);
-                }
-
-                // Verify that case label is assignable to the type of the switch expression.
-                IClass rvType = this.getType(caseLabel);
-                this.assignmentConversion(
-                    ss,                   // locatable
-                    rvType,               // sourceType
-                    switchExpressionType, // targetType
-                    cv                    // optionalConstantValue
-                );
-
-                // Convert char, byte, short, int to "Integer".
                 Integer civ;
-                if (cv instanceof Integer) {
-                    civ = (Integer) cv;
-                } else
-                if (cv instanceof Number) {
-                    civ = new Integer(((Number) cv).intValue());
-                } else
-                if (cv instanceof Character) {
-                    civ = new Integer(((Character) cv).charValue());
+
+                CIV:
+                if (isEnumSwitch) {
+                    if (!(caseLabel instanceof Java.AmbiguousName)) {
+                        this.compileError("Case label must be an enum constant", caseLabel.getLocation());
+                        civ = 99;
+                        break CIV;
+                    }
+                    String[] identifiers = ((Java.AmbiguousName) caseLabel).identifiers;
+                    if (identifiers.length != 1) {
+                        this.compileError("Case label must be a plain enum constant", caseLabel.getLocation());
+                        civ = 99;
+                        break CIV;
+                    }
+                    String constantName = identifiers[0];
+
+                    IField[] fields = switchExpressionType.getDeclaredIFields();
+                    for (int ordinal = 0; ordinal < fields.length; ordinal++) {
+                        if (fields[ordinal].getName().equals(constantName)) {
+                            civ = ordinal;
+                            break CIV;
+                        }
+                    }
+
+                    this.compileError("Unknown enum constant \"" + constantName + "\"", caseLabel.getLocation());
+                    civ = 99;
                 } else {
-                    this.compileError(
-                        "Value of case label must be a char, byte, short or int constant",
-                        caseLabel.getLocation()
-                    );
-                    civ = new Integer(99);
+
+                    // Verify that case label value is a constant.
+                    Object cv = this.getConstantValue(caseLabel);
+                    if (cv == UnitCompiler.NOT_CONSTANT) {
+                        this.compileError(
+                            "Value of 'case' label does not pose a constant value",
+                            caseLabel.getLocation()
+                        );
+                        civ = 99;
+                        break CIV;
+                    }
+
+                    // Convert char, byte, short, int to "Integer".
+                    if (cv instanceof Integer) {
+                        civ = (Integer) cv;
+                    } else
+                    if (cv instanceof Number) {
+                        civ = new Integer(((Number) cv).intValue());
+                    } else
+                    if (cv instanceof Character) {
+                        civ = new Integer(((Character) cv).charValue());
+                    } else {
+                        this.compileError(
+                            "Value of case label must be a char, byte, short or int constant",
+                            caseLabel.getLocation()
+                        );
+                        civ = new Integer(99);
+                    }
                 }
 
                 // Store in case label map.
@@ -11012,6 +11044,10 @@ class UnitCompiler {
         throw new JaninoRuntimeException("Unexpected type \"" + t + "\"");
     }
 
+    /**
+     * Invokes the <var>iMethod</var>; assumes that {@code this} (unless <var>iMethod</var> is static) and the correct
+     * number and types of arguments are on the operand stack.
+     */
     private void
     invoke(Locatable locatable, IMethod iMethod) throws CompileException {
         if (iMethod.getDeclaringIClass().isInterface()) {
@@ -11035,6 +11071,10 @@ class UnitCompiler {
         }
     }
 
+    /**
+     * Invokes the <var>iConstructor</var>; assumes that {@code this} and the correct number and types of arguments are
+     * on the operand stack.
+     */
     private void
     invoke(Locatable locatable, IConstructor iConstructor) throws CompileException {
         this.writeOpcode(locatable, Opcode.INVOKESPECIAL);

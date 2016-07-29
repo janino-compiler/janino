@@ -225,6 +225,85 @@ class Scanner {
     location() { return new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber); }
 
     /**
+     * Enumeration of the types of tokens that this scanner produces.
+     */
+    public
+    enum TokenType {
+
+        /**
+         * Indication of the 'end-of-input' condition.
+         */
+        EOF,
+
+        /**
+         * The token represents a Java identifier.
+         */
+        IDENTIFIER,
+
+        /**
+         * The token represents a Java keyword. ({@code "true"}, {@code "false"} and {@code "null"} are <em>not</em>
+         * Java keywords, but {@link #BOOLEAN_LITERAL}s and {@link #NULL_LITERAL}s.)
+         */
+        KEYWORD,
+
+        /**
+         * The token represents an integer literal; its {@link #value} is the text of the integer literal exactly as it
+         * appears in the source code (e.g. "0", "123", "123L", "03ff", "0xffff", "0b10101010").
+         */
+        INTEGER_LITERAL,
+
+        /**
+         * The token represents a floating-point literal; its {@link #value} is the text of the floating-point literal
+         * exactly as it appears in the source code (e.g. "1.23", "1.23F", "1.23D", "1.", ".1", "1E13").
+         */
+        FLOATING_POINT_LITERAL,
+
+        /**
+         * The token represents a boolean literal; its {@link #value} is either 'true' or 'false'.
+         */
+        BOOLEAN_LITERAL,
+
+        /**
+         * The token represents a character literal; its {@link #value} is the text of the character literal exactly as
+         * it appears in the source code (including the single quotes around it).
+         */
+        CHARACTER_LITERAL,
+
+        /**
+         * The token represents a string literal; its {@link #value} is the text of the string literal exactly as it
+         * appears in the source code (including the double quotes around it).
+         */
+        STRING_LITERAL,
+
+        /**
+         * The token represents the {@code null} literal; its {@link #value} is 'null'.
+         */
+        NULL_LITERAL,
+
+        /**
+         * The token represents an operator; its {@link #value} is exactly the particular operator (e.g.
+         * "&lt;&lt;&lt;=").
+         */
+        OPERATOR,
+
+        /**
+         * The token represents a "space"; i.e. a non-empty sequence of whitespace characters.
+         */
+        SPACE,
+
+        /**
+         * The token represents a C++-style comment like "{@code // This is a C++-style comment.}".
+         */
+        C_PLUS_PLUS_STYLE_COMMENT,
+
+        /**
+         * The token represents a C-style comment, like "<code>/* This is a C-style comment. &#42;/</code>", which may
+         * span multiple lines.
+         */
+        C_STYLE_COMMENT,
+    }
+
+    /**
      * Representation of a Java&trade; token.
      */
     public final
@@ -236,74 +315,13 @@ class Scanner {
         @Nullable private Location     location; // Created lazily.
 
         /** The type of this token; legal values are the various public constant declared in this class. */
-        public final int type;
-
-        /** Indication of the 'end-of-input' condition. */
-        public static final int EOF = 0;
-
-        /** The token represents an identifier. */
-        public static final int IDENTIFIER = 1;
-
-        /** The token represents a keyword. */
-        public static final int KEYWORD = 2;
-
-        /**
-         * The token represents an integer literal; its {@link #value} is the text of the integer literal exactly as it
-         * appears in the source code (e.g. "0", "123", "123L", "03ff", "0xffff", "0b10101010").
-         */
-        public static final int INTEGER_LITERAL = 3;
-
-        /**
-         * The token represents a floating-point literal; its {@link #value} is the text of the floating-point literal
-         * exactly as it appears in the source code (e.g. "1.23", "1.23F", "1.23D", "1.", ".1", "1E13").
-         */
-        public static final int FLOATING_POINT_LITERAL = 4;
-
-        /** The token represents a boolean literal; its {@link #value} is either 'true' or 'false'. */
-        public static final int BOOLEAN_LITERAL = 5;
-
-        /**
-         * The token represents a character literal; its {@link #value} is the text of the character literal exactly as
-         * it appears in the source code (including the single quotes around it).
-         */
-        public static final int CHARACTER_LITERAL = 6;
-
-        /**
-         * The token represents a string literal; its {@link #value} is the text of the string literal exactly as it
-         * appears in the source code (including the double quotes around it).
-         */
-        public static final int STRING_LITERAL = 7;
-
-        /** The token represents the {@code null} literal; its {@link #value} is 'null'. */
-        public static final int NULL_LITERAL = 8;
-
-        /**
-         * The token represents an operator; its {@link #value} is exactly the particular operator (e.g.
-         * "&lt;&lt;&lt;=").
-         */
-        public static final int OPERATOR = 9;
-
-        /**
-         * The token represents a "space" area; i.e. a non-empty sequence of whitespace characters.
-         */
-        public static final int SPACE = 10;
-
-        /**
-         * The token represents a C++-style comment like "{@code // This is a C++-style comment.}".
-         */
-        public static final int C_PLUS_PLUS_STYLE_COMMENT = 11;
-
-        /**
-         * The token represents a C-style comment, like "{@code /* This is a C-style comment. &#42;/}", which may span
-         * multiple lines.
-         */
-        public static final int C_STYLE_COMMENT = 12;
+        public final TokenType type;
 
         /** The text of the token exactly as it appears in the source code. */
         public final String value;
 
         public
-        Token(int type, String value) {
+        Token(TokenType type, String value) {
             this.optionalFileName = Scanner.this.optionalFileName;
             this.lineNumber       = Scanner.this.tokenLineNumber;
             this.columnNumber     = Scanner.this.tokenColumnNumber;
@@ -338,28 +356,28 @@ class Scanner {
     public Token
     produce() throws CompileException, IOException {
 
-        if (this.peek() == -1) return new Token(Token.EOF, "EOF");
+        if (this.peek() == -1) return new Token(TokenType.EOF, "EOF");
 
         this.tokenLineNumber   = this.nextCharLineNumber;
         this.tokenColumnNumber = this.nextCharColumnNumber;
 
         this.sb.setLength(0);
 
-        int    tokenType  = this.scan();
-        String tokenValue = this.sb.toString();
+        TokenType tokenType  = this.scan();
+        String    tokenValue = this.sb.toString();
 
         // We want to be able to use REFERENCE EQUALITY for these...
         if (
-            tokenType == Token.KEYWORD
-            || tokenType == Token.BOOLEAN_LITERAL
-            || tokenType == Token.NULL_LITERAL
-            || tokenType == Token.OPERATOR
+            tokenType == TokenType.KEYWORD
+            || tokenType == TokenType.BOOLEAN_LITERAL
+            || tokenType == TokenType.NULL_LITERAL
+            || tokenType == TokenType.OPERATOR
         ) tokenValue = tokenValue.intern();
 
         return new Token(tokenType, tokenValue);
     }
 
-    private int
+    private TokenType
     scan() throws CompileException, IOException {
 
         // Space token?
@@ -367,19 +385,19 @@ class Scanner {
             do {
                 this.read();
             } while (this.peek() != -1 && Character.isWhitespace((char) this.peek()));
-            return Token.SPACE;
+            return TokenType.SPACE;
         }
 
         // Scan a token that begins with "/".
         if (this.peekRead('/')) {
 
-            if (this.peekRead(-1)) return Token.OPERATOR; // "/"
+            if (this.peekRead(-1)) return TokenType.OPERATOR; // "/"
 
-            if (this.peekRead('=')) return Token.OPERATOR; // "/="
+            if (this.peekRead('=')) return TokenType.OPERATOR; // "/="
 
             if (this.peekRead('/')) { // C++-style comment.
                 while (!this.peek("\r\n")) this.read();
-                return Token.C_PLUS_PLUS_STYLE_COMMENT;
+                return TokenType.C_PLUS_PLUS_STYLE_COMMENT;
             }
 
             if (this.peekRead('*')) { // C-style comment.
@@ -390,7 +408,7 @@ class Scanner {
                     }
                     char c = this.read();
                     if (asteriskPending) {
-                        if (c == '/') return Token.C_STYLE_COMMENT;
+                        if (c == '/') return TokenType.C_STYLE_COMMENT;
                         if (c != '*') asteriskPending = false;
                     } else {
                         if (c == '*') asteriskPending = true;
@@ -398,7 +416,7 @@ class Scanner {
                 }
             }
 
-            return Token.OPERATOR; // "/"
+            return TokenType.OPERATOR; // "/"
         }
 
         // Scan identifier.
@@ -406,13 +424,13 @@ class Scanner {
             this.read();
             while (Character.isJavaIdentifierPart((char) this.peek())) this.read();
             String s = this.sb.toString();
-            if ("true".equals(s))  return Token.BOOLEAN_LITERAL;
-            if ("false".equals(s)) return Token.BOOLEAN_LITERAL;
-            if ("null".equals(s))  return Token.NULL_LITERAL;
+            if ("true".equals(s))  return TokenType.BOOLEAN_LITERAL;
+            if ("false".equals(s)) return TokenType.BOOLEAN_LITERAL;
+            if ("null".equals(s))  return TokenType.NULL_LITERAL;
 
-            if (Scanner.JAVA_KEYWORDS.contains(s)) return Token.KEYWORD;
+            if (Scanner.JAVA_KEYWORDS.contains(s)) return TokenType.KEYWORD;
 
-            return Token.IDENTIFIER;
+            return TokenType.IDENTIFIER;
         }
 
         // Scan numeric literal.
@@ -424,7 +442,7 @@ class Scanner {
         // Scan string literal.
         if (this.peekRead('"')) {
             while (!this.peekRead('"')) this.scanLiteralCharacter();
-            return Token.STRING_LITERAL;
+            return TokenType.STRING_LITERAL;
         }
 
         // Scan character literal.
@@ -439,7 +457,7 @@ class Scanner {
             this.scanLiteralCharacter();
             if (!this.peekRead('\'')) throw new CompileException("Closing single quote missing", this.location());
 
-            return Token.CHARACTER_LITERAL;
+            return TokenType.CHARACTER_LITERAL;
         }
 
         // Scan operator (including what Java calls "separators").
@@ -447,7 +465,7 @@ class Scanner {
             do {
                 this.read();
             } while (Scanner.JAVA_OPERATORS.contains(this.sb.toString() + (char) this.peek()));
-            return Token.OPERATOR;
+            return TokenType.OPERATOR;
         }
 
         throw new CompileException(
@@ -456,7 +474,7 @@ class Scanner {
         );
     }
 
-    private int
+    private TokenType
     scanNumericLiteral() throws CompileException, IOException {
 
         if (this.peekRead('0')) {
@@ -478,16 +496,16 @@ class Scanner {
                 if (this.peekRead("lL")) {
 
                     // Octal long literal.
-                    return Token.INTEGER_LITERAL;
+                    return TokenType.INTEGER_LITERAL;
                 }
 
                 // Octal int literal
-                return Token.INTEGER_LITERAL;
+                return TokenType.INTEGER_LITERAL;
             }
 
-            if (this.peekRead("lL")) return Token.INTEGER_LITERAL; // "0L"
+            if (this.peekRead("lL")) return TokenType.INTEGER_LITERAL; // "0L"
 
-            if (this.peekRead("fFdD")) return Token.FLOATING_POINT_LITERAL; // "0F", "0D"
+            if (this.peekRead("fFdD")) return TokenType.FLOATING_POINT_LITERAL; // "0F", "0D"
 
             if (this.peek(".Ee")) {
                 if (this.peekRead('.')) {
@@ -518,7 +536,7 @@ class Scanner {
 
                 this.peekRead("fFdD");
 
-                return Token.FLOATING_POINT_LITERAL;
+                return TokenType.FLOATING_POINT_LITERAL;
             }
 
             if (this.peekRead("xX")) { // "0x"
@@ -571,13 +589,13 @@ class Scanner {
 
                     this.peekRead("fFdD");
 
-                    return Token.FLOATING_POINT_LITERAL;
+                    return TokenType.FLOATING_POINT_LITERAL;
                 }
 
-                if (this.peekRead("lL")) return Token.INTEGER_LITERAL; // Hex long literal
+                if (this.peekRead("lL")) return TokenType.INTEGER_LITERAL; // Hex long literal
 
                 // Hex int literal
-                return Token.INTEGER_LITERAL;
+                return TokenType.INTEGER_LITERAL;
             }
 
             if (this.peekRead("bB")) { // "0b"
@@ -592,12 +610,12 @@ class Scanner {
                     || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isBinaryDigit(this.peekButOne())))
                 ) this.read();
 
-                if (this.peekRead("lL")) return Token.INTEGER_LITERAL;
+                if (this.peekRead("lL")) return TokenType.INTEGER_LITERAL;
 
-                return Token.INTEGER_LITERAL;
+                return TokenType.INTEGER_LITERAL;
             }
 
-            return Token.INTEGER_LITERAL;
+            return TokenType.INTEGER_LITERAL;
         }
 
         if (this.peek() == '.' && Scanner.isDecimalDigit(this.peekButOne())) { // ".9"
@@ -611,11 +629,11 @@ class Scanner {
                 || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isDecimalDigit(this.peekButOne())))
             ) this.read();
 
-            if (this.peekRead("lL")) return Token.INTEGER_LITERAL;
+            if (this.peekRead("lL")) return TokenType.INTEGER_LITERAL;
 
-            if (this.peekRead("fFdD")) return Token.FLOATING_POINT_LITERAL;
+            if (this.peekRead("fFdD")) return TokenType.FLOATING_POINT_LITERAL;
 
-            if (!this.peek(".eE")) return Token.INTEGER_LITERAL;
+            if (!this.peek(".eE")) return TokenType.INTEGER_LITERAL;
         } else
         {
             throw new CompileException(
@@ -653,7 +671,7 @@ class Scanner {
 
         this.peekRead("fFdD");
 
-        return Token.FLOATING_POINT_LITERAL;
+        return TokenType.FLOATING_POINT_LITERAL;
     }
 
     /**

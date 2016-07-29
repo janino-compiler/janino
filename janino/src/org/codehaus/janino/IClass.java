@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -309,7 +310,7 @@ class IClass {
 
         IField[] fields = this.getDeclaredIFields2();
 
-        Map<String /*fieldName*/, IField> m = new HashMap<String, IClass.IField>();
+        Map<String /*fieldName*/, IField> m = new LinkedHashMap<String, IClass.IField>();
         for (IField f : fields) m.put(f.getName(), f);
         return (this.declaredIFieldsCache = m);
     }

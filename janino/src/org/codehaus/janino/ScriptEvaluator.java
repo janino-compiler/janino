@@ -57,7 +57,7 @@ import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Parser.ClassDeclarationContext;
-import org.codehaus.janino.Scanner.Token;
+import org.codehaus.janino.Scanner.TokenType;
 import org.codehaus.janino.util.Traverser;
 
 /**
@@ -810,7 +810,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             Type methodOrVariableType = parser.parseType();
 
             // Modifiers Type Identifier MethodDeclarationRest ';'
-            if (parser.peek().type == Token.IDENTIFIER && parser.peekNextButOne("(")) {
+            if (parser.peek().type == TokenType.IDENTIFIER && parser.peekNextButOne("(")) {
                 localMethods.add(parser.parseMethodDeclarationRest(
                     null,                   // optionalDocComment
                     modifiers,              // modifiers
@@ -846,7 +846,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         Type methodOrVariableType = a.toTypeOrCompileException();
 
         // [ Modifiers ] Expression identifier MethodDeclarationRest
-        if (parser.peek().type == Token.IDENTIFIER && parser.peekNextButOne("(")) {
+        if (parser.peek().type == TokenType.IDENTIFIER && parser.peekNextButOne("(")) {
             localMethods.add(parser.parseMethodDeclarationRest(
                 null,                   // optionalDocComment
                 modifiers,              // modifiers

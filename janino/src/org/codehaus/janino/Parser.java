@@ -129,6 +129,7 @@ import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Java.Wildcard;
 import org.codehaus.janino.Scanner.Token;
+import org.codehaus.janino.Scanner.TokenType;
 
 /**
  * A parser for the Java&trade; programming language.
@@ -188,12 +189,11 @@ class Parser {
 
             switch (token.type) {
 
-            case Token.SPACE:
-            case Token.C_PLUS_PLUS_STYLE_COMMENT:
-                ;
+            case SPACE:
+            case C_PLUS_PLUS_STYLE_COMMENT:
                 break;
 
-            case Token.C_STYLE_COMMENT:
+            case C_STYLE_COMMENT:
                 if (token.value.startsWith("/**")) {
                     if (Parser.this.optionalDocComment != null) {
                         Parser.this.warning("MDC", "Misplaced doc comment", this.scanner.location());
@@ -203,9 +203,9 @@ class Parser {
                 break;
 
             default:
-                if (Parser.this.expectGreater && token.type == Token.OPERATOR && token.value.startsWith(">>")) {
-                    this.pushback = this.scanner.new Token(Token.OPERATOR, token.value.substring(1));
-                    return this.scanner.new Token(Token.OPERATOR, ">");
+                if (Parser.this.expectGreater && token.type == TokenType.OPERATOR && token.value.startsWith(">>")) {
+                    this.pushback = this.scanner.new Token(TokenType.OPERATOR, token.value.substring(1));
+                    return this.scanner.new Token(TokenType.OPERATOR, ">");
                 }
                 return token;
             }
@@ -362,7 +362,7 @@ class Parser {
     parseQualifiedIdentifier() throws CompileException, IOException {
         List<String> l = new ArrayList<String>();
         l.add(this.readIdentifier());
-        while (this.peek(".") && this.peekNextButOne().type == Token.IDENTIFIER) {
+        while (this.peek(".") && this.peekNextButOne().type == TokenType.IDENTIFIER) {
             this.read();
             l.add(this.readIdentifier());
         }
@@ -2983,7 +2983,7 @@ class Parser {
             // Parse and ignore type arguments.
             this.parseTypeArgumentsOpt();
 
-            if (this.peek().type == Token.IDENTIFIER) {
+            if (this.peek().type == TokenType.IDENTIFIER) {
                 String identifier = this.readIdentifier();
                 if (this.peek("(")) {
                     // '.' Identifier Arguments
@@ -3167,12 +3167,12 @@ class Parser {
     parseLiteral() throws CompileException, IOException {
         Token t = this.read();
         switch (t.type) {
-        case Token.INTEGER_LITERAL:        return new IntegerLiteral(t.getLocation(), t.value);
-        case Token.FLOATING_POINT_LITERAL: return new FloatingPointLiteral(t.getLocation(), t.value);
-        case Token.BOOLEAN_LITERAL:        return new BooleanLiteral(t.getLocation(), t.value);
-        case Token.CHARACTER_LITERAL:      return new CharacterLiteral(t.getLocation(), t.value);
-        case Token.STRING_LITERAL:         return new StringLiteral(t.getLocation(), t.value);
-        case Token.NULL_LITERAL:           return new NullLiteral(t.getLocation(), t.value);
+        case INTEGER_LITERAL:        return new IntegerLiteral(t.getLocation(), t.value);
+        case FLOATING_POINT_LITERAL: return new FloatingPointLiteral(t.getLocation(), t.value);
+        case BOOLEAN_LITERAL:        return new BooleanLiteral(t.getLocation(), t.value);
+        case CHARACTER_LITERAL:      return new CharacterLiteral(t.getLocation(), t.value);
+        case STRING_LITERAL:         return new StringLiteral(t.getLocation(), t.value);
+        case NULL_LITERAL:           return new NullLiteral(t.getLocation(), t.value);
         default:
             throw this.compileException("Literal expected");
         }
@@ -3257,7 +3257,7 @@ class Parser {
      *         of the next token is none of the {@code suspected} types
      */
     public int
-    peek(int[] suspected) throws CompileException, IOException {
+    peek(TokenType[] suspected) throws CompileException, IOException {
         return Parser.indexOf(suspected, this.peek().type);
     }
 
@@ -3342,22 +3342,22 @@ class Parser {
     /** @return Whether the scanner is at end-of-input */
     public boolean
     peekEof() throws CompileException, IOException {
-        return this.peek().type == Token.EOF;
+        return this.peek().type == TokenType.EOF;
     }
 
     /** @return {@code null} iff the next token is not an identifier, otherwise the value of the identifier token */
     @Nullable public String
     peekIdentifier() throws CompileException, IOException {
         Token t = this.peek();
-        return t.type == Token.IDENTIFIER ? t.value : null;
+        return t.type == TokenType.IDENTIFIER ? t.value : null;
     }
 
     /** @return Whether the next token is a literal */
     public boolean
     peekLiteral() throws CompileException, IOException {
-        return this.peek(new int[] {
-            Token.INTEGER_LITERAL, Token.FLOATING_POINT_LITERAL, Token.BOOLEAN_LITERAL, Token.CHARACTER_LITERAL,
-            Token.STRING_LITERAL, Token.NULL_LITERAL,
+        return this.peek(new TokenType[] {
+            TokenType.INTEGER_LITERAL, TokenType.FLOATING_POINT_LITERAL, TokenType.BOOLEAN_LITERAL,
+            TokenType.CHARACTER_LITERAL, TokenType.STRING_LITERAL, TokenType.NULL_LITERAL,
         }) != -1;
     }
 
@@ -3368,7 +3368,9 @@ class Parser {
     public String
     readIdentifier() throws CompileException, IOException {
         Token t = this.read();
-        if (t.type != Token.IDENTIFIER) throw this.compileException("Identifier expected instead of '" + t.value + "'");
+        if (t.type != TokenType.IDENTIFIER) {
+            throw this.compileException("Identifier expected instead of '" + t.value + "'");
+        }
         return t.value;
     }
 
@@ -3379,7 +3381,9 @@ class Parser {
     public String
     readOperator() throws CompileException, IOException {
         Token t = this.read();
-        if (t.type != Token.OPERATOR) throw this.compileException("Operator expected instead of '" + t.value + "'");
+        if (t.type != TokenType.OPERATOR) {
+            throw this.compileException("Operator expected instead of '" + t.value + "'");
+        }
         return t.value;
     }
 
@@ -3392,9 +3396,9 @@ class Parser {
     }
 
     private static int
-    indexOf(int[] values, int subject) {
-        for (int i = 0; i < values.length; ++i) {
-            if (values[i] == subject) return i;
+    indexOf(TokenType[] tta, TokenType subject) {
+        for (int i = 0; i < tta.length; ++i) {
+            if (tta[i].equals(subject)) return i;
         }
         return -1;
     }
