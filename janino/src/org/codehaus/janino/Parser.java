@@ -132,10 +132,11 @@ import org.codehaus.janino.Scanner.Token;
 import org.codehaus.janino.Scanner.TokenType;
 
 /**
- * A parser for the Java&trade; programming language.
+ * A parser for the Java programming language.
  * <p>
- * 'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
- * Edition</a>.
+ *   'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
+ *   Edition</a>.
+ * </p>
  */
 public
 class Parser {
@@ -143,14 +144,14 @@ class Parser {
     private final Scanner scanner;
 
     public
-    Parser(Scanner scanner) { this.scanner = scanner; }
+    Parser(Scanner scanner) { (this.scanner = scanner).setIgnoreWhiteSpace(true); }
 
     /** The optional JAVADOC comment preceding the {@link #nextToken}. */
     @Nullable private String optionalDocComment;
 
     /**
-     * Whether the scanner is in 'expect greater' mode: If so, it parses character sequences like ">>>=" as
-     * ">", ">", ">", "=".
+     * Whether the scanner is in 'expect greater' mode: If so, it parses character sequences like "{@code >>>=}" as
+     * "{@code >}", "{@code >}", "{@code >}", "{@code =}".
      */
     private boolean expectGreater;
 
@@ -189,7 +190,7 @@ class Parser {
 
             switch (token.type) {
 
-            case SPACE:
+            case WHITE_SPACE:
             case C_PLUS_PLUS_STYLE_COMMENT:
                 break;
 
@@ -3342,7 +3343,7 @@ class Parser {
     /** @return Whether the scanner is at end-of-input */
     public boolean
     peekEof() throws CompileException, IOException {
-        return this.peek().type == TokenType.EOF;
+        return this.peek().type == TokenType.END_OF_INPUT;
     }
 
     /** @return {@code null} iff the next token is not an identifier, otherwise the value of the identifier token */

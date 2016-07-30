@@ -203,6 +203,14 @@ class Scanner {
     }
 
     /**
+     * If <var>value</var> is {@code true}, then white space in the input stream is <em>ignored</em>, rather than
+     * scanned as a {@link TokenType#WHITE_SPACE} token. Since white space is typically quite numerous, this
+     * optimization may save considerable overhead.
+     */
+    public void
+    setIgnoreWhiteSpace(boolean value) { this.ignoreWhiteSpace = value; }
+
+    /**
      * @return The file name optionally passed to the constructor
      */
     @Nullable public String
@@ -233,7 +241,7 @@ class Scanner {
         /**
          * Indication of the 'end-of-input' condition.
          */
-        EOF,
+        END_OF_INPUT,
 
         /**
          * The token represents a Java identifier.
@@ -247,64 +255,68 @@ class Scanner {
         KEYWORD,
 
         /**
-         * The token represents an integer literal; its {@link #value} is the text of the integer literal exactly as it
-         * appears in the source code (e.g. "0", "123", "123L", "03ff", "0xffff", "0b10101010").
+         * The token represents an integer literal; its {@link Token#value} is the text of the integer literal exactly
+         * as it appears in the source code (e.g. "0", "123", "123L", "03ff", "0xffff", "0b10101010").
          */
         INTEGER_LITERAL,
 
         /**
-         * The token represents a floating-point literal; its {@link #value} is the text of the floating-point literal
-         * exactly as it appears in the source code (e.g. "1.23", "1.23F", "1.23D", "1.", ".1", "1E13").
+         * The token represents a floating-point literal; its {@link Token#value} is the text of the floating-point
+         * literal exactly as it appears in the source code (e.g. "1.23", "1.23F", "1.23D", "1.", ".1", "1E13").
          */
         FLOATING_POINT_LITERAL,
 
         /**
-         * The token represents a boolean literal; its {@link #value} is either 'true' or 'false'.
+         * The token represents a boolean literal; its {@link Token#value} is either 'true' or 'false'.
          */
         BOOLEAN_LITERAL,
 
         /**
-         * The token represents a character literal; its {@link #value} is the text of the character literal exactly as
-         * it appears in the source code (including the single quotes around it).
+         * The token represents a character literal; its {@link Token#value} is the text of the character literal
+         * exactly as it appears in the source code (including the single quotes around it).
          */
         CHARACTER_LITERAL,
 
         /**
-         * The token represents a string literal; its {@link #value} is the text of the string literal exactly as it
-         * appears in the source code (including the double quotes around it).
+         * The token represents a string literal; its {@link Token#value} is the text of the string literal exactly as
+         * it appears in the source code (including the double quotes around it).
          */
         STRING_LITERAL,
 
         /**
-         * The token represents the {@code null} literal; its {@link #value} is 'null'.
+         * The token represents the {@code null} literal; its {@link Token#value} is 'null'.
          */
         NULL_LITERAL,
 
         /**
-         * The token represents an operator; its {@link #value} is exactly the particular operator (e.g.
+         * The token represents an operator; its {@link Token#value} is exactly the particular operator (e.g.
          * "&lt;&lt;&lt;=").
          */
         OPERATOR,
 
         /**
-         * The token represents a "space"; i.e. a non-empty sequence of whitespace characters.
+         * The token represents "white space"; i.e. a non-empty sequence of whitespace characters. Specifically, any
+         * line terminators appear exactly as in the inut stream. JLS8 3.6
          */
-        SPACE,
+        WHITE_SPACE,
 
         /**
-         * The token represents a C++-style comment like "{@code // This is a C++-style comment.}".
+         * The token represents a C++-style comment like "{@code // This is a C++-style comment.}". Notice that the
+         * line terminator is <em>not</em> part of the comment; hence, this token is always followed by a {@link
+         * #WHITE_SPACE} token (or by {@link #END_OF_INPUT}).
          */
         C_PLUS_PLUS_STYLE_COMMENT,
 
         /**
          * The token represents a C-style comment, like "<code>/* This is a C-style comment. &#42;/</code>", which may
-         * span multiple lines.
+         * span multiple lines. In the latter case, the enclosed line terminators appear exactly as in the input
+         * stream.
          */
         C_STYLE_COMMENT,
     }
 
     /**
-     * Representation of a Java&trade; token.
+     * Representation of a Java token.
      */
     public final
     class Token {
@@ -351,12 +363,20 @@ class Scanner {
 
     /**
      * Produces and returns the next token. Notice that end-of-input is <i>not</i> signalized with a {@code null}
-     * product, but by an {@link Token#EOF}-type token.
+     * product, but by an {@link TokenType#END_OF_INPUT}-type token.
      */
     public Token
     produce() throws CompileException, IOException {
 
-        if (this.peek() == -1) return new Token(TokenType.EOF, "EOF");
+        if (this.peek() == -1) return new Token(TokenType.END_OF_INPUT, "");
+
+        // Funny... the JLS calls it "white space", and the JRE calls it "whitespace"!?
+        if (this.ignoreWhiteSpace && Character.isWhitespace(this.peek())) {
+            do {
+                this.read();
+                if (this.peek() == -1) return new Token(TokenType.END_OF_INPUT, "");
+            } while (Character.isWhitespace(this.peek()));
+        }
 
         this.tokenLineNumber   = this.nextCharLineNumber;
         this.tokenColumnNumber = this.nextCharColumnNumber;
@@ -380,12 +400,12 @@ class Scanner {
     private TokenType
     scan() throws CompileException, IOException {
 
-        // Space token?
+        // Whitespace token?
         if (Character.isWhitespace(this.peek())) {
             do {
                 this.read();
-            } while (this.peek() != -1 && Character.isWhitespace((char) this.peek()));
-            return TokenType.SPACE;
+            } while (this.peek() != -1 && Character.isWhitespace(this.peek()));
+            return TokenType.WHITE_SPACE;
         }
 
         // Scan a token that begins with "/".
@@ -866,6 +886,7 @@ class Scanner {
 
     @Nullable private final String optionalFileName;
     private final Reader           in;
+    private boolean                ignoreWhiteSpace;
     private int                    nextChar       = -1;
     private int                    nextButOneChar = -1;
     private boolean                crLfPending;
