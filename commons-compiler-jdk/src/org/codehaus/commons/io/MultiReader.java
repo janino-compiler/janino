@@ -37,10 +37,11 @@ import java.util.List;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * Similar to {@link FilterReader}, but when the first delegate is at end-of-input, it continues
- * with reading from the next delegate.
+ * Similar to {@link FilterReader}, but when the first delegate is at end-of-input, it continues with reading from the
+ * next delegate.
  * <p>
- * This {@link Reader} does not support MARK.
+ *   This {@link Reader} does not support MARK.
+ * </p>
  */
 public
 class MultiReader extends Reader {
@@ -59,7 +60,9 @@ class MultiReader extends Reader {
     public
     MultiReader(Reader[] delegates) { this(Arrays.asList(delegates)); }
 
-    /** Closes all delegates. */
+    /**
+     * Closes all delegates.
+     */
     @Override public void
     close() throws IOException { for (Reader delegate : this.delegates) delegate.close(); }
 

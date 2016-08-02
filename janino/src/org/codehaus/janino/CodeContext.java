@@ -47,9 +47,9 @@ import org.codehaus.janino.util.ClassFile.AttributeInfo;
 import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
 
 /**
- * The context of the compilation of a function (constructor or method). Manages generation of
- * byte code, the exception table, generation of line number tables, allocation of local variables,
- * determining of stack size and local variable table size and flow analysis.
+ * The context of the compilation of a function (constructor or method). Manages generation of byte code, the exception
+ * table, generation of line number tables, allocation of local variables, determining of stack size and local variable
+ * table size and flow analysis.
  */
 public
 class CodeContext {
@@ -72,20 +72,23 @@ class CodeContext {
     private Inserter                        currentInserter;
     private final List<ExceptionTableEntry> exceptionTableEntries;
 
-    /** All the local variables that are allocated in any block in this {@link CodeContext}. */
+    /**
+     * All the local variables that are allocated in any block in this {@link CodeContext}.
+     */
     private final List<Java.LocalVariableSlot> allLocalVars = new ArrayList<Java.LocalVariableSlot>();
 
     /**
-     * List of List of Java.LocalVariableSlot objects. Each List of Java.LocalVariableSlot is
-     * the local variables allocated for a block. They are pushed and poped onto the list together
-     * to make allocation of the next local variable slot easy.
+     * Each List of Java.LocalVariableSlot is the local variables allocated for a block. They are pushed and poped onto
+     * the list together to make allocation of the next local variable slot easy.
      */
     private final List<List<Java.LocalVariableSlot>> scopedVars = new ArrayList<List<Java.LocalVariableSlot>>();
 
     private short                   nextLocalVariableSlot;
     private final List<Relocatable> relocatables = new ArrayList<Relocatable>();
 
-    /** Creates an empty "Code" attribute. */
+    /**
+     * Creates an empty "Code" attribute.
+     */
     public
     CodeContext(ClassFile classFile, String functionName) {
         this.classFile    = classFile;
@@ -105,21 +108,22 @@ class CodeContext {
         this.end.prev         = this.beginning;
     }
 
-    /** The {@link ClassFile} this context is related to. */
+    /**
+     * The {@link ClassFile} this context is related to.
+     */
     public ClassFile
     getClassFile() { return this.classFile; }
 
 
     /**
-     * Allocate space for a local variable of the given size (1 or 2)
-     * on the local variable array.
-     *
-     * As a side effect, the "max_locals" field of the "Code" attribute
-     * is updated.
-     *
-     * The only way to deallocate local variables is to
-     * {@link #saveLocalVariables()} and later {@link
-     * #restoreLocalVariables()}.
+     * Allocates space for a local variable of the given size (1 or 2) on the local variable array.
+     * <p>
+     *   As a side effect, the "max_locals" field of the "Code" attribute is updated.
+     * </p>
+     * <p>
+     *   The only way to deallocate local variables is to {@link #saveLocalVariables()} and later {@link
+     *   #restoreLocalVariables()}.
+     * </p>
      *
      * @param size The number of slots to allocate (1 or 2)
      * @return The slot index of the allocated variable
@@ -128,7 +132,7 @@ class CodeContext {
     allocateLocalVariable(short size) { return this.allocateLocalVariable(size, null, null).getSlotIndex(); }
 
     /**
-     * Allocate space for a local variable of the given size (1 or 2) on the local variable array. As a side effect,
+     * Allocates space for a local variable of the given size (1 or 2) on the local variable array. As a side effect,
      * the "max_locals" field of the "Code" attribute is updated.
      * <p>
      *   The only way to deallocate local variables is to {@link #saveLocalVariables()} and later {@link
@@ -167,7 +171,9 @@ class CodeContext {
         return slot;
     }
 
-    /** Remembers the current size of the local variables array. */
+    /**
+     * Remembers the current size of the local variables array.
+     */
     public List<Java.LocalVariableSlot>
     saveLocalVariables() {
 
@@ -179,9 +185,8 @@ class CodeContext {
     }
 
     /**
-     * Restore the previous size of the local variables array. This MUST to be called for every call
-     * to saveLocalVariables as it closes the variable extent for all the active local variables in
-     * the current block.
+     * Restores the previous size of the local variables array. This MUST to be called for every call to
+     * saveLocalVariables as it closes the variable extent for all the active local variables in the current block.
      */
     public void
     restoreLocalVariables() {
@@ -198,7 +203,6 @@ class CodeContext {
     }
 
     /**
-     *
      * @param dos
      * @param lineNumberTableAttributeNameIndex 0 == don't generate a "LineNumberTable" attribute
      * @throws IOException
@@ -304,8 +308,9 @@ class CodeContext {
 
     /**
      * Checks the code for consistency; updates the "maxStack" member.
-     *
-     * Notice: On inconsistencies, a "RuntimeException" is thrown (KLUDGE).
+     * <p>
+     *   Notice: On inconsistencies, a "RuntimeException" is thrown (KLUDGE).
+     * </p>
      */
     public void
     flowAnalysis(String functionName) {
@@ -454,7 +459,8 @@ class CodeContext {
 
             case Opcode.SD_GETFIELD:
                 --stackSize;
-                /* FALL THROUGH */
+                /* FALL THROUGH
+                */
             case Opcode.SD_GETSTATIC:
                 stackSize += this.determineFieldSize((short) (
                     CodeContext.extract16BitValue(0, operandOffset, code)
@@ -463,7 +469,8 @@ class CodeContext {
 
             case Opcode.SD_PUTFIELD:
                 --stackSize;
-                /* FALL THROUGH */
+                /* FALL THROUGH
+                */
             case Opcode.SD_PUTSTATIC:
                 stackSize -= this.determineFieldSize((short) (
                     CodeContext.extract16BitValue(0, operandOffset, code)
@@ -474,7 +481,8 @@ class CodeContext {
             case Opcode.SD_INVOKESPECIAL:
             case Opcode.SD_INVOKEINTERFACE:
                 --stackSize;
-                /* FALL THROUGH */
+                /* FALL THROUGH
+                */
             case Opcode.SD_INVOKESTATIC:
                 stackSize -= this.determineArgumentsSize((short) (
                     CodeContext.extract16BitValue(0, operandOffset, code)
@@ -682,7 +690,7 @@ class CodeContext {
     }
 
     /**
-     * Extract a 16 bit value at offset in code and add bias to it
+     * Extracts a 16 bit value at offset in code and adds <var>bias</var> to it.
      *
      * @param bias   An int to skew the final result by (useful for calculating relative offsets)
      * @param offset The position in the code array to extract the bytes from
@@ -703,7 +711,7 @@ class CodeContext {
     }
 
     /**
-     * Extract a 32 bit value at offset in code and add bias to it
+     * Extracts a 32 bit value at offset in code and adds <var>bias</var> to it.
      *
      * @param bias   An int to skew the final result by (useful for calculating relative offsets)
      * @param offset The position in the code array to extract the bytes from
@@ -729,7 +737,9 @@ class CodeContext {
         return result;
     }
 
-    /** Fixes up all of the offsets and relocate() all relocatables. */
+    /**
+     * Fixes up all of the offsets and relocate() all relocatables.
+     */
     public void
     fixUpAndRelocate() {
 
@@ -742,7 +752,9 @@ class CodeContext {
         } while (!this.relocate());
     }
 
-    /** Fixes up all offsets. */
+    /**
+     * Fixes up all offsets.
+     */
     private void
     fixUp() {
         for (Offset o = this.beginning; o != this.end; o = o.next) {
@@ -752,9 +764,9 @@ class CodeContext {
     }
 
     /**
-     * Relocate all relocatables and aggregate their response into a single one
-     * @return true if all of them relocated successfully
-     *         false if any of them needed to change size
+     * Relocates all relocatables and aggregate their response into a single one.
+     *
+     * @return {@code true} if all of them relocated successfully, {@code false} if any of them needed to change size
      */
     private boolean
     relocate() {
@@ -768,7 +780,9 @@ class CodeContext {
         return finished;
     }
 
-    /** Analyses the descriptor of the Fieldref and return its size. */
+    /**
+     * Analyses the descriptor of the Fieldref and return its size.
+     */
     private int
     determineFieldSize(short idx) {
         ClassFile.ConstantFieldrefInfo cfi = (
@@ -778,8 +792,8 @@ class CodeContext {
     }
 
     /**
-     * Analyse the descriptor of the Methodref and return the sum of the
-     * arguments' sizes minus the return value's size.
+     * Analyses the descriptor of the Methodref and returns the sum of the arguments' sizes minus the return value's
+     * size.
      */
     private int
     determineArgumentsSize(short idx) {
@@ -823,8 +837,7 @@ class CodeContext {
     }
 
     /**
-     * Inserts a sequence of bytes at the current insertion position. Creates
-     * {@link LineNumberOffset}s as necessary.
+     * Inserts a sequence of bytes at the current insertion position. Creates {@link LineNumberOffset}s as necessary.
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param b
@@ -839,11 +852,10 @@ class CodeContext {
     }
 
     /**
-     * Inserts a byte at the current insertion position. Creates
-     * {@link LineNumberOffset}s as necessary.
+     * Inserts a byte at the current insertion position. Creates {@link LineNumberOffset}s as necessary.
      * <p>
-     * This method is an optimization to avoid allocating small byte[] and ease
-     * GC load.
+     *   This method is an optimization to avoid allocating small byte[] and ease GC load.
+     * </p>
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param b1
@@ -856,11 +868,10 @@ class CodeContext {
     }
 
     /**
-     * Inserts bytes at the current insertion position. Creates
-     * {@link LineNumberOffset}s as necessary.
+     * Inserts bytes at the current insertion position. Creates {@link LineNumberOffset}s as necessary.
      * <p>
-     * This method is an optimization to avoid allocating small byte[] and ease
-     * GC load.
+     *   This method is an optimization to avoid allocating small byte[] and ease GC load.
+     * </p>
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param b1
@@ -875,11 +886,10 @@ class CodeContext {
     }
 
     /**
-     * Inserts bytes at the current insertion position. Creates
-     * {@link LineNumberOffset}s as necessary.
+     * Inserts bytes at the current insertion position. Creates {@link LineNumberOffset}s as necessary.
      * <p>
-     * This method is an optimization to avoid allocating small byte[] and ease
-     * GC load.
+     *   This method is an optimization to avoid allocating small byte[] and ease GC load.
+     * </p>
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param b1
@@ -896,11 +906,10 @@ class CodeContext {
     }
 
     /**
-     * Inserts bytes at the current insertion position. Creates
-     * {@link LineNumberOffset}s as necessary.
+     * Inserts bytes at the current insertion position. Creates {@link LineNumberOffset}s as necessary.
      * <p>
-     * This method is an optimization to avoid allocating small byte[] and ease
-     * GC load.
+     *   This method is an optimization to avoid allocating small byte[] and ease GC load.
+     * </p>
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param b1
@@ -919,7 +928,7 @@ class CodeContext {
     }
 
     /**
-     * Add space for {@code size} bytes at current offset. Creates {@link LineNumberOffset}s as necessary.
+     * Adds space for <var>size</var> bytes at current offset. Creates {@link LineNumberOffset}s as necessary.
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
      * @param size       The size in bytes to inject
@@ -973,11 +982,15 @@ class CodeContext {
         for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += size;
     }
 
-    /** @param lineNumber The line number that corresponds to the byte code, or -1 */
+    /**
+     * @param lineNumber The line number that corresponds to the byte code, or -1
+     */
     public void
     writeShort(short lineNumber, int v) { this.write(lineNumber, (byte) (v >> 8), (byte) v); }
 
-    /** @param lineNumber The line number that corresponds to the byte code, or -1 */
+    /**
+     * @param lineNumber The line number that corresponds to the byte code, or -1
+     */
     public void
     writeBranch(short lineNumber, int opcode, final Offset dst) {
         this.relocatables.add(new Branch(opcode, dst));
@@ -1071,7 +1084,9 @@ class CodeContext {
         private final Offset   destination;
     }
 
-    /** E.g. {@link Opcode#IFLT} ("less than") inverts to {@link Opcode#IFGE} ("greater than or equal to"). */
+    /**
+     * E.g. {@link Opcode#IFLT} ("less than") inverts to {@link Opcode#IFGE} ("greater than or equal to").
+     */
     private static byte
     invertBranchOpcode(byte branchOpcode) {
         return (Byte) CodeContext.BRANCH_OPCODE_INVERSION.get(new Byte(branchOpcode));
@@ -1101,7 +1116,9 @@ class CodeContext {
         return Collections.unmodifiableMap(m);
     }
 
-    /** Writes a four-byte offset (as it is used in TABLESWITCH and LOOKUPSWITCH) into this code context. */
+    /**
+     * Writes a four-byte offset (as it is used in TABLESWITCH and LOOKUPSWITCH) into this code context.
+     */
     public void
     writeOffset(short lineNumber, Offset src, final Offset dst) {
         this.relocatables.add(new OffsetBranch(this.newOffset(), src, dst));
@@ -1135,7 +1152,9 @@ class CodeContext {
         private final Offset where, source, destination;
     }
 
-    /** Creates and inserts an {@link CodeContext.Offset} at the current inserter's current position. */
+    /**
+     * Creates and inserts an {@link CodeContext.Offset} at the current inserter's current position.
+     */
     public Offset
     newOffset() {
         Offset o = new Offset();
@@ -1144,23 +1163,25 @@ class CodeContext {
     }
 
     /**
-     * Allocate an {@link Inserter}, set it to the current offset, and
-     * insert it before the current offset.
-     *
-     * In clear text, this means that you can continue writing to the
-     * "Code" attribute, then {@link #pushInserter(CodeContext.Inserter)} the
-     * {@link Inserter}, then write again (which inserts bytes into the
-     * "Code" attribute at the previously remembered position), and then
-     * {@link #popInserter()}.
+     * Allocates an {@link Inserter}, set it to the current offset, and inserts it before the current offset.
+     * <p>
+     *   In clear text, this means that you can continue writing to the "Code" attribute, then {@link
+     *   #pushInserter(CodeContext.Inserter)} the {@link Inserter}, then write again (which inserts bytes into the
+     *   "Code" attribute at the previously remembered position), and then {@link #popInserter()}.
+     * </p>
      */
     public Inserter
     newInserter() { Inserter i = new Inserter(); i.set(); return i; }
 
-    /** @return The current inserter */
+    /**
+     * @return The current inserter
+     */
     public Inserter
     currentInserter() { return this.currentInserter; }
 
-    /** Remember the current {@link Inserter}, then replace it with the new one. */
+    /**
+     * Remembers the current {@link Inserter}, then replaces it with the new one.
+     */
     public void
     pushInserter(Inserter ins) {
         if (ins.nextInserter != null) throw new JaninoRuntimeException("An Inserter can only be pushed once at a time");
@@ -1169,8 +1190,7 @@ class CodeContext {
     }
 
     /**
-     * Replace the current {@link Inserter} with the remembered one (see
-     * {@link #pushInserter(CodeContext.Inserter)}).
+     * Replaces the current {@link Inserter} with the remembered one (see {@link #pushInserter(CodeContext.Inserter)}).
      */
     public void
     popInserter() {
@@ -1182,15 +1202,17 @@ class CodeContext {
 
     /**
      * A class that represents an offset within a "Code" attribute.
-     *
-     * The concept of an "offset" is that if one writes into the middle of
-     * a "Code" attribute, all offsets behind the insertion point are
-     * automatically shifted.
+     * <p>
+     *   The concept of an "offset" is that if one writes into the middle of a "Code" attribute, all offsets behind the
+     *   insertion point are automatically shifted.
+     * </p>
      */
     public
     class Offset {
 
-        /** The offset in the code attribute that this object represents. */
+        /**
+         * The offset in the code attribute that this object represents.
+         */
         int offset = Offset.UNSET;
 
         /**
@@ -1220,7 +1242,9 @@ class CodeContext {
             this.next.prev = this;
         }
 
-        /** @return The {@link CodeContext} that this {@link Offset} belongs to */
+        /**
+         * @return The {@link CodeContext} that this {@link Offset} belongs to
+         */
         public final CodeContext getCodeContext() { return CodeContext.this; }
 
         @Override public String
@@ -1228,9 +1252,9 @@ class CodeContext {
     }
 
     /**
-     * Add another entry to the "exception_table" of this code attribute (see JVMS 4.7.3).
+     * Adds another entry to the "exception_table" of this code attribute (see JVMS 4.7.3).
      *
-     * @param catchTypeFd null == "finally" clause
+     * @param catchTypeFd {@code null} means {@code finally} clause
      */
     public void
     addExceptionTableEntry(Offset startPc, Offset endPc, Offset handlerPc, @Nullable String catchTypeFd) {
@@ -1242,7 +1266,9 @@ class CodeContext {
         ));
     }
 
-    /** Representation of an entry in the "exception_table" of a "Code" attribute (see JVMS 4.7.3). */
+    /**
+     * Representation of an entry in the "exception_table" of a "Code" attribute (see JVMS 4.7.3).
+     */
     private static
     class ExceptionTableEntry {
         ExceptionTableEntry(Offset startPc, Offset endPc, Offset handlerPc, short  catchType) {
@@ -1255,13 +1281,17 @@ class CodeContext {
         final short  catchType; // 0 == "finally" clause
     }
 
-    /** A class that implements an insertion point into a "Code" attribute. */
+    /**
+     * A class that implements an insertion point into a "Code" attribute.
+     */
     public
     class Inserter extends Offset {
         @Nullable private Inserter nextInserter; // null == not in "currentInserter" stack
     }
 
-    /** An {@link Offset} who#s sole purpose is to later create a 'LneNumberTable' attribute. */
+    /**
+     * An {@link Offset} who#s sole purpose is to later create a 'LneNumberTable' attribute.
+     */
     public
     class LineNumberOffset extends Offset {
         private final int lineNumber;
@@ -1277,36 +1307,39 @@ class CodeContext {
     class Relocatable {
 
         /**
-         * Relocate this object.
-         * @return true if the relocation succeeded in place
-         *         false if the relocation grew the number of bytes required
+         * Relocates this object.
+         *
+         * @return {@code true} if the relocation succeeded in place; {@code false} if the relocation grew the number
+         *         of bytes required
          */
         public abstract boolean relocate();
     }
 
     /**
-     * A throw-in interface that marks {@link CodeContext.Offset}s
-     * as "fix-ups": During the execution of
-     * {@link CodeContext#fixUp}, all "fix-ups" are invoked and
-     * can do last touches to the code attribute.
+     * A throw-in interface that marks {@link CodeContext.Offset}s as "fix-ups": During the execution of {@link
+     * CodeContext#fixUp}, all "fix-ups" are invoked and can do last touches to the code attribute.
      * <p>
-     * This is currently used for inserting the "padding bytes" into the
-     * TABLESWITCH and LOOKUPSWITCH instructions.
+     *   This is currently used for inserting the "padding bytes" into the TABLESWITCH and LOOKUPSWITCH instructions.
+     * </p>
      */
     public
     interface FixUp {
 
-        /** @see FixUp */
+        /**
+         * @see FixUp
+         */
         void fixUp();
     }
 
-    /** @return All the local variables that are allocated in any block in this {@link CodeContext} */
+    /**
+     * @return All the local variables that are allocated in any block in this {@link CodeContext}
+     */
     public List<Java.LocalVariableSlot>
     getAllLocalVars() { return this.allLocalVars; }
 
     /**
-     * Removes all code between {@code from} and {@code to}. Also removes any {@link CodeContext.Relocatable}s existing
-     * in that range.
+     * Removes all code between <var>from</var> and <var>to</var>. Also removes any {@link CodeContext.Relocatable}s
+     * existing in that range.
      */
     public void
     removeCode(Offset from, Offset to) {

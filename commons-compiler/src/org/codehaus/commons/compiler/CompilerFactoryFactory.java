@@ -46,7 +46,7 @@ class CompilerFactoryFactory {
     @Nullable private static ICompilerFactory defaultCompilerFactory;
 
     /**
-     * Finds the first implementation of <code>org.codehaus.commons.compiler</code> on the class path, then loads and
+     * Finds the first implementation of {@code org.codehaus.commons.compiler} on the class path, then loads and
      * instantiates its {@link ICompilerFactory}.
      *
      * @return           The {@link ICompilerFactory} of the first implementation on the class path
@@ -81,7 +81,7 @@ class CompilerFactoryFactory {
     }
 
     /**
-     * Finds all implementation of <code>org.codehaus.commons.compiler</code> on the class path, then loads and
+     * Finds all implementation of {@code org.codehaus.commons.compiler} on the class path, then loads and
      * instantiates their {@link ICompilerFactory}s.
      *
      * @return           The {@link ICompilerFactory}s of all implementations on the class path
@@ -129,7 +129,9 @@ class CompilerFactoryFactory {
         ).newInstance();
     }
 
-    /** @return The version of the commons-compiler specification, or <code>null</code> */
+    /**
+     * @return The version of the commons-compiler specification, or {@code null}
+     */
     public static String
     getSpecificationVersion() {
         return CompilerFactoryFactory.class.getPackage().getSpecificationVersion();

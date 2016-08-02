@@ -73,7 +73,9 @@ import org.junit.Test;
 
 // CHECKSTYLE JavadocMethod:OFF
 
-/** Unit tests for the {@link SimpleCompiler}. */
+/**
+ * Unit tests for the {@link SimpleCompiler}.
+ */
 public
 class CompilerTests {
 

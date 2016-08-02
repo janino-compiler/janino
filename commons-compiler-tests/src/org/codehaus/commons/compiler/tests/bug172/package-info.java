@@ -24,7 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Declares a helper class for {@link ReportedBugs#testBug172()}. */
+/**
+ * Declares a helper class for {@link ReportedBugs#testBug172()}.
+ */
 @NotNullByDefault
 package org.codehaus.commons.compiler.tests.bug172;
 

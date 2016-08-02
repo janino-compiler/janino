@@ -44,7 +44,9 @@ import util.TestUtil;
 
 // CHECKSTYLE JavadocMethod:OFF
 
-/** Tests for the serializability of JANINO data structures. */
+/**
+ * Tests for the serializability of JANINO data structures.
+ */
 @RunWith(Parameterized.class) public
 class SerializationTests {
 
@@ -56,7 +58,9 @@ class SerializationTests {
     public
     SerializationTests(ICompilerFactory compilerFactory) { this.compilerFactory = compilerFactory; }
 
-    /** Verifies that {@link CompileException} is serializable. */
+    /**
+     * Verifies that {@link CompileException} is serializable.
+     */
     @Test public void
     testExceptionSerializable() throws Exception {
         ISimpleCompiler compiler = this.compilerFactory.newSimpleCompiler();

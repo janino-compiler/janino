@@ -37,7 +37,9 @@ import javax.tools.StandardLocation;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/** A {@link ClassLoader} that loads classes through a {@link JavaFileManager}. */
+/**
+ * A {@link ClassLoader} that loads classes through a {@link JavaFileManager}.
+ */
 public
 class JavaFileManagerClassLoader extends ClassLoader {
 

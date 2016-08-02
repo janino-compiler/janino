@@ -26,11 +26,16 @@
 
 package org.codehaus.commons.compiler.tests.bug172;
 
+import org.codehaus.commons.compiler.tests.ReportedBugs;
+
 /**
  * For {@link ReportedBugs#testBug172()}.
  */
 public
 class First {
-    /** Purpose is fictitious. */
+
+    /**
+     * Purpose is fictitious.
+     */
     public int field1;
 }

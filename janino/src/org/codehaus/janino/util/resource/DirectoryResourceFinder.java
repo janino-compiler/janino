@@ -37,17 +37,18 @@ import java.util.Set;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link org.codehaus.janino.util.resource.FileResourceFinder} that finds file resources in
- * a directory. The name of the file is constructed by concatenating a dirctory name
- * with the resource name such that slashes in the resource name map to file
- * separators.
+ * A {@link org.codehaus.janino.util.resource.FileResourceFinder} that finds file resources in a directory. The name of
+ * the file is constructed by concatenating a dirctory name with the resource name such that slashes in the resource
+ * name map to file separators.
  */
 public
 class DirectoryResourceFinder extends FileResourceFinder {
     private final File                                     directory;
     private final Map<String /*directoryName*/, Set<File>> subdirectoryNameToFiles = new HashMap<String, Set<File>>();
 
-    /** @param directory the directory to use as the search base */
+    /**
+     * @param directory the directory to use as the search base
+     */
     public
     DirectoryResourceFinder(File directory) { this.directory = directory; }
 

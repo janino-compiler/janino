@@ -39,7 +39,9 @@ class MultiResourceFinder extends ResourceFinder {
 
     private final Collection<ResourceFinder> resourceFinders; // One for each entry
 
-    /** @param resourceFinders The entries of the "path" */
+    /**
+     * @param resourceFinders The entries of the "path"
+     */
     public
     MultiResourceFinder(Collection<ResourceFinder> resourceFinders) { this.resourceFinders = resourceFinders; }
 

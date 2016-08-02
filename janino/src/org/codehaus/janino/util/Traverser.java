@@ -393,43 +393,57 @@ class Traverser<EX extends Throwable> {
         @Override @Nullable public Void visitSingleElementAnnotation(SingleElementAnnotation sea) throws EX { Traverser.this.traverseSingleElementAnnotation(sea); return null; }
     };
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     public void
     visitImportDeclaration(CompilationUnit.ImportDeclaration id) throws EX {
         id.accept(Traverser.this.importTraverser);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     public void
     visitTypeDeclaration(TypeDeclaration td) throws EX {
         td.accept(Traverser.this.typeDeclarationTraverser);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     public void
     visitTypeBodyDeclaration(TypeBodyDeclaration tbd) throws EX {
         tbd.accept(Traverser.this.typeBodyDeclarationTraverser);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     public void
     visitBlockStatement(BlockStatement bs) throws EX {
         bs.accept(Traverser.this.blockStatementTraverser);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     public void
     visitAtom(Atom a) throws EX {
         a.accept(Traverser.this.atomTraverser);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     public void
     visitElementValue(ElementValue ev) throws EX {
         ev.accept(Traverser.this.elementValueTraverser);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     public void
     visitAnnotation(Annotation a) throws EX {
         a.accept(Traverser.this.annotationTraverser);
@@ -437,7 +451,9 @@ class Traverser<EX extends Throwable> {
 
     // These may be overridden by derived classes.
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     public void
     traverseCompilationUnit(CompilationUnit cu) throws EX {
 
@@ -453,70 +469,94 @@ class Traverser<EX extends Throwable> {
         }
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid) throws EX {
         this.traverseImportDeclaration(stid);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd) throws EX {
         this.traverseImportDeclaration(tiodd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseSingleStaticImportDeclaration(CompilationUnit.SingleStaticImportDeclaration stid) throws EX {
         this.traverseImportDeclaration(stid);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseStaticImportOnDemandDeclaration(CompilationUnit.StaticImportOnDemandDeclaration siodd) throws EX {
         this.traverseImportDeclaration(siodd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseImportDeclaration(CompilationUnit.ImportDeclaration id) throws EX { this.traverseLocated(id); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseAnonymousClassDeclaration(AnonymousClassDeclaration acd) throws EX {
         acd.baseType.accept(this.atomTraverser);
         this.traverseClassDeclaration(acd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseLocalClassDeclaration(LocalClassDeclaration lcd) throws EX { this.traverseNamedClassDeclaration(lcd); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traversePackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration pmcd) throws EX {
         this.traverseNamedClassDeclaration(pmcd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseMemberInterfaceDeclaration(MemberInterfaceDeclaration mid) throws EX {
         this.traverseInterfaceDeclaration(mid);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traversePackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid) throws EX {
         this.traverseInterfaceDeclaration(pmid);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseMemberClassDeclaration(MemberClassDeclaration mcd) throws EX {
         this.traverseNamedClassDeclaration(mcd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseConstructorDeclarator(ConstructorDeclarator cd) throws EX {
         if (cd.optionalConstructorInvocation != null) {
@@ -525,18 +565,24 @@ class Traverser<EX extends Throwable> {
         this.traverseFunctionDeclarator(cd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseInitializer(Initializer i) throws EX {
         i.block.accept(this.blockStatementTraverser);
         this.traverseAbstractTypeBodyDeclaration(i);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseMethodDeclarator(MethodDeclarator md) throws EX { this.traverseFunctionDeclarator(md); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseFieldDeclaration(FieldDeclaration fd) throws EX {
         fd.type.accept(this.atomTraverser);
@@ -547,28 +593,36 @@ class Traverser<EX extends Throwable> {
         this.traverseStatement(fd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseLabeledStatement(LabeledStatement ls) throws EX {
         ls.body.accept(this.blockStatementTraverser);
         this.traverseBreakableStatement(ls);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseBlock(Block b) throws EX {
         for (BlockStatement bs : b.statements) bs.accept(this.blockStatementTraverser);
         this.traverseStatement(b);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseExpressionStatement(ExpressionStatement es) throws EX {
         es.rvalue.accept(this.rvalueTraverser);
         this.traverseStatement(es);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseIfStatement(IfStatement is) throws EX {
         is.condition.accept(this.rvalueTraverser);
@@ -577,7 +631,9 @@ class Traverser<EX extends Throwable> {
         this.traverseStatement(is);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseForStatement(ForStatement fs) throws EX {
         if (fs.optionalInit != null) fs.optionalInit.accept(this.blockStatementTraverser);
@@ -589,7 +645,9 @@ class Traverser<EX extends Throwable> {
         this.traverseContinuableStatement(fs);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseForEachStatement(ForEachStatement fes) throws EX {
         this.traverseFormalParameter(fes.currentElement);
@@ -598,7 +656,9 @@ class Traverser<EX extends Throwable> {
         this.traverseContinuableStatement(fes);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseWhileStatement(WhileStatement ws) throws EX {
         ws.condition.accept(this.rvalueTraverser);
@@ -606,7 +666,9 @@ class Traverser<EX extends Throwable> {
         this.traverseContinuableStatement(ws);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseTryStatement(TryStatement ts) throws EX {
         ts.body.accept(this.blockStatementTraverser);
@@ -615,7 +677,9 @@ class Traverser<EX extends Throwable> {
         this.traverseStatement(ts);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseSwitchStatement(SwitchStatement ss) throws EX {
         ss.condition.accept(this.rvalueTraverser);
@@ -627,7 +691,9 @@ class Traverser<EX extends Throwable> {
         this.traverseBreakableStatement(ss);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseSynchronizedStatement(SynchronizedStatement ss) throws EX {
         ss.expression.accept(this.rvalueTraverser);
@@ -635,7 +701,9 @@ class Traverser<EX extends Throwable> {
         this.traverseStatement(ss);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseDoStatement(DoStatement ds) throws EX {
         ds.body.accept(this.blockStatementTraverser);
@@ -643,7 +711,9 @@ class Traverser<EX extends Throwable> {
         this.traverseContinuableStatement(ds);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) throws EX {
         lvds.type.accept(this.atomTraverser);
@@ -654,29 +724,39 @@ class Traverser<EX extends Throwable> {
         this.traverseStatement(lvds);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseReturnStatement(ReturnStatement rs) throws EX {
         if (rs.optionalReturnValue != null) rs.optionalReturnValue.accept(this.rvalueTraverser);
         this.traverseStatement(rs);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseThrowStatement(ThrowStatement ts) throws EX {
         ts.expression.accept(this.rvalueTraverser);
         this.traverseStatement(ts);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseBreakStatement(BreakStatement bs) throws EX { this.traverseStatement(bs); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseContinueStatement(ContinueStatement cs) throws EX { this.traverseStatement(cs); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseAssertStatement(AssertStatement as) throws EX {
         as.expression1.accept(this.rvalueTraverser);
@@ -684,29 +764,39 @@ class Traverser<EX extends Throwable> {
         this.traverseStatement(as);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseEmptyStatement(EmptyStatement es) throws EX { this.traverseStatement(es); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds) throws EX {
         lcds.lcd.accept(this.typeDeclarationTraverser);
         this.traverseStatement(lcds);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traversePackage(Package p) throws EX { this.traverseAtom(p); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseArrayLength(ArrayLength al) throws EX {
         al.lhs.accept(this.rvalueTraverser);
         this.traverseRvalue(al);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseAssignment(Assignment a) throws EX {
         a.lhs.accept(this.rvalueTraverser);
@@ -714,14 +804,18 @@ class Traverser<EX extends Throwable> {
         this.traverseRvalue(a);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseUnaryOperation(UnaryOperation uo) throws EX {
         uo.operand.accept(this.rvalueTraverser);
         this.traverseBooleanRvalue(uo);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseBinaryOperation(BinaryOperation bo) throws EX {
         bo.lhs.accept(this.rvalueTraverser);
@@ -729,7 +823,9 @@ class Traverser<EX extends Throwable> {
         this.traverseBooleanRvalue(bo);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseCast(Cast c) throws EX {
         c.targetType.accept(this.atomTraverser);
@@ -737,14 +833,18 @@ class Traverser<EX extends Throwable> {
         this.traverseRvalue(c);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseClassLiteral(ClassLiteral cl) throws EX {
         cl.type.accept(this.atomTraverser);
         this.traverseRvalue(cl);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseConditionalExpression(ConditionalExpression ce) throws EX {
         ce.lhs.accept(this.rvalueTraverser);
@@ -753,14 +853,18 @@ class Traverser<EX extends Throwable> {
         this.traverseRvalue(ce);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseCrement(Crement c) throws EX {
         c.operand.accept(this.rvalueTraverser);
         this.traverseRvalue(c);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseInstanceof(Instanceof io) throws EX {
         io.lhs.accept(this.rvalueTraverser);
@@ -768,50 +872,72 @@ class Traverser<EX extends Throwable> {
         this.traverseRvalue(io);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseMethodInvocation(MethodInvocation mi) throws EX {
         if (mi.optionalTarget != null) mi.optionalTarget.accept(this.atomTraverser);
         this.traverseInvocation(mi);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseSuperclassMethodInvocation(SuperclassMethodInvocation smi) throws EX { this.traverseInvocation(smi); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseLiteral(Literal l) throws EX { this.traverseRvalue(l); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseIntegerLiteral(IntegerLiteral il) throws EX { this.traverseLiteral(il); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseFloatingPointLiteral(FloatingPointLiteral fpl) throws EX { this.traverseLiteral(fpl); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseBooleanLiteral(BooleanLiteral bl) throws EX { this.traverseLiteral(bl); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseCharacterLiteral(CharacterLiteral cl) throws EX { this.traverseLiteral(cl); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseStringLiteral(StringLiteral sl) throws EX { this.traverseLiteral(sl); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseNullLiteral(NullLiteral nl) throws EX { this.traverseLiteral(nl); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseSimpleLiteral(SimpleConstant sl) throws EX { this.traverseRvalue(sl); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseNewAnonymousClassInstance(NewAnonymousClassInstance naci) throws EX {
         if (naci.optionalQualification != null) {
@@ -822,7 +948,9 @@ class Traverser<EX extends Throwable> {
         this.traverseRvalue(naci);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseNewArray(NewArray na) throws EX {
         na.type.accept(this.atomTraverser);
@@ -830,7 +958,9 @@ class Traverser<EX extends Throwable> {
         this.traverseRvalue(na);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseNewInitializedArray(NewInitializedArray nia) throws EX {
         assert nia.arrayType != null;
@@ -838,7 +968,9 @@ class Traverser<EX extends Throwable> {
         this.traverseArrayInitializerOrRvalue(nia.arrayInitializer);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseArrayInitializerOrRvalue(ArrayInitializerOrRvalue aiorv) throws EX {
         if (aiorv instanceof Rvalue) {
@@ -856,7 +988,9 @@ class Traverser<EX extends Throwable> {
         }
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseNewClassInstance(NewClassInstance nci) throws EX {
         if (nci.optionalQualification != null) {
@@ -867,54 +1001,74 @@ class Traverser<EX extends Throwable> {
         this.traverseRvalue(nci);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseParameterAccess(ParameterAccess pa) throws EX { this.traverseRvalue(pa); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseQualifiedThisReference(QualifiedThisReference qtr) throws EX {
         qtr.qualification.accept(this.atomTraverser);
         this.traverseRvalue(qtr);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseThisReference(ThisReference tr) throws EX { this.traverseRvalue(tr); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseArrayType(ArrayType at) throws EX {
         at.componentType.accept(this.atomTraverser);
         this.traverseType(at);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traversePrimitiveType(PrimitiveType bt) throws EX { this.traverseType(bt); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseReferenceType(ReferenceType rt) throws EX { this.traverseType(rt); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseRvalueMemberType(RvalueMemberType rmt) throws EX {
         rmt.rvalue.accept(this.rvalueTraverser);
         this.traverseType(rmt);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseSimpleType(SimpleType st) throws EX { this.traverseType(st); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseAlternateConstructorInvocation(AlternateConstructorInvocation aci) throws EX {
         this.traverseConstructorInvocation(aci);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseSuperConstructorInvocation(SuperConstructorInvocation sci) throws EX {
         if (sci.optionalQualification != null) {
@@ -923,11 +1077,15 @@ class Traverser<EX extends Throwable> {
         this.traverseConstructorInvocation(sci);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseAmbiguousName(AmbiguousName an) throws EX { this.traverseLvalue(an); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseArrayAccessExpression(ArrayAccessExpression aae) throws EX {
         aae.lhs.accept(this.rvalueTraverser);
@@ -935,21 +1093,27 @@ class Traverser<EX extends Throwable> {
         this.traverseLvalue(aae);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseFieldAccess(FieldAccess fa) throws EX {
         fa.lhs.accept(this.atomTraverser);
         this.traverseLvalue(fa);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseFieldAccessExpression(FieldAccessExpression fae) throws EX {
         fae.lhs.accept(this.atomTraverser);
         this.traverseLvalue(fae);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws EX {
         if (scfae.optionalQualification != null) {
@@ -958,18 +1122,24 @@ class Traverser<EX extends Throwable> {
         this.traverseLvalue(scfae);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseLocalVariableAccess(LocalVariableAccess lva) throws EX { this.traverseLvalue(lva); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseParenthesizedExpression(ParenthesizedExpression pe) throws EX {
         pe.value.accept(this.rvalueTraverser);
         this.traverseLvalue(pe);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseElementValueArrayInitializer(ElementValueArrayInitializer evai) throws EX {
         for (ElementValue elementValue : evai.elementValues) elementValue.accept(this.elementValueTraverser);
@@ -983,7 +1153,9 @@ class Traverser<EX extends Throwable> {
     protected void
     traverseElementValue(ElementValue ev) throws EX {}
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseSingleElementAnnotation(SingleElementAnnotation sea) throws EX {
         sea.type.accept(this.atomTraverser);
@@ -998,7 +1170,9 @@ class Traverser<EX extends Throwable> {
     protected void
     traverseAnnotation(Annotation a) throws EX {}
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseNormalAnnotation(NormalAnnotation na) throws EX {
         na.type.accept(this.atomTraverser);
@@ -1008,14 +1182,18 @@ class Traverser<EX extends Throwable> {
         this.traverseAnnotation(na);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseMarkerAnnotation(MarkerAnnotation ma) throws EX {
         ma.type.accept(this.atomTraverser);
         this.traverseAnnotation(ma);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseClassDeclaration(AbstractClassDeclaration cd) throws EX {
         for (ConstructorDeclarator ctord : cd.constructors) ctord.accept(this.typeBodyDeclarationTraverser);
@@ -1025,7 +1203,9 @@ class Traverser<EX extends Throwable> {
         this.traverseAbstractTypeDeclaration(cd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseAbstractTypeDeclaration(AbstractTypeDeclaration atd) throws EX {
         for (Annotation a : atd.getAnnotations()) this.traverseAnnotation(a);
@@ -1033,7 +1213,9 @@ class Traverser<EX extends Throwable> {
         for (MethodDeclarator md : atd.getMethodDeclarations()) this.traverseMethodDeclarator(md);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseNamedClassDeclaration(NamedClassDeclaration ncd) throws EX {
         for (Type implementedType : ncd.implementedTypes) {
@@ -1043,7 +1225,9 @@ class Traverser<EX extends Throwable> {
         this.traverseClassDeclaration(ncd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseInterfaceDeclaration(InterfaceDeclaration id) throws EX {
         for (TypeBodyDeclaration cd : id.constantDeclarations) cd.accept(this.typeBodyDeclarationTraverser);
@@ -1051,7 +1235,9 @@ class Traverser<EX extends Throwable> {
         this.traverseAbstractTypeDeclaration(id);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseFunctionDeclarator(FunctionDeclarator fd) throws EX {
         this.traverseFormalParameters(fd.formalParameters);
@@ -1060,7 +1246,9 @@ class Traverser<EX extends Throwable> {
         }
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseFormalParameters(FunctionDeclarator.FormalParameters formalParameters) throws EX {
         for (FunctionDeclarator.FormalParameter formalParameter : formalParameters.parameters) {
@@ -1068,51 +1256,71 @@ class Traverser<EX extends Throwable> {
         }
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseFormalParameter(FunctionDeclarator.FormalParameter formalParameter) throws EX {
         formalParameter.type.accept(this.atomTraverser);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseAbstractTypeBodyDeclaration(AbstractTypeBodyDeclaration atbd) throws EX { this.traverseLocated(atbd); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseStatement(Statement s) throws EX { this.traverseLocated(s); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseBreakableStatement(BreakableStatement bs) throws EX { this.traverseStatement(bs); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseContinuableStatement(ContinuableStatement cs) throws EX { this.traverseBreakableStatement(cs); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseRvalue(Rvalue rv) throws EX { this.traverseAtom(rv); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseBooleanRvalue(BooleanRvalue brv) throws EX { this.traverseRvalue(brv); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseInvocation(Invocation i) throws EX {
         for (Rvalue argument : i.arguments) argument.accept(this.rvalueTraverser);
         this.traverseRvalue(i);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseConstructorInvocation(ConstructorInvocation ci) throws EX {
         for (Rvalue argument : ci.arguments) argument.accept(this.rvalueTraverser);
         this.traverseAtom(ci);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseEnumConstant(EnumConstant ec) throws EX {
 
@@ -1125,43 +1333,59 @@ class Traverser<EX extends Throwable> {
         this.traverseAbstractTypeDeclaration(ec);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traversePackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed) throws EX {
         this.traversePackageMemberClassDeclaration(pmed);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseMemberEnumDeclaration(MemberEnumDeclaration med) throws EX {
         this.traverseMemberClassDeclaration(med);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traversePackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) throws EX {
         this.traversePackageMemberInterfaceDeclaration(pmatd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws EX {
         this.traverseMemberInterfaceDeclaration(matd);
     }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseLvalue(Lvalue lv) throws EX { this.traverseRvalue(lv); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseType(Type t) throws EX { this.traverseAtom(t); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     protected void
     traverseAtom(Atom a) throws EX { this.traverseLocated(a); }
 
-    /** @see Traverser */
+    /**
+     * @see Traverser
+     */
     @SuppressWarnings("unused") protected void
     traverseLocated(Located l) throws EX {}
 }

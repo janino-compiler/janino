@@ -28,25 +28,27 @@
  * This package declares interfaces for the implementation of an {@link
  * org.codehaus.commons.compiler.IExpressionEvaluator}, an {@link org.codehaus.commons.compiler.IScriptEvaluator}, an
  * {@link org.codehaus.commons.compiler.IClassBodyEvaluator} and an {@link
- * org.codehaus.commons.compiler.ISimpleCompiler}. All of these adhere to the syntax of the Java &trade; programming
+ * org.codehaus.commons.compiler.ISimpleCompiler}. All of these adhere to the syntax of the Java  programming
  * language.
  * <p>
- * There are (at least) two implementations of these interfaces available:
+ *   There are (at least) two implementations of these interfaces available:
+ * </p>
  * <ul>
  *   <li>
  *     {@link org.codehaus.janino}: A lightweight, stand-alone implementation that implements Java 1.4 and most of Java
  *     5. Runs on all JREs starting at version 1.3.
  *   </li>
  *   <li>
- *     {@link org.codehaus.commons.compiler.jdk}: Uses the <code>javax.tools.JavaCompiler</code> API that is available
+ *     {@link org.codehaus.commons.compiler.jdk}: Uses the {@code javax.tools.JavaCompiler} API that is available
  *     since Java 1.6. Requires a JDK (not just a JRE).
  *   </li>
  * </ul>
- *
- * Notice: Implementations may or may not be prone to "Java injection", i.e. it may or may not be possible to, e.g.,
- * break out of the "expression" scope of an {@link org.codehaus.commons.compiler.IExpressionEvaluator} by providing a
- * "bogus" expression text. The documentation of each implementation should state clearly whether or not it is prone to
- * Java injection.
+ * <p>
+ *   Notice: Implementations may or may not be prone to "Java injection", i.e. it may or may not be possible to, e.g.,
+ *   break out of the "expression" scope of an {@link org.codehaus.commons.compiler.IExpressionEvaluator} by providing
+ *   a "bogus" expression text. The documentation of each implementation should state clearly whether or not it is
+ *   prone to Java injection.
+ * </p>
  */
 @NotNullByDefault
 package org.codehaus.commons.compiler;

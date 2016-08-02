@@ -36,8 +36,8 @@ import java.util.List;
 import org.codehaus.commons.compiler.samples.DemoBase;
 
 /**
- * A test program that allows you to play around with the
- * {@link org.codehaus.janino.ScriptEvaluator ScriptEvaluator} class.
+ * A test program that allows you to play around with the {@link org.codehaus.janino.ScriptEvaluator ScriptEvaluator}
+ * class.
  */
 public final
 class Jsh extends DemoBase {

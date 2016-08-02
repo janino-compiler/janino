@@ -31,11 +31,11 @@ import java.io.File;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * This class specializes the {@link org.codehaus.janino.util.resource.ResourceFinder}
- * for finding resources in {@link java.io.File}s.
+ * This class specializes the {@link org.codehaus.janino.util.resource.ResourceFinder} for finding resources in {@link
+ * java.io.File}s.
  * <p>
- * It finds {@link FileResource}s instead of simple
- * {@link Resource}s.
+ *   It finds {@link FileResource}s instead of simple {@link Resource}s.
+ * </p>
  */
 public abstract
 class FileResourceFinder extends ResourceFinder {
@@ -47,7 +47,9 @@ class FileResourceFinder extends ResourceFinder {
         return new FileResource(file);
     }
 
-    /** Converts a given resource resource name into a {@link File}. */
+    /**
+     * Converts a given resource resource name into a {@link File}.
+     */
     @Nullable protected abstract File
     findResourceAsFile(String resourceName);
 }

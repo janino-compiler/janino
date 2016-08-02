@@ -24,7 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** I/O utilities. */
+/**
+ * I/O utilities.
+ */
 @NotNullByDefault
 package org.codehaus.commons.io;
 

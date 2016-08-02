@@ -41,7 +41,9 @@ import util.TestUtil;
 
 // CHECKSTYLE JavadocMethod:OFF
 
-/** Tests for the {@link IJavaSourceClassLoader}. */
+/**
+ * Tests for the {@link IJavaSourceClassLoader}.
+ */
 @RunWith(Parameterized.class) public
 class JavaSourceClassLoaderTests {
 

@@ -31,15 +31,16 @@ import java.util.Stack;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * Implements a scheme for benchmarking, i.e. for determining and/or reporting the time elapsed
- * between the beginning and the end of an activity.
+ * Implements a scheme for benchmarking, i.e. for determining and/or reporting the time elapsed between the beginning
+ * and the end of an activity.
  * <p>
- * The measurement is done by invoking {@link #begin()} and later calling {@link #end()} whichs
- * returns the time elapsed since the call to {@link #begin()}.
+ *   The measurement is done by invoking {@link #begin()} and later calling {@link #end()} whichs returns the time
+ *   elapsed since the call to {@link #begin()}.
+ * </p>
  * <p>
- * Notice that calls to {@link #begin()} and {@link #end()} can be nested, and each call to
- * {@link #end()} refers to the matching {@link #begin()} call. To ensure that all calls match,
- * the preferred way to write a benchmark is
+ *   Notice that calls to {@link #begin()} and {@link #end()} can be nested, and each call to {@link #end()} refers to
+ *   the matching {@link #begin()} call. To ensure that all calls match, the preferred way to write a benchmark is
+ * </p>
  * <pre>
  * ...
  * Benchmark b = new Benchmark();
@@ -51,31 +52,40 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *     long ms = b.end();
  * }
  * </pre>
- * This code layout also makes it visually easy to write correct pairs of {@link #begin()} /
- * {@link #end()} pairs.
  * <p>
- * The pair {@link #beginReporting()} and {@link #endReporting()} do basically the same, but
- * report the benchmarking information through an internal {@link Reporter} object. The default
- * {@link Reporter} prints its messages by <code>System.out.println()</code>.
+ *   This code layout also makes it visually easy to write correct pairs of {@link #begin()} / {@link #end()} pairs.
+ * </p>
  * <p>
- * Reporting is only enabled if the Benchmark object was created through {@link #Benchmark(boolean)}
- * with a <code>true</code> argument.
+ *   The pair {@link #beginReporting()} and {@link #endReporting()} do basically the same, but report the benchmarking
+ *   information through an internal {@link Reporter} object. The default {@link Reporter} prints its messages by
+ *   {@code System.out.println()}.
+ * </p>
+ * <p>
+ *   Reporting is only enabled if the Benchmark object was created through {@link #Benchmark(boolean)} with a {@code
+ *   true} argument.
+ * </p>
  */
 public
 class Benchmark {
     private final Stack<Long> beginTimes = new Stack<Long>();
 
-    /** @see Benchmark */
+    /**
+     * @see Benchmark
+     */
     public void
     begin() { this.beginTimes.push(new Long(System.currentTimeMillis())); }
 
-    /** @see Benchmark */
+    /**
+     * @see Benchmark
+     */
     public long
     end() { return System.currentTimeMillis() - ((Long) this.beginTimes.pop()).longValue(); }
 
     // Reporting-related methods and fields.
 
-    /** Sets up a {@link Benchmark} with a default {@link Reporter} that reports to {@code System.out}. */
+    /**
+     * Sets up a {@link Benchmark} with a default {@link Reporter} that reports to {@code System.out}.
+     */
     public
     Benchmark(boolean reportingEnabled) {
         this.reportingEnabled = reportingEnabled;
@@ -84,7 +94,9 @@ class Benchmark {
         };
     }
 
-    /** Set up a {@link Benchmark} with a custom {@link Reporter}. */
+    /**
+     * Sets up a {@link Benchmark} with a custom {@link Reporter}.
+     */
     public
     Benchmark(boolean reportingEnabled, Reporter reporter) {
         this.reportingEnabled = reportingEnabled;
@@ -94,15 +106,21 @@ class Benchmark {
     private final boolean  reportingEnabled;
     private final Reporter reporter;
 
-    /** Interface used to report messages. */
+    /**
+     * Interface used to report messages.
+     */
     public
     interface Reporter {
 
-        /** Reports the given {@code message}. */
+        /**
+         * Reports the given <var>message</var>.
+         */
         void report(String message);
     }
 
-    /** Begin a benchmark (see {@link #begin()}) and report the fact. */
+    /**
+     * Begins a benchmark (see {@link #begin()}) and report the fact.
+     */
     public void
     beginReporting() {
         if (!this.reportingEnabled) return;
@@ -111,7 +129,9 @@ class Benchmark {
         this.begin();
     }
 
-    /** Begin a benchmark (see {@link #begin()}) and report the fact. */
+    /**
+     * Begins a benchmark (see {@link #begin()}) and report the fact.
+     */
     public void
     beginReporting(String message) {
         if (!this.reportingEnabled) return;
@@ -119,21 +139,27 @@ class Benchmark {
         this.begin();
     }
 
-    /** End a benchmark (see {@link #end()}) and report the fact. */
+    /**
+     * End a benchmark (see {@link #end()}) and report the fact.
+     */
     public void
     endReporting() {
         if (!this.reportingEnabled) return;
         this.reportIndented("... took " + this.end() + " ms");
     }
 
-    /** End a benchmark (see {@link #begin()}) and report the fact. */
+    /**
+     * Ends a benchmark (see {@link #begin()}) and report the fact.
+     */
     public void
     endReporting(String message) {
         if (!this.reportingEnabled) return;
         this.reportIndented("... took " + this.end() + " ms: " + message);
     }
 
-    /** Report the given message. */
+    /**
+     * Reports the given message.
+     */
     public void
     report(String message) {
         if (!this.reportingEnabled) return;
@@ -141,7 +167,7 @@ class Benchmark {
     }
 
     /**
-     * Report the <code>title</code>, a colon, a space, and the pretty-printed {@link Object}.
+     * Reports the {@code title}, a colon, a space, and the pretty-printed {@link Object}.
      */
     public void
     report(@Nullable String optionalTitle, @Nullable Object o) {
@@ -179,7 +205,9 @@ class Benchmark {
     }
     private static final String PAD = "                       ";
 
-    /** Report a message through {@link #reporter}, indent by N spaces where N is the current benchmark stack depth. */
+    /**
+     * Reports a message through {@link #reporter}, indent by N spaces where N is the current benchmark stack depth.
+     */
     private void
     reportIndented(String message) {
         StringBuilder sb = new StringBuilder();

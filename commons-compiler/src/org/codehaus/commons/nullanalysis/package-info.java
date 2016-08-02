@@ -27,8 +27,9 @@
 /**
  * Annotations for ECLIPSE's "null analysis" feature.
  * <p>
- * The following settings on the 'Java / Compiler / Errors/Warnings' preference page (or the 'Java Compiler /
- * Errors/Warnings' project properties page) are recommended:
+ *   The following settings on the 'Java / Compiler / Errors/Warnings' preference page (or the 'Java Compiler /
+ *   Errors/Warnings' project properties page) are recommended:
+ * </p>
  * <pre>
  * <b>Null analysis</b>
  *   Null pointer access:                                                      [Error   ]   4.2+
@@ -52,8 +53,9 @@
  *    'NonNull' annotation:          [org.codehaus.commons.nullanalysis.NotNull          ]
  *    'NonNullByDefault' annotation: [org.codehaus.commons.nullanalysis.NotNullByDefault ]
  * </pre>
- * (ECLIPSE Version: JUNO / 4.2, HELIOS / 4.3)
- *
+ * <p>
+ *   (ECLIPSE Version: JUNO / 4.2, HELIOS / 4.3)
+ * </p>
  */
 // Don't put a NNBD here, otherwise ECLIPSE LUNA produces an internal compiler error.
 // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=438449.

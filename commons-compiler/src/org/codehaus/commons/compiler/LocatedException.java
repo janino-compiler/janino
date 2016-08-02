@@ -28,7 +28,9 @@ package org.codehaus.commons.compiler;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/** An {@link Exception} that is associated with an optional {@link Location} in a source file. */
+/**
+ * An {@link Exception} that is associated with an optional {@link Location} in a source file.
+ */
 public
 class LocatedException extends Exception {
 
@@ -47,8 +49,7 @@ class LocatedException extends Exception {
     }
 
     /**
-     * Returns the message specified at creation time, preceeded with nicely formatted location
-     * information (if any).
+     * Returns the message specified at creation time, preceeded with nicely formatted location information (if any).
      */
     @Override public String
     getMessage() {
@@ -59,7 +60,9 @@ class LocatedException extends Exception {
         );
     }
 
-    /** @return The {@link Location} specified at construction time (may be <code>null</code>) */
+    /**
+     * @return The {@link Location} specified at construction time (may be {@code null})
+     */
     @Nullable public Location
     getLocation() { return this.optionalLocation; }
 }

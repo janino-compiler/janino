@@ -37,7 +37,9 @@ import java.util.Iterator;
 public abstract
 class FilterIterator<T> implements Iterator<T> {
 
-    /** @see FilterIterator */
+    /**
+     * @see FilterIterator
+     */
     protected final Iterator<T> delegate;
 
     public FilterIterator(Iterator<T> delegate) { this.delegate = delegate; }

@@ -39,16 +39,16 @@ import org.codehaus.janino.util.Producer;
 /**
  * An {@link Iterator} that finds the normal {@link File}s who's names are
  * {@link FilenameFilter#accept(java.io.File, java.lang.String) accepted} by the
- * <code>fileNameFilter</code> and
+ * {@code fileNameFilter} and
  * <ul>
  *   <li>
- *     that exist in the given <code>rootDirectory</code>,
+ *     that exist in the given {@code rootDirectory},
  *   </li>
  *   <li>
  *     and those that exist in all subdirectories of the
- *     <code>rootDirectory</code> who's names are
+ *     {@code rootDirectory} who's names are
  *     {@link FilenameFilter#accept(java.io.File, java.lang.String)}ed by the
- *     <code>directoryNameFilter</code>
+ *     {@code directoryNameFilter}
  *   </li>
  * </ul>
  */
@@ -107,7 +107,7 @@ class DirectoryIterator extends ProducerIterator<File> {
     }
 
     /**
-     * Create an {@link Iterator} that returns all matching {@link File}s locatable in a <i>set</i> of root
+     * Creates an {@link Iterator} that returns all matching {@link File}s locatable in a <em>set</em> of root
      * directories.
      *
      * @see #DirectoryIterator(File, FilenameFilter, FilenameFilter)

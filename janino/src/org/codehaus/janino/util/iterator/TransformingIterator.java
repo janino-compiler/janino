@@ -51,6 +51,8 @@ class TransformingIterator<T1, T2> implements Iterator<T2> {
     @Override public void
     remove() { this.delegate.remove(); }
 
-    /** Derived classes must implement this method such that it does the desired transformation. */
+    /**
+     * Derived classes must implement this method such that it does the desired transformation.
+     */
     protected abstract T2 transform(T1 o);
 }

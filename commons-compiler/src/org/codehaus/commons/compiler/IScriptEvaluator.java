@@ -34,7 +34,7 @@ import java.lang.reflect.Method;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * An engine that executes a script in Java&trade; bytecode.
+ * An engine that executes a script in Java bytecode.
  * <p>
  *   The syntax of the script to compile is a sequence of import declarations (not allowed if you compile many scripts
  *   at a time, see below) followed by a sequence of statements, as defined in the <a
@@ -54,52 +54,61 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *   System.out.println("HELLO");
  *   System.out.println(new DecimalFormat("####,###.##").format(a));
  * </pre>
- * (Notice that this expression refers to a parameter "a", as explained below.)
  * <p>
- * The script may complete abnormally, e.g. through a RETURN statement:
+ *   (Notice that this expression refers to a parameter "a", as explained below.)
+ * </p>
+ * <p>
+ *   The script may complete abnormally, e.g. through a RETURN statement:
+ * </p>
  * <pre>
  *   if (a == null) {
  *       System.out.println("Oops!");
  *       return;
  *   }
  * </pre>
- * Optionally, the script may be declared with a non-void return type. In this case, the last
- * statement of the script must be a RETURN statement (or a THROW statement), and all RETURN
- * statements in the script must return a value with the given type.
  * <p>
- * The script evaluator is implemented by creating and compiling a temporary compilation unit
- * defining one class with one method the body of which consists of the statements of the
- * script.
+ *   Optionally, the script may be declared with a non-void return type. In this case, the last statement of the script
+ *   must be a RETURN statement (or a THROW statement), and all RETURN statements in the script must return a value
+ *   with the given type.
+ * </p>
  * <p>
- * To set up a {@link IScriptEvaluator} object, proceed as follows:
+ *   The script evaluator is implemented by creating and compiling a temporary compilation unit defining one class with
+ *   one method the body of which consists of the statements of the script.
+ * </p>
+ * <p>
+ *   To set up a {@link IScriptEvaluator} object, proceed as follows:
+ * </p>
  * <ol>
+ *   <li>Create an {@link IScriptEvaluator}-implementing class.</li>
  *   <li>
- *   Create an {@link IScriptEvaluator}-implementing class.
+ *     Configure the {@link IScriptEvaluator} by calling any of the following methods:
+ *     <ul>
+ *        <li>{@link #setReturnType(Class)}
+ *        <li>{@link #setParameters(String[], Class[])}
+ *        <li>{@link #setThrownExceptions(Class[])}
+ *        <li>{@link org.codehaus.janino.SimpleCompiler#setParentClassLoader(ClassLoader)}
+ *        <li>{@link org.codehaus.janino.ClassBodyEvaluator#setDefaultImports(String[])}
+ *     </ul>
+ *   </li>
  *   <li>
- *   Configure the {@link IScriptEvaluator} by calling any of the following methods:
- *   <ul>
- *      <li>{@link #setReturnType(Class)}
- *      <li>{@link #setParameters(String[], Class[])}
- *      <li>{@link #setThrownExceptions(Class[])}
- *      <li>{@link org.codehaus.janino.SimpleCompiler#setParentClassLoader(ClassLoader)}
- *      <li>{@link org.codehaus.janino.ClassBodyEvaluator#setDefaultImports(String[])}
- *   </ul>
- *   <li>
- *   Call any of the {@link org.codehaus.commons.compiler.Cookable#cook(Reader)} methods to scan,
- *   parse, compile and load the script into the JVM.
+ *     Call any of the {@link org.codehaus.commons.compiler.Cookable#cook(Reader)} methods to scan, parse, compile and
+ *     load the script into the JVM.
+ *   </li>
  * </ol>
- * After the {@link IScriptEvaluator} object is created, the script can be executed as often with
- * different parameter values (see {@link #evaluate(Object[])}). This execution is very fast,
- * compared to the compilation.
  * <p>
- * Less common methods exist that allow for the specification of the name of the generated class,
- * the class it extends, the interfaces it implements, the name of the method that executes the
- * script, the exceptions that this method (i.e. the script) is allowed to throw, and the
- * {@link ClassLoader} that is used to define the generated class and to load classes referenced by
- * the script.
+ *   After the {@link IScriptEvaluator} object is created, the script can be executed as often with different parameter
+ *   values (see {@link #evaluate(Object[])}). This execution is very fast, compared to the compilation.
+ * </p>
  * <p>
- * If you want to compile many scripts at the same time, you have the option to cook an
- * <i>array</i> of scripts in one {@link IScriptEvaluator} by using the following methods:
+ *   Less common methods exist that allow for the specification of the name of the generated class, the class it
+ *   extends, the interfaces it implements, the name of the method that executes the script, the exceptions that this
+ *   method (i.e. the script) is allowed to throw, and the {@link ClassLoader} that is used to define the generated
+ *   class and to load classes referenced by the script.
+ * </p>
+ * <p>
+ *   If you want to compile many scripts at the same time, you have the option to cook an <em>array</em> of scripts in
+ *   one {@link IScriptEvaluator} by using the following methods:
+ * </p>
  * <ul>
  *   <li>{@link #setMethodNames(String[])}
  *   <li>{@link #setParameters(String[][], Class[][])}
@@ -109,51 +118,69 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *   <li>{@link #cook(Reader)}
  *   <li>{@link #evaluate(int, Object[])}
  * </ul>
- * Notice that these methods have array parameters in contrast to their one-script brethren.
+ * <p>
+ *   Notice that these methods have array parameters in contrast to their one-script brethren.
+ * </p>s
  */
 public
 interface IScriptEvaluator extends IClassBodyEvaluator {
 
-    /** Defines whether the generated method overrides a methods declared in a supertype. */
+    /**
+     * Defines whether the generated method overrides a methods declared in a supertype.
+     */
     void
     setOverrideMethod(boolean overrideMethod);
 
-    /** Defines whether the generated method should be STATIC or not. Defaults to {@code true}. */
+    /**
+     * Defines whether the generated method should be STATIC or not. Defaults to {@code true}.
+     */
     void setStaticMethod(boolean staticMethod);
 
     /**
-     * Defines the return type of the generated method. The meaning of a {@code null} value is implementation-dependent.
+     * Defines the return type of the generated method. The meaning of a {@code null} value is
+     * simplementation-dependent.
      */
     void setReturnType(Class<?> returnType);
 
-    /** Define the name of the generated method. Defaults to an unspecified name. */
+    /**
+     * Defines the name of the generated method. Defaults to an unspecified name.
+     */
     void setMethodName(String methodName);
 
     /**
-     * Define the names and types of the parameters of the generated method.
+     * Defines the names and types of the parameters of the generated method.
      * <p>
-     * <code>names</code> and <code>types</code> must have the same number of elements.
+     *   <var>names</var> and <var>types</var> must have the same number of elements.
+     * </p>
      * <p>
-     * The parameters can be of primitive type, e.g. <code>double.class</code>.
+     *   The parameters can be of primitive type, e.g. {@code double.class}.
+     * </p>
      * <p>
-     * The default is to have zero parameters.
+     *   The default is to have zero parameters.
+     * </p>
      */
     void setParameters(String[] names, Class<?>[] types);
 
-    /** Define the exceptions that the generated method may throw. */
+    /**
+     * Defines sthe exceptions that the generated method may throw.
+     */
     void setThrownExceptions(Class<?>[] thrownExceptions);
 
     /**
      * Calls the script with concrete parameter values.
      * <p>
-     * Each argument must have the same type as specified through the <code>parameterTypes</code> parameter of {@link
-     * #setParameters(String[], Class[])}.
+     *   Each argument must have the same type as specified through the {@code parameterTypes} parameter of {@link
+     *   #setParameters(String[], Class[])}.
+     * </p>
      * <p>
-     * Arguments of primitive type must passed with their wrapper class objects.
+     *   Arguments of primitive type must passed with their wrapper class objects.
+     * </p>
      * <p>
-     * The object returned has the class as specified through {@link #setReturnType(Class)}.
+     *   The object returned has the class as specified through {@link #setReturnType(Class)}.
+     * </p>
      * <p>
-     * This method is thread-safe.
+     *   This method is thread-safe.
+     * </p>
      *
      * @param arguments The actual parameter values
      */
@@ -162,69 +189,89 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Returns the loaded {@link java.lang.reflect.Method}.
      * <p>
-     * This method must only be called after exactly one of the {@link #cook(String, Reader)}
-     * methods was called.
+     *   This method must only be called after exactly one of the {@link #cook(String, Reader)} methods was called.
+     * </p>s
      */
     Method getMethod();
 
-    /** Same as {@link #setOverrideMethod(boolean)}, but for multiple scripts. */
+    /**
+     * Same as {@link #setOverrideMethod(boolean)}, but for multiple scripts.
+     */
     void
     setOverrideMethod(boolean[] overrideMethod);
 
-    /** Same as {@link #setStaticMethod(boolean)}, but for multiple scripts. */
+    /**
+     * Same as {@link #setStaticMethod(boolean)}, but for multiple scripts.
+     */
     void setStaticMethod(boolean[] staticMethod);
 
     /**
      * Defines the return types of the generated methods. The meaning of {@code null} elements is
-     * implementation-dependent.
+     * simplementation-dependent.
      */
     void setReturnTypes(Class<?>[] returnTypes);
 
     /**
      * Same as {@link #setMethodName(String)}, but for multiple scripts.
      * <p>
-     * Define the names of the generated methods. By default the methods have distinct and
-     * implementation-specific names.
+     *   Define the names of the generated methods. By default the methods have distinct and implementation-specific
+     *   names.
+     * </p>
      * <p>
-     * If two scripts have the same name, then they must have different parameter types
-     * (see {@link #setParameters(String[][], Class[][])}).
+     *   If two scripts have the same name, then they must have different parameter types (see {@link
+     *   #setParameters(String[][], Class[][])}).
+     * </p>
      */
     void setMethodNames(String[] methodNames);
 
-    /** Same as {@link #setParameters(String[], Class[])}, but for multiple scripts. */
+    /**
+     * Same as {@link #setParameters(String[], Class[])}, but for multiple scripts.
+     */
     void setParameters(String[][] names, Class<?>[][] types);
 
-    /** Same as {@link #setThrownExceptions(Class[])}, but for multiple scripts. */
+    /**
+     * Same as {@link #setThrownExceptions(Class[])}, but for multiple scripts.
+     */
     void setThrownExceptions(Class<?>[][] thrownExceptions);
 
-    /** Same as {@link #cook(Reader)}, but for multiple scripts. */
+    /**
+     * Same as {@link #cook(Reader)}, but for multiple scripts.
+     */
     void cook(Reader[] readers) throws CompileException, IOException;
 
     /**
-     * Same as {@link #cook(String, Reader)}, but cooks a <i>set</i> of scripts into one class. Notice that
-     * if <i>any</i> of the scripts causes trouble, the entire compilation will fail. If you
-     * need to report <i>which</i> of the scripts causes the exception, you may want to use the
-     * <code>optionalFileNames</code> parameter to distinguish between the individual token sources.
+     * Same as {@link #cook(String, Reader)}, but cooks a <em>set</em> of scripts into one class. Notice that
+     * if <em>any</em> of the scripts causes trouble, the entire compilation will fail. If you
+     * need to report <em>which</em> of the scripts causes the exception, you may want to use the
+     * {@code optionalFileNames} parameter to distinguish between the individual token sources.
      * <p>
-     * If and only if the number of scanners is one, then that single script may contain leading
-     * IMPORT directives.
+     *   Iff the number of scanners is one, then that single script may contain leading IMPORT directives.
+     * </p>s
      *
-     * @throws IllegalStateException if any of the preceding <code>set...()</code> had an array
-     *                               size different from that of <code>scanners</code>
+     * @throws IllegalStateException if any of the preceding {@code set...()} had an array
+     *                               size different from that of {@code scanners}
      */
     void
     cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException;
 
-    /** Same as {@link #cook(String)}, but for multiple scripts. */
+    /**
+     * Same as {@link #cook(String)}, but for multiple scripts.
+     */
     void cook(String[] strings) throws CompileException;
 
-    /** Same as {@link #cook(String, String)}, but for multiple scripts. */
+    /**
+     * Same as {@link #cook(String, String)}, but for multiple scripts.
+     */
     void cook(@Nullable String[] optionalFileNames, String[] strings) throws CompileException;
 
-    /** Same as {@link #evaluate(Object[])}, but for multiple scripts. */
+    /**
+     * Same as {@link #evaluate(Object[])}, but for multiple scripts.
+     */
     Object evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException;
 
-    /** Same as {@link #getMethod()}, but for multiple scripts. */
+    /**
+     * Same as {@link #getMethod()}, but for multiple scripts.
+     */
     Method getMethod(int idx);
 
     /**
@@ -239,13 +286,15 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     ) throws CompileException;
 
     /**
-     * If the parameter and return types of the expression are known at compile time, then a "fast"
-     * script evaluator can be instantiated through this method.
+     * If the parameter and return types of the expression are known at compile time, then a "fast" script evaluator
+     * can be instantiated through this method.
      * <p>
-     * Script evaluation is faster than through {@link #evaluate(Object[])}, because it is not done
-     * through reflection but through direct method invocation.
+     *   Script evaluation is faster than through {@link #evaluate(Object[])}, because it is not done through
+     *   reflection but through direct method invocation.
+     * </p>
      * <p>
-     * Example:
+     *   Example:
+     * </p>
      * <pre>
      * public interface Foo {
      *     int bar(int a, int b);
@@ -268,13 +317,14 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      * );
      * System.out.println("1 - 2 = " + f.bar(1, 2));
      * </pre>
-     * All other configuration (implemented type, static method, return type, method name,
-     * parameter names and types, thrown exceptions) are predetermined by the
-     * <code>interfaceToImplement</code>.
-     *
-     * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
-     * or with package scope in the same package as the generated class (see {@link
-     * #setClassName(String)}).
+     * <p>
+     *   All other configuration (implemented type, static method, return type, method name, parameter names and types,
+     *   thrown exceptions) are predetermined by the {@code interfaceToImplement}.
+     * </p>
+     * <p>
+     *   Notice: The {@code interfaceToImplement} must either be declared {@code public}, or with package scope in the
+     *   same package as the generated class (see {@link #setClassName(String)}).
+     * </p>s
      *
      * @param reader               Produces the stream of script tokens
      * @param interfaceToImplement Must declare exactly one method

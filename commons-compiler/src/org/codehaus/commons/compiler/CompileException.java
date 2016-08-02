@@ -28,7 +28,9 @@ package org.codehaus.commons.compiler;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/** An exception that reflects an error during compilation. */
+/**
+ * Representation of an error condition during compilation.
+ */
 public
 class CompileException extends LocatedException {
 

@@ -54,8 +54,8 @@ import javax.tools.StandardJavaFileManager;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
 /**
- * A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s in byte arrays, i.e. in
- * memory (as opposed to the {@link StandardJavaFileManager}, which stores them in files).
+ * A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s in byte arrays, i.e. in memory (as opposed
+ * to the {@link StandardJavaFileManager}, which stores them in files).
  *
  * @param <M>
  */
@@ -108,10 +108,10 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
         /**
          * {@link StringWriter}-based implementation of {@link JavaFileObject}.
          * <p>
-         * Notice that {@link #getCharContent(boolean)} is much more efficient than {@link
-         * ByteArrayJavaFileObject#getCharContent(boolean)}. However, memory consumption is
-         * roughly double, and {@link #openInputStream()} and {@link #openOutputStream()} are
-         * not available.
+         *   Notice that {@link #getCharContent(boolean)} is much more efficient than {@link
+         *   ByteArrayJavaFileObject#getCharContent(boolean)}. However, memory consumption is roughly double, and
+         *   {@link #openInputStream()} and {@link #openOutputStream()} are not available.
+         * </p>
          */
         class StringWriterJavaFileObject extends SimpleJavaFileObject {
             final StringWriter buffer = new StringWriter();
@@ -186,7 +186,9 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
         return result;
     }
 
-    /** Byte array-based implementation of {@link JavaFileObject}. */
+    /**
+     * Byte array-based implementation of {@link JavaFileObject}.
+     */
     public static
     class ByteArrayJavaFileObject extends SimpleJavaFileObject {
 
@@ -203,7 +205,9 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
         @Override public OutputStream
         openOutputStream() throws IOException { return this.buffer; }
 
-        /** @return The bytes that were previously written to this {@link JavaFileObject}. */
+        /**
+         * @return The bytes that were previously written to this {@link JavaFileObject}
+         */
         public byte[]
         toByteArray() { return this.buffer.toByteArray(); }
 

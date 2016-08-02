@@ -622,8 +622,7 @@ class UnparserTests {
             }
 
             /**
-             * Traverse the given {@link CompilationUnit} and collect a list of all its
-             * syntactical elements.
+             * Traverses the given {@link CompilationUnit} and collect a list of all its syntactical elements.
              */
             private Locatable[]
             listSyntaxElements(CompilationUnit cu) {
@@ -651,9 +650,8 @@ class UnparserTests {
     }
 
     /**
-     * Invoke {@code fileFilter} for all files and subdirectories in the given
-     * {@code directory}. If {@link FileFilter#accept(File)} returns {@code true},
-     * recurse with that file/directory.
+     * Invokes <var>fileFilter</var> for all files and subdirectories in the given <var>directory</var>. If {@link
+     * FileFilter#accept(File)} returns {@code true}, recurse with that file/directory.
      */
     private void
     find(File directory, FileFilter fileFilter) {

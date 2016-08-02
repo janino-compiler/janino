@@ -35,20 +35,26 @@ import java.util.List;
 public
 class MethodDescriptor {
 
-    /** The field descriptors of the method parameters. */
+    /**
+     * The field descriptors of the method parameters.
+     */
     public final String[] parameterFds;
 
-    /** The field descriptor of the method return value. */
+    /**
+     * The field descriptor of the method return value.
+     */
     public final String   returnFd;
 
-    /** */
+    /***/
     public
     MethodDescriptor(String[] parameterFds, String returnFd) {
         this.parameterFds = parameterFds;
         this.returnFd     = returnFd;
     }
 
-    /** Parse a method descriptor into parameter FDs and return FDs. */
+    /**
+     * Parses a method descriptor into parameter FDs and return FDs.
+     */
     public
     MethodDescriptor(String s) {
         if (s.charAt(0) != '(') throw new JaninoRuntimeException();
@@ -74,7 +80,9 @@ class MethodDescriptor {
         this.returnFd     = s.substring(++from);
     }
 
-    /** @return The "method descriptor" (JVMS 4.3.3) */
+    /**
+     * @return The "method descriptor" (JVMS 4.3.3)
+     */
     @Override public String
     toString() {
         StringBuilder sb = new StringBuilder("(");
@@ -82,7 +90,9 @@ class MethodDescriptor {
         return sb.append(')').append(this.returnFd).toString();
     }
 
-    /** Patches an additional parameter into a given method descriptor. */
+    /**
+     * Patches an additional parameter into a given method descriptor.
+     */
     public static String
     prependParameter(String md, String parameterFd) { return '(' + parameterFd + md.substring(1); }
 }

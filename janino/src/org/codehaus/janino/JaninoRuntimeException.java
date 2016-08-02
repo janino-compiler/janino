@@ -29,8 +29,8 @@ package org.codehaus.janino;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * All Janino components that throw {@link RuntimeException} throw this subclass
- * to allow for client libraries to intercept them more easily.
+ * All Janino components that throw {@link RuntimeException} throw this subclass to allow for client libraries to
+ * intercept them more easily.
  */
 public
 class JaninoRuntimeException extends RuntimeException {

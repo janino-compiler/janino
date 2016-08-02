@@ -66,11 +66,15 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     @Nullable private JavaCompiler    compiler;
     @Nullable private JavaFileManager fileManager;
 
-    /** @see ICompilerFactory#newJavaSourceClassLoader() */
+    /**
+     * @see ICompilerFactory#newJavaSourceClassLoader()
+     */
     public
     JavaSourceClassLoader() { this.init(); }
 
-    /** @see ICompilerFactory#newJavaSourceClassLoader(ClassLoader) */
+    /**
+     * @see ICompilerFactory#newJavaSourceClassLoader(ClassLoader)
+     */
     public
     JavaSourceClassLoader(ClassLoader parentClassLoader) {
         super(parentClassLoader);
@@ -90,8 +94,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * Creates the underlying {@link JavaFileManager} lazily, because {@link #setSourcePath(File[])} and consorts
-     * are called <i>after</i> initialization.
+     * Creates the underlying {@link JavaFileManager} lazily, because {@link #setSourcePath(File[])} and consorts are
+     * called <em>after</em> initialization.
      */
     JavaFileManager
     getJavaFileManager() {
@@ -264,11 +268,11 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * Construct the name of a resource that could contain the source code of
-     * the class with the given name.
+     * Constructs the name of a resource that could contain the source code of the class with the given name.
      * <p>
-     * Notice that member types are declared inside a different type, so the relevant source file
-     * is that of the outermost declaring class.
+     *   Notice that member types are declared inside a different type, so the relevant source file is that of the
+     *   outermost declaring class.
+     * </p>
      *
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
      * @return the name of the resource, e.g. "pkg1/pkg2/Outer.java"

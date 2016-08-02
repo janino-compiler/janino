@@ -37,22 +37,30 @@ import java.util.List;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link java.io.FilterWriter} that automatically indents lines by looking at
- * trailing opening braces ('{') and leading closing braces ('}').
+ * A {@link java.io.FilterWriter} that automatically indents lines by looking at trailing opening braces ('{') and
+ * leading closing braces ('}').
  */
 public
 class AutoIndentWriter extends FilterWriter {
 
-    /** Special character indicating a tabular layout of the following text. */
+    /**
+     * Special character indicating a tabular layout of the following text.
+     */
     public static final char TABULATOR = 0xffff;
 
-    /** Special character indicating to clear all tabluar layout that was configured through {@link #TABULATOR}. */
+    /**
+     * Special character indicating to clear all tabluar layout that was configured through {@link #TABULATOR}.
+     */
     public static final char CLEAR_TABULATORS = 0xfffe;
 
-    /** Special character that inserts a line break and indents the following text by one position. */
+    /**
+     * Special character that inserts a line break and indents the following text by one position.
+     */
     public static final char INDENT = 0xfffd;
 
-    /** Special character that inserts a line break and unindents the following text by one position. */
+    /**
+     * Special character that inserts a line break and unindents the following text by one position.
+     */
     public static final char UNINDENT = 0xfffc;
 
     private final StringBuilder           lineBuffer = new StringBuilder();
@@ -175,13 +183,21 @@ class AutoIndentWriter extends FilterWriter {
      * spaces, so that the characters immediately following the {@link #TABULATOR}s are vertically
      * aligned, like this:
      * <p>
-     * Input:<pre>
+     *   Input:
+     * </p>
+     * <pre>
      *   a @b @c\r\n
      *   aa @bb @cc\r\n
-     *   aaa @bbb @ccc\r\n</pre>Output:<pre>
+     *   aaa @bbb @ccc\r\n
+     * </pre>
+     * <p>
+     *   Output:
+     * </p>
+     * <pre>
      *   a   b   c\r\n
      *   aa  bb  cc\r\n
-     *   aaa bbb ccc\r\n</pre>
+     *   aaa bbb ccc\r\n
+     * </pre>
      */
     private static void
     resolveTabs(List<StringBuilder> lineGroup) {
@@ -229,7 +245,9 @@ class AutoIndentWriter extends FilterWriter {
         }
     }
 
-    /** @return a {@link String} of <code>n</code> spaces */
+    /**
+     * @return a {@link String} of {@code n} spaces
+     */
     private static String
     spaces(int n) {
         if (n < 30) return "                              ".substring(0, n);

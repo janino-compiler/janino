@@ -50,27 +50,32 @@ import org.codehaus.commons.io.MultiReader;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * To set up a {@link ScriptEvaluator} object, proceed as described for {@link IScriptEvaluator}.
- * Alternatively, a number of "convenience constructors" exist that execute the described steps
- * instantly.
+ * To set up a {@link ScriptEvaluator} object, proceed as described for {@link IScriptEvaluator}. Alternatively, a
+ * number of "convenience constructors" exist that execute the described steps instantly.
  * <p>
- * Alternatively, a number of "convenience constructors" exist that execute the steps described
- * above instantly. Their use is discouraged.
+ *   Alternatively, a number of "convenience constructors" exist that execute the steps described above instantly.
+ *   Their use is discouraged.
+ * </p>
  * <p>
- * <b>Notice that this implementation of {@link IClassBodyEvaluator} is prone to "Java
- * injection", i.e. an application could get more than one class body compiled by passing a
- * bogus input document.</b>
+ *   <b>Notice that this implementation of {@link IClassBodyEvaluator} is prone to "Java injection", i.e. an
+ *   application could get more than one class body compiled by passing a bogus input document.</b>
+ * </p>
  * <p>
- * <b>Also notice that the parsing of leading IMPORT declarations is heuristic and has certain
- * limitations; see {@link #parseImportDeclarations(Reader)}.</b>
+ *   <b>Also notice that the parsing of leading IMPORT declarations is heuristic and has certain limitations; see
+ *   {@link #parseImportDeclarations(Reader)}.</b>
+ * </p>
  */
 public
 class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
-    /** Whether methods override a method declared by a supertype; {@code null} means "none". */
+    /**
+     * Whether methods override a method declared by a supertype; {@code null} means "none".
+     */
     @Nullable protected boolean[] optionalOverrideMethod;
 
-    /** Whether methods are static; {@code null} means "all". */
+    /**
+     * Whether methods are static; {@code null} means "all".
+     */
     @Nullable protected boolean[] optionalStaticMethod;
 
     @Nullable private Class<?>[]   optionalReturnTypes;
@@ -79,13 +84,17 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Nullable private Class<?>[][] optionalParameterTypes;
     @Nullable private Class<?>[][] optionalThrownExceptions;
 
-    /** null=uncooked */
+    /**
+     * null=uncooked
+     */
     @Nullable private Method[] result;
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.cook(script);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.cook(script);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see Cookable#cook(String)
@@ -94,10 +103,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     ScriptEvaluator(String script) throws CompileException { this.cook(script); }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.cook(script);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.cook(script);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
@@ -110,11 +121,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.cook(script);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.cook(script);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
@@ -130,12 +143,14 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.setThrownExceptions(thrownExceptions);
-     * se.cook(script);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.setThrownExceptions(thrownExceptions);
+     *     se.cook(script);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
@@ -158,13 +173,15 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.setThrownExceptions(thrownExceptions);
-     * se.setParentClassLoader(optionalParentClassLoader);
-     * se.cook(optionalFileName, is);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.setThrownExceptions(thrownExceptions);
+     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.cook(optionalFileName, is);
+     * </pre>
      *
      * @param optionalParentClassLoader {@code null} means use current thread's context class loader
      * @see #ScriptEvaluator()
@@ -192,13 +209,15 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.setThrownExceptions(thrownExceptions);
-     * se.setParentClassLoader(optionalParentClassLoader);
-     * se.cook(reader);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.setThrownExceptions(thrownExceptions);
+     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.cook(reader);
+     * </pre>
      *
      * @param optionalParentClassLoader {@code null} means use current thread's context class loader
      * @see #ScriptEvaluator()
@@ -333,7 +352,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
-    /** @param readers The scripts to cook */
+    /**
+     * @param readers The scripts to cook
+     */
     protected final void
     cook(@Nullable String[] optionalFileNames, Reader[] readers, String[] imports)
     throws CompileException, IOException {
@@ -483,7 +504,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
-    /** The default return type of a script is {@code void}. */
+    /**
+     * The default return type of a script is {@code void}.
+     */
     protected Class<?>
     getDefaultReturnType() { return void.class; }
 
@@ -504,7 +527,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
-    /** Don't use. */
+    /**
+     * Don't use.
+     */
     @Override public final Object
     createInstance(Reader reader) { throw new UnsupportedOperationException("createInstance"); }
 

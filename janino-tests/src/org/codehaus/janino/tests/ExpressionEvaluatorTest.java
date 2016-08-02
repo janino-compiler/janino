@@ -27,22 +27,23 @@
 package org.codehaus.janino.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
+import org.junit.Assert;
 import org.junit.Test;
 
 // CHECKSTYLE JavadocMethod:OFF
 
-/** Unit tests fot the {@link ExpressionEvaluator}. */
+/**
+ * Unit tests fot the {@link ExpressionEvaluator}.
+ */
 public
 class ExpressionEvaluatorTest {
 
@@ -55,7 +56,7 @@ class ExpressionEvaluatorTest {
                 + "a + b.c + d.e() + f() + g.h.I.j() + k.l.M"
             ))))
         );
-        assertEquals(new HashSet(Arrays.asList(new String[] { "a", "b", "d" })), parameterNames);
+        Assert.assertEquals(new HashSet(Arrays.asList(new String[] { "a", "b", "d" })), parameterNames);
 
         parameterNames = new HashSet(
             Arrays.asList(ScriptEvaluator.guessParameterNames(new Scanner(null, new StringReader(
@@ -65,20 +66,6 @@ class ExpressionEvaluatorTest {
                 + "return a + b.c + d.e() + f() + g.h.I.j() + k.l.M;"
             ))))
         );
-        assertEquals(new HashSet(Arrays.asList(new String[] { "b", "d" })), parameterNames);
-    }
-
-    /**
-     * JANINO (as of now) does not support generics, and should clearly state the fact instead of throwing
-     * mysterious {@link CompileException}s like 'Identifier expected'.
-     */
-    @Test public void
-    testGenerics() {
-        try {
-            new ExpressionEvaluator().cook("new java.util.HashMap<String, String>()");
-        } catch (CompileException ce) {
-            if (ce.getMessage().contains("does not support generics")) return;
-            fail("Unexpected CompileException message '" + ce.getMessage() + "'");
-        }
+        Assert.assertEquals(new HashSet(Arrays.asList(new String[] { "b", "d" })), parameterNames);
     }
 }

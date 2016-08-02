@@ -38,8 +38,9 @@ import org.codehaus.janino.util.iterator.TransformingIterator;
 
 
 /**
- * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds its resources along a "path"
- * consisting of JAR file names, ZIP file names, and directory names.
+ * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds its resources along a "path" consisting of JAR
+ * file names, ZIP file names, and directory names.
+ *
  * @see org.codehaus.janino.util.resource.ZipFileResourceFinder
  * @see org.codehaus.janino.util.resource.DirectoryResourceFinder
  */
@@ -61,7 +62,7 @@ class PathResourceFinder extends LazyMultiResourceFinder {
     PathResourceFinder(Iterator<ResourceFinder> entries) { super(entries); }
 
     /**
-     * @param path A java-like path, i.e. a "path separator"-separated list of entries.
+     * @param path A java-like path, i.e. a "path separator"-separated list of entries
      */
     public
     PathResourceFinder(String path) { this(PathResourceFinder.parsePath(path)); }
@@ -77,7 +78,7 @@ class PathResourceFinder extends LazyMultiResourceFinder {
     }
 
     /**
-     * Break a given string up by the system-dependent path-separator character (on UNIX systems,
+     * Breaks a given string up by the system-dependent path-separator character (on UNIX systems,
      * this character is ':'; on Microsoft Windows systems it is ';'). Empty components are
      * ignored.
      * <p>
@@ -112,7 +113,7 @@ class PathResourceFinder extends LazyMultiResourceFinder {
      * A factory method that creates a Java classpath-style ResourceFinder as
      * follows:
      * <table>
-     *   <tr><th><code>entry</code></th><th>Returned {@link ResourceFinder}</th></tr>
+     *   <tr><th>{@code entry}</th><th>Returned {@link ResourceFinder}</th></tr>
      *   <tr><td>"*.jar" file</td><td>{@link ZipFileResourceFinder}</td></tr>
      *   <tr><td>"*.zip" file</td><td>{@link ZipFileResourceFinder}</td></tr>
      *   <tr><td>directory</td><td>{@link DirectoryResourceFinder}</td></tr>

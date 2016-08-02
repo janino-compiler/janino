@@ -36,9 +36,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * By default, types in method signatures that lack a null annotation are regarded as <i>nullable</i>.
+ * By default, types in method signatures that lack a null annotation are regarded as <em>nullable</em>.
  * This annotation (with it default value {@code true}) indicates that types in method signatures that lack a null
- * annotation are regarded as <i>non-null</i>.
+ * annotation are regarded as <em>non-null</em>.
  * It is generally good practice to add {@code @NotNullByDefault} to all your package declarations (i.e.
  * 'package-into.java' files), because in well-designed code (especially API methods), {@code @NonNull} is
  * significantly more frequent than {@code @Nullable}.

@@ -45,8 +45,8 @@ class EnumerationIterator<T> implements Iterator<T> {
     @Override public T       next()    { return this.e.nextElement(); }
 
     /**
-     * Since {@link Enumeration}s don't support element removal, this method always throws
-     * an {@link UnsupportedOperationException}.
+     * Since {@link Enumeration}s don't support element removal, this method always throws an {@link
+     * UnsupportedOperationException}.
      *
      * @see Iterator#remove()
      */

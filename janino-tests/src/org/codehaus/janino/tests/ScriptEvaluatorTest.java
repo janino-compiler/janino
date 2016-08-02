@@ -33,7 +33,9 @@ import org.junit.Test;
 
 // CHECKSTYLE JavadocMethod:OFF
 
-/** Unit tests for the {@link ScriptEvaluator}. */
+/**
+ * Unit tests for the {@link ScriptEvaluator}.
+ */
 public
 class ScriptEvaluatorTest {
 

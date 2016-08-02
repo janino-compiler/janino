@@ -47,7 +47,8 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 /**
  * This {@link org.codehaus.janino.IClassLoader} finds, scans and parses compilation units.
  * <p>
- * Notice that it does not compile them!
+ *   Notice that it does not compile them!
+ * </p>
  */
 public
 class JavaSourceIClassLoader extends IClassLoader {
@@ -56,7 +57,10 @@ class JavaSourceIClassLoader extends IClassLoader {
 
     private ResourceFinder           sourceFinder;
     @Nullable private String         optionalCharacterEncoding;
-    /** Collection of parsed compilation units. */
+
+    /**
+     * Collection of parsed compilation units.
+     */
     private final Set<UnitCompiler>  unitCompilers = new HashSet<UnitCompiler>();
 
     @Nullable private ErrorHandler   optionalCompileErrorHandler;
@@ -81,7 +85,9 @@ class JavaSourceIClassLoader extends IClassLoader {
     public Set<UnitCompiler>
     getUnitCompilers() { return this.unitCompilers; }
 
-    /** @param pathResourceFinder The source path */
+    /**
+     * @param pathResourceFinder The source path
+     */
     public void
     setSourceFinder(ResourceFinder pathResourceFinder) {
         this.sourceFinder = pathResourceFinder;
@@ -96,7 +102,9 @@ class JavaSourceIClassLoader extends IClassLoader {
         this.optionalCharacterEncoding = optionalCharacterEncoding;
     }
 
-    /** @see UnitCompiler#setCompileErrorHandler(ErrorHandler) */
+    /**
+     * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
+     */
     public void
     setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
         this.optionalCompileErrorHandler = optionalCompileErrorHandler;
@@ -178,8 +186,7 @@ class JavaSourceIClassLoader extends IClassLoader {
     }
 
     /**
-     * Finds the Java&trade; source file for the named class through the configured 'source resource finder' and
-     * parses it.
+     * Finds the Java source file for the named class through the configured 'source resource finder' and parses it.
      *
      * @return {@code null} iff the source file could not be found
      */

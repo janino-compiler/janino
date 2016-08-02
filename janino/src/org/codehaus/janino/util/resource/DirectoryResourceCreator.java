@@ -29,8 +29,10 @@ package org.codehaus.janino.util.resource;
 import java.io.File;
 
 /**
- * Creates a resource in a given directory:<pre>
- *     <i>destinationDirectory</i>/<i>resourceName</i></pre>
+ * Creates a resource in a given directory:
+ * <pre>
+ *     <em>destinationDirectory</em>/<em>resourceName</em>
+ * </pre>
  */
 public
 class DirectoryResourceCreator extends FileResourceCreator {

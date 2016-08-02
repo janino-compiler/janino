@@ -36,7 +36,9 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 
-/** The {@link CompilerFactory} implementation for {@code org.codehaus.commons.compiler.jdk}. */
+/**
+ * The {@link CompilerFactory} implementation for {@code org.codehaus.commons.compiler.jdk}.
+ */
 public
 class CompilerFactory extends AbstractCompilerFactory {
 

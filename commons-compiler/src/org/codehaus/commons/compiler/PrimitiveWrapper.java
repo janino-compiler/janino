@@ -26,7 +26,9 @@
 
 package org.codehaus.commons.compiler;
 
-/** A helper class that wraps primitive values in their wrapper classes. */
+/**
+ * A helper class that wraps primitive values in their wrapper classes.
+ */
 public final
 class PrimitiveWrapper {
 

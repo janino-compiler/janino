@@ -39,11 +39,15 @@ import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.junit.Assert;
 
-/** A base class for JUnit 4 test cases that provides easy-to-use functionality to test JANINO. */
+/**
+ * A base class for JUnit 4 test cases that provides easy-to-use functionality to test JANINO.
+ */
 public
 class JaninoTestSuite {
 
-    /** The {@link ICompilerFactory} in effect for this test execution. */
+    /**
+     * The {@link ICompilerFactory} in effect for this test execution.
+     */
     protected final ICompilerFactory compilerFactory;
 
     public
@@ -52,7 +56,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that cooking the given {@code expression} issues an error.
+     * Asserts that cooking the given <var>expression</var> issues an error.
      */
     protected void
     assertExpressionUncookable(String expression) throws Exception {
@@ -60,7 +64,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code expression} can be cooked without errors and warnings.
+     * Asserts that the given <var>expression</var> can be cooked without errors and warnings.
      */
     protected void
     assertExpressionCookable(String expression) throws Exception {
@@ -68,7 +72,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code expression} can be cooked and evaluated. (Its value is ignored.)
+     * Asserts that the given <var>expression</var> can be cooked and evaluated. (Its value is ignored.)
      */
     protected void
     assertExpressionEvaluatable(String expression) throws Exception {
@@ -76,7 +80,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code expression} evaluates to TRUE.
+     * Asserts that the given <var>expression</var> evaluates to TRUE.
      */
     protected void
     assertExpressionEvaluatesTrue(String expression) throws Exception {
@@ -102,7 +106,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that cooking the given {@code script} issues an error.
+     * Asserts that cooking the given <var>script</var> issues an error.
      */
     protected void
     assertScriptUncookable(String script) throws Exception {
@@ -110,8 +114,8 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that cooking the given {@code script} issues an error, and the error message contains the
-     * {@code messageInfix}.
+     * Asserts that cooking the given <var>script</var> issues an error, and the error message contains the
+     * <var>messageInfix</var>.
      */
     protected void
     assertScriptUncookable(String script, String messageInfix) throws Exception {
@@ -119,8 +123,8 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that cooking the given {@code script} issues an error, and the error message contains a match for
-     * {@code messageRegex}.
+     * Asserts that cooking the given <var>script</var> issues an error, and the error message contains a match for
+     * <var>messageRegex</var>.
      */
     protected void
     assertScriptUncookable(String script, Pattern messageRegex) throws Exception {
@@ -128,7 +132,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code script} can be cooked without errors and warnings.
+     * Asserts that the given <var>script</var> can be cooked without errors and warnings.
      */
     protected void
     assertScriptCookable(String script) throws Exception {
@@ -136,7 +140,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code script} can be cooked and executed. (Its return value is ignored.)
+     * Asserts that the given <var>script</var> can be cooked and executed. (Its return value is ignored.)
      */
     protected void
     assertScriptExecutable(String script) throws Exception {
@@ -144,7 +148,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code script} returns TRUE.
+     * Asserts that the given <var>script</var> returns TRUE.
      */
     protected void
     assertScriptReturnsTrue(String script) throws Exception {
@@ -176,7 +180,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that cooking the given {@code classBody} issues an error.
+     * Asserts that cooking the given <var>classBody</var> issues an error.
      */
     protected void
     assertClassBodyUncookable(String classBody) throws Exception {
@@ -184,7 +188,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code classBody} can be cooked without errors and warnings.
+     * Asserts that the given <var>classBody</var> can be cooked without errors and warnings.
      */
     protected void
     assertClassBodyCookable(String classBody) throws Exception {
@@ -192,7 +196,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code classBody} declares a method '{@code public static }<i>any-type</i> {@code
+     * Asserts that the given <var>classBody</var> declares a method '{@code public static }<em>any-type</em> {@code
      * main()}' which executes and terminates normally. (The return value is ignored.)
      */
     protected void
@@ -201,8 +205,8 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code classBody} declares a method {@code public static boolean main()} which executes
-     * and returns {@code true}.
+     * Asserts that the given <var>classBody</var> declares a method {@code public static boolean main()} which
+     * executesc and returns {@code true}.
      */
     protected void
     assertClassBodyMainReturnsTrue(String classBody) throws Exception {
@@ -231,7 +235,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that cooking the given {@code compilationUnit} with the {@link ISimpleCompiler} issues an error.
+     * Asserts that cooking the given <var>compilationUnit</var> with the {@link ISimpleCompiler} issues an error.
      */
     protected void
     assertCompilationUnitUncookable(String compilationUnit) throws Exception {
@@ -239,8 +243,8 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code compilationUnit} can be cooked by the {@link ISimpleCompiler} without errors and
-     * warnings.
+     * Asserts that the given <var>compilationUnit</var> can be cooked by the {@link ISimpleCompiler} without errors
+     * and warnings.
      */
     protected void
     assertCompilationUnitCookable(String compilationUnit) throws Exception {
@@ -248,9 +252,9 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code compilationUnit} can be cooked by the {@link ISimpleCompiler} and its '{@code
-     * public static }<i>any-type className</i>{@code .main()}' method completes without exceptions. (The return value
-     * is ignored.)
+     * Asserts that the given <var>compilationUnit</var> can be cooked by the {@link ISimpleCompiler} and its '{@code
+     * public static }<em>any-type className</em>{@code .main()}' method completes without exceptions. (The return
+     * value is ignored.)
      */
     protected void
     assertCompilationUnitMainExecutable(String compilationUnit, String className) throws Exception {
@@ -258,8 +262,8 @@ class JaninoTestSuite {
     }
 
     /**
-     * Asserts that the given {@code compilationUnit} can be cooked by the {@link ISimpleCompiler} and its {@code public
-     * static boolean }<i>className</i>{@code .main()} method returns TRUE.
+     * Asserts that the given <var>compilationUnit</var> can be cooked by the {@link ISimpleCompiler} and its {@code
+     * public static boolean }<em>className</em>{@code .main()} method returns TRUE.
      */
     protected void
     assertCompilationUnitMainReturnsTrue(String compilationUnit, String className) throws Exception {
@@ -296,7 +300,7 @@ class JaninoTestSuite {
     }
 
     /**
-     * Loads the class with the given {@code className} from the given {@code sourceDirectory}.
+     * Loads the class with the given <var>className</var> from the given <var>sourceDirectory</var>.
      */
     protected void
     assertJavaSourceLoadable(final File sourceDirectory, final String className) throws Exception {
@@ -306,20 +310,24 @@ class JaninoTestSuite {
     }
 
     /**
-     * A test case that calls its abstract methods {@link #compile()}, then {@link #execute()}, and
-     * verifies that they throw exceptions and return results as expected.
+     * A test case that calls its abstract methods {@link #compile()}, then {@link #execute()}, and verifies that they
+     * throw exceptions and return results as expected.
      */
     abstract static
     class CompileAndExecuteTest {
 
-        /** @see CompileAndExecuteTest */
+        /**
+         * @see CompileAndExecuteTest
+         */
         protected abstract void compile() throws Exception;
 
-        /** @see CompileAndExecuteTest */
+        /**
+         * @see CompileAndExecuteTest
+         */
         @Nullable protected abstract Object execute() throws Exception;
 
         /**
-         * Assert that cooking issues an error.
+         * Asserts that cooking issues an error.
          */
         protected void
         assertUncookable() throws Exception {
@@ -332,7 +340,7 @@ class JaninoTestSuite {
         }
 
         /**
-         * Assert that cooking issues an error, and the error message contains the {@code messageInfix}.
+         * Asserts that cooking issues an error, and the error message contains the <var>messageInfix</var>.
          */
         protected void
         assertUncookable(String messageInfix) throws Exception {
@@ -348,7 +356,7 @@ class JaninoTestSuite {
         }
 
         /**
-         * Assert that cooking issues an error, and the error message contains the a match of {@code messageRegex}.
+         * Asserts that cooking issues an error, and the error message contains the a match of <var>messageRegex</var>.
          */
         protected void
         assertUncookable(Pattern messageRegex) throws Exception {
@@ -364,7 +372,7 @@ class JaninoTestSuite {
         }
 
         /**
-         * Assert that cooking completes without errors.
+         * Asserts that cooking completes without errors.
          */
         protected void
         assertCookable() throws Exception {
@@ -372,7 +380,7 @@ class JaninoTestSuite {
         }
 
         /**
-         * Assert that cooking and executing completes normally.
+         * Asserts that cooking and executing completes normally.
          */
         protected void
         assertExecutable() throws Exception {
@@ -381,7 +389,7 @@ class JaninoTestSuite {
         }
 
         /**
-         * Assert that cooking completes normally and executing returns TRUE.
+         * Asserts that cooking completes normally and executing returns TRUE.
          */
         protected void
         assertResultTrue() throws Exception {

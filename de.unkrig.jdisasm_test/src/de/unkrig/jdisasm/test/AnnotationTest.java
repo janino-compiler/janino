@@ -75,10 +75,13 @@ class AnnotationTest {
     }
 
     // Annotation type declaration with nested enum type declaration
-    /** @deprecated */
+    /**
+     * @deprecated
+     */
     @Deprecated public
     @interface Quality {
-        enum Level { /** @deprecated */ @Deprecated BAD, INDIFFERENT, GOOD }
+        enum Level { /** @deprecated
+        */ @Deprecated BAD, INDIFFERENT, GOOD }
 
         Level value();
     }
@@ -99,7 +102,9 @@ class AnnotationTest {
             class Nested1 {}
         }
 
-        /** @deprecated */
+        /**
+         * @deprecated
+         */
         @Deprecated void
         meth(@Copyright("foo") int x) {
             class Nested2 {

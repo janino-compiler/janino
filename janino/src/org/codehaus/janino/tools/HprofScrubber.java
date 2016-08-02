@@ -43,8 +43,9 @@ import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * Example for object allocation statistics:
- *
+ * <pre>
  *     java -Xrunhprof:heap=sites,monitor=n,cutoff=0,depth=4 MyClass
+ * </pre>
  */
 public final
 class HprofScrubber {

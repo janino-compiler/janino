@@ -32,20 +32,26 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Creates resources as byte arrays in a delegate {@link java.util.Map}. */
+/**
+ * Creates resources as byte arrays in a delegate {@link java.util.Map}.
+ */
 public
 class MapResourceCreator implements ResourceCreator {
 
     private final Map<String, byte[]> map;
 
-    /** Auto-create the delegate {@link Map}. */
+    /**
+     * Auto-create the delegate {@link Map}.
+     */
     public
     MapResourceCreator() { this.map = new HashMap<String, byte[]>(); }
 
     public
     MapResourceCreator(Map<String, byte[]> map) { this.map = map; }
 
-    /** @return The {@link String}-to-{@code byte[]} map of the resources created */
+    /**
+     * @return The {@link String}-to-{@code byte[]} map of the resources created
+     */
     public final Map<String, byte[]>
     getMap() { return this.map; }
 

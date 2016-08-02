@@ -28,10 +28,14 @@ package org.codehaus.commons.compiler;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/** Processes an error issued by the compiler. */
+/**
+ * Processes an error issued by the compiler.
+ */
 public
 interface ErrorHandler {
 
-    /** May or may not choose to throw a {@link CompileException}. */
+    /**
+     * May or may not choose to throw a {@link CompileException}.
+     */
     void handleError(String message, @Nullable Location optionalLocation) throws CompileException;
 }

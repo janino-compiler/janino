@@ -34,8 +34,8 @@ import java.io.Writer;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link java.io.FilterReader} that copies the bytes being passed through
- * to a given {@link java.io.Writer}. This is in analogy with the UNIX "tee" command.
+ * A {@link java.io.FilterReader} that copies the bytes being passed through to a given {@link java.io.Writer}. This is
+ * in analogy with the UNIX "tee" command.
  */
 public
 class TeeReader extends FilterReader {

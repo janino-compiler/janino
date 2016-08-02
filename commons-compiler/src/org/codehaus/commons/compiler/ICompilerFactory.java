@@ -30,24 +30,28 @@ package org.codehaus.commons.compiler;
  * An entity that produces implementations of {@link IExpressionEvaluator}, {@link IScriptEvaluator}, {@link
  * IClassBodyEvaluator}, {@link ISimpleCompiler} or {@link AbstractJavaSourceClassLoader}.
  * <p>
- * Implementations of this interface are, e.g. 'org.codehaus.janino' or 'org.codehaus.commons.compiler.jdk'.
+ *   Implementations of this interface are, e.g. {@code org.codehaus.janino} and {@code
+ *   org.codehaus.commons.compiler.jdk}.
+ * </p>
  */
 public
 interface ICompilerFactory {
 
     /**
      * @return A {@link String} which uniquely identifies the concrete implementation of this interface, e.g.
-     *         "org.codehaus.janino" or "org.codehaus.commons.compiler.jdk"
+     *         {@code "org.codehaus.janino"} or {@code "org.codehaus.commons.compiler.jdk"}
      */
     String getId();
 
     /**
      * @return A human-readable {@link String} that identifies the concrete implementation of this interface in a user
-     *         interface, e.g. "janino" or "jdk"
+     *         interface, e.g. {@code "janino"} or {@code "jdk"}
      */
     @Override String toString();
 
-    /** @return The version of <i>this</i> implementation of the commons-compiler specification, or <code>null</code> */
+    /**
+     * @return The version of <em>this</em> implementation of the commons-compiler specification, or {@code null}
+     */
     String getImplementationVersion();
 
     /**

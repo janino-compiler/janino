@@ -26,10 +26,14 @@
 
 package org.codehaus.commons.compiler.tests.bug180;
 
-/** Interface needed for {@link ReportedBugs#testBug180()}. */
+/**
+ * Interface needed for {@link ReportedBugs#testBug180()}.
+ */
 public
 interface UnaryDoubleFunction {
 
-    /** Purpose is ficticious. */
+    /**
+     * Purpose is ficticious.
+     */
     double evaluate(double x);
 }

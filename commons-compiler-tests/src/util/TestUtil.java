@@ -33,7 +33,9 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.runners.Parameterized.Parameters;
 
-/** Utility methods for testing. */
+/**
+ * Utility methods for testing.
+ */
 public final
 class TestUtil {
 
@@ -42,7 +44,7 @@ class TestUtil {
      * <pre>
      *     &#64;Parameters(name = "CompilerFactory={0}")
      *     public static Collection&lt;Object[]>
-     *     <i>any-name</i>() throws Exception {
+     *     <em>any-name</em>() throws Exception {
      *         return TestUtil.getCompilerFactoriesForParameters();
      *     }
      * </pre>

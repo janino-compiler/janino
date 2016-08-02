@@ -66,7 +66,8 @@ class TraversingIterator implements Iterator<Object> {
 
     /**
      * Reads the next element and stores it in {@link #nextElement}.
-     * @return <code>false</code> if no more element can be read.
+     *
+     * @return {@code false} if no more element can be read
      */
     private boolean
     readNext() {
@@ -99,8 +100,8 @@ class TraversingIterator implements Iterator<Object> {
     }
 
     /**
-     * @throws UnsupportedOperationException iff the {@link Iterator} currently being
-     *                                       traversed doesn't support element removal
+     * @throws UnsupportedOperationException The {@link Iterator} currently being traversed doesn't support element
+     *                                       removal
      * @see Iterator#remove()
      */
     @Override public void

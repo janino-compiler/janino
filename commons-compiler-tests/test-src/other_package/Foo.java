@@ -28,7 +28,9 @@
 
 package other_package; // SUPPRESS CHECKSTYLE PackageName
 
-/** Helper class for {@link JlsTests} -- used to define accessibility tests. */
+/**
+ * Helper class for {@link JlsTests} -- used to define accessibility tests.
+ */
 public
 class Foo {
     public      Foo(int i)     {}

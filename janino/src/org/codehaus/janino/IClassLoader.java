@@ -228,7 +228,7 @@ class IClassLoader {
     }
 
     /**
-     * Get an {@link IClass} by field descriptor.
+     * Gets an {@link IClass} by field descriptor.
      *
      * @param fieldDescriptor         E.g. 'Lpkg1/pkg2/Outer$Inner;'
      * @return                        {@code null} if an {@link IClass} could not be loaded
@@ -311,43 +311,44 @@ class IClassLoader {
     }
 
     /**
-     * Find a new {@link IClass} by descriptor; return <code>null</code> if a class
-     * for that <code>descriptor</code> could not be found.
+     * Finds a new {@link IClass} by descriptor; return {@code null} if a class for that {@code descriptor} could not
+     * be found.
      * <p>
-     * Similar {@link java.lang.ClassLoader#findClass(java.lang.String)}, this method
-     * must
+     *   Similar {@link java.lang.ClassLoader#findClass(java.lang.String)}, this method must
+     * </p>
      * <ul>
-     *   <li>Get an {@link IClass} object from somewhere for the given type
-     *   <li>Call {@link #defineIClass(IClass)} with that {@link IClass} object as
-     *       the argument
-     *   <li>Return the {@link IClass} object
+     *   <li>Get an {@link IClass} object from somewhere for the given type</li>
+     *   <li>Call {@link #defineIClass(IClass)} with that {@link IClass} object as the argument</li>
+     *   <li>Return the {@link IClass} object</li>
      * </ul>
      * <p>
-     * The format of a <code>descriptor</code> is defined in JVMS 4.3.2. Typical
-     * descriptors are:
+     *   The format of a {@code descriptor} is defined in JVMS 4.3.2. Typical descriptors are:
+     * </p>
      * <ul>
-     *   <li><code>I</code> (Integer)
-     *   <li><code>Lpkg1/pkg2/Cls;</code> (Class declared in package)
-     *   <li><code>Lpkg1/pkg2/Outer$Inner;</code> Member class
+     *   <li>{@code I} (Integer)</li>
+     *   <li>{@code Lpkg1/pkg2/Cls;} (Class declared in package)</li>
+     *   <li>{@code Lpkg1/pkg2/Outer$Inner;} Member class</li>
      * </ul>
-     * Notice that this method is never called for array types.
      * <p>
-     * Notice that this method is never called from more than one thread at a time.
-     * In other words, implementations of this method need not be synchronized.
+     *   Notice that this method is never called for array types.
+     * </p>
+     * <p>
+     *   Notice that this method is never called from more than one thread at a time. In other words, implementations
+     *   of this method need not be synchronized.
+     * </p>
      *
-     * @return <code>null</code> if a class with that descriptor could not be found
+     * @return {@code null} if a class with that descriptor could not be found
      * @throws ClassNotFoundException if an exception was raised while loading the class
      */
     @Nullable protected abstract IClass
     findIClass(String descriptor) throws ClassNotFoundException;
 
     /**
-     * Define an {@link IClass} in the context of this {@link IClassLoader}.
-     * If an {@link IClass} with that descriptor already exists, a
-     * {@link RuntimeException} is thrown.
+     * Defines an {@link IClass} in the context of this {@link IClassLoader}. If an {@link IClass} with that descriptor
+     * already exists, a {@link RuntimeException} is thrown.
      * <p>
-     * This method should only be called from an implementation of
-     * {@link #findIClass(String)}.
+     *   This method should only be called from an implementation of {@link #findIClass(String)}.
+     * </p>
      *
      * @throws RuntimeException A different {@link IClass} object is already defined for this type
      */
@@ -368,14 +369,13 @@ class IClassLoader {
     }
 
     /**
-     * Create an {@link IClassLoader} that looks for classes in the given "boot class
-     * path", then in the given "extension directories", and then in the given
-     * "class path".
+     * Creates an {@link IClassLoader} that looks for classes in the given "boot class path", then in the given
+     * "extension directories", and then in the given "class path".
      * <p>
-     * The default for the <code>optionalBootClassPath</code> is the path defined in
-     * the system property "sun.boot.class.path", and the default for the
-     * <code>optionalExtensionDirs</code> is the path defined in the "java.ext.dirs"
-     * system property.
+     *   The default for the {@code optionalBootClassPath} is the path defined in the system property
+     *   "sun.boot.class.path", and the default for the {@code optionalExtensionDirs} is the path defined in the
+     *   "java.ext.dirs" system property.
+     * </p>
      */
     public static IClassLoader
     createJavacLikePathIClassLoader(

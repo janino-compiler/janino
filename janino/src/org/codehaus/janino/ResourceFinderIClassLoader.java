@@ -36,9 +36,8 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 
 
 /**
- * This {@link org.codehaus.janino.IClassLoader} loads IClasses through a
- * a {@link org.codehaus.janino.util.resource.ResourceFinder} that designates
- * {@link org.codehaus.janino.util.ClassFile}s.
+ * This {@link org.codehaus.janino.IClassLoader} loads IClasses through a a {@link
+ * org.codehaus.janino.util.resource.ResourceFinder} that designates {@link org.codehaus.janino.util.ClassFile}s.
  */
 public
 class ResourceFinderIClassLoader extends IClassLoader {

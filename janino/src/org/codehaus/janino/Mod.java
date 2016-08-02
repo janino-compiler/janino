@@ -29,14 +29,17 @@ package org.codehaus.janino;
 /**
  * This class defines constants and convenience methods for the handling of modifiers as defined by the JVM.
  * <p>
- * Notice: This class should be named <code>IClass.IModifier</code>, but changing the name would break existing client
- * code. Thus it won't be renamed until there's a really good reason to do it (maybe with a major design change).
+ *   Notice: This class should be named {@code IClass.IModifier}, but changing the name would break existing client
+ *   code. Thus it won't be renamed until there's a really good reason to do it (maybe with a major design change).
+ * </p>
  */
 public final
 class Mod {
     private Mod() {} // Don't instantiate me!
 
-    /** An alias for '0' -- <i>no</i> modifiers. */
+    /**
+     * An alias for '0' -- <em>no</em> modifiers.
+     */
     public static final short NONE = 0x0000;
 
     /**
@@ -48,7 +51,9 @@ class Mod {
      */
     public static final short PUBLIC = 0x0001;
 
-    /** @return Whether the given modifier symbolizes {@link #PUBLIC} accessibility */
+    /**
+     * @return Whether the given modifier symbolizes {@link #PUBLIC} accessibility
+     */
     public static boolean isPublicAccess(short sh) { return (sh & Mod.PPP) == Mod.PUBLIC; }
 
     /**
@@ -59,7 +64,9 @@ class Mod {
      */
     public static final short PRIVATE = 0x0002;
 
-    /** @return Whether the given modifier symbolizes {@link #PRIVATE} accessibility */
+    /**
+     * @return Whether the given modifier symbolizes {@link #PRIVATE} accessibility
+     */
     public static boolean isPrivateAccess(short sh) { return (sh & Mod.PPP) == Mod.PRIVATE; }
 
     /**
@@ -70,7 +77,9 @@ class Mod {
      */
     public static final short PROTECTED = 0x0004;
 
-    /** @return Whether the given modifier symbolizes {@link #PROTECTED} accessibility */
+    /**
+     * @return Whether the given modifier symbolizes {@link #PROTECTED} accessibility
+     */
     public static boolean isProtectedAccess(short sh) { return (sh & Mod.PPP) == Mod.PROTECTED; }
 
     /**
@@ -81,13 +90,19 @@ class Mod {
      */
     public static final short PACKAGE = 0x0000;
 
-    /** @return Whether the given modifier symbolizes {@link #PACKAGE} (a.k.a. 'default') accessibility */
+    /**
+     * @return Whether the given modifier symbolizes {@link #PACKAGE} (a.k.a. 'default') accessibility
+     */
     public static boolean isPackageAccess(short sh) { return (sh & Mod.PPP) == Mod.PACKAGE; }
 
-    /** The mask to select the accessibility flags from modifiers. */
+    /**
+     * The mask to select the accessibility flags from modifiers.
+     */
     public static final short PPP = 0x0007;
 
-    /** @return The given {@code modifiers}, but with the accessibility part changed to {@code newAccess} */
+    /**
+     * @return The given <var>modifiers</var>, but with the accessibility part changed to <var>newAccess</var>
+     */
     public static short
     changeAccess(short modifiers, short newAccess) { return (short) ((modifiers & ~Mod.PPP) | newAccess); }
 
@@ -97,7 +112,9 @@ class Mod {
      */
     public static final short STATIC = 0x0008;
 
-    /** @return Whether the given modifier includes {@link #STATIC} */
+    /**
+     * @return Whether the given modifier includes {@link #STATIC}
+     */
     public static boolean isStatic(short sh) { return (sh & Mod.STATIC) != 0; }
 
     /**
@@ -106,7 +123,9 @@ class Mod {
      */
     public static final short FINAL = 0x0010;
 
-    /** @return Whether the given modifier includes {@link #INTERFACE} */
+    /**
+     * @return Whether the given modifier includes {@link #INTERFACE}
+     */
     public static boolean isFinal(short sh) { return (sh & Mod.FINAL) != 0; }
 
     /**
@@ -115,7 +134,9 @@ class Mod {
      */
     public static final short SUPER = 0x0020;
 
-    /** @return Whether the given modifier includes {@link #SUPER} */
+    /**
+     * @return Whether the given modifier includes {@link #SUPER}
+     */
     public static boolean isSuper(short sh) { return (sh & Mod.SUPER) != 0; }
 
     /**
@@ -124,7 +145,9 @@ class Mod {
      */
     public static final short SYNCHRONIZED = 0x0020;
 
-    /** @return Whether the given modifier includes {@link #SYNCHRONIZED} */
+    /**
+     * @return Whether the given modifier includes {@link #SYNCHRONIZED}
+     */
     public static boolean isSynchronized(short sh) { return (sh & Mod.SYNCHRONIZED) != 0; }
 
     /**
@@ -133,7 +156,9 @@ class Mod {
      */
     public static final short VOLATILE = 0x0040;
 
-    /** @return Whether the given modifier includes {@link #VOLATILE} */
+    /**
+     * @return Whether the given modifier includes {@link #VOLATILE}
+     */
     public static boolean isVolatile(short sh) { return (sh & Mod.VOLATILE) != 0; }
 
     /**
@@ -142,7 +167,9 @@ class Mod {
      */
     public static final short BRIDGE = 0x0040;
 
-    /** @return Whether the given modifier includes {@link #BRIDGE} */
+    /**
+     * @return Whether the given modifier includes {@link #BRIDGE}
+     */
     public static boolean isBridge(short sh) { return (sh & Mod.BRIDGE) != 0; }
 
     /**
@@ -151,7 +178,9 @@ class Mod {
      */
     public static final short TRANSIENT = 0x0080;
 
-    /** @return Whether the given modifier includes {@link #TRANSIENT} */
+    /**
+     * @return Whether the given modifier includes {@link #TRANSIENT}
+     */
     public static boolean isTransient(short sh) { return (sh & Mod.TRANSIENT) != 0; }
 
     /**
@@ -161,13 +190,19 @@ class Mod {
      */
     public static final short VARARGS = 0x0080;
 
-    /** @return Whether the given modifier includes {@link #VARARGS} */
+    /**
+     * @return Whether the given modifier includes {@link #VARARGS}
+     */
     public static boolean isVarargs(short sh) { return (sh & Mod.VARARGS) != 0; }
 
-    /** This flag is set on NATIVE methods, and is mutually exclusive with {@link #ABSTRACT}. */
+    /**
+     * This flag is set on NATIVE methods, and is mutually exclusive with {@link #ABSTRACT}.
+     */
     public static final short NATIVE = 0x0100;
 
-    /** @return Whether the given modifier includes {@link #NATIVE} */
+    /**
+     * @return Whether the given modifier includes {@link #NATIVE}
+     */
     public static boolean isNative(short sh) { return (sh & Mod.NATIVE) != 0; }
 
     /**
@@ -176,7 +211,9 @@ class Mod {
      */
     public static final short INTERFACE = 0x0200;
 
-    /** @return Whether the given modifier includes {@link #INTERFACE} */
+    /**
+     * @return Whether the given modifier includes {@link #INTERFACE}
+     */
     public static boolean isInterface(short sh) { return (sh & Mod.INTERFACE) != 0; }
 
     /**
@@ -185,13 +222,19 @@ class Mod {
      */
     public static final short ABSTRACT = 0x0400;
 
-    /** @return Whether the given modifier includes {@link #ABSTRACT} */
+    /**
+     * @return Whether the given modifier includes {@link #ABSTRACT}
+     */
     public static boolean isAbstract(short sh) { return (sh & Mod.ABSTRACT) != 0; }
 
-    /** This flag is set on STRICTFP methods, and is mutually exclusive with {@link #ABSTRACT}. */
+    /**
+     * This flag is set on STRICTFP methods, and is mutually exclusive with {@link #ABSTRACT}.
+     */
     public static final short STRICTFP = 0x0800;
 
-    /** @return Whether the given modifier includes {@link #STRICTFP} */
+    /**
+     * @return Whether the given modifier includes {@link #STRICTFP}
+     */
     public static boolean isStrictfp(short sh) { return (sh & Mod.STRICTFP) != 0; }
 
     // Poorly documented JDK 1.5 modifiers:
@@ -202,7 +245,9 @@ class Mod {
      */
     public static final short SYNTHETIC = 0x1000;
 
-    /** @return Whether the given modifier includes {@link #SYNTHETIC} */
+    /**
+     * @return Whether the given modifier includes {@link #SYNTHETIC}
+     */
     public static boolean isSynthetic(short sh) { return (sh & Mod.SYNTHETIC) != 0; }
 
     /**
@@ -211,7 +256,9 @@ class Mod {
      */
     public static final short ANNOTATION = 0x2000;
 
-    /** @return Whether the given modifier includes {@link #ANNOTATION} */
+    /**
+     * @return Whether the given modifier includes {@link #ANNOTATION}
+     */
     public static boolean isAnnotation(short sh) { return (sh & Mod.ANNOTATION) != 0; }
 
     /**
@@ -220,17 +267,19 @@ class Mod {
      */
     public static final short ENUM = 0x4000;
 
-    /** @return Whether the given modifier includes {@link #ENUM} */
+    /**
+     * @return Whether the given modifier includes {@link #ENUM}
+     */
     public static boolean isEnum(short sh) { return (sh & Mod.ENUM) != 0; }
 
     /**
      * Composes and returns a string that maps the given modifier as follows:
      * <ul>
-     *   <li>Value zero is mapped to "".
-     *   <li>Non-zero values are mapped to a sequence of words, separated with blanks.
-     *   <li>{@link #VARARGS} is mapped to "transient", because the two flags have the same value
-     *   <li>{@link #SUPER} is mapped to "synchronized", because the two flags have the same value
-     *   <li>{@link #BRIDGE} is mapped to "volatile", because the two flags have the same value
+     *   <li>Value zero is mapped to "".</li>
+     *   <li>Non-zero values are mapped to a sequence of words, separated with blanks.</li>
+     *   <li>{@link #VARARGS} is mapped to {@code "transient"}, because the two flags have the same value</li>
+     *   <li>{@link #SUPER} is mapped to {@code "synchronized"}, because the two flags have the same value</li>
+     *   <li>{@link #BRIDGE} is mapped to {@code "volatile"}, because the two flags have the same value</li>
      * </ul>
      */
     public static String

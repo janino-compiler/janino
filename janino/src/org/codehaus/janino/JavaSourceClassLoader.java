@@ -45,13 +45,12 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
 import org.codehaus.janino.util.resource.ResourceFinder;
 
 /**
- * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s,
- * does not load byte code, but reads Java&trade; source code and then scans, parses,
- * compiles and loads it into the virtual machine.
+ * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s, does not load byte code, but reads Java source code
+ * and then scans, parses, compiles and loads it into the virtual machine.
  * <p>
- * As with any {@link ClassLoader}, it is not possible to "update" classes after they've been
- * loaded. The way to achieve this is to give up on the {@link JavaSourceClassLoader} and create
- * a new one.
+ *   As with any {@link ClassLoader}, it is not possible to "update" classes after they've been loaded. The way to
+ *   achieve this is to give up on the {@link JavaSourceClassLoader} and create a new one.
+ * </p>
  */
 public
 class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
@@ -69,13 +68,13 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * Set up a {@link JavaSourceClassLoader} that finds Java&trade; source code in a file that resides in either of
+     * Sets up a {@link JavaSourceClassLoader} that finds Java source code in a file that resides in either of
      * the directories specified by the given source path.
      *
      * @param parentClassLoader         See {@link ClassLoader}
-     * @param optionalSourcePath        A collection of directories that are searched for Java&trade; source files in
+     * @param optionalSourcePath        A collection of directories that are searched for Java source files in
      *                                  the given order
-     * @param optionalCharacterEncoding The encoding of the Java&trade; source files (<code>null</code> for platform
+     * @param optionalCharacterEncoding The encoding of the Java source files ({@code null} for platform
      *                                  default encoding)
      */
     public
@@ -96,16 +95,16 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * Constructs a {@link JavaSourceClassLoader} that finds Java&trade; source code through a given {@link
+     * Constructs a {@link JavaSourceClassLoader} that finds Java source code through a given {@link
      * ResourceFinder}.
      * <p>
-     * You can specify to include certain debugging information in the generated class files, which
-     * is useful if you want to debug through the generated classes (see
-     * {@link Scanner#Scanner(String, Reader)}).
+     *   You can specify to include certain debugging information in the generated class files, which is useful if you
+     *   want to debug through the generated classes (see {@link Scanner#Scanner(String, Reader)}).
+     * </p>
      *
      * @param parentClassLoader         See {@link ClassLoader}
      * @param sourceFinder              Used to locate additional source files
-     * @param optionalCharacterEncoding The encoding of the Java&trade; source files (<code>null</code> for platform
+     * @param optionalCharacterEncoding The encoding of the Java source files ({@code null} for platform
      *                                  default encoding)
      */
     public
@@ -147,7 +146,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         this.debugVars   = debugVars;
     }
 
-    /** @see UnitCompiler#setCompileErrorHandler */
+    /**
+     * @see UnitCompiler#setCompileErrorHandler
+     */
     public void
     setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
         this.iClassLoader.setCompileErrorHandler(optionalCompileErrorHandler);
@@ -167,7 +168,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @throws ClassNotFoundException
      */
-    @Override protected /*synchronized <- No need to synchronize, because 'loadClass()' is synchronized */ Class<?>
+    @Override protected /*synchronized <- No need to synchronize, because 'loadClass()' is synchronized
+    */ Class<?>
     findClass(@Nullable String name) throws ClassNotFoundException {
         assert name != null;
 
@@ -197,18 +199,16 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     }
 
     /**
-     * This {@link Map} keeps those classes which were already compiled, but not
-     * yet defined i.e. which were not yet passed to
-     * {@link ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
+     * This {@link Map} keeps those classes which were already compiled, but not yet defined i.e. which were not yet
+     * passed to {@link ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
      */
     private final Map<String /*name*/, byte[] /*bytecode*/> precompiledClasses = new HashMap<String, byte[]>();
 
     /**
-     * Find, scan, parse the right compilation unit. Compile the parsed compilation unit to
-     * bytecode. This may cause more compilation units being scanned and parsed. Continue until
-     * all compilation units are compiled.
+     * Finds, scans, parses the right compilation unit. Compile the parsed compilation unit to bytecode. This may cause
+     * more compilation units being scanned and parsed. Continue until all compilation units are compiled.
      *
-     * @return String name =&gt; byte[] bytecode, or <code>null</code> if no source code could be found
+     * @return String name =&gt; byte[] bytecode, or {@code null} if no source code could be found
      * @throws ClassNotFoundException on compilation problems
      */
     @Nullable protected Map<String /*name*/, byte[] /*bytecode*/>

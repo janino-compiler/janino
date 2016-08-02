@@ -10,13 +10,12 @@ import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.Scanner;
 
 /**
- * This class is part of a sudo test to find errors in multi-threaded coded in Janino.
- * It is not run directly as part of an automated test; instead it should be run by
- * the perl script in janino-tests/util/MultiThreadedIssueTest.pl
- *
- * That script will run this test in a loop and keep track of failures and successes.
- * It should always succeed; however, for the bug reported this test would fail ~1/8
- * of the time.
+ * This class is part of a sudo test to find errors in multi-threaded coded in Janino. It is not run directly as part
+ * of an automated test; instead it should be run by the perl script in janino-tests/util/MultiThreadedIssueTest.pl
+ * <p>
+ *   That script will run this test in a loop and keep track of failures and successes. It should always succeed;
+ *   however, for the bug reported this test would fail ~1/8 of the time.
+ * </p>
  */
 public final class MultiThreadedIssueTest {
 

@@ -24,7 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Helper classes for bug #63. */
+/**
+ * Helper classes for bug #63.
+ */
 @NotNullByDefault
 package org.codehaus.commons.compiler.tests.bug63;
 

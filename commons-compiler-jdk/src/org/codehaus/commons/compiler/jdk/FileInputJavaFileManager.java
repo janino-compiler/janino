@@ -48,8 +48,8 @@ import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link ForwardingJavaFileManager} that maps accesses to a particular {@link Location} and {@link Kind} to
- * a path-based search in the file system.
+ * A {@link ForwardingJavaFileManager} that maps accesses to a particular {@link Location} and {@link Kind} to a
+ * path-based search in the file system.
  */
 @NotNullByDefault(false) final
 class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> {
@@ -101,7 +101,7 @@ class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager
 
     /**
      * @param qualification E.g. "", or "pkg1.pkg2."
-     * @return              All {@link JavaFileObject}s of the given {@code kind} in the given {@code directory}
+     * @return              All {@link JavaFileObject}s of the given <var>kind</var> in the given <var>directory</var>
      */
     private Collection<JavaFileObject>
     list(File directory, String qualification, Kind kind, boolean recurse) throws IOException {
@@ -139,7 +139,6 @@ class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager
         assert className != null;
         assert kind != null;
 
-
         if (location == this.location && kind == this.kind) {
 
             // Find the source file through the source path.
@@ -163,7 +162,9 @@ class FileInputJavaFileManager extends ForwardingJavaFileManager<JavaFileManager
         return super.getJavaFileForInput(location, className, kind);
     }
 
-    /** A {@link JavaFileObject} that reads from a {@link File}. */
+    /**
+     * A {@link JavaFileObject} that reads from a {@link File}.
+     */
     private
     class InputFileJavaFileObject extends SimpleJavaFileObject {
         private final File   file;

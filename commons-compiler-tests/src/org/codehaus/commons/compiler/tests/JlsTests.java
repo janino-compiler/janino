@@ -1475,7 +1475,9 @@ class JlsTests extends JaninoTestSuite {
         this.assertExpressionEvaluatesTrue("true || new Boolean(true)");
     }
 
-    /** 15.25 Conditional Operator ? : */
+    /**
+     * 15.25 Conditional Operator ? :
+     */
     @Test public void
     test_15_25__ConditionalOperator() throws Exception {
 
@@ -1539,7 +1541,9 @@ class JlsTests extends JaninoTestSuite {
         this.assertScriptReturnsTrue("int a = 3; return (a != 0 ? ++a : a + a) == 4;");
     }
 
-    /** 15.26 Assignment Operators */
+    /**
+     * 15.26 Assignment Operators
+     */
     @Test public void
     test_15_26__AssignmentOperators() throws Exception {
 

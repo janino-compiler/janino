@@ -31,15 +31,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-/** Common base class for the "...Demo" classes that demostrate Janino. */
+/**
+ * Common base class for the "...Demo" classes that demostrate Janino.
+ */
 public
 class DemoBase {
 
     protected DemoBase() {}
 
     /**
-     * Creates an instance of the given {@code type}, by calling the single-string-parameter constructor, or, if
-     * the {@code value} equals "", the zero-parameter constructor.
+     * Creates an instance of the given <var>type</var>, by calling the single-string-parameter constructor, or, if
+     * the <var>value</var> equals "", the zero-parameter constructor.
      */
     public static Object
     createObject(Class<?> type, String value)
@@ -69,7 +71,9 @@ class DemoBase {
         }
     }
 
-    /** @return {@code s}, split at the commas */
+    /**
+     * @return <var>s</var>, split at the commas
+     */
     public static String[]
     explode(String s) {
         StringTokenizer st = new StringTokenizer(s, ",");
@@ -78,7 +82,9 @@ class DemoBase {
         return (String[]) l.toArray(new String[l.size()]);
     }
 
-    /** @return {@code s}, converted to a Java type */
+    /**
+     * @return <var>s</var>, converted to a Java type
+     */
     public static Class<?>
     stringToType(String s) {
 
@@ -125,7 +131,9 @@ class DemoBase {
         }
     }
 
-    /** Converts the given comma-separated list of class names to an array of {@link Class}es. */
+    /**
+     * Converts the given comma-separated list of class names to an array of {@link Class}es.
+     */
     public static Class<?>[]
     stringToTypes(String s) {
 

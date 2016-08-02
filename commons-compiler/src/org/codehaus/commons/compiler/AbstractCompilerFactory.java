@@ -26,7 +26,9 @@
 
 package org.codehaus.commons.compiler;
 
-/** Base class for a simple {@link ICompilerFactory}. */
+/**
+ * Base class for a simple {@link ICompilerFactory}.
+ */
 public abstract
 class AbstractCompilerFactory implements ICompilerFactory {
 

@@ -32,15 +32,17 @@ import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.StringPattern;
 
-/** Invokes a delegate iff the handle of the warning matches one or more of a set of {@link StringPattern}s. */
+/**
+ * Invokes a delegate iff the handle of the warning matches one or more of a set of {@link StringPattern}s.
+ */
 public
 class FilterWarningHandler implements WarningHandler {
     private final StringPattern[] handlePatterns;
     private final WarningHandler  delegate;
 
     /**
-     * Popular values for the <code>handlePatterns</code> parameter are
-     * {@link StringPattern#PATTERNS_ALL} and {@link StringPattern#PATTERNS_NONE}.
+     * Popular values for the {@code handlePatterns} parameter are {@link StringPattern#PATTERNS_ALL} and {@link
+     * StringPattern#PATTERNS_NONE}.
      */
     public
     FilterWarningHandler(StringPattern[] handlePatterns, WarningHandler delegate) {

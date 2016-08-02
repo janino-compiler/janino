@@ -58,22 +58,23 @@ import org.codehaus.janino.util.resource.ResourceFinder;
 
 /**
  * A simplified substitute for the <tt>javac</tt> tool.
- *
- * Usage:
+ * <p>
+ *   Usage:
+ * </p>
  * <pre>
- * java org.codehaus.janino.Compiler \
- *           [ -d <i>destination-dir</i> ] \
- *           [ -sourcepath <i>dirlist</i> ] \
- *           [ -classpath <i>dirlist</i> ] \
- *           [ -extdirs <i>dirlist</i> ] \
- *           [ -bootclasspath <i>dirlist</i> ] \
- *           [ -encoding <i>encoding</i> ] \
- *           [ -verbose ] \
- *           [ -g:none ] \
- *           [ -g:{source,lines,vars} ] \
- *           [ -warn:<i>pattern-list</i> ] \
- *           <i>source-file</i> ...
- * java org.codehaus.janino.Compiler -help
+ *     java org.codehaus.janino.Compiler \
+ *               [ -d <em>destination-dir</em> ] \
+ *               [ -sourcepath <em>dirlist</em> ] \
+ *               [ -classpath <em>dirlist</em> ] \
+ *               [ -extdirs <em>dirlist</em> ] \
+ *               [ -bootclasspath <em>dirlist</em> ] \
+ *               [ -encoding <em>encoding</em> ] \
+ *               [ -verbose ] \
+ *               [ -g:none ] \
+ *               [ -g:{source,lines,vars} ] \
+ *               [ -warn:<em>pattern-list</em> ] \
+ *               <em>source-file</em> ...
+ *     java org.codehaus.janino.Compiler -help
  * </pre>
  */
 public
@@ -81,7 +82,9 @@ class Compiler {
 
     private static final Logger LOGGER = Logger.getLogger(Compiler.class.getName());
 
-    /** Command line interface. */
+    /**
+     * Command line interface.
+     */
     public static void
     main(String[] args) {
         File            destinationDirectory      = Compiler.NO_DESTINATION_DIRECTORY;
@@ -221,9 +224,14 @@ class Compiler {
         + "The default encoding in this environment is \"" + Charset.defaultCharset().toString() + "\"."
     );
 
-    /** Special value for "classFileResourceFinder". */
+    /**
+     * Special value for "classFileResourceFinder".
+     */
     @Nullable public static final ResourceFinder  FIND_NEXT_TO_SOURCE_FILE = null;
-    /** Special value for "classFileResourceCreator". */
+
+    /**
+     * Special value for "classFileResourceCreator".
+     */
     @Nullable public static final ResourceCreator CREATE_NEXT_TO_SOURCE_FILE = null;
 
     @Nullable private final ResourceCreator classFileCreator;
@@ -240,25 +248,31 @@ class Compiler {
     private final List<UnitCompiler> parsedCompilationUnits = new ArrayList<UnitCompiler>();
 
     /**
-     * Initialize a Java&trade; compiler with the given parameters.
+     * Initializes a Java compiler with the given parameters.
      * <p>
      *   Classes are searched in the following order:
      * <p>
      * <ul>
      *   <li>
-     *     <b>If {@code optionalBootClassPath} is {@code null}:</b> Through the system class loader of the JVM that
-     *     runs JANINO
+     *     <b>If <var>optionalBootClassPath</var> is {@code null}:</b> Through the system class loader of the JVM
+     *     that runs JANINO
      *   </li>
      *   <li>
-     *     <b>If {@code optionalBootClassPath} is not {@code null}:</b> Through the {@code optionalBootClassPath}
-     *   </li>
-     *   <li><b>If {@code optionalExtDirs} is not {@code null}:</b> Through the {@code optionalExtDirs}</li>
-     *   <li>Through the {@code classPath}</li>
-     *   <li>
-     *     <b>If {@code optionalSourcePath} is {@code null}:</b> Through source files found on the {@code classPath}
+     *     <b>If <var>optionalBootClassPath</var> is not {@code null}:</b> Through the
+     *     <var>optionalBootClassPath</var>
      *   </li>
      *   <li>
-     *     <b>If {@code optionalSourcePath} is not {@code null}:</b> Through source files found on the {@code
+     *     <b>If <var>optionalExtDirs</var> is not {@code null}:</b> Through the <var>optionalExtDirs</var>
+     *   </li>
+     *   <li>
+     *     Through the <var>classPath</var>
+     *   </li>
+     *   <li>
+     *     <b>If <var>optionalSourcePath</var> is {@code null}:</b> Through source files found on the
+     *     <var>classPath</var>
+     *   </li>
+     *   <li>
+     *     <b>If <var>optionalSourcePath</var> is not {@code null}:</b> Through source files found on the {@code
      *     sourcePath}
      *   </li>
      * </ul>
@@ -267,11 +281,11 @@ class Compiler {
      * </p>
      * <ul>
      *   <li>
-     *     <b>If {@code optionalDestinationDirectory} is not {@link #NO_DESTINATION_DIRECTORY}:</b>
+     *     <b>If <var>optionalDestinationDirectory</var> is not {@link #NO_DESTINATION_DIRECTORY}:</b>
      *     <var>optionalDestinationDirectory</var>{@code /pkg/Example.class}
      *   </li>
      *   <li>
-     *     <b>If {@code optionalDestinationDirectory} is {@link #NO_DESTINATION_DIRECTORY}:</b> {@code
+     *     <b>If <var>optionalDestinationDirectory</var> is {@link #NO_DESTINATION_DIRECTORY}:</b> {@code
      *     dir1/dir2/Example.class} (Assuming that the file name of the source file that declares the class was {@code
      *     dir1/dir2/Any.java}.)
      *   </li>
@@ -343,10 +357,14 @@ class Compiler {
         this.benchmark.report("Rebuild",                 new Boolean(rebuild));
     }
 
-    /** Backwards compatibility -- previously, "null" was officially documented. */
+    /**
+     * Backwards compatibility -- previously, "null" was officially documented.
+     */
     @Nullable public static final File NO_DESTINATION_DIRECTORY = null;
 
-    /** Prints warnings to STDERR. */
+    /**
+     * Prints warnings to STDERR.
+     */
     public static
     class SimpleWarningHandler implements WarningHandler {
 
@@ -370,20 +388,19 @@ class Compiler {
     }
 
     /**
-     * The default value for the {@code warningHandlerPatterns} parameter of {@link Compiler#Compiler(File[], File[],
+     * The default value for the <var>warningHandlerPatterns</var> parameter of {@link Compiler#Compiler(File[], File[],
      * File[], File[], File, String, boolean, boolean, boolean, boolean, StringPattern[], boolean)}.
      */
     public static final StringPattern[] DEFAULT_WARNING_HANDLE_PATTERNS = StringPattern.PATTERNS_NONE;
 
     /**
-     * To mimic the behavior of JAVAC with a missing "-d" command line option,
-     * pass {@link #FIND_NEXT_TO_SOURCE_FILE} as the {@code classFileResourceFinder} and
-     * {@link #CREATE_NEXT_TO_SOURCE_FILE} as the {@code classFileResourceCreator}.
+     * To mimic the behavior of JAVAC with a missing "-d" command line option, pass {@link #FIND_NEXT_TO_SOURCE_FILE}
+     * as the <var>classFileResourceFinder</var> and {@link #CREATE_NEXT_TO_SOURCE_FILE} as the
+     * <var>classFileResourceCreator</var>.
      * <p>
-     * If it is impossible to check whether an already-compiled class file
-     * exists, or if you want to enforce recompilation, pass
-     * {@link ResourceFinder#EMPTY_RESOURCE_FINDER} as the
-     * {@code classFileResourceFinder}.
+     *   If it is impossible to check whether an already-compiled class file exists, or if you want to enforce
+     *   recompilation, pass {@link ResourceFinder#EMPTY_RESOURCE_FINDER} as the <var>classFileResourceFinder</var>.
+     * </p>
      *
      * @param sourceFinder           Finds extra Java compilation units that need to be compiled (a.k.a. "-sourcepath")
      * @param iClassLoader           Loads auxiliary {@link IClass}es (a.k.a. "-classpath"), e.g. <code>new
@@ -419,17 +436,20 @@ class Compiler {
     }
 
     /**
-     * Install a custom {@link ErrorHandler}. The default {@link ErrorHandler} prints the first 20 compile errors to
+     * Installs a custom {@link ErrorHandler}. The default {@link ErrorHandler} prints the first 20 compile errors to
      * {@link System#err} and then throws a {@link CompileException}.
      * <p>
-     * Passing {@code null} restores the default {@link ErrorHandler}.
+     *   Passing {@code null} restores the default {@link ErrorHandler}.
+     * </p>
      * <p>
-     * Notice that scan and parse errors are <i>not</i> redirected to this {@link ErrorHandler}, instead, they cause a
-     * {@link CompileException} to be thrown. Also, the {@link Compiler} may choose to throw {@link CompileException}s
-     * in certain, fatal compile error situations, even if an {@link ErrorHandler} is installed.
+     *   Notice that scan and parse errors are <em>not</em> redirected to this {@link ErrorHandler}, instead, they
+     *   cause a {@link CompileException} to be thrown. Also, the {@link Compiler} may choose to throw {@link
+     *   CompileException}s in certain, fatal compile error situations, even if an {@link ErrorHandler} is installed.
+     * </p>
      * <p>
-     * In other words: In situations where compilation can reasonably continue after a compile error, the {@link
-     * ErrorHandler} is called; all other error conditions cause a {@link CompileException} to be thrown.
+     *   In other words: In situations where compilation can reasonably continue after a compile error, the {@link
+     *   ErrorHandler} is called; all other error conditions cause a {@link CompileException} to be thrown.
+     * </p>
      */
     public void
     setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
@@ -447,35 +467,35 @@ class Compiler {
     }
 
     /**
-     * Reads a set of Java&trade; compilation units (a.k.a. "source
-     * files") from the file system, compiles them into a set of "class
-     * files" and stores these in the file system. Additional source files are
-     * parsed and compiled on demand through the "source path" set of
-     * directories.
+     * Reads a set of Java compilation units (a.k.a. "source files") from the file system, compiles them into a set of
+     * "class files" and stores these in the file system. Additional source files are parsed and compiled on demand
+     * through the "source path" set of directories.
      * <p>
-     * For example, if the source path comprises the directories "A/B" and "../C",
-     * then the source file for class "com.acme.Main" is searched in
+     *   For example, if the source path comprises the directories "A/B" and "../C", then the source file for class
+     *   "com.acme.Main" is searched in
+     * </p>
      * <dl>
      *   <dd>A/B/com/acme/Main.java
      *   <dd>../C/com/acme/Main.java
      * </dl>
-     * Notice that it does make a difference whether you pass multiple source
-     * files to {@link #compile(File[])} or if you invoke
-     * {@link #compile(File[])} multiply: In the former case, the source
-     * files may contain arbitrary references among each other (even circular
-     * ones). In the latter case, only the source files on the source path
-     * may contain circular references, not the {@code sourceFiles}.
      * <p>
-     * This method must be called exactly once after object construction.
+     *   Notice that it does make a difference whether you pass multiple source files to {@link #compile(File[])} or if
+     *   you invoke {@link #compile(File[])} multiply: In the former case, the source files may contain arbitrary
+     *   references among each other (even circular ones). In the latter case, only the source files on the source path
+     *   may contain circular references, not the <var>sourceFiles</var>.
+     * </p>
      * <p>
-     * Compile errors are reported as described at
-     * {@link #setCompileErrorHandler(ErrorHandler)}.
+     *   This method must be called exactly once after object construction.
+     * </p>
+     * <p>
+     *   Compile errors are reported as described at {@link #setCompileErrorHandler(ErrorHandler)}.
+     * </p>
      *
      * @param sourceFiles       Contain the compilation units to compile
      * @return                  {@code true} for backwards compatibility (return value can safely be ignored)
-     * @throws CompileException Fatal compilation error, or the {@link CompileException} thrown be the installed compile
-     *                          error handler
-     * @throws IOException      Occurred when reading from the {@code sourceFiles}
+     * @throws CompileException Fatal compilation error, or the {@link CompileException} thrown be the installed
+     *                          compile error handler
+     * @throws IOException      Occurred when reading from the <var>sourceFiles</var>
      */
     public boolean
     compile(File[] sourceFiles) throws CompileException, IOException {
@@ -574,9 +594,11 @@ class Compiler {
     }
 
     /**
-     * Read one compilation unit from a file and parse it.
+     * Reads one compilation unit from a file and parses it.
      * <p>
-     * The {@code inputStream} is closed before the method returns.
+     *   The <var>inputStream</var> is closed before the method returns.
+     * </p>
+     *
      * @return the parsed compilation unit
      */
     private Java.CompilationUnit
@@ -604,17 +626,17 @@ class Compiler {
     }
 
     /**
-     * Construct the name of a file that could store the byte code of the class with the given
-     * name.
+     * Constructs the name of a file that could store the byte code of the class with the given name.
      * <p>
-     * If {@code optionalDestinationDirectory} is non-null, the returned path is the
-     * {@code optionalDestinationDirectory} plus the package of the class (with dots replaced
-     * with file separators) plus the class name plus ".class". Example:
-     * "destdir/pkg1/pkg2/Outer$Inner.class"
+     *   If <var>optionalDestinationDirectory</var> is non-null, the returned path is the
+     *   <var>optionalDestinationDirectory</var> plus the package of the class (with dots replaced with file
+     *   separators) plus the class name plus ".class". Example: "destdir/pkg1/pkg2/Outer$Inner.class"
+     * </p>
      * <p>
-     * If {@code optionalDestinationDirectory} is null, the returned path is the
-     * directory of the {@code sourceFile} plus the class name plus ".class". Example:
-     * "srcdir/Outer$Inner.class"
+     *   If <var>optionalDestinationDirectory</var> is null, the returned path is the directory of the
+     *   <var>sourceFile</var> plus the class name plus ".class". Example: "srcdir/Outer$Inner.class"
+     * </p>
+     *
      * @param className E.g. "pkg1.pkg2.Outer$Inner"
      * @param sourceFile E.g. "srcdir/Outer.java"
      * @param optionalDestinationDirectory E.g. "destdir"
@@ -633,8 +655,8 @@ class Compiler {
     }
 
     /**
-     * Store the byte code of this {@link ClassFile} in the file system. Directories are created
-     * as necessary.
+     * Stores the byte code of this {@link ClassFile} in the file system. Directories are created as necessary.
+     *
      * @param classFile
      * @param sourceFile Required to compute class file path if no destination directory given
      */
@@ -684,16 +706,17 @@ class Compiler {
     }
 
     /**
-     * A specialized {@link IClassLoader} that loads {@link IClass}es from the following
-     * sources:
+     * A specialized {@link IClassLoader} that loads {@link IClass}es from the following sources:
      * <ol>
      *   <li>An already-parsed compilation unit
      *   <li>A class file in the output directory (if existant and younger than source file)
      *   <li>A source file in any of the source path directories
      *   <li>The parent class loader
      * </ol>
-     * Notice that the {@link CompilerIClassLoader} is an inner class of {@link Compiler} and
-     * heavily uses {@link Compiler}'s members.
+     * <p>
+     *   Notice that the {@link CompilerIClassLoader} is an inner class of {@link Compiler} and heavily uses {@link
+     *   Compiler}'s members.
+     * </p>
      */
     private
     class CompilerIClassLoader extends IClassLoader {
@@ -710,9 +733,9 @@ class Compiler {
         }
 
         /**
-         * @param type field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
-         * @return {@code null} if a the type could not be found
-         * @throws ClassNotFoundException if an exception was raised while loading the {@link IClass}
+         * @param type                    field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
+         * @return                        {@code null} if a the type could not be found
+         * @throws ClassNotFoundException An exception was raised while loading the {@link IClass}
          */
         @Override @Nullable protected IClass
         findIClass(final String type) throws ClassNotFoundException {
@@ -781,12 +804,12 @@ class Compiler {
         }
 
         /**
-         * Parse the compilation unit stored in the given {@code sourceResource}, remember it in
-         * {@code Compiler.this.parsedCompilationUnits} (it may declare other classes that
-         * are needed later), find the declaration of the type with the given
-         * {@code className}, and define it in the {@link IClassLoader}.
+         * Parses the compilation unit stored in the given <var>sourceResource</var>, remembers it in {@code
+         * Compiler.this.parsedCompilationUnits} (it may declare other classes that are needed later), finds the
+         * declaration of the type with the given <var>className</var>, and defines it in the {@link IClassLoader}.
          * <p>
-         * Notice that the CU is not compiled here!
+         *   Notice that the CU is not compiled here!
+         * </p>
          */
         private IClass
         defineIClassFromSourceResource(Resource sourceResource, String className) throws ClassNotFoundException {
@@ -825,8 +848,8 @@ class Compiler {
         }
 
         /**
-         * Open the given {@code classFileResource}, read its contents, define it in the
-         * {@link IClassLoader}, and resolve it (this step may involve loading more classes).
+         * Opens the given <var>classFileResource</var>, reads its contents, defines it in the {@link IClassLoader},
+         * and resolves it (this step may involve loading more classes).
          */
         private IClass
         defineIClassFromClassFileResource(Resource classFileResource) throws ClassNotFoundException {

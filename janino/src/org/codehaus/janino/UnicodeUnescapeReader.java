@@ -36,9 +36,10 @@ import org.codehaus.commons.nullanalysis.Nullable;
 /**
  * A {@link FilterReader} that unescapes the "Unicode Escapes" as described in JLS7 3.10.6.
  * <p>
- * Notice that it is possible to formulate invalid escape sequences, e.g. "&#92;u123g" ("g" is not a valid hex
- * character). This is handled by throwing a {@link java.lang.RuntimeException}-derived {@link
- * org.codehaus.janino.UnicodeUnescapeException}.
+ *   Notice that it is possible to formulate invalid escape sequences, e.g. "&#92;u123g" ("g" is not a valid hex
+ *   character). This is handled by throwing a {@link java.lang.RuntimeException}-derived {@link
+ *   UnicodeUnescapeException}.
+ * </p>
  */
 public
 class UnicodeUnescapeReader extends FilterReader {
@@ -47,7 +48,7 @@ class UnicodeUnescapeReader extends FilterReader {
     UnicodeUnescapeReader(Reader in) { super(in); }
 
     /**
-     * Override {@link FilterReader#read()}.
+     * Overrides {@link FilterReader#read()}.
      *
      * @throws UnicodeUnescapeException Invalid escape sequence encountered
      */
@@ -95,7 +96,9 @@ class UnicodeUnescapeReader extends FilterReader {
         }
     }
 
-    /** Overrides {@link FilterReader#read(char[], int, int)}. */
+    /**
+     * Overrides {@link FilterReader#read(char[], int, int)}.
+     */
     @Override public int
     read(@Nullable char[] cbuf, int off, int len) throws IOException {
         assert cbuf != null;
@@ -109,7 +112,9 @@ class UnicodeUnescapeReader extends FilterReader {
         return res == 0 ? -1 : res;
     }
 
-    /** Simple unit testing. */
+    /**
+     * Simple unit testing.
+     */
     public static void
     main(String[] args) throws IOException {
         Reader r = new UnicodeUnescapeReader(new StringReader(args[0]));

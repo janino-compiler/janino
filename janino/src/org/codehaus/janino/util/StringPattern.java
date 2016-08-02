@@ -34,22 +34,28 @@ import org.codehaus.commons.nullanalysis.Nullable;
 /**
  * Implementation of a UNIX shell-like string pattern algorithm.
  * <p>
- * Additionally, the concept of the "combined pattern" is supported (see
- * {@link #matches(StringPattern[], String)}.
+ *   Additionally, the concept of the "combined pattern" is supported (see {@link #matches(StringPattern[], String)}.
+ * </p>
  */
 public
 class StringPattern {
 
-    /** @see #matches(StringPattern[], String) */
+    /**
+     * @see #matches(StringPattern[], String)
+     */
     public static final int INCLUDE = 0;
 
-    /** @see #matches(StringPattern[], String) */
+    /**
+     * @see #matches(StringPattern[], String)
+     */
     public static final int EXCLUDE = 1;
 
     private final int              mode;
     @Nullable private final String pattern;
 
-    /** @param mode {@link #INCLUDE} or {@link #EXCLUDE} */
+    /**
+     * @param mode {@link #INCLUDE} or {@link #EXCLUDE}
+     */
     public
     StringPattern(int mode, String pattern) {
         this.mode    = mode;
@@ -63,41 +69,45 @@ class StringPattern {
     }
 
     /**
-     * @return Whether this {@link StringPattern} represents <i>inclusion</i> ({@link #INCLUDE}) or <i>exclusion</i>
+     * @return Whether this {@link StringPattern} represents <em>inclusion</em> ({@link #INCLUDE}) or <em>exclusion</em>
      *         exclusion ({@link #EXCLUDE}) of subjects
      */
     public int
     getMode() { return this.mode; }
 
     /**
-     * Match the given <code>text</code> against the pattern represented by the current instance,
+     * Matches the given {@code text} against the pattern represented by the current instance,
      * as follows:
      * <ul>
      *   <li>
-     *     A <code>*</code> in the pattern matches any sequence of zero or more characters in the
-     *     <code>text</code>
+     *     A {@code *} in the pattern matches any sequence of zero or more characters in the
+     *     {@code text}
      *   </li>
      *   <li>
-     *     A <code>?</code> in the pattern matches exactly one character in the <code>text</code>
+     *     A {@code ?} in the pattern matches exactly one character in the {@code text}
      *   </li>
      *   <li>
-     *     Any other character in the pattern must appear exactly as it is in the <code>text</code>
+     *     Any other character in the pattern must appear exactly as it is in the {@code text}
      * </ul>
-     * Notice: The <code>mode</code> flag of the current instance does not take any effect here.
+     * <p>
+     *   Notice: The {@code mode} flag of the current instance does not take any effect here.
+     * </p>
      */
     public boolean
     matches(String text) { return StringPattern.wildmatch(this.pattern, text); }
 
     /**
-     * Parse a "combined pattern" into an array of {@link StringPattern}s. A combined pattern
+     * Parses a "combined pattern" into an array of {@link StringPattern}s. A combined pattern
      * string is structured as follows:
      * <pre>
      *   combined-pattern :=
      *     [ '+' | '-' ] pattern
      *     { ( '+' | '-' ) pattern }
      * </pre>
-     * If a pattern is preceeded with a '-', then the {@link StringPattern} is created with mode
-     * {@link #EXCLUDE}, otherwise with mode {@link #INCLUDE}.
+     * <p>
+     *   If a pattern is preceeded with a '-', then the {@link StringPattern} is created with mode {@link #EXCLUDE},
+     *   otherwise with mode {@link #INCLUDE}.
+     * </p>
      */
     public static StringPattern[]
     parseCombinedPattern(String combinedPattern) {
@@ -125,21 +135,22 @@ class StringPattern {
     }
 
     /**
-     * Match a given <code>text</code> against an array of {@link StringPattern}s (which was
-     * typically created by {@link #parseCombinedPattern(String)}.
+     * Matchs a given {@code text} against an array of {@link StringPattern}s (which was typically created by {@link
+     * #parseCombinedPattern(String)}.
      * <p>
-     * The last matching pattern takes effect; if its mode is {@link #INCLUDE}, then
-     * <code>true</code> is returned, if its mode is {@link #EXCLUDE}, then <code>false</code> is
-     * returned.
+     *   The last matching pattern takes effect; if its mode is {@link #INCLUDE}, then {@code true} is returned, if its
+     *   mode is {@link #EXCLUDE}, then {@code false} is returned.
+     * </p>
      * <p>
-     * If <code>patterns</code> is {@link #PATTERNS_NONE}, or empty, or none of its patterns
-     * matches, then <code>false</code> is returned.
+     *   If {@code patterns} is {@link #PATTERNS_NONE}, or empty, or none of its patterns matches, then {@code false}
+     *   is returned.
+     * </p>
      * <p>
-     * If <code>patterns</code> is {@link #PATTERNS_ALL}, then <code>true</code> is
-     * returned.
+     *   If {@code patterns} is {@link #PATTERNS_ALL}, then {@code true} is returned.
+     * </p>
      * <p>
-     * For backwards compatibility, <code>null</code> patterns are treated like
-     * {@link #PATTERNS_NONE}.
+     *   For backwards compatibility, {@code null} patterns are treated like {@link #PATTERNS_NONE}.
+     * </p>
      */
     @SuppressWarnings({ "unused", "null" })
     public static boolean
@@ -157,9 +168,14 @@ class StringPattern {
         return false; // No patterns defined or no pattern matches.
     }
 
-    /** A {@link StringPattern} that matches any subject. */
+    /**
+     * A {@link StringPattern} that matches any subject.
+     */
     public static final StringPattern[] PATTERNS_ALL  = new StringPattern[] { new StringPattern("*") };
-    /** A {@link StringPattern} that matches no subject whatsoever. */
+
+    /**
+     * A {@link StringPattern} that matches no subject whatsoever.
+     */
     public static final StringPattern[] PATTERNS_NONE = new StringPattern[0];
 
     @Override public String

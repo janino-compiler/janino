@@ -52,7 +52,9 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/** The JDK-based implementation of {@link ISimpleCompiler}. */
+/**
+ * The JDK-based implementation of {@link ISimpleCompiler}.
+ */
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
@@ -227,7 +229,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         );
     }
 
-    /** @deprecated Auxiliary classes never really worked... don't use them. */
+    /**
+     * @deprecated Auxiliary classes never really worked... don't use them.
+     */
     @Deprecated public void
     setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
         this.setParentClassLoader(optionalParentClassLoader);
@@ -243,7 +247,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
-    /** Throws an {@link IllegalStateException} if this {@link Cookable} is already cooked. */
+    /**
+     * Throws an {@link IllegalStateException} if this {@link Cookable} is already cooked.
+     */
     protected void
     assertNotCooked() {
         if (this.result != null) throw new IllegalStateException("Already cooked");

@@ -30,8 +30,8 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 
 /**
- * Sample application which demonstrates how to use the
- * {@link org.codehaus.janino.ExpressionEvaluator ExpressionEvaluator} class.
+ * Sample application which demonstrates how to use the {@link org.codehaus.janino.ExpressionEvaluator
+ * ExpressionEvaluator} class.
  */
 public final
 class ShippingCost {

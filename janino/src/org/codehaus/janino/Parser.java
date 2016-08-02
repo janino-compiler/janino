@@ -146,7 +146,9 @@ class Parser {
     public
     Parser(Scanner scanner) { (this.scanner = scanner).setIgnoreWhiteSpace(true); }
 
-    /** The optional JAVADOC comment preceding the {@link #nextToken}. */
+    /**
+     * The optional JAVADOC comment preceding the {@link #nextToken}.
+     */
     @Nullable private String optionalDocComment;
 
     /**
@@ -215,9 +217,9 @@ class Parser {
     @Nullable private Token pushback;
 
     /**
-     * Get the text of the doc comment (a.k.a. "JAVADOC comment") preceeding
-     * the next token.
-     * @return <code>null</code> if the next token is not preceeded by a doc comment
+     * Gets the text of the doc comment (a.k.a. "JAVADOC comment") preceeding the next token.
+     *
+     * @return {@code null} if the next token is not preceeded by a doc comment
      */
     @Nullable public String
     doc() {
@@ -226,7 +228,9 @@ class Parser {
         return s;
     }
 
-    /** @return The scanner that produces the tokens for this parser. */
+    /**
+     * @return The scanner that produces the tokens for this parser.
+     */
     public Scanner
     getScanner() { return this.scanner; }
 
@@ -722,13 +726,19 @@ class Parser {
     public
     enum ClassDeclarationContext {
 
-        /** The class declaration appears inside a 'block'. */
+        /**
+         * The class declaration appears inside a 'block'.
+         */
         BLOCK,
 
-        /** The class declaration appears (directly) inside a type declaration. */
+        /**
+         * The class declaration appears (directly) inside a type declaration.
+         */
         TYPE_DECLARATION,
 
-        /** The class declaration appears on the top level. */
+        /**
+         * The class declaration appears on the top level.
+         */
         COMPILATION_UNIT,
     }
 
@@ -1067,10 +1077,14 @@ class Parser {
     public
     enum InterfaceDeclarationContext {
 
-        /** The interface declaration appears (directly) inside a 'named type declaration'. */
+        /**
+         * The interface declaration appears (directly) inside a 'named type declaration'.
+         */
         NAMED_TYPE_DECLARATION,
 
-        /** The interface declaration appears at the top level. */
+        /**
+         * The interface declaration appears at the top level.
+         */
         COMPILATION_UNIT,
     }
 
@@ -1530,11 +1544,15 @@ class Parser {
      *     Expression BracketsOpt VariableDeclarators ';'  (3)
      * </pre>
      *
-     * (1) Includes the "labeled statement".
-     * <br />
-     * (2) Local class declaration.
-     * <br />
-     * (3) Local variable declaration statement; "Expression" must pose a type, and has optional trailing brackets.
+     * <p>
+     *   (1) Includes the "labeled statement".
+     * </p>
+     * <p>
+     *   (2) Local class declaration.
+     * </p>
+     * <p>
+     *   (3) Local variable declaration statement; "Expression" must pose a type, and has optional trailing brackets.
+     * </p>
      */
     public BlockStatement
     parseBlockStatement() throws CompileException, IOException {
@@ -1656,7 +1674,9 @@ class Parser {
      * <pre>
      *   VariableDeclaratorRest := { '[' ']' } [ '=' VariableInitializer ]
      * </pre>
-     * Used by field declarations and local variable declarations.
+     * <p>
+     *   Used by field declarations and local variable declarations.
+     * </p>
      */
     public VariableDeclarator
     parseVariableDeclaratorRest(String name) throws CompileException, IOException  {
@@ -1772,7 +1792,9 @@ class Parser {
      *     | Expression VariableDeclarators              (1)
      *     | Expression { ',' Expression }
      * </pre>
-     * (1) "Expression" must pose a type.
+     * <p>
+     *   (1) "Expression" must pose a type.
+     * </p>
      */
     public Statement
     parseForStatement() throws CompileException, IOException {
@@ -3192,7 +3214,9 @@ class Parser {
         return new ExpressionStatement(rv);
     }
 
-    /** @return The location of the first character of the previously {@link #peek()}ed or {@link #read()} token */
+    /**
+     * @return The location of the first character of the previously {@link #peek()}ed or {@link #read()} token
+     */
     public Location
     location() { return this.scanner.location(); }
 
@@ -3200,7 +3224,9 @@ class Parser {
 
     // Token-level methods.
 
-    /** @return The next token, but does not consume it */
+    /**
+     * @return The next token, but does not consume it
+     */
     public Token
     peek() throws CompileException, IOException {
         if (this.nextToken == null) this.nextToken = this.produceToken();
@@ -3208,7 +3234,9 @@ class Parser {
         return this.nextToken;
     }
 
-    /** @return The next-but-one token, but consumes neither the next nor the next-but-one token */
+    /**
+     * @return The next-but-one token, but consumes neither the next nor the next-but-one token
+     */
     public Token
     peekNextButOne() throws CompileException, IOException {
         if (this.nextToken == null) this.nextToken = this.produceToken();
@@ -3217,7 +3245,9 @@ class Parser {
         return this.nextButOneToken;
     }
 
-    /** @return The next and also consumes it, or {@code null} iff the scanner is at end-of-input */
+    /**
+     * @return The next and also consumes it, or {@code null} iff the scanner is at end-of-input
+     */
     public Token
     read() throws CompileException, IOException {
 
@@ -3233,18 +3263,20 @@ class Parser {
 
     // Peek/read/peekRead convenience methods.
 
-    /** @return Whether the value of the next token equals {@code suspected}; does not consume the next token */
+    /**
+     * @return Whether the value of the next token equals <var>suspected</var>; does not consume the next token
+     */
     public boolean
     peek(String suspected) throws CompileException, IOException {
         return this.peek().value.equals(suspected);
     }
 
     /**
-     * Checks whether the value of the next token equals any of the {@code suspected}; does not consume the next
+     * Checks whether the value of the next token equals any of the <var>suspected</var>; does not consume the next
      * token.
      *
-     * @return The index of the first of the {@code suspected} that equals the value of the next token, or -1 if the
-     *         value of the next token equals none of the {@code suspected}
+     * @return The index of the first of the <var>suspected</var> that equals the value of the next token, or -1 if the
+     *         value of the next token equals none of the <var>suspected</var>
      */
     public int
     peek(String[] suspected) throws CompileException, IOException {
@@ -3252,10 +3284,10 @@ class Parser {
     }
 
     /**
-     * Checks whether the type of the next token is any of the {@code suspected}; does not consume the next token.
+     * Checks whether the type of the next token is any of the <var>suspected</var>; does not consume the next token.
      *
-     * @return The index of the first of the {@code suspected} types that is the next token's type, or -1 if the type
-     *         of the next token is none of the {@code suspected} types
+     * @return The index of the first of the <var>suspected</var> types that is the next token's type, or -1 if the type
+     *         of the next token is none of the <var>suspected</var> types
      */
     public int
     peek(TokenType[] suspected) throws CompileException, IOException {
@@ -3263,7 +3295,7 @@ class Parser {
     }
 
     /**
-     * @return Whether the value of the next-but-one token equals the {@code suspected}; consumes neither the next
+     * @return Whether the value of the next-but-one token equals the <var>suspected</var>; consumes neither the next
      *         nor the next-but-one token
      */
     public boolean
@@ -3272,9 +3304,9 @@ class Parser {
     }
 
     /**
-     * Verifies that the value of the next token equals {@code expected}, and consumes the token.
+     * Verifies that the value of the next token equals <var>expected</var>, and consumes the token.
      *
-     * @throws CompileException The value of the next token does not equal {@code expected} (this includes the case
+     * @throws CompileException The value of the next token does not equal <var>expected</var> (this includes the case
      *                          that  the scanner is at end-of-input)
      */
     public void
@@ -3284,10 +3316,10 @@ class Parser {
     }
 
     /**
-     * Verifies that the value of the next token equals one of the {@code expected}, and consumes the token.
+     * Verifies that the value of the next token equals one of the <var>expected</var>, and consumes the token.
      *
-     * @return                  The index of the consumed token within {@code expected}
-     * @throws CompileException The value of the next token does not equal any of the {@code expected} (this includes
+     * @return                  The index of the consumed token within <var>expected</var>
+     * @throws CompileException The value of the next token does not equal any of the <var>expected</var> (this includes
      *                          the case where the scanner is at end-of-input)
      */
     public int
@@ -3303,7 +3335,7 @@ class Parser {
     }
 
     /**
-     * @return Whether the value of the next token equals the {@code suspected}; if so, it consumes the next token
+     * @return Whether the value of the next token equals the <var>suspected</var>; if so, it consumes the next token
      * @throws CompileException
      * @throws IOException
      */
@@ -3323,7 +3355,9 @@ class Parser {
         return false;
     }
 
-    /** @return -1 iff the next token is none of <code>values</code> */
+    /**
+     * @return -1 iff the next token is none of {@code values}
+     */
     public int
     peekRead(String[] values) throws CompileException, IOException {
         if (this.nextToken != null) {
@@ -3340,20 +3374,26 @@ class Parser {
         return -1;
     }
 
-    /** @return Whether the scanner is at end-of-input */
+    /**
+     * @return Whether the scanner is at end-of-input
+     */
     public boolean
     peekEof() throws CompileException, IOException {
         return this.peek().type == TokenType.END_OF_INPUT;
     }
 
-    /** @return {@code null} iff the next token is not an identifier, otherwise the value of the identifier token */
+    /**
+     * @return {@code null} iff the next token is not an identifier, otherwise the value of the identifier token
+     */
     @Nullable public String
     peekIdentifier() throws CompileException, IOException {
         Token t = this.peek();
         return t.type == TokenType.IDENTIFIER ? t.value : null;
     }
 
-    /** @return Whether the next token is a literal */
+    /**
+     * @return Whether the next token is a literal
+     */
     public boolean
     peekLiteral() throws CompileException, IOException {
         return this.peek(new TokenType[] {
@@ -3404,7 +3444,9 @@ class Parser {
         return -1;
     }
 
-    /** Issue a warning if the given string does not comply with the package naming conventions. */
+    /**
+     * Issues a warning if the given string does not comply with the package naming conventions.
+     */
     private void
     verifyStringIsConventionalPackageName(String s, Location loc) throws CompileException {
         if (!Character.isLowerCase(s.charAt(0))) {
@@ -3426,7 +3468,7 @@ class Parser {
     }
 
     /**
-     * Issue a warning if the given identifier does not comply with the class and interface type naming conventions
+     * Issues a warning if the given identifier does not comply with the class and interface type naming conventions
      * (JLS7 6.8.2).
      */
     private void
@@ -3454,7 +3496,9 @@ class Parser {
         }
     }
 
-    /** Issue a warning if the given identifier does not comply with the method naming conventions (JLS7 6.8.3). */
+    /**
+     * Issues a warning if the given identifier does not comply with the method naming conventions (JLS7 6.8.3).
+     */
     private void
     verifyIdentifierIsConventionalMethodName(String id, Location loc) throws CompileException {
         if (!Character.isLowerCase(id.charAt(0))) {
@@ -3479,7 +3523,7 @@ class Parser {
     }
 
     /**
-     * Issue a warning if the given identifier does not comply with the field naming conventions (JLS7 6.8.4) and
+     * Issues a warning if the given identifier does not comply with the field naming conventions (JLS7 6.8.4) and
      * constant naming conventions (JLS7 6.8.5).
      */
     private void
@@ -3523,8 +3567,8 @@ class Parser {
     }
 
     /**
-     * Issue a warning if the given identifier does not comply with the local variable and parameter naming conventions
-     * (JLS7 6.8.6).
+     * Issues a warning if the given identifier does not comply with the local variable and parameter naming
+     * conventions (JLS7 6.8.6).
      */
     private void
     verifyIdentifierIsConventionalLocalVariableOrParameterName(String id, Location loc) throws CompileException {
@@ -3554,11 +3598,12 @@ class Parser {
     /**
      * By default, warnings are discarded, but an application my install a {@link WarningHandler}.
      * <p>
-     * Notice that there is no <code>Parser.setErrorHandler()</code> method, but parse errors always throw a {@link
-     * CompileException}. The reason being is that there is no reasonable way to recover from parse errors and continue
-     * parsing, so there is no need to install a custom parse error handler.
+     *   Notice that there is no {@code Parser.setErrorHandler()} method, but parse errors always throw a {@link
+     *   CompileException}. The reason being is that there is no reasonable way to recover from parse errors and
+     *   continue parsing, so there is no need to install a custom parse error handler.
+     * </p>
      *
-     * @param optionalWarningHandler <code>null</code> to indicate that no warnings be issued
+     * @param optionalWarningHandler {@code null} to indicate that no warnings be issued
      */
     public void
     setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
@@ -3573,7 +3618,7 @@ class Parser {
      * a {@link WarningHandler} that was installed through
      * {@link #setWarningHandler(WarningHandler)}.
      * <p>
-     * The <code>handle</code> argument qualifies the warning and is typically used by
+     * The {@code handle} argument qualifies the warning and is typically used by
      * the {@link WarningHandler} to suppress individual warnings.
      *
      * @throws CompileException The optionally installed {@link WarningHandler} decided to throw a {@link
@@ -3586,7 +3631,9 @@ class Parser {
         }
     }
 
-    /** Convenience method for throwing a {@link CompileException}. */
+    /**
+     * Convenience method for throwing a {@link CompileException}.
+     */
     protected final CompileException
     compileException(String message) {
         return new CompileException(message, this.location());

@@ -28,7 +28,9 @@ package org.codehaus.commons.compiler;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/** Processes a warning issued by the compiler. */
+/**
+ * Processes a warning issued by the compiler.
+ */
 public
 interface WarningHandler {
 

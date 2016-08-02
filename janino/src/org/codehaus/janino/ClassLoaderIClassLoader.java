@@ -39,7 +39,9 @@ class ClassLoaderIClassLoader extends IClassLoader {
 
     private static final Logger LOGGER = Logger.getLogger(ClassLoaderIClassLoader.class.getName());
 
-    /** @param classLoader The delegate that loads the classes. */
+    /**
+     * @param classLoader The delegate that loads the classes
+     */
     public
     ClassLoaderIClassLoader(ClassLoader classLoader) {
         super(
@@ -59,7 +61,9 @@ class ClassLoaderIClassLoader extends IClassLoader {
     public
     ClassLoaderIClassLoader() { this(Thread.currentThread().getContextClassLoader()); }
 
-    /** @return The delegate {@link ClassLoader} */
+    /**
+     * @return The delegate {@link ClassLoader}
+     */
     public ClassLoader
     getClassLoader() { return this.classLoader; }
 

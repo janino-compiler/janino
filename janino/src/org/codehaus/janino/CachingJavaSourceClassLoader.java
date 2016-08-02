@@ -44,20 +44,23 @@ import org.codehaus.janino.util.resource.ResourceCreator;
 import org.codehaus.janino.util.resource.ResourceFinder;
 
 /**
- * A {@link org.codehaus.janino.JavaSourceClassLoader} that uses a resource storage provided by the application to cache
- * compiled classes and thus saving unnecessary recompilations.
+ * A {@link org.codehaus.janino.JavaSourceClassLoader} that uses a resource storage provided by the application to
+ * cache compiled classes and thus saving unnecessary recompilations.
  * <p>
- * The application provides access to the resource storeage through a pair of a {@link
- * org.codehaus.janino.util.resource.ResourceFinder} and a {@link org.codehaus.janino.util.resource.ResourceCreator}
- * (see {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)}.
+ *   The application provides access to the resource storeage through a pair of a {@link
+ *   org.codehaus.janino.util.resource.ResourceFinder} and a {@link org.codehaus.janino.util.resource.ResourceCreator}
+ *   (see {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)}.
+ * </p>
  * <p>
- * See {@link org.codehaus.janino.JavaSourceClassLoader#main(String[])} for an example how to use this class.
+ *   See {@link org.codehaus.janino.JavaSourceClassLoader#main(String[])} for an example how to use this class.
+ * </p>
  * <p>
- * <b>Notice:</b> You must NOT rely on that this class stores some particular data in some particular resources through
- * the given {@code classFileCacheResourceFinder/Creator}! These serve only as a means for the {@link
- * CachingJavaSourceClassLoader} to persistently cache some data between invocations. In other words: If you want to
- * compile {@code .java} files into {@code .class} files, then don't use <i>this</i> class but {@link Compiler}
- * instead!
+ *   <b>Notice:</b> You must NOT rely on that this class stores some particular data in some particular resources
+ *   through the given {@code classFileCacheResourceFinder/Creator}! These serve only as a means for the {@link
+ *   CachingJavaSourceClassLoader} to persistently cache some data between invocations. In other words: If you want to
+ *   compile {@code .java} files into {@code .class} files, then don't use <em>this</em> class but {@link Compiler}
+ *   instead!
+ * </p>
  */
 public
 class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
@@ -92,18 +95,19 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     }
 
     /**
-     * Notice that this class is thread-safe if and only if the {@code classFileCacheResourceCreator} stores its data
-     * atomically, i.e. the {@code classFileCacheResourceFinder} sees the resource written by the {@code
+     * Notice that this class is thread-safe if and only if the <var>classFileCacheResourceCreator</var> stores its
+     * data atomically, i.e. the <var>classFileCacheResourceFinder</var> sees the resource written by the {@code
      * classFileCacheResourceCreator} only after the {@link OutputStream} is closed.
      * <p>
-     * In order to make the caching scheme work, both the {@code classFileCacheResourceFinder} and the {@code
-     * sourceFinder} must support the {@link org.codehaus.janino.util.resource.Resource#lastModified()} method, so that
-     * the modification time of the source and the class files can be compared.
+     *   In order to make the caching scheme work, both the <var>classFileCacheResourceFinder</var> and the {@code
+     *   sourceFinder} must support the {@link org.codehaus.janino.util.resource.Resource#lastModified()} method, so
+     *   that the modification time of the source and the class files can be compared.
+     * </p>
      *
      * @param parentClassLoader             Attempt to load classes through this one before looking for source files
-     * @param sourceFinder                  Finds Java&trade; source for class {@code pkg.Cls} in resource {@code
+     * @param sourceFinder                  Finds Java source for class {@code pkg.Cls} in resource {@code
      *                                      pkg/Cls.java}
-     * @param optionalCharacterEncoding     Encoding of Java&trade; source or {@code null} for platform default
+     * @param optionalCharacterEncoding     Encoding of Java source or {@code null} for platform default
      *                                      encoding
      * @param classFileCacheResourceFinder  Finds precompiled class {@code pkg.Cls} in resource {@code pkg/Cls.class}
      *                                      (see class description)
@@ -125,7 +129,7 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     }
 
     /**
-     * Override {@link JavaSourceClassLoader#generateBytecodes(String)} to implement class file caching.
+     * Overrides {@link JavaSourceClassLoader#generateBytecodes(String)} to implement class file caching.
      *
      * @return                        String name =&gt; byte[] bytecode, or {@code null} if no source code could be
      *                                found
@@ -187,7 +191,9 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
         return bytecodes;
     }
 
-    /** Reads all bytes from the given resource. */
+    /**
+     * Reads all bytes from the given resource.
+     */
     private static byte[]
     readResource(Resource r) throws IOException {
         ByteArrayOutputStream baos   = new ByteArrayOutputStream();
@@ -207,7 +213,9 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
         return baos.toByteArray();
     }
 
-    /** Create a resource with the given name and store the data in it. */
+    /**
+     * Creates a resource with the given name and store the data in it.
+     */
     private static void
     writeResource(ResourceCreator resourceCreator, String resourceName, byte[] data) throws IOException {
         OutputStream os = resourceCreator.createResource(resourceName);

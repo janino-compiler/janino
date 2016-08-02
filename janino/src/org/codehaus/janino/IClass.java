@@ -26,6 +26,7 @@
 
 package org.codehaus.janino;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,30 +55,56 @@ class IClass {
     private static final Logger LOGGER = Logger.getLogger(IClass.class.getName());
 
     /**
-     * Special return value for {@link IField#getConstantValue()} indicating that the field does <i>not</i> have a
+     * Special return value for {@link IField#getConstantValue()} indicating that the field does <em>not</em> have a
      * constant value.
      */
     public static final Object NOT_CONSTANT = new Object() {
         @Override public String toString() { return "NOT_CONSTANT"; }
     };
 
-    /** The {@link IClass} object for the type VOID. */
+    /**
+     * The {@link IClass} object for the type VOID.
+     */
     public static final IClass VOID    = new PrimitiveIClass(Descriptor.VOID);
-    /** The {@link IClass} object for the primitive type BYTE. */
+
+    /**
+     * The {@link IClass} object for the primitive type BYTE.
+     */
     public static final IClass BYTE    = new PrimitiveIClass(Descriptor.BYTE);
-    /** The {@link IClass} object for the primitive type CHAR. */
+
+    /**
+     * The {@link IClass} object for the primitive type CHAR.
+     */
     public static final IClass CHAR    = new PrimitiveIClass(Descriptor.CHAR);
-    /** The {@link IClass} object for the primitive type DOUBLE. */
+
+    /**
+     * The {@link IClass} object for the primitive type DOUBLE.
+     */
     public static final IClass DOUBLE  = new PrimitiveIClass(Descriptor.DOUBLE);
-    /** The {@link IClass} object for the primitive type FLOAT. */
+
+    /**
+     * The {@link IClass} object for the primitive type FLOAT.
+     */
     public static final IClass FLOAT   = new PrimitiveIClass(Descriptor.FLOAT);
-    /** The {@link IClass} object for the primitive type INT. */
+
+    /**
+     * The {@link IClass} object for the primitive type INT.
+     */
     public static final IClass INT     = new PrimitiveIClass(Descriptor.INT);
-    /** The {@link IClass} object for the primitive type LONG. */
+
+    /**
+     * The {@link IClass} object for the primitive type LONG.
+     */
     public static final IClass LONG    = new PrimitiveIClass(Descriptor.LONG);
-    /** The {@link IClass} object for the primitive type SHORT. */
+
+    /**
+     * The {@link IClass} object for the primitive type SHORT.
+     */
     public static final IClass SHORT   = new PrimitiveIClass(Descriptor.SHORT);
-    /** The {@link IClass} object for the primitive type BOOLEAN. */
+
+    /**
+     * The {@link IClass} object for the primitive type BOOLEAN.
+     */
     public static final IClass BOOLEAN = new PrimitiveIClass(Descriptor.BOOLEAN);
 
     private static
@@ -110,7 +137,7 @@ class IClass {
      * Returns all the constructors declared by the class represented by the type. If the class has a default
      * constructor, it is included.
      * <p>
-     *   Returns an array with zero elements for an interface, array, primitive type or "void".
+     *   Returns an array with zero elements for an interface, array, primitive type or {@code void}.
      * </p>
      */
     public final IConstructor[]
@@ -121,14 +148,17 @@ class IClass {
     }
     @Nullable private IConstructor[] declaredIConstructorsCache;
 
-    /** The uncached version of {@link #getDeclaredIConstructors()} which must be implemented by derived classes. */
+    /**
+     * The uncached version of {@link #getDeclaredIConstructors()} which must be implemented by derived classes.
+     */
     protected abstract IConstructor[] getDeclaredIConstructors2();
 
     /**
      * Returns the methods of the class or interface (but not inherited methods). For covariant methods, only the
      * method with the most derived return type is included.
-     * <br>
-     * Returns an empty array for an array, primitive type or "void".
+     * <p>
+     *   Returns an empty array for an array, primitive type or {@code void}.
+     * </p>
      */
     public final IMethod[]
     getDeclaredIMethods() {
@@ -137,13 +167,16 @@ class IClass {
     }
     @Nullable private IMethod[] declaredIMethodsCache;
 
-    /** The uncached version of {@link #getDeclaredIMethods()} which must be implemented by derived classes. */
+    /**
+     * The uncached version of {@link #getDeclaredIMethods()} which must be implemented by derived classes.
+     */
     protected abstract IMethod[] getDeclaredIMethods2();
 
     /**
      * Returns all methods with the given name declared in the class or interface (but not inherited methods).
-     * <br>
-     * Returns an empty array if no methods with that name are declared.
+     * <p>
+     *   Returns an empty array if no methods with that name are declared.
+     * </p>
      *
      * @return an array of {@link IMethod}s that must not be modified
      */
@@ -191,8 +224,7 @@ class IClass {
     @Nullable private Map<String /*methodName*/, Object /*IMethod-or-List<IMethod>*/> declaredIMethodCache;
 
     /**
-     * Returns all methods declared in the class or interface, its superclasses and its
-     * superinterfaces.<br>
+     * Returns all methods declared in the class or interface, its superclasses and its superinterfaces.
      *
      * @return an array of {@link IMethod}s that must not be modified
      */
@@ -295,7 +327,7 @@ class IClass {
     /**
      * Returns the {@link IField}s declared in this {@link IClass} (but not inherited fields).
      *
-     * @return An empty array for an array, primitive type or "void"
+     * @return An empty array for an array, primitive type or {@code void}
      */
     public final IField[]
     getDeclaredIFields() {
@@ -303,7 +335,9 @@ class IClass {
         return (IField[]) allFields.toArray(new IField[allFields.size()]);
     }
 
-    /** @return String fieldName => IField */
+    /**
+     * @return {@code String fieldName => IField}
+     */
     private Map<String /*fieldName*/, IField>
     getDeclaredIFieldsCache() {
         if (this.declaredIFieldsCache != null) return this.declaredIFieldsCache;
@@ -318,7 +352,7 @@ class IClass {
     /**
      * Returns the named {@link IField} declared in this {@link IClass} (does not work for inherited fields).
      *
-     * @return <code>null</code> iff this {@link IClass} does not declare an {@link IField} with that name
+     * @return {@code null} iff this {@link IClass} does not declare an {@link IField} with that name
      */
     @Nullable public final IField
     getDeclaredIField(String name) { return (IField) this.getDeclaredIFieldsCache().get(name); }
@@ -332,20 +366,23 @@ class IClass {
 
     @Nullable private Map<String /*fieldName*/, IField> declaredIFieldsCache;
 
-    /** Uncached version of {@link #getDeclaredIFields()}. */
+    /**
+     * Uncached version of {@link #getDeclaredIFields()}.
+     */
     protected abstract IField[] getDeclaredIFields2();
 
     /**
-     * Returns the synthetic fields of an anonymous or local class, in
-     * the order in which they are passed to all constructors.
+     * @returns The synthetic fields of an anonymous or local class, in the order in which they are passed to all
+     *          constructors
      */
     public IField[]
     getSyntheticIFields() { return new IField[0]; }
 
     /**
-     * Returns the classes and interfaces declared as members of the class
-     * (but not inherited classes and interfaces).<br>
-     * Returns an empty array for an array, primitive type or "void".
+     * Returns the classes and interfaces declared as members of the class (but not inherited classes and interfaces).
+     * <p>
+     *   Returns an empty array for an array, primitive type or {@code void}.
+     * </p>
      */
     public final IClass[]
     getDeclaredIClasses() throws CompileException {
@@ -354,10 +391,14 @@ class IClass {
     }
     @Nullable private IClass[] declaredIClassesCache;
 
-    /** @return The member types of this type */
+    /**
+     * @return The member types of this type
+     */
     protected abstract IClass[] getDeclaredIClasses2() throws CompileException;
 
-    /** @return If this class is a member class, the declaring class, otherwise {@code null} */
+    /**
+     * @return If this class is a member class, the declaring class, otherwise {@code null}
+     */
     @Nullable public final IClass
     getDeclaringIClass() throws CompileException {
         if (!this.declaringIClassIsCached) {
@@ -369,7 +410,9 @@ class IClass {
     private boolean          declaringIClassIsCached;
     @Nullable private IClass declaringIClassCache;
 
-    /** @return If this class is a member class, the declaring class, otherwise {@code null} */
+    /**
+     * @return If this class is a member class, the declaring class, otherwise {@code null}
+     */
     @Nullable protected abstract IClass
     getDeclaringIClass2() throws CompileException;
 
@@ -393,14 +436,17 @@ class IClass {
     private boolean          outerIClassIsCached;
     @Nullable private IClass outerIClassCache;
 
-    /** @see #getOuterIClass() */
+    /**
+     * @see #getOuterIClass()
+     */
     @Nullable protected abstract IClass
     getOuterIClass2() throws CompileException;
 
     /**
-     * Returns the superclass of the class.<br>
-     * Returns "null" for class "Object", interfaces, arrays, primitive types
-     * and "void".
+     * Returns the superclass of the class.
+     * <p>
+     *   Returns {@code null} for class {@link Object}, interfaces, arrays, primitive types and {@code void}.
+     * </p>
      */
     @Nullable public final IClass
     getSuperclass() throws CompileException {
@@ -419,24 +465,30 @@ class IClass {
     private boolean          superclassIsCached;
     @Nullable private IClass superclassCache;
 
-    /** @see #getSuperclass() */
+    /**
+     * @see #getSuperclass()
+     */
     @Nullable protected abstract IClass
     getSuperclass2() throws CompileException;
 
-    /** @return The accessibility of this type */
+    /**
+     * @return The accessibility of this type
+     */
     public abstract Access getAccess();
 
     /**
      * Whether subclassing is allowed (JVMS 4.1 access_flags)
-     * @return <code>true</code> if subclassing is prohibited
+     *
+     * @return {@code true} if subclassing is prohibited
      */
     public abstract boolean isFinal();
 
     /**
-     * Returns the interfaces implemented by the class.<br>
-     * Returns the superinterfaces of the interface.<br>
-     * Returns "Cloneable" and "Serializable" for arrays.<br>
-     * Returns an empty array for primitive types and "void".
+     * Returns the interfaces implemented by the class, respectively the superinterfaces of the interface, respectively
+     * <code>{</code> {@link Cloneable}{@code ,} {@link Serializable} <code>}</code> for arrays.
+     * <p>
+     *   Returns an empty array for primitive types and {@code void}.
+     * </p>
      */
     public final IClass[]
     getInterfaces() throws CompileException {
@@ -455,16 +507,21 @@ class IClass {
     }
     @Nullable private IClass[] interfacesCache;
 
-    /** @see #getInterfaces() */
+    /**
+     * @see #getInterfaces()
+     */
     protected abstract IClass[] getInterfaces2() throws CompileException;
 
     /**
-     * Whether the class may be instantiated (JVMS 4.1 access_flags)
-     * @return <code>true</code> if instantiation is prohibited
+     * Whether the class may be instantiated (JVMS 4.1 access_flags).
+     *
+     * @return {@code true} if instantiation is prohibited
      */
     public abstract boolean isAbstract();
 
-    /** Returns the field descriptor for the type as defined by JVMS 4.3.2. This method is fast. */
+    /**
+     * Returns the field descriptor for the type as defined by JVMS 4.3.2. This method is fast.
+     */
     public final String
     getDescriptor() {
         if (this.descriptorCache != null) return this.descriptorCache;
@@ -472,11 +529,14 @@ class IClass {
     }
     @Nullable private String descriptorCache;
 
-    /** @return The field descriptor for the type as defined by JVMS 4.3.2. */
+    /**
+     * @return The field descriptor for the type as defined by JVMS 4.3.2.
+     */
     protected abstract String getDescriptor2();
 
     /**
      * Convenience method that determines the field descriptors of an array of {@link IClass}es.
+     *
      * @see #getDescriptor()
      */
     public static String[]
@@ -502,12 +562,13 @@ class IClass {
     public abstract boolean isArray();
 
     /**
-     * @return Whether this type represents a primitive type or "void"
+     * @return Whether this type represents a primitive type or {@code void}
      */
     public abstract boolean isPrimitive();
 
     /**
-     * @return Whether this type represents "byte", "short", "int", "long", "char", "float" or "double"
+     * @return Whether this type represents {@code byte}, {@code short}, {@code int}, {@code long}, {@code char},
+     *         {@code float} or {@code double}
      */
     public abstract boolean isPrimitiveNumeric();
 
@@ -525,7 +586,9 @@ class IClass {
     private boolean          componentTypeIsCached;
     @Nullable private IClass componentTypeCache;
 
-    /** @see #getComponentType() */
+    /**
+     * @see #getComponentType()
+     */
     @Nullable protected abstract IClass
     getComponentType2();
 
@@ -533,9 +596,9 @@ class IClass {
     toString() { return Descriptor.toClassName(this.getDescriptor()); }
 
     /**
-     * Determine if "this" is assignable from "that". This is true if "this" is identical with "that" (JLS7 5.1.1), or
-     * if "that" is widening-primitive-convertible to "this" (JLS7 5.1.2), or if "that" is
-     * widening-reference-convertible to "this" (JLS7 5.1.5).
+     * Determines if {@code this} is assignable from <var>that</var>. This is true if {@code this} is identical with
+     * <var>that</var> (JLS7 5.1.1), or if <var>that</var> is widening-primitive-convertible to {@code this} (JLS7
+     * 5.1.2), or if <var>that</var> is widening-reference-convertible to {@code this} (JLS7 5.1.5).
      */
     public boolean
     isAssignableFrom(IClass that) throws CompileException {
@@ -625,8 +688,7 @@ class IClass {
     }
 
     /**
-     * Returns <code>true</code> if this class is an immediate or non-immediate
-     * subclass of <code>that</code> class.
+     * Returns {@code true} if this class is an immediate or non-immediate subclass of {@code that} class.
      */
     public boolean
     isSubclassOf(IClass that) throws CompileException {
@@ -637,11 +699,12 @@ class IClass {
     }
 
     /**
-     * If <code>this</code> represents a class: Return <code>true</code> if this class
-     * directly or indirectly implements <code>that</code> interface.
+     * If {@code this} represents a class: Return {@code true} if this class directly or indirectly implements {@code
+     * that} interface.
      * <p>
-     * If <code>this</code> represents an interface: Return <code>true</code> if this
-     * interface directly or indirectly extends <code>that</code> interface.
+     *   If {@code this} represents an interface: Return {@code true} if this interface directly or indirectly extends
+     *   {@code that} interface.
+     * </p>
      */
     public boolean
     implementsInterface(IClass that) throws CompileException {
@@ -655,7 +718,7 @@ class IClass {
     }
 
     /**
-     * Get an {@link IClass} that represents an n-dimensional array of this type.
+     * Gets an {@link IClass} that represents an n-dimensional array of this type.
      *
      * @param n dimension count
      * @param objectType Required because the superclass of an array class is {@link Object} by definition
@@ -668,7 +731,7 @@ class IClass {
     }
 
     /**
-     * Get an {@link IClass} that represents an array of this type.
+     * Gets an {@link IClass} that represents an array of this type.
      *
      * @param objectType Required because the superclass of an array class is {@link Object} by definition
      */
@@ -734,15 +797,17 @@ class IClass {
     }
 
     /**
-     * If <code>optionalName</code> is <code>null</code>, find all {@link IClass}es visible in the
-     * scope of the current class.
+     * If <var>optionalName</var> is {@code null}, finds all {@link IClass}es visible in the scope of the current
+     * class.
      * <p>
-     * If <code>optionalName</code> is not <code>null</code>, find the member {@link IClass}es
-     * that has the given name. If the name is ambiguous (i.e. if more than one superclass,
-     * interface of enclosing type declares a type with that name), then the size of the
-     * returned array is greater than one.
+     *   If <var>optionalName</var> is not {@code null}, finds the member {@link IClass}es that has the given name. If
+     *   the name is ambiguous (i.e. if more than one superclass, interface of enclosing type declares a type with that
+     *   name), then the size of the returned array is greater than one.
+     * </p>
      * <p>
-     * Examines superclasses, interfaces and enclosing type declarations.
+     *   Examines superclasses, interfaces and enclosing type declarations.
+     * </p>
+     *
      * @return an array of {@link IClass}es in unspecified order, possibly of length zero
      */
     IClass[]
@@ -822,7 +887,9 @@ class IClass {
     protected IAnnotation[]
     getIAnnotations2() throws CompileException { return IClass.NO_ANNOTATIONS; }
 
-    /** Array of zero {@link IAnnotation}s. */
+    /**
+     * Array of zero {@link IAnnotation}s.
+     */
     public static final IAnnotation[] NO_ANNOTATIONS = new IAnnotation[0];
 
     /**
@@ -833,29 +900,39 @@ class IClass {
     interface IMember {
 
         /**
-         * @return One of {@link Access#PRIVATE}, {@link Access#PROTECTED},
-         * {@link Access#DEFAULT} and {@link Access#PUBLIC}.
+         * @return One of {@link Access#PRIVATE}, {@link Access#PROTECTED}, {@link Access#DEFAULT} and {@link
+         *         Access#PUBLIC}.
          */
         Access getAccess();
 
-        /** @return Modifiers and/or annotations of this member */
+        /**
+         * @return Modifiers and/or annotations of this member
+         */
         IAnnotation[] getAnnotations();
 
-        /** @return The {@link IClass} that declares this {@link IClass.IMember} */
+        /**
+         * @return The {@link IClass} that declares this {@link IClass.IMember}
+         */
         IClass getDeclaringIClass();
     }
 
-    /** Base class for {@link IConstructor} and {@link IMethod}. */
+    /**
+     * Base class for {@link IConstructor} and {@link IMethod}.
+     */
     public abstract
     class IInvocable implements IMember {
 
         private boolean argsNeedAdjust;
 
-        /** TODO */
+        /**
+         * TODO
+         */
         public void
         setArgsNeedAdjust(boolean newVal) { this.argsNeedAdjust = newVal; }
 
-        /** TODO */
+        /**
+         * TODO
+         */
         public boolean
         argsNeedAdjust() { return this.argsNeedAdjust; }
 
@@ -870,7 +947,9 @@ class IClass {
         @Override public abstract Access getAccess();
         @Override public IClass          getDeclaringIClass() { return IClass.this; }
 
-        /** Returns the types of the parameters of this constructor or method. This method is fast. */
+        /**
+         * Returns the types of the parameters of this constructor or method. This method is fast.
+         */
         public final IClass[]
         getParameterTypes() throws CompileException {
             if (this.parameterTypesCache != null) return this.parameterTypesCache;
@@ -879,9 +958,7 @@ class IClass {
         @Nullable private IClass[] parameterTypesCache;
 
         /**
-         * <p>
-         *   Opposed to the {@link Constructor}, there is no magic "{@code this$0}" parameter.
-         * </p>
+         * Opposed to the {@link Constructor}, there is no magic "{@code this$0}" parameter.
          * <p>
          *   Opposed to the {@link Constructor}, {@code enum}s have no magic parameters "{@code String name}" and
          *   "{@code int ordinal}".
@@ -903,11 +980,15 @@ class IClass {
         }
         @Nullable private String descriptorCache;
 
-        /** Uncached implementation of {@link #getDescriptor()}. */
+        /**
+         * Uncached implementation of {@link #getDescriptor()}.
+         */
         public abstract String
         getDescriptor2() throws CompileException;
 
-        /** Returns the types thrown by this constructor or method. This method is fast. */
+        /**
+         * Returns the types thrown by this constructor or method. This method is fast.
+         */
         public final IClass[]
         getThrownExceptions() throws CompileException {
             if (this.thrownExceptionsCache != null) return this.thrownExceptionsCache;
@@ -915,12 +996,15 @@ class IClass {
         }
         @Nullable private IClass[] thrownExceptionsCache;
 
-        /** @return The types thrown by this constructor or method */
+        /**
+         * @return The types thrown by this constructor or method
+         */
         public abstract IClass[]
         getThrownExceptions2() throws CompileException;
 
         /**
-         * @return Whether this {@link IInvocable} is more specific then {@code that} (in the sense of JLS7 15.12.2.5)
+         * @return Whether this {@link IInvocable} is more specific then <var>that</var> (in the sense of JLS7
+         *         15.12.2.5)
          */
         public boolean
         isMoreSpecificThan(IInvocable that) throws CompileException {
@@ -1042,7 +1126,8 @@ class IClass {
         }
 
         /**
-         * @return Whether this {@link IInvocable} is less specific then {@code that} (in the sense of JLS7 15.12.2.5)
+         * @return Whether this {@link IInvocable} is less specific then <var>that</var> (in the sense of JLS7
+         *         15.12.2.5)
          */
         public boolean
         isLessSpecificThan(IInvocable that) throws CompileException { return that.isMoreSpecificThan(this); }
@@ -1105,20 +1190,30 @@ class IClass {
         }
     }
 
-    /** Representation of a method in an {@link IClass}. */
+    /**
+     * Representation of a method in an {@link IClass}.
+     */
     public abstract
     class IMethod extends IInvocable {
 
-        /** @return Whether this method is STATIC */
+        /**
+         * @return Whether this method is STATIC
+         */
         public abstract boolean isStatic();
 
-        /** @return Whether this method is ABSTRACT */
+        /**
+         * @return Whether this method is ABSTRACT
+         */
         public abstract boolean isAbstract();
 
-        /** @return The return type of this method */
+        /**
+         * @return The return type of this method
+         */
         public abstract IClass getReturnType() throws CompileException;
 
-        /** @return The name of this method */
+        /**
+         * @return The name of this method
+         */
         public abstract String getName();
 
         @Override public String
@@ -1168,7 +1263,9 @@ class IClass {
         }
     }
 
-    /** Representation of a field of this {@link IClass}. */
+    /**
+     * Representation of a field of this {@link IClass}.
+     */
     public abstract
     class IField implements IMember {
 
@@ -1176,16 +1273,24 @@ class IClass {
         @Override public abstract Access getAccess();
         @Override public IClass          getDeclaringIClass() { return IClass.this; }
 
-        /** @return Whether this field is STATIC */
+        /**
+         * @return Whether this field is STATIC
+         */
         public abstract boolean isStatic();
 
-        /** @return The type of this field */
+        /**
+         * @return The type of this field
+         */
         public abstract IClass getType() throws CompileException;
 
-        /** @return The name this field */
+        /**
+         * @return The name this field
+         */
         public abstract String getName();
 
-        /** @return The descriptor of this field */
+        /**
+         * @return The descriptor of this field
+         */
         public String getDescriptor() throws CompileException { return this.getType().getDescriptor(); }
 
         /**

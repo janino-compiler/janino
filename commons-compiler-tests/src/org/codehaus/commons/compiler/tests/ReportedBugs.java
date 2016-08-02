@@ -49,7 +49,9 @@ import util.TestUtil;
 // CHECKSTYLE MethodName:OFF
 // CHECKSTYLE JavadocMethod:OFF
 
-/** Test cases for the bug reported on <a href="http://jira.codehaus.org/">CODEHAUS JIRA</a> for project JANINO. */
+/**
+ * Test cases for the bug reported on <a href="http://jira.codehaus.org/">CODEHAUS JIRA</a> for project JANINO.
+ */
 @RunWith(Parameterized.class) public
 class ReportedBugs extends JaninoTestSuite {
 

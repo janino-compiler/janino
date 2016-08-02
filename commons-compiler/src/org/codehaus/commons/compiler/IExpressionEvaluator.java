@@ -32,31 +32,38 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-
 /**
- * An engine that evaluates expressions in Java&trade; bytecode.
+ * An engine that evaluates expressions in Java bytecode.
  * <p>
- * The syntax of the expression to compile is that of a Java&trade; expression, as defined in JLS7, section 15. Notice
- * that a Java&trade; expression does not have a concluding semicolon.
+ *   The syntax of the expression to compile is that of a Java expression, as defined in JLS7, section 15. Notice
+ *   that a Java expression does not have a concluding semicolon.
+ * </p>
  * <p>
- * Example:<pre>
- *   a + 7 * b</pre>
- * (Notice that this expression refers to two parameters "a" and "b", as explained below.)
+ *   Example:
+ * </p>
+ * <pre>
+ *   a + 7 * b
+ * </pre>
  * <p>
- * The expression may optionally be preceeded with a sequence of import directives like
+ *   (Notice that this expression refers to two parameters "a" and "b", as explained below.)
+ * </p>
+ * <p>
+ *   The expression may optionally be preceeded with a sequence of import directives like
+ * </p>
  * <pre>
  *   import java.text.*;
  *   new DecimalFormat("####,###.##").format(10200020.345345)
  * </pre>
- * (Notice that the import directive is concluded with a semicolon, while the expression is not.)
- * This feature is not available if you compile many expressions at a time (see below).
  * <p>
- * To set up an {@link IExpressionEvaluator} object, proceed as follows:
+ *   (Notice that the import directive is concluded with a semicolon, while the expression is not.) This feature is not
+ *   available if you compile many expressions at a time (see below).
+ * </p>
+ * <p>
+ *   To set up an {@link IExpressionEvaluator} object, proceed as follows:
+ * </p>
  * <ol>
- *   <li>
- *   Create an {@link IExpressionEvaluator}-derived class
- *   <li>
- *   Configure the {@link IExpressionEvaluator} by calling any of the following methods:
+ *   <li>Create an {@link IExpressionEvaluator}-derived class</li>
+ *   <li>Configure the {@link IExpressionEvaluator} by calling any of the following methods:</li>
  *   <ul>
  *     <li>{@link #setExpressionType(Class)}
  *     <li>{@link #setParameters(String[], Class[])}
@@ -65,21 +72,24 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *     <li>{@link #setDefaultImports(String[])}
  *   </ul>
  *   <li>
- *   Call any of the {@link #cook(String, java.io.Reader)} methods to scan,
- *   parse, compile and load the expression into the JVM.
+ *     Call any of the {@link #cook(String, java.io.Reader)} methods to scan, parse, compile and load the expression
+ *     into the JVM.
+ *   </li>
  * </ol>
- * After the {@link IExpressionEvaluator} object is set up, the expression can be evaluated as
- * often with different parameter values (see {@link #evaluate(Object[])}). This evaluation is
- * very fast, compared to the compilation.
  * <p>
- * Less common methods exist that allow for the specification of the name of the generated class,
- * the class it extends, the interfaces it implements, the name of the method that executes the
- * expression, the exceptions that this method (i.e. the expression) is allowed to throw, and the
- * {@link ClassLoader} that is used to define the generated class and to load classes referenced by
- * the expression.
+ *   After the {@link IExpressionEvaluator} object is set up, the expression can be evaluated as often with different
+ *   parameter values (see {@link #evaluate(Object[])}). This evaluation is very fast, compared to the compilation.
+ * </p>
  * <p>
- * If you want to compile many expressions at the same time, you have the option to cook an
- * <i>array</i> of expressions in one {@link IExpressionEvaluator} by using the following methods:
+ *   Less common methods exist that allow for the specification of the name of the generated class, the class it
+ *   extends, the interfaces it implements, the name of the method that executes the expression, the exceptions that
+ *   this method (i.e. the expression) is allowed to throw, and the {@link ClassLoader} that is used to define the
+ *   generated class and to load classes referenced by the expression.
+ * </p>
+ * <p>
+ *   If you want to compile many expressions at the same time, you have the option to cook an <em>array</em> of
+ *   expressions in one {@link IExpressionEvaluator} by using the following methods:
+ * </p>
  * <ul>
  *   <li>{@link #setMethodNames(String[])}
  *   <li>{@link #setParameters(String[][], Class[][])}
@@ -89,59 +99,73 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *   <li>{@link #cook(String[], Reader[])}
  *   <li>{@link #evaluate(int, Object[])}
  * </ul>
- * Notice that these methods have array parameters in contrast to their one-expression brethren.
  * <p>
- * Notice that for <i>functionally</i> identical {@link IExpressionEvaluator}s,
- * {@link java.lang.Object#equals(java.lang.Object)} will return <code>true</code>. E.g. "a+b" and
- * "c + d" are functionally identical if "a" and "c" have the same type, and so do "b" and "d".
+ *    Notice that these methods have array parameters in contrast to their one-expression brethren.
+ *  </p>
  * <p>
- * 'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
- * Edition</a>.
+ *   Notice that for <em>functionally</em> identical {@link IExpressionEvaluator}s, {@link
+ *   java.lang.Object#equals(java.lang.Object)} will return {@code true}. E.g. "a+b" and "c + d" are functionally
+ *   identical if "a" and "c" have the same type, and so do "b" and "d".
+ * </p>
+ * <p>
+ *   'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
+ *   Edition</a>.
+ * </p>
  */
 public
 interface IExpressionEvaluator extends IScriptEvaluator {
 
-    /** Special value for {@link #setExpressionType(Class)} that indicates that the expression may have any type. */
+    /**
+     * Special value for {@link #setExpressionType(Class)} that indicates that the expression may have any type.
+     */
     @Nullable Class<?> ANY_TYPE = null;
 
     /**
-     * Define the type of the expression. The special type {@link #ANY_TYPE} allows the expression
-     * to return any type (primitive or reference).
+     * Defines the type of the expression. The special type {@link #ANY_TYPE} allows the expression to return any type
+     * (primitive or reference).
      * <p>
-     * If <code>expressionType</code> is {@link Void#TYPE}, then the expression must be an
-     * invocation of a <code>void</code> method.
+     *   If {@code expressionType} is {@link Void#TYPE}, then the expression must be an invocation of a {@code void}
+     *   method.
+     * </p>
      * <p>
-     * Defaults to {@link #ANY_TYPE}.
+     *   Defaults to {@link #ANY_TYPE}.
+     * </p>
      */
     void setExpressionType(@Nullable Class<?> expressionType);
 
-    /** Same as {@link #setExpressionType(Class)}, but for multiple expressions. */
+    /**
+     * Same as {@link #setExpressionType(Class)}, but for multiple expressions.
+     */
     void setExpressionTypes(Class<?>[] expressionTypes);
 
     /**
-     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionType(Class)} instead.
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionType(Class)} instead
      */
     @Override @Deprecated void setReturnType(Class<?> returnType);
 
     /**
      * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])}
-     *             instead.
+     *             instead
      */
     @Override @Deprecated void setReturnTypes(Class<?>[] returnTypes);
 
     /**
      * Evaluates the expression with concrete parameter values.
      * <p>
-     * Each argument value must have the same type as specified through the "parameterTypes" parameter of {@link
-     * #setParameters(String[], Class[])}.
+     *   Each argument value must have the same type as specified through the "parameterTypes" parameter of {@link
+     *   #setParameters(String[], Class[])}.
+     * </p>
      * <p>
-     * Arguments of primitive type must passed with their wrapper class objects.
+     *   Arguments of primitive type must passed with their wrapper class objects.
+     * </p>
      * <p>
-     * The object returned has the class as specified through {@link #setExpressionType(Class)}.
+     *   The object returned has the class as specified through {@link #setExpressionType(Class)}.
+     * </p>
      * <p>
-     * This method is thread-safe.
+     *   This method is thread-safe.
+     * </p>
      *
-     * @param arguments The actual parameter values.
+     * @param arguments The actual parameter values
      */
     @Override @Nullable Object evaluate(@Nullable Object[] arguments) throws InvocationTargetException;
 
@@ -151,7 +175,8 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      * faster than through {@link #evaluate(Object[])}, because it is not done through reflection but through direct
      * method invocation.
      * <p>
-     * Example:
+     *   Example:
+     * </p>
      * <pre>
      * public interface Foo {
      *     int bar(int a, int b);
@@ -173,13 +198,15 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      * );
      * System.out.println("1 + 2 = " + f.bar(1, 2)); // Evaluate the expression
      * </pre>
-     * All other configuration (implemented type, static method, return type, method name,
-     * parameter names and types, thrown exceptions) are predetermined by the
-     * <code>interfaceToImplement</code>.
-     *
-     * Notice: The <code>interfaceToImplement</code> must be accessible by the compiled class, i.e. either be declared
-     * <code>public</code>, or with <code>protected</code> or default access in the package of the compiled class (see
-     * {@link #setClassName(String)}.
+     * <p>
+     *   All other configuration (implemented type, static method, return type, method name, parameter names and types,
+     *   thrown exceptions) are predetermined by the <var>interfaceToImplement</var>.
+     * </p>
+     * <p>
+     *   Notice: The {@code interfaceToImplement} must be accessible by the compiled class, i.e. either be declared
+     *   {@code public}, or with {@code protected} or default access in the package of the compiled class (see {@link
+     *   #setClassName(String)}.
+     * </p>
      */
     @Override <T> Object
     createFastEvaluator(
@@ -188,7 +215,9 @@ interface IExpressionEvaluator extends IScriptEvaluator {
         String[] parameterNames
     ) throws CompileException;
 
-     /** @see #createFastEvaluator(String, Class, String[]) */
+    /**
+     * @see #createFastEvaluator(String, Class, String[])
+     */
     @Override <T> Object
     createFastEvaluator(
         Reader   reader,

@@ -60,7 +60,9 @@ class MultiDimensionalIterator<T> implements Iterator<T> {
         for (int i = 1; i < dimensionCount; ++i) this.nest[i] = MultiDimensionalIterator.EMPTY_ITERATOR;
     }
 
-    /** @throws UniterableElementException */
+    /**
+     * @throws UniterableElementException
+     */
     @Override public boolean
     hasNext() {
 

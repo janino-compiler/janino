@@ -40,15 +40,17 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * The <code>optionalClassLoader</code> serves two purposes:
+ * The {@code optionalClassLoader} serves two purposes:
  * <ul>
  *   <li>It is used to look for classes referenced by the class body.
- *   <li>It is used to load the generated Java&trade; class
+ *   <li>It is used to load the generated Java class
  *   into the JVM; directly if it is a subclass of {@link
  *   ByteArrayClassLoader}, or by creation of a temporary
  *   {@link ByteArrayClassLoader} if not.
  * </ul>
- * A number of "convenience constructors" exist that execute the setup steps instantly.
+ * <p>
+ *   A number of "convenience constructors" exist that execute the setup steps instantly.
+ * </p>
  */
 public
 class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
@@ -62,9 +64,11 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     @Nullable private Class<?> result; // null=uncooked
 
     /**
-     * Equivalent to<pre>
-     * ClassBodyEvaluator cbe = new ClassBodyEvaluator();
-     * cbe.cook(classBody);</pre>
+     * Equivalent to
+     * <pre>
+     *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
+     *     cbe.cook(classBody);
+     * </pre>
      *
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String)
@@ -73,9 +77,11 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     ClassBodyEvaluator(String classBody) throws CompileException { this.cook(classBody); }
 
     /**
-     * Equivalent to<pre>
-     * ClassBodyEvaluator cbe = new ClassBodyEvaluator();
-     * cbe.cook(optionalFileName, is);</pre>
+     * Equivalent to
+     * <pre>
+     *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
+     *     cbe.cook(optionalFileName, is);
+     * </pre>
      *
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String, InputStream)
@@ -86,9 +92,11 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ClassBodyEvaluator cbe = new ClassBodyEvaluator();
-     * cbe.cook(optionalFileName, reader);</pre>
+     * Equivalent to
+     * <pre>
+     *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
+     *     cbe.cook(optionalFileName, reader);
+     * </pre>
      *
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String, Reader)
@@ -99,10 +107,12 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ClassBodyEvaluator cbe = new ClassBodyEvaluator();
-     * cbe.setParentClassLoader(optionalParentClassLoader);
-     * cbe.cook(scanner);</pre>
+     * Equivalent to
+     * <pre>
+     *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
+     *     cbe.setParentClassLoader(optionalParentClassLoader);
+     *     cbe.cook(scanner);
+     * </pre>
      *
      * @see #ClassBodyEvaluator()
      * @see SimpleCompiler#setParentClassLoader(ClassLoader)
@@ -116,12 +126,14 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ClassBodyEvaluator cbe = new ClassBodyEvaluator();
-     * cbe.setExtendedType(optionalExtendedType);
-     * cbe.setImplementedTypes(implementedTypes);
-     * cbe.setParentClassLoader(optionalParentClassLoader);
-     * cbe.cook(scanner);</pre>
+     * Equivalent to
+     * <pre>
+     *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
+     *     cbe.setExtendedType(optionalExtendedType);
+     *     cbe.setImplementedTypes(implementedTypes);
+     *     cbe.setParentClassLoader(optionalParentClassLoader);
+     *     cbe.cook(scanner);
+     * </pre>
      *
      * @see #ClassBodyEvaluator()
      * @see #setExtendedClass(Class)
@@ -143,13 +155,15 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ClassBodyEvaluator cbe = new ClassBodyEvaluator();
-     * cbe.setClassName(className);
-     * cbe.setExtendedType(optionalExtendedType);
-     * cbe.setImplementedTypes(implementedTypes);
-     * cbe.setParentClassLoader(optionalParentClassLoader);
-     * cbe.cook(scanner);</pre>
+     * Equivalent to
+     * <pre>
+     *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
+     *     cbe.setClassName(className);
+     *     cbe.setExtendedType(optionalExtendedType);
+     *     cbe.setImplementedTypes(implementedTypes);
+     *     cbe.setParentClassLoader(optionalParentClassLoader);
+     *     cbe.cook(scanner);</pre>
+     * </p>
      *
      * @see #ClassBodyEvaluator()
      * @see #setClassName(String)
@@ -193,11 +207,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         this.optionalExtendedType = optionalExtendedType;
     }
 
-    /** @deprecated */
-    @Deprecated @Override public void
-    setExtendedType(@Nullable Class<?> optionalExtendedClass) {
-        this.setExtendedClass(optionalExtendedClass);
-    }
+    @Override public void
+    setExtendedType(@Nullable Class<?> optionalExtendedClass) { this.setExtendedClass(optionalExtendedClass); }
 
     @Override public void
     setImplementedInterfaces(Class<?>[] implementedTypes) {
@@ -205,11 +216,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         this.implementedTypes = implementedTypes;
     }
 
-    /** @deprecated */
-    @Deprecated @Override public void
-    setImplementedTypes(Class<?>[] implementedInterfaces) {
-        this.setImplementedInterfaces(implementedInterfaces);
-    }
+    @Override public void
+    setImplementedTypes(Class<?>[] implementedInterfaces) { this.setImplementedInterfaces(implementedInterfaces); }
 
     @Override public void
     cook(Scanner scanner) throws CompileException, IOException {
@@ -230,10 +238,11 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /**
-     * Create a {@link Java.CompilationUnit}, set the default imports, and parse the import declarations.
+     * Creates a {@link Java.CompilationUnit}, set the default imports, and parse the import declarations.
      * <p>
-     * If the <code>optionalParser</code> is given, a sequence of IMPORT directives is parsed from it and added to the
-     * compilation unit.
+     *   If the {@code optionalParser} is given, a sequence of IMPORT directives is parsed from it and added to the
+     *   compilation unit.
+     * </p>
      */
     protected final Java.CompilationUnit
     makeCompilationUnit(@Nullable Parser optionalParser) throws CompileException, IOException {
@@ -299,7 +308,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /**
-     * Compile the given compilation unit, load all generated classes, and return the class with the given name.
+     * Compiles the given compilation unit, load all generated classes, and return the class with the given name.
      *
      * @param compilationUnit
      * @return The loaded class
@@ -366,18 +375,18 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     /**
      * Use {@link #createInstance(Reader)} instead:
      * <pre>
-     * IClassBodyEvaluator cbe = {@link CompilerFactoryFactory}.{@link
-     * CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
-     * ICompilerFactory#newClassBodyEvaluator() newClassBodyEvaluator}();
-     * if (optionalBaseType != null) {
-     *     if (optionalBaseType.isInterface()) {
-     *         cbe.{@link #setImplementedInterfaces setImplementedInterfaces}(new Class[] { optionalBaseType });
-     *     } else {
-     *         cbe.{@link #setExtendedClass(Class) setExtendedClass}(optionalBaseType);
+     *     IClassBodyEvaluator cbe = {@link CompilerFactoryFactory}.{@link
+     *     CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
+     *     ICompilerFactory#newClassBodyEvaluator() newClassBodyEvaluator}();
+     *     if (optionalBaseType != null) {
+     *         if (optionalBaseType.isInterface()) {
+     *             cbe.{@link #setImplementedInterfaces setImplementedInterfaces}(new Class[] { optionalBaseType });
+     *         } else {
+     *             cbe.{@link #setExtendedClass(Class) setExtendedClass}(optionalBaseType);
+     *         }
      *     }
-     * }
-     * cbe.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
-     * cbe.{@link IClassBodyEvaluator#createInstance(Reader) createInstance}(reader);
+     *     cbe.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
+     *     cbe.{@link IClassBodyEvaluator#createInstance(Reader) createInstance}(reader);
      * </pre>
      *
      * @see #createInstance(Reader)
@@ -408,17 +417,17 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     /**
      * Use {@link #createInstance(Reader)} instead:
      * <pre>
-     * IClassBodyEvaluator cbe = {@link CompilerFactoryFactory}.{@link
-     * CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
-     * ICompilerFactory#newClassBodyEvaluator() newClassBodyEvaluator}();
-     * cbe.{@link #setExtendedClass(Class) setExtendedClass}(optionalExtendedClass);
-     * cbe.{@link #setImplementedInterfaces(Class[]) setImplementedInterfaces}(implementedInterfaces);
-     * cbe.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
-     * cbe.{@link IClassBodyEvaluator#createInstance(Reader) createInstance}(reader);
+     *     IClassBodyEvaluator cbe = {@link CompilerFactoryFactory}.{@link
+     *     CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
+     *     ICompilerFactory#newClassBodyEvaluator() newClassBodyEvaluator}();
+     *     cbe.{@link #setExtendedClass(Class) setExtendedClass}(optionalExtendedClass);
+     *     cbe.{@link #setImplementedInterfaces(Class[]) setImplementedInterfaces}(implementedInterfaces);
+     *     cbe.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
+     *     cbe.{@link IClassBodyEvaluator#createInstance(Reader) createInstance}(reader);
      * </pre>
      *
      * @see        #createInstance(Reader)
-     * @deprecated Use {@link #createInstance(Reader)} instead.
+     * @deprecated Use {@link #createInstance(Reader)} instead
      */
     @Deprecated public static Object
     createFastClassBodyEvaluator(

@@ -32,8 +32,9 @@ import java.io.OutputStream;
 /**
  * Opens a resource, characterized by a name, for writing.
  * <p>
- * There also exists a concept {@link org.codehaus.janino.util.resource.ResourceFinder} that
- * finds {@link org.codehaus.janino.util.resource.Resource}s for reading.
+ *   There also exists a concept {@link org.codehaus.janino.util.resource.ResourceFinder} that finds {@link
+ *   org.codehaus.janino.util.resource.Resource}s for reading.
+ * </p>
  *
  * @see org.codehaus.janino.util.resource.ResourceFinder
  */
@@ -41,10 +42,10 @@ public
 interface ResourceCreator {
 
     /**
-     * Create the designated resource.
+     * Creates the designated resource.
      *
      * @param resourceName Designates the resource; typically structured by slashes ("/") like
-     *                     "<code>com/foo/pkg/Bar.class</code>"
+     *                     "{@code com/foo/pkg/Bar.class}"
      * @return             Bytes written to this {@link OutputStream} are stored in the resource
      * @throws IOException Problems creating the resource
      */
@@ -53,7 +54,7 @@ interface ResourceCreator {
     /**
      * Deletes the resource with the given name.
      *
-     * @return <code>false</code> if the resource could not be deleted
+     * @return {@code false} if the resource could not be deleted
      */
     boolean deleteResource(String resourceName);
 }

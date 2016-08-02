@@ -38,7 +38,6 @@ public
 interface Annotatable {
 
     /**
-     * @param runtimeVisible TODO
      * @return The annotations on this element; an empty array iff there are no annotations
      */
     ClassFile.AnnotationsAttribute.Annotation[]

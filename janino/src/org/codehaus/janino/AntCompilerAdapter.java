@@ -35,40 +35,41 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A simple {@link org.apache.tools.ant.taskdefs.compilers.CompilerAdapter} for the "ant" tool
- * that silently ignores most of the configuration parameters and attempts to compile all given
- * source files into class files.
+ * A simple {@link org.apache.tools.ant.taskdefs.compilers.CompilerAdapter} for the "ant" tool that silently ignores
+ * most of the configuration parameters and attempts to compile all given source files into class files.
  */
 public
 class AntCompilerAdapter extends DefaultCompilerAdapter {
 
     /**
-     * Compile all source files in <code>DefaultCompilerAdapter.compileList</code> individually and
-     * write class files in directory <code>DefaultCompilerAdapter.destDir</code>.
+     * Compiles all source files in {@code DefaultCompilerAdapter.compileList} individually and creates class files in
+     * the {@code DefaultCompilerAdapter.destDir}.
      * <p>
      * The following fields of {@link DefaultCompilerAdapter} are honored:
      * <ul>
-     *   <li><code>DefaultCompilerAdapter.compileList</code> - the set of Java&trade; source files to compile
-     *   <li><code>DefaultCompilerAdapter.destDir</code> - where to store the class files
-     *   <li><code>DefaultCompilerAdapter.compileSourcepath</code> - where to look for more Java&trade; source files
-     *   <li><code>DefaultCompilerAdapter.compileClasspath</code> - where to look for required classes
-     *   <li><code>DefaultCompilerAdapter.extdirs</code>
-     *   <li><code>DefaultCompilerAdapter.bootclasspath</code>
-     *   <li><code>DefaultCompilerAdapter.encoding</code> - how the Java&trade; source files are encoded
-     *   <li><code>DefaultCompilerAdapter.verbose</code>
-     *   <li><code>DefaultCompilerAdapter.debug</code>
-     *   <li><code>org.apache.tools.ant.taskdefs.Javac.getDebugLevel()</code>
-     *   <li><code>DefaultCompilerAdapter.src</code>
+     *   <li>{@code DefaultCompilerAdapter.compileList} - the set of Java source files to compile</li>
+     *   <li>{@code DefaultCompilerAdapter.destDir} - where to store the class files</li>
+     *   <li>{@code DefaultCompilerAdapter.compileSourcepath} - where to look for more Java source files</li>
+     *   <li>{@code DefaultCompilerAdapter.compileClasspath} - where to look for required classes</li>
+     *   <li>{@code DefaultCompilerAdapter.extdirs}</li>
+     *   <li>{@code DefaultCompilerAdapter.bootclasspath}</li>
+     *   <li>{@code DefaultCompilerAdapter.encoding} - how the Java source files are encoded</li>
+     *   <li>{@code DefaultCompilerAdapter.verbose}</li>
+     *   <li>{@code DefaultCompilerAdapter.debug}</li>
+     *   <li>{@code org.apache.tools.ant.taskdefs.Javac.getDebugLevel()}</li>
+     *   <li>{@code DefaultCompilerAdapter.src}</li>
      * </ul>
-     * The following fields of {@link DefaultCompilerAdapter} are not honored at this time:
+     * <p>
+     *   The following fields of {@link DefaultCompilerAdapter} are not honored at this time:
+     * </p>
      * <ul>
-     *   <li><code>DefaultCompilerAdapter.depend</code>
-     *   <li><code>DefaultCompilerAdapter.deprecation</code>
-     *   <li><code>DefaultCompilerAdapter.includeAntRuntime</code>
-     *   <li><code>DefaultCompilerAdapter.includeJavaRuntime</code>
-     *   <li><code>DefaultCompilerAdapter.location</code>
-     *   <li><code>DefaultCompilerAdapter.optimize</code>
-     *   <li><code>DefaultCompilerAdapter.target</code>
+     *   <li>{@code DefaultCompilerAdapter.depend}</li>
+     *   <li>{@code DefaultCompilerAdapter.deprecation}</li>
+     *   <li>{@code DefaultCompilerAdapter.includeAntRuntime}</li>
+     *   <li>{@code DefaultCompilerAdapter.includeJavaRuntime}</li>
+     *   <li>{@code DefaultCompilerAdapter.location}</li>
+     *   <li>{@code DefaultCompilerAdapter.optimize}</li>
+     *   <li>{@code DefaultCompilerAdapter.target}</li>
      * </ul>
      *
      * @return "true" on success
@@ -153,10 +154,9 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
     }
 
     /**
-     * Convert a {@link org.apache.tools.ant.types.Path} into an array of
-     * {@link File}.
-     * @param path
-     * @return The converted path, or <code>null</code> if <code>path</code> is <code>null</code>
+     * Converts a {@link org.apache.tools.ant.types.Path} into an array of {@link File}s.
+     *
+     * @return The converted path, or {@code null} if {@code path} is {@code null}
      */
     @Nullable private static File[]
     pathToFiles(@Nullable Path path) {
@@ -169,11 +169,9 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
     }
 
     /**
-     * Convert a {@link org.apache.tools.ant.types.Path} into an array of
-     * {@link File}.
-     * @param path
-     * @param defaultValue
-     * @return The converted path, or, if <code>path</code> is <code>null</code>, the <code>defaultValue</code>
+     * Converts a {@link org.apache.tools.ant.types.Path} into an array of {@link File}s.
+     *
+     * @return The converted path, or, if {@code path} is {@code null}, the {@code defaultValue}
      */
     private static File[]
     pathToFiles(@Nullable Path path, File[] defaultValue) {

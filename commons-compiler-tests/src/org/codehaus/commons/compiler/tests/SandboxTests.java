@@ -43,7 +43,9 @@ import util.TestUtil;
 
 // CHECKSTYLE JavadocMethod:OFF
 
-/** Tests for JANINO's 'sandbox mode'. */
+/**
+ * Tests for JANINO's 'sandbox mode'.
+ */
 @RunWith(Parameterized.class) public
 class SandboxTests {
 

@@ -24,7 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** This package contains JUnit 4 test cases for {@link org.codehaus.commons.compiler}. */
+/**
+ * This package contains JUnit 4 test cases for {@link org.codehaus.commons.compiler}.
+ */
 @NotNullByDefault
 package org.codehaus.commons.compiler.tests;
 

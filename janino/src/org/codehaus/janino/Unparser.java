@@ -868,8 +868,8 @@ class Unparser {
     /**
      * Testing of parsing/unparsing.
      * <p>
-     * Reads compilation units from the files named on the command line
-     * and unparses them to {@link System#out}.
+     *   Reads compilation units from the files named on the command line and unparses them to {@link System#out}.
+     * </p>
      */
     public static void
     main(String[] args) throws Exception {
@@ -892,7 +892,9 @@ class Unparser {
         w.flush();
     }
 
-    /** Unparses the given {@link Java.CompilationUnit} to the given {@link Writer}. */
+    /**
+     * Unparses the given {@link Java.CompilationUnit} to the given {@link Writer}.
+     */
     public static void
     unparse(Java.CompilationUnit cu, Writer w) {
         Unparser uv = new Unparser(w);
@@ -905,11 +907,15 @@ class Unparser {
         this.pw  = new PrintWriter(new AutoIndentWriter(w), true);
     }
 
-    /** Flushes all generated code. */
+    /**
+     * Flushes all generated code.
+     */
     public void
     close() { this.pw.flush(); }
 
-    /** @param cu The compilation unit to unparse */
+    /**
+     * @param cu The compilation unit to unparse
+     */
     public void
     unparseCompilationUnit(Java.CompilationUnit cu) {
 
@@ -1068,8 +1074,8 @@ class Unparser {
     unparseAtom(Java.Atom a) { a.accept(this.atomUnparser); }
 
     /**
-     * Iff the <code>operand</code> is unnatural for the <code>unaryOperator</code>, enclose the
-     * <code>operand</code> in parentheses. Example: "a+b" is an unnatural operand for unary "!x".
+     * Iff the {@code operand} is unnatural for the {@code unaryOperator}, encloses the {@code operand} in parentheses.
+     * Example: "a+b" is an unnatural operand for unary "!x".
      *
      * @param unaryOperator ++x --x +x -x ~x !x x++ x--
      */
@@ -1080,8 +1086,8 @@ class Unparser {
     }
 
     /**
-     * Iff the <code>lhs</code> is unnatural for the <code>binaryOperator</code>, enclose the
-     * <code>lhs</code> in parentheses. Example: "a+b" is an unnatural lhs for operator "*".
+     * Iff the {@code lhs} is unnatural for the {@code binaryOperator}, encloses the {@code lhs} in parentheses.
+     * Example: "a+b" is an unnatural lhs for operator "*".
      *
      * @param binaryOperator = +=... ?: || && | ^ & == != < > <= >= instanceof << >> >>> + - * / % cast
      */
@@ -1091,10 +1097,9 @@ class Unparser {
         this.unparse(lhs, cmp < 0 || (cmp == 0 && Unparser.isLeftAssociate(binaryOperator)));
     }
 
-
     /**
-     * Iff the <code>rhs</code> is unnatural for the <code>binaryOperator</code>, enclose the
-     * <code>rhs</code> in parentheses. Example: "a+b" is an unnatural rhs for operator "*".
+     * Iff the {@code rhs} is unnatural for the {@code binaryOperator}, enclose the {@code rhs} in parentheses.
+     * Example: "a+b" is an unnatural rhs for operator "*".
      */
     private void
     unparseRhs(Java.Rvalue rhs, String binaryOperator) {
@@ -1110,19 +1115,17 @@ class Unparser {
     }
 
     /**
-     * Return true iff operator is right associative e.g. <code>a = b = c</code> evaluates as
-     * <code>a = (b = c)</code>.
+     * Returns {@code true} iff <var>operator</var> is right associative e.g. {@code a = b = c} evaluates as
+     * {@code a = (b = c)}.
      *
      * @return Return true iff operator is right associative
      */
     private static boolean
-    isRightAssociate(String op) { return Unparser.RIGHT_ASSOCIATIVE_OPERATORS.contains(op); }
+    isRightAssociate(String operator) { return Unparser.RIGHT_ASSOCIATIVE_OPERATORS.contains(operator); }
 
     /**
-     * Return true iff operator is left associative e.g. <code>a - b - c</code> evaluates as
-     * <code>(a - b) - c</code>.
-     *
-     * @return Return true iff operator is left associative
+     * Returns {@code true} iff <var>operator</var> is left associative e.g. {@code a - b - c} evaluates as
+     * {@code (a - b) - c}.
      */
     private static boolean
     isLeftAssociate(String op) { return Unparser.LEFT_ASSOCIATIVE_OPERATORS.contains(op); }
@@ -1130,9 +1133,9 @@ class Unparser {
     /**
      * Returns a value
      * <ul>
-     *   <li>&lt; 0 iff the <code>operator</code> has lower precedence than the <code>operand</code>
-     *   <li>==; 0 iff the <code>operator</code> has equal precedence than the <code>operand</code>
-     *   <li>&gt; 0 iff the <code>operator</code> has higher precedence than the <code>operand</code>
+     *   <li>&lt; 0 iff the {@code operator} has lower precedence than the {@code operand}</li>
+     *   <li>==; 0 iff the {@code operator} has equal precedence than the {@code operand}</li>
+     *   <li>&gt; 0 iff the {@code operator} has higher precedence than the {@code operand}</li>
      * </ul>
      */
     private static int

@@ -34,10 +34,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
-import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
@@ -50,44 +48,49 @@ import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.util.Traverser;
 
 /**
- * This {@link IExpressionEvaluator} is implemented by creating and compiling a temporary
- * compilation unit defining one class with one static method with one RETURN statement.
+ * This {@link IExpressionEvaluator} is implemented by creating and compiling a temporary compilation unit defining one
+ * class with one static method with one RETURN statement.
  * <p>
- * A number of "convenience constructors" exist that execute the set-up steps described for {@link
- * IExpressionEvaluator} instantly.
+ *   A number of "convenience constructors" exist that execute the set-up steps described for {@link
+ *   IExpressionEvaluator} instantly.
+ * </p>
  * <p>
- * If the parameter and return types of the expression are known at compile time, then a "fast"
- * expression evaluator can be instantiated through
- * {@link #createFastExpressionEvaluator(String, Class, String[], ClassLoader)}. Expression
- * evaluation is faster than through {@link #evaluate(Object[])}, because it is not done through
- * reflection but through direct method invocation.
+ *   If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator
+ *   can be instantiated through {@link #createFastExpressionEvaluator(String, Class, String[], ClassLoader)}.
+ *   Expression evaluation is faster than through {@link #evaluate(Object[])}, because it is not done through
+ *   reflection but through direct method invocation.
+ * </p>
  * <p>
- * Example:
+ *   Example:
+ * </p>
  * <pre>
- * public interface Foo {
- *     int bar(int a, int b);
- * }
- * ...
- * Foo f = (Foo) ExpressionEvaluator.createFastExpressionEvaluator(
- *     "a + b",                    // expression to evaluate
- *     Foo.class,                  // interface that describes the expression's signature
- *     new String[] { "a", "b" },  // the parameters' names
- *     (ClassLoader) null          // Use current thread's context class loader
- * );
- * System.out.println("1 + 2 = " + f.bar(1, 2)); // Evaluate the expression
+ *     public interface Foo {
+ *         int bar(int a, int b);
+ *     }
+ *     ...
+ *     Foo f = (Foo) ExpressionEvaluator.createFastExpressionEvaluator(
+ *         "a + b",                    // expression to evaluate
+ *         Foo.class,                  // interface that describes the expression's signature
+ *         new String[] { "a", "b" },  // the parameters' names
+ *         (ClassLoader) null          // Use current thread's context class loader
+ *     );
+ *     System.out.println("1 + 2 = " + f.bar(1, 2)); // Evaluate the expression
  * </pre>
- * Notice: The <code>interfaceToImplement</code> must either be declared <code>public</code>,
- * or with package scope in the root package (i.e. "no" package).
  * <p>
- * On my system (Intel P4, 2 GHz, MS Windows XP, JDK 1.4.1), expression "x + 1"
- * evaluates as follows:
+ *   Notice: The {@code interfaceToImplement} must either be declared {@code public}, or with package scope in the root
+ *   package (i.e. "no" package).
+ * </p>
+ * <p>
+ *   On my system (Intel P4, 2 GHz, MS Windows XP, JDK 1.4.1), expression "x + 1" evaluates as follows:
+ * </p>
  * <table>
  *   <tr><td></td><th>Server JVM</th><th>Client JVM</th></tr>
  *   <tr><td>Normal EE</td><td>23.7 ns</td><td>64.0 ns</td></tr>
  *   <tr><td>Fast EE</td><td>31.2 ns</td><td>42.2 ns</td></tr>
  * </table>
- * (How can it be that interface method invocation is slower than reflection for
- * the server JVM?)
+ * <p>
+ *   (How can it be that interface method invocation is slower than reflection for the server JVM?)
+ * </p>
  */
 public
 class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
@@ -95,11 +98,13 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     @Nullable private Class<?>[] optionalExpressionTypes;
 
     /**
-     * Equivalent to<pre>
-     * ExpressionEvaluator ee = new ExpressionEvaluator();
-     * ee.setExpressionType(expressionType);
-     * ee.setParameters(parameterNames, parameterTypes);
-     * ee.cook(expression);</pre>
+     * Equivalent to
+     * <pre>
+     *     ExpressionEvaluator ee = new ExpressionEvaluator();
+     *     ee.setExpressionType(expressionType);
+     *     ee.setParameters(parameterNames, parameterTypes);
+     *     ee.cook(expression);
+     * </pre>
      *
      * @see #ExpressionEvaluator()
      * @see ExpressionEvaluator#setExpressionType(Class)
@@ -115,13 +120,15 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     }
 
     /**
-     * Equivalent to<pre>
-     * ExpressionEvaluator ee = new ExpressionEvaluator();
-     * ee.setExpressionType(expressionType);
-     * ee.setParameters(parameterNames, parameterTypes);
-     * ee.setThrownExceptions(thrownExceptions);
-     * ee.setParentClassLoader(optionalParentClassLoader);
-     * ee.cook(expression);</pre>
+     * Equivalent to
+     * <pre>
+     *     ExpressionEvaluator ee = new ExpressionEvaluator();
+     *     ee.setExpressionType(expressionType);
+     *     ee.setParameters(parameterNames, parameterTypes);
+     *     ee.setThrownExceptions(thrownExceptions);
+     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.cook(expression);
+     * </pre>
      *
      * @see #ExpressionEvaluator()
      * @see ExpressionEvaluator#setExpressionType(Class)
@@ -147,15 +154,17 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     }
 
     /**
-     * Equivalent to<pre>
-     * ExpressionEvaluator ee = new ExpressionEvaluator();
-     * ee.setExpressionType(expressionType);
-     * ee.setParameters(parameterNames, parameterTypes);
-     * ee.setThrownExceptions(thrownExceptions);
-     * ee.setExtendedType(optionalExtendedType);
-     * ee.setImplementedTypes(implementedTypes);
-     * ee.setParentClassLoader(optionalParentClassLoader);
-     * ee.cook(expression);</pre>
+     * Equivalent to
+     * <pre>
+     *     ExpressionEvaluator ee = new ExpressionEvaluator();
+     *     ee.setExpressionType(expressionType);
+     *     ee.setParameters(parameterNames, parameterTypes);
+     *     ee.setThrownExceptions(thrownExceptions);
+     *     ee.setExtendedType(optionalExtendedType);
+     *     ee.setImplementedTypes(implementedTypes);
+     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.cook(expression);
+     * </pre>
      *
      * @see #ExpressionEvaluator()
      * @see ExpressionEvaluator#setExpressionType(Class)
@@ -192,17 +201,17 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      *   Equivalent to:
      * </p>
      * <pre>
-     * ExpressionEvaluator ee = new ExpressionEvaluator();
-     * ee.setClassName(className);
-     * ee.setExtendedType(optionalExtendedType);
-     * ee.setImplementedTypes(implementedTypes);
-     * ee.setStaticMethod(staticMethod);
-     * ee.setExpressionType(expressionType);
-     * ee.setMethodName(methodName);
-     * ee.setParameters(parameterNames, parameterTypes);
-     * ee.setThrownExceptions(thrownExceptions);
-     * ee.setParentClassLoader(optionalParentClassLoader);
-     * ee.cook(scanner);
+     *     ExpressionEvaluator ee = new ExpressionEvaluator();
+     *     ee.setClassName(className);
+     *     ee.setExtendedType(optionalExtendedType);
+     *     ee.setImplementedTypes(implementedTypes);
+     *     ee.setStaticMethod(staticMethod);
+     *     ee.setExpressionType(expressionType);
+     *     ee.setMethodName(methodName);
+     *     ee.setParameters(parameterNames, parameterTypes);
+     *     ee.setThrownExceptions(thrownExceptions);
+     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.cook(scanner);
      * </pre>
      *
      * @see IExpressionEvaluator
@@ -261,13 +270,17 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         super.setReturnTypes(returnTypes);
     }
 
-    /** @deprecated {@link #setExpressionType(Class)} should be called instead. */
+    /**
+     * @deprecated {@link #setExpressionType(Class)} should be called instead.
+     */
     @Override @Deprecated public final void
     setReturnType(Class<?> returnType) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
     }
 
-    /** @deprecated {@link #setExpressionTypes(Class[])} should be called instead. */
+    /**
+     * @deprecated {@link #setExpressionTypes(Class[])} should be called instead.
+     */
     @Override @Deprecated public final void
     setReturnTypes(Class<?>[] returnTypes) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
@@ -325,14 +338,6 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     }
 
     /**
-     * <pre>
-     * {@link IExpressionEvaluator} ee = {@link CompilerFactoryFactory}.{@link
-     * CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
-     * ICompilerFactory#newExpressionEvaluator() newExpressionEvaluator}();
-     * ee.setParentClassLoader(optionalParentClassLoader);
-     * return ee.{@link #createFastEvaluator createFastEvaluator}(expression, interfaceToImplement, parameterNames);
-     * </pre>
-     *
      * @deprecated Use {@link #createFastEvaluator(String, Class, String[])} instead:
      */
     @Deprecated public static Object
@@ -348,10 +353,6 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     }
 
     /**
-     * Notice: This method is not declared in {@link IExpressionEvaluator}, and is hence only available in <i>this</i>
-     * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
-     * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
-     *
      * @deprecated Use {@link #createFastEvaluator(Reader, Class, String[])} instead
      */
     @Deprecated public static Object
@@ -371,10 +372,6 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     }
 
     /**
-     * Notice: This method is not declared in {@link IExpressionEvaluator}, and is hence only available in <i>this</i>
-     * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
-     * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
-     *
      * @deprecated Use {@link #createFastEvaluator(Reader, Class, String[])} instead
      */
     @Deprecated public static Object
@@ -400,9 +397,8 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
      * at all "ambiguous names" in the expression (e.g. in "a.b.c.d()", the ambiguous name
      * is "a.b.c"), and then at the first components of the ambiguous name.
      * <ul>
-     *   <li>If any component starts with an upper-case letter, then ambiguous name is assumed to
-     *       be a type name.
-     *   <li>Otherwise, it is assumed to be a parameter name.
+     *   <li>If any component starts with an upper-case letter, then ambiguous name is assumed to be a type name.</li>
+     *   <li>Otherwise, it is assumed to be a parameter name.</li>
      * </ul>
      *
      * @see Scanner#Scanner(String, Reader)

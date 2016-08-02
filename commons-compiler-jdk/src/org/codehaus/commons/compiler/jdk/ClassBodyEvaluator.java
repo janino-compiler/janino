@@ -44,16 +44,16 @@ import org.codehaus.commons.io.MultiReader;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * To set up a {@link ClassBodyEvaluator} object, proceed as described for {@link
- * IClassBodyEvaluator}. Alternatively, a number of "convenience constructors" exist that execute
- * the described steps instantly.
+ * To set up a {@link ClassBodyEvaluator} object, proceed as described for {@link IClassBodyEvaluator}. Alternatively,
+ * a number of "convenience constructors" exist that execute the described steps instantly.
  * <p>
- * <b>Notice that this implementation of {@link IClassBodyEvaluator} is prone to "Java
- * injection", i.e. an application could get more than one class body compiled by passing a
- * bogus input document.</b>
+ *   <b>Notice that this implementation of {@link IClassBodyEvaluator} is prone to "Java injection", i.e. an
+ *   application could get more than one class body compiled by passing a bogus input document.</b>
+ * </p>
  * <p>
- * <b>Also notice that the parsing of leading IMPORT declarations is heuristic and has certain
- * limitations; see {@link #parseImportDeclarations(Reader)}.</b>
+ *   <b>Also notice that the parsing of leading IMPORT declarations is heuristic and has certain limitations; see
+ *   {@link #parseImportDeclarations(Reader)}.</b>
+ * </p>
  *
  * @see IClassBodyEvaluator
  */
@@ -65,7 +65,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     @Nullable private Class<?> optionalExtendedType;
     private Class<?>[]         implementedTypes = new Class[0];
 
-    /* {@code null} means "not yet cooked". */
+    /* {@code null} means "not yet cooked".
+    */
     @Nullable private Class<?> result;
 
     @Override public void
@@ -86,11 +87,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         this.optionalExtendedType = optionalExtendedType;
     }
 
-    /** @deprecated */
-    @Deprecated @Override public void
-    setExtendedType(@Nullable Class<?> optionalExtendedClass) {
-        this.setExtendedClass(optionalExtendedClass);
-    }
+    @Override public void
+    setExtendedType(@Nullable Class<?> optionalExtendedClass) { this.setExtendedClass(optionalExtendedClass); }
 
     @Override public void
     setImplementedInterfaces(Class<?>[] implementedTypes) {
@@ -98,11 +96,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         this.implementedTypes = implementedTypes;
     }
 
-    /** @deprecated */
-    @Deprecated @Override public void
-    setImplementedTypes(Class<?>[] implementedInterfaces) {
-        this.setImplementedInterfaces(implementedInterfaces);
-    }
+    @Override public void
+    setImplementedTypes(Class<?>[] implementedInterfaces) { this.setImplementedInterfaces(implementedInterfaces); }
 
     @Override public void
     cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException {
@@ -200,7 +195,9 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
             });
         }
 
-        /** Compile the generated compilation unit. */
+        /**
+         * Compiles the generated compilation unit.
+         */
         super.cook(optionalFileName, r);
 
         try {
@@ -214,7 +211,9 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         }
     }
 
-    /** @return The {@link Class} created by the preceding call to {@link #cook(Reader)} */
+    /**
+     * @return The {@link Class} created by the preceding call to {@link #cook(Reader)}
+     */
     @Override public Class<?>
     getClazz() {
         assert this.result != null;
@@ -222,13 +221,13 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /**
-     * Heuristically parse IMPORT declarations at the beginning of the character stream produced
-     * by the given {@link Reader}. After this method returns, all characters up to and including
-     * that last IMPORT declaration have been read from the {@link Reader}.
+     * Heuristically parses IMPORT declarations at the beginning of the character stream produced by the given {@link
+     * Reader}. After this method returns, all characters up to and including that last IMPORT declaration have been
+     * read from the {@link Reader}.
      * <p>
-     * This method does not handle comments and string literals correctly, i.e. if a pattern that
-     * looks like an IMPORT declaration appears within a comment or a string literal, it will be
-     * taken as an IMPORT declaration.
+     *   This method does not handle comments and string literals correctly, i.e. if a pattern that looks like an
+     *   IMPORT declaration appears within a comment or a string literal, it will be taken as an IMPORT declaration.
+     * </p>
      *
      * @param r A {@link Reader} that supports MARK, e.g. a {@link BufferedReader}
      * @return  The parsed imports, e.g. {@code { "java.util.*", "static java.util.Map.Entry" }}

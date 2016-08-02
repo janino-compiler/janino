@@ -26,7 +26,9 @@
 
 package org.codehaus.janino;
 
-/** Definitions of Java bytecode opcodes. */
+/**
+ * Definitions of Java bytecode opcodes.
+ */
 final
 class Opcode {
     private Opcode() {}
@@ -127,7 +129,10 @@ class Opcode {
     public static final byte I2L             = (byte) 133;
     public static final byte I2S             = (byte) 147;
     public static final byte IADD            = 96;
-    /** @see <a href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-6.html#jvms-6.5.iaload">JVMS 8</a> */
+
+    /**
+     * @see <a href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-6.html#jvms-6.5.iaload">JVMS 8</a>
+     */
     public static final byte IALOAD          = 46;
     public static final byte IAND            = 126;
     public static final byte IASTORE         = 79;
@@ -240,123 +245,229 @@ class Opcode {
 
     // Constants for the "OPCODE_PROPERTIES" array.
 
-    /** Special value for {@link #OPCODE_PROPERTIES} indicating that this element represents an invalid opcode. */
+    /**
+     * Special value for {@link #OPCODE_PROPERTIES} indicating that this element represents an invalid opcode.
+     */
     public static final short INVALID_OPCODE = -1;
 
-    /** Masks the 'stack delta' portion of {@link #OPCODE_PROPERTIES}. */
+    /**
+     * Masks the 'stack delta' portion of {@link #OPCODE_PROPERTIES}.
+     */
     public static final short SD_MASK = 31;
+
     /**
      * Indicates that the opcode represented by this element of {@link #OPCODE_PROPERTIES} reduces the operand stack
      * size by 4 elements.
      */
     public static final short SD_M4 = 0;
+
     /**
      * Indicates that the opcode represented by this element of {@link #OPCODE_PROPERTIES} reduces the operand stack
      * size by 3 elements.
      */
     public static final short SD_M3 = 1;
+
     /**
      * Indicates that the opcode represented by this element of {@link #OPCODE_PROPERTIES} reduces the operand stack
      * size by 2 elements.
      */
     public static final short SD_M2 = 2;
+
     /**
      * Indicates that the opcode represented by this element of {@link #OPCODE_PROPERTIES} reduces the operand stack
      * size by 1 element.
      */
     public static final short SD_M1 = 3;
+
     /**
      * Indicates that the opcode represented by this element of {@link #OPCODE_PROPERTIES} results in the same operand
      * stack size.
      */
     public static final short SD_P0 = 4;
+
     /**
      * Indicates that the opcode represented by this element of {@link #OPCODE_PROPERTIES} increases the operand stack
      * size by 1 element.
      */
     public static final short SD_P1 = 5;
+
     /**
      * Indicates that the opcode represented by this element of {@link #OPCODE_PROPERTIES} increases the operand stack
      * size by 2 elements.
      */
     public static final short SD_P2 = 6;
-    /** Indicates that the opcode represented by this element of {@link #OPCODE_PROPERTIES} clears the operand stack. */
+
+    /**
+     * Indicates that the opcode represented by this element of {@link #OPCODE_PROPERTIES} clears the operand stack.
+     */
     public static final short SD_0 = 7;
-    /** This element of {@link #OPCODE_PROPERTIES} represents the GETFIELD opcode. */
+
+    /**
+     * This element of {@link #OPCODE_PROPERTIES} represents the GETFIELD opcode.
+     */
     public static final short SD_GETFIELD = 9;
-    /** This element of {@link #OPCODE_PROPERTIES} represents the GETSTATIC opcode. */
+
+    /**
+     * This element of {@link #OPCODE_PROPERTIES} represents the GETSTATIC opcode.
+     */
     public static final short SD_GETSTATIC = 10;
-    /** This element of {@link #OPCODE_PROPERTIES} represents the PUTFIELD opcode. */
+
+    /**
+     * This element of {@link #OPCODE_PROPERTIES} represents the PUTFIELD opcode.
+     */
     public static final short SD_PUTFIELD = 11;
-    /** This element of {@link #OPCODE_PROPERTIES} represents the PUTSTATIC opcode. */
+
+    /**
+     * This element of {@link #OPCODE_PROPERTIES} represents the PUTSTATIC opcode.
+     */
     public static final short SD_PUTSTATIC = 12;
-    /** This element of {@link #OPCODE_PROPERTIES} represents the INVOKEVIRTUAL opcode. */
+
+    /**
+     * This element of {@link #OPCODE_PROPERTIES} represents the INVOKEVIRTUAL opcode.
+     */
     public static final short SD_INVOKEVIRTUAL = 13;
-    /** This element of {@link #OPCODE_PROPERTIES} represents the INVOKESPECIAL opcode. */
+
+    /**
+     * This element of {@link #OPCODE_PROPERTIES} represents the INVOKESPECIAL opcode.
+     */
     public static final short SD_INVOKESPECIAL = 14;
-    /** This element of {@link #OPCODE_PROPERTIES} represents the INVOKESTATIC opcode. */
+
+    /**
+     * This element of {@link #OPCODE_PROPERTIES} represents the INVOKESTATIC opcode.
+     */
     public static final short SD_INVOKESTATIC = 15;
-    /** This element of {@link #OPCODE_PROPERTIES} represents the INVOKEINTERFACE opcode. */
+
+    /**
+     * This element of {@link #OPCODE_PROPERTIES} represents the INVOKEINTERFACE opcode.
+     */
     public static final short SD_INVOKEINTERFACE = 16;
-    /** This element of {@link #OPCODE_PROPERTIES} represents the MULTIANEWARRAY opcode. */
+
+    /**
+     * This element of {@link #OPCODE_PROPERTIES} represents the MULTIANEWARRAY opcode.
+     */
     public static final short SD_MULTIANEWARRAY = 18;
 
     // Properties of the opcode's first operand.
 
-    /** Masks the 'first operand' portion of {@link #OPCODE_PROPERTIES}. */
+    /**
+     * Masks the 'first operand' portion of {@link #OPCODE_PROPERTIES}.
+     */
     public static final short OP1_MASK = 15 * 32;
-    /** The first operand of this opcode is a signed byte. */
+
+    /**
+     * The first operand of this opcode is a signed byte.
+     */
     public static final short OP1_SB =  1 * 32;
-    /** The first operand of this opcode is an unsigned byte. */
+
+    /**
+     * The first operand of this opcode is an unsigned byte.
+     */
     public static final short OP1_UB =  2 * 32;
-    /** The first operand of this opcode is a signed short. */
+
+    /**
+     * The first operand of this opcode is a signed short.
+     */
     public static final short OP1_SS =  3 * 32;
-    /** The first operand of this opcode is a one-byte constant pool index. */
+
+    /**
+     * The first operand of this opcode is a one-byte constant pool index.
+     */
     public static final short OP1_CP1 =  4 * 32;
-    /** The first operand of this opcode is a two-byte constant pool index. */
+
+    /**
+     * The first operand of this opcode is a two-byte constant pool index.
+     */
     public static final short OP1_CP2 =  5 * 32;
-    /** The first operand of this opcode is a one-byte local variable array index. */
+
+    /**
+     * The first operand of this opcode is a one-byte local variable array index.
+     */
     public static final short OP1_LV1 =  6 * 32;
-    /** The first operand of this opcode is a two-byte local variable array index. */
+
+    /**
+     * The first operand of this opcode is a two-byte local variable array index.
+     */
     public static final short OP1_LV2 =  7 * 32;
-    /** The first operand of this opcode is a two-byte branch offset. */
+
+    /**
+     * The first operand of this opcode is a two-byte branch offset.
+     */
     public static final short OP1_BO2 =  8 * 32;
-    /** The first operand of this opcode is a four-byte branch offset. */
+
+    /**
+     * The first operand of this opcode is a four-byte branch offset.
+     */
     public static final short OP1_BO4 =  9 * 32;
-    /** The first operand of this opcode is a signed byte. */
+
+    /**
+     * The first operand of this opcode is a signed byte.
+     */
     public static final short OP1_LOOKUPSWITCH = 10 * 32;
-    /** The first operand of this opcode is a signed byte. */
+
+    /**
+     * The first operand of this opcode is a signed byte.
+     */
     public static final short OP1_TABLESWITCH = 11 * 32;
-    /** The first operand of this opcode is a signed byte. */
+
+    /**
+     * The first operand of this opcode is a signed byte.
+     */
     public static final short OP1_JSR = 12 * 32;
 
     // Properties of the opcode's second operand.
 
-    /** Masks the 'second operand' portion of {@link #OPCODE_PROPERTIES}. */
+    /**
+     * Masks the 'second operand' portion of {@link #OPCODE_PROPERTIES}.
+     */
     public static final short OP2_MASK = 3 * 512;
-    /** The second operand of this opcode is a signed byte. */
+
+    /**
+     * The second operand of this opcode is a signed byte.
+     */
     public static final short OP2_SB = 1 * 512;
-    /** The second operand of this opcode is a signed short. */
+
+    /**
+     * The second operand of this opcode is a signed short.
+     */
     public static final short OP2_SS = 2 * 512;
 
     // Properties of the opcode's third operand.
 
-    /** Masks the 'third operand' portion of {@link #OPCODE_PROPERTIES}. */
+    /**
+     * Masks the 'third operand' portion of {@link #OPCODE_PROPERTIES}.
+     */
     public static final short OP3_MASK = 1 * 2048;
-    /** The third operand of this opcode is a signed byte. */
+
+    /**
+     * The third operand of this opcode is a signed byte.
+     */
     public static final short OP3_SB = 1 * 2048;
 
     // Properties of the opcode's 'implicit' operand.
 
-    /** Masks the 'implicit operand' portion of {@link #OPCODE_PROPERTIES}. */
+    /**
+     * Masks the 'implicit operand' portion of {@link #OPCODE_PROPERTIES}.
+     */
     public static final short IO_MASK = 7 * 4096;
-    /** The local variable wiht index 0 is the opcode's implicit operand. */
+
+    /**
+     * The local variable wiht index 0 is the opcode's implicit operand.
+     */
     public static final short IO_LV_0 = 1 * 4096;
-    /** The local variable wiht index 1 is the opcode's implicit operand. */
+
+    /**
+     * The local variable wiht index 1 is the opcode's implicit operand.
+     */
     public static final short IO_LV_1 = 2 * 4096;
-    /** The local variable wiht index 2 is the opcode's implicit operand. */
+
+    /**
+     * The local variable wiht index 2 is the opcode's implicit operand.
+     */
     public static final short IO_LV_2 = 3 * 4096;
-    /** The local variable wiht index 3 is the opcode's implicit operand. */
+
+    /**
+     * The local variable wiht index 3 is the opcode's implicit operand.
+     */
     public static final short IO_LV_3 = 4 * 4096;
 
     /**
@@ -365,7 +476,9 @@ class Opcode {
      */
     public static final short NO_FALLTHROUGH = (short) 32768;
 
-    /** The {@code n}th element of this array describes the properties of the JVM opcode {@code n}. */
+    /**
+     * The <var>n</var>th element of this array describes the properties of the JVM opcode <var>n</var>.
+     */
     public static final short[] OPCODE_PROPERTIES = {
         // CHECKSTYLE WrapAndIndent:OFF
 /*  0*/ /*NOP*/             Opcode.SD_P0,
@@ -589,7 +702,9 @@ class Opcode {
         // CHECKSTYLE WrapAndIndent:ON
     };
 
-    /** The {@code n}th element of this array describes the properties of the JVM opcode {@code WIDE n}. */
+    /**
+     * The <var>n</var>th element of this array describes the properties of the JVM opcode {@code WIDE n}.
+     */
     public static final short[] WIDE_OPCODE_PROPERTIES = new short[256];
     static {
         for (int i = 0; i < Opcode.WIDE_OPCODE_PROPERTIES.length; ++i) {

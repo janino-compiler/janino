@@ -36,9 +36,8 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.util.Traverser;
 
 /**
- * An example application for the {@link org.codehaus.janino.util.Traverser}:
- * Reads, scans and parses the files named on the command line and counts
- * several kinds of declarations.
+ * An example application for the {@link org.codehaus.janino.util.Traverser}: Reads, scans and parses the files named
+ * on the command line and counts several kinds of declarations.
  */
 public
 class DeclarationCounter extends Traverser<RuntimeException> {

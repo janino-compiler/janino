@@ -101,7 +101,7 @@ class Scanner {
     // Public Scanners that read from an InputStream
 
     /**
-     * Set up a scanner that reads tokens from the given {@link InputStream} in the platform default encoding.
+     * Sets up a scanner that reads tokens from the given {@link InputStream} in the platform default encoding.
      * <p>
      *   The <var>fileName</var> is solely used for reporting in thrown exceptions.
      * </p>
@@ -117,7 +117,7 @@ class Scanner {
     }
 
     /**
-     * Set up a scanner that reads tokens from the given {@link InputStream} with the given
+     * Sets up a scanner that reads tokens from the given {@link InputStream} with the given
      * <var>optionalEncoding</var> ({@code null} means platform default encoding).
      * <p>
      *   The <var>optionalFileName</var> is used for reporting errors during compilation and for source level
@@ -145,14 +145,14 @@ class Scanner {
     // Public Scanners that read from a Reader.
 
     /**
-     * Set up a scanner that reads tokens from the given {@link Reader}.
+     * Sets up a scanner that reads tokens from the given {@link Reader}.
      * <p>
-     *    The <var>optionalFileName</var> is used for reporting errors during compilation and for source level
-     *    debugging, and should name an existing file. If {@code null} is passed, and the system property {@code
-     *    org.codehaus.janino.source_debugging.enable} is set to "true", then a temporary file in {@code
-     *    org.codehaus.janino.source_debugging.dir} or the system's default temp dir is created in order to make the
-     *    source code available to a debugger.
-     *  </p>
+     *   The <var>optionalFileName</var> is used for reporting errors during compilation and for source level
+     *   debugging, and should name an existing file. If {@code null} is passed, and the system property {@code
+     *   org.codehaus.janino.source_debugging.enable} is set to "true", then a temporary file in {@code
+     *   org.codehaus.janino.source_debugging.dir} or the system's default temp dir is created in order to make the
+     *   source code available to a debugger.
+     * </p>
      */
     public
     Scanner(@Nullable String optionalFileName, Reader in) throws IOException {
@@ -308,7 +308,7 @@ class Scanner {
         C_PLUS_PLUS_STYLE_COMMENT,
 
         /**
-         * The token represents a C-style comment, like "<code>/* This is a C-style comment. &#42;/</code>", which may
+         * The token represents a C-style comment, like "{@code /* This is a C-style comment. &#42;/}", which may
          * span multiple lines. In the latter case, the enclosed line terminators appear exactly as in the input
          * stream.
          */
@@ -326,10 +326,14 @@ class Scanner {
         private final short            columnNumber;
         @Nullable private Location     location; // Created lazily.
 
-        /** The type of this token; legal values are the various public constant declared in this class. */
+        /**
+         * The type of this token; legal values are the various public constant declared in this class.
+         */
         public final TokenType type;
 
-        /** The text of the token exactly as it appears in the source code. */
+        /**
+         * The text of the token exactly as it appears in the source code.
+         */
         public final String value;
 
         public
@@ -362,7 +366,7 @@ class Scanner {
     private final StringBuilder sb = new StringBuilder();
 
     /**
-     * Produces and returns the next token. Notice that end-of-input is <i>not</i> signalized with a {@code null}
+     * Produces and returns the next token. Notice that end-of-input is <em>not</em> signalized with a {@code null}
      * product, but by an {@link TokenType#END_OF_INPUT}-type token.
      */
     public Token
@@ -714,7 +718,9 @@ class Scanner {
     private static boolean
     isBinaryDigit(int c) { return c == '0' || c == '1'; }
 
-    /** Scans the next literal character into a {@link StringBuilder}. */
+    /**
+     * Scans the next literal character into a {@link StringBuilder}.
+     */
     private void
     scanLiteralCharacter() throws CompileException, IOException {
         if (this.peek() == -1) throw new CompileException("EOF in literal", this.location());
@@ -893,7 +899,9 @@ class Scanner {
     private short                  nextCharLineNumber;
     private short                  nextCharColumnNumber;
 
-    /** Line number of the previously produced token (typically starting at one). */
+    /**
+     * Line number of the previously produced token (typically starting at one).
+     */
     private short tokenLineNumber;
 
     /**
@@ -903,6 +911,9 @@ class Scanner {
     private short tokenColumnNumber;
 
     private static final Set<String> JAVA_KEYWORDS = new HashSet<String>(Arrays.asList(
+
+        // SUPPRESS CHECKSTYLE WrapMethod:16
+
         "abstract", "assert",
         "boolean", "break", "byte",
         "case", "catch", "char", "class", "const", "continue",
@@ -922,6 +933,8 @@ class Scanner {
     ));
 
     private static final Set<String> JAVA_OPERATORS = new HashSet<String>(Arrays.asList(
+
+        // SUPPRESS CHECKSTYLE WrapMethod:9
 
         // Separators:
         "(", ")", "{", "}", "[", "]", ";", ",", ".", "@",

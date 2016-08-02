@@ -368,7 +368,9 @@ class ClassFileIClass extends IClass {
         };
     }
 
-    /** Resolves all classes referenced by this class file. */
+    /**
+     * Resolves all classes referenced by this class file.
+     */
     public void
     resolveAllClasses() throws ClassNotFoundException {
         for (short i = 0; i < this.classFile.getConstantPoolSize(); ++i) {
@@ -389,7 +391,9 @@ class ClassFileIClass extends IClass {
         }
     }
 
-    /** @param index Index of the CONSTANT_Class_info to resolve (JVMS 4.4.1) */
+    /**
+     * @param index Index of the CONSTANT_Class_info to resolve (JVMS 4.4.1)
+     */
     private IClass
     resolveClass(short index) throws ClassNotFoundException {
         ClassFileIClass.LOGGER.entering(null, "resolveClass", index);
@@ -427,8 +431,8 @@ class ClassFileIClass extends IClass {
     }
 
     /**
-     * Turn a {@link ClassFile.MethodInfo} into an {@link IInvocable}. This includes the checking and the
-     * removal of the magic first parameter of an inner class constructor.
+     * Turns a {@link ClassFile.MethodInfo} into an {@link IInvocable}. This includes the checking and the removal of
+     * the magic first parameter of an inner class constructor.
      *
      * @param methodInfo
      * @throws ClassNotFoundException
@@ -563,7 +567,7 @@ class ClassFileIClass extends IClass {
 
         // Determine optional "constant value" of the field (JLS7 15.28, bullet 14). If a field has a "ConstantValue"
         // attribute, we assume that it has a constant value. Notice that this assumption is not always correct,
-        // because typical Java&trade; compilers do not generate a "ConstantValue" attribute for fields like
+        // because typical Java compilers do not generate a "ConstantValue" attribute for fields like
         // "int RED = 0", because "0" is the default value for an integer field.
         ClassFile.ConstantValueAttribute cva = null;
         for (ClassFile.AttributeInfo ai : fieldInfo.getAttributes()) {

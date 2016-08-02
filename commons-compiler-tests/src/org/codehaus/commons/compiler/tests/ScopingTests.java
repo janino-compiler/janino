@@ -42,7 +42,9 @@ import util.TestUtil;
 
 // CHECKSTYLE JavadocMethod:OFF
 
-/** Tests for the handling of 'scopes' within JANINO. */
+/**
+ * Tests for the handling of 'scopes' within JANINO.
+ */
 @RunWith(Parameterized.class) public
 class ScopingTests {
     private final ICompilerFactory compilerFactory;

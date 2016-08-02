@@ -31,7 +31,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/** Stores a stream of bytes in a named resource. */
+/**
+ * Stores a stream of bytes in a named resource.
+ */
 public abstract
 class FileResourceCreator implements ResourceCreator {
 
@@ -52,6 +54,8 @@ class FileResourceCreator implements ResourceCreator {
     @Override public final boolean
     deleteResource(String resourceName) { return this.getFile(resourceName).delete(); }
 
-    /** @return The file into which the contents is written */
+    /**
+     * @return The file into which the contents is written
+     */
     protected abstract File getFile(String resourceName);
 }

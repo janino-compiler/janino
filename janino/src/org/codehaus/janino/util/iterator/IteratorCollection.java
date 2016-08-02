@@ -34,21 +34,25 @@ import java.util.List;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link java.util.Collection} that lazily reads its elements from an
- * {@link java.util.Iterator}.
+ * A {@link java.util.Collection} that lazily reads its elements from an {@link java.util.Iterator}.
  * <p>
- * In other words, you can call {@link #iterator()} as often as you want, but the
- * {@link IteratorCollection} will iterate over its delegate only once.
+ *   In other words, you can call {@link #iterator()} as often as you want, but the {@link IteratorCollection} will
+ *   iterate over its delegate only once.
+ * </p>
  *
  * @param <T> The element type of the iterator and the collection
  */
 public
 class IteratorCollection<T> extends AbstractCollection<T> {
 
-    /** The delegate. */
+    /**
+     * The delegate.
+     */
     private final Iterator<T> iterator;
 
-    /** Lazily-filled collection of the elements delivered by the delegate. */
+    /**
+     * Lazily-filled collection of the elements delivered by the delegate.
+     */
     private final List<T> elements = new ArrayList<T>();
 
     public

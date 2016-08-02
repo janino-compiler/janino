@@ -30,7 +30,9 @@ import java.util.Map;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/** This {@link ClassLoader} allows for the loading of a set of Java&trade; classes provided in class file format. */
+/**
+ * This {@link ClassLoader} allows for the loading of a set of Java classes provided in class file format.
+ */
 public
 class ByteArrayClassLoader extends ClassLoader {
 
@@ -40,9 +42,11 @@ class ByteArrayClassLoader extends ClassLoader {
      * @param classes String className =&gt; byte[] data
      */
     public
-    ByteArrayClassLoader(Map<String /*className*/, byte[] /*data*/> classes) { this.classes = classes; }
+    ByteArrayClassLoader(Map<String, byte[]> classes) { this.classes = classes; }
 
-    /** @see #ByteArrayClassLoader(Map) */
+    /**
+     * @see #ByteArrayClassLoader(Map)
+     */
     public
     ByteArrayClassLoader(Map<String /*className*/, byte[] /*data*/> classes, ClassLoader parent) {
         super(parent);
@@ -52,9 +56,9 @@ class ByteArrayClassLoader extends ClassLoader {
     /**
      * Implements {@link ClassLoader#findClass(String)}.
      * <p>
-     * Notice that, although nowhere documented, no more than one thread at a time calls this
-     * method, because {@link ClassLoader#loadClass(java.lang.String)} is
-     * <code>synchronized</code>.
+     *   Notice that, although nowhere documented, no more than one thread at a time calls this method, because {@link
+     *   ClassLoader#loadClass(java.lang.String)} is {@code synchronized}.
+     * </p>
      */
     @Override protected Class<?>
     findClass(@Nullable String name) throws ClassNotFoundException {

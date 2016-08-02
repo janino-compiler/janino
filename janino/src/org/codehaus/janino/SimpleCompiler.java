@@ -51,9 +51,8 @@ import org.codehaus.janino.Visitor.TypeVisitor;
 import org.codehaus.janino.util.ClassFile;
 
 /**
- * To set up a {@link SimpleCompiler} object, proceed as described for {@link ISimpleCompiler}.
- * Alternatively, a number of "convenience constructors" exist that execute the described steps
- * instantly.
+ * To set up a {@link SimpleCompiler} object, proceed as described for {@link ISimpleCompiler}. Alternatively, a number
+ * of "convenience constructors" exist that execute the described steps instantly.
  */
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
@@ -111,9 +110,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     /**
-     * Equivalent to<pre>
-     * SimpleCompiler sc = new SimpleCompiler();
-     * sc.cook(optionalFileName, in);</pre>
+     * Equivalent to
+     * <pre>
+     *     SimpleCompiler sc = new SimpleCompiler();
+     *     sc.cook(optionalFileName, in);
+     * </pre>
      *
      * @see #SimpleCompiler()
      * @see Cookable#cook(String, Reader)
@@ -124,9 +125,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     /**
-     * Equivalent to<pre>
-     * SimpleCompiler sc = new SimpleCompiler();
-     * sc.cook(optionalFileName, is);</pre>
+     * Equivalent to
+     * <pre>
+     *     SimpleCompiler sc = new SimpleCompiler();
+     *     sc.cook(optionalFileName, is);
+     * </pre>
      *
      * @see #SimpleCompiler()
      * @see Cookable#cook(String, InputStream)
@@ -137,9 +140,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     /**
-     * Equivalent to<pre>
-     * SimpleCompiler sc = new SimpleCompiler();
-     * sc.cook(fileName);</pre>
+     * Equivalent to
+     * <pre>
+     *     SimpleCompiler sc = new SimpleCompiler();
+     *     sc.cook(fileName);
+     * </pre>
      *
      * @see #SimpleCompiler()
      * @see Cookable#cookFile(String)
@@ -150,10 +155,12 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     /**
-     * Equivalent to<pre>
-     * SimpleCompiler sc = new SimpleCompiler();
-     * sc.setParentClassLoader(optionalParentClassLoader);
-     * sc.cook(scanner);</pre>
+     * Equivalent to
+     * <pre>
+     *     SimpleCompiler sc = new SimpleCompiler();
+     *     sc.setParentClassLoader(optionalParentClassLoader);
+     *     sc.cook(scanner);
+     * </pre>
      *
      * @see #SimpleCompiler()
      * @see #setParentClassLoader(ClassLoader)
@@ -255,14 +262,18 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         this.optionalWarningHandler = optionalWarningHandler;
     }
 
-    /** Wraps a reflection {@link Class} in a {@link Java.Type} object. */
+    /**
+     * Wraps a reflection {@link Class} in a {@link Java.Type} object.
+     */
     @Nullable protected Java.Type
     optionalClassToType(final Location location, @Nullable final Class<?> clazz) {
         if (clazz == null) return null;
         return this.classToType(location, clazz);
     }
 
-    /** Wraps a reflection {@link Class} in a {@link Java.Type} object. */
+    /**
+     * Wraps a reflection {@link Class} in a {@link Java.Type} object.
+     */
     protected Java.Type
     classToType(final Location location, final Class<?> clazz) {
 
@@ -365,7 +376,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 //    private final Map<Class, IClass> classes = new HashMap();
 
-    /** Converts an array of {@link Class}es into an array of{@link Java.Type}s. */
+    /**
+     * Converts an array of {@link Class}es into an array of{@link Java.Type}s.
+     */
     protected Java.Type[]
     classesToTypes(Location location, Class<?>[] classes) {
         Java.Type[] types = new Java.Type[classes.length];
@@ -376,8 +389,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     /**
-     * Compile the given compilation unit. (A "compilation unit" is typically the contents
-     * of a Java&trade; source file.)
+     * Compiles the given compilation unit. (A "compilation unit" is typically the contents of a Java source file.)
      *
      * @param compilationUnit   The parsed compilation unit
      * @return                  The {@link ClassLoader} into which the compiled classes were defined
@@ -424,7 +436,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         throw new IllegalStateException("Must only be called after \"cook()\"");
     }
 
-    /** @throws IllegalStateException This {@link Cookable} is already cooked */
+    /**
+     * @throws IllegalStateException This {@link Cookable} is already cooked
+     */
     protected void
     assertNotCooked() {
         if (this.classLoaderIClassLoader != null) throw new IllegalStateException("Already cooked");

@@ -57,8 +57,8 @@ import util.TestUtil;
 // CHECKSTYLE JavadocMethod:OFF
 
 /**
- * Tests for JANINO's {@link ExpressionEvaluator}, {@link ScriptEvaluator}, {@link ClassBodyEvaluator} and
- * {@link SimpleCompiler}.
+ * Tests for JANINO's {@link ExpressionEvaluator}, {@link ScriptEvaluator}, {@link ClassBodyEvaluator} and {@link
+ * SimpleCompiler}.
  */
 @RunWith(Parameterized.class) public
 class EvaluatorTests extends JaninoTestSuite {
@@ -293,7 +293,6 @@ class EvaluatorTests extends JaninoTestSuite {
             sc.getClassLoader().loadClass("test.simple.L0$L1$L2"),
         };
 
-
         Method[] methods  = exp[0].getMethods();
         Object   inst     = exp[0].newInstance();
         int      numTests = 0;
@@ -332,7 +331,6 @@ class EvaluatorTests extends JaninoTestSuite {
             + "    }\n"
             + "}"
         );
-
 
         Class<?> c = sc.getClassLoader().loadClass("test.Test");
         Object   o = c.newInstance();
@@ -528,21 +526,21 @@ class EvaluatorTests extends JaninoTestSuite {
 
         /* == expected contant pool ==
         ( 0) fake entry
-        [ 1] ConstantUtf8Info			"test/Test"
-        [ 2] ConstantClassInfo			1
-        [ 3] ConstantUtf8Info			"java/lang/Object"
-        [ 4] ConstantClassInfo			3
-        [ 5] ConstantUtf8Info			"<init>"
-        [ 6] ConstantUtf8Info			"()V"
-        [ 7] ConstantNameAndTypeInfo	5
-        [ 8] ConstantMethodrefInfo		4
-        [ 9] ConstantUtf8Info			"Code"
-        [10] ConstantUtf8Info			"_v0"
-        [11] ConstantUtf8Info			"Z"
-        [12] ConstantUtf8Info			"_v1"
-        [13] ConstantUtf8Info			"_v2"
+        [ 1] ConstantUtf8Info        "test/Test"
+        [ 2] ConstantClassInfo       1
+        [ 3] ConstantUtf8Info        "java/lang/Object"
+        [ 4] ConstantClassInfo       3
+        [ 5] ConstantUtf8Info        "<init>"
+        [ 6] ConstantUtf8Info        "()V"
+        [ 7] ConstantNameAndTypeInfo 5
+        [ 8] ConstantMethodrefInfo   4
+        [ 9] ConstantUtf8Info        "Code"
+        [10] ConstantUtf8Info        "_v0"
+        [11] ConstantUtf8Info        "Z"
+        [12] ConstantUtf8Info        "_v1"
+        [13] ConstantUtf8Info        "_v2"
         ...
-        [65534] ConstantUtf8Info	"_v65523"
+        [65534] ConstantUtf8Info     "_v65523"
         */
 
         final int[]     repetitionss = new int[]     { 1,    100,  65524, 65525 };
@@ -763,7 +761,6 @@ class EvaluatorTests extends JaninoTestSuite {
 
     }
 
-
     @Test public void
     testInstanceOf() throws Exception {
         String test = (
@@ -885,7 +882,6 @@ class EvaluatorTests extends JaninoTestSuite {
         ((Runnable) res).run();
     }
 
-
     @Test public void
     testNamedFieldInitializedByCapture() throws Exception {
         ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
@@ -916,7 +912,6 @@ class EvaluatorTests extends JaninoTestSuite {
         Object   res      = get.invoke(t, new Object[0]);
         ((Runnable) res).run();
     }
-
 
     @Test public void
     testAbstractGrandParentsWithCovariantReturns() throws Exception {

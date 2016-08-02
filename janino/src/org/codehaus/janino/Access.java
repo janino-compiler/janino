@@ -26,20 +26,30 @@
 
 package org.codehaus.janino;
 
-/** Return value for {@link IClass.IMember#getAccess}. */
+/**
+ * Return value for {@link IClass.IMember#getAccess}.
+ */
 public
 enum Access {
 
-    /** Representation of PRIVATE accessibility. */
+    /**
+     * Representation of PRIVATE accessibility.
+     */
     PRIVATE,
 
-    /** Representation of PROTECTED accessibility. */
+    /**
+     * Representation of PROTECTED accessibility.
+     */
     PROTECTED,
 
-    /** Representation of DEFAULT accessibility. */
+    /**
+     * Representation of DEFAULT accessibility.
+     */
     DEFAULT,
 
-    /** Representation of PUBLIC accessibility. */
+    /**
+     * Representation of PUBLIC accessibility.
+     */
     PUBLIC,
 
     ;

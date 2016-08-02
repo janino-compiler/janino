@@ -62,24 +62,24 @@ import org.codehaus.janino.util.resource.PathResourceFinder;
 
 /**
  * Reads a set of compilation units from the file system and searches it for specific
- * Java&trade; constructs, e.g. invocations of a particular method.
+ * Java constructs, e.g. invocations of a particular method.
  *
  * Usage:
  * <pre>
  * java org.codehaus.janino.JGrep \
- *           [ -dirs <i>directory-name-patterns</i> ] \
- *           [ -files <i>file-name-patterns</i> ] \
- *           { <i>directory-path</i> } \
- *           -method-invocation <i>class.method(arg-types)</i>
+ *           [ -dirs <em>directory-name-patterns</em> ] \
+ *           [ -files <em>file-name-patterns</em> ] \
+ *           { <em>directory-path</em> } \
+ *           -method-invocation <em>class.method(arg-types)</em>
  * java org.codehaus.janino.JGrep -help
  * </pre>
  *
- * If "-dirs" is not given, then all <i>directory-path</i>es are scanned for files.
- * The <i>directory-name-patterns</i> work as described in
+ * If "-dirs" is not given, then all <em>directory-path</em>es are scanned for files.
+ * The <em>directory-name-patterns</em> work as described in
  * {@link org.codehaus.janino.util.StringPattern#parseCombinedPattern(String)}.
  * <p>
  * If "-files" is not given, then all files ending in ".java" are read. The
- * <i>file-name-patterns</i> work as described in
+ * <em>file-name-patterns</em> work as described in
  * {@link org.codehaus.janino.util.StringPattern#parseCombinedPattern(String)}.
  */
 public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
@@ -89,7 +89,9 @@ class JGrep {
 
     private final List<UnitCompiler> parsedCompilationUnits = new ArrayList<UnitCompiler>();
 
-    /** Command line interface. */
+    /**
+     * Command line interface.
+     */
     public static void
     main(String[] args) {
         int idx = 0;
@@ -133,7 +135,8 @@ class JGrep {
             {
                 System.err.println("Unexpected command-line argument \"" + arg + "\", try \"-help\".");
                 System.exit(1);
-                return; /* NEVER REACHED */
+                return; /* NEVER REACHED
+                */
             }
         }
 
@@ -145,7 +148,8 @@ class JGrep {
             if (idx == first) {
                 System.err.println("No <directory-path>es given, try \"-help\".");
                 System.exit(1);
-                return; /* NEVER REACHED */
+                return; /* NEVER REACHED
+                */
             }
             rootDirectories = new File[idx - first];
             for (int i = first; i < idx; ++i) rootDirectories[i - first] = new File(args[i]);
@@ -170,7 +174,8 @@ class JGrep {
                 } catch (Exception ex) {
                     System.err.println("Parsing method invocation pattern \"" + args[idx] + "\": " + ex.getMessage());
                     System.exit(1);
-                    return; /* NEVER REACHED */
+                    return; /* NEVER REACHED
+                    */
                 }
                 while (idx < args.length - 1) {
                     arg = args[idx + 1];
@@ -192,7 +197,8 @@ class JGrep {
                                 + ex.getMessage()
                             );
                             System.exit(1);
-                            return; /* NEVER REACHED */
+                            return; /* NEVER REACHED
+                            */
                         }
                     } else
                     if (arg.startsWith("action:")) {
@@ -207,7 +213,8 @@ class JGrep {
                                 + ex.getMessage()
                             );
                             System.exit(1);
-                            return; /* NEVER REACHED */
+                            return; /* NEVER REACHED
+                            */
                         }
                     } else
                     {
@@ -220,7 +227,8 @@ class JGrep {
             {
                 System.err.println("Unexpected command-line argument \"" + arg + "\", try \"-help\".");
                 System.exit(1);
-                return; /* NEVER REACHED */
+                return; /* NEVER REACHED
+                */
             }
         }
 
@@ -385,23 +393,31 @@ class JGrep {
         }
     }
 
-    /** A predicate that examines a method invocation. */
+    /**
+     * A predicate that examines a method invocation.
+     */
     interface MethodInvocationPredicate {
 
-        /** @return Whether the method incovation met some criterion */
+        /**
+         * @return Whether the method incovation met some criterion
+         */
         boolean evaluate(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws Exception;
     }
 
-    /** An entity that does something with a method invocation, e.g. report where it occurred. */
+    /**
+     * An entity that does something with a method invocation, e.g. report where it occurred.
+     */
     interface MethodInvocationAction {
 
-        /** Executes some action for a method invocation. */
+        /**
+         * Executes some action for a method invocation.
+         */
         void execute(UnitCompiler uc, Java.Invocation invocation, IClass.IMethod method) throws Exception;
     }
 
     /**
-     * @return Whether the fully qualified {@code typeName} matches the {@code pattern}, or, iff the pattern does not
-     *         contain a period, the simple type name of {@code typeName} matches the {@code pattern}
+     * @return Whether the fully qualified <var>typeName</var> matches the <var>pattern</var>, or, iff the pattern does
+     *         not contain a period, the simple type name of <var>typeName</var> matches the <var>pattern</var>
      */
     static boolean
     typeMatches(@Nullable String pattern, String typeName) {
@@ -604,9 +620,11 @@ class JGrep {
     }
 
     /**
-     * Read one compilation unit from a file and parse it.
+     * Reads one compilation unit from a file and parse it.
      * <p>
-     * The <code>inputStream</code> is closed before the method returns.
+     *   The {@code inputStream} is closed before the method returns.
+     * </p>
+     *
      * @return the parsed compilation unit
      */
     private Java.CompilationUnit
@@ -628,17 +646,28 @@ class JGrep {
     }
 
     /**
-     * Construct the name of a file that could store the byte code of the class with the given
-     * name.
+     * Constructs the name of a file that could store the byte code of the class with the given name.
      * <p>
-     * If <code>optionalDestinationDirectory</code> is non-null, the returned path is the
-     * <code>optionalDestinationDirectory</code> plus the package of the class (with dots replaced
-     * with file separators) plus the class name plus ".class". Example:
+     *   If {@code optionalDestinationDirectory} is non-null, the returned path is the
+     *   <var>optionalDestinationDirectory</var> plus the package of the class (with dots replaced with file
+     *   separators) plus the class name plus ".class".
+     * </p>
+     * <p>
+     *   Example:
+     * </p>
+     * <pre>
      * "destdir/pkg1/pkg2/Outer$Inner.class"
+     * </pre>
      * <p>
-     * If <code>optionalDestinationDirectory</code> is null, the returned path is the
-     * directory of the <code>sourceFile</code> plus the class name plus ".class". Example:
+     *   If <var>optionalDestinationDirectory</var> is null, the returned path is the directory of the
+     *   <var>sourceFile</var> plus the class name plus ".class".
+     * </p>
+     * <p>
+     *   Example:
+     * </p>
+     * <pre>
      * "srcdir/Outer$Inner.class"
+     * </pre>
      *
      * @param className                    E.g. "pkg1.pkg2.Outer$Inner"
      * @param sourceFile                   E.g. "srcdir/Outer.java"
@@ -658,16 +687,17 @@ class JGrep {
     }
 
     /**
-     * A specialized {@link IClassLoader} that loads {@link IClass}es from the following
-     * sources:
+     * A specialized {@link IClassLoader} that loads {@link IClass}es from the following sources:
      * <ol>
      *   <li>An already-parsed compilation unit
      *   <li>A class file in the output directory (if existant and younger than source file)
      *   <li>A source file in any of the source path directories
      *   <li>The parent class loader
      * </ol>
-     * Notice that the {@link JGrepIClassLoader} is an inner class of {@link JGrep} and
-     * heavily uses {@link JGrep}'s members.
+     * <p>
+     *   Notice that the {@link JGrepIClassLoader} is an inner class of {@link JGrep} and heavily uses {@link JGrep}'s
+     *   members.
+     * </p>
      */
     private
     class JGrepIClassLoader extends IClassLoader {
@@ -680,7 +710,9 @@ class JGrep {
             super.postConstruct();
         }
 
-        /** @param type Field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;" */
+        /**
+         * @param type Field descriptor of the {@IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
+         */
         @Override @Nullable protected IClass
         findIClass(final String type) {
             JGrep.LOGGER.entering(null, "findIClass", type);

@@ -36,16 +36,19 @@ import java.util.StringTokenizer;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s, does not load byte code, but reads Java&trade; source
+ * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s, does not load byte code, but reads Java source
  * code and then scans, parses, compiles and loads it into the virtual machine.
  * <p>
- * As with any {@link ClassLoader}, it is not possible to "update" classes after they've been loaded. The way to
- * achieve this is to give up on the {@link AbstractJavaSourceClassLoader} and create a new one.
+ *   As with any {@link ClassLoader}, it is not possible to "update" classes after they've been loaded. The way to
+ *   achieve this is to give up on the {@link AbstractJavaSourceClassLoader} and create a new one.
+ * </p>
  */
 public abstract
 class AbstractJavaSourceClassLoader extends ClassLoader {
 
-    /** @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain) */
+    /**
+     * @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain)
+     */
     @Nullable protected ProtectionDomainFactory optionalProtectionDomainFactory;
 
     public
@@ -54,10 +57,14 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
     public
     AbstractJavaSourceClassLoader(ClassLoader parentClassLoader) { super(parentClassLoader); }
 
-    /** @param sourcePath The sequence of directories to search for Java&trade; source files */
+    /**
+     * @param sourcePath The sequence of directories to search for Java source files
+     */
     public abstract void setSourcePath(File[] sourcePath);
 
-    /** @param optionalCharacterEncoding if {@code null}, use platform default encoding */
+    /**
+     * @param optionalCharacterEncoding if {@code null}, use platform default encoding
+     */
     public abstract void setSourceFileCharacterEncoding(@Nullable String optionalCharacterEncoding);
 
     /**
@@ -67,25 +74,32 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
      */
     public abstract void setDebuggingInfo(boolean lines, boolean vars, boolean source);
 
-    /** @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain) */
+    /**
+     * @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain)
+     */
     public final void
     setProtectionDomainFactory(@Nullable ProtectionDomainFactory optionalProtectionDomainFactory) {
         this.optionalProtectionDomainFactory = optionalProtectionDomainFactory;
     }
 
-    /** @see AbstractJavaSourceClassLoader#setProtectionDomainFactory */
+    /**
+     * @see AbstractJavaSourceClassLoader#setProtectionDomainFactory
+     */
     public
     interface ProtectionDomainFactory {
 
-        /** @param sourceResourceName E.g. 'pkg1/pkg2/Outer.java' */
+        /**
+         * @param sourceResourceName E.g. "pkg1/pkg2/Outer.java"
+         */
         ProtectionDomain getProtectionDomain(String sourceResourceName);
     }
 
     /**
-     * Read Java&trade; source code for a given class name, scan, parse, compile and load it into the virtual machine,
+     * Reads Java source code for a given class name, scan, parse, compile and load it into the virtual machine,
      * and invoke its "main()" method with the given arguments.
      * <p>
-     * Usage is as follows:
+     *   Usage is as follows:
+     * </p>
      * <pre>
      *   java {@link AbstractJavaSourceClassLoader} [ <i>option</i> ] ... <i>class-name</i> [ <i>argument</i> ] ...
      *

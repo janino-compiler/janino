@@ -227,7 +227,7 @@ class ReflectionIClass extends IClass {
     getClazz() { return this.clazz; }
 
     /**
-     * @return E.g. "int", "int[][]", "pkg1.pkg2.Outer$Inner[]"
+     * @return E.g. {@code "int"}, {@code "int[][]"}, {@code "pkg1.pkg2.Outer$Inner[]"}
      */
     @Override public String
     toString() {
@@ -385,15 +385,17 @@ class ReflectionIClass extends IClass {
          * This implementation of {@link IClass.IField#getConstantValue()} is not completely correct:
          * <ul>
          *   <li>
-         *   It treats non-static fields as non-constant
+         *     It treats non-static fields as non-constant
+         *   </li>
          *   <li>
-         *   Even fields with a <i>non-constant</i> initializer are identified
-         *   as constant. (The value of that field may be different in a
-         *   different JVM instance -- the classical example is
-         *   {@link java.io.File#separator}.)
+         *     Even fields with a <em>non-constant</em> initializer are identified as constant. (The value of that
+         *     field may be different in a different JVM instance -- the classical example is {@link
+         *     java.io.File#separator}.)
+         *   </li>
          * </ul>
          * <p>
          *   Notice that enum constants are <em>not</em> constant expression (despite the similarity of names).
+         * </p>
          */
         @Override public Object
         getConstantValue() throws CompileException {
@@ -436,7 +438,9 @@ class ReflectionIClass extends IClass {
         return iClass;
     }
 
-    /** @see #classToIClass(Class) */
+    /**
+     * @see #classToIClass(Class)
+     */
     private IClass[]
     classesToIClasses(Class<?>[] cs) {
 

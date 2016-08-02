@@ -42,14 +42,18 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * This {@link IExpressionEvaluator} is implemented by creating and compiling a temporary compilation unit defining one
  * class with one static method with one RETURN statement.
  * <p>
- * A number of "convenience constructors" exist that execute the set-up steps described for {@link
- * IExpressionEvaluator} instantly.
+ *   A number of "convenience constructors" exist that execute the set-up steps described for {@link
+ *   IExpressionEvaluator} instantly.
+ * </p>
  * <p>
- * If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator can
- * be instantiated through {@link #createFastEvaluator(String, Class, String[])}. Expression evaluation is faster than
- * through {@link #evaluate(Object[])}, because it is not done through reflection but through direct method invocation.
+ *   If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator
+ *   can be instantiated through {@link #createFastEvaluator(String, Class, String[])}. Expression evaluation is faster
+ *   than through {@link #evaluate(Object[])}, because it is not done through reflection but through direct method
+ *   invocation.
+ * </p>
  * <p>
- * Example:
+ *   Example:
+ * </p>
  * <pre>
  * public interface Foo {
  *     int bar(int a, int b);
@@ -63,18 +67,21 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * );
  * System.out.println("1 + 2 = " + f.bar(1, 2)); // Evaluate the expression
  * </pre>
- * Notice: The {@code interfaceToImplement} must either be declared {@code public},
- * or with package scope in the root package (i.e. "no" package).
  * <p>
- * On my system (Intel P4, 2 GHz, MS Windows XP, JDK 1.4.1), expression "x + 1"
- * evaluates as follows:
+ *   Notice: The <var>interfaceToImplement</var> must either be declared <var>public</var>, or with package scope in
+ *   the root package (i.e. "no" package).
+ * </p>
+ * <p>
+ *   On my system (Intel P4, 2 GHz, MS Windows XP, JDK 1.4.1), expression "x + 1" evaluates as follows:
+ * </p>
  * <table>
  *   <tr><td></td><th>Server JVM</th><th>Client JVM</th></tr>
  *   <tr><td>Normal EE</td><td>23.7 ns</td><td>64.0 ns</td></tr>
  *   <tr><td>Fast EE</td><td>31.2 ns</td><td>42.2 ns</td></tr>
  * </table>
- * (How can it be that interface method invocation is slower than reflection for
- * the server JVM?)
+ * <p>
+ *   (How can it be that interface method invocation is slower than reflection for the server JVM?)
+ * </p>
  */
 public
 class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
@@ -82,11 +89,13 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     @Nullable private Class<?>[] optionalExpressionTypes;
 
     /**
-     * Equivalent to<pre>
-     * ExpressionEvaluator ee = new ExpressionEvaluator();
-     * ee.setExpressionType(expressionType);
-     * ee.setParameters(parameterNames, parameterTypes);
-     * ee.cook(expression);</pre>
+     * Equivalent to
+     * <pre>
+     *     ExpressionEvaluator ee = new ExpressionEvaluator();
+     *     ee.setExpressionType(expressionType);
+     *     ee.setParameters(parameterNames, parameterTypes);
+     *     ee.cook(expression);
+     * </pre>
      *
      * @see #ExpressionEvaluator()
      * @see ExpressionEvaluator#setExpressionType(Class)
@@ -106,13 +115,15 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     }
 
     /**
-     * Equivalent to<pre>
-     * ExpressionEvaluator ee = new ExpressionEvaluator();
-     * ee.setExpressionType(expressionType);
-     * ee.setParameters(parameterNames, parameterTypes);
-     * ee.setThrownExceptions(thrownExceptions);
-     * ee.setParentClassLoader(optionalParentClassLoader);
-     * ee.cook(expression);</pre>
+     * Equivalent to
+     * <pre>
+     *     ExpressionEvaluator ee = new ExpressionEvaluator();
+     *     ee.setExpressionType(expressionType);
+     *     ee.setParameters(parameterNames, parameterTypes);
+     *     ee.setThrownExceptions(thrownExceptions);
+     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.cook(expression);
+     * </pre>
      *
      * @see #ExpressionEvaluator()
      * @see ExpressionEvaluator#setExpressionType(Class)
@@ -138,15 +149,17 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     }
 
     /**
-     * Equivalent to<pre>
-     * ExpressionEvaluator ee = new ExpressionEvaluator();
-     * ee.setExpressionType(expressionType);
-     * ee.setParameters(parameterNames, parameterTypes);
-     * ee.setThrownExceptions(thrownExceptions);
-     * ee.setExtendedType(optionalExtendedType);
-     * ee.setImplementedTypes(implementedTypes);
-     * ee.setParentClassLoader(optionalParentClassLoader);
-     * ee.cook(expression);</pre>
+     * Equivalent to
+     * <pre>
+     *     ExpressionEvaluator ee = new ExpressionEvaluator();
+     *     ee.setExpressionType(expressionType);
+     *     ee.setParameters(parameterNames, parameterTypes);
+     *     ee.setThrownExceptions(thrownExceptions);
+     *     ee.setExtendedType(optionalExtendedType);
+     *     ee.setImplementedTypes(implementedTypes);
+     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.cook(expression);
+     * </pre>
      *
      * @see #ExpressionEvaluator()
      * @see ExpressionEvaluator#setExpressionType(Class)
@@ -197,19 +210,19 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         super.setReturnTypes(returnTypes);
     }
 
-    /** @deprecated */
-    @Override @Deprecated public final void
+    @Override public final void
     setReturnType(Class<?> returnType) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
     }
 
-    /** @deprecated */
-    @Override @Deprecated public final void
+    @Override public final void
     setReturnTypes(Class<?>[] returnTypes) {
         throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
     }
 
-    /** The default return type of an expression is {@code Object}. */
+    /**
+     * The default return type of an expression is {@code Object}.
+     */
     @Override protected Class<?>
     getDefaultReturnType() { return Object.class; }
 

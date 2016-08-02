@@ -24,7 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Auxiliary command line tools related to JANINO. */
+/**
+ * Auxiliary command line tools related to JANINO.
+ */
 @NotNullByDefault
 package org.codehaus.janino.tools;
 

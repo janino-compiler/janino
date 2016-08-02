@@ -77,13 +77,19 @@ import org.codehaus.janino.util.Traverser;
 public
 class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
-    /** Whether methods override a method declared by a supertype; {@code null} means "none". */
+    /**
+     * Whether methods override a method declared by a supertype; {@code null} means "none".
+     */
     @Nullable protected boolean[] optionalOverrideMethod;
 
-    /** Whether methods are static; {@code null} means "all". */
+    /**
+     * Whether methods are static; {@code null} means "all".
+     */
     @Nullable protected boolean[] optionalStaticMethod;
 
-    /** The methods' return types; {@code null} means "none". */
+    /**
+     * The methods' return types; {@code null} means "none".
+     */
     @Nullable protected Class<?>[] optionalReturnTypes;
 
     @Nullable private String[]     optionalMethodNames;
@@ -94,9 +100,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Nullable private Method[] result; // null=uncooked
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.cook(script);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.cook(script);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see Cookable#cook(String)
@@ -107,10 +115,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.cook(script);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.cook(script);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
@@ -123,11 +133,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.cook(script);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.cook(script);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
@@ -143,12 +155,14 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.setThrownExceptions(thrownExceptions);
-     * se.cook(script);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.setThrownExceptions(thrownExceptions);
+     *     se.cook(script);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
@@ -171,13 +185,15 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.setThrownExceptions(thrownExceptions);
-     * se.setParentClassLoader(optionalParentClassLoader);
-     * se.cook(optionalFileName, is);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.setThrownExceptions(thrownExceptions);
+     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.cook(optionalFileName, is);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
@@ -204,13 +220,15 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.setThrownExceptions(thrownExceptions);
-     * se.setParentClassLoader(optionalParentClassLoader);
-     * se.cook(reader);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.setThrownExceptions(thrownExceptions);
+     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.cook(reader);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
@@ -237,13 +255,15 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setReturnType(returnType);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.setThrownExceptions(thrownExceptions);
-     * se.setParentClassLoader(optionalParentClassLoader);
-     * se.cook(scanner);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setReturnType(returnType);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.setThrownExceptions(thrownExceptions);
+     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.cook(scanner);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
@@ -269,15 +289,17 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setExtendedType(optionalExtendedType);
-     * se.setImplementedTypes(implementedTypes);
-     * se.setReturnType(returnType);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.setThrownExceptions(thrownExceptions);
-     * se.setParentClassLoader(optionalParentClassLoader);
-     * se.cook(scanner);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setExtendedType(optionalExtendedType);
+     *     se.setImplementedTypes(implementedTypes);
+     *     se.setReturnType(returnType);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.setThrownExceptions(thrownExceptions);
+     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.cook(scanner);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see ClassBodyEvaluator#setExtendedClass(Class)
@@ -309,18 +331,20 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Equivalent to<pre>
-     * ScriptEvaluator se = new ScriptEvaluator();
-     * se.setClassName(className);
-     * se.setExtendedType(optionalExtendedType);
-     * se.setImplementedTypes(implementedTypes);
-     * se.setStaticMethod(staticMethod);
-     * se.setReturnType(returnType);
-     * se.setMethodName(methodName);
-     * se.setParameters(parameterNames, parameterTypes);
-     * se.setThrownExceptions(thrownExceptions);
-     * se.setParentClassLoader(optionalParentClassLoader);
-     * se.cook(scanner);</pre>
+     * Equivalent to
+     * <pre>
+     *     ScriptEvaluator se = new ScriptEvaluator();
+     *     se.setClassName(className);
+     *     se.setExtendedType(optionalExtendedType);
+     *     se.setImplementedTypes(implementedTypes);
+     *     se.setStaticMethod(staticMethod);
+     *     se.setReturnType(returnType);
+     *     se.setMethodName(methodName);
+     *     se.setParameters(parameterNames, parameterTypes);
+     *     se.setThrownExceptions(thrownExceptions);
+     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.cook(scanner);
+     * </pre>
      *
      * @see #ScriptEvaluator()
      * @see ClassBodyEvaluator#setClassName(String)
@@ -464,27 +488,26 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Like {@link #cook(Scanner)}, but cooks a <i>set</i> of scripts into one class. Notice that
-     * if <i>any</i> of the scripts causes trouble, the entire compilation will fail. If you
-     * need to report <i>which</i> of the scripts causes the exception, you may want to use the
-     * <code>optionalFileName</code> argument of {@link Scanner#Scanner(String, Reader)} to
-     * distinguish between the individual token sources.
+     * Like {@link #cook(Scanner)}, but cooks a <em>set</em> of scripts into one class. Notice that if <em>any</em> of
+     * the scripts causes trouble, the entire compilation will fail. If you need to report <em>which</em> of the
+     * scripts causes the exception, you may want to use the {@code optionalFileName} argument of {@link
+     * Scanner#Scanner(String, Reader)} to distinguish between the individual token sources.
      * <p>
-     * On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling
-     * 10000 expressions "a + b" (integer) takes about 4 seconds and 56 MB of main memory.
-     * The generated class file is 639203 bytes large.
+     *   On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling 10000 expressions "a + b"
+     *   (integer) takes about 4 seconds and 56 MB of main memory. The generated class file is 639203 bytes large.
+     * </p>
      * <p>
-     * The number and the complexity of the scripts is restricted by the
-     * <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#88659">Limitations
-     * of the Java Virtual Machine</a>, where the most limiting factor is the 64K entries limit
-     * of the constant pool. Since every method with a distinct name requires one entry there,
-     * you can define at best 32K (very simple) scripts.
+     *   The number and the complexity of the scripts is restricted by the <a
+     *   href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#88659">Limitations of the Java
+     *   Virtual Machine</a>, where the most limiting factor is the 64K entries limit of the constant pool. Since every
+     *   method with a distinct name requires one entry there, you can define at best 32K (very simple) scripts.
+     * </p>
+     * <p>
+     *   If and only if the number of scanners is one, then that single script may contain leading IMPORT directives.
+     * </p>
      *
-     * If and only if the number of scanners is one, then that single script may contain leading
-     * IMPORT directives.
-     *
-     * @throws IllegalStateException Any of the preceeding <code>set...()</code> had an array size different from that
-     *                               of <code>scanners</code>
+     * @throws IllegalStateException Any of the preceeding {@code set...()} had an array size different from that
+     *                               of {@code scanners}
      */
     public final void
     cook(Scanner[] scanners) throws CompileException, IOException {
@@ -496,7 +519,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.cook(parsers);
     }
 
-    /** @see #cook(Scanner[]) */
+    /**
+     * @see #cook(Scanner[])
+     */
     public final void
     cook(Parser[] parsers) throws CompileException, IOException {
 
@@ -678,15 +703,14 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling
-     * 10000 expressions "a + b" (integer) takes about 4 seconds and 56 MB of main memory.
-     * The generated class file is 639203 bytes large.
+     * On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling 10000 expressions "a + b"
+     * (integer) takes about 4 seconds and 56 MB of main memory. The generated class file is 639203 bytes large.
      * <p>
-     * The number and the complexity of the scripts is restricted by the
-     * <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#88659">Limitations
-     * of the Java Virtual Machine</a>, where the most limiting factor is the 64K entries limit
-     * of the constant pool. Since every method with a distinct name requires one entry there,
-     * you can define at best 32K (very simple) scripts.
+     *   The number and the complexity of the scripts is restricted by the <a
+     *   href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#88659">Limitations of the Java
+     *   Virtual Machine</a>, where the most limiting factor is the 64K entries limit of the constant pool. Since every
+     *   method with a distinct name requires one entry there, you can define at best 32K (very simple) scripts.
+     * </p>
      */
     @Override public final void
     cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
@@ -727,7 +751,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         return null;
     }
 
-    /** Fills the given <code>block</code> by parsing statements until EOF and adding them to the block. */
+    /**
+     * Fills the given {@code block} by parsing statements until EOF and adding them to the block.
+     */
     protected void
     parseScript(Parser parser, List<Java.BlockStatement> mainStatements, List<Java.MethodDeclarator> localMethods)
     throws CompileException, IOException {
@@ -749,14 +775,18 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      *     Expression Identifier MethodDeclarationRest             (3)
      *     Expression VariableDeclarators ';' |                    (4)
      * </pre>
-     *
-     * (1) Includes the "labeled statement".
-     * <br />
-     * (2) Local class declaration.
-     * <br />
-     * (3) Local method declaration statement; "Expression" must pose a type.
-     * <br />
-     * (4) Local variable declaration statement; "Expression" must pose a type.
+     * <p>
+     *   (1) Includes the "labeled statement".
+     * </p>
+     * <p>
+     *   (2) Local class declaration.
+     * </p>
+     * <p>
+     *   (3) Local method declaration statement; "Expression" must pose a type.
+     * </p>
+     * <p>
+     *   (4) Local variable declaration statement; "Expression" must pose a type.
+     * </p>
      */
     private static void
     parseScriptStatement(
@@ -868,11 +898,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * To the given {@link Java.AbstractClassDeclaration}, add
+     * To the given {@link Java.AbstractClassDeclaration}, adds
      * <ul>
-     *   <li>A public method declaration with the given return type, name, parameter
-     *       names and values and thrown exceptions
-     *   <li>A block
+     *   <li>
+     *     A public method declaration with the given return type, name, parameter names and values and thrown
+     *     exceptions
+     *   </li>
+     *   <li>A block</li>
      * </ul>
      *
      * @param returnType Return type of the declared method
@@ -979,13 +1011,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     /**
      * <pre>
-     * {@link ScriptEvaluator} se = new {@link ScriptEvaluator#ScriptEvaluator() ScriptEvaluator}();
-     * se.{@link #setDefaultImports(String[]) setDefaultImports}.(optionalDefaultImports);
-     * se.{@link #setClassName(String) setClassName}.(className);
-     * se.{@link #setExtendedClass(Class) setExtendedClass}.(optionalExtendedClass);
-     * se.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
-     * return se.{@link #createFastEvaluator(Scanner, Class, String[]) createFastEvaluator}(scanner,
-     * interfaceToImplement, parameterNames);
+     *     {@link ScriptEvaluator} se = new {@link ScriptEvaluator#ScriptEvaluator() ScriptEvaluator}();
+     *     se.{@link #setDefaultImports(String[]) setDefaultImports}.(optionalDefaultImports);
+     *     se.{@link #setClassName(String) setClassName}.(className);
+     *     se.{@link #setExtendedClass(Class) setExtendedClass}.(optionalExtendedClass);
+     *     se.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
+     *     return se.{@link #createFastEvaluator(Scanner, Class, String[]) createFastEvaluator}(scanner,
+     *     interfaceToImplement, parameterNames);
      * </pre>
      *
      * @deprecated Use {@link #createFastEvaluator(Scanner,Class,String[])} instead:
@@ -1008,7 +1040,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         return se.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
-    /** Don't use. */
+    /**
+     * Don't use.
+     */
     @Override public final Object
     createInstance(Reader reader) {
         throw new UnsupportedOperationException("createInstance");
@@ -1034,8 +1068,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Notice: This method is not declared in {@link IScriptEvaluator}, and is hence only available in <i>this</i>
-     * implementation of <code>org.codehaus.commons.compiler</code>. To be independent from this particular
+     * Notice: This method is not declared in {@link IScriptEvaluator}, and is hence only available in <em>this</em>
+     * implementation of {@code org.codehaus.commons.compiler}. To be independent from this particular
      * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
      *
      * @param scanner Source of tokens to read
@@ -1088,17 +1122,22 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Guess the names of the parameters used in the given expression. The strategy is to look
-     * at all "ambiguous names" in the expression (e.g. in "a.b.c.d()", the ambiguous name
-     * is "a.b.c"), and then at the components of the ambiguous name.
+     * Guesses the names of the parameters used in the given expression. The strategy is to look at all "ambiguous
+     * names" in the expression (e.g. in "a.b.c.d()", the ambiguous name is "a.b.c"), and then at the components of the
+     * ambiguous name.
      * <ul>
-     *   <li>If any component starts with an upper-case letter, then ambiguous name is assumed to
-     *       be a type name.
-     *   <li>Otherwise, if the first component of the ambiguous name matches the name of a
-     *       previously defined local variable, then the first component of the ambiguous name is
-     *       assumed to be a local variable name. (Notice that this strategy does not consider that
-     *       the scope of a local variable declaration may end before the end of the script.)
-     *   <li>Otherwise, the first component of the ambiguous name is assumed to be a parameter name.
+     *   <li>
+     *     If any component starts with an upper-case letter, then ambiguous name is assumed to be a type name.
+     *   </li>
+     *   <li>
+     *     Otherwise, if the first component of the ambiguous name matches the name of a previously defined local
+     *     variable, then the first component of the ambiguous name is assumed to be a local variable name. (Notice
+     *     that this strategy does not consider that the scope of a local variable declaration may end before the end
+     *     of the script.)
+     *   </li>
+     *   <li>
+     *     Otherwise, the first component of the ambiguous name is assumed to be a parameter name.
+     *   </li>
      * </ul>
      *
      * @see Scanner#Scanner(String, Reader)
