@@ -105,10 +105,12 @@ import de.unkrig.jdisasm.commons.nullanalysis.Nullable;
 /**
  * A Java bytecode disassembler, comparable to JAVAP, which is part of ORACLE's JDK.
  * <p>
- * Notice that this tool does not depend on any other classes or libraries (other than the standard JDK library).
+ *   Notice that this tool does not depend on any other classes or libraries (other than the standard JDK library).
+ * </p>
  * <p>
- * The disassembly is optimized to produce minimal DIFFs for changed class files: E.g. code offsets and local
- * variable indexes are only printed if really necessary.
+ *   The disassembly is optimized to produce minimal DIFFs for changed class files: E.g. code offsets and local
+ *   variable indexes are only printed if really necessary.
+ * </p>
  */
 public
 class Disassembler {
@@ -124,19 +126,27 @@ class Disassembler {
 
     // Configuration variables.
 
-    /** Where to print the output. */
+    /**
+     * Where to print the output.
+     */
     private PrintWriter pw = new PrintWriter(System.out);
 
-    /** @see #setVerbose */
+    /**
+     * @see #setVerbose
+     */
     boolean verbose;
 
-    /** {@code null} means "do not attempt to find the source file". */
+    /**
+     * {@code null} means "do not attempt to find the source file".
+     */
     @Nullable private File sourceDirectory;
     private boolean        hideLines;
     private boolean        hideVars;
     private boolean        symbolicLabels;
 
-    /** "" for the default package; with a trailing period otherwise. */
+    /**
+     * "" for the default package; with a trailing period otherwise.
+     */
     @Nullable private String thisClassPackageName;
 
     @Nullable private Map<Integer /*offset*/, String /*label*/> branchTargets;
@@ -219,19 +229,25 @@ class Disassembler {
 
     public Disassembler() {}
 
-    /** @param writer Where to write all output */
+    /**
+     * @param writer Where to write all output
+     */
     public void
     setOut(Writer writer) {
         this.pw = writer instanceof PrintWriter ? (PrintWriter) writer : new PrintWriter(writer);
     }
 
-    /** @param stream Where to write all output */
+    /**
+     * @param stream Where to write all output
+     */
     public void
     setOut(OutputStream stream) {
         this.pw = new PrintWriter(stream);
     }
 
-    /** @param stream Where to write all output */
+    /**
+     * @param stream Where to write all output
+     */
     public void
     setOut(OutputStream stream, String charsetName) throws UnsupportedEncodingException {
         this.pw = new PrintWriter(new OutputStreamWriter(stream, charsetName));
@@ -254,13 +270,17 @@ class Disassembler {
         this.sourceDirectory = sourceDirectory;
     }
 
-    /** @param hideLines Whether to not report source code line numbers */
+    /**
+     * @param hideLines Whether to not report source code line numbers
+     */
     public void
     setHideLines(boolean hideLines) {
         this.hideLines = hideLines;
     }
 
-    /** @param hideVars Whether to not report local variable names */
+    /**
+     * @param hideVars Whether to not report local variable names
+     */
     public void
     setHideVars(boolean hideVars) {
         this.hideVars = hideVars;
@@ -279,7 +299,9 @@ class Disassembler {
     private void println(String s)                     { this.pw.println(s); }
     private void printf(String format, Object... args) { this.pw.printf(format, args); }
 
-    /** Reads a class file from the given {@code file} and disassembles it. */
+    /**
+     * Reads a class file from the given <var>file</var> and disassembles it.
+     */
     public void
     disasm(File file) throws IOException {
         InputStream is = new FileInputStream(file);
@@ -298,7 +320,9 @@ class Disassembler {
         }
     }
 
-    /** Reads a class file from the given {@code location} and disassembles it. */
+    /**
+     * Reads a class file from the given <var>location</var> and disassembles it.
+     */
     public void
     disasm(URL location) throws IOException {
         InputStream is = location.openConnection().getInputStream();
@@ -317,7 +341,9 @@ class Disassembler {
         }
     }
 
-    /** Reads a class file from the given {@code stream} and disassembles it. */
+    /**
+     * Reads a class file from the given <var>stream</var> and disassembles it.
+     */
     public void
     disasm(InputStream stream) throws IOException {
         try {
@@ -327,7 +353,9 @@ class Disassembler {
         }
     }
 
-    /** @param dis A Java&trade; class file */
+    /**
+     * @param dis A Java class file
+     */
     private void
     disassembleClassFile(DataInputStream dis) throws IOException {
 
@@ -528,7 +556,9 @@ class Disassembler {
         }, AttributeContext.CLASS);
     }
 
-    /**Disassemble one method. */
+    /**
+     * Disassembles one method.
+     */
     private void
     disassembleMethod(Method method, ClassFile cf, Map<Integer, String> sourceLines) {
         try {
@@ -820,7 +850,9 @@ class Disassembler {
         for (Attribute a : tmp) a.accept(visitor);
     }
 
-    /** Prints an {@link Attribute}. */
+    /**
+     * Prints an {@link Attribute}.
+     */
     public
     class PrintAttributeVisitor implements AttributeVisitor {
 
@@ -1106,7 +1138,9 @@ class Disassembler {
         this.print(")");
     }
 
-    /** Read byte code from the given {@link InputStream} and disassemble it. */
+    /**
+     * Reads byte code from the given {@link InputStream} and disassemble it.
+     */
     private void
     disassembleBytecode(
         InputStream                        is,
@@ -1321,7 +1355,9 @@ class Disassembler {
         return label;
     }
 
-    /** @return -1 iff the offset is not associated with a line number */
+    /**
+     * @return -1 iff the offset is not associated with a line number
+     */
     private static int
     findLineNumber(LineNumberTableAttribute lnta, int offset) {
         for (LineNumberTableEntry lnte : lnta.entries) {
@@ -1330,7 +1366,9 @@ class Disassembler {
         return -1;
     }
 
-    /** @return The {@code operands} converted into one line of text, prefixed and separated by one space */
+    /**
+     * @return The <var>operands</var> converted into one line of text, prefixed and separated by one space
+     */
     String
     disassembleOperands(
         Operand[]       operands,
@@ -2163,7 +2201,9 @@ class Disassembler {
         }
     }
 
-    /** Representation of a local variable reference in the {@code Code} attribute. */
+    /**
+     * Representation of a local variable reference in the {@code Code} attribute.
+     */
     class LocalVariable {
 
         /**
@@ -2173,7 +2213,9 @@ class Disassembler {
          */
         @Nullable final TypeSignature typeSignature;
 
-        /** The name of this local variable. */
+        /**
+         * The name of this local variable.
+         */
         final String name;
 
         LocalVariable(@Nullable TypeSignature typeSignature, String name) {
@@ -2193,11 +2235,15 @@ class Disassembler {
         this.pw.println("*** Error: " + message);
     }
 
-    /** Static description of a Java&trade; byte code instruction. */
+    /**
+     * Static description of a Java byte code instruction.
+     */
     private static
     class Instruction {
 
-        /** @param operands <code>null</code> is equivalent to "zero operands" */
+        /**
+         * @param operands {@code null} is equivalent to "zero operands"
+         */
         Instruction(String mnemonic, Operand[] operands) {
             this.mnemonic = mnemonic;
             this.operands = operands;
@@ -2213,11 +2259,15 @@ class Disassembler {
         private final Operand[] operands;
     }
 
-    /** Static description of an operand of a Java&trade; byte code instruction. */
+    /**
+     * Static description of an operand of a Java byte code instruction.
+     */
     private
     interface Operand {
 
-        /** @return One space and this operand disassembled */
+        /**
+         * @return One space and this operand disassembled
+         */
         String
         disassemble(
             DataInputStream dis,
@@ -2228,7 +2278,9 @@ class Disassembler {
         ) throws IOException;
     }
 
-    /** An {@link InputStream} that counts how many bytes have been read so far. */
+    /**
+     * An {@link InputStream} that counts how many bytes have been read so far.
+     */
     @NotNullByDefault(false) private static
     class CountingInputStream extends FilterInputStream {
 
@@ -2255,7 +2307,9 @@ class Disassembler {
         private long count;
     }
 
-    /** @eturn A series of words, in canonical order, separated with one space, and with one trailing space */
+    /**
+     * @eturn A series of words, in canonical order, separated with one space, and with one trailing space
+     */
     private static String
     decodeAccess(short n) {
         StringBuilder sb = new StringBuilder();
