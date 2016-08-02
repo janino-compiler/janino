@@ -459,9 +459,7 @@ class CodeContext {
 
             case Opcode.SD_GETFIELD:
                 --stackSize;
-                /* FALL THROUGH
-                */
-            case Opcode.SD_GETSTATIC:
+            case Opcode.SD_GETSTATIC: // SUPPRESS CHECKSTYLE FallThrough
                 stackSize += this.determineFieldSize((short) (
                     CodeContext.extract16BitValue(0, operandOffset, code)
                 ));
@@ -469,9 +467,7 @@ class CodeContext {
 
             case Opcode.SD_PUTFIELD:
                 --stackSize;
-                /* FALL THROUGH
-                */
-            case Opcode.SD_PUTSTATIC:
+            case Opcode.SD_PUTSTATIC: // SUPPRESS CHECKSTYLE FallThrough
                 stackSize -= this.determineFieldSize((short) (
                     CodeContext.extract16BitValue(0, operandOffset, code)
                 ));
@@ -481,9 +477,7 @@ class CodeContext {
             case Opcode.SD_INVOKESPECIAL:
             case Opcode.SD_INVOKEINTERFACE:
                 --stackSize;
-                /* FALL THROUGH
-                */
-            case Opcode.SD_INVOKESTATIC:
+            case Opcode.SD_INVOKESTATIC: // SUPPRESS CHECKSTYLE FallThrough
                 stackSize -= this.determineArgumentsSize((short) (
                     CodeContext.extract16BitValue(0, operandOffset, code)
                 ));
