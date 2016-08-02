@@ -40,9 +40,13 @@ import de.unkrig.jdisasm.commons.nullanalysis.Nullable;
 
 /**
  * A {@link URLStreamHandler} for the protocol "{@code zip}".
- * <p>The path component is interpreted as follows:</p>
- * <quote><code><i>container-url</i>!<i>entry-name</i></code></quote>
- * <p>The contents of the container must be in zip archive format.</p>
+ * <p>
+ *   The path component is interpreted as follows:
+ * </p>
+ * <quote>{@code <em>container-url</em>!<em>entry-name</em>}</quote>
+ * <p>
+ *   The contents of the container must be in zip archive format.
+ * </p>
  */
 public
 class Handler extends URLStreamHandler {

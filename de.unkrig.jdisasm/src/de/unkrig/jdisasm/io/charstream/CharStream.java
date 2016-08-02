@@ -51,8 +51,8 @@ interface CharStream {
     int peek() throws IOException;
 
     /**
-     * Returns whether the character stream is not at end-of-input <i>and</i> the next character on this stream equals
-     * the given character. Does <b>not</b> consume any characters.
+     * Returns whether the character stream is not at end-of-input <em>and</em> the next character on this stream
+     * equals the given character. Does <b>not</b> consume any characters.
      */
     boolean peek(char c) throws IOException;
 
@@ -102,9 +102,13 @@ interface CharStream {
      */
     int peekRead(String chars) throws IOException;
 
-    /** @return Whether this stream is at end-of-input */
+    /**
+     * @return Whether this stream is at end-of-input
+     */
     boolean atEoi() throws IOException;
 
-    /** @throws UnexpectedCharacterException This stream is <i>not</i> at end-of-input */
+    /**
+     * @throws UnexpectedCharacterException This stream is <em>not</em> at end-of-input
+     */
     void eoi() throws UnexpectedCharacterException;
 }

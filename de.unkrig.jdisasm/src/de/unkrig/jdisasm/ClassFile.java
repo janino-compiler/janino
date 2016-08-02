@@ -39,7 +39,9 @@ import de.unkrig.jdisasm.ConstantPool.ConstantUtf8Info;
 import de.unkrig.jdisasm.SignatureParser.SignatureException;
 import de.unkrig.jdisasm.commons.nullanalysis.Nullable;
 
-/** Representation of a Java&trade; class file. */
+/**
+ * Representation of a Java class file.
+ */
 public
 class ClassFile {
 
@@ -61,7 +63,9 @@ class ClassFile {
      */
     public short accessFlags;
 
-    /** The fully qualified (dot-separated) name of this type. */
+    /**
+     * The fully qualified (dot-separated) name of this type.
+     */
     public String thisClassName;
 
     /**
@@ -70,7 +74,9 @@ class ClassFile {
      */
     @Nullable public String superClassName;
 
-    /** Fully qualified (dot-separated) names of the interfaces that this type implements. */
+    /**
+     * Fully qualified (dot-separated) names of the interfaces that this type implements.
+     */
     public final List<String> interfaceNames = new ArrayList<String>();
 
     /**
@@ -86,38 +92,57 @@ class ClassFile {
      * of a method in this class or interface</a>. If neither of the ACC_NATIVE and ACC_ABSTRACT flags are set in
      * {@link Method#accessFlags}, the Java Virtual Machine instructions implementing the method are also supplied.
      * <p>
-     * The {@link Method} structures represent all methods declared by this class or interface type, including instance
-     * methods, class methods, instance initialization methods, and any class or interface initialization method.
-     * The methods table does not include items representing methods that are inherited from superclasses or
-     * superinterfaces.
+     *   The {@link Method} structures represent all methods declared by this class or interface type, including
+     *   instance methods, class methods, instance initialization methods, and any class or interface initialization
+     *   method. The methods table does not include items representing methods that are inherited from superclasses or
+     *   superinterfaces.
+     * </p>
      */
     public final List<Method> methods = new ArrayList<Method>();
 
-    /** The optional {@code Deprecated} attribute of this class or interface. */
+    /**
+     * The optional {@code Deprecated} attribute of this class or interface.
+     */
     @Nullable public DeprecatedAttribute deprecatedAttribute;
 
-    /** The optional {@code EnclosingMethod} attribute of this class or interface. */
+    /**
+     * The optional {@code EnclosingMethod} attribute of this class or interface.
+     */
     @Nullable public EnclosingMethodAttribute enclosingMethodAttribute;
 
-    /** The optional {@code InnerClasses} attribute of this class or interface. */
+    /**
+     * The optional {@code InnerClasses} attribute of this class or interface.
+     */
     @Nullable public InnerClassesAttribute innerClassesAttribute;
 
-    /** The optional {@code RuntimeInvisibleAnnotations} attribute of this class or interface. */
+    /**
+     * The optional {@code RuntimeInvisibleAnnotations} attribute of this class or interface.
+     */
     @Nullable public RuntimeInvisibleAnnotationsAttribute runtimeInvisibleAnnotationsAttribute;
 
-    /** The optional {@code RuntimeVisibleAnnotations} attribute of this class or interface. */
+    /**
+     * The optional {@code RuntimeVisibleAnnotations} attribute of this class or interface.
+     */
     @Nullable public RuntimeVisibleAnnotationsAttribute runtimeVisibleAnnotationsAttribute;
 
-    /** The optional {@code Signature} attribute of this class or interface. */
+    /**
+     * The optional {@code Signature} attribute of this class or interface.
+     */
     @Nullable public SignatureAttribute signatureAttribute;
 
-    /** The optional {@code Signature} attribute of this class or interface. */
+    /**
+     * The optional {@code Signature} attribute of this class or interface.
+     */
     @Nullable public SourceFileAttribute sourceFileAttribute;
 
-    /** The optional {@code Synthetic} attribute of this class or interface. */
+    /**
+     * The optional {@code Synthetic} attribute of this class or interface.
+     */
     @Nullable public SyntheticAttribute syntheticAttribute;
 
-    /** The other attributes of this class or interface. */
+    /**
+     * The other attributes of this class or interface.
+     */
     public final List<Attribute> attributes = new ArrayList<Attribute>();
 
     // Class, nested class, field and method access and property flags.
@@ -267,7 +292,9 @@ class ClassFile {
         });
     }
 
-    /** @return The major/minor version of this class file translated into a human-readable JDK name */
+    /**
+     * @return The major/minor version of this class file translated into a human-readable JDK name
+     */
     public String
     getJdkName() {
         switch (this.majorVersion) {
@@ -290,7 +317,9 @@ class ClassFile {
         }
     }
 
-    /** Representation of a field description in a Java&trade; class file. */
+    /**
+     * Representation of a field description in a Java class file.
+     */
     public
     class Field {
 
@@ -360,7 +389,9 @@ class ClassFile {
         }
     }
 
-    /** Representation of a method in a Java&trade; class file. */
+    /**
+     * Representation of a method in a Java class file.
+     */
     public
     class Method {
 
@@ -472,18 +503,26 @@ class ClassFile {
         }
     }
 
-    /** Representation of an attribute in a Java&trade; class file. */
+    /**
+     * Representation of an attribute in a Java class file.
+     */
     public
     interface Attribute {
 
-        /** Accepts the {@code visitor}. */
+        /**
+         * Accepts the <var>visitor</var>.
+         */
         void accept(AttributeVisitor visitor);
 
-        /** @return This attribute's name */
+        /**
+         * @return This attribute's name
+         */
         String getName();
     }
 
-    /** Reads a set of attributs and has them accept the {@code visitor}. */
+    /**
+     * Reads a set of attributs and has them accept the <var>visitor</var>.
+     */
     final void
     readAttributes(DataInputStream dis, AttributeVisitor visitor) throws IOException {
         short n = dis.readShort();
@@ -596,7 +635,9 @@ class ClassFile {
         }
     }
 
-    /** The visitor for {@Attribute}. */
+    /**
+     * The visitor for {@Attribute}.
+     */
     public
     interface AttributeVisitor {
 
@@ -620,15 +661,21 @@ class ClassFile {
         void visit(SyntheticAttribute                            sa);
         // CHECKSTYLE MethodCheck:ON
 
-        /** An unknown attribute accepted this visitor. */
+        /**
+         * An unknown attribute accepted this visitor.
+         */
         void visit(UnknownAttribute unknownAttribute);
     }
 
-    /** Default implementation of the {@link AttributeVisitor}. */
+    /**
+     * Default implementation of the {@link AttributeVisitor}.
+     */
     public abstract static
     class AbstractAttributeVisitor implements AttributeVisitor {
 
-        /** Called by the default implementations of the {@code visit(...)} methods. */
+        /**
+         * Called by the default implementations of the {@code visit(...)} methods.
+         */
         public abstract void visitOther(Attribute ai);
 
         @Override public void visit(AnnotationDefaultAttribute                    ada)   { this.visitOther(ada); }
@@ -651,7 +698,9 @@ class ClassFile {
         @Override public void visit(UnknownAttribute                              a)     { this.visitOther(a); }
     }
 
-    /** Representation of an attribute with an unknown name. */
+    /**
+     * Representation of an attribute with an unknown name.
+     */
     public static final
     class UnknownAttribute implements Attribute {
 
@@ -661,7 +710,9 @@ class ClassFile {
          */
         public final String name;
 
-        /** The (unstructured) attribute information. */
+        /**
+         * The (unstructured) attribute information.
+         */
         public byte[] info;
 
         UnknownAttribute(String name, DataInputStream dis, ClassFile cf) throws IOException {
@@ -673,7 +724,9 @@ class ClassFile {
         @Override public String getName()                        { return this.name; }
     }
 
-    /** Representation of a {@code Synthetic} attribute. */
+    /**
+     * Representation of a {@code Synthetic} attribute.
+     */
     public static
     class SyntheticAttribute implements Attribute {
         public SyntheticAttribute(DataInputStream dis, ClassFile cf) {}
@@ -682,7 +735,9 @@ class ClassFile {
         @Override public String getName()                        { return "Synthetic"; }
     }
 
-    /** Representation of a {@code Deprecated} attribute. */
+    /**
+     * Representation of a {@code Deprecated} attribute.
+     */
     public static
     class DeprecatedAttribute implements Attribute {
         public DeprecatedAttribute(DataInputStream dis, ClassFile cf) {}
@@ -691,11 +746,15 @@ class ClassFile {
         @Override public String getName()                        { return "Deprecated"; }
     }
 
-    /** Representation of a {@code InnerClasses} attribute. */
+    /**
+     * Representation of a {@code InnerClasses} attribute.
+     */
     public static final
     class InnerClassesAttribute implements Attribute {
 
-        /** Helper class for {@link InnerClassesAttribute}. */
+        /**
+         * Helper class for {@link InnerClassesAttribute}.
+         */
         public static
         class ClasS {
 
@@ -708,14 +767,16 @@ class ClassFile {
             /**
              * The class or interface of which the {@link #innerClassInfo inner class} is a member.
              * <p>
-             * {@code null} == top-level type or anonymous class
+             *   {@code null} == top-level type or anonymous class
+             * </p>
              */
             @Nullable public final ConstantClassInfo outerClassInfo;
 
             /**
              * The original simple name of the {@link #innerClassInfo inner class}.
              * <p>
-             * {@code null} == anonymous
+             *   {@code null} == anonymous
+             * </p>
              */
             @Nullable public final ConstantUtf8Info innerName;
 
@@ -734,7 +795,9 @@ class ClassFile {
             }
         }
 
-        /** The inner/outer class relationship relevant for this class. */
+        /**
+         * The inner/outer class relationship relevant for this class.
+         */
         public final List<ClasS> classes = new ArrayList<ClasS>();
 
         InnerClassesAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -750,7 +813,7 @@ class ClassFile {
     /**
      * Representation of the <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16">{@code
      * RuntimeVisibleAnnotations} attribute</a>.
-     * */
+     */
     public static
     class RuntimeVisibleAnnotationsAttribute implements Attribute {
 
@@ -760,7 +823,9 @@ class ClassFile {
          */
         public final List<Annotation> annotations = new ArrayList<Annotation>();
 
-        /** Reads and populates this object from the given {@link DataInputStream}. */
+        /**
+         * Reads and populates this object from the given {@link DataInputStream}.
+         */
         RuntimeVisibleAnnotationsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
             for (int i = 0xffff & dis.readShort(); i > 0; --i) {
                 this.annotations.add(new Annotation(dis, cf));
@@ -771,7 +836,9 @@ class ClassFile {
         @Override public String getName()                        { return "RuntimeVisibleAnnotations"; }
     }
 
-    /** Representation of the {@code RuntimeInvisibleAnnotations} attribute. */
+    /**
+     * Representation of the {@code RuntimeInvisibleAnnotations} attribute.
+     */
     public static
     class RuntimeInvisibleAnnotationsAttribute extends RuntimeVisibleAnnotationsAttribute {
 
@@ -783,7 +850,9 @@ class ClassFile {
         @Override public void accept(AttributeVisitor visitor) { visitor.visit(this); }
     }
 
-    /** Helper class for {@link RuntimeVisibleParameterAnnotationsAttribute}. */
+    /**
+     * Helper class for {@link RuntimeVisibleParameterAnnotationsAttribute}.
+     */
     public static
     class ParameterAnnotation {
 
@@ -825,7 +894,9 @@ class ClassFile {
         @Override public String getName()                        { return "RuntimeVisibleParameterAnnotations"; }
     }
 
-    /** Representation of the {@code RuntimeInvisibleParameterAnnotations} attribute. */
+    /**
+     * Representation of the {@code RuntimeInvisibleParameterAnnotations} attribute.
+     */
     public static
     class RuntimeInvisibleParameterAnnotationsAttribute
     extends RuntimeVisibleParameterAnnotationsAttribute {
@@ -863,9 +934,10 @@ class ClassFile {
     /**
      * Helper class for the {@code Runtime*visible*Annotations} attributes.
      * <p>
-     * Represents a single <a
-     * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D">run-time-visible
-     * annotation</a> on a program element.
+     *   Represents a single <a
+     *   href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D">run-time-visible
+     *   annotation</a> on a program element.
+     * </p>
      */
     public static
     class Annotation {
@@ -873,9 +945,10 @@ class ClassFile {
         /**
          * Helper class for the {@code Runtime*visible*Annotations} attributes.
          * <p>
-         * Represents a single <a
-         * href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D.2-3">element-value
-         * pair</a> in the annotation represented by this {@link Annotation}.
+         *   Represents a single <a
+         *   href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.16-300-D.2-3">element-value
+         *   pair</a> in the annotation represented by this {@link Annotation}.
+         * </p>
          */
         public static
         class ElementValuePair {
@@ -917,7 +990,9 @@ class ClassFile {
          */
         public String typeName;
 
-        /** Each value of this list represents a single element-value pair in the {@link Annotation}. */
+        /**
+         * Each value of this list represents a single element-value pair in the {@link Annotation}.
+         */
         public final List<ElementValuePair> elementValuePairs = new ArrayList<ElementValuePair>();
 
         public
@@ -948,12 +1023,16 @@ class ClassFile {
         }
     }
 
-    /** Representation of an annotation element value. */
+    /**
+     * Representation of an annotation element value.
+     */
     public
     interface ElementValue {
     }
 
-    /** Reads one {@link ElementValue} from the given {@link DataInputStream}. */
+    /**
+     * Reads one {@link ElementValue} from the given {@link DataInputStream}.
+     */
     static ElementValue
     newElementValue(DataInputStream dis, ClassFile cf) throws IOException {
         final byte tag = dis.readByte();
@@ -1056,7 +1135,9 @@ class ClassFile {
          */
         public ConstantClassInfo clasS;
 
-        /** null == not enclosed by a constructor or a method, i.e. a field initializer */
+        /**
+         * null == not enclosed by a constructor or a method, i.e. a field initializer
+         */
         @Nullable public ConstantNameAndTypeInfo method;
 
         EnclosingMethodAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -1125,16 +1206,24 @@ class ClassFile {
          */
         public final List<ExceptionTableEntry> exceptionTable = new ArrayList<ExceptionTableEntry>();
 
-        /** The {@code Code} attribute's optional {@code LocalVariableTable} attribute. */
+        /**
+         * The <var>Code</var> attribute's optional <var>LocalVariableTable</var> attribute.
+         */
         @Nullable public LocalVariableTableAttribute localVariableTableAttribute;
 
-        /** The {@code Code} attribute's optional {@code LocalVariableTypeTable} attribute. */
+        /**
+         * The <var>Code</var> attribute's optional <var>LocalVariableTypeTable</var> attribute.
+         */
         @Nullable public LocalVariableTypeTableAttribute localVariableTypeTableAttribute;
 
-        /** The {@code Code} attribute's optional {@code LineNumberTable} attribute. */
+        /**
+         * The <var>Code</var> attribute's optional <var>LineNumberTable</var> attribute.
+         */
         @Nullable public LineNumberTableAttribute lineNumberTableAttribute;
 
-        /** The attributes of the {@code Code} attribute. */
+        /**
+         * The attributes of the {@code Code} attribute.
+         */
         public final List<Attribute> attributes = new ArrayList<Attribute>();
 
         CodeAttribute(DataInputStream dis, ClassFile cf) throws IOException {
@@ -1183,7 +1272,8 @@ class ClassFile {
     /**
      * Helper class for {@link CodeAttribute}.
      * <p>
-     * Describes one exception handler in the code array.
+     *   Describes one exception handler in the code array.
+     * </p>
      */
     public static
     class ExceptionTableEntry {
@@ -1196,8 +1286,9 @@ class ClassFile {
          * a valid index into the code array of the opcode of an instruction or must be equal to {@code code.length},
          * the length of the code array. The value of {@link #startPc} must be less than the value of {@link #endPc}.
          * <p>
-         * The {@link #startPc} is inclusive and {@link #endPc} is exclusive; that is, the exception handler must be
-         * active while the program counter is within the interval [{@link #startPc}, {@link #endPc}).
+         *   The {@link #startPc} is inclusive and {@link #endPc} is exclusive; that is, the exception handler must be
+         *   active while the program counter is within the interval [{@link #startPc}, {@link #endPc}).
+         * </p>
          */
         public int startPc, endPc;
 
@@ -1214,8 +1305,9 @@ class ClassFile {
          * exceptions that this exception handler is designated to catch</a>. The exception handler will be called only
          * if the thrown exception is an instance of the given class or one of its subclasses.
          * <p>
-         * If the value is {@code null}, this exception handler is called for all exceptions. This is used to implement
-         * {@code finally}
+         *   If the value is {@code null}, this exception handler is called for all exceptions. This is used to
+         *   implement {@code finally}.
+         * </p>
          */
         @Nullable public ConstantClassInfo catchType;
 
@@ -1288,7 +1380,9 @@ class ClassFile {
         @Override public String getName()                        { return "LineNumberTable"; }
     }
 
-    /** Helper class for {@link LineNumberTableAttribute}. */
+    /**
+     * Helper class for {@link LineNumberTableAttribute}.
+     */
     public static
     class LineNumberTableEntry {
 
@@ -1298,7 +1392,9 @@ class ClassFile {
          */
         public int startPc;
 
-        /** The value must give the corresponding line number in the original source file. */
+        /**
+         * The value must give the corresponding line number in the original source file.
+         */
         public int lineNumber;
 
         LineNumberTableEntry(DataInputStream dis) throws IOException {
@@ -1312,14 +1408,17 @@ class ClassFile {
      * attribute</a> is an optional variable-length attribute in the attributes table of a {@link CodeAttribute}. It
      * may be used by debuggers to determine the value of a given local variable during the execution of a method.
      * <p>
-     * If {@link LocalVariableTableAttribute}s are present in the attributes table of a given {@link CodeAttribute},
-     * then they may appear in any order. There may be no more than one {@link LocalVariableTableAttribute} per local
-     * variable in the {@link CodeAttribute}.
+     *   If {@link LocalVariableTableAttribute}s are present in the attributes table of a given {@link CodeAttribute},
+     *   then they may appear in any order. There may be no more than one {@link LocalVariableTableAttribute} per local
+     *   variable in the {@link CodeAttribute}.
+     * </p>
      */
     public
     class LocalVariableTableAttribute implements Attribute {
 
-        /** Helper class for {@link LocalVariableTableAttribute}. */
+        /**
+         * Helper class for {@link LocalVariableTableAttribute}.
+         */
         class Entry {
 
             /**
@@ -1327,19 +1426,25 @@ class ClassFile {
              * #startPC}, {@link #startPC} + {@link #length}), that is, between {@link #startPC} inclusive and {@link
              * #startPC} + {@link #length} exclusive.
              * <p>
-             * The value of {@link #startPC} must be a valid index into the code array of this {@link CodeAttribute}
-             * and must be the index of the opcode of an instruction.
+             *   The value of {@link #startPC} must be a valid index into the code array of this {@link CodeAttribute}
+             *   and must be the index of the opcode of an instruction.
+             * </p>
              * <p>
-             * The value of {@link #startPC} + {@link #length} must either be a valid index into the code array of this
-             * {@link CodeAttribute} and be the index of the opcode of an instruction, or it must be the first index
-             * beyond the end of that code array.
+             *   The value of {@link #startPC} + {@link #length} must either be a valid index into the code array of
+             *   this {@link CodeAttribute} and be the index of the opcode of an instruction, or it must be the first
+             *   index beyond the end of that code array.
+             * </p>
              */
             public final short startPC, length;
 
-            /** Represents a valid unqualified name denoting a local variable. */
+            /**
+             * Represents a valid unqualified name denoting a local variable.
+             */
             public final String name;
 
-            /** Representation of a field descriptor encoding the type of a local variable in the source program. */
+            /**
+             * Representation of a field descriptor encoding the type of a local variable in the source program.
+             */
             public final String descriptor;
 
             /**
@@ -1394,16 +1499,20 @@ class ClassFile {
              * #startPC}, {@link #startPC} + {@link #length}), that is, between {@link #startPC} inclusive and
              * {@link #startPC} + {@link #length} exclusive.
              * <p>
-             * The value of {@link #startPC} must be a valid index into the code array of this {@link CodeAttribute}
-             * and must be the index of the opcode of an instruction.
+             *   The value of {@link #startPC} must be a valid index into the code array of this {@link CodeAttribute}
+             *   and must be the index of the opcode of an instruction.
+             * </p>
              * <p>
-             * The value of {@link #startPC} + {@link #length} must either be a valid index into the code array of this
-             * {@link CodeAttribute} and be the index of the opcode of an instruction, or it must be the first index
-             * beyond the end of that code array.
+             *   The value of {@link #startPC} + {@link #length} must either be a valid index into the code array of
+             *   this {@link CodeAttribute} and be the index of the opcode of an instruction, or it must be the first
+             *   index beyond the end of that code array.
+             * </p>
              */
             public final int startPC, length;
 
-            /** Represents a valid unqualified name denoting a local variable. */
+            /**
+             * Represents a valid unqualified name denoting a local variable.
+             */
             public final String name;
 
             /**

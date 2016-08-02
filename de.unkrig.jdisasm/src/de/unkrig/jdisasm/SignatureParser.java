@@ -46,7 +46,9 @@ class SignatureParser {
 
     private SignatureParser() {}
 
-    /** Decodes a 'class signature' as defined in JLS7 4.3.4. */
+    /**
+     * Decodes a 'class signature' as defined in JLS7 4.3.4.
+     */
     public static ClassSignature
     decodeClassSignature(String s) throws SignatureException {
         try {
@@ -64,7 +66,9 @@ class SignatureParser {
         }
     }
 
-    /** Decodes a 'method type signature' as defined in JLS7 4.3.4. */
+    /**
+     * Decodes a 'method type signature' as defined in JLS7 4.3.4.
+     */
     public static MethodTypeSignature
     decodeMethodTypeSignature(String s) throws SignatureException {
         try {
@@ -81,7 +85,9 @@ class SignatureParser {
         }
     }
 
-    /** Decodes a 'type signature' as defined in JLS7 4.3.4. */
+    /**
+     * Decodes a 'type signature' as defined in JLS7 4.3.4.
+     */
     public static TypeSignature
     decodeTypeSignature(String s) throws SignatureException {
         try {
@@ -98,7 +104,9 @@ class SignatureParser {
         }
     }
 
-    /** Decodes a 'field type signature' as defined in JLS7 4.3.4. */
+    /**
+     * Decodes a 'field type signature' as defined in JLS7 4.3.4.
+     */
     public static FieldTypeSignature
     decodeFieldTypeSignature(String s) throws SignatureException {
         try {
@@ -115,7 +123,9 @@ class SignatureParser {
         }
     }
 
-    /** Decodes a 'method descriptor' as defined in JLS7 4.3.3. */
+    /**
+     * Decodes a 'method descriptor' as defined in JLS7 4.3.3.
+     */
     public static MethodTypeSignature
     decodeMethodDescriptor(String s) throws SignatureException {
         try {
@@ -132,7 +142,9 @@ class SignatureParser {
         }
     }
 
-    /** Decodes a 'field descriptor' as defined in JLS7 4.3.2. */
+    /**
+     * Decodes a 'field descriptor' as defined in JLS7 4.3.2.
+     */
     public static TypeSignature
     decodeFieldDescriptor(String s) throws SignatureException {
         try {
@@ -149,7 +161,9 @@ class SignatureParser {
         }
     }
 
-    /** Decodes a 'return type' as defined in JLS7 4.3.4. */
+    /**
+     * Decodes a 'return type' as defined in JLS7 4.3.4.
+     */
     public static TypeSignature
     decodeReturnType(String s) throws SignatureException {
         try {
@@ -166,20 +180,30 @@ class SignatureParser {
         }
     }
 
-    /** Representation of the "MethodTypeSignature" clause. */
+    /**
+     * Representation of the "MethodTypeSignature" clause.
+     */
     public static
     class MethodTypeSignature {
 
-        /** The formal types of the method, e.g. '{@code void <T, U> int meth(T t, U u) ...}'. */
+        /**
+         * The formal types of the method, e.g. '{@code void <T, U> int meth(T t, U u) ...}'.
+         */
         public final List<FormalTypeParameter> formalTypeParameters;
 
-        /** The types of the method's parameters. */
+        /**
+         * The types of the method's parameters.
+         */
         public final List<TypeSignature> parameterTypes;
 
-        /** The return type of the method. */
+        /**
+         * The return type of the method.
+         */
         public final TypeSignature returnType;
 
-        /** The exceptions declared for the method. */
+        /**
+         * The exceptions declared for the method.
+         */
         public final List<ThrowsSignature> thrownTypes;
 
         public
@@ -196,7 +220,7 @@ class SignatureParser {
         }
 
         /**
-         * Combine the name of the declaring class, the name of the method and this method type signature into a nice,
+         * Combines the name of the declaring class, the name of the method and this method type signature into a nice,
          * human-readable string like '{@code <T> MyClass.meth(List<T> l, int i) => double}'.
          */
         public String
@@ -238,17 +262,25 @@ class SignatureParser {
         }
     }
 
-    /** Representation of the "ClassSignature" clause. */
+    /**
+     * Representation of the "ClassSignature" clause.
+     */
     public static
     class ClassSignature {
 
-        /** The class's formal type parameters, e.g. '{@code class MyMap<K, V> ...}'. */
+        /**
+         * The class's formal type parameters, e.g. '{@code class MyMap<K, V> ...}'.
+         */
         public final List<FormalTypeParameter> formalTypeParameters;
 
-        /** The class's superclass type. */
+        /**
+         * The class's superclass type.
+         */
         public ClassTypeSignature superclassSignature;
 
-        /** The interfaces that the class implements. */
+        /**
+         * The interfaces that the class implements.
+         */
         public final List<ClassTypeSignature> superinterfaceSignatures;
 
         public
@@ -263,7 +295,7 @@ class SignatureParser {
         }
 
         /**
-         * Combine the name of the class and this class signature into a nice, human-readable string like '{@code
+         * Combines the name of the class and this class signature into a nice, human-readable string like '{@code
          * MyMap<K, V> extends SomeClass implements Interface1, Interface2}'.
          */
         public String
@@ -285,20 +317,30 @@ class SignatureParser {
         }
     }
 
-    /** Representation of the "ClassTypeSignature" clause, e.g. '{@code pkg.Outer<T>.Inner<U>}'. */
+    /**
+     * Representation of the "ClassTypeSignature" clause, e.g. '{@code pkg.Outer<T>.Inner<U>}'.
+     */
     public static
     class ClassTypeSignature implements ThrowsSignature, FieldTypeSignature {
 
-        /** <pre>{ identifier '/' }</pre> */
+        /**
+         * <pre>{ identifier '/' }</pre>
+         */
         public final String packageSpecifier;
 
-        /** <pre>identifier</pre> */
+        /**
+         * <pre>identifier</pre>
+         */
         public final String simpleClassName;
 
-        /** The {@link TypeArgument}s of this class. */
+        /**
+         * The {@link TypeArgument}s of this class.
+         */
         public final List<TypeArgument> typeArguments;
 
-        /** The nested types. */
+        /**
+         * The nested types.
+         */
         public final List<SimpleClassTypeSignature> suffixes;
 
         public
@@ -335,7 +377,9 @@ class SignatureParser {
         }
     }
 
-    /** The class type signature of the {@link Object} class. */
+    /**
+     * The class type signature of the {@link Object} class.
+     */
     public static final ClassTypeSignature OBJECT = new ClassTypeSignature(
         "java.lang.",
         "Object",
@@ -343,14 +387,20 @@ class SignatureParser {
         Collections.<SimpleClassTypeSignature>emptyList()
     );
 
-    /** Representation of the "SimpleClassTypeSignature" clause, e.g. '{@code MyMap<K, V>}'. */
+    /**
+     * Representation of the "SimpleClassTypeSignature" clause, e.g. '{@code MyMap<K, V>}'.
+     */
     public static
     class SimpleClassTypeSignature {
 
-        /** The simple name of the class. */
+        /**
+         * The simple name of the class.
+         */
         public final String simpleClassName;
 
-        /** The type arguments of the class, e.g. '{@code <A extends x, B super x, *, x>}'. */
+        /**
+         * The type arguments of the class, e.g. '{@code <A extends x, B super x, *, x>}'.
+         */
         public final List<TypeArgument> typeArguments;
 
         public
@@ -359,7 +409,9 @@ class SignatureParser {
             this.typeArguments   = typeArguments;
         }
 
-        /** Converts this simple class type signature into a nice, human-readable string like '{@code MyClass<U>}'. */
+        /**
+         * Converts this simple class type signature into a nice, human-readable string like '{@code MyClass<U>}'.
+         */
         @Override public String
         toString() {
             StringBuilder sb = new StringBuilder(this.simpleClassName);
@@ -373,11 +425,15 @@ class SignatureParser {
         }
     }
 
-    /** Representation of the "ArrayTypeSignature" clause. The array's component have a {@link TypeSignature}. */
+    /**
+     * Representation of the "ArrayTypeSignature" clause. The array's component have a {@link TypeSignature}.
+     */
     public static
     class ArrayTypeSignature implements FieldTypeSignature {
 
-        /** The type of the array components. */
+        /**
+         * The type of the array components.
+         */
         public final TypeSignature componentTypeSignature;
 
         public
@@ -388,11 +444,15 @@ class SignatureParser {
         @Override public String toString() { return this.componentTypeSignature.toString() + "[]"; }
     }
 
-    /** Representation of the "TypeVariableSignature" clause, e.g. '{@code T}'. */
+    /**
+     * Representation of the "TypeVariableSignature" clause, e.g. '{@code T}'.
+     */
     public static
     class TypeVariableSignature implements ThrowsSignature, FieldTypeSignature {
 
-        /** The name of the type variable, e.g. '{@code T}'. */
+        /**
+         * The name of the type variable, e.g. '{@code T}'.
+         */
         public String identifier;
 
         public
@@ -405,7 +465,7 @@ class SignatureParser {
      * Representation of the "TypeSignature" clause. A 'type signature' is one of
      * <dl>
      *   <dt>{@link PrimitiveTypeSignature}:</dt>
-     *   <dd>'{@code byte}', '{@code int}', etc., but <i>not</i> '{@code void}'</dd>
+     *   <dd>'{@code byte}', '{@code int}', etc., but <em>not</em> '{@code void}'</dd>
      *   <dt>{@link FieldTypeSignature}:</dt>
      *   <dd>
      *     One of:
@@ -423,22 +483,32 @@ class SignatureParser {
         @Override String toString();
     }
 
-    /** Representation of the "ThrowsSignature" clause. */
+    /**
+     * Representation of the "ThrowsSignature" clause.
+     */
     public
     interface ThrowsSignature {
     }
 
-    /** Representation of the "FormalTypeParameter" clause, e.g. '{@code T extends MyClass & MyInterface}'. */
+    /**
+     * Representation of the "FormalTypeParameter" clause, e.g. '{@code T extends MyClass & MyInterface}'.
+     */
     public static
     class FormalTypeParameter {
 
-        /** The name of the formal type parameter, e.g. '{@code T}'. */
+        /**
+         * The name of the formal type parameter, e.g. '{@code T}'.
+         */
         public final String identifier;
 
-        /** The class that this formal type parameter (optionally) extends. */
+        /**
+         * The class that this formal type parameter (optionally) extends.
+         */
         @Nullable public final FieldTypeSignature classBound;
 
-        /** The interfaces that this formal type parameter (optionally) extends. */
+        /**
+         * The interfaces that this formal type parameter (optionally) extends.
+         */
         public final List<FieldTypeSignature> interfaceBounds;
 
         public
@@ -471,13 +541,15 @@ class SignatureParser {
     }
 
     /**
-     * Representation of the "PrimitiveTypeSignature" clause, i.e. '{@code byte}', '{@code int}', etc., but <i>not</i>
+     * Representation of the "PrimitiveTypeSignature" clause, i.e. '{@code byte}', '{@code int}', etc., but <em>not</em>
      * '{@code void}'.
      */
     public static
     class PrimitiveTypeSignature implements TypeSignature {
 
-        /** The name of the primitive type, e.g. '{@code int}'. */
+        /**
+         * The name of the primitive type, e.g. '{@code int}'.
+         */
         public final String typeName;
 
         PrimitiveTypeSignature(String typeName) {
@@ -500,10 +572,14 @@ class SignatureParser {
     public static
     class TypeArgument {
 
-        /** @see TypeArgument */
+        /**
+         * @see TypeArgument
+         */
         enum Mode { EXTENDS, SUPER, ANY, NONE }
 
-        /** @see TypeArgument */
+        /**
+         * @see TypeArgument
+         */
         public final Mode mode;
 
         /**
@@ -513,7 +589,9 @@ class SignatureParser {
          */
         @Nullable public final FieldTypeSignature fieldTypeSignature;
 
-        /** @param fieldTypeSignature {@code null} iff {@code mode == ANY} */
+        /**
+         * @param fieldTypeSignature {@code null} iff {@code mode == ANY}
+         */
         public
         TypeArgument(Mode mode, @Nullable FieldTypeSignature fieldTypeSignature) {
             assert mode == Mode.ANY ^ fieldTypeSignature == null;
@@ -564,31 +642,49 @@ class SignatureParser {
         @Override String toString();
     }
 
-    /** The primitive '{@code byte}' type. */
+    /**
+     * The primitive '{@code byte}' type.
+     */
     public static final PrimitiveTypeSignature BYTE = new PrimitiveTypeSignature("byte");
 
-    /** The primitive '{@code char}' type. */
+    /**
+     * The primitive '{@code char}' type.
+     */
     public static final PrimitiveTypeSignature CHAR = new PrimitiveTypeSignature("char");
 
-    /** The primitive '{@code double}' type. */
+    /**
+     * The primitive '{@code double}' type.
+     */
     public static final PrimitiveTypeSignature DOUBLE = new PrimitiveTypeSignature("double");
 
-    /** The primitive '{@code float}' type. */
+    /**
+     * The primitive '{@code float}' type.
+     */
     public static final PrimitiveTypeSignature FLOAT = new PrimitiveTypeSignature("float");
 
-    /** The primitive '{@code int}' type. */
+    /**
+     * The primitive '{@code int}' type.
+     */
     public static final PrimitiveTypeSignature INT = new PrimitiveTypeSignature("int");
 
-    /** The primitive '{@code long}' type. */
+    /**
+     * The primitive '{@code long}' type.
+     */
     public static final PrimitiveTypeSignature LONG = new PrimitiveTypeSignature("long");
 
-    /** The primitive '{@code short}' type. */
+    /**
+     * The primitive '{@code short}' type.
+     */
     public static final PrimitiveTypeSignature SHORT = new PrimitiveTypeSignature("short");
 
-    /** The primitive '{@code boolean}' type. */
+    /**
+     * The primitive '{@code boolean}' type.
+     */
     public static final PrimitiveTypeSignature BOOLEAN = new PrimitiveTypeSignature("boolean");
 
-    /** Representation of the 'void' type. */
+    /**
+     * Representation of the 'void' type.
+     */
     public static final TypeSignature VOID = new TypeSignature() {
         @Override public String toString() { return "void"; }
     };
@@ -804,7 +900,9 @@ class SignatureParser {
         return new TypeArgument(TypeArgument.Mode.NONE, SignatureParser.parseFieldTypeSignature(scs));
     }
 
-    /** Signalizes am malformed signature. */
+    /**
+     * Signalizes am malformed signature.
+     */
     public static
     class SignatureException extends Exception {
 

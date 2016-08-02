@@ -32,7 +32,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Designates that a field, return value, argument, or variable may be {@code null}. */
+/**
+ * Designates that a field, return value, argument, or variable may be {@code null}.
+ */
 @Target({
     ElementType.FIELD,
     ElementType.METHOD,

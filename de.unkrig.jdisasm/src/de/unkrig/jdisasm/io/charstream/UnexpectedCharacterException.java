@@ -28,7 +28,9 @@ package de.unkrig.jdisasm.io.charstream;
 
 import java.io.IOException;
 
-/** Indicates that {@link CharStream#read} did not find the character(s) it expected. */
+/**
+ * Indicates that {@link CharStream#read} did not find the character(s) it expected.
+ */
 public // SUPPRESS CHECKSTYLE CauseParameterInExceptionCheck
 class UnexpectedCharacterException extends IOException {
 

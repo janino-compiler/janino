@@ -29,7 +29,9 @@ package de.unkrig.jdisasm.io.charstream;
 import java.io.EOFException;
 import java.io.IOException;
 
-/** Reads from a {@link String}. Notice that none of the overridden methods throw {@link IOException}. */
+/**
+ * Reads from a {@link String}. Notice that none of the overridden methods throw {@link IOException}.
+ */
 public
 class StringCharStream implements CharStream {
 
