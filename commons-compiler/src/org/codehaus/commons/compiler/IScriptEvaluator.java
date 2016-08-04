@@ -137,8 +137,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     void setStaticMethod(boolean staticMethod);
 
     /**
-     * Defines the return type of the generated method. The meaning of a {@code null} value is
-     * simplementation-dependent.
+     * Defines the return type of the generated method. Value {@code null} is equivalent with {@code void.class}.
      */
     void setReturnType(Class<?> returnType);
 
@@ -206,8 +205,10 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     void setStaticMethod(boolean[] staticMethod);
 
     /**
-     * Defines the return types of the generated methods. The meaning of {@code null} elements is
-     * simplementation-dependent.
+     * Configures the return types of the generated methods. None of the array elements may be {@code null}.
+     * <p>
+     *   Unless this method is invoked, the return type of all script is {@code void.class}.
+     * </p>
      */
     void setReturnTypes(Class<?>[] returnTypes);
 
@@ -267,7 +268,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Same as {@link #evaluate(Object[])}, but for multiple scripts.
      */
-    Object evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException;
+    @Nullable Object evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException;
 
     /**
      * Same as {@link #getMethod()}, but for multiple scripts.
