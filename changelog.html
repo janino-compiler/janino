@@ -51,7 +51,7 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version ?, ? - <a href="?">Download</a></h4>
+    <h4>HEAD version</h4>
     <ul>
       <li>Implemented enum declarations.</li>
       <li>Implemented underscores in integer and floating-point literals.</li>
@@ -65,7 +65,17 @@ h5 {
         Major refactoring and simplification of the scanner; the "doc comment" and "expect greater" features were moved
         to the parser (where they actually belong).
       </li>
-      <li>Implemented the enum switch statement.
+      <li>Implemented the enum switch statement.</li>
+      <li>Class literals in interface field initializers caused errors in the "flow analysis" phase.</li>
+      <li>
+        IExpressionEvaluator: Removed the "ANY_TYPE" feature which implemented sort of an "autoboxing" of an expression
+        value, which is unnecessary since Java 5.
+      </li>
+      <li>
+        JSH: Added the "interactive mode", and thus moved the tool from project "commons-compiler" to project "janino",
+        because the specific parsing for interactive mode is only possible with a JANINO-dependent "StatementEvaluator"
+        class.
+      </li>
     </ul>
 
     <h4>Version 3.0.0, July 7, 2016 - <a href="http://janino.unkrig.de/download/janino-3.0.0.zip">Download</a></h4>
