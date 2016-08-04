@@ -24,17 +24,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.tools;
+package org.codehaus.janino.tools.jsh;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -51,6 +49,7 @@ import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
+import org.codehaus.janino.tools.jsh.command.Ls;
 
 /**
  * A test program that allows you to play around with the
@@ -58,6 +57,8 @@ import org.codehaus.janino.ScriptEvaluator;
  */
 public final
 class Jsh extends DemoBase {
+
+    private Jsh() {}
 
     /***/
     public static void
@@ -70,6 +71,11 @@ class Jsh extends DemoBase {
         List<String>   defaultImports    = new ArrayList<String>();
         String         optionalEncoding  = null;
         String         compilerFactoryId = null;
+
+        defaultImports.add("java.util.*");
+        defaultImports.add("static " + System.class.getName() + ".*");
+        defaultImports.add("static " + Brief.class.getName() + ".*");
+        defaultImports.add("static " + Ls.class.getName() + ".*");
 
         int i;
         for (i = 0; i < args.length; ++i) {
@@ -95,23 +101,29 @@ class Jsh extends DemoBase {
                 compilerFactoryId = args[++i];
             } else
            if ("--help".equals(arg)) {
-               System.err.println("Usage:");
-               System.err.println("  Jsh { <option> } <script-file> { <argument> }");
-               System.err.println("Valid options are:");
-               System.err.println(" --return-type <return-type>         (default: void)");
-               System.err.println(" --parameter <type> <name>           (multiple allowed)");
+               System.err.println("The \"Java shell\".");
+               System.err.println();
+               System.err.println("Usage as an interactive shell:");
+               System.err.println("  Jsh { <option> }");
+               System.err.println("Valid <option>s are:");
                System.err.println(" --thrown-exception <exception-type> (multiple allowed)");
                System.err.println(" --default-import <imports>          (multiple allowed)");
                System.err.println(" --encoding <encoding>");
-               System.err.println(" --compiler-factory <id>             (One of " + Arrays.toString(CompilerFactoryFactory.getAllCompilerFactories()) + ")"); // SUPPRESS CHECKSTYLE LineLength
                System.err.println(" --help");
-               System.err.println("If no \"--parameter\"s are specified, then the <argument>s are passed as a single");
-               System.err.println("parameter \"String[] args\".");
-               System.err.println("Otherwise, the number of <argument>s must exactly match the number of");
-               System.err.println("parameters, and each <argument> is converted to the respective parameter's");
-               System.err.println("type.");
-               System.err.println("Iff the return type is not \"void\", then the return value is printed to STDOUT.");
-               System.exit(0);
+               System.err.println();
+               System.err.println("Usage for executing a script file (containing Java code):");
+               System.err.println("  Jsh { <option> } <script-file> { <argument> }");
+               System.err.println("Valid <option>s are thos described above, plus:");
+               System.err.println(" --return-type <return-type>         (default: void)");
+               System.err.println(" --parameter <type> <name>           (multiple allowed)");
+               System.err.println(" --compiler-factory <id>             (One of " + Arrays.toString(CompilerFactoryFactory.getAllCompilerFactories()) + ")"); // SUPPRESS CHECKSTYLE LineLength
+               System.err.println("If no \"--parameter\"s are specified, then the <argument>s are passed as a");
+               System.err.println("single parameter \"String[] args\". Otherwise, the number of <argument>s must");
+               System.err.println("exactly match the number of parameters, and each <argument> is converted to");
+               System.err.println("the respective parameter's type.");
+               System.err.println("Iff the return type is not \"void\", then the return value is printed to STDOUT");
+               System.err.println("after the script completes.");
+               return;
            } else
            {
                System.err.println("Invalid command line option \"" + arg + "\"; try \"--help\".");
@@ -119,23 +131,52 @@ class Jsh extends DemoBase {
            }
         }
 
+        // Now check if we want INTERACTIVE MODE.
         if (i == args.length) {
-            if (!parameterTypes.isEmpty()) {
-                System.err.println("Parameters are not possible if the script is read from STDIN");
+            if (compilerFactoryId != null) {
+                System.err.println("Compiler factory by cannot be set if reading from STDIN");
                 System.exit(1);
             }
             if (returnType != void.class) {
                 System.err.println("Return type not possible if reading from STDIN");
                 System.exit(1);
             }
-            if (compilerFactoryId != null) {
-                System.err.println("Compiler factory by cannot be set if reading from STDIN");
+            if (!parameterTypes.isEmpty()) {
+                System.err.println("Parameters are not possible if the script is read from STDIN");
                 System.exit(1);
             }
 
             Jsh.interactiveJsh(thrownExceptions, defaultImports, optionalEncoding);
-            return;
+        } else {
+
+            final File scriptFile = new File(args[i++]);
+
+            Jsh.executeScriptFile(
+                compilerFactoryId,
+                scriptFile,
+                optionalEncoding,
+                defaultImports,
+                returnType,
+                parameterNames,
+                parameterTypes,
+                thrownExceptions,
+                Arrays.copyOfRange(args, i, args.length) // args
+            );
         }
+    }
+
+    private static void
+    executeScriptFile(
+        @Nullable String compilerFactoryId,
+        File             scriptFile,
+        @Nullable String optionalEncoding,
+        List<String>     defaultImports,
+        Class<?>         returnType,
+        List<String>     parameterNames,
+        List<Class<?>>   parameterTypes,
+        List<Class<?>>   thrownExceptions,
+        String[]         args
+    ) throws Exception {
 
         ICompilerFactory compilerFactory;
         COMPILER_FACTORY_BY_ID:
@@ -154,30 +195,26 @@ class Jsh extends DemoBase {
         }
 
         IScriptEvaluator se = compilerFactory.newScriptEvaluator();
-        se.setExtendedClass(JshBase.class);
 
         se.setReturnType(returnType);
-        se.setDefaultImports(defaultImports.toArray(new String[0]));
-        se.setThrownExceptions(thrownExceptions.toArray(new Class[0]));
-
-        final File scriptFile = new File(args[i++]);
+        se.setDefaultImports(defaultImports.toArray(new String[defaultImports.size()]));
+        se.setThrownExceptions(thrownExceptions.toArray(new Class[thrownExceptions.size()]));
 
         Object[] arguments;
         if (parameterTypes.isEmpty()) {
 
             parameterTypes.add(String[].class);
             parameterNames.add("args");
-
-            arguments = new Object[] { Arrays.copyOfRange(args, i, args.length) };
+            arguments = args;
 
             if (thrownExceptions.isEmpty()) thrownExceptions.add(Exception.class);
         } else {
 
             // One command line argument for each parameter.
-            if (args.length - i != parameterTypes.size()) {
+            if (args.length != parameterTypes.size()) {
                 System.err.println(
                     "Argument count ("
-                    + (args.length - i)
+                    + args.length
                     + ") and parameter count ("
                     + parameterTypes.size()
                     + ") do not match; try \"--help\"."
@@ -186,14 +223,17 @@ class Jsh extends DemoBase {
             }
 
             // Convert command line arguments to call arguments.
-            arguments = new Object[parameterTypes.size()];
-            for (int j = 0; j < arguments.length; ++j) {
-                arguments[j] = DemoBase.createObject(parameterTypes.get(j), args[i + j]);
+            arguments = new Object[args.length];
+            for (int j = 0; j < args.length; ++j) {
+                arguments[j] = DemoBase.createObject(parameterTypes.get(j), args[j]);
             }
         }
 
         // Create and configure the "ScriptEvaluator" object.
-        se.setParameters(parameterNames.toArray(new String[0]), parameterTypes.toArray(new Class[0]));
+        se.setParameters(
+            parameterNames.toArray(new String[0]),
+            parameterTypes.toArray(new Class[parameterTypes.size()])
+        );
         se.setThrownExceptions(thrownExceptions.toArray(new Class[0]));
 
         // Scan, parse and compile the script file.
@@ -222,8 +262,7 @@ class Jsh extends DemoBase {
         // Use than JANINO implementation of IScriptEvaluator, because only that offers the "setMinimal()" feature.
         StatementEvaluator se = new StatementEvaluator();
 
-        se.setExtendedClass(JshBase.class);
-        se.setDefaultImports(defaultImports.toArray(new String[0]));
+        se.setDefaultImports(defaultImports.toArray(new String[defaultImports.size()]));
 
         System.err.println("Welcome, stranger, and speak!");
 
@@ -244,108 +283,13 @@ class Jsh extends DemoBase {
             try {
                 se.execute();
             } catch (Exception e) {
+                System.out.flush();
                 System.err.println(e.getLocalizedMessage());
                 continue;
             }
+
+            System.out.flush();
         }
-    }
-
-    private Jsh() {}
-
-    public static
-    class JshBase {
-
-        public static Collection<File>
-        ls() { return JshBase.ls("."); }
-
-        public static Collection<File>
-        ls(String... globs) {
-            Collection<File> result = new ArrayList<File>();
-            for (String glob : globs) {
-                for (File f : JshBase.glob(glob)) result.add(f);
-            }
-            return result;
-        }
-
-        public static Collection<? extends File>
-        glob(String glob) {
-            Collection<File> result = new ArrayList<File>();
-            Jsh.glob(null, glob, result);
-            return result;
-        }
-    }
-
-    private static void
-    glob(@Nullable File parent, String glob, Collection<File> result) {
-
-        final String prefix, suffix;
-        {
-            int idx = glob.indexOf('/');
-            if (idx == -1) {
-                prefix = glob;
-                suffix = null;
-            } else {
-                prefix = glob.substring(0, idx);
-                for (idx++; idx < glob.length() && glob.charAt(idx) == '/'; idx++);
-                suffix = idx == glob.length() ? null : glob.substring(idx);
-            }
-        }
-
-        File[] children;
-        if (Jsh.containsWildcards(glob)) {
-            children = (parent == null ? new File(".") : parent).listFiles(new FilenameFilter() {
-
-                @Override public boolean
-                accept(@Nullable File dir, @Nullable String name) {
-                    assert name != null;
-                    return Jsh.wildmatch(prefix, name);
-                }
-            });
-        } else {
-            children = new File[] { new File(parent, glob) };
-        }
-
-        if (suffix == null) {
-            result.addAll(Arrays.asList(children));
-        } else {
-            for (File child : children) Jsh.glob(child, suffix, result);
-        }
-    }
-
-    private static boolean
-    wildmatch(@Nullable String pattern, String text) {
-
-        if (pattern == null) return true;
-
-        int i;
-        for (i = 0; i < pattern.length(); ++i) {
-            char c = pattern.charAt(i);
-            switch (c) {
-
-            case '?':
-                if (i == text.length()) return false;
-                break;
-
-            case '*':
-                if (pattern.length() == i + 1) return true; // Optimization for trailing '*'.
-                pattern = pattern.substring(i + 1);
-                for (; i <= text.length(); ++i) {
-                    if (Jsh.wildmatch(pattern, text.substring(i))) return true;
-                }
-                return false;
-
-            default:
-                if (i == text.length()) return false;
-                if (text.charAt(i) != c) return false;
-                break;
-            }
-        }
-        return text.length() == i;
-    }
-
-    private static boolean
-    containsWildcards(@Nullable String pattern) {
-        return pattern != null && (pattern.indexOf('*') != -1 || pattern.indexOf('?') != -1);
     }
 
     /**
@@ -425,7 +369,7 @@ class Jsh extends DemoBase {
                 ),
                 null,                                                            // optionalTypeParameters
                 this.classToType(location, void.class),                          // type
-                StatementEvaluator.METHOD_NAME,                                   // name
+                StatementEvaluator.METHOD_NAME,                                  // name
                 fps,                                                             // formalParameters
                 new Java.Type[] { this.classToType(location, Exception.class) }, // thrownExceptions
                 Collections.singletonList(statement)                             // optionalStatements
