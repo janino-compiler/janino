@@ -433,7 +433,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.cook(new Scanner[] { scanner });
     }
 
-    @Override public Object
+    @Override @Nullable public Object
     evaluate(@Nullable Object[] arguments) throws InvocationTargetException {
         return this.evaluate(0, arguments);
     }
@@ -743,6 +743,21 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     getDefaultReturnType() { return void.class; }
 
     /**
+     * @return The return type of the indexed script.
+     */
+    protected final Class<?>
+    getReturnType(int i) {
+
+        if (this.optionalReturnTypes != null) {
+            Class<?> rt = this.optionalReturnTypes[i];
+            assert rt != null;
+            return rt;
+        }
+
+        return this.getDefaultReturnType();
+    }
+
+    /**
      * @throws CompileException
      * @throws IOException
      */
@@ -766,27 +781,20 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     /**
      * <pre>
      *   ScriptStatement :=
-     *     Statement |                                             (1)
-     *     'class' ... |                                           (2)
-     *     [ Modifiers ] 'void' Identifier MethodDeclarationRest |
-     *     Modifiers Type Identifier MethodDeclarationRest ';' |
-     *     Modifiers Type VariableDeclarators ';' |
-     *     Expression ';' |
-     *     Expression Identifier MethodDeclarationRest             (3)
-     *     Expression VariableDeclarators ';' |                    (4)
+     *     Statement                                               (1)
+     *     | 'class' ...                                           (2)
+     *     | [ Modifiers ] 'void' Identifier MethodDeclarationRest (3a)
+     *     | Modifiers Type Identifier MethodDeclarationRest ';'   (3b)
+     *     | Expression Identifier MethodDeclarationRest           (3c) (5)
+     *     | Modifiers Type VariableDeclarators ';'                (4a)
+     *     | Expression VariableDeclarators ';'                    (4b) (5)
+     *     | Expression ';'
      * </pre>
-     * <p>
-     *   (1) Includes the "labeled statement".
-     * </p>
-     * <p>
-     *   (2) Local class declaration.
-     * </p>
-     * <p>
-     *   (3) Local method declaration statement; "Expression" must pose a type.
-     * </p>
-     * <p>
-     *   (4) Local variable declaration statement; "Expression" must pose a type.
-     * </p>
+     * <p> (1): Includes the "labeled statement".</p>
+     * <p> (2): Local class declaration.</p>
+     * <p> (3a), (3b), (3c): Local method declaration statement.</p>
+     * <p> (4) Local variable declaration statement.</p>
+     * <p> (5) "Expression" must pose a type.</p>
      */
     private static void
     parseScriptStatement(
@@ -800,9 +808,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             (parser.peekIdentifier() != null && parser.peekNextButOne(":"))
             || parser.peek(new String[] {
                 "if", "for", "while", "do", "try", "switch", "synchronized",
-                "return", "throw", "break", "continue", "assert"
+                "return", "throw", "break", "continue", "assert",
+                "{", ";"
             }) != -1
-            || parser.peek(new String[] { "{", ";" }) != -1
         ) {
             mainStatements.add(parser.parseStatement());
             return;
@@ -1184,7 +1192,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
     }
 
-    @Override public Object
+    @Override @Nullable public Object
     evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException {
         try {
             return this.assertCooked()[idx].invoke(null, arguments);
