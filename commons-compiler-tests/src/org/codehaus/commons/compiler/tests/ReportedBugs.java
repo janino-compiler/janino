@@ -494,10 +494,9 @@ class ReportedBugs extends JaninoTestSuite {
         this.assertExpressionUncookable("\"aaa\\/bbb\"");
     }
 
-    @SuppressWarnings("deprecation") @Test(expected = AssertionError.class) public void
+    @SuppressWarnings("deprecation") @Test public void
     testBug157() throws Exception {
-        IExpressionEvaluator evaluator = this.compilerFactory.newExpressionEvaluator();
-        evaluator.setReturnType(Long.class);
+        this.compilerFactory.newExpressionEvaluator().setReturnType(Long.class);
     }
 
     @Test public void
