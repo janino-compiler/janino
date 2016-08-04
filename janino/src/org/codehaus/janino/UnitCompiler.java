@@ -349,7 +349,11 @@ class UnitCompiler {
         try {
 
             for (PackageMemberTypeDeclaration pmtd : this.compilationUnit.packageMemberTypeDeclarations) {
-                this.compile(pmtd);
+                try {
+                    this.compile(pmtd);
+                } catch (RuntimeException re) {
+                    throw new RuntimeException("Compiling \"" + pmtd + "\": " + re.getMessage(), re);
+                }
             }
 
             if (this.compileErrorCount > 0) {
@@ -2759,13 +2763,17 @@ class UnitCompiler {
             try {
                 codeContext.flowAnalysis(fd.toString());
             } catch (RuntimeException re) {
-                UnitCompiler.LOGGER.log(Level.FINE, null, re);
+                UnitCompiler.LOGGER.log(Level.FINE, "*** FLOW ANALYSIS", re);
 
                 // Continue, so that the .class file is generated and can be examined.
                 ;
             }
         } else {
-            codeContext.flowAnalysis(fd.toString());
+            try {
+                codeContext.flowAnalysis(fd.toString());
+            } catch (RuntimeException re) {
+                throw new RuntimeException("Compiling \"" + fd + "\"; " + re.getMessage(), re);
+            }
         }
 
         final short lntani;
@@ -11123,7 +11131,7 @@ class UnitCompiler {
      */
     private void
     invoke(Locatable locatable, IMethod iMethod) throws CompileException {
-        if (iMethod.getDeclaringIClass().isInterface()) {
+        if (iMethod.getDeclaringIClass().isInterface() && !iMethod.isStatic()) {
             this.writeOpcode(locatable, Opcode.INVOKEINTERFACE);
             this.writeConstantInterfaceMethodrefInfo(
                 iMethod.getDeclaringIClass().getDescriptor(), // classFD
