@@ -275,7 +275,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.cook(new String[] { optionalFileName }, new Reader[] { r });
     }
 
-    @Override public Object
+    @Override @Nullable public Object
     evaluate(@Nullable Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
 
     @Override public Method
@@ -296,6 +296,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Override public void
     setReturnTypes(Class<?>[] returnTypes) {
         this.assertNotCooked();
+        for (Class<?> rt : returnTypes) assert rt != null;
         this.optionalReturnTypes = returnTypes.clone();
     }
 
@@ -510,6 +511,18 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     protected Class<?>
     getDefaultReturnType() { return void.class; }
 
+    protected final Class<?>
+    getReturnType(int i) {
+
+        if (this.optionalReturnTypes != null) {
+            Class<?> rt = this.optionalReturnTypes[i];
+            assert rt != null;
+            return rt;
+        }
+
+        return this.getDefaultReturnType();
+    }
+
     /**
      * @param script Contains the sequence of script tokens
      * @see #createFastEvaluator(String, Class, String[])
@@ -574,7 +587,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
-    @Override public Object
+    @Override @Nullable public Object
     evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException {
         try {
             return this.getMethods()[idx].invoke(null, arguments);
