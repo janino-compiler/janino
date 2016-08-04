@@ -117,24 +117,33 @@ interface IExpressionEvaluator extends IScriptEvaluator {
 
     /**
      * Special value for {@link #setExpressionType(Class)} that indicates that the expression may have any type.
+     *
+     * @deprecated Since autoboxing was introduced in JANINO, this feature is no longer necessary because you can use
+     *             expression type {@link Object}{@code .class}
      */
-    @Nullable Class<?> ANY_TYPE = null;
+    @Deprecated Class<?> ANY_TYPE = Object.class;
 
     /**
-     * Defines the type of the expression. The special type {@link #ANY_TYPE} allows the expression to return any type
-     * (primitive or reference).
+     * Defines the type of the expression.
      * <p>
-     *   If {@code expressionType} is {@link Void#TYPE}, then the expression must be an invocation of a {@code void}
+     *   Defaults to {@link Object}{@code .class}, which, thanks to autoboxing, allows for any expression type
+     *   (including primitive types).
+     * </p>
+     * <p>
+     *   If {@code expressionType} is {@code void.class}, then the expression must be an invocation of a {@code void}
      *   method.
      * </p>
-     * <p>
-     *   Defaults to {@link #ANY_TYPE}.
-     * </p>
      */
-    void setExpressionType(@Nullable Class<?> expressionType);
+    void setExpressionType(Class<?> expressionType);
 
     /**
-     * Same as {@link #setExpressionType(Class)}, but for multiple expressions.
+     * Configures the types of the expressions.
+     * <p>
+     *   Unless this method is called, all expressions have type {@link Object}{@code .class}.
+     * </p>
+     * <p>
+     *   If any expression has type {@code void.class}, then it must be an invocation of a {@code void} method.
+     * </p>
      */
     void setExpressionTypes(Class<?>[] expressionTypes);
 

@@ -40,7 +40,6 @@ import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
-import org.codehaus.commons.compiler.PrimitiveWrapper;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.BlockStatement;
@@ -255,36 +254,10 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     public ExpressionEvaluator() {}
 
     @Override public void
-    setExpressionType(@Nullable Class<?> expressionType) { this.setExpressionTypes(new Class[] { expressionType }); }
+    setExpressionType(Class<?> expressionType) { super.setReturnType(expressionType); }
 
     @Override public void
-    setExpressionTypes(Class<?>[] expressionTypes) {
-        this.assertNotCooked();
-        this.optionalExpressionTypes = expressionTypes;
-
-        Class<?>[] returnTypes = new Class[expressionTypes.length];
-        for (int i = 0; i < returnTypes.length; ++i) {
-            Class<?> et = expressionTypes[i];
-            returnTypes[i] = et == IExpressionEvaluator.ANY_TYPE ? Object.class : et;
-        }
-        super.setReturnTypes(returnTypes);
-    }
-
-    /**
-     * @deprecated {@link #setExpressionType(Class)} should be called instead.
-     */
-    @Override @Deprecated public final void
-    setReturnType(Class<?> returnType) {
-        throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
-    }
-
-    /**
-     * @deprecated {@link #setExpressionTypes(Class[])} should be called instead.
-     */
-    @Override @Deprecated public final void
-    setReturnTypes(Class<?>[] returnTypes) {
-        throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
-    }
+    setExpressionTypes(Class<?>[] expressionTypes) { super.setReturnTypes(expressionTypes); }
 
     @Override protected Class<?>
     getDefaultReturnType() { return Object.class; }
@@ -296,40 +269,13 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         // Parse the expression.
         Rvalue value = parser.parseExpression().toRvalueOrCompileException();
 
-        Class<?>[] oets = this.optionalExpressionTypes;
-        Class<?>   et   = oets == null ? IExpressionEvaluator.ANY_TYPE : oets[idx];
+        Class<?> et = this.getReturnType(idx);
         if (et == void.class) {
-
-            // ExpressionEvaluator with an expression type "void" is a simple expression statement.
             statements.add(new Java.ExpressionStatement(value));
         } else {
-
-            // Special case: Expression type "ANY_TYPE" means return type "Object" and automatic
-            // wrapping of primitive types.
-            if (et == IExpressionEvaluator.ANY_TYPE) {
-                value = new Java.MethodInvocation(
-                    parser.location(),          // location
-                    new Java.ReferenceType(     // optionalTarget
-                        parser.location(), // location
-                        new String[] {     // identifiers
-                            "org", "codehaus", "commons", "compiler", "PrimitiveWrapper"
-                        },
-                        null               // optionalTypeArguments
-                    ),
-                    "wrap",                     // methodName
-                    new Java.Rvalue[] { value } // arguments
-                );
-
-                // Make sure "PrimitiveWrapper" is compiled.
-                PrimitiveWrapper.wrap(99);
-
-                // Verify that "PrimitiveWrapper" is loadable.
-                this.classToType(parser.location(), PrimitiveWrapper.class);
-            }
-
-            // Add a return statement.
             statements.add(new Java.ReturnStatement(parser.location(), value));
         }
+
         if (!parser.peekEof()) {
             throw new CompileException("Unexpected token \"" + parser.peek() + "\"", parser.location());
         }

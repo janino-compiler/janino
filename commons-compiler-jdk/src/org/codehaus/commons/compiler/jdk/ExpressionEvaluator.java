@@ -86,8 +86,6 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
 
-    @Nullable private Class<?>[] optionalExpressionTypes;
-
     /**
      * Equivalent to
      * <pre>
@@ -193,35 +191,17 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     public ExpressionEvaluator() {}
 
     @Override public void
-    setExpressionType(@Nullable Class<?> expressionType) {
+    setExpressionType(Class<?> expressionType) {
         this.setExpressionTypes(new Class<?>[] { expressionType });
     }
 
     @Override public void
     setExpressionTypes(Class<?>[] expressionTypes) {
-        this.assertNotCooked();
-        this.optionalExpressionTypes = expressionTypes;
-
-        Class<?>[] returnTypes = new Class[expressionTypes.length];
-        for (int i = 0; i < returnTypes.length; ++i) {
-            Class<?> et = expressionTypes[i];
-            returnTypes[i] = et == IExpressionEvaluator.ANY_TYPE ? Object.class : et;
-        }
-        super.setReturnTypes(returnTypes);
-    }
-
-    @Override public final void
-    setReturnType(Class<?> returnType) {
-        throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionType()' instead");
-    }
-
-    @Override public final void
-    setReturnTypes(Class<?>[] returnTypes) {
-        throw new AssertionError("Must not be used on an ExpressionEvaluator; use 'setExpressionTypes()' instead");
+        super.setReturnTypes(expressionTypes);
     }
 
     /**
-     * The default return type of an expression is {@code Object}.
+     * The default return type of an expression is {@code Object}{@code .class}.
      */
     @Override protected Class<?>
     getDefaultReturnType() { return Object.class; }
@@ -240,25 +220,19 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
             imports = new String[0];
         }
 
-        Class<?>[] oets        = this.optionalExpressionTypes;
         Class<?>[] returnTypes = new Class[readers.length];
         for (int i = 0; i < readers.length; ++i) {
+
             StringWriter sw = new StringWriter();
             PrintWriter  pw = new PrintWriter(sw);
 
-            if (oets == null || oets[i] == IExpressionEvaluator.ANY_TYPE) {
-                returnTypes[i] = Object.class;
-                pw.print("return org.codehaus.commons.compiler.PrimitiveWrapper.wrap(");
-                pw.write(Cookable.readString(readers[i]));
-                pw.println(");");
-            } else {
-                returnTypes[i] = oets[i];
-                if (returnTypes[i] != void.class && returnTypes[i] != Void.class) {
-                    pw.print("return ");
-                }
-                pw.write(Cookable.readString(readers[i]));
-                pw.println(";");
+            returnTypes[i] = this.getReturnType(i);
+            if (returnTypes[i] != void.class && returnTypes[i] != Void.class) {
+                pw.print("return ");
             }
+            pw.write(Cookable.readString(readers[i]));
+            pw.println(";");
+
             pw.close();
             readers[i] = new StringReader(sw.toString());
         }
