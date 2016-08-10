@@ -49,6 +49,7 @@ import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
+import org.codehaus.janino.tools.jsh.command.Echo;
 import org.codehaus.janino.tools.jsh.command.Ls;
 
 /**
@@ -73,9 +74,12 @@ class Jsh extends DemoBase {
         String         compilerFactoryId = null;
 
         defaultImports.add("java.util.*");
-        defaultImports.add("static " + System.class.getName() + ".*");
+
+        // The order of STATIC imports is significant!
         defaultImports.add("static " + Brief.class.getName() + ".*");
+        defaultImports.add("static " + System.class.getName() + ".*");
         defaultImports.add("static " + Ls.class.getName() + ".*");
+        defaultImports.add("static " + Echo.class.getName() + ".*");
 
         int i;
         for (i = 0; i < args.length; ++i) {
@@ -268,7 +272,7 @@ class Jsh extends DemoBase {
 
         for (;;) {
 
-            System.err.println(">");
+            System.err.print("> ");
             System.err.flush();
 
             // Scan, parse, compile and load one statement.
