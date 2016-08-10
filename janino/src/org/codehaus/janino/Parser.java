@@ -2209,25 +2209,26 @@ class Parser {
      */
     public Type
     parseType() throws CompileException, IOException {
-        int  idx = this.peekRead(Parser.PRIMITIVE_TYPE_NAMES);
-        Type res = (
-            idx != -1
-            ? (Type) new PrimitiveType(
-                this.location(),
-                Primitive.valueOf(Parser.PRIMITIVE_TYPE_NAMES[idx].toUpperCase())
-            )
-            : this.parseReferenceType()
-        );
-        for (int i = this.parseBracketsOpt(); i > 0; --i) res = new ArrayType(res);
-        return res;
-    }
-    private static final String[] PRIMITIVE_TYPE_NAMES;
-    static {
-        List<String> l = new ArrayList<String>();
-        for (Primitive p : Primitive.values()) {
-            if (p != Primitive.VOID) l.add(p.name().toLowerCase());
+
+        Type res;
+        switch (this.peekRead(new String[] {
+            "byte", "short", "char", "int", "long", "float", "double", "boolean"
+        })) {
+        case 0:  res = new PrimitiveType(this.location(), Primitive.BYTE);    break;
+        case 1:  res = new PrimitiveType(this.location(), Primitive.SHORT);   break;
+        case 2:  res = new PrimitiveType(this.location(), Primitive.CHAR);    break;
+        case 3:  res = new PrimitiveType(this.location(), Primitive.INT);     break;
+        case 4:  res = new PrimitiveType(this.location(), Primitive.LONG);    break;
+        case 5:  res = new PrimitiveType(this.location(), Primitive.FLOAT);   break;
+        case 6:  res = new PrimitiveType(this.location(), Primitive.DOUBLE);  break;
+        case 7:  res = new PrimitiveType(this.location(), Primitive.BOOLEAN); break;
+        case -1: res = this.parseReferenceType(); break;
+        default: throw new AssertionError();
         }
-        PRIMITIVE_TYPE_NAMES = (String[]) l.toArray(new String[l.size()]);
+
+        for (int i = this.parseBracketsOpt(); i > 0; --i) res = new ArrayType(res);
+
+        return res;
     }
 
     /**
