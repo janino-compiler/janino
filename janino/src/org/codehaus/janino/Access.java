@@ -64,4 +64,7 @@ enum Access {
         if ("public".equals(s)) return PUBLIC;
         throw new IllegalArgumentException(s);
     }
+
+    @Override public String
+    toString() { return this.name().toLowerCase(); }
 }

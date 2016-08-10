@@ -372,8 +372,8 @@ class IClass {
     protected abstract IField[] getDeclaredIFields2();
 
     /**
-     * @returns The synthetic fields of an anonymous or local class, in the order in which they are passed to all
-     *          constructors
+     * @return The synthetic fields of an anonymous or local class, in the order in which they are passed to all
+     *         constructors
      */
     public IField[]
     getSyntheticIFields() { return new IField[0]; }
