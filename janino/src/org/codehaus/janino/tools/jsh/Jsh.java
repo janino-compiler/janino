@@ -390,8 +390,5 @@ class Jsh extends DemoBase {
 
             throw new IllegalStateException("Must only be called after \"cook()\"");
         }
-
-        private Method
-        getMethod() { return this.assertCooked(); }
     }
 }
