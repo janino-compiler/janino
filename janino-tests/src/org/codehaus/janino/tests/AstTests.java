@@ -45,6 +45,7 @@ import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
+import org.codehaus.janino.Java.Primitive;
 import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
@@ -80,7 +81,7 @@ class AstTests {
 
     private static ArrayType
     createByteArrayType() {
-        return new Java.ArrayType(new Java.PrimitiveType(AstTests.getLocation(), Java.PrimitiveType.BYTE));
+        return new Java.ArrayType(new Java.PrimitiveType(AstTests.getLocation(), Java.Primitive.BYTE));
     }
 
     private static PackageMemberClassDeclaration
@@ -99,7 +100,7 @@ class AstTests {
     }
 
     private static Type
-    createDoubleType() { return new PrimitiveType(AstTests.getLocation(), PrimitiveType.DOUBLE); }
+    createDoubleType() { return new PrimitiveType(AstTests.getLocation(), Primitive.DOUBLE); }
 
     private static Java.BinaryOperation
     createOp(Rvalue l1, String op, Rvalue l2) { return new Java.BinaryOperation(AstTests.getLocation(), l1, op, l2); }

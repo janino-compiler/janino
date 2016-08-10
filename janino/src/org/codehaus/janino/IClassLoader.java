@@ -79,6 +79,7 @@ class IClassLoader {
     public IClass TYPE_java_lang_Short;
     public IClass TYPE_java_lang_String;
     public IClass TYPE_java_lang_StringBuilder;
+    public IClass TYPE_java_lang_System;
     public IClass TYPE_java_lang_Throwable;
     public IClass TYPE_java_io_Serializable;
     public IClass TYPE_java_util_Iterator;
@@ -147,6 +148,7 @@ class IClassLoader {
             this.TYPE_java_lang_Short                = this.requireType(Descriptor.JAVA_LANG_SHORT);
             this.TYPE_java_lang_String               = this.requireType(Descriptor.JAVA_LANG_STRING);
             this.TYPE_java_lang_StringBuilder        = this.requireType(Descriptor.JAVA_LANG_STRINGBUILDER);
+            this.TYPE_java_lang_System               = this.requireType(Descriptor.JAVA_LANG_SYSTEM);
             this.TYPE_java_lang_Throwable            = this.requireType(Descriptor.JAVA_LANG_THROWABLE);
             this.TYPE_java_io_Serializable           = this.requireType(Descriptor.JAVA_IO_SERIALIZABLE);
             this.TYPE_java_util_Iterator             = this.requireType(Descriptor.JAVA_UTIL_ITERATOR);

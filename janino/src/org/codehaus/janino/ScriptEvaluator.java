@@ -53,6 +53,7 @@ import org.codehaus.janino.Java.LocalClassDeclarationStatement;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.Modifiers;
+import org.codehaus.janino.Java.Primitive;
 import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.VariableDeclarator;
@@ -820,11 +821,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         if (parser.peekRead("void")) {
             String name = parser.readIdentifier();
             localMethods.add(parser.parseMethodDeclarationRest(
-                null,                                                     // optionalDocComment
-                modifiers,                                                // modifiers
-                null,                                                     // optionalTypeParameters
-                new PrimitiveType(parser.location(), PrimitiveType.VOID), // type
-                name                                                      // name
+                null,                                                 // optionalDocComment
+                modifiers,                                            // modifiers
+                null,                                                 // optionalTypeParameters
+                new PrimitiveType(parser.location(), Primitive.VOID), // type
+                name                                                  // name
             ));
             return;
         }

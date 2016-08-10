@@ -426,6 +426,11 @@ class Descriptor {
     public static final String JAVA_LANG_STRINGBUILDER = "Ljava/lang/StringBuilder;"; // Since 1.5!
 
     /**
+     * The field descriptor for the class {@link java.lang.System}.
+     */
+    public static final String JAVA_LANG_SYSTEM = "Ljava/lang/System;";
+
+    /**
      * The field descriptor for the class {@link java.lang.Throwable}.
      */
     public static final String JAVA_LANG_THROWABLE = "Ljava/lang/Throwable;";

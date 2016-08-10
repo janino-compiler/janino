@@ -2084,21 +2084,21 @@ class Java {
             Modifiers                                modifiers,
             Type                                     type,
             String                                   name,
-            FormalParameters                         parameters,
+            FormalParameters                         formalParameters,
             Type[]                                   thrownExceptions,
             @Nullable List<? extends BlockStatement> optionalStatements
         ) {
             super(location, Mod.isStatic(modifiers.accessFlags));
             this.optionalDocComment = optionalDocComment;
-            this.modifiers          = parameters.variableArity ? modifiers.add(Mod.VARARGS) : modifiers;
+            this.modifiers          = formalParameters.variableArity ? modifiers.add(Mod.VARARGS) : modifiers;
             this.type               = type;
             this.name               = name;
-            this.formalParameters   = parameters;
+            this.formalParameters   = formalParameters;
             this.thrownExceptions   = thrownExceptions;
             this.optionalStatements = optionalStatements;
 
             this.type.setEnclosingScope(this);
-            for (FormalParameter fp : parameters.parameters) fp.type.setEnclosingScope(this);
+            for (FormalParameter fp : formalParameters.parameters) fp.type.setEnclosingScope(this);
             for (Type te : thrownExceptions) te.setEnclosingScope(this);
             if (optionalStatements != null) {
                 for (Java.BlockStatement bs : optionalStatements) {
@@ -2276,20 +2276,20 @@ class Java {
             Location                        location,
             @Nullable String                optionalDocComment,
             Modifiers                       modifiers,
-            FormalParameters                parameters,
+            FormalParameters                formalParameters,
             Type[]                          thrownExceptions,
             @Nullable ConstructorInvocation optionalConstructorInvocation,
             List<BlockStatement>            statements
         ) {
             super(
-                location,                                        // location
-                optionalDocComment,                              // optionalDocComment
-                modifiers,                                       // modifiers
-                new PrimitiveType(location, PrimitiveType.VOID), // type
-                "<init>",                                        // name
-                parameters,                                      // parameters
-                thrownExceptions,                                // thrownExceptions
-                statements                                       // optionalStatements
+                location,                                    // location
+                optionalDocComment,                          // optionalDocComment
+                modifiers,                                   // modifiers
+                new PrimitiveType(location, Primitive.VOID), // type
+                "<init>",                                    // name
+                formalParameters,                            // formalParameters
+                thrownExceptions,                            // thrownExceptions
+                statements                                   // optionalStatements
             );
             this.optionalConstructorInvocation = optionalConstructorInvocation;
             if (optionalConstructorInvocation != null) optionalConstructorInvocation.setEnclosingScope(this);
@@ -2356,7 +2356,7 @@ class Java {
             @Nullable TypeParameter[]                optionalTypeParameters,
             Type                                     type,
             String                                   name,
-            FormalParameters                         parameters,
+            FormalParameters                         formalParameters,
             Type[]                                   thrownExceptions,
             @Nullable List<? extends BlockStatement> optionalStatements
         ) {
@@ -2366,7 +2366,7 @@ class Java {
                 modifiers,          // modifiers
                 type,               // type
                 name,               // name
-                parameters,         // parameters
+                formalParameters,   // formalParameters
                 thrownExceptions,   // thrownExceptions
                 optionalStatements  // optionalStatements
             );
@@ -3672,7 +3672,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 4.2 "primitive type".
+     * Representation of a JLS7 4.2 "primitive type", i.e a primitive type "usage", which has a location.
      */
     public static final
     class PrimitiveType extends Type {
@@ -3680,88 +3680,42 @@ class Java {
         /**
          * One of {@link #VOID}, {@link #BYTE} and consorts.
          */
-        public final int index;
+        public final Primitive primitive;
 
         public
-        PrimitiveType(Location location, int index) {
+        PrimitiveType(Location location, Primitive primitive) {
             super(location);
-            this.index = index;
+            this.primitive = primitive;
         }
 
         @Override public String
-        toString() {
-            switch (this.index) {
-            case PrimitiveType.VOID:
-                return "void";
-            case PrimitiveType.BYTE:
-                return "byte";
-            case PrimitiveType.SHORT:
-                return "short";
-            case PrimitiveType.CHAR:
-                return "char";
-            case PrimitiveType.INT:
-                return "int";
-            case PrimitiveType.LONG:
-                return "long";
-            case PrimitiveType.FLOAT:
-                return "float";
-            case PrimitiveType.DOUBLE:
-                return "double";
-            case PrimitiveType.BOOLEAN:
-                return "boolean";
-            default:
-                throw new JaninoRuntimeException("Invalid index " + this.index);
-            }
-        }
+        toString() { return this.primitive.toString(); }
 
         // SUPPRESS CHECKSTYLE LineLength:2
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitPrimitiveType(this); }
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);          }
+    }
 
-        /**
-         * Value representing the VOID type.
-         */
-        public static final int VOID = 0;
+    /**
+     * Java's primitive types.
+     */
+    public
+    enum Primitive {
 
-        /**
-         * Value representing the BYTE type.
-         */
-        public static final int BYTE = 1;
+        // SUPPRESS CHECKSTYLE JavadocVariable:9
+        VOID,
+        BYTE,
+        SHORT,
+        CHAR,
+        INT,
+        LONG,
+        FLOAT,
+        DOUBLE,
+        BOOLEAN,
+        ;
 
-        /**
-         * Value representing the SHORT type.
-         */
-        public static final int SHORT = 2;
-
-        /**
-         * Value representing the CHAR type.
-         */
-        public static final int CHAR = 3;
-
-        /**
-         * Value representing the INT type.
-         */
-        public static final int INT = 4;
-
-        /**
-         * Value representing the LONG type.
-         */
-        public static final int LONG = 5;
-
-        /**
-         * Value representing the FLOAT type.
-         */
-        public static final int FLOAT = 6;
-
-        /**
-         * Value representing the DOUBLE type.
-         */
-        public static final int DOUBLE = 7;
-
-        /**
-         * Value representing the BOOLEAN type.
-         */
-        public static final int BOOLEAN = 8;
+        @Override public String
+        toString() { return this.name().toLowerCase(); }
     }
 
     /**
@@ -3930,7 +3884,7 @@ class Java {
                     if (t.enclosingScope != null && enclosingScope != t.enclosingScope) {
                         throw new JaninoRuntimeException(
                             "Enclosing scope already set for type \""
-                            + this.toString()
+                            + t.toString()
                             + "\" at "
                             + t.getLocation()
                         );

@@ -105,6 +105,7 @@ import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.PackageMemberInterfaceDeclaration;
 import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
 import org.codehaus.janino.Java.ParenthesizedExpression;
+import org.codehaus.janino.Java.Primitive;
 import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.ReferenceType;
@@ -853,11 +854,11 @@ class Parser {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", location);
             String name = this.readIdentifier();
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                optionalDocComment,                              // optionalDocComment
-                modifiers,                                       // modifiers
-                null,                                            // optionalTypeParameters
-                new PrimitiveType(location, PrimitiveType.VOID), // type
-                name                                             // name
+                optionalDocComment,                          // optionalDocComment
+                modifiers,                                   // modifiers
+                null,                                        // optionalTypeParameters
+                new PrimitiveType(location, Primitive.VOID), // type
+                name                                         // name
             ));
             return;
         }
@@ -934,11 +935,11 @@ class Parser {
             if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
             String name = this.readIdentifier();
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                optionalDocComment,                                     // optionalDocComment
-                modifiers,                                              // modifiers
-                optionalTypeParameters,                                 // optionalTypeParameters
-                new PrimitiveType(this.location(), PrimitiveType.VOID), // type
-                name                                                    // name
+                optionalDocComment,                                 // optionalDocComment
+                modifiers,                                          // modifiers
+                optionalTypeParameters,                             // optionalTypeParameters
+                new PrimitiveType(this.location(), Primitive.VOID), // type
+                name                                                // name
             ));
             return;
         }
@@ -1121,11 +1122,11 @@ class Parser {
                 Location location = this.location();
                 String   name     = this.readIdentifier();
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                    optionalDocComment,                              // optionalDocComment
-                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC),        // modifiers
-                    null,                                            // optionalTypeParameters
-                    new PrimitiveType(location, PrimitiveType.VOID), // type
-                    name                                             // name
+                    optionalDocComment,                          // optionalDocComment
+                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC),    // modifiers
+                    null,                                        // optionalTypeParameters
+                    new PrimitiveType(location, Primitive.VOID), // type
+                    name                                         // name
                 ));
                 continue;
             }
@@ -1202,11 +1203,11 @@ class Parser {
                 Location location = this.location();
                 String   name     = this.readIdentifier();
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                    optionalDocComment,                              // optionalDocComment
-                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC),        // modifiers
-                    optionalTypeParameters,                          // optionalTypeParameters
-                    new PrimitiveType(location, PrimitiveType.VOID), // type
-                    name                                             // name
+                    optionalDocComment,                          // optionalDocComment
+                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC),    // modifiers
+                    optionalTypeParameters,                      // optionalTypeParameters
+                    new PrimitiveType(location, Primitive.VOID), // type
+                    name                                         // name
                 ));
                 continue;
             }
@@ -2211,20 +2212,23 @@ class Parser {
         int  idx = this.peekRead(Parser.PRIMITIVE_TYPE_NAMES);
         Type res = (
             idx != -1
-            ? (Type) new PrimitiveType(this.location(), Parser.PRIMITIVE_TYPE_CODES[idx])
+            ? (Type) new PrimitiveType(
+                this.location(),
+                Primitive.valueOf(Parser.PRIMITIVE_TYPE_NAMES[idx].toUpperCase())
+            )
             : this.parseReferenceType()
         );
         for (int i = this.parseBracketsOpt(); i > 0; --i) res = new ArrayType(res);
         return res;
     }
-    private static final String[] PRIMITIVE_TYPE_NAMES = {
-        "byte", "short", "char", "int", "long",
-        "float", "double", "boolean"
-    };
-    private static final int[] PRIMITIVE_TYPE_CODES = {
-        PrimitiveType.BYTE, PrimitiveType.SHORT, PrimitiveType.CHAR, PrimitiveType.INT, PrimitiveType.LONG,
-        PrimitiveType.FLOAT, PrimitiveType.DOUBLE, PrimitiveType.BOOLEAN
-    };
+    private static final String[] PRIMITIVE_TYPE_NAMES;
+    static {
+        List<String> l = new ArrayList<String>();
+        for (Primitive p : Primitive.values()) {
+            if (p != Primitive.VOID) l.add(p.name().toLowerCase());
+        }
+        PRIMITIVE_TYPE_NAMES = (String[]) l.toArray(new String[l.size()]);
+    }
 
     /**
      * <pre>
@@ -2969,7 +2973,7 @@ class Parser {
                 this.read();
                 Location location = this.location();
                 this.read();
-                return new ClassLiteral(location, new PrimitiveType(location, PrimitiveType.VOID));
+                return new ClassLiteral(location, new PrimitiveType(location, Primitive.VOID));
             }
             throw this.compileException("\"void\" encountered in wrong context");
         }

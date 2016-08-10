@@ -160,6 +160,7 @@ import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
 import org.codehaus.janino.Java.Padder;
 import org.codehaus.janino.Java.ParameterAccess;
 import org.codehaus.janino.Java.ParenthesizedExpression;
+import org.codehaus.janino.Java.Primitive;
 import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.ReferenceType;
@@ -548,6 +549,7 @@ class UnitCompiler {
             // Create field and static initializer for each enum constant.
             for (EnumConstant ec : ed.getConstants()) {
 
+                // E <constant> = new E(<ordinal>, <name> [ optional-constructor-args ]);
                 VariableDeclarator variableDeclarator = new VariableDeclarator(
                     ec.getLocation(),     // location
                     ec.name,              // name
@@ -573,6 +575,34 @@ class UnitCompiler {
 
                 this.addFields(fd, cf);
             }
+
+            // Create the synthetic "ENUM$VALUES" field:
+            //
+            //     private static final E[] ENUM$VALUES = new E[<number-of-enum-constants>];
+            Location         loc        = ed.getLocation();
+            IClass           enumIClass = this.resolve(ed);
+            FieldDeclaration fd         = new FieldDeclaration(
+                loc,                                                           // location
+                null,                                                          // optionalDocComment
+                new Modifiers((short) (Mod.PRIVATE | Mod.STATIC | Mod.FINAL)), // modifiers
+                new SimpleType(loc, enumIClass),                               // type
+                new VariableDeclarator[] {                                     // variableDeclarators)
+                    new VariableDeclarator(
+                        loc,           // location
+                        "ENUM$VALUES", // name
+                        1,             // brackets
+                        new NewArray(  // optionalInitializer
+                            loc,                             // location
+                            new SimpleType(loc, enumIClass), // type
+                            new Rvalue[] {                   // dimExprs
+                                new IntegerLiteral(loc, String.valueOf(ed.getConstants().size())),
+                            },
+                            0                                // dims
+                        )
+                    )
+                }
+            );
+            ((AbstractClassDeclaration) ed).addFieldDeclaration(fd);
         }
 
         // Process static initializers (a.k.a. class initializers).
@@ -580,8 +610,172 @@ class UnitCompiler {
             if (((TypeBodyDeclaration) vdoi).isStatic()) classInitializationStatements.add(vdoi);
         }
 
+        if (cd instanceof EnumDeclaration) {
+            EnumDeclaration ed         = (EnumDeclaration) cd;
+            IClass          enumIClass = this.resolve(ed);
+
+            // Initialize the elements of the synthetic "ENUM$VALUES" field:
+            //
+            //     E.ENUM$VALUES[0] = E.<first-constant>;
+            //     E.ENUM$VALUES[1] = E.<second-constant>;
+            //     ...
+            int index = 0;
+            for (EnumConstant ec : ed.getConstants()) {
+                classInitializationStatements.add(
+                    new ExpressionStatement(
+                        new Assignment(
+                            ec.getLocation(),          // location
+                            new ArrayAccessExpression( // lhs
+                                ec.getLocation(),                                             // location
+                                new FieldAccessExpression(                                    // lhs
+                                    ec.getLocation(),
+                                    new SimpleType(ec.getLocation(), enumIClass),
+                                    "ENUM$VALUES"
+                                ),
+                                new IntegerLiteral(ec.getLocation(), String.valueOf(index++)) // rhs
+                            ),
+                            "=",                       // operator
+                            new FieldAccessExpression( // rhs
+                                ec.getLocation(),
+                                new SimpleType(ec.getLocation(), enumIClass),
+                                ec.name
+                            )
+                        )
+                    )
+                );
+            }
+        }
+
         // Create class initialization method.
         this.maybeCreateInitMethod(cd, cf, classInitializationStatements);
+
+        // Generate and compile the "magic" ENUM methods "E[] values()" and "E valueOf(String)".
+        if (cd instanceof EnumDeclaration) {
+            EnumDeclaration ed = (EnumDeclaration) cd;
+
+            // public static E[] values() {
+            //     E[] tmp = new T[<number-of-constants>];
+            //     System.arraycopy(T.ENUM$VALUES, 0, tmp, 0, <number-of-constants>);
+            //     return tmp;
+            // }
+            Location   loc                   = ed.getLocation();
+            int        numberOfEnumConstants = ed.getConstants().size();
+            IClass     enumIClass            = this.resolve(ed);
+
+            // tmp = new T[<number-of-constants>];
+            VariableDeclarator vd = new VariableDeclarator(
+                loc,          // location
+                "tmp",        // name
+                0,            // brackets
+                new NewArray( // optionalinitializer
+                    loc,                             // location
+                    new SimpleType(loc, enumIClass), // type
+                    new Rvalue[] {                   // dimExprs
+                        new IntegerLiteral(loc, String.valueOf(numberOfEnumConstants))
+                    },
+                    0                                // dims
+                )
+            );
+
+            // E[] tmp = new E[<number-of-constants>];
+            LocalVariableDeclarationStatement lvds = new LocalVariableDeclarationStatement(
+                loc,
+                new Modifiers(),
+                new SimpleType(loc, enumIClass.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object)),
+                new VariableDeclarator[] { vd }
+            );
+
+            // public static E[] values() {
+            //     E[] tmp = new T[<number-of-constants>];
+            //     System.arraycopy(T.ENUM$VALUES, 0, tmp, 0, <number-of-constants>);
+            //     return tmp;
+            // }
+            {
+                MethodDeclarator md = new MethodDeclarator(
+                    loc,                                              // location
+                    null,                                             // optionalDocComment
+                    new Modifiers((short) (Mod.PUBLIC | Mod.STATIC)), // modifiers
+                    null,                                             // optionalTypeParameters
+                    new ArrayType(new SimpleType(loc, enumIClass)),   // type
+                    "values",                                         // name
+                    new FormalParameters(loc),                        // parameters
+                    new Type[0],                                      // thrownExceptions
+                    Arrays.asList(                                    // optionalStatements
+
+                        // E[] tmp = new E[<number-of-constants>];
+                        lvds,
+
+                        // System.arraycopy(E.ENUM$VALUES, 0, tmp, 0, <number-of-constants>);
+                        new ExpressionStatement(new MethodInvocation(
+                            loc,                                                          // location
+                            new SimpleType(loc, this.iClassLoader.TYPE_java_lang_System), // optionalTarget
+                            "arraycopy",                                                  // methodName
+                            new Rvalue[] {                                                // arguments
+                                // SUPPRESS CHECKSTYLE LineLength:5
+                                new FieldAccessExpression(loc, new SimpleType(loc, enumIClass), "ENUM$VALUES"), // Argument #1: E.ENUM$VALUES
+                                new IntegerLiteral(loc, "0"),                                                   // Argument #2: 0
+                                new LocalVariableAccess(loc, this.getLocalVariable(lvds, vd)),                  // Argument #3: tmp
+                                new IntegerLiteral(loc, "0"),                                                   // Argument #4: 0
+                                new IntegerLiteral(loc, String.valueOf(numberOfEnumConstants)),                 // Argument #5: <number-of-constants>
+                            }
+                        )),
+
+                        // return tmp;
+                        new ReturnStatement(loc, new LocalVariableAccess(loc, this.getLocalVariable(lvds, vd)))
+                    )
+                );
+                md.setDeclaringType(ed);
+
+                this.compile(md, cf);
+            }
+
+            // public static E valueOf(String s) {
+            //     return (E) Enum.valueOf(E.class, s);
+            // }
+            FormalParameter fp = new FormalParameter(
+                loc,                                                          // location
+                false,                                                        // finaL
+                new SimpleType(loc, this.iClassLoader.TYPE_java_lang_String), // type
+                "s"                                                           // name
+            );
+            {
+                MethodDeclarator md = new MethodDeclarator(
+                    loc,                                              // location
+                    null,                                             // optionalDocComment
+                    new Modifiers((short) (Mod.PUBLIC | Mod.STATIC)), // modifiers
+                    null,                                             // optionalTypeParameters
+                    new SimpleType(loc, enumIClass),                  // type
+                    "valueOf",                                        // name
+                    new FormalParameters(                             // formalParameters
+                        loc,                          // location
+                        new FormalParameter[] { fp }, // parameters
+                        false                         // variableArity
+                    ),
+                    new Type[0],                                      // thrownExceptions,
+                    Arrays.asList(                                    // optionalStatements
+
+                        // return (E) Enum.valueOf(E.class, s);
+                        new ReturnStatement(loc, new Cast(
+                            loc,                             // location
+                            new SimpleType(loc, enumIClass), // targetType
+                            new MethodInvocation(            // value
+                                loc,                                                        // location
+                                new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Enum), // optionalTarget
+                                "valueOf",                                                  // methodName
+                                new Rvalue[] {                                              // arguments
+                                    new ClassLiteral(loc, new SimpleType(loc, enumIClass)),
+                                    new ParameterAccess(loc, fp)
+                                }
+                            )
+                        ))
+                    )
+                );
+
+                md.setEnclosingScope(ed);
+
+                this.compile(md, cf);
+            }
+        }
 
         // Compile declared methods.
         this.compileDeclaredMethods(cd, cf);
@@ -1042,15 +1236,15 @@ class UnitCompiler {
         // Create class/interface initialization method iff there is any initialization code.
         if (this.generatesCode2(statements)) {
             MethodDeclarator md = new MethodDeclarator(
-                td.getLocation(),                                        // location
-                null,                                                    // optionalDocComment
-                new Modifiers((short) (Mod.STATIC | Mod.PUBLIC)),        // modifiers
-                null,                                                    // optionalTypeParameters
-                new PrimitiveType(td.getLocation(), PrimitiveType.VOID), // type
-                "<clinit>",                                              // name
-                new FormalParameters(td.getLocation()),                  // formalParameters
-                new ReferenceType[0],                                    // thrownExceptions
-                statements                                               // optionalStatements
+                td.getLocation(),                                    // location
+                null,                                                // optionalDocComment
+                new Modifiers((short) (Mod.STATIC | Mod.PUBLIC)),    // modifiers
+                null,                                                // optionalTypeParameters
+                new PrimitiveType(td.getLocation(), Primitive.VOID), // type
+                "<clinit>",                                          // name
+                new FormalParameters(td.getLocation()),              // formalParameters
+                new ReferenceType[0],                                // thrownExceptions
+                statements                                           // optionalStatements
             );
             md.setDeclaringType(td);
             this.compile(md, cf);
@@ -1710,12 +1904,14 @@ class UnitCompiler {
                     }
                     String constantName = identifiers[0];
 
-                    IField[] fields = switchExpressionType.getDeclaredIFields();
-                    for (int ordinal = 0; ordinal < fields.length; ordinal++) {
-                        if (fields[ordinal].getName().equals(constantName)) {
+                    int ordinal = 0;
+                    for (IField f : switchExpressionType.getDeclaredIFields()) {
+                        if (f.getAccess() != Access.PUBLIC || !f.isStatic()) continue;
+                        if (f.getName().equals(constantName)) {
                             civ = ordinal;
                             break CIV;
                         }
+                        ordinal++;
                     }
 
                     this.compileError("Unknown enum constant \"" + constantName + "\"", caseLabel.getLocation());
@@ -5779,17 +5975,17 @@ class UnitCompiler {
 
     @SuppressWarnings("static-method") private IClass
     getType2(PrimitiveType bt) {
-        switch (bt.index) {
-        case PrimitiveType.VOID:    return IClass.VOID;
-        case PrimitiveType.BYTE:    return IClass.BYTE;
-        case PrimitiveType.SHORT:   return IClass.SHORT;
-        case PrimitiveType.CHAR:    return IClass.CHAR;
-        case PrimitiveType.INT:     return IClass.INT;
-        case PrimitiveType.LONG:    return IClass.LONG;
-        case PrimitiveType.FLOAT:   return IClass.FLOAT;
-        case PrimitiveType.DOUBLE:  return IClass.DOUBLE;
-        case PrimitiveType.BOOLEAN: return IClass.BOOLEAN;
-        default:                    throw new JaninoRuntimeException("Invalid index " + bt.index);
+        switch (bt.primitive) {
+        case VOID:    return IClass.VOID;
+        case BYTE:    return IClass.BYTE;
+        case SHORT:   return IClass.SHORT;
+        case CHAR:    return IClass.CHAR;
+        case INT:     return IClass.INT;
+        case LONG:    return IClass.LONG;
+        case FLOAT:   return IClass.FLOAT;
+        case DOUBLE:  return IClass.DOUBLE;
+        case BOOLEAN: return IClass.BOOLEAN;
+        default:      throw new JaninoRuntimeException("Invalid primitive " + bt.primitive);
         }
     }
     private IClass
@@ -8972,12 +9168,53 @@ class UnitCompiler {
 
             @Override protected IClass.IMethod[]
             getDeclaredIMethods2() {
-                IClass.IMethod[] res = new IClass.IMethod[atd.getMethodDeclarations().size()];
-                int              i   = 0;
+                List<IClass.IMethod> res = new ArrayList<IClass.IMethod>(atd.getMethodDeclarations().size());
                 for (MethodDeclarator md : atd.getMethodDeclarations()) {
-                    res[i++] = UnitCompiler.this.toIMethod(md);
+                    res.add(UnitCompiler.this.toIMethod(md));
                 }
-                return res;
+
+                if (td instanceof Java.EnumDeclaration) {
+
+                    res.add(new IMethod() {
+
+                        @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
+                        @Override public boolean       isStatic()             { return true; }
+                        @Override public boolean       isAbstract()           { return false; }
+                        @Override public String        getName()              { return "values"; }
+                        @Override public boolean       isVarargs()            { return false; }
+                        @Override public Access        getAccess()            { return Access.PUBLIC; }
+                        @Override public IClass[]      getParameterTypes2()   { return new IClass[0]; }
+                        @Override public IClass[]      getThrownExceptions2() { return new IClass[0]; }
+
+                        @Override public IClass
+                        getReturnType() {
+                            IClass rt = atd.resolvedType;
+                            assert rt != null;
+                            return rt.getArrayIClass(UnitCompiler.this.iClassLoader.TYPE_java_lang_Object);
+                        }
+                    });
+
+                    res.add(new IMethod() {
+
+                        @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
+                        @Override public boolean       isStatic()             { return true; }
+                        @Override public boolean       isAbstract()           { return false; }
+                        @Override public String        getName()              { return "valueOf"; }
+                        @Override public boolean       isVarargs()            { return false; }
+                        @Override public Access        getAccess()            { return Access.PUBLIC; }
+                        @Override public IClass[]      getParameterTypes2()   { return new IClass[] { UnitCompiler.this.iClassLoader.TYPE_java_lang_String }; } // SUPPRESS CHECKSTYLE LineLength
+                        @Override public IClass[]      getThrownExceptions2() { return new IClass[0]; }
+
+                        @Override public IClass
+                        getReturnType() {
+                            IClass rt = atd.resolvedType;
+                            assert rt != null;
+                            return rt;
+                        }
+                    });
+                }
+
+                return (IClass.IMethod[]) res.toArray(new IClass.IMethod[res.size()]);
             }
 
             @Nullable private IClass[] declaredClasses;
