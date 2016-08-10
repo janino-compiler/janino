@@ -118,7 +118,7 @@ class EvaluatorTests extends JaninoTestSuite {
             false,
         });
         ee.setExpressionTypes(new Class[] {
-            IExpressionEvaluator.ANY_TYPE,
+            Object.class,
             InputStream.class,
             void.class,
         });
