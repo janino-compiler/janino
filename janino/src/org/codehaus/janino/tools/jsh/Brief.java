@@ -180,6 +180,9 @@ class Brief {
         }
     }
 
+    /**
+     * Implements "wildcard matching". "?" matches <em>any</em> character, "*" matches any sequence of characters.
+     */
     public static boolean
     wildmatch(@Nullable String pattern, String text) {
 
@@ -211,6 +214,10 @@ class Brief {
         return text.length() == i;
     }
 
+    /**
+     * If {@code false}, then {@link #wildmatch(String, String)} will return {@code true} iff {@code
+     * pattern.equals(text)}.
+     */
     public static boolean
     containsWildcards(@Nullable String pattern) {
         return pattern != null && (pattern.indexOf('*') != -1 || pattern.indexOf('?') != -1);
