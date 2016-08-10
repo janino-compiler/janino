@@ -29,6 +29,7 @@ package org.codehaus.janino.tools.jsh;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,12 +52,16 @@ class Brief {
 
     /**
      * Prints the <var>subject</var> to {@code System.out}.
+     *
+     * @see #print(Object, PrintStream)
      */
     public static void
     out(@Nullable Object subject) { Brief.print(subject, System.out); }
 
     /**
      * Prints the <var>subject</var> to {@code System.err}.
+     *
+     * @see #print(Object, PrintStream)
      */
     public static void
     err(@Nullable Object subject) { Brief.print(subject, System.err); }
@@ -71,13 +76,53 @@ class Brief {
      * </ul>
      */
     public static void
-    print(@Nullable Object subject, PrintStream ps) {
+    print(@Nullable Object subject, PrintWriter pw) {
+        Brief.print(subject, Brief.printWriterPrintln(pw));
+    }
+
+    private static Consumer<Object>
+    printWriterPrintln(final PrintWriter pw) {
+        return new Consumer<Object>() {
+            @Override public void consume(Object subject) { pw.println(subject); }
+        };
+    }
+
+    /**
+     * Implements the "jsh standard way" of printing objects.
+     * <ul>
+     *   <li>A {@code null} subject results in <em>nothing</em> being printed.</li>
+     *   <li>Arrays (including primitive arrays) result in one line being printed per element.</li>
+     *   <li>Collections result in one line being printed per element.</li>
+     *   <li>All other subjects converted with {@link Object#toString()}, and then printed in one line.</li>
+     * </ul>
+     */
+    public static void
+    print(@Nullable Object subject, PrintStream ps) { Brief.print(subject, Brief.printStreamPrintln(ps)); }
+
+    private static Consumer<Object>
+    printStreamPrintln(final PrintStream ps) {
+        return new Consumer<Object>() {
+            @Override public void consume(Object subject) { ps.println(subject); }
+        };
+    }
+
+    /**
+     * Converts to <var>subject</var> to zero, one or more strings, and passes these to the <var>destination</var>.
+     * <ul>
+     *   <li>A {@code null} subject results in <em>zero</em> strings.</li>
+     *   <li>Arrays (including primitive arrays) result in one string per element.</li>
+     *   <li>Collections result in one string per element.</li>
+     *   <li>All other subjects converted with {@link Object#toString()} to one string.</li>
+     * </ul>
+     */
+    public static void
+    print(@Nullable Object subject, Consumer<Object> destination) {
 
         if (subject == null) return;
 
         if (subject instanceof Object[]) {
             for (Object e : (Object[]) subject) {
-                ps.println(e);
+                destination.consume(e);
             }
             return;
         }
@@ -87,17 +132,17 @@ class Brief {
             // "o" is a PRIMITIVE array. (Arrays of object references have already been handled.)
             int length = Array.getLength(subject);
             for (int i = 0; i < length; i++) {
-                ps.println(Array.get(subject, i));
+                destination.consume(Array.get(subject, i));
             }
             return;
         }
 
         if (subject instanceof Collection) {
-            for (Object e : (Collection<?>) subject) ps.println(e);
+            for (Object e : (Collection<?>) subject) destination.consume(e);
             return;
         }
 
-        ps.println(subject);
+        destination.consume(subject);
     }
 
     /**
