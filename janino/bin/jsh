@@ -1,0 +1,9 @@
+#!/bin/bash
+
+java="$JAVA_HOME/jre/bin/java.exe";
+
+lib="`dirname $0`/../../janino-dist/build";
+
+cp="$lib/janino.jar;$lib/commons-compiler.jar";
+
+"$java" -cp "$cp" org.codehaus.janino.tools.jsh.Jsh "$@";
