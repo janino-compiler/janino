@@ -71,8 +71,10 @@ class ExpressionEvaluatorTest {
     @Test public void
     testAnyType1() throws Exception {
 
+        @SuppressWarnings("deprecation") Class<?> anyType = IExpressionEvaluator.ANY_TYPE;
+
         ExpressionEvaluator ee = new ExpressionEvaluator();
-        ee.setExpressionType(IExpressionEvaluator.ANY_TYPE);
+        ee.setExpressionType(anyType);
 
         ee.cook("3");
         Assert.assertEquals(3, ee.evaluate(null));
