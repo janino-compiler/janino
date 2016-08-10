@@ -190,6 +190,19 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
     public ExpressionEvaluator() {}
 
+    /**
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionType(Class)} instead
+     */
+    @Deprecated @Override public void
+    setReturnType(Class<?> expressionType) { super.setReturnType(expressionType); }
+
+    /**
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])}
+     *             instead
+     */
+    @Deprecated @Override public void
+    setReturnTypes(Class<?>[] expressionTypes) { super.setReturnTypes(expressionTypes); }
+
     @Override public void
     setExpressionType(Class<?> expressionType) {
         this.setExpressionTypes(new Class<?>[] { expressionType });

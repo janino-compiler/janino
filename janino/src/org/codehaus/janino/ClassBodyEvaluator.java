@@ -207,7 +207,10 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         this.optionalExtendedType = optionalExtendedType;
     }
 
-    @Override public void
+    /**
+     * @deprecated Use {@link #setExtendedClass(Class)} instead
+     */
+    @Deprecated @Override public void
     setExtendedType(@Nullable Class<?> optionalExtendedClass) { this.setExtendedClass(optionalExtendedClass); }
 
     @Override public void
@@ -216,7 +219,10 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         this.implementedTypes = implementedTypes;
     }
 
-    @Override public void
+    /**
+     * @deprecated Use {@link #setImplementedInterfaces(Class[])} instead
+     */
+    @Deprecated @Override public void
     setImplementedTypes(Class<?>[] implementedInterfaces) { this.setImplementedInterfaces(implementedInterfaces); }
 
     @Override public void

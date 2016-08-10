@@ -390,14 +390,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public ScriptEvaluator() {}
 
     @Override public void
-    setOverrideMethod(boolean overrideMethod) {
-        this.setOverrideMethod(new boolean[] { overrideMethod });
-    }
+    setOverrideMethod(boolean overrideMethod) { this.setOverrideMethod(new boolean[] { overrideMethod }); }
 
     @Override public void
-    setStaticMethod(boolean staticMethod) {
-        this.setStaticMethod(new boolean[] { staticMethod });
-    }
+    setStaticMethod(boolean staticMethod) { this.setStaticMethod(new boolean[] { staticMethod }); }
 
     /**
      * Defines the return types of the generated methods.
@@ -409,14 +405,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see              ExpressionEvaluator#getDefaultReturnType()
      */
     @Override public void
-    setReturnType(Class<?> returnType) {
-        this.setReturnTypes(new Class[] { returnType });
-    }
+    setReturnType(Class<?> returnType) { this.setReturnTypes(new Class[] { returnType }); }
 
     @Override public void
-    setMethodName(String methodName) {
-        this.setMethodNames(new String[] { methodName });
-    }
+    setMethodName(String methodName) { this.setMethodNames(new String[] { methodName }); }
 
     @Override public void
     setParameters(String[] parameterNames, Class<?>[] parameterTypes) {
@@ -424,19 +416,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     @Override public void
-    setThrownExceptions(Class<?>[] thrownExceptions) {
-        this.setThrownExceptions(new Class[][] { thrownExceptions });
-    }
+    setThrownExceptions(Class<?>[] thrownExceptions) { this.setThrownExceptions(new Class[][] { thrownExceptions }); }
 
     @Override public final void
-    cook(Scanner scanner) throws CompileException, IOException {
-        this.cook(new Scanner[] { scanner });
-    }
+    cook(Scanner scanner) throws CompileException, IOException { this.cook(new Scanner[] { scanner }); }
 
     @Override @Nullable public Object
-    evaluate(@Nullable Object[] arguments) throws InvocationTargetException {
-        return this.evaluate(0, arguments);
-    }
+    evaluate(@Nullable Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
 
     @Override public Method
     getMethod() { return this.getMethod(0); }
