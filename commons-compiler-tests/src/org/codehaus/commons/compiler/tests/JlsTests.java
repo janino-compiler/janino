@@ -573,6 +573,72 @@ class JlsTests extends JaninoTestSuite {
     }
 
     @Test public void
+    test_8_9__Enums__valueOf() throws Exception {
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "public\n"
+            + "enum Shape {\n"
+            + "\n"
+            + "    SQUARE,\n"
+            + "    CIRCLE,\n"
+            + "}\n"
+            + "\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static Object\n"
+            + "    main() {\n"
+            // SUPPRESS CHECKSTYLE LineLength:4
+            + "        if (Shape.valueOf(\"SQUARE\") == null)        return 100 + Shape.valueOf(\"SQUARE\").ordinal();\n"
+            + "        if (Shape.valueOf(\"SQUARE\").ordinal() != 0) return 200 + Shape.valueOf(\"SQUARE\").ordinal();\n"
+            + "        if (Shape.valueOf(\"CIRCLE\") == null)        return 300 + Shape.valueOf(\"CIRCLE\").ordinal();\n"
+            + "        if (Shape.valueOf(\"CIRCLE\").ordinal() != 1) return 400 + Shape.valueOf(\"CIRCLE\").ordinal();\n"
+            + "        try {\n"
+            + "            Shape.valueOf(\"SQUARE \");\n"
+            + "            return 500;\n"
+            + "        } catch (IllegalArgumentException iae) {\n"
+            + "            ;\n"
+            + "        }\n"
+            + "\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
+    test_8_9__Enums__values() throws Exception {
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "public\n"
+            + "enum Shape {\n"
+            + "\n"
+            + "    SQUARE,\n"
+            + "    CIRCLE,\n"
+            + "}\n"
+            + "\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static Object\n"
+            + "    main() {\n"
+            + "        Shape[] ss = Shape.values();\n"
+            + "        if (ss == null)            return 100;\n"
+            + "        if (ss.length != 2)        return 200 + ss.length;\n"
+            + "        if (ss[0] == null)         return 300;\n"
+            + "        if (ss[0] != Shape.SQUARE) return 400 + ss[0].toString();\n"
+            + "        if (ss[1] == null)         return 500;\n"
+            + "        if (ss[1] != Shape.CIRCLE) return 600 + ss[0].toString();\n"
+            + "\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
     test_9_6_Annotation_Types() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
