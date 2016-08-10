@@ -124,7 +124,7 @@ class ExpressionDemo extends DemoBase {
 
         // Create "ExpressionEvaluator" object.
         IExpressionEvaluator ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
-        ee.setExpressionType(optionalExpressionType);
+        if (optionalExpressionType != null) ee.setExpressionType(optionalExpressionType);
         ee.setDefaultImports(optionalDefaultImports);
         ee.setParameters(parameterNames, parameterTypes);
         ee.setThrownExceptions(thrownExceptions);
