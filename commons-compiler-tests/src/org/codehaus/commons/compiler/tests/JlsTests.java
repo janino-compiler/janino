@@ -589,11 +589,8 @@ class JlsTests extends JaninoTestSuite {
             + "\n"
             + "    public static Object\n"
             + "    main() {\n"
-            // SUPPRESS CHECKSTYLE LineLength:4
-            + "        if (Shape.valueOf(\"SQUARE\") == null)         return 100 + Shape.valueOf(\"SQUARE\").ordinal();\n"
-            + "        if (Shape.valueOf(\"SQUARE\") != Shape.SQUARE) return 200 + Shape.valueOf(\"SQUARE\").toString();\n"
-            + "        if (Shape.valueOf(\"CIRCLE\") == null)         return 300 + Shape.valueOf(\"CIRCLE\").ordinal();\n"
-            + "        if (Shape.valueOf(\"CIRCLE\") != Shape.CIRCLE) return 400 + Shape.valueOf(\"CIRCLE\").toString();\n"
+            + "        if (Shape.valueOf(\"SQUARE\") != Shape.SQUARE) return \"100\" + Shape.valueOf(\"SQUARE\");\n"
+            + "        if (Shape.valueOf(\"CIRCLE\") != Shape.CIRCLE) return \"200\" + Shape.valueOf(\"CIRCLE\");\n"
             + "        try {\n"
             + "            Shape.valueOf(\"SQUARE \");\n"
             + "            return 500;\n"
