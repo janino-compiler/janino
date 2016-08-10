@@ -511,6 +511,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     protected Class<?>
     getDefaultReturnType() { return void.class; }
 
+    /**
+     * @return The return type of the <var>i</var>th script
+     */
     protected final Class<?>
     getReturnType(int i) {
 
