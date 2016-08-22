@@ -3678,7 +3678,7 @@ class Java {
     class PrimitiveType extends Type {
 
         /**
-         * One of {@link #VOID}, {@link #BYTE} and consorts.
+         * One of {@link Primitive#VOID}, {@link Primitive#BYTE} and consorts.
          */
         public final Primitive primitive;
 
