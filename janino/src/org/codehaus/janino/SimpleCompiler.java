@@ -380,7 +380,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * Converts an array of {@link Class}es into an array of{@link Java.Type}s.
      */
     protected Java.Type[]
-    classesToTypes(Location location, Class<?>[] classes) {
+    classesToTypes(Location location, @Nullable Class<?>[] classes) {
+
+        if (classes == null) return new Java.Type[0];
+
         Java.Type[] types = new Java.Type[classes.length];
         for (int i = 0; i < classes.length; ++i) {
             types[i] = this.classToType(location, classes[i]);
