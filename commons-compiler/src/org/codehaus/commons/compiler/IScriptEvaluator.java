@@ -120,7 +120,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </ul>
  * <p>
  *   Notice that these methods have array parameters in contrast to their one-script brethren.
- * </p>s
+ * </p>
  */
 public
 interface IScriptEvaluator extends IClassBodyEvaluator {
@@ -188,16 +188,15 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Returns the loaded {@link java.lang.reflect.Method}.
      * <p>
-     *   This method must only be called after exactly one of the {@link #cook(String, Reader)} methods was called.
-     * </p>s
+     *   This method must only be called after one of the {@link #cook(String, Reader)} methods was called.
+     * </p>
      */
     Method getMethod();
 
     /**
      * Same as {@link #setOverrideMethod(boolean)}, but for multiple scripts.
      */
-    void
-    setOverrideMethod(boolean[] overrideMethod);
+    void setOverrideMethod(boolean[] overrideMethod);
 
     /**
      * Same as {@link #setStaticMethod(boolean)}, but for multiple scripts.

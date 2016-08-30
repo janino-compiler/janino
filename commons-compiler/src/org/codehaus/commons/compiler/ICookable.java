@@ -37,9 +37,6 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * "Cooking" means scanning a sequence of characters and turning them into some JVM-executable artifact. For example,
  * if you cook a {@link org.codehaus.janino.ClassBodyEvaluator}, then the tokens are interpreted as a class body and
  * compiled into a {@link Class} which is accessible through {@link IClassBodyEvaluator#getClazz()}.
- * <p>
- *   The {@code cook*()} methods eventually invoke the abstract {@link #cook(String, Reader)} method.
- * </p>
  */
 public
 interface ICookable {
