@@ -161,7 +161,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     void setParameters(String[] names, Class<?>[] types);
 
     /**
-     * Defines sthe exceptions that the generated method may throw.
+     * Defines the exceptions that the generated method may throw.
      */
     void setThrownExceptions(Class<?>[] thrownExceptions);
 
