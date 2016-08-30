@@ -77,7 +77,6 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     @Override public void
     cook(@Nullable String optionalFileName, final Reader r) throws CompileException, IOException {
-        this.assertNotCooked();
 
         // Create one Java source file in memory, which will be compiled later.
         JavaFileObject compilationUnit;
@@ -221,7 +220,6 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     @Override public void
     setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader) {
-        this.assertNotCooked();
         this.parentClassLoader = (
             optionalParentClassLoader != null
             ? optionalParentClassLoader
@@ -245,13 +243,5 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     @Override public void
     setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
-    }
-
-    /**
-     * Throws an {@link IllegalStateException} if this {@link Cookable} is already cooked.
-     */
-    protected void
-    assertNotCooked() {
-        if (this.result != null) throw new IllegalStateException("Already cooked");
     }
 }

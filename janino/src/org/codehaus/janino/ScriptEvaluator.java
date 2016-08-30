@@ -429,16 +429,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     getMethod() { return this.getMethod(0); }
 
     @Override public void
-    setOverrideMethod(boolean[] overrideMethod) {
-        this.assertNotCooked();
-        this.optionalOverrideMethod = overrideMethod.clone();
-    }
+    setOverrideMethod(boolean[] overrideMethod) { this.optionalOverrideMethod = overrideMethod.clone(); }
 
     @Override public void
-    setStaticMethod(boolean[] staticMethod) {
-        this.assertNotCooked();
-        this.optionalStaticMethod = staticMethod.clone();
-    }
+    setStaticMethod(boolean[] staticMethod) { this.optionalStaticMethod = staticMethod.clone(); }
 
     /**
      * Defines the return types of the generated methods.
@@ -450,29 +444,19 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see               ExpressionEvaluator#getDefaultReturnType()
      */
     @Override public void
-    setReturnTypes(Class<?>[] returnTypes) {
-        this.assertNotCooked();
-        this.optionalReturnTypes = returnTypes.clone();
-    }
+    setReturnTypes(Class<?>[] returnTypes) { this.optionalReturnTypes = returnTypes.clone(); }
 
     @Override public void
-    setMethodNames(String[] methodNames) {
-        this.assertNotCooked();
-        this.optionalMethodNames = methodNames.clone();
-    }
+    setMethodNames(String[] methodNames) { this.optionalMethodNames = methodNames.clone(); }
 
     @Override public void
     setParameters(String[][] parameterNames, Class<?>[][] parameterTypes) {
-        this.assertNotCooked();
         this.optionalParameterNames = parameterNames.clone();
         this.optionalParameterTypes = parameterTypes.clone();
     }
 
     @Override public void
-    setThrownExceptions(Class<?>[][] thrownExceptions) {
-        this.assertNotCooked();
-        this.optionalThrownExceptions = thrownExceptions.clone();
-    }
+    setThrownExceptions(Class<?>[][] thrownExceptions) { this.optionalThrownExceptions = thrownExceptions.clone(); }
 
     /**
      * Like {@link #cook(Scanner)}, but cooks a <em>set</em> of scripts into one class. Notice that if <em>any</em> of

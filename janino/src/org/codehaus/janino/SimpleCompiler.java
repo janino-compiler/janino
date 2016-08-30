@@ -61,7 +61,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
 
-    // Set when "cook()"ing.
+    // Set while "cook()"ing.
     @Nullable private ClassLoaderIClassLoader classLoaderIClassLoader;
 
     @Nullable private ClassLoader    result;
@@ -177,7 +177,6 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     @Override public void
     setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader) {
-        this.assertNotCooked();
         this.parentClassLoader = (
             optionalParentClassLoader != null
             ? optionalParentClassLoader
@@ -402,32 +401,38 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     compileToClassLoader(Java.CompilationUnit compilationUnit) throws CompileException {
         SimpleCompiler.LOGGER.entering(null, "compileToClassLoader", compilationUnit);
 
+        assert this.classLoaderIClassLoader == null;
+
         this.classLoaderIClassLoader = new ClassLoaderIClassLoader(this.parentClassLoader);
+        try {
 
-        // Compile compilation unit to class files.
-        UnitCompiler unitCompiler = new UnitCompiler(compilationUnit, this.classLoaderIClassLoader);
-        unitCompiler.setCompileErrorHandler(this.optionalCompileErrorHandler);
-        unitCompiler.setWarningHandler(this.optionalWarningHandler);
-        ClassFile[] classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
+            // Compile compilation unit to class files.
+            UnitCompiler unitCompiler = new UnitCompiler(compilationUnit, this.classLoaderIClassLoader);
+            unitCompiler.setCompileErrorHandler(this.optionalCompileErrorHandler);
+            unitCompiler.setWarningHandler(this.optionalWarningHandler);
+            ClassFile[] classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
 
-        // Convert the class files to bytes and store them in a Map.
-        final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap<String, byte[]>();
-        for (ClassFile cf : classFiles) {
-            classes.put(cf.getThisClassName(), cf.toByteArray());
-        }
-
-        // Create a ClassLoader that loads the generated classes.
-        this.result = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-
-            @Override public ClassLoader
-            run() {
-                return new ByteArrayClassLoader(
-                    classes,                              // classes
-                    SimpleCompiler.this.parentClassLoader // parent
-                );
+            // Convert the class files to bytes and store them in a Map.
+            final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap<String, byte[]>();
+            for (ClassFile cf : classFiles) {
+                classes.put(cf.getThisClassName(), cf.toByteArray());
             }
-        });
-        return this.assertCooked();
+
+            // Create a ClassLoader that loads the generated classes.
+            this.result = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+
+                @Override public ClassLoader
+                run() {
+                    return new ByteArrayClassLoader(
+                        classes,                              // classes
+                        SimpleCompiler.this.parentClassLoader // parent
+                    );
+                }
+            });
+            return this.assertCooked();
+        } finally {
+            this.classLoaderIClassLoader = null;
+        }
     }
 
     /**
@@ -437,13 +442,5 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     assertCooked() {
         if (this.result != null) return this.result;
         throw new IllegalStateException("Must only be called after \"cook()\"");
-    }
-
-    /**
-     * @throws IllegalStateException This {@link Cookable} is already cooked
-     */
-    protected void
-    assertNotCooked() {
-        if (this.classLoaderIClassLoader != null) throw new IllegalStateException("Already cooked");
     }
 }

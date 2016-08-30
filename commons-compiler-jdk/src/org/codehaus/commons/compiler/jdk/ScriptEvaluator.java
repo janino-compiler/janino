@@ -282,42 +282,28 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     getMethod() { return this.getMethod(0); }
 
     @Override public void
-    setOverrideMethod(boolean[] overrideMethod) {
-        this.assertNotCooked();
-        this.optionalOverrideMethod = overrideMethod.clone();
-    }
+    setOverrideMethod(boolean[] overrideMethod) { this.optionalOverrideMethod = overrideMethod.clone(); }
 
     @Override public void
-    setStaticMethod(boolean[] staticMethod) {
-        this.assertNotCooked();
-        this.optionalStaticMethod = staticMethod.clone();
-    }
+    setStaticMethod(boolean[] staticMethod) { this.optionalStaticMethod = staticMethod.clone(); }
 
     @Override public void
     setReturnTypes(Class<?>[] returnTypes) {
-        this.assertNotCooked();
         for (Class<?> rt : returnTypes) assert rt != null;
         this.optionalReturnTypes = returnTypes.clone();
     }
 
     @Override public void
-    setMethodNames(String[] methodNames) {
-        this.assertNotCooked();
-        this.optionalMethodNames = methodNames.clone();
-    }
+    setMethodNames(String[] methodNames) { this.optionalMethodNames = methodNames.clone(); }
 
     @Override public void
     setParameters(String[][] names, Class<?>[][] types) {
-        this.assertNotCooked();
         this.optionalParameterNames = names.clone();
         this.optionalParameterTypes = types.clone();
     }
 
     @Override public void
-    setThrownExceptions(Class<?>[][] thrownExceptions) {
-        this.assertNotCooked();
-        this.optionalThrownExceptions = thrownExceptions.clone();
-    }
+    setThrownExceptions(Class<?>[][] thrownExceptions) { this.optionalThrownExceptions = thrownExceptions.clone(); }
 
     @Override public final void
     cook(Reader[] readers) throws CompileException, IOException { this.cook(null, readers); }
@@ -611,14 +597,5 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     getMethods() {
         if (this.result != null) return this.result;
         throw new IllegalStateException("\"cook()\" has not yet been called");
-    }
-
-    /**
-     * @throws IllegalStateException This {@link ScriptEvaluator} has already been {@code cook()}ed
-     */
-    @Override
-    protected void
-    assertNotCooked() {
-        if (this.result != null) throw new IllegalStateException("\"cook()\" has already been called");
     }
 }

@@ -240,18 +240,6 @@ class EvaluatorTests extends JaninoTestSuite {
     }
 
     @Test public void
-    testAssertNotCooked() throws Exception {
-        IClassBodyEvaluator temp = this.compilerFactory.newClassBodyEvaluator();
-        temp.cook("");
-        try {
-            temp.setExtendedClass(String.class); // Must throw an ISE because the CBE is already cooked.
-        } catch (IllegalStateException ex) {
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test public void
     testAccessingCompilingClass() throws Exception {
         ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
         sc.cook(
