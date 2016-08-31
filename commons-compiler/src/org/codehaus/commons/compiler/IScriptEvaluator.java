@@ -149,7 +149,8 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Defines the names and types of the parameters of the generated method.
      * <p>
-     *   <var>names</var> and <var>types</var> must have the same number of elements.
+     *   <var>names</var>{@code .length} and <var>types</var>{@code .length} must be equal. This invariant may be
+     *   checked immediately, or later when the script is cooked.
      * </p>
      * <p>
      *   The parameters can be of primitive type, e.g. {@code double.class}.
