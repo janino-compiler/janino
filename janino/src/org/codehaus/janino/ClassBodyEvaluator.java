@@ -236,7 +236,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     }
 
     /**
-     * Creates a {@link Java.CompilationUnit}, set the default imports, and parse the import declarations.
+     * Creates a {@link Java.CompilationUnit}, sets the default imports, and parses the import declarations.
      * <p>
      *   If the {@code optionalParser} is given, a sequence of IMPORT directives is parsed from it and added to the
      *   compilation unit.
