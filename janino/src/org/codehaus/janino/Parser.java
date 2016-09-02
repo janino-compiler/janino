@@ -142,80 +142,22 @@ import org.codehaus.janino.Scanner.TokenType;
 public
 class Parser {
 
-    private final Scanner scanner;
+    private final Scanner     scanner;
+    private final TokenStream tokenStream;
 
     public
-    Parser(Scanner scanner) { (this.scanner = scanner).setIgnoreWhiteSpace(true); }
+    Parser(Scanner scanner) { this(scanner, new TokenStreamImpl(scanner)); }
+
+    public
+    Parser(Scanner scanner, TokenStream tokenStream) {
+        (this.scanner = scanner).setIgnoreWhiteSpace(true);
+        this.tokenStream = tokenStream;
+    }
 
     /**
      * The optional JAVADOC comment preceding the {@link #nextToken}.
      */
     @Nullable private String optionalDocComment;
-
-    /**
-     * Whether the scanner is in 'expect greater' mode: If so, it parses character sequences like "{@code >>>=}" as
-     * "{@code >}", "{@code >}", "{@code >}", "{@code =}".
-     */
-    private boolean expectGreater;
-
-    /**
-     * While the scanner is in "expect greater mode", then the char sequence ">>" is scanned into two ">" tokens.
-     *
-     * @return Whether the scanner is currently in 'expect greater' mode
-     */
-    public boolean
-    getExpectGreater() { return this.expectGreater; }
-
-    /**
-     * While the scanner is in "expect greater mode", then the char sequence ">>" is scanned into two ">" tokens.
-     *
-     * @param value Whether "expect greater mode" should be activated
-     * @return      Whether "expect greater mode" was previously active
-     */
-    public boolean
-    setExpectGreater(boolean value) {
-        boolean result = this.expectGreater;
-        this.expectGreater = value;
-        return result;
-    }
-
-    private Scanner.Token
-    produceToken() throws CompileException, IOException {
-
-        if (this.pushback != null) {
-            Token result = this.pushback;
-            this.pushback = null;
-            return result;
-        }
-
-        for (;;) {
-            Token token = this.scanner.produce();
-
-            switch (token.type) {
-
-            case WHITE_SPACE:
-            case C_PLUS_PLUS_STYLE_COMMENT:
-                break;
-
-            case C_STYLE_COMMENT:
-                if (token.value.startsWith("/**")) {
-                    if (Parser.this.optionalDocComment != null) {
-                        Parser.this.warning("MDC", "Misplaced doc comment", this.scanner.location());
-                        Parser.this.optionalDocComment = null;
-                    }
-                }
-                break;
-
-            default:
-                if (Parser.this.expectGreater && token.type == TokenType.OPERATOR && token.value.startsWith(">>")) {
-                    this.pushback = this.scanner.new Token(TokenType.OPERATOR, token.value.substring(1));
-                    return this.scanner.new Token(TokenType.OPERATOR, ">");
-                }
-                return token;
-            }
-        }
-    }
-    @Nullable private Token pushback;
 
     /**
      * Gets the text of the doc comment (a.k.a. "JAVADOC comment") preceeding the next token.
@@ -3225,229 +3167,34 @@ class Parser {
     public Location
     location() { return this.scanner.location(); }
 
-    @Nullable private Token nextToken, nextButOneToken;
-
     // Token-level methods.
 
     /**
-     * @return The next token, but does not consume it
-     */
-    public Token
-    peek() throws CompileException, IOException {
-        if (this.nextToken == null) this.nextToken = this.produceToken();
-        assert this.nextToken != null;
-        return this.nextToken;
-    }
-
-    /**
-     * @return The next-but-one token, but consumes neither the next nor the next-but-one token
-     */
-    public Token
-    peekNextButOne() throws CompileException, IOException {
-        if (this.nextToken == null) this.nextToken = this.produceToken();
-        if (this.nextButOneToken == null) this.nextButOneToken = this.produceToken();
-        assert this.nextButOneToken != null;
-        return this.nextButOneToken;
-    }
-
-    /**
-     * @return The next and also consumes it, or {@code null} iff the scanner is at end-of-input
-     */
-    public Token
-    read() throws CompileException, IOException {
-
-        if (this.nextToken == null) return this.produceToken();
-
-        final Token result = this.nextToken;
-        assert result != null;
-
-        this.nextToken       = this.nextButOneToken;
-        this.nextButOneToken = null;
-        return result;
-    }
-
-    // Peek/read/peekRead convenience methods.
-
-    /**
-     * @return Whether the value of the next token equals <var>suspected</var>; does not consume the next token
-     */
-    public boolean
-    peek(String suspected) throws CompileException, IOException {
-        return this.peek().value.equals(suspected);
-    }
-
-    /**
-     * Checks whether the value of the next token equals any of the <var>suspected</var>; does not consume the next
-     * token.
+     * While the scanner is in "expect greater mode", then the char sequence ">>" is scanned into two ">" tokens.
      *
-     * @return The index of the first of the <var>suspected</var> that equals the value of the next token, or -1 if the
-     *         value of the next token equals none of the <var>suspected</var>
+     * @param value Whether "expect greater mode" should be activated
+     * @return      Whether "expect greater mode" was previously active
      */
-    public int
-    peek(String[] suspected) throws CompileException, IOException {
-        return Parser.indexOf(suspected, this.peek().value);
-    }
+    private boolean
+    setExpectGreater(boolean value) { return this.tokenStream.setExpectGreater(value); }
 
-    /**
-     * Checks whether the type of the next token is any of the <var>suspected</var>; does not consume the next token.
-     *
-     * @return The index of the first of the <var>suspected</var> types that is the next token's type, or -1 if the type
-     *         of the next token is none of the <var>suspected</var> types
-     */
-    public int
-    peek(TokenType[] suspected) throws CompileException, IOException {
-        return Parser.indexOf(suspected, this.peek().type);
-    }
-
-    /**
-     * @return Whether the value of the next-but-one token equals the <var>suspected</var>; consumes neither the next
-     *         nor the next-but-one token
-     */
-    public boolean
-    peekNextButOne(String suspected) throws CompileException, IOException {
-        return this.peekNextButOne().value.equals(suspected);
-    }
-
-    /**
-     * Verifies that the value of the next token equals <var>expected</var>, and consumes the token.
-     *
-     * @throws CompileException The value of the next token does not equal <var>expected</var> (this includes the case
-     *                          that  the scanner is at end-of-input)
-     */
-    public void
-    read(String expected) throws CompileException, IOException {
-        String s = this.read().value;
-        if (!s.equals(expected)) throw this.compileException("'" + expected + "' expected instead of '" + s + "'");
-    }
-
-    /**
-     * Verifies that the value of the next token equals one of the <var>expected</var>, and consumes the token.
-     *
-     * @return                  The index of the consumed token within <var>expected</var>
-     * @throws CompileException The value of the next token does not equal any of the <var>expected</var> (this includes
-     *                          the case where the scanner is at end-of-input)
-     */
-    public int
-    read(String[] expected) throws CompileException, IOException {
-
-        String s = this.read().value;
-
-        int idx = Parser.indexOf(expected, s);
-        if (idx == -1) {
-            throw this.compileException("One of '" + Parser.join(expected, " ") + "' expected instead of '" + s + "'");
-        }
-        return idx;
-    }
-
-    /**
-     * @return Whether the value of the next token equals the <var>suspected</var>; if so, it consumes the next token
-     * @throws CompileException
-     * @throws IOException
-     */
-    public boolean
-    peekRead(String suspected) throws CompileException, IOException {
-
-        if (this.nextToken != null) {
-            if (!this.nextToken.value.equals(suspected)) return false;
-            this.nextToken       = this.nextButOneToken;
-            this.nextButOneToken = null;
-            return true;
-        }
-
-        Token t = this.produceToken();
-        if (t.value.equals(suspected)) return true;
-        this.nextToken = t;
-        return false;
-    }
-
-    /**
-     * @return -1 iff the next token is none of {@code values}
-     */
-    public int
-    peekRead(String[] values) throws CompileException, IOException {
-        if (this.nextToken != null) {
-            int idx = Parser.indexOf(values, this.nextToken.value);
-            if (idx == -1) return -1;
-            this.nextToken       = this.nextButOneToken;
-            this.nextButOneToken = null;
-            return idx;
-        }
-        Token t   = this.produceToken();
-        int   idx = Parser.indexOf(values, t.value);
-        if (idx != -1) return idx;
-        this.nextToken = t;
-        return -1;
-    }
-
-    /**
-     * @return Whether the scanner is at end-of-input
-     */
-    public boolean
-    peekEof() throws CompileException, IOException {
-        return this.peek().type == TokenType.END_OF_INPUT;
-    }
-
-    /**
-     * @return {@code null} iff the next token is not an identifier, otherwise the value of the identifier token
-     */
-    @Nullable public String
-    peekIdentifier() throws CompileException, IOException {
-        Token t = this.peek();
-        return t.type == TokenType.IDENTIFIER ? t.value : null;
-    }
-
-    /**
-     * @return Whether the next token is a literal
-     */
-    public boolean
-    peekLiteral() throws CompileException, IOException {
-        return this.peek(new TokenType[] {
-            TokenType.INTEGER_LITERAL, TokenType.FLOATING_POINT_LITERAL, TokenType.BOOLEAN_LITERAL,
-            TokenType.CHARACTER_LITERAL, TokenType.STRING_LITERAL, TokenType.NULL_LITERAL,
-        }) != -1;
-    }
-
-    /**
-     * @return                  The value of the next token, which is an indentifier
-     * @throws CompileException The next token is not an identifier
-     */
-    public String
-    readIdentifier() throws CompileException, IOException {
-        Token t = this.read();
-        if (t.type != TokenType.IDENTIFIER) {
-            throw this.compileException("Identifier expected instead of '" + t.value + "'");
-        }
-        return t.value;
-    }
-
-    /**
-     * @return                  The value of the next token, which is an operator
-     * @throws CompileException The next token is not an operator
-     */
-    public String
-    readOperator() throws CompileException, IOException {
-        Token t = this.read();
-        if (t.type != TokenType.OPERATOR) {
-            throw this.compileException("Operator expected instead of '" + t.value + "'");
-        }
-        return t.value;
-    }
-
-    private static int
-    indexOf(String[] strings, String subject) {
-        for (int i = 0; i < strings.length; ++i) {
-            if (strings[i].equals(subject)) return i;
-        }
-        return -1;
-    }
-
-    private static int
-    indexOf(TokenType[] tta, TokenType subject) {
-        for (int i = 0; i < tta.length; ++i) {
-            if (tta[i].equals(subject)) return i;
-        }
-        return -1;
-    }
+    // Shorthand for the various "TokenStream" methods.       SUPPRESS CHECKSTYLE LineLength|JavadocMethod:16
+    public Token            peek() throws CompileException, IOException                           { return this.tokenStream.peek(); }
+    public Token            peekNextButOne() throws CompileException, IOException                 { return this.tokenStream.peekNextButOne(); }
+    public Token            read() throws CompileException, IOException                           { return this.tokenStream.read(); }
+    public boolean          peek(String suspected) throws CompileException, IOException           { return this.tokenStream.peek(suspected); }
+    public int              peek(String[] suspected) throws CompileException, IOException         { return this.tokenStream.peek(suspected); }
+    public int              peek(TokenType[] suspected) throws CompileException, IOException      { return this.tokenStream.peek(suspected); }
+    public boolean          peekNextButOne(String suspected) throws CompileException, IOException { return this.tokenStream.peekNextButOne(suspected); }
+    public void             read(String expected) throws CompileException, IOException            { this.tokenStream.read(expected); }
+    public int              read(String[] expected) throws CompileException, IOException          { return this.tokenStream.read(expected); }
+    public boolean          peekRead(String suspected) throws CompileException, IOException       { return this.tokenStream.peekRead(suspected); }
+    public int              peekRead(String[] suspected) throws CompileException, IOException     { return this.tokenStream.peekRead(suspected); }
+    public boolean          peekEof() throws CompileException, IOException                        { return this.tokenStream.peekEof(); }
+    @Nullable public String peekIdentifier() throws CompileException, IOException                 { return this.tokenStream.peekIdentifier(); }
+    public boolean          peekLiteral() throws CompileException, IOException                    { return this.tokenStream.peekLiteral(); }
+    public String           readIdentifier() throws CompileException, IOException                 { return this.tokenStream.readIdentifier(); }
+    public String           readOperator() throws CompileException, IOException                   { return this.tokenStream.readOperator(); }
 
     /**
      * Issues a warning if the given string does not comply with the package naming conventions.
@@ -3613,6 +3360,7 @@ class Parser {
     public void
     setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
+        this.tokenStream.setWarningHandler(optionalWarningHandler);
     }
 
     // Used for elaborate warning handling.
