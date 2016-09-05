@@ -64,6 +64,24 @@ class JaninoTestSuite {
     }
 
     /**
+     * Asserts that cooking the given <var>expression</var> issues an error, and the error message contains the
+     * <var>messageInfix</var>.
+     */
+    protected void
+    assertExpressionUncookable(String expression, String messageInfix) throws Exception {
+        new ExpressionTest(expression).assertUncookable(messageInfix);
+    }
+
+    /**
+     * Asserts that cooking the given <var>expression</var> issues an error, and the error message contains a match for
+     * <var>messageRegex</var>.
+     */
+    protected void
+    assertExpressionUncookable(String expression, Pattern messageRegex) throws Exception {
+        new ExpressionTest(expression).assertUncookable(messageRegex);
+    }
+
+    /**
      * Asserts that the given <var>expression</var> can be cooked without errors and warnings.
      */
     protected void

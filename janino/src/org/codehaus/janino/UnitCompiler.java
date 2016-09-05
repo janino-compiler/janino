@@ -822,6 +822,21 @@ class UnitCompiler {
                         override != null
                         && !base.getReturnType().equals(override.getReturnType())
                     ) {
+
+                        if (
+                            !base.getReturnType().isAssignableFrom(override.getReturnType())
+                            || override.getReturnType() == IClass.VOID
+                        ) {
+                            this.compileError(
+                                "The return type of \""
+                                + override
+                                + "\" is incompatible with that of \""
+                                + base
+                                + "\""
+                            );
+                            return;
+                        }
+
                         this.compileBridgeMethod(cf, base, override);
                     }
                 }
@@ -1369,6 +1384,7 @@ class UnitCompiler {
      */
     private void
     compileBridgeMethod(ClassFile cf, IMethod base, IMethod override) throws CompileException {
+
         ClassFile.MethodInfo mi = cf.addMethodInfo(
             (short) (Mod.PUBLIC | Mod.SYNTHETIC), // accessFlags
             base.getName(),

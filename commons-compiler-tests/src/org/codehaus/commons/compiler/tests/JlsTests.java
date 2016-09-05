@@ -496,6 +496,11 @@ class JlsTests extends JaninoTestSuite {
             + "    new KidClone().clone();\n"
             + "}\n"
         );
+
+        this.assertExpressionUncookable(
+            "new Object() { public void toString() {}}.toString()",
+            Pattern.compile("The return type of.*is incompatible with")
+        );
     }
 
     @Test public void
