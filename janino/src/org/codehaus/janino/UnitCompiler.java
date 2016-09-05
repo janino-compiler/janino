@@ -811,35 +811,15 @@ class UnitCompiler {
 
         // For every method look for bridge methods that need to be supplied. This is used to correctly dispatch into
         // covariant return types from existing code.
-        {
-            IMethod[] ms = iClass.getIMethods();
-            for (IMethod base : ms) {
-                if (!base.isStatic()) {
-                    IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
+        for (IMethod base : iClass.getIMethods()) {
+            if (!base.isStatic()) {
+                IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
 
-                    // If we overrode the method but with a DIFFERENT return type.
-                    if (
-                        override != null
-                        && !base.getReturnType().equals(override.getReturnType())
-                    ) {
-
-                        if (
-                            !base.getReturnType().isAssignableFrom(override.getReturnType())
-                            || override.getReturnType() == IClass.VOID
-                        ) {
-                            this.compileError(
-                                "The return type of \""
-                                + override
-                                + "\" is incompatible with that of \""
-                                + base
-                                + "\""
-                            );
-                            return;
-                        }
-
-                        this.compileBridgeMethod(cf, base, override);
-                    }
-                }
+                // If we overrode the method but with a DIFFERENT return type.
+                if (
+                    override != null
+                    && base.getReturnType() != override.getReturnType()
+                ) this.generateBridgeMethod(cf, base, override);
             }
         }
 
@@ -1380,10 +1360,25 @@ class UnitCompiler {
     }
 
     /**
-     * Compiles a bridge method which will add a method of the signature of base that delegates to override.
+     * Generates and compiles a bridge method with signature <var>base</var> that delegates to <var>override</var>.
      */
     private void
-    compileBridgeMethod(ClassFile cf, IMethod base, IMethod override) throws CompileException {
+    generateBridgeMethod(ClassFile cf, IMethod base, IMethod override) throws CompileException {
+
+        if (
+            !base.getReturnType().isAssignableFrom(override.getReturnType())
+            || override.getReturnType() == IClass.VOID
+        ) {
+            this.compileError(
+                "The return type of \""
+                + override
+                + "\" is incompatible with that of \""
+                + base
+                + "\""
+            );
+            return;
+        }
+
 
         ClassFile.MethodInfo mi = cf.addMethodInfo(
             (short) (Mod.PUBLIC | Mod.SYNTHETIC), // accessFlags

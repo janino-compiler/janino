@@ -593,7 +593,11 @@ class IClass {
     getComponentType2();
 
     @Override public String
-    toString() { return Descriptor.toClassName(this.getDescriptor()); }
+    toString() {
+        String className = Descriptor.toClassName(this.getDescriptor());
+        if (className.startsWith("java.lang.")) className = className.substring(10);
+        return className;
+    }
 
     /**
      * Determines if {@code this} is assignable from <var>that</var>. This is true if {@code this} is identical with
