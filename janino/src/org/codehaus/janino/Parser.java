@@ -129,8 +129,6 @@ import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Java.Wildcard;
-import org.codehaus.janino.Scanner.Token;
-import org.codehaus.janino.Scanner.TokenType;
 
 /**
  * A parser for the Java programming language.

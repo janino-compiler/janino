@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010, Arno Unkrig
+ * Copyright (c) 2016, Arno Unkrig
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,66 +24,67 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler;
+package org.codehaus.janino;
 
-import java.io.Serializable;
-
+import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * Immutable representation of the location of a character in a document, as defined by an optional file name, a line
- * number and a column number.
+ * Representation of a Java token.
  */
-public
-class Location implements Serializable {
-
-    /**
-     * Representation of an unspecified location.
-     */
-    public static final Location NOWHERE = new Location("<internally generated location>", (short) -1, (short) -1);
+public final
+class Token {
 
     @Nullable private final String optionalFileName;
     private final int              lineNumber;
     private final int              columnNumber;
 
+    @Nullable private Location location; // Created lazily to save overhead.
+
     /**
-     * @param optionalFileName A human-readable indication where the document related to this {@link Location} can be
-     *                         found
+     * The type of this token.
+     * <p>
+     *   Strictly speaking, this field is redundant, because the token type can always be deduced from the token
+     *   value, e.g. iff the value begins with "'", then the type is {@link TokenType#CHARACTER_LITERAL}.
+     * </p>
      */
+    public final TokenType type;
+
+    /**
+     * The text of the token exactly as it appears in the source code.
+     */
+    public final String value;
+
     public
-    Location(@Nullable String optionalFileName, int lineNumber, int columnNumber) {
+    Token(@Nullable String optionalFileName, int lineNumber, int columnNumber, TokenType type, String value) {
         this.optionalFileName = optionalFileName;
         this.lineNumber       = lineNumber;
         this.columnNumber     = columnNumber;
+        this.type             = type;
+        this.value            = value;
+    }
+
+    public
+    Token(Location location, TokenType type, String value) {
+        this.optionalFileName = location.getFileName();
+        this.lineNumber       = location.getLineNumber();
+        this.columnNumber     = location.getColumnNumber();
+        this.location         = location;
+        this.type             = type;
+        this.value            = value;
     }
 
     /**
-     * @return The "file name" associated with this location, or {@code null}
+     * @return The location of the first character of this token
      */
-    @Nullable public String getFileName() { return this.optionalFileName; }
+    public Location
+    getLocation() {
 
-    /**
-     * @return The line number associated with this location, or -1
-     */
-    public int getLineNumber() { return this.lineNumber; }
+        if (this.location != null) return this.location;
 
-    /**
-     * @return The column number associated with this location, or -1
-     */
-    public int getColumnNumber() { return this.columnNumber; }
+        return (this.location = new Location(this.optionalFileName, this.lineNumber, this.columnNumber));
+    }
 
-    /**
-     * Converts this {@link Location} into an english text, like '{@code File Main.java, Line 23, Column 79}'.
-     */
     @Override public String
-    toString() {
-
-        StringBuilder sb = new StringBuilder();
-        if (this.optionalFileName != null) {
-            sb.append("File '").append(this.optionalFileName).append("', ");
-        }
-        sb.append("Line ").append(this.lineNumber).append(", ");
-        sb.append("Column ").append(this.columnNumber);
-        return sb.toString();
-    }
+    toString() { return this.value; }
 }

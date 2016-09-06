@@ -2374,10 +2374,10 @@ class ClassFile implements Annotatable {
             /**
              * The fields of the entries in the {@code line_number_table}, as described in JVMS7 4.7.12.
              */
-            public final int startPC, lineNumber;
+            public final short startPC, lineNumber;
 
             public
-            Entry(int startPc, int lineNumber) {
+            Entry(short startPc, short lineNumber) {
                 this.startPC    = startPc;
                 this.lineNumber = lineNumber;
             }

@@ -31,8 +31,6 @@ import java.io.IOException;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.Scanner.Token;
-import org.codehaus.janino.Scanner.TokenType;
 
 /**
  * An interface that allows for peeking and consuming a stream of {@link Token}s.

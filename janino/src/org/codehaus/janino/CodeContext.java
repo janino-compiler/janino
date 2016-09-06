@@ -232,7 +232,14 @@ class CodeContext {
             List<ClassFile.LineNumberTableAttribute.Entry> lnt = new ArrayList<Entry>();
             for (Offset o = this.beginning; o != null; o = o.next) {
                 if (o instanceof LineNumberOffset) {
-                    lnt.add(new ClassFile.LineNumberTableAttribute.Entry(o.offset, ((LineNumberOffset) o).lineNumber));
+
+                    int offset = o.offset;
+                    if (offset > 0xffff) throw new JaninoRuntimeException("LineNumberTable entry offset out of range");
+
+                    int lineNumber = ((LineNumberOffset) o).lineNumber;
+                    if (lineNumber > 0xffff) lineNumber = 0xffff;
+
+                    lnt.add(new ClassFile.LineNumberTableAttribute.Entry((short) offset, (short) lineNumber));
                 }
             }
             ClassFile.LineNumberTableAttribute.Entry[] lnte = (ClassFile.LineNumberTableAttribute.Entry[]) lnt.toArray(

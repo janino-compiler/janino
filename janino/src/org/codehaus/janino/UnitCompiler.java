@@ -7066,6 +7066,7 @@ class UnitCompiler {
 
         // A very special case.
         if (operator == "+" && firstOperandType == this.iClassLoader.TYPE_java_lang_String) { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
+            assert firstOperandType != null;
             return this.compileStringConcatenation(locatable, firstOperandType, (Rvalue) operands.next(), operands);
         }
 
@@ -11599,17 +11600,20 @@ class UnitCompiler {
 
     private void
     writeOpcode(Locatable locatable, int opcode) {
-        this.getCodeContext().write(locatable.getLocation().getLineNumber(), (byte) opcode);
+        int lineNumber = locatable.getLocation().getLineNumber();
+        this.getCodeContext().write((short) Math.min(lineNumber, 0xffff), (byte) opcode);
     }
 
     private void
     writeOpcodes(Locatable locatable, byte[] opcodes) {
-        this.getCodeContext().write(locatable.getLocation().getLineNumber(), opcodes);
+        int lineNumber = locatable.getLocation().getLineNumber();
+        this.getCodeContext().write((short) Math.min(lineNumber, 0xffff), opcodes);
     }
 
     private void
     writeBranch(Locatable locatable, int opcode, final CodeContext.Offset dst) {
-        this.getCodeContext().writeBranch(locatable.getLocation().getLineNumber(), opcode, dst);
+        int lineNumber = locatable.getLocation().getLineNumber();
+        this.getCodeContext().writeBranch((short) Math.min(lineNumber, 0xffff), opcode, dst);
     }
 
     private void

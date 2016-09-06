@@ -58,7 +58,6 @@ import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Parser.ClassDeclarationContext;
-import org.codehaus.janino.Scanner.TokenType;
 import org.codehaus.janino.util.Traverser;
 
 /**

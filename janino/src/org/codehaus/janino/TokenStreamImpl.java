@@ -32,8 +32,6 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.Scanner.Token;
-import org.codehaus.janino.Scanner.TokenType;
 
 /**
  * Standard implementation for the {@link TokenStream}.
@@ -51,7 +49,7 @@ class TokenStreamImpl implements TokenStream {
      */
     @Nullable private String optionalDocComment;
 
-    private Scanner.Token
+    private Token
     produceToken() throws CompileException, IOException {
 
         if (this.pushback != null) {
@@ -160,7 +158,9 @@ class TokenStreamImpl implements TokenStream {
     @Override public int
     read(String[] expected) throws CompileException, IOException {
 
-        String s = this.read().value;
+        Token t = this.read();
+
+        String s = t.value;
 
         int idx = TokenStreamImpl.indexOf(expected, s);
 
@@ -170,7 +170,7 @@ class TokenStreamImpl implements TokenStream {
             if (s.charAt(0) == '>') {
                 int result = TokenStreamImpl.indexOf(expected, ">");
                 if (result != -1) {
-                    this.nextToken = this.scanner.new Token(TokenType.OPERATOR, s.substring(1));
+                    this.nextToken = new Token(t.getLocation(), TokenType.OPERATOR, s.substring(1));
                     return result;
                 }
             }
