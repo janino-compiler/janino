@@ -160,32 +160,37 @@ class TokenStreamImpl implements TokenStream {
 
         Token t = this.read();
 
-        String s = t.value;
+        String value = t.value;
 
-        int idx = TokenStreamImpl.indexOf(expected, s);
+        int idx = TokenStreamImpl.indexOf(expected, value);
+        if (idx != -1) return idx;
 
-        // Catch 22: Iff the parser is looking for token ">", and the next token only STARTS with ">" (e.g. ">>="),
-        // then split that token into TWO tokens ">" and ">=".
-        if (idx == -1) {
-            if (s.charAt(0) == '>') {
-                int result = TokenStreamImpl.indexOf(expected, ">");
-                if (result != -1) {
-                    this.nextToken = new Token(t.getLocation(), TokenType.OPERATOR, s.substring(1));
-                    return result;
-                }
+        if (value.startsWith(">")) {
+            int result = TokenStreamImpl.indexOf(expected, ">");
+            if (result != -1) {
+
+                // The parser is "looking for" token ">", but the next token only STARTS with ">" (e.g. ">>="); split
+                // that token into TWO tokens (">" and ">=", in the example).
+                // See JLS8 3.2, "Lexical Transformation", last paragraph.
+                Location loc = t.getLocation();
+                this.nextToken = new Token(
+                    loc.getFileName(),
+                    loc.getLineNumber(),
+                    loc.getColumnNumber() + 1,
+                    TokenType.OPERATOR,
+                    value.substring(1)
+                );
+                return result;
             }
         }
 
-        if (idx == -1) {
-            throw this.compileException(
-                "One of '"
-                + TokenStreamImpl.join(expected, " ")
-                + "' expected instead of '"
-                + s
-                + "'"
-            );
-        }
-        return idx;
+        throw this.compileException(
+            "One of '"
+            + TokenStreamImpl.join(expected, " ")
+            + "' expected instead of '"
+            + value
+            + "'"
+        );
     }
 
     @Override public boolean
