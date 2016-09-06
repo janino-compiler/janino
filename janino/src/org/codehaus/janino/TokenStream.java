@@ -41,23 +41,6 @@ public
 interface TokenStream {
 
     /**
-     * While the scanner is in "expect greater mode", then the char sequence ">>" is scanned into two ">" tokens.
-     *
-     * @return Whether the scanner is currently in 'expect greater' mode
-     */
-    boolean
-    getExpectGreater();
-
-    /**
-     * While the scanner is in "expect greater mode", then the char sequence ">>" is scanned into two ">" tokens.
-     *
-     * @param value Whether "expect greater mode" should be activated
-     * @return      Whether "expect greater mode" was previously active
-     */
-    boolean
-    setExpectGreater(boolean value);
-
-    /**
      * @return The next token, but does not consume it
      */
     Token

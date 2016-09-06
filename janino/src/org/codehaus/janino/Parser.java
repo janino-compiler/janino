@@ -2230,20 +2230,12 @@ class Parser {
 
         if (!this.peekRead("<")) return null;
 
-        // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators starting
-        // with '>>'.
-        boolean orig = this.setExpectGreater(true);
-        try {
-
-            List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
+        List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
+        typeArguments.add(this.parseTypeArgument());
+        while (this.read(new String[] { ">", "," }) == 1) {
             typeArguments.add(this.parseTypeArgument());
-            while (this.read(new String[] { ">", "," }) == 1) {
-                typeArguments.add(this.parseTypeArgument());
-            }
-            return (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()]);
-        } finally {
-            this.setExpectGreater(orig);
         }
+        return (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()]);
     }
 
     /**
@@ -2493,68 +2485,47 @@ class Parser {
                 );
             } else
             if (this.peek(new String[] { "<", ">", "<=", ">=" }) != -1) {
-                String op  = this.read().value;
 
-                if ("<".equals(op) && a instanceof Java.AmbiguousName && this.peek("?")) {
-                    final String[] identifiers = ((Java.AmbiguousName) a).identifiers;
+                // ambiguous-name '<' '?' ...
+                if (a instanceof Java.AmbiguousName && this.peek("<") && this.peekNextButOne("?")) {
+                    return new ReferenceType(
+                        this.location(),
+                        ((Java.AmbiguousName) a).identifiers,
+                        this.parseTypeArgumentsOpt()
+                    );
+                }
 
-                    // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators
-                    // starting with '>>'.
-                    boolean orig = this.setExpectGreater(true);
-                    try {
+                String op = this.read().value;
 
-                        // '<' TypeArgument [ { ',' TypeArgument } '>' ]
+                Atom rhs = this.parseShiftExpression();
+
+                if ("<".equals(op) && a instanceof Java.AmbiguousName) {
+
+                    if (this.peek(new String[] { "<", ">", "," }) != -1) {
+                        final String[] identifiers = ((Java.AmbiguousName) a).identifiers;
+
+                        // '<' ShiftExpression [ TypeArguments ] ( '<' | '>' | ',' )
+                        this.parseTypeArgumentsOpt();
+                        Type t = rhs.toTypeOrCompileException();
+
+                        TypeArgument ta;
+                        if (t instanceof ArrayType)     { ta = (ArrayType)     t; } else
+                        if (t instanceof ReferenceType) { ta = (ReferenceType) t; } else
+                        {
+                            throw this.compileException("'" + t + "' is not a valid type argument");
+                        }
+
                         List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
-                        typeArguments.add(this.parseTypeArgument());
-                        while (this.read(new String[] { ">", "," }) == 1) typeArguments.add(this.parseTypeArgument());
+                        typeArguments.add(ta);
+                        while (this.read(new String[] { ">", "," }) == 1) {
+                            typeArguments.add(this.parseTypeArgument());
+                        }
 
                         return new ReferenceType(
                             this.location(),
                             identifiers,
                             (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
                         );
-                    } finally {
-                        this.setExpectGreater(orig);
-                    }
-                }
-
-                Atom rhs = this.parseShiftExpression();
-
-                if ("<".equals(op) && a instanceof Java.AmbiguousName) {
-
-                    // Temporarily switch the scanner into 'expect greater' mode, where it doesn't recognize operators
-                    // starting with '>>'.
-                    boolean orig = this.setExpectGreater(true);
-                    try {
-
-                        if (this.peek(new String[] { "<", ">", "," }) != -1) {
-                            final String[] identifiers = ((Java.AmbiguousName) a).identifiers;
-
-                            // '<' ShiftExpression [ TypeArguments ] { ',' TypeArgument } '>'
-                            this.parseTypeArgumentsOpt();
-                            Type t = rhs.toTypeOrCompileException();
-
-                            TypeArgument ta;
-                            if (t instanceof ArrayType)     { ta = (ArrayType)     t; } else
-                            if (t instanceof ReferenceType) { ta = (ReferenceType) t; } else
-                            {
-                                throw this.compileException("'" + t + "' is not a valid type argument");
-                            }
-
-                            List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
-                            typeArguments.add(ta);
-                            while (this.read(new String[] { ">", "," }) == 1) {
-                                typeArguments.add(this.parseTypeArgument());
-                            }
-
-                            return new ReferenceType(
-                                this.location(),
-                                identifiers,
-                                (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
-                            );
-                        }
-                    } finally {
-                        this.setExpectGreater(orig);
                     }
                 }
 
@@ -3168,15 +3139,6 @@ class Parser {
     location() { return this.scanner.location(); }
 
     // Token-level methods.
-
-    /**
-     * While the scanner is in "expect greater mode", then the char sequence ">>" is scanned into two ">" tokens.
-     *
-     * @param value Whether "expect greater mode" should be activated
-     * @return      Whether "expect greater mode" was previously active
-     */
-    private boolean
-    setExpectGreater(boolean value) { return this.tokenStream.setExpectGreater(value); }
 
     // Shorthand for the various "TokenStream" methods.       SUPPRESS CHECKSTYLE LineLength|JavadocMethod:16
     public Token            peek() throws CompileException, IOException                           { return this.tokenStream.peek(); }

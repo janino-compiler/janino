@@ -51,33 +51,6 @@ class TokenStreamImpl implements TokenStream {
      */
     @Nullable private String optionalDocComment;
 
-    /**
-     * Whether the scanner is in 'expect greater' mode: If so, it parses character sequences like "{@code >>>=}" as
-     * "{@code >}", "{@code >}", "{@code >}", "{@code =}".
-     */
-    private boolean expectGreater;
-
-    /**
-     * While the scanner is in "expect greater mode", then the char sequence ">>" is scanned into two ">" tokens.
-     *
-     * @return Whether the scanner is currently in 'expect greater' mode
-     */
-    @Override public boolean
-    getExpectGreater() { return this.expectGreater; }
-
-    /**
-     * While the scanner is in "expect greater mode", then the char sequence ">>" is scanned into two ">" tokens.
-     *
-     * @param value Whether "expect greater mode" should be activated
-     * @return      Whether "expect greater mode" was previously active
-     */
-    @Override public boolean
-    setExpectGreater(boolean value) {
-        boolean result = this.expectGreater;
-        this.expectGreater = value;
-        return result;
-    }
-
     private Scanner.Token
     produceToken() throws CompileException, IOException {
 
@@ -106,14 +79,6 @@ class TokenStreamImpl implements TokenStream {
                 break;
 
             default:
-                if (
-                    TokenStreamImpl.this.expectGreater
-                    && token.type == TokenType.OPERATOR
-                    && token.value.startsWith(">>")
-                ) {
-                    this.pushback = this.scanner.new Token(TokenType.OPERATOR, token.value.substring(1));
-                    return this.scanner.new Token(TokenType.OPERATOR, ">");
-                }
                 return token;
             }
         }
@@ -198,6 +163,19 @@ class TokenStreamImpl implements TokenStream {
         String s = this.read().value;
 
         int idx = TokenStreamImpl.indexOf(expected, s);
+
+        // Catch 22: Iff the parser is looking for token ">", and the next token only STARTS with ">" (e.g. ">>="),
+        // then split that token into TWO tokens ">" and ">=".
+        if (idx == -1) {
+            if (s.charAt(0) == '>') {
+                int result = TokenStreamImpl.indexOf(expected, ">");
+                if (result != -1) {
+                    this.nextToken = this.scanner.new Token(TokenType.OPERATOR, s.substring(1));
+                    return result;
+                }
+            }
+        }
+
         if (idx == -1) {
             throw this.compileException(
                 "One of '"
