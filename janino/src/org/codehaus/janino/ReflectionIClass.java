@@ -238,7 +238,11 @@ class ReflectionIClass extends IClass {
             c = c.getComponentType();
         }
         String s = c.getName();
-        if (s.startsWith("java.lang.")) s = s.substring(10);
+        
+        // Must not strip "java.lang.", because some pieces of code rely on "toString()" returning the COMPLETE
+        // qualified name.
+//        if (s.startsWith("java.lang.")) s = s.substring(10);
+        
         while (brackets-- > 0) s += "[]";
         return s;
     }
