@@ -30,7 +30,7 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * Representation of a Java token.
+ * Immutable representation of a Java token.
  */
 public final
 class Token {
