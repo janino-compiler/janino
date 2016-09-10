@@ -946,35 +946,15 @@ Object o = cl.loadClass("pkg1.A").newInstance();
           repeated use.
         </p>
 
+        <h4>
+          <a id="jsh" class="anchor" href="#jsh" aria-hidden="true"><span aria-hidden="true" class="octicon
+          octicon-link"></span></a>jsh
+        </h4>
+
         <p>
-          A BASH shell script named "<a
-          href="https://github.com/janino-compiler/janino/blob/master/janino/bin/janino">bin/janino</a>" is provided
-          that wraps the JavaSourceClassLoader in a JAVAC-like command line interface:
+          JANINO has a sister project <a href="https://github.com/janino-compiler/jsh">"jsh"</a> which implements a
+          "shell" program similar to "bash", "ksh", "csh" etc., but with Java syntax.
         </p>
-
-        <div class="highlight highlight-text-xml"><pre class="brush: bash">
-$ cat my/pkg/A.java
-package my.pkg;
-
-import java.util.*;
-
-public class A {
-    public static void main(String[] args) {
-        B b = new B();
-        b.meth1();
-    }
-}
-
-class B {
-    void meth1() {
-        System.out.println("Hello there.");
-    }
-}
-$ type janino
-/usr/local/bin/janino
-$ janino my.pkg.A
-Hello there.
-$</pre></div>
 
         <h4>
           <a id="janino-as-a-command-line-java-compiler" class="anchor" href="#janino-as-a-command-line-java-compiler"
