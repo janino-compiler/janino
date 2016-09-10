@@ -7,6 +7,9 @@ do_nothing=0;
 
 lib="`dirname $0`/../../janino-dist/build";
 
+# Fix CYGWIN pathnames to WINDOWS pathnames.
+lib=`echo $lib | sed -e 's,/cygdrive/\(\w\),\1:,g'`;
+
 while (( $# > 0 )); do
     arg=$1; shift;
     case $arg in
@@ -16,7 +19,7 @@ while (( $# > 0 )); do
         compiler_args[${#compiler_args[*]}]="$1"; shift;
         ;;
 
-    -verbose | -g* | -warn* | -rebuild)
+    -verbose | -g* | -warn* | -rebuild | -help)
         compiler_args[${#compiler_args[*]}]="$arg";
         ;;
 
@@ -26,38 +29,6 @@ while (( $# > 0 )); do
 
     -D* | -version | -X*)
         java_args[${#java_args[*]}]="$arg";
-        ;;
-
-    -help)
-        cat <<EOF;
-A drop-in replacement for the JAVAC compiler, see the documentation for JAVAC
-Usage:
-  $0 [ <option> ] ... <class-name> [ <argument> ] ...
-Options:
-  -sourcepath <dir-list>    Where to look for source files
-  -classpath <dir-list>     Where to look for class files
-  -cp <dir-list>            Synonym for "-classpath"
-  -extdirs <dir-list>       Where to look for extension class files
-  -bootclasspath <dir-list> Where to look for boot class files
-  -encoding <encoding>      Encoding of source files, default is platform-dependent
-  -verbose                  Report about opening, parsing, compiling of files
-  -g                        Generate all debugging info
-  -g:none                   Generate no debugging info
-  -g:{lines,vars,source}    Generate only some debugging info
-  -warn:<pattern-list>      Issue certain warnings, examples:
-    -warn:*                 Enables all warnings
-    -warn:IASF              Only warn against implicit access to static fields
-    -warn:*-IASF            Enables all warnings, except those against implicit
-                            access to static fields
-    -warn:*-IA*+IASF        Enables all warnings, except those against implicit
-                            accesses, but do warn against implicit access to
-                            static fields
-  -rebuild                  Compile all source files, even if the class files
-                            seems up-to-date
-  -n                        Print subcommands to STDOUT instead of running them
-  (any valid command-line optipon for the JAVA tool, see "java -help")
-EOF
-        exit 0;
         ;;
 
     -*)
@@ -73,13 +44,7 @@ EOF
     esac;
 done;
 
-java=java;
+java="$JAVA_HOME/jre/bin/java";
 
-cmd="$java -classpath $lib/janino.jar;$lib/commons-compiler.jar ${java_args[@]} org.codehaus.janino.Compiler ${compiler_args[@]} $class_name ${main_args[@]}";
-
-if (( $do_nothing )); then
-    echo $cmd;
-else
-    $cmd;
-fi;
+"$java" -classpath "$lib/janino.jar;$lib/commons-compiler.jar" ${java_args[@]} org.codehaus.janino.Compiler ${compiler_args[@]} $class_name ${main_args[@]};
 
