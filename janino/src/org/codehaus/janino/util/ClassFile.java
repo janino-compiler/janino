@@ -961,6 +961,15 @@ class ClassFile implements Annotatable {
             case 1:
                 return new ConstantUtf8Info(dis.readUTF());
 
+            case 15:
+                return new ConstantMethodHandleInfo(dis.readByte(), dis.readShort());
+
+            case 16:
+                return new ConstantMethodTypeInfo(dis.readShort());
+
+            case 18:
+                return new ConstantInvokeDynamicInfo(dis.readShort(), dis.readShort());
+
             default:
                 throw new ClassFileException("Invalid constant pool tag " + tag);
             }
@@ -1416,6 +1425,130 @@ class ClassFile implements Annotatable {
 
         @Override public int
         hashCode() { return this.s.hashCode(); }
+    }
+
+    /**
+     * See JVMS7 4.4.8.
+     */
+    public static
+    class ConstantMethodHandleInfo extends ConstantPoolInfo {
+
+        private final byte  referenceKind;
+        private final short referenceIndex;
+
+        public
+        ConstantMethodHandleInfo(byte referenceKind, short referenceIndex) {
+            this.referenceKind  = referenceKind;
+            this.referenceIndex = referenceIndex;
+        }
+
+        public byte getReferenceKind() { return this.referenceKind; }
+        public short getReferenceIndex() { return this.referenceIndex; }
+
+        // Implement ConstantPoolInfo.
+
+        @Override public boolean
+        isWide() { return false; }
+
+        @Override public void
+        store(DataOutputStream dos) throws IOException {
+            dos.writeByte(15);
+            dos.writeByte(this.referenceKind);
+            dos.writeShort(this.referenceIndex);
+        }
+
+        @Override public boolean
+        equals(@Nullable Object o) {
+            return (
+                o instanceof ConstantMethodHandleInfo
+                && ((ConstantMethodHandleInfo) o).referenceKind  == this.referenceKind
+                && ((ConstantMethodHandleInfo) o).referenceIndex == this.referenceIndex
+            );
+        }
+
+        @Override public int
+        hashCode() { return this.referenceKind + (this.referenceIndex << 16); }
+    }
+
+    /**
+     * See JVMS7 4.4.9.
+     */
+    public static
+    class ConstantMethodTypeInfo extends ConstantPoolInfo {
+
+        private final short descriptorIndex;
+
+        public
+        ConstantMethodTypeInfo(short descriptorIndex) {
+            this.descriptorIndex = descriptorIndex;
+        }
+
+        public short getdescriptorIndex() { return this.descriptorIndex; }
+
+        // Implement ConstantPoolInfo.
+
+        @Override public boolean
+        isWide() { return false; }
+
+        @Override public void
+        store(DataOutputStream dos) throws IOException {
+            dos.writeByte(16);
+            dos.writeShort(this.descriptorIndex);
+        }
+
+        @Override public boolean
+        equals(@Nullable Object o) {
+            return (
+                o instanceof ConstantMethodTypeInfo
+                && ((ConstantMethodTypeInfo) o).descriptorIndex == this.descriptorIndex
+            );
+        }
+
+        @Override public int
+        hashCode() { return this.descriptorIndex; }
+    }
+
+    /**
+     * See JVMS7 4.4.10.
+     */
+    public static
+    class ConstantInvokeDynamicInfo extends ConstantPoolInfo {
+
+        private final short bootstrapMethodAttrIndex;
+        private final short nameAndTypeIndex;
+
+        public
+        ConstantInvokeDynamicInfo(short bootstrapMethodAttrIndex, short nameAndTypeIndex) {
+            this.bootstrapMethodAttrIndex = bootstrapMethodAttrIndex;
+            this.nameAndTypeIndex         = nameAndTypeIndex;
+        }
+
+        public short getBootstrapMethodAttrIndex() { return this.bootstrapMethodAttrIndex; }
+        public short getNameAndTypeIndex() { return this.nameAndTypeIndex; }
+
+        // Implement ConstantPoolInfo.
+
+        @Override public boolean
+        isWide() { return false; }
+
+        @Override public void
+        store(DataOutputStream dos) throws IOException {
+            dos.writeByte(18);
+            dos.writeShort(this.bootstrapMethodAttrIndex);
+            dos.writeShort(this.nameAndTypeIndex);
+        }
+
+        @Override public boolean
+        equals(@Nullable Object o) {
+            return (
+                o instanceof ConstantInvokeDynamicInfo
+                && ((ConstantInvokeDynamicInfo) o).bootstrapMethodAttrIndex == this.bootstrapMethodAttrIndex
+                && ((ConstantInvokeDynamicInfo) o).nameAndTypeIndex         == this.nameAndTypeIndex
+            );
+        }
+
+        @Override public int
+        hashCode() { return this.bootstrapMethodAttrIndex + (this.nameAndTypeIndex << 16); }
     }
 
     /**
