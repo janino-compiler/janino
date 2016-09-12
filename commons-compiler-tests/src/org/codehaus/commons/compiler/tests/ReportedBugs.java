@@ -777,4 +777,15 @@ class ReportedBugs extends JaninoTestSuite {
             + "}\n"
         );
     }
+
+    @Test public void
+    testIssue6() throws Exception {
+    	this.assertCompilationUnitCookable(
+			""
+			+ "public enum MyEnum {\n"
+			+ "  A, B;\n"
+			+ "  Object notAnEnumConstant = new Object();\n"
+			+ "}\n"
+		);
+    }
 }
