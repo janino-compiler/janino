@@ -7412,28 +7412,28 @@ class UnitCompiler {
         }
 
         // Enum constant: Pass constant name and ordinal as synthetic parameters.
-        ENUM:
+        ENUM_CONSTANT:
         if (scope instanceof FieldDeclaration) {
             FieldDeclaration fd = (FieldDeclaration) scope;
 
-            if (fd.getEnclosingScope() instanceof EnumDeclaration) {
-                EnumDeclaration ed = (EnumDeclaration) fd.getEnclosingScope();
+            if (!(fd.getEnclosingScope() instanceof EnumDeclaration)) break ENUM_CONSTANT;
 
-                assert fd.variableDeclarators.length == 1;
+            EnumDeclaration ed = (EnumDeclaration) fd.getEnclosingScope();
 
-                String constantName = fd.variableDeclarators[0].name;
-                this.pushConstant(locatable, constantName);
+            if (fd.variableDeclarators.length != 1) break ENUM_CONSTANT;
 
-                int ordinal = 0;
-                for (EnumConstant ec : ed.getConstants()) {
-                    if (constantName.equals(ec.name)) {
-                        this.pushConstant(locatable, ordinal);
-                        break ENUM;
-                    }
-                    ordinal++;
+            String fieldName = fd.variableDeclarators[0].name;
+
+            int ordinal = 0;
+            for (EnumConstant ec : ed.getConstants()) {
+                if (fieldName.equals(ec.name)) {
+
+                    // Now we know that the field IS an enum constant.
+                    this.pushConstant(locatable, fieldName);
+                    this.pushConstant(locatable, ordinal);
+                    break ENUM_CONSTANT;
                 }
-
-                throw new AssertionError(constantName);
+                ordinal++;
             }
         }
 
