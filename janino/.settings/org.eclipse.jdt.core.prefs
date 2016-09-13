@@ -6,6 +6,7 @@ org.eclipse.jdt.core.compiler.annotation.nonnullbydefault=org.codehaus.commons.n
 org.eclipse.jdt.core.compiler.annotation.nullable=org.codehaus.commons.nullanalysis.Nullable
 org.eclipse.jdt.core.compiler.annotation.nullanalysis=enabled
 org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode=enabled
+org.eclipse.jdt.core.compiler.codegen.methodParameters=do not generate
 org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.6
 org.eclipse.jdt.core.compiler.codegen.unusedLocal=preserve
 org.eclipse.jdt.core.compiler.compliance=1.6

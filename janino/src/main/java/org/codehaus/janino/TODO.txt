@@ -1,0 +1,7 @@
+The raw, inofficial list of TODOs:
+
+* Implement '@SuppressWarnings'; supersede JANINO's old '-warn:...' feature
+* Implement ENUMs
+
+Recently implemented:
+* ASSERT (simplified, ASSERTions are ALWAYS enabled, as if '-ea' were set)
