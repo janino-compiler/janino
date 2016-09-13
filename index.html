@@ -63,6 +63,7 @@
           <li><a href="#getting_started">Getting Started</a></li>
           <li><a href="#properties">Properties</a></li>
           <li><a href="#limitations">Limitations</a></li>
+          <li><a href="#license">License</a></li>
           <li>
             <a href="#download">Download</a>
             <ul>
@@ -312,6 +313,16 @@
         </ul>
 
         <h2>
+          <a id="license" class="anchor" href="#license" aria-hidden="true"><span aria-hidden="true"
+          class="octicon octicon-link"></span></a>License
+        </h2>
+        
+        <p>
+          JANINO is available under the <a
+          href="https://raw.githubusercontent.com/janino-compiler/janino/master/LICENSE">New BSD License</a>.
+        </p>
+
+        <h2>
           <a id="download" class="anchor" href="#download" aria-hidden="true"><span aria-hidden="true"
           class="octicon octicon-link"></span></a>Download
         </h2>
@@ -336,31 +347,14 @@
 
         <ul>
           <li>
-            Download the latest distribution of Janino from the <a href="changelog.html">download page</a>.
+            Download <a href="http://repo1.maven.org/maven2/org/codehaus/janino/janino/">the latest version of
+            "janino-<var>version</var>.jar"</a>.
           </li>
-          <li>Unzip the distribution file you have downloaded:</li>
-        </ul>
-
-        <div class="highlight highlight-text-xml"><pre class="brush: bash">
-$ jar xvf janino-*.zip
-$ </pre></div>
-
-        <ul>
-          <li>Change to the Janino directory:</li>
-        </ul>
-
-        <div class="highlight highlight-text-xml">
-          <pre class="brush: bash">
-$ cd janino-*
-$</pre>
-        </div>
-
-        <ul>
           <li>
-            You will find the Janino JAR files, the source code ZIP files, the text of the BSD license, and a README
-            file.
+            Download <a href="http://repo1.maven.org/maven2/org/codehaus/janino/commons-compiler/">the same version of
+            "commons-compiler-<var>version</var>.jar"</a>.
           </li>
-          <li>Put "commons-compiler.jar" and "janino.jar" on your class path.</li>
+          <li>Put the two JAR files on your classpath.</li>
         </ul>
 
         <h3>
@@ -369,8 +363,8 @@ $</pre>
         </h3>
 
         <p>
-          If you're using an IDE like ECLIPSE, you can optionally have "commons-compiler-src.zip" as the source
-          attachment of "commons-compiler.jar", and "janino-src.zip" as the source attachment of "janino.jar". That'll
+          If you're using an IDE like ECLIPSE, you can optionally download "janino-<var>version</var>-sources.jar" and
+          "commons-compiler-<var>version</var>-sources.jar" and configure them as the source attachments. That'll
           get you tooltip JAVADOC and source level debugging into the JANINO libraries.
         </p>
 
@@ -392,31 +386,31 @@ System.out.println(ee.evaluate(null)); // Prints "7".</pre></div>
 
         <p>
           The <a
-          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/org/codehaus/commons/compiler/samples/ShippingCost.java">ShippingCost</a>
+          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/main/java/org/codehaus/commons/compiler/samples/ShippingCost.java">ShippingCost</a>
           class demonstrates how easy it is to use Janino as an expression evaluator.
         </p>
 
         <p>
           The <a
-          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/org/codehaus/commons/compiler/samples/ExpressionDemo.java">ExpressionDemo</a>
+          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/main/java/org/codehaus/commons/compiler/samples/ExpressionDemo.java">ExpressionDemo</a>
           class implements a command line-based test environment for the expression evaluator.
         </p>
 
         <p>
           The <a
-          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/org/codehaus/commons/compiler/samples/ScriptDemo.java">ScriptDemo</a>
+          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/main/java/org/codehaus/commons/compiler/samples/ScriptDemo.java">ScriptDemo</a>
           class implements a command line-based test environment for the script evaluator.
         </p>
 
         <p>
           The <a
-          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/org/codehaus/commons/compiler/samples/ClassBodyDemo.java">ClassBodyDemo</a>
+          href="https://github.com/janino-compiler/janino/blob/master/commons-compiler/src/main/java/org/codehaus/commons/compiler/samples/ClassBodyDemo.java">ClassBodyDemo</a>
           class implements a command line-based test environment for the class body evaluator.
         </p>
 
         <p>
           The <a
-          href="https://github.com/janino-compiler/janino/blob/master/janino/src/org/codehaus/janino/samples/DeclarationCounter.java">DeclarationCounter</a>
+          href="https://github.com/janino-compiler/janino/blob/master/janino/src/main/java/org/codehaus/janino/samples/DeclarationCounter.java">DeclarationCounter</a>
           class implements a command-line utility that counts class, interface, field and local variable declarations
           in a set of Java source files.
         </p>
@@ -441,8 +435,8 @@ System.out.println(ee.evaluate(null)); // Prints "7".</pre></div>
         </h3>
 
         <p>
-          The full JAVADOC documentation for JANINO is available <a
-          href="http://janino.unkrig.de/javadoc/index.html">online</a>.
+          The full JAVADOC documentation for JANINO is available for download <a
+          href="http://repo1.maven.org/maven2/org/codehaus/janino/">here</a>.
         </p>
 
         <h3>
@@ -1241,7 +1235,8 @@ $ java \
 
         <ul>
           <li>
-            If it is a compilation problem, verify that ORACLE's JavaTM compiler JAVAC also believes it is one.
+            If you're getting an unexpected compilation error, verify that ORACLE's JavaTM compiler JAVAC also believes
+            it is one.
           </li>
           <li>
             Try to isolate the problem. Don't send me huge source files; attempt, if at all possible, to reproduce the
@@ -1299,12 +1294,9 @@ $ java \
         </p>
 
         <ul>
+          <li><a href="https://github.com/janino-compiler/janino/tree/master/janino-parent">janino-parent</a></li>
           <li>
             <a href="https://github.com/janino-compiler/janino/tree/master/commons-compiler">commons-compiler</a>
-          </li>
-          <li>
-            <a
-            href="https://github.com/janino-compiler/janino/tree/master/commons-compiler-jdk">commons-compiler-jdk</a>
           </li>
           <li><a href="https://github.com/janino-compiler/janino/tree/master/janino">janino</a></li>
         </ul>
@@ -1312,6 +1304,10 @@ $ java \
         <p>Optional:</p>
 
         <ul>
+          <li>
+            <a
+            href="https://github.com/janino-compiler/janino/tree/master/commons-compiler-jdk">commons-compiler-jdk</a>
+          </li>
           <li>
             <a
             href="https://github.com/janino-compiler/janino/tree/master/commons-compiler-tests">commons-compiler-tests</a>
@@ -1324,7 +1320,6 @@ $ java \
             href="https://github.com/janino-compiler/janino/tree/master/de.unkrig.jdisasm_test">de.unkrig.jdisasm_test</a>
           </li>
           <li><a href="https://github.com/janino-compiler/janino/tree/master/janino-dist">janino-dist</a></li>
-          <li><a href="https://github.com/janino-compiler/janino/tree/master/janino-tests">janino-tests</a></li>
         </ul>
 
         <p>
