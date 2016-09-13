@@ -1,4 +1,5 @@
-<project default="build">
+<project
+>
 
 	<property file="local_build.properties"/>
 	<property file="build.properties"/>
@@ -25,212 +26,6 @@
 		resource="org/apache/maven/artifact/ant/antlib.xml"
 		uri=""
 	/>
-
-	<target
-		name="build" description="Creates and populates a directory './mirror' for later upload to the web site."
-		depends="clean, build.jars, build.mirror, build.javadoc"
-	>
-		<echo message="*** The next step is to execute target 'publish', which uploads the artifacts to the JANINO web site." />
-	</target>
-
-	<target name="clean">
-		<delete dir="build" />
-		<delete dir="mirror" />
-	</target>
-
-	<target name="build.jars" description="Creates 'build/(*.jar|*-src.zip)'">
-
-		<!-- Build 'build/commons-compiler.jar'. -->
-		<delete dir="build/bin-commons-compiler"/>
-		<mkdir dir="build/bin-commons-compiler"/>
-		<javac
-			fork="yes"
-			source="1.6"
-			target="1.6"
-			srcdir="../commons-compiler/src"
-			destdir="build/bin-commons-compiler"
-			debug="true"
-			debuglevel="lines,vars,source"
-			includeantruntime="false"
-		>
-			<compilerarg value="-Xlint:none"/>
-			<compilerarg value="-Xlint:deprecation"/>
-		</javac>
-		<copy todir="build/bin-commons-compiler">
-			<fileset dir="../commons-compiler/src" excludes="**/*.java,**/package.html"/>
-		</copy>
-		<jar jarfile="build/commons-compiler.jar" filesonly="true">
-			<manifest>
-				<attribute name="Specification-Version"  value="${version}"/>
-				<!-- OSGI info, see JANINO-181. -->
-				<attribute name="Bundle-Name"            value="Commons-Compiler"/>
-				<attribute name="Bundle-SymbolicName"    value="org.codehaus.janino.commons-compiler;singleton:=true"/>
-				<attribute name="Bundle-Version"         value="${version}"/>
-				<attribute name="Bundle-ManifestVersion" value="2"/>
-				<attribute name="Bundle-License"         value="http://dist.codehaus.org/janino/new_bsd_license.txt"/>
-				<attribute name="Bundle-Description"     value="Janino is a super-small, super-fast Java compiler."/>
-				<attribute name="Export-Package"         value="org.codehaus.commons.compiler, org.codehaus.commons.compiler.samples"/>
-			</manifest>
-			<fileset dir="build/bin-commons-compiler"/>
-		</jar>
-		<signjar
-			keystore="dummy-keystore"
-			storepass="storepass"
-			keypass="keypass"
-			jar="build/commons-compiler.jar"
-			alias="dummy"
-		/>
-
-		<!-- Build 'build/janino.jar'. -->
-		<delete dir="build/bin-janino"/>
-		<mkdir dir="build/bin-janino"/>
-		<javac
-			fork="yes"
-			source="1.6"
-			target="1.6"
-			srcdir="../janino/src"
-			destdir="build/bin-janino"
-			classpath="${ant.jar}:build/bin-commons-compiler:../de.unkrig.jdisasm/bin"
-			debug="true"
-			debuglevel="lines,vars,source"
-			includeantruntime="false"
-		>
-			<compilerarg value="-Xlint:none"/>
-			<compilerarg value="-Xlint:deprecation"/>
-		</javac>
-		<copy todir="build/bin-janino">
-			<fileset dir="../janino/src" excludes="**/*.java,**/package.html"/>
-		</copy>
-		<jar jarfile="build/janino.jar" filesonly="true">
-			<manifest>
-				<attribute name="Implementation-Version" value="${version}"/>
-				<attribute name="Implementation-URL"     value="http://janino.net"/>
-				<!-- OSGI info, see JANINO-181. -->
-				<attribute name="Bundle-Name"            value="Janino"/>
-				<attribute name="Bundle-SymbolicName"    value="org.codehaus.janino;singleton:=true"/>
-				<attribute name="Bundle-Version"         value="${version}"/>
-				<attribute name="Bundle-ManifestVersion" value="2"/>
-				<attribute name="Bundle-License"         value="http://dist.codehaus.org/janino/new_bsd_license.txt"/>
-				<attribute name="Bundle-Description"     value="Janino is a super-small, super-fast Java compiler."/>
-				<attribute name="Export-Package"         value="org.codehaus.janino, org.codehaus.janino.samples, org.codehaus.janino.tools, org.codehaus.janino.util"/>
-				<attribute name="Require-Bundle"         value="org.codehaus.janino.commons-compiler"/>
-			</manifest>
-			<fileset dir="build/bin-janino"/>
-		</jar>
-		<signjar
-			keystore="dummy-keystore"
-			storepass="storepass"
-			keypass="keypass"
-			jar="build/janino.jar"
-			alias="dummy"
-		/>
-
-		<!-- Build 'build/commons-compiler-jdk.jar'. -->
-		<delete dir="build/bin-commons-compiler-jdk"/>
-		<mkdir dir="build/bin-commons-compiler-jdk"/>
-		<javac
-			fork="yes"
-			source="1.6"
-			target="1.6"
-			srcdir="../commons-compiler-jdk/src"
-			destdir="build/bin-commons-compiler-jdk"
-			classpath="build/bin-commons-compiler"
-			debug="true"
-			debuglevel="lines,vars,source"
-			includeantruntime="false"
-		>
-			<compilerarg value="-Xlint:none"/>
-			<compilerarg value="-Xlint:deprecation"/>
-		</javac>
-		<copy todir="build/bin-commons-compiler-jdk">
-			<fileset dir="../commons-compiler-jdk/src" excludes="**/*.java,**/package.html"/>
-		</copy>
-		<jar jarfile="build/commons-compiler-jdk.jar" filesonly="true">
-			<manifest>
-				<attribute name="Implementation-Version" value="${version}"/>
-				<attribute name="Implementation-URL"     value="http://janino-compiler.github.io/janino/"/>
-				<!-- OSGI info, see JANINO-181. -->
-				<attribute name="Bundle-Name"            value="Commons-Compiler-Jdk"/>
-				<attribute name="Bundle-SymbolicName"    value="org.codehaus.janino.commons-compiler-jdk;singleton:=true"/>
-				<attribute name="Bundle-Version"         value="${version}"/>
-				<attribute name="Bundle-ManifestVersion" value="2"/>
-				<attribute name="Bundle-License"         value="http://dist.codehaus.org/janino/new_bsd_license.txt"/>
-				<attribute name="Bundle-Description"     value="Janino is a super-small, super-fast Java compiler."/>
-				<attribute name="Export-Package"         value="org.codehaus.commons.compiler.jdk, org.codehaus.commons.io"/>
-				<attribute name="Require-Bundle"         value="org.codehaus.janino.commons-compiler"/>
-			</manifest>
-			<fileset dir="build/bin-commons-compiler-jdk"/>
-		</jar>
-		<signjar
-			keystore="dummy-keystore"
-			storepass="storepass"
-			keypass="keypass"
-			jar="build/commons-compiler-jdk.jar"
-			alias="dummy"
-		/>
-
-		<!-- Build source ZIP files. -->
-		<zip destfile="build/commons-compiler-src.zip" filesonly="true">
-			<zipfileset dir="../commons-compiler/src"/>
-		</zip>
-		<zip destfile="build/janino-src.zip" filesonly="true">
-			<zipfileset dir="../janino/src"/>
-		</zip>
-		<zip destfile="build/commons-compiler-jdk-src.zip" filesonly="true">
-			<zipfileset dir="../commons-compiler-jdk/src"/>
-		</zip>
-	</target>
-
-	<target name="build.mirror" description="Creates 'mirror/(download/*|samples/*.java|*.*">
-
-		<mkdir dir="mirror/download"/>
-
-		<!-- Build 'mirror/download/janino-VERSION.zip' file. -->
-		<zip destfile="mirror/download/janino-${version}.zip" filesonly="true">
-			<zipfileset file="build/commons-compiler.jar"         prefix="janino-${version}"/>
-			<zipfileset file="build/commons-compiler-src.zip"     prefix="janino-${version}"/>
-
-			<zipfileset file="build/janino.jar"                   prefix="janino-${version}"/>
-			<zipfileset file="build/janino-src.zip"               prefix="janino-${version}"/>
-
-			<zipfileset file="build/commons-compiler-jdk.jar"     prefix="janino-${version}"/>
-			<zipfileset file="build/commons-compiler-jdk-src.zip" prefix="janino-${version}"/>
-
-			<zipfileset file="README.txt"                         prefix="janino-${version}"/>
-			<zipfileset file="new_bsd_license.txt"                prefix="janino-${version}"/>
-		</zip>
-
-		<!-- Copy auxiliary files to 'mirror/'. -->
-		<copy todir="mirror">
-			<fileset file="favicon.ico"/>
-			<fileset file="new_bsd_license.txt"/>
-			<fileset dir="../janino/src/org/codehaus/janino"                     includes="samples/*.java"/>
-			<fileset dir="../commons-compiler/src/org/codehaus/commons/compiler" includes="samples/*.java"/>
-		</copy>
-	</target>
-
-	<target name="build.javadoc" description="Creates 'mirror/javadoc/**'">
-
-		<!-- Build 'mirror/javadoc/'. -->
-		<delete dir="mirror/javadoc" />
-		<mkdir dir="mirror/javadoc" />
-		<javadoc
-			header="&lt;a href=&quot;http://janino-compiler.github.io/janino/&quot; target=&quot;_top&quot;&gt;Project home page&lt;/a&gt;"
-			splitindex="true"
-			doctitle="Janino ${version}"
-			windowtitle="Janino ${version}"
-			overview="../janino/src/overview.html"
-			sourcepath="../commons-compiler/src;../janino/src;../commons-compiler-jdk/src"
-			classpath="${ant.jar}"
-			destdir="mirror/javadoc"
-			packagenames="${javadoc-packages}"
-			stylesheetfile="javadoc8-stylesheet.css"
-		>
-			<link offline="true" href="${javadoc-jdk-href}" packagelistloc="${javadoc-jdk-packagelistloc}" />
-			<link offline="true" href="${javadoc-ant-href}" packagelistloc="${javadoc-ant-packagelistloc}" />
-			<arg value="-Xdoclint:none" />
-		</javadoc>
-	</target>
 
 	<target name="publish" description="Uploads './mirror' to 'unkrig.de/janino'">
 
@@ -322,78 +117,53 @@
 			<text property="gpg.passphrase" secure="true" focus="true" />
 		</swingDialog>
 
-		<!-- All artifacts get this same JAVADOC jar file. -->
-		<jar jarfile="build/janino-javadoc.jar"><fileset dir="mirror/javadoc" /></jar>
-
-		<forEach2 list="commons-compiler,commons-compiler-jdk,janino" param="artifactId">
+		<forEach2 list="commons-compiler,commons-compiler-jdk,janino,janino-parent" param="artifactId">
 			<sequential>
 
-				<var name="versioned.pom.file" unset="true" />
-				<tempfile property="versioned.pom.file" suffix=".pom"/>
-				<copy file="poms/@{artifactId}.pom" tofile="${versioned.pom.file}">
-					<filterchain><replacestring from="@VERSION@" to="${version}" /></filterchain>
-				</copy>
-
-				<echo message="*** Sign and deploy the main artifact for @{artifactId}." />
+				<echo message="*** Sign and deploy '@{artifactId}/target/@{artifactId}-${version}.jar'." />
 				<echo message="Notice: If you get a 401, check '~/.m2/settings.xml'." />
 				<mvn failonerror="true">
 					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
 					<arg value="-Durl=${maven-staging-repository-url}" />
 					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
-					<arg value="-DpomFile=${versioned.pom.file}" />
-					<arg value="-Dfile=build/@{artifactId}.jar" />
+					<arg value="-DpomFile=../@{artifactId}/pom.xml" />
+					<arg value="-Dfile=../@{artifactId}/target/@{artifactId}-${version}.jar" />
 					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
 					<arg value="-Dgpg.executable=${gpg.executable}" />
 					<arg value="-Pgpg" />
 				</mvn>
 
-				<echo message="*** Sign and deploy the sources artifact for @{artifactId}." />
-				<mvn failonerror="true">
-					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
-					<arg value="-Durl=${maven-staging-repository-url}" />
-					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
-					<arg value="-DpomFile=${versioned.pom.file}" />
-					<arg value="-Dfile=build/@{artifactId}-src.zip" />
-					<arg value="-Dclassifier=sources" />
-					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
-					<arg value="-Dgpg.executable=${gpg.executable}" />
-					<arg value="-Pgpg" />
-				</mvn>
+				<if><available file="../@{artifactId}/target/@{artifactId}-${version}-sources.jar" /><then>
+					<echo message="*** Sign and deploy '@{artifactId}-${version}-sources.jar'." />
+					<mvn failonerror="true">
+						<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+						<arg value="-Durl=${maven-staging-repository-url}" />
+						<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+						<arg value="-DpomFile=../@{artifactId}/pom.xml" />
+						<arg value="-Dfile=../@{artifactId}/target/@{artifactId}-${version}-sources.jar" />
+						<arg value="-Dclassifier=sources" />
+						<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+						<arg value="-Dgpg.executable=${gpg.executable}" />
+						<arg value="-Pgpg" />
+					</mvn>
+				</then></if>
 
-				<echo message="*** Sign and deploy the javadoc artifact for @{artifactId}." />
-				<mvn failonerror="true">
-					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
-					<arg value="-Durl=${maven-staging-repository-url}" />
-					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
-					<arg value="-DpomFile=${versioned.pom.file}" />
-					<arg value="-Dfile=build/janino-javadoc.jar" />
-					<arg value="-Dclassifier=javadoc" />
-					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
-					<arg value="-Dgpg.executable=${gpg.executable}" />
-					<arg value="-Pgpg" />
-				</mvn>
-
-				<delete file="${versioned.pom.file}" />
+				<if><available file="../@{artifactId}/target/@{artifactId}-${version}-javadoc.jar" /><then>
+					<echo message="*** Sign and deploy '@{artifactId}-${version}-javadoc.jar'." />
+					<mvn failonerror="true">
+						<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+						<arg value="-Durl=${maven-staging-repository-url}" />
+						<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+						<arg value="-DpomFile=../@{artifactId}/pom.xml" />
+						<arg value="-Dfile=../@{artifactId}/target/@{artifactId}-${version}-javadoc.jar" />
+						<arg value="-Dclassifier=javadoc" />
+						<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+						<arg value="-Dgpg.executable=${gpg.executable}" />
+						<arg value="-Pgpg" />
+					</mvn>
+				</then></if>
 			</sequential>
 		</forEach2>
-
-		<echo message="*** Sign and deploy the janino-parent artifact." />
-		<var name="versioned.pom.file" unset="true" />
-		<tempfile property="versioned.pom.file" suffix=".pom"/>
-		<copy file="poms/janino-parent.pom" tofile="${versioned.pom.file}">
-			<filterchain><replacestring from="@VERSION@" to="${version}" /></filterchain>
-		</copy>
-		<mvn failonerror="true">
-			<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
-			<arg value="-Durl=${maven-staging-repository-url}" />
-			<arg value="-DrepositoryId=${maven-staging-repository-id}" />
-			<arg value="-DpomFile=${versioned.pom.file}" />
-			<arg value="-Dfile=${versioned.pom.file}" />
-			<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
-			<arg value="-Dgpg.executable=${gpg.executable}" />
-			<arg value="-Pgpg" />
-		</mvn>
-		<delete file="${versioned.pom.file}" />
 
 		<echo level="error" message="*** Now open 'https://oss.sonatype.org/#stagingRepositories', select repository 'orgcodehausjanino-*', check its" />
 		<echo level="error" message="*** content, then hit 'Close' and afterwards 'Release'." />
