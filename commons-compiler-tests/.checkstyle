@@ -7,8 +7,4 @@
   <fileset name="all" enabled="true" check-config-name="unkrig.de" local="true">
     <file-match-pattern match-pattern="." include-pattern="true"/>
   </fileset>
-  <filter name="FilesFromPackage" enabled="true">
-    <filter-data value="src/for_sandbox_tests"/>
-    <filter-data value="src/other_package"/>
-  </filter>
 </fileset-config>

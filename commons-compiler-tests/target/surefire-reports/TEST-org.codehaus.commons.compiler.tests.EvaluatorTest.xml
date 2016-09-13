@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="org.codehaus.commons.compiler.tests.EvaluatorTest" time="31.563" tests="56" errors="1" skipped="0" failures="0">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="sun.boot.library.path" value="C:\Program Files (x86)\Java\jdk1.7.0_21\jre\bin"/>
+    <property name="java.vm.version" value="23.21-b01"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="maven.multiModuleProjectDirectory" value="C:\eclipse,away\eclipse-java-mars-R\${workspace_loc:\janino-parent}"/>
+    <property name="java.vendor.url" value="http://java.oracle.com/"/>
+    <property name="path.separator" value=";"/>
+    <property name="guice.disable.misplaced.annotation.check" value="true"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) Client VM"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="user.script" value=""/>
+    <property name="user.country" value="DE"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="user.dir" value="C:\workspaces\janino\janino-parent"/>
+    <property name="java.runtime.version" value="1.7.0_21-b11"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.Win32GraphicsEnvironment"/>
+    <property name="java.endorsed.dirs" value="C:\Program Files (x86)\Java\jdk1.7.0_21\jre\lib\endorsed"/>
+    <property name="os.arch" value="x86"/>
+    <property name="java.io.tmpdir" value="C:\Users\Arno\AppData\Local\Temp\"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="user.variant" value=""/>
+    <property name="os.name" value="Windows 8"/>
+    <property name="classworlds.conf" value="C:\workspaces\janino\.metadata\.plugins\org.eclipse.m2e.launching\launches\m2conf2356561748966242609.tmp"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Program Files (x86)\Java\jdk1.7.0_21\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:/Program Files/Java/jdk1.8.0_45/bin/../jre/bin/server;C:/Program Files/Java/jdk1.8.0_45/bin/../jre/bin;C:/Program Files/Java/jdk1.8.0_45/bin/../jre/lib/amd64;C:\ProgramData\Oracle\Java\javapath;C:\Program Files (x86)\Lenovo\FusionEngine;C:\Program Files (x86)\Intel\iCLS Client\;C:\Program Files\Intel\iCLS Client\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\DAL;C:\Program Files (x86)\Intel\Intel(R) Management Engine Components\IPT;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\Program Files (x86)\Common Files\lenovo\easyplussdk\bin;C:\Program Files\sysinternal;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files (x86)\GNU\GnuPG\pub;C:\eclipse,away\eclipse-java-mars-R;;."/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.class.version" value="51.0"/>
+    <property name="sun.management.compiler" value="HotSpot Client Compiler"/>
+    <property name="os.version" value="6.2"/>
+    <property name="user.home" value="C:\Users\Arno"/>
+    <property name="user.timezone" value="Europe/Berlin"/>
+    <property name="java.awt.printerjob" value="sun.awt.windows.WPrinterJob"/>
+    <property name="java.specification.version" value="1.7"/>
+    <property name="file.encoding" value="Cp1252"/>
+    <property name="user.name" value="Arno"/>
+    <property name="java.class.path" value="/C:/eclipse,away/eclipse-java-mars-R/plugins/org.eclipse.m2e.maven.runtime_1.6.0.20150526-2031/jars/plexus-classworlds-2.5.2.jar"/>
+    <property name="java.vm.specification.version" value="1.7"/>
+    <property name="sun.arch.data.model" value="32"/>
+    <property name="java.home" value="C:\Program Files (x86)\Java\jdk1.7.0_21\jre"/>
+    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher -B install"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="user.language" value="de"/>
+    <property name="awt.toolkit" value="sun.awt.windows.WToolkit"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.version" value="1.7.0_21"/>
+    <property name="java.ext.dirs" value="C:\Program Files (x86)\Java\jdk1.7.0_21\jre\lib\ext;C:\WINDOWS\Sun\Java\lib\ext"/>
+    <property name="sun.boot.class.path" value="C:\Program Files (x86)\Java\jdk1.7.0_21\jre\lib\resources.jar;C:\Program Files (x86)\Java\jdk1.7.0_21\jre\lib\rt.jar;C:\Program Files (x86)\Java\jdk1.7.0_21\jre\lib\sunrsasign.jar;C:\Program Files (x86)\Java\jdk1.7.0_21\jre\lib\jsse.jar;C:\Program Files (x86)\Java\jdk1.7.0_21\jre\lib\jce.jar;C:\Program Files (x86)\Java\jdk1.7.0_21\jre\lib\charsets.jar;C:\Program Files (x86)\Java\jdk1.7.0_21\jre\lib\jfr.jar;C:\Program Files (x86)\Java\jdk1.7.0_21\jre\classes"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="maven.home" value="C:\workspaces\janino\janino-parent\EMBEDDED"/>
+    <property name="file.separator" value="\"/>
+    <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="sun.desktop" value="windows"/>
+    <property name="sun.cpu.isalist" value="pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86"/>
+  </properties>
+  <testcase name="testDivByZero[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.625"/>
+  <testcase name="testNonExistentImport[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.047"/>
+  <testcase name="testMultiScriptEvaluator[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.031"/>
+  <testcase name="testTrinaryOptimize[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.015"/>
+  <testcase name="test64kConstantPool[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="12.252">
+    <error message="Line 1, Column 0: simplecompiler:1: too many constants (compiler.err.limit.pool)" type="org.codehaus.commons.compiler.CompileException">org.codehaus.commons.compiler.CompileException: Line 1, Column 0: simplecompiler:1: too many constants (compiler.err.limit.pool)
+	at org.codehaus.commons.compiler.tests.EvaluatorTest.test64kConstantPool(EvaluatorTest.java:553)
+</error>
+  </testcase>
+  <testcase name="testManyArgumentsCall[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.031"/>
+  <testcase name="testFastExpressionEvaluator[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.031"/>
+  <testcase name="testFastClassBodyEvaluator1[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.047"/>
+  <testcase name="testFastClassBodyEvaluator2[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="test32kBranchLimit[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.625"/>
+  <testcase name="testCovariantClone[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.062"/>
+  <testcase name="testCovariantReturns[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="testAccessingCompilingClass[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.031"/>
+  <testcase name="testExpressionEvaluator[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.032"/>
+  <testcase name="testWideInstructions[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.062"/>
+  <testcase name="testInstanceOf[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="testAnonymousFieldInitializedByCapture[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.031"/>
+  <testcase name="testOverrideVisibility[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="testNullComparator[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.015"/>
+  <testcase name="testManyEEs[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="4.536"/>
+  <testcase name="testStringBuilderLength[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="testNamedFieldInitializedByCapture[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.047"/>
+  <testcase name="testBaseClassAccess[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.015"/>
+  <testcase name="testHandlingNaN[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.031"/>
+  <testcase name="test64kOperandStackHeight[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.079"/>
+  <testcase name="testAbstractGrandParentsWithCovariantReturns[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.015"/>
+  <testcase name="testHugeIntArray[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.125"/>
+  <testcase name="testStaticFieldAccess[CompilerFactory=jdk]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.031"/>
+  <testcase name="testDivByZero[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.407"/>
+  <testcase name="testNonExistentImport[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.015"/>
+  <testcase name="testMultiScriptEvaluator[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="testTrinaryOptimize[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="test64kConstantPool[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="1.359"/>
+  <testcase name="testManyArgumentsCall[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.047"/>
+  <testcase name="testFastExpressionEvaluator[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="testFastClassBodyEvaluator1[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="testFastClassBodyEvaluator2[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="test32kBranchLimit[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.875"/>
+  <testcase name="testCovariantClone[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.015"/>
+  <testcase name="testCovariantReturns[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="testAccessingCompilingClass[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="testExpressionEvaluator[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="testWideInstructions[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.062"/>
+  <testcase name="testInstanceOf[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="testAnonymousFieldInitializedByCapture[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="testOverrideVisibility[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="testNullComparator[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="testManyEEs[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="3.038"/>
+  <testcase name="testStringBuilderLength[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="testNamedFieldInitializedByCapture[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="testBaseClassAccess[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.016"/>
+  <testcase name="testHandlingNaN[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="test64kOperandStackHeight[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0.797"/>
+  <testcase name="testAbstractGrandParentsWithCovariantReturns[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+  <testcase name="testHugeIntArray[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="5.675"/>
+  <testcase name="testStaticFieldAccess[CompilerFactory=janino]" classname="org.codehaus.commons.compiler.tests.EvaluatorTest" time="0"/>
+</testsuite>

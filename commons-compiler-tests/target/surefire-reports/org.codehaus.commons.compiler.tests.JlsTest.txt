@@ -1,0 +1,28 @@
+-------------------------------------------------------------------------------
+Test set: org.codehaus.commons.compiler.tests.JlsTest
+-------------------------------------------------------------------------------
+Tests run: 148, Failures: 2, Errors: 4, Skipped: 0, Time elapsed: 5.301 sec <<< FAILURE! - in org.codehaus.commons.compiler.tests.JlsTest
+test_14_10__TheAssertStatement[CompilerFactory=jdk](org.codehaus.commons.compiler.tests.JlsTest)  Time elapsed: 0.016 sec  <<< FAILURE!
+java.lang.AssertionError: expected null, but was:<nope>
+	at org.codehaus.commons.compiler.tests.JlsTest.test_14_10__TheAssertStatement(JlsTest.java:859)
+
+test_15_18__AdditiveOperators[CompilerFactory=jdk](org.codehaus.commons.compiler.tests.JlsTest)  Time elapsed: 0.234 sec  <<< ERROR!
+org.codehaus.commons.compiler.CompileException: Line 1, Column 0: simplecompiler:1: constant string too long (compiler.err.limit.string)
+	at org.codehaus.commons.compiler.tests.JlsTest.test_15_18__AdditiveOperators(JlsTest.java:1491)
+
+test_3_10_2__FloatingPointLiterals_underscores[CompilerFactory=jdk](org.codehaus.commons.compiler.tests.JlsTest)  Time elapsed: 0.002 sec  <<< ERROR!
+org.codehaus.commons.compiler.CompileException: Line 1, Column 0: simplecompiler:1: ';' expected (compiler.err.expected)
+	at org.codehaus.commons.compiler.tests.JlsTest.test_3_10_2__FloatingPointLiterals_underscores(JlsTest.java:223)
+
+test_3_10_1__IntegerLiterals_underscores[CompilerFactory=jdk](org.codehaus.commons.compiler.tests.JlsTest)  Time elapsed: 0 sec  <<< ERROR!
+org.codehaus.commons.compiler.CompileException: Line 1, Column 0: simplecompiler:1: ';' expected (compiler.err.expected)
+	at org.codehaus.commons.compiler.tests.JlsTest.test_3_10_1__IntegerLiterals_underscores(JlsTest.java:183)
+
+test_14_20_1__ExecutionOfTryCatch__4[CompilerFactory=jdk](org.codehaus.commons.compiler.tests.JlsTest)  Time elapsed: 0.016 sec  <<< FAILURE!
+java.lang.AssertionError: Should have issued an error, but compiled successfully
+	at org.codehaus.commons.compiler.tests.JlsTest.test_14_20_1__ExecutionOfTryCatch__4(JlsTest.java:1040)
+
+test_3_10_1__IntegerLiterals_binary[CompilerFactory=jdk](org.codehaus.commons.compiler.tests.JlsTest)  Time elapsed: 0 sec  <<< ERROR!
+org.codehaus.commons.compiler.CompileException: Line 1, Column 0: simplecompiler:1: ';' expected (compiler.err.expected)
+	at org.codehaus.commons.compiler.tests.JlsTest.test_3_10_1__IntegerLiterals_binary(JlsTest.java:163)
+

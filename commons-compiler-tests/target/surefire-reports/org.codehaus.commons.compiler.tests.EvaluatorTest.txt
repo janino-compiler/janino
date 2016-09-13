@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------
+Test set: org.codehaus.commons.compiler.tests.EvaluatorTest
+-------------------------------------------------------------------------------
+Tests run: 56, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 31.563 sec <<< FAILURE! - in org.codehaus.commons.compiler.tests.EvaluatorTest
+test64kConstantPool[CompilerFactory=jdk](org.codehaus.commons.compiler.tests.EvaluatorTest)  Time elapsed: 12.252 sec  <<< ERROR!
+org.codehaus.commons.compiler.CompileException: Line 1, Column 0: simplecompiler:1: too many constants (compiler.err.limit.pool)
+	at org.codehaus.commons.compiler.tests.EvaluatorTest.test64kConstantPool(EvaluatorTest.java:553)
+

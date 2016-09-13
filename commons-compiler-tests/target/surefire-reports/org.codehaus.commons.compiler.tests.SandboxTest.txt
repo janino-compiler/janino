@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------
+Test set: org.codehaus.commons.compiler.tests.SandboxTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.031 sec <<< FAILURE! - in org.codehaus.commons.compiler.tests.SandboxTest
+testForbiddenClass[CompilerFactory=jdk](org.codehaus.commons.compiler.tests.SandboxTest)  Time elapsed: 0.016 sec  <<< FAILURE!
+java.lang.AssertionError: Should have thrown a CompileException
+	at org.codehaus.commons.compiler.tests.SandboxTest.testForbiddenClass(SandboxTest.java:72)
+
