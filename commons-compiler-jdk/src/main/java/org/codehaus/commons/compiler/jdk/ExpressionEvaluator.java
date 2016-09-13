@@ -1,0 +1,255 @@
+
+/*
+ * Janino - An embedded Java[TM] compiler
+ *
+ * Copyright (c) 2001-2010, Arno Unkrig
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+ * following conditions are met:
+ *
+ *    1. Redistributions of source code must retain the above copyright notice, this list of conditions and the
+ *       following disclaimer.
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+ *       following disclaimer in the documentation and/or other materials provided with the distribution.
+ *    3. The name of the author may not be used to endorse or promote products derived from this software without
+ *       specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package org.codehaus.commons.compiler.jdk;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+
+import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.nullanalysis.Nullable;
+
+/**
+ * This {@link IExpressionEvaluator} is implemented by creating and compiling a temporary compilation unit defining one
+ * class with one static method with one RETURN statement.
+ * <p>
+ *   A number of "convenience constructors" exist that execute the set-up steps described for {@link
+ *   IExpressionEvaluator} instantly.
+ * </p>
+ * <p>
+ *   If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator
+ *   can be instantiated through {@link #createFastEvaluator(String, Class, String[])}. Expression evaluation is faster
+ *   than through {@link #evaluate(Object[])}, because it is not done through reflection but through direct method
+ *   invocation.
+ * </p>
+ * <p>
+ *   Example:
+ * </p>
+ * <pre>
+ * public interface Foo {
+ *     int bar(int a, int b);
+ * }
+ * ...
+ * Foo f = (Foo) ExpressionEvaluator.createFastExpressionEvaluator(
+ *     "a + b",                    // expression to evaluate
+ *     Foo.class,                  // interface that describes the expression's signature
+ *     new String[] { "a", "b" },  // the parameters' names
+ *     (ClassLoader) null          // Use current thread's context class loader
+ * );
+ * System.out.println("1 + 2 = " + f.bar(1, 2)); // Evaluate the expression
+ * </pre>
+ * <p>
+ *   Notice: The <var>interfaceToImplement</var> must either be declared <var>public</var>, or with package scope in
+ *   the root package (i.e. "no" package).
+ * </p>
+ * <p>
+ *   On my system (Intel P4, 2 GHz, MS Windows XP, JDK 1.4.1), expression "x + 1" evaluates as follows:
+ * </p>
+ * <table>
+ *   <tr><td></td><th>Server JVM</th><th>Client JVM</th></tr>
+ *   <tr><td>Normal EE</td><td>23.7 ns</td><td>64.0 ns</td></tr>
+ *   <tr><td>Fast EE</td><td>31.2 ns</td><td>42.2 ns</td></tr>
+ * </table>
+ * <p>
+ *   (How can it be that interface method invocation is slower than reflection for the server JVM?)
+ * </p>
+ */
+public
+class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
+
+    /**
+     * Equivalent to
+     * <pre>
+     *     ExpressionEvaluator ee = new ExpressionEvaluator();
+     *     ee.setExpressionType(expressionType);
+     *     ee.setParameters(parameterNames, parameterTypes);
+     *     ee.cook(expression);
+     * </pre>
+     *
+     * @see #ExpressionEvaluator()
+     * @see ExpressionEvaluator#setExpressionType(Class)
+     * @see ScriptEvaluator#setParameters(String[], Class[])
+     * @see Cookable#cook(String)
+     */
+    public
+    ExpressionEvaluator(
+        String     expression,
+        Class<?>   expressionType,
+        String[]   parameterNames,
+        Class<?>[] parameterTypes
+    ) throws CompileException {
+        this.setExpressionType(expressionType);
+        this.setParameters(parameterNames, parameterTypes);
+        this.cook(expression);
+    }
+
+    /**
+     * Equivalent to
+     * <pre>
+     *     ExpressionEvaluator ee = new ExpressionEvaluator();
+     *     ee.setExpressionType(expressionType);
+     *     ee.setParameters(parameterNames, parameterTypes);
+     *     ee.setThrownExceptions(thrownExceptions);
+     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.cook(expression);
+     * </pre>
+     *
+     * @see #ExpressionEvaluator()
+     * @see ExpressionEvaluator#setExpressionType(Class)
+     * @see ScriptEvaluator#setParameters(String[], Class[])
+     * @see ScriptEvaluator#setThrownExceptions(Class[])
+     * @see SimpleCompiler#setParentClassLoader(ClassLoader)
+     * @see Cookable#cook(String)
+     */
+    public
+    ExpressionEvaluator(
+        String                expression,
+        Class<?>              expressionType,
+        String[]              parameterNames,
+        Class<?>[]            parameterTypes,
+        Class<?>[]            thrownExceptions,
+        @Nullable ClassLoader optionalParentClassLoader
+    ) throws CompileException {
+        this.setExpressionType(expressionType);
+        this.setParameters(parameterNames, parameterTypes);
+        this.setThrownExceptions(thrownExceptions);
+        this.setParentClassLoader(optionalParentClassLoader);
+        this.cook(expression);
+    }
+
+    /**
+     * Equivalent to
+     * <pre>
+     *     ExpressionEvaluator ee = new ExpressionEvaluator();
+     *     ee.setExpressionType(expressionType);
+     *     ee.setParameters(parameterNames, parameterTypes);
+     *     ee.setThrownExceptions(thrownExceptions);
+     *     ee.setExtendedType(optionalExtendedType);
+     *     ee.setImplementedTypes(implementedTypes);
+     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.cook(expression);
+     * </pre>
+     *
+     * @see #ExpressionEvaluator()
+     * @see ExpressionEvaluator#setExpressionType(Class)
+     * @see ScriptEvaluator#setParameters(String[], Class[])
+     * @see ScriptEvaluator#setThrownExceptions(Class[])
+     * @see ClassBodyEvaluator#setExtendedClass(Class)
+     * @see ClassBodyEvaluator#setImplementedInterfaces(Class[])
+     * @see SimpleCompiler#setParentClassLoader(ClassLoader)
+     * @see Cookable#cook(String)
+     */
+    public
+    ExpressionEvaluator(
+        String                expression,
+        Class<?>              expressionType,
+        String[]              parameterNames,
+        Class<?>[]            parameterTypes,
+        Class<?>[]            thrownExceptions,
+        @Nullable Class<?>    optionalExtendedType,
+        Class<?>[]            implementedTypes,
+        @Nullable ClassLoader optionalParentClassLoader
+    ) throws CompileException {
+        this.setExpressionType(expressionType);
+        this.setParameters(parameterNames, parameterTypes);
+        this.setThrownExceptions(thrownExceptions);
+        this.setExtendedClass(optionalExtendedType);
+        this.setImplementedInterfaces(implementedTypes);
+        this.setParentClassLoader(optionalParentClassLoader);
+        this.cook(expression);
+    }
+
+    public ExpressionEvaluator() {}
+
+    /**
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionType(Class)} instead
+     */
+    @Deprecated @Override public void
+    setReturnType(Class<?> expressionType) { super.setReturnType(expressionType); }
+
+    /**
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])}
+     *             instead
+     */
+    @Deprecated @Override public void
+    setReturnTypes(Class<?>[] expressionTypes) { super.setReturnTypes(expressionTypes); }
+
+    @Override public void
+    setExpressionType(Class<?> expressionType) {
+        this.setExpressionTypes(new Class<?>[] { expressionType });
+    }
+
+    @Override public void
+    setExpressionTypes(Class<?>[] expressionTypes) {
+        super.setReturnTypes(expressionTypes);
+    }
+
+    /**
+     * The default return type of an expression is {@code Object}{@code .class}.
+     */
+    @Override protected Class<?>
+    getDefaultReturnType() { return Object.class; }
+
+    @Override public void
+    cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
+
+        readers = readers.clone(); // Don't modify the argument array.
+
+        String[] imports;
+        if (readers.length == 1) {
+            if (!readers[0].markSupported()) readers[0] = new BufferedReader(readers[0]);
+            imports = ClassBodyEvaluator.parseImportDeclarations(readers[0]);
+        } else
+        {
+            imports = new String[0];
+        }
+
+        Class<?>[] returnTypes = new Class[readers.length];
+        for (int i = 0; i < readers.length; ++i) {
+
+            StringWriter sw = new StringWriter();
+            PrintWriter  pw = new PrintWriter(sw);
+
+            returnTypes[i] = this.getReturnType(i);
+            if (returnTypes[i] != void.class && returnTypes[i] != Void.class) {
+                pw.print("return ");
+            }
+            pw.write(Cookable.readString(readers[i]));
+            pw.println(";");
+
+            pw.close();
+            readers[i] = new StringReader(sw.toString());
+        }
+        super.setReturnTypes(returnTypes);
+        this.cook(optionalFileNames, readers, imports);
+    }
+}
