@@ -54,19 +54,6 @@
           </instructions>
         </configuration>
       </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <offlineLinks>
-            <offlineLink>
-              <location>../../../commons-compiler/target/apidocs/</location>
-              <url>.</url>
-            </offlineLink>
-          </offlineLinks>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 </project>

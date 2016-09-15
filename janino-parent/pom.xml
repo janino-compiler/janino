@@ -86,6 +86,11 @@
         <version>2.10.4</version>
         <configuration>
           <quiet>true</quiet>
+          <offlineLinks>
+            <offlineLink><location>../../../commons-compiler/target/apidocs/</location>    <url>.</url></offlineLink>
+            <offlineLink><location>../../../commons-compiler-jdk/target/apidocs/</location><url>.</url></offlineLink>
+            <offlineLink><location>../../../janino/target/apidocs/</location>              <url>.</url></offlineLink>
+          </offlineLinks>
         </configuration>
         <executions>
           <execution>
