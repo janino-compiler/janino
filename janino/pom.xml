@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.codehaus.janino</groupId>
     <artifactId>janino-parent</artifactId>
-    <version>3.0.2</version>
+    <version>3.0.5</version>
     <relativePath>../janino-parent</relativePath>
   </parent>
 
@@ -25,7 +25,7 @@
     <dependency>
       <groupId>org.codehaus.janino</groupId>
       <artifactId>commons-compiler</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
     	<groupId>org.apache.ant</groupId>

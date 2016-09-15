@@ -8,7 +8,7 @@
     <groupId>org.codehaus.janino</groupId>
     <artifactId>janino-parent</artifactId>
     <relativePath>../janino-parent</relativePath>
-    <version>3.0.2</version>
+    <version>3.0.5</version>
   </parent>
 
   <artifactId>commons-compiler-jdk</artifactId>
@@ -19,7 +19,7 @@
     <dependency>
       <groupId>org.codehaus.janino</groupId>
       <artifactId>commons-compiler</artifactId>
-      <version>${project.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
 

@@ -125,7 +125,7 @@
 			<text property="gpg.passphrase" secure="true" focus="true" />
 		</swingDialog>
 
-		<forEach2 list="commons-compiler,commons-compiler-jdk,janino,janino-parent" param="artifactId">
+		<forEach2 list="commons-compiler,commons-compiler-jdk,janino" param="artifactId">
 			<sequential>
 
 				<if><available file="../@{artifactId}/target/@{artifactId}-${version}.jar" /><then>
@@ -144,7 +144,7 @@
 				</then></if>
 
 				<if><available file="../@{artifactId}/target/@{artifactId}-${version}-sources.jar" /><then>
-					<echo message="*** Sign and deploy '@{artifactId}-${version}-sources.jar'." />
+					<echo message="*** Sign and deploy '@{artifactId}/target/@{artifactId}-${version}-sources.jar'." />
 					<mvn failonerror="true">
 						<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
 						<arg value="-Durl=${maven-staging-repository-url}" />
@@ -159,7 +159,7 @@
 				</then></if>
 
 				<if><available file="../@{artifactId}/target/@{artifactId}-${version}-javadoc.jar" /><then>
-					<echo message="*** Sign and deploy '@{artifactId}-${version}-javadoc.jar'." />
+					<echo message="*** Sign and deploy '@{artifactId}/target/@{artifactId}-${version}-javadoc.jar'." />
 					<mvn failonerror="true">
 						<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
 						<arg value="-Durl=${maven-staging-repository-url}" />
@@ -174,6 +174,19 @@
 				</then></if>
 			</sequential>
 		</forEach2>
+
+		<!-- Must treat "janino-parent" differently, because it has only a POM artifact and no JARs. -->
+		<echo message="*** Sign and deploy 'janino-parent/pom.xml'." />
+		<mvn failonerror="true">
+			<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+			<arg value="-Durl=${maven-staging-repository-url}" />
+			<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+			<arg value="-DpomFile=../janino-parent/pom.xml" />
+			<arg value="-Dfile=../janino-parent/pom.xml" />
+			<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+			<arg value="-Dgpg.executable=${gpg.executable}" />
+			<arg value="-Pgpg" />
+		</mvn>
 
 		<echo level="error" message="*** Now open 'https://oss.sonatype.org/#stagingRepositories', select repository 'orgcodehausjanino-*', check its" />
 		<echo level="error" message="*** content, then hit 'Close' and afterwards 'Release'." />

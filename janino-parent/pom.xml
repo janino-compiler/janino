@@ -14,7 +14,7 @@
 
   <groupId>org.codehaus.janino</groupId>
   <packaging>pom</packaging>
-  <version>3.0.2</version>
+  <version>3.0.5</version>
   <dependencyManagement>
   	<dependencies>
   		<dependency>
@@ -24,6 +24,25 @@
   		</dependency>
   	</dependencies>
   </dependencyManagement>
+
+  <developers>
+    <developer>
+      <id>aunkrig</id>
+      <name>Arno Unkrig</name>
+      <roles>
+        <role>Despot</role>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>oontvo</id>
+      <name>Vy Nguyen</name>
+      <roles>
+        <role>Despot</role>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
 
   <modules>
   	<module>../commons-compiler</module>
@@ -87,9 +106,9 @@
         <configuration>
           <quiet>true</quiet>
           <offlineLinks>
-            <offlineLink><location>../../../commons-compiler/target/apidocs/</location>    <url>.</url></offlineLink>
-            <offlineLink><location>../../../commons-compiler-jdk/target/apidocs/</location><url>.</url></offlineLink>
-            <offlineLink><location>../../../janino/target/apidocs/</location>              <url>.</url></offlineLink>
+            <offlineLink><location>../../../commons-compiler/target/apidocs</location>    <url>.</url></offlineLink>
+            <offlineLink><location>../../../commons-compiler-jdk/target/apidocs</location><url>.</url></offlineLink>
+            <offlineLink><location>../../../janino/target/apidocs</location>              <url>.</url></offlineLink>
           </offlineLinks>
         </configuration>
         <executions>
@@ -127,4 +146,17 @@
       </plugin>
     </plugins>
   </build>
+  <description>Janino is a super-small, super-fast Java compiler.</description>
+  <url>http://janino-compiler.github.io/janino/</url>
+  <licenses>
+    <license>
+      <name>New BSD License</name>
+      <url>https://raw.githubusercontent.com/janino-compiler/janino/master/LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+  	<developerConnection>See project web site http://janino-compiler.github.io/janino/</developerConnection>
+  	<url>https://github.com/janino-compiler/janino</url>
+  </scm>
 </project>
