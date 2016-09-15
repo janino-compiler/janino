@@ -25,6 +25,7 @@
     <dependency>
       <groupId>org.codehaus.janino</groupId>
       <artifactId>commons-compiler</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
     	<groupId>org.apache.ant</groupId>
@@ -51,6 +52,19 @@
 			<Export-Package>org.codehaus.janino, org.codehaus.janino.samples, org.codehaus.janino.tools, org.codehaus.janino.util</Export-Package>
             <Require-Bundle>org.codehaus.janino.commons-compiler</Require-Bundle>
           </instructions>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <offlineLinks>
+            <offlineLink>
+              <location>../../../commons-compiler/target/apidocs/</location>
+              <url>.</url>
+            </offlineLink>
+          </offlineLinks>
         </configuration>
       </plugin>
     </plugins>

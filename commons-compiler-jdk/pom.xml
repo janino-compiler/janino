@@ -19,20 +19,12 @@
     <dependency>
       <groupId>org.codehaus.janino</groupId>
       <artifactId>commons-compiler</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-      </plugin>
-
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
@@ -41,6 +33,19 @@
             <Export-Package>org.codehaus.commons.compiler.jdk, org.codehaus.commons.io</Export-Package>
             <Require-Bundle>org.codehaus.janino.commons-compiler</Require-Bundle>
           </instructions>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <offlineLinks>
+            <offlineLink>
+              <location>../../../commons-compiler/target/apidocs/</location>
+              <url>.</url>
+            </offlineLink>
+          </offlineLinks>
         </configuration>
       </plugin>
     </plugins>
