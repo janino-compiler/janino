@@ -124,10 +124,12 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             new ByteArrayJavaFileManager<JavaFileManager>(fm)
         ) {
 
-            @Override public ClassLoader
-            getClassLoader(@Nullable javax.tools.JavaFileManager.Location location) {
-                return SimpleCompiler.this.parentClassLoader;
-            }
+            // Unclear why the following four lines were once added - they break the commons-compiler-jdk
+            // implementation with Java 7 and 8 (although Java 6 works).
+//            @Override @Nullable public ClassLoader
+//            getClassLoader(@Nullable javax.tools.JavaFileManager.Location location) {
+//                return SimpleCompiler.this.parentClassLoader;
+//            }
         };
 
         // Run the compiler.
