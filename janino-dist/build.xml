@@ -110,6 +110,14 @@
 
 	<target name="stage" description="Deploy release version to Maven staging repository.">
 
+		<swingDialog messagetype="QUESTION">
+			<label><![CDATA[<html>
+				Did you verify that all POMs refer to version "${version}"?
+				<br />
+				Did you execute "mvn clean install" on project "janino-parent"?
+			</html>]]></label>
+		</swingDialog>
+
 		<!-- Enter the GPG passphrase. -->
 		<var name="gpg.passphrase" unset="true" />
 		<swingDialog title="Deploying to staging repository">
@@ -120,18 +128,20 @@
 		<forEach2 list="commons-compiler,commons-compiler-jdk,janino,janino-parent" param="artifactId">
 			<sequential>
 
-				<echo message="*** Sign and deploy '@{artifactId}/target/@{artifactId}-${version}.jar'." />
-				<echo message="Notice: If you get a 401, check '~/.m2/settings.xml'." />
-				<mvn failonerror="true">
-					<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
-					<arg value="-Durl=${maven-staging-repository-url}" />
-					<arg value="-DrepositoryId=${maven-staging-repository-id}" />
-					<arg value="-DpomFile=../@{artifactId}/pom.xml" />
-					<arg value="-Dfile=../@{artifactId}/target/@{artifactId}-${version}.jar" />
-					<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
-					<arg value="-Dgpg.executable=${gpg.executable}" />
-					<arg value="-Pgpg" />
-				</mvn>
+				<if><available file="../@{artifactId}/target/@{artifactId}-${version}.jar" /><then>
+					<echo message="*** Sign and deploy '@{artifactId}/target/@{artifactId}-${version}.jar'." />
+					<echo message="Notice: If you get a 401, check '~/.m2/settings.xml'." />
+					<mvn failonerror="true">
+						<arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+						<arg value="-Durl=${maven-staging-repository-url}" />
+						<arg value="-DrepositoryId=${maven-staging-repository-id}" />
+						<arg value="-DpomFile=../@{artifactId}/pom.xml" />
+						<arg value="-Dfile=../@{artifactId}/target/@{artifactId}-${version}.jar" />
+						<arg value="-Dgpg.passphrase=${gpg.passphrase}" />
+						<arg value="-Dgpg.executable=${gpg.executable}" />
+						<arg value="-Pgpg" />
+					</mvn>
+				</then></if>
 
 				<if><available file="../@{artifactId}/target/@{artifactId}-${version}-sources.jar" /><then>
 					<echo message="*** Sign and deploy '@{artifactId}-${version}-sources.jar'." />
