@@ -7,21 +7,13 @@
   <parent>
     <groupId>org.codehaus.janino</groupId>
     <artifactId>janino-parent</artifactId>
-    <version>3.0.2</version>
+    <version>3.0.5-SNAPSHOT</version>
     <relativePath>../janino-parent</relativePath>
   </parent>
 
   <artifactId>commons-compiler</artifactId>
 
   <name>Commons Compiler</name>
-
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
 
   <build>
     <plugins>
@@ -36,5 +28,4 @@
       </plugin>
     </plugins>
   </build>
-  <packaging>bundle</packaging>
 </project>
