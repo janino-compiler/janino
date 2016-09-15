@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-// CHECKSTYLE Javadoc:OFF
+// CHECKSTYLE .:OFF
 
 package for_sandbox_tests; // SUPPRESS CHECKSTYLE PackageName
 

@@ -500,7 +500,12 @@ class JlsTest extends JaninoTestSuite {
 
         this.assertExpressionUncookable(
             "new Object() { public void toString() {}}.toString()",
-            Pattern.compile("The return type of.*is incompatible with|toString\\(\\) in  cannot override toString\\(\\) in java.lang.Object; attempting to use incompatible return type")
+            Pattern.compile(
+                ""
+                + "The return type of.*is incompatible with"
+                + "|"
+                + "toString\\(\\) in  cannot override toString\\(\\) in java.lang.Object; attempting to use incompatible return type" // SUPPRESS CHECKSTYLE LineLength
+            )
         );
     }
 
