@@ -32,8 +32,7 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 
 /**
- * A test program that allows you to play around with the {@link org.codehaus.janino.ExpressionEvaluator
- * ExpressionEvaluator} class.
+ * A test program that allows you to play around with the {@link IExpressionEvaluator} class.
  */
 public final
 class ExpressionDemo extends DemoBase {

@@ -32,8 +32,7 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 
 /**
- * A test program that allows you to play around with the {@link org.codehaus.janino.ScriptEvaluator ScriptEvaluator}
- * class.
+ * A test program that allows you to play around with the {@link IScriptEvaluator} class.
  */
 public final
 class ScriptDemo extends DemoBase {

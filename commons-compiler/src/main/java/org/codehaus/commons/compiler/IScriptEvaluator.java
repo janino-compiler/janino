@@ -86,8 +86,8 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *        <li>{@link #setReturnType(Class)}
  *        <li>{@link #setParameters(String[], Class[])}
  *        <li>{@link #setThrownExceptions(Class[])}
- *        <li>{@link org.codehaus.janino.SimpleCompiler#setParentClassLoader(ClassLoader)}
- *        <li>{@link org.codehaus.janino.ClassBodyEvaluator#setDefaultImports(String[])}
+ *        <li>{@link ISimpleCompiler#setParentClassLoader(ClassLoader)}
+ *        <li>{@link IClassBodyEvaluator#setDefaultImports(String[])}
  *     </ul>
  *   </li>
  *   <li>
