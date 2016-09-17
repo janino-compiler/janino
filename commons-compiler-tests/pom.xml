@@ -13,7 +13,7 @@
 
   <artifactId>commons-compiler-tests</artifactId>
 
-  <name>Tests for all implementations</name>
+  <name>commons-compiler-tests</name>
 
   <dependencies>
     <dependency>
@@ -49,4 +49,6 @@
     </plugins>
   </build>
   <packaging>jar</packaging>
+  <description>Tests that use only the &quot;commons-compiler&quot; API and are thus applicable to ALL implementations.</description>
+  <url>http://janino-compiler.github.io/janino/</url>
 </project>

@@ -13,7 +13,7 @@
 
   <artifactId>commons-compiler-jdk</artifactId>
 
-  <name>Commons Compiler Jdk</name>
+  <name>commons-compiler-jdk</name>
 
   <dependencies>
     <dependency>
@@ -37,4 +37,5 @@
       </plugin>
     </plugins>
   </build>
+  <url>http://janino-compiler.github.io/janino/</url>
 </project>

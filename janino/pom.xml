@@ -13,7 +13,7 @@
 
   <artifactId>janino</artifactId>
 
-  <name>Janino</name>
+  <name>janino</name>
 
   <dependencies>
     <dependency>
@@ -57,4 +57,5 @@
       </plugin>
     </plugins>
   </build>
+  <url>http://janino-compiler.github.io/janino/</url>
 </project>
