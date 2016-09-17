@@ -346,7 +346,7 @@ class UnitCompiler {
             throw new IllegalStateException("\"UnitCompiler.compileUnit()\" is not reentrant");
         }
 
-        this.generatedClassFiles = new ArrayList<ClassFile>();
+        final List<ClassFile> gcfs = (this.generatedClassFiles = new ArrayList<ClassFile>());
         try {
 
             for (PackageMemberTypeDeclaration pmtd : this.compilationUnit.packageMemberTypeDeclarations) {
@@ -366,8 +366,7 @@ class UnitCompiler {
                 ), null);
             }
 
-            List<ClassFile> l = this.generatedClassFiles;
-            return (ClassFile[]) l.toArray(new ClassFile[l.size()]);
+            return (ClassFile[]) gcfs.toArray(new ClassFile[gcfs.size()]);
         } finally {
             this.generatedClassFiles = null;
         }
