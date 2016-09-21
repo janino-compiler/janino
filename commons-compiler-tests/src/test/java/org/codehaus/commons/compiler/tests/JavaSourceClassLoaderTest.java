@@ -47,7 +47,7 @@ import util.TestUtil;
 @RunWith(Parameterized.class) public
 class JavaSourceClassLoaderTest {
 
-    private static final File[] SOURCE_PATH = new File[] {
+    private static final File[] SOURCE_PATH = {
         new File("../janino/src/main/java"),
         new File("../commons-compiler/src/main/java"),
     };

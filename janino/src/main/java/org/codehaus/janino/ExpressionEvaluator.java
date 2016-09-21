@@ -287,7 +287,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
             statements.add(new Java.ReturnStatement(parser.location(), value));
         }
 
-        if (!parser.peekEof()) {
+        if (!parser.peek(TokenType.END_OF_INPUT)) {
             throw new CompileException("Unexpected token \"" + parser.peek() + "\"", parser.location());
         }
 
@@ -369,7 +369,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
         // Parse the expression.
         Rvalue rvalue = parser.parseExpression().toRvalueOrCompileException();
-        if (!parser.peekEof()) {
+        if (!parser.peek(TokenType.END_OF_INPUT)) {
             throw new CompileException("Unexpected token \"" + parser.peek() + "\"", scanner.location());
         }
 

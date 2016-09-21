@@ -227,7 +227,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         Java.AbstractClassDeclaration cd = this.addPackageMemberClassDeclaration(scanner.location(), compilationUnit);
 
         // Parse class body declarations (member declarations) until EOF.
-        while (!parser.peekEof()) {
+        while (!parser.peek(TokenType.END_OF_INPUT)) {
             parser.parseClassBodyDeclaration(cd);
         }
 
@@ -256,12 +256,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
                 Scanner s       = new Scanner(null, new StringReader(defaultImport));
                 Parser  parser2 = new Parser(s);
                 cu.addImportDeclaration(parser2.parseImportDeclarationBody());
-                if (!parser2.peekEof()) {
-                    throw new CompileException(
-                        "Unexpected token '" + parser2.peek() + "' in default import",
-                        s.location()
-                    );
-                }
+                parser2.read(TokenType.END_OF_INPUT);
             }
         }
 

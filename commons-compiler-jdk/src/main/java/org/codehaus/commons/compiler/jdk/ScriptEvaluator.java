@@ -253,9 +253,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     setStaticMethod(final boolean staticMethod) { this.setStaticMethod(new boolean[] { staticMethod }); }
 
     @Override public void
-    setReturnType(Class<?> returnType) {
-        this.setReturnTypes(new Class<?>[] { returnType });
-    }
+    setReturnType(Class<?> returnType) { this.setReturnTypes(new Class<?>[] { returnType }); }
 
     @Override public void
     setMethodName(String methodName) { this.setMethodNames(new String[] { methodName }); }

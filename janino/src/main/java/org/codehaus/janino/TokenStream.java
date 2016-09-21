@@ -75,6 +75,12 @@ interface TokenStream {
     peek(String... suspected) throws CompileException, IOException;
 
     /**
+     * @return Whether the type of the next token is <var>suspected</var>
+     */
+    boolean
+    peek(TokenType suspected) throws CompileException, IOException;
+
+    /**
      * Checks whether the type of the next token is any of the <var>suspected</var>; does not consume the next token.
      *
      * @return The index of the first of the <var>suspected</var> types that is the next token's type, or -1 if the type
@@ -110,6 +116,13 @@ interface TokenStream {
     read(String... expected) throws CompileException, IOException;
 
     /**
+     * @return                  The value of the next token, who's type is <var>expected</var>
+     * @throws CompileException The next token's type is not <var>expected</var>
+     */
+    String
+    read(TokenType expected) throws CompileException, IOException;
+
+    /**
      * @return Whether the value of the next token equals the <var>suspected</var>; if so, it consumes the next token
      * @throws CompileException
      * @throws IOException
@@ -125,36 +138,10 @@ interface TokenStream {
     peekRead(String... suspected) throws CompileException, IOException;
 
     /**
-     * @return Whether the scanner is at end-of-input
-     */
-    boolean
-    peekEof() throws CompileException, IOException;
-
-    /**
      * @return {@code null} iff the next token is not an identifier, otherwise the value of the identifier token
      */
     @Nullable String
     peekIdentifier() throws CompileException, IOException;
-
-    /**
-     * @return Whether the next token is a literal
-     */
-    boolean
-    peekLiteral() throws CompileException, IOException;
-
-    /**
-     * @return                  The value of the next token, which is an indentifier
-     * @throws CompileException The next token is not an identifier
-     */
-    String
-    readIdentifier() throws CompileException, IOException;
-
-    /**
-     * @return                  The value of the next token, which is an operator
-     * @throws CompileException The next token is not an operator
-     */
-    String
-    readOperator() throws CompileException, IOException;
 
     /**
      * By default, warnings are discarded, but an application my install a {@link WarningHandler}.

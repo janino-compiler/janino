@@ -86,10 +86,7 @@ class MultiIterator<T> implements Iterator<T> {
      */
     public
     MultiIterator(Object/*T*/ object, Collection<T> collection) {
-        this.outer = Arrays.asList(new Object[] {
-            new Object[] { object },
-            collection
-        }).iterator();
+        this.outer = Arrays.asList(new Object[] { object }, collection).iterator();
     }
 
     /**
@@ -97,10 +94,7 @@ class MultiIterator<T> implements Iterator<T> {
      */
     public
     MultiIterator(Collection<T> collection, Object/*T*/ object) {
-        this.outer = Arrays.asList(new Object[] {
-            collection,
-            new Object[] { object }
-        }).iterator();
+        this.outer = Arrays.asList(collection, new Object[] { object }).iterator();
     }
 
     /**
@@ -108,10 +102,7 @@ class MultiIterator<T> implements Iterator<T> {
      */
     public
     MultiIterator(Object/*T*/ prefix, Iterator<T> iterator) {
-        this.outer = Arrays.asList(new Object[] {
-            new Object[] { prefix },
-            iterator
-        }).iterator();
+        this.outer = Arrays.asList(new Object[] { prefix }, iterator).iterator();
     }
 
     /**
@@ -119,10 +110,7 @@ class MultiIterator<T> implements Iterator<T> {
      */
     public
     MultiIterator(Iterator<T> iterator, Object/*T*/ suffix) {
-        this.outer = Arrays.asList(new Object[] {
-            iterator,
-            new Object[] { suffix }
-        }).iterator();
+        this.outer = Arrays.asList(iterator, new Object[] { suffix }).iterator();
     }
 
     @Override public boolean

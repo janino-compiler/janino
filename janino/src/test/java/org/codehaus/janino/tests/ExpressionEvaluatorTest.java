@@ -55,7 +55,7 @@ class ExpressionEvaluatorTest {
                 + "a + b.c + d.e() + f() + g.h.I.j() + k.l.M"
             ))))
         );
-        Assert.assertEquals(new HashSet<String>(Arrays.asList(new String[] { "a", "b", "d" })), parameterNames);
+        Assert.assertEquals(new HashSet<String>(Arrays.asList("a", "b", "d")), parameterNames);
 
         parameterNames = new HashSet<String>(
             Arrays.asList(ScriptEvaluator.guessParameterNames(new Scanner(null, new StringReader(
@@ -65,7 +65,7 @@ class ExpressionEvaluatorTest {
                 + "return a + b.c + d.e() + f() + g.h.I.j() + k.l.M;"
             ))))
         );
-        Assert.assertEquals(new HashSet<String>(Arrays.asList(new String[] { "b", "d" })), parameterNames);
+        Assert.assertEquals(new HashSet<String>(Arrays.asList("b", "d")), parameterNames);
     }
 
     @Test public void

@@ -105,8 +105,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         Class<?> c = cl.loadClass(className);
 
         // Invoke the "public static main(String[])" method.
-        Method m = c.getMethod("main", new Class[] { String[].class });
-        m.invoke(null, new Object[] { arguments });
+        Method m = c.getMethod("main", String[].class);
+        m.invoke(null, (Object) arguments);
     }
 
     /**

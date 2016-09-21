@@ -660,7 +660,7 @@ class IClass {
 
     private static final Set<String> PRIMITIVE_WIDENING_CONVERSIONS = new HashSet<String>();
     static {
-        String[] pwcs = new String[] {
+        String[] pwcs = {
             Descriptor.BYTE  + Descriptor.SHORT,
 
             Descriptor.BYTE  + Descriptor.INT,

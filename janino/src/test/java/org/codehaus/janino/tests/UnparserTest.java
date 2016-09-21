@@ -416,7 +416,7 @@ class UnparserTest {
 
     @Test public void
     testLiterals() throws Exception {
-        Object[][] tests = new Object[][] {
+        Object[][] tests = {
             { new FloatingPointLiteral(Location.NOWHERE, "-0.0D"), "-0.0D" },
             { new FloatingPointLiteral(Location.NOWHERE, "-0.0F"), "-0.0F" },
         };
@@ -446,8 +446,8 @@ class UnparserTest {
 
     @Test public void
     testMany() throws Exception {
-        final String[][] exprs = new String[][] {
-              //input                                  expected simplified                    expect non-simplified
+        final String[][] exprs = {
+            //input                                    expected simplified                    expect non-simplified
             { "((1)+2)",                               "1 + 2",                               "((1) + 2)"            },
             { "1 - 2 + 3",                             null,                                  null                   },
             { "(1 - 2) + 3",                           "1 - 2 + 3",                           null                   },
@@ -504,8 +504,8 @@ class UnparserTest {
 
     @Test public void
     testParseUnparseEnumDeclaration() throws Exception {
-        final String[][] cus = new String[][] {
-//            input:                                                      expected output (if different from input):
+        final String[][] cus = {
+            //input:                                                      expected output (if different from input):
             { "enum Foo { A, B ; }",                                      null },
             { "public enum Foo { A, B ; }",                               null },
             { "public enum Foo implements Serializable { A, B ; }",       null },
@@ -528,11 +528,11 @@ class UnparserTest {
 
     @Test public void
     testParseUnparseAnnotationTypeDeclaration() throws Exception {
-        final String[][] cus = new String[][] {
-//          input:                                                 expected output (if different from input):
-            { "@interface Foo { }",                                null },
-            { "public @interface Foo { }",                         null },
-            { "@Deprecated @interface Foo { }",                    null },
+        final String[][] cus = {
+            //input:                                        expected output (if different from input):
+            { "@interface Foo { }",                         null },
+            { "public @interface Foo { }",                  null },
+            { "@Deprecated @interface Foo { }",             null },
             { "@interface Foo { int value(); }",            null },
             { "@interface Foo { int[] value(); }",          null },
 //            { "@interface Foo { int value() default 99; }", null },  NYI

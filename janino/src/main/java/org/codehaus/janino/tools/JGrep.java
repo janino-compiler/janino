@@ -52,6 +52,7 @@ import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
+import org.codehaus.janino.TokenType;
 import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
@@ -97,8 +98,8 @@ class JGrep {
         int idx = 0;
 
         StringPattern[] directoryNamePatterns     = StringPattern.PATTERNS_ALL;
-        StringPattern[] fileNamePatterns          = new StringPattern[] { new StringPattern("*.java") };
-        File[]          classPath                 = new File[] { new File(".") };
+        StringPattern[] fileNamePatterns          = { new StringPattern("*.java") };
+        File[]          classPath                 = { new File(".") };
         File[]          optionalExtDirs           = null;
         File[]          optionalBootClassPath     = null;
         String          optionalCharacterEncoding = null;
@@ -311,7 +312,7 @@ class JGrep {
                     mit.optionalClassNamePattern += '.' + s;
                 }
             } else
-            if (parser.peekEof()) {
+            if (parser.peek(TokenType.END_OF_INPUT)) {
                 mit.methodNamePattern = s;
                 return mit;
             }
@@ -323,16 +324,15 @@ class JGrep {
         StringBuilder sb = new StringBuilder();
         if (p.peekRead("*")) {
             sb.append('*');
-        } else
-        {
-            sb.append(p.readIdentifier());
+        } else {
+            sb.append(p.read(TokenType.IDENTIFIER));
         }
         for (;;) {
             if (p.peekRead("*")) {
                 sb.append('*');
             } else
             if (p.peekIdentifier() != null) {
-                sb.append(p.readIdentifier());
+                sb.append(p.read(TokenType.IDENTIFIER));
             } else
             {
                 return sb.toString();

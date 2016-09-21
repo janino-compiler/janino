@@ -101,7 +101,7 @@ class CompilerTest {
     testSelfCompile() throws Exception {
 
         ClassLoader bootstrapClassLoader = ICookable.BOOT_CLASS_LOADER;
-        File[]      sourceFiles          = new File[] {
+        File[]      sourceFiles          = {
             new File(CompilerTest.JANINO_SRC + "/org/codehaus/janino/Compiler.java"),
             new File(CompilerTest.COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),
             new File(CompilerTest.JANINO_SRC + "/org/codehaus/janino/ClassLoaderIClassLoader.java"),
@@ -326,7 +326,7 @@ class CompilerTest {
         }
 
         Assert.assertEquals(
-            new HashSet<Object>(Arrays.asList(new Object[] { "pkg/A.class", "pkg/B.class", })),
+            new HashSet<Object>(Arrays.asList("pkg/A.class", "pkg/B.class")),
             classes.keySet()
         );
     }
@@ -367,7 +367,7 @@ class CompilerTest {
              (WarningHandler) null                                          // optionalWarningHandler
          );
          compiler.compile(new Resource[] { sourceFinder.findResource("pkg/A.java") });
-         Assert.assertEquals(new HashSet<Object>(Arrays.asList(new Object[] { "pkg/A.class" })), classes.keySet());
+         Assert.assertEquals(new HashSet<Object>(Arrays.asList("pkg/A.class")), classes.keySet());
     }
 
 

@@ -67,7 +67,7 @@ class DemoBase {
         if ("".equals(value)) {
             return type.getConstructor(new Class[0]).newInstance(new Object[0]);
         } else {
-            return type.getConstructor(new Class[] { String.class }).newInstance(new Object[] { value });
+            return type.getConstructor(String.class).newInstance(value);
         }
     }
 

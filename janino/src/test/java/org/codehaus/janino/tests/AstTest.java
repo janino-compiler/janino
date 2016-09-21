@@ -215,9 +215,7 @@ class AstTest {
                     AstTest.createByteArrayType(),
                     new Java.ArrayInitializer(
                         AstTest.getLocation(),
-                        new Java.Rvalue[] {
-                            AstTest.createIntegerLiteral("1")
-                        }
+                        new Java.Rvalue[] { AstTest.createIntegerLiteral("1") }
                     )
                 )
             )
@@ -290,20 +288,18 @@ class AstTest {
                 new Java.ClassLiteral(
                     AstTest.getLocation(),
                     new Java.ReferenceType(
-                        AstTest.getLocation(),
-                        new String[] {
-                            "HandMade"
-                        },
-                        null // optionalTypeArguments
+                        AstTest.getLocation(),       // location
+                        new String[] { "HandMade" }, // identifiers
+                        null                         // optionalTypeArguments
                     )
                 )
             )
         );
 
         AstTest.createMethod(clazz, body, new Java.ReferenceType(
-            AstTest.getLocation(),
-            new String[] { "java", "lang", "Class" },
-            null // optionalTypeArguments
+            AstTest.getLocation(),                    // location
+            new String[] { "java", "lang", "Class" }, // identifiers
+            null                                      // optionalTypeArguments
         ));
 
         SimpleCompiler compiler = new SimpleCompiler();

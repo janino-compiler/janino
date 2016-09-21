@@ -199,7 +199,7 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
         // Find its "main" method.
         Method mainMethod;
         try {
-            mainMethod = clazz.getMethod("main", new Class[] { String[].class });
+            mainMethod = clazz.getMethod("main", String[].class);
         } catch (NoSuchMethodException ex) {
             System.err.println("Class \"" + className + "\" has not public method \"main(String[])\".");
             System.exit(1);
@@ -207,7 +207,7 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
         }
 
         // Invoke the "main" method.
-        mainMethod.invoke(null, new Object[] { mainArgs });
+        mainMethod.invoke(null, (Object) mainArgs);
     }
 
     private static File[]

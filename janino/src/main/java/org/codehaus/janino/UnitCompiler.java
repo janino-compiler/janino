@@ -4191,10 +4191,7 @@ class UnitCompiler {
                     declaringClassOrInterfaceType, // optionalTarget
                     "class$",                      // methodName
                     new Rvalue[] {                 // arguments
-                        new StringLiteral(
-                            loc,                           // location
-                            '"' + className + '"'          // constantValue
-                        )
+                        new StringLiteral(loc, '"' + className + '"')
                     }
                 )
             )
@@ -7046,7 +7043,7 @@ class UnitCompiler {
         return this.compileArithmeticOperation(
             locatable,
             lhsType,
-            Arrays.asList(new Rvalue[] { rhs }).iterator(),
+            Arrays.asList(rhs).iterator(),
             operator
         );
     }
@@ -10046,24 +10043,24 @@ class UnitCompiler {
             new SimpleType(loc, noClassDefFoundErrorIClass), // type
             new Rvalue[] {                                   // arguments
                 new MethodInvocation(
-                    loc,                                             // location
-                    new AmbiguousName(loc, new String[] { "ex" }),   // optionalTarget
-                    "getMessage",                                    // methodName
-                    new Rvalue[0]                                    // arguments
+                    loc,                                           // location
+                    new AmbiguousName(loc, new String[] { "ex" }), // optionalTarget
+                    "getMessage",                                  // methodName
+                    new Rvalue[0]                                  // arguments
                 )
             }
         )));
 
         List<CatchClause> l = new ArrayList<CatchClause>();
         l.add(new CatchClause(
-            loc,                                               // location
-            new FormalParameter(                               // caughtException
+            loc,                 // location
+            new FormalParameter( // caughtException
                 loc,                                               // location
                 true,                                              // finaL
                 new SimpleType(loc, classNotFoundExceptionIClass), // type
                 "ex"                                               // name
             ),
-            b                                                  // body
+            b                    // body
         ));
         TryStatement ts = new TryStatement(
             loc,                          // location
@@ -11914,12 +11911,9 @@ class UnitCompiler {
     disassembleToStdout(byte[] contents) {
         try {
             Class<?> disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
-            disassemblerClass.getMethod(
-                "disasm",
-                new Class[] { InputStream.class }
-            ).invoke(
+            disassemblerClass.getMethod("disasm", InputStream.class).invoke(
                 disassemblerClass.newInstance(),
-                new Object[] { new ByteArrayInputStream(contents) }
+                new ByteArrayInputStream(contents)
             );
         } catch (Exception e) {
             e.printStackTrace();

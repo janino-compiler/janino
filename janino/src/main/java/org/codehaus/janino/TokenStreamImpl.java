@@ -139,6 +139,11 @@ class TokenStreamImpl implements TokenStream {
         return TokenStreamImpl.indexOf(suspected, this.peek().value);
     }
 
+    @Override public boolean
+    peek(TokenType suspected) throws CompileException, IOException {
+        return this.peek().type == suspected;
+    }
+
     @Override public int
     peek(TokenType... suspected) throws CompileException, IOException {
         return TokenStreamImpl.indexOf(suspected, this.peek().type);
@@ -193,6 +198,15 @@ class TokenStreamImpl implements TokenStream {
         );
     }
 
+    @Override public String
+    read(TokenType expected) throws CompileException, IOException {
+
+        Token t = this.read();
+        if (t.type != expected) throw this.compileException(expected + " expected instead of '" + t.value + "'");
+
+        return t.value;
+    }
+
     @Override public boolean
     peekRead(String suspected) throws CompileException, IOException {
 
@@ -225,41 +239,10 @@ class TokenStreamImpl implements TokenStream {
         return -1;
     }
 
-    @Override public boolean
-    peekEof() throws CompileException, IOException {
-        return this.peek().type == TokenType.END_OF_INPUT;
-    }
-
     @Override @Nullable public String
     peekIdentifier() throws CompileException, IOException {
         Token t = this.peek();
         return t.type == TokenType.IDENTIFIER ? t.value : null;
-    }
-
-    @Override public boolean
-    peekLiteral() throws CompileException, IOException {
-        return this.peek(new TokenType[] {
-            TokenType.INTEGER_LITERAL, TokenType.FLOATING_POINT_LITERAL, TokenType.BOOLEAN_LITERAL,
-            TokenType.CHARACTER_LITERAL, TokenType.STRING_LITERAL, TokenType.NULL_LITERAL,
-        }) != -1;
-    }
-
-    @Override public String
-    readIdentifier() throws CompileException, IOException {
-        Token t = this.read();
-        if (t.type != TokenType.IDENTIFIER) {
-            throw this.compileException("Identifier expected instead of '" + t.value + "'");
-        }
-        return t.value;
-    }
-
-    @Override public String
-    readOperator() throws CompileException, IOException {
-        Token t = this.read();
-        if (t.type != TokenType.OPERATOR) {
-            throw this.compileException("Operator expected instead of '" + t.value + "'");
-        }
-        return t.value;
     }
 
     private static int

@@ -743,7 +743,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     parseScript(Parser parser, List<Java.BlockStatement> mainStatements, List<Java.MethodDeclarator> localMethods)
     throws CompileException, IOException {
 
-        while (!parser.peekEof()) {
+        while (!parser.peek(TokenType.END_OF_INPUT)) {
             ScriptEvaluator.parseScriptStatement(parser, mainStatements, localMethods);
         }
     }
@@ -776,11 +776,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         // Statement?
         if (
             (parser.peekIdentifier() != null && parser.peekNextButOne(":"))
-            || parser.peek(new String[] {
+            || parser.peek(
                 "if", "for", "while", "do", "try", "switch", "synchronized",
                 "return", "throw", "break", "continue", "assert",
                 "{", ";"
-            }) != -1
+            ) != -1
         ) {
             mainStatements.add(parser.parseStatement());
             return;
@@ -802,7 +802,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
         // "void" method declaration (without type parameters).
         if (parser.peekRead("void")) {
-            String name = parser.readIdentifier();
+            String name = parser.read(TokenType.IDENTIFIER);
             localMethods.add(parser.parseMethodDeclarationRest(
                 null,                                                 // optionalDocComment
                 modifiers,                                            // modifiers
@@ -818,13 +818,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             Type methodOrVariableType = parser.parseType();
 
             // Modifiers Type Identifier MethodDeclarationRest ';'
-            if (parser.peek().type == TokenType.IDENTIFIER && parser.peekNextButOne("(")) {
+            if (parser.peek(TokenType.IDENTIFIER) && parser.peekNextButOne("(")) {
                 localMethods.add(parser.parseMethodDeclarationRest(
-                    null,                   // optionalDocComment
-                    modifiers,              // modifiers
-                    null,                   // optionalTypeParameters
-                    methodOrVariableType,   // type
-                    parser.readIdentifier() // name
+                    null,                             // optionalDocComment
+                    modifiers,                        // modifiers
+                    null,                             // optionalTypeParameters
+                    methodOrVariableType,             // type
+                    parser.read(TokenType.IDENTIFIER) // name
                 ));
                 return;
             }
@@ -854,13 +854,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         Type methodOrVariableType = a.toTypeOrCompileException();
 
         // [ Modifiers ] Expression identifier MethodDeclarationRest
-        if (parser.peek().type == TokenType.IDENTIFIER && parser.peekNextButOne("(")) {
+        if (parser.peek(TokenType.IDENTIFIER) && parser.peekNextButOne("(")) {
             localMethods.add(parser.parseMethodDeclarationRest(
-                null,                   // optionalDocComment
-                modifiers,              // modifiers
-                null,                   // optionalTypeParameters
-                methodOrVariableType,   // type
-                parser.readIdentifier() // name
+                null,                             // optionalDocComment
+                modifiers,                        // modifiers
+                null,                             // optionalTypeParameters
+                methodOrVariableType,             // type
+                parser.read(TokenType.IDENTIFIER) // name
             ));
             return;
         }
@@ -1129,7 +1129,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
         // Parse the script statements into a block.
         Java.Block block = new Java.Block(scanner.location());
-        while (!parser.peekEof()) block.addStatement(parser.parseBlockStatement());
+        while (!parser.peek(TokenType.END_OF_INPUT)) block.addStatement(parser.parseBlockStatement());
 
         // Traverse the block for ambiguous names and guess which of them are parameter names.
         final Set<String> localVariableNames = new HashSet<String>();

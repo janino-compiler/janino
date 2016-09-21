@@ -171,7 +171,7 @@ class StringPattern {
     /**
      * A {@link StringPattern} that matches any subject.
      */
-    public static final StringPattern[] PATTERNS_ALL  = new StringPattern[] { new StringPattern("*") };
+    public static final StringPattern[] PATTERNS_ALL = { new StringPattern("*") };
 
     /**
      * A {@link StringPattern} that matches no subject whatsoever.

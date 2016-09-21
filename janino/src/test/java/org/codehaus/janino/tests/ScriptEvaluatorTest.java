@@ -62,8 +62,8 @@ class ScriptEvaluatorTest {
         IScriptEvaluator se = new ScriptEvaluator();
         try {
             se.cook(new String[] {
-                    "void meth() {}\n",
-                    "void meth() {}\n"
+                "void meth() {}\n",
+                "void meth() {}\n"
             });
             Assert.fail("Compilation exception expected");
         } catch (ClassFormatError cfe) {

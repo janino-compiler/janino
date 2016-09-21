@@ -49,7 +49,7 @@ class ShippingCost {
         }
 
         // Convert command line argument to call argument "total".
-        Object[] arguments = new Object[] { new Double(args[0]) };
+        Object[] arguments = { new Double(args[0]) };
 
         // Create "ExpressionEvaluator" object.
         IExpressionEvaluator ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();

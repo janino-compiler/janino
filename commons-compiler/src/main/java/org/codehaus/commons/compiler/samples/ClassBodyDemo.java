@@ -76,8 +76,8 @@ class ClassBodyDemo {
         Class<?> c = cbe.getClazz();
 
         // Invoke the "public static main(String[])" method.
-        Method m           = c.getMethod("main", new Class[] { String[].class });
-        Object returnValue = m.invoke(null, new Object[] { arguments });
+        Method m           = c.getMethod("main", String[].class);
+        Object returnValue = m.invoke(null, (Object) arguments);
 
         // If non-VOID, print the return value.
         if (m.getReturnType() != void.class) {
