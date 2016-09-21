@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,8 +64,8 @@ class JlsTest extends JaninoTestSuite {
         super(compilerFactory);
     }
 
-    @Before
-    public void
+    @SuppressWarnings("static-method") // JUNIT does not like it when "setUp()" is STATIC.
+    @Before public void
     setUp() throws Exception {
 
         // Optionally print class file disassemblies to the console.
@@ -134,7 +135,12 @@ class JlsTest extends JaninoTestSuite {
     @Test public void
     test_3_10_1__IntegerLiterals_octal() throws Exception {
         this.assertExpressionEvaluatesTrue("17 == 021L");
-        this.assertExpressionUncookable("17 == 029"); // Digit "9" not allowed in octal literal.
+        this.assertExpressionUncookable("17 == 029", Pattern.compile(
+            ""
+            + "Digit '9' not allowed in octal literal"
+            + "|"
+            + "compiler.err.int.number.too.large"
+        ));
     }
 
     @Test public void
@@ -160,6 +166,13 @@ class JlsTest extends JaninoTestSuite {
 
     @Test public void
     test_3_10_1__IntegerLiterals_binary() throws Exception {
+
+        // "Binary numeric literals" is a Java 7 feature, so JDKs before 1.7 don't support it.
+        Assume.assumeFalse(
+            this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk")
+            && System.getProperty("java.version").matches("1\\.[1-6].*")
+        );
+
         this.assertExpressionEvaluatable("0b111");
         this.assertExpressionEvaluatesTrue("0b111 == 7");
         this.assertExpressionEvaluatesTrue("0b0000111 == 7");
@@ -180,6 +193,14 @@ class JlsTest extends JaninoTestSuite {
 
     @Test public void
     test_3_10_1__IntegerLiterals_underscores() throws Exception {
+
+        // "Underscores in numeric literals" is a Java 7 feature, so JDKs before 1.7 don't support
+        // it.
+        Assume.assumeFalse(
+            this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk")
+            && System.getProperty("java.version").matches("1\\.[1-6].*")
+        );
+
         this.assertExpressionEvaluatesTrue("1_23 == 12_3");
         this.assertExpressionEvaluatesTrue("1__3 == 13");
     }
@@ -220,6 +241,14 @@ class JlsTest extends JaninoTestSuite {
 
     @Test public void
     test_3_10_2__FloatingPointLiterals_underscores() throws Exception {
+
+        // "Underscores in numeric literals" is a Java 7 feature, so JDKs before 1.7 don't support
+        // it.
+        Assume.assumeFalse(
+            this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk")
+            && System.getProperty("java.version").matches("1\\.[1-6].*")
+        );
+
         this.assertExpressionEvaluatesTrue("1___0.1___0 == 10.1");
     }
 
@@ -504,7 +533,9 @@ class JlsTest extends JaninoTestSuite {
                 ""
                 + "The return type of.*is incompatible with"
                 + "|"
-                + "toString\\(\\) in  cannot override toString\\(\\) in java.lang.Object; attempting to use incompatible return type" // SUPPRESS CHECKSTYLE LineLength
+                + "compiler.err.override.incompatible.ret"
+                + "|"
+                + "attempting to use incompatible return type"
             )
         );
     }
@@ -935,6 +966,8 @@ class JlsTest extends JaninoTestSuite {
                 "Assignment conversion not possible from type \"int\" to type \"short\""
                 + "|"
                 + "possible loss of precision"
+                + "|"
+                + "possible lossy conversion from int to short"
             )
         );
 
@@ -1042,6 +1075,11 @@ class JlsTest extends JaninoTestSuite {
 
     @Test public void
     test_14_20_1__ExecutionOfTryCatch__4() throws Exception {
+
+        // JAVAC does not detect this condition although, I believe, it should, according to the
+        // JLS.
+        Assume.assumeFalse(this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk"));
+
         this.assertClassBodyUncookable(
             ""
             + "static void meth() throws java.io.FileNotFoundException {\n"
@@ -1052,7 +1090,7 @@ class JlsTest extends JaninoTestSuite {
             + "        meth();\n"
             + "    } catch (java.io.FileNotFoundException fnfe) {\n"
             + "        return false;\n"
-            + "    } catch (java.io.IOException ioe) {\n" // <= Not thrown by 'meth()', but JDK 6 doesn't detect that
+            + "    } catch (java.io.IOException ioe) {\n" // <= Not thrown by 'meth()', but JDKs 6...8 don't detect that
             + "        return false;\n"
             + "    } catch (Exception e) {\n"
             + "        return false;\n"
@@ -1388,8 +1426,8 @@ class JlsTest extends JaninoTestSuite {
 
         this.assertClassBodyUncookable(
             ""
-            + "public static boolean main() {\n"
-            + "    return meth((byte)1, (byte)2) == 1;\n"
+            + "public static Object main() {\n"
+            + "    return meth((byte) 1, (byte) 2);\n"
             + "}\n"
             + "\n"
             + "static int meth(byte...a) {\n"
@@ -1488,6 +1526,10 @@ class JlsTest extends JaninoTestSuite {
         );
         this.assertExpressionEvaluatesTrue("1 + 2 + \" fiddlers\" == \"3 fiddlers\"");
         this.assertExpressionEvaluatesTrue("\"fiddlers \" + 1 + 2 == \"fiddlers 12\"");
+
+        // JAVAC does not supports "super-long string literals".
+        Assume.assumeFalse(this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk"));
+
         for (int i = 65530; i <= 65537; ++i) {
             char[] ca = new char[i];
             Arrays.fill(ca, 'x');

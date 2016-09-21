@@ -360,47 +360,52 @@ class JaninoTestSuite {
 
         /**
          * Asserts that cooking issues an error.
+         *
+         * @return The compilation error message
          */
-        protected void
+        protected String
         assertUncookable() throws Exception {
+
             try {
                 this.compile();
             } catch (CompileException ce) {
-                return; // SUPPRESS CHECKSTYLE AvoidHidingCause
+                return ce.getMessage();
             }
-            Assert.fail("Should have issued an error, but compiled successfully");
+
+            try {
+                Assert.fail("Should have issued an error, but compiled successfully, and evaluated to \"" + this.execute() + "\"");
+            } catch (Exception e) {
+                Assert.fail("Should have issued an error, but compiled successfully");
+            }
+            return "S.N.O.";
         }
 
         /**
-         * Asserts that cooking issues an error, and the error message contains the <var>messageInfix</var>.
+         * Asserts that cooking issues an error, and that the error message contains the
+         * <var>messageInfix</var>.
          */
         protected void
         assertUncookable(String messageInfix) throws Exception {
-            try {
-                this.compile();
-            } catch (CompileException ce) {
-                if (!ce.getMessage().contains(messageInfix)) {
-                    Assert.fail("Error message '" + ce.getMessage() + "' does not contain'" + messageInfix + "'");
-                }
-                return;
+
+            String errorMessage = this.assertUncookable();
+
+            if (!errorMessage.contains(messageInfix)) {
+                Assert.fail("Error message '" + errorMessage + "' does not contain '" + messageInfix + "'");
             }
-            Assert.fail("Should have issued an error, but compiled successfully");
         }
 
         /**
-         * Asserts that cooking issues an error, and the error message contains the a match of <var>messageRegex</var>.
+         * Asserts that cooking issues an error, and that the error message contains a match of
+         * <var>messageRegex</var>.
          */
         protected void
-        assertUncookable(Pattern messageRegex) throws Exception {
-            try {
-                this.compile();
-            } catch (CompileException ce) {
-                if (!messageRegex.matcher(ce.getMessage()).find()) {
-                    Assert.fail("Error message '" + ce.getMessage() + "' does not contain'" + messageRegex + "'");
-                }
-                return;
+        assertUncookable(@Nullable Pattern messageRegex) throws Exception {
+
+            String errorMessage = this.assertUncookable();
+
+            if (messageRegex != null && !messageRegex.matcher(errorMessage).find()) {
+                Assert.fail("Error message '" + errorMessage + "' does not contain a match of '" + messageRegex + "'");
             }
-            Assert.fail("Should have issued an error, but compiled successfully");
         }
 
         /**
@@ -430,7 +435,7 @@ class JaninoTestSuite {
         }
 
         /**
-         * Asserts that cooking completes normally and executing returns TRUE.
+         * Asserts that cooking completes normally and executing returns {@link Boolean#TRUE}.
          */
         protected void
         assertResultTrue() throws Exception {
