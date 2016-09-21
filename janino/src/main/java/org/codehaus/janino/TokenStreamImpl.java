@@ -52,12 +52,6 @@ class TokenStreamImpl implements TokenStream {
     private Token
     produceToken() throws CompileException, IOException {
 
-        if (this.pushback != null) {
-            Token result = this.pushback;
-            this.pushback = null;
-            return result;
-        }
-
         for (;;) {
             Token token = this.scanner.produce();
 
@@ -81,7 +75,6 @@ class TokenStreamImpl implements TokenStream {
             }
         }
     }
-    @Nullable private Token pushback;
 
     /**
      * Gets the text of the doc comment (a.k.a. "JAVADOC comment") preceeding the next token.
@@ -96,8 +89,6 @@ class TokenStreamImpl implements TokenStream {
     }
 
     @Nullable private Token nextToken, nextButOneToken;
-
-    // Token-level methods.
 
     @Override public Token
     peek() throws CompileException, IOException {
@@ -205,6 +196,25 @@ class TokenStreamImpl implements TokenStream {
         return t.value;
     }
 
+    @Override public int
+    read(TokenType... expected) throws CompileException, IOException {
+
+        Token t = this.read();
+
+        TokenType type = t.type;
+
+        int idx = TokenStreamImpl.indexOf(expected, type);
+        if (idx != -1) return idx;
+
+        throw this.compileException(
+            "One of '"
+            + TokenStreamImpl.join(expected, " ")
+            + "' expected instead of '"
+            + type
+            + "'"
+        );
+    }
+
     @Override public boolean
     peekRead(String suspected) throws CompileException, IOException {
 
@@ -237,10 +247,41 @@ class TokenStreamImpl implements TokenStream {
         return -1;
     }
 
-    @Override @Nullable public String
-    peekIdentifier() throws CompileException, IOException {
-        Token t = this.peek();
-        return t.type == TokenType.IDENTIFIER ? t.value : null;
+    @Override public boolean
+    peekRead(TokenType suspected) throws CompileException, IOException {
+
+        if (this.nextToken != null) {
+            if (this.nextToken.type != suspected) return false;
+            this.nextToken       = this.nextButOneToken;
+            this.nextButOneToken = null;
+            return true;
+        }
+
+        Token t = this.produceToken();
+        if (t.type == suspected) return true;
+
+        this.nextToken = t;
+        return false;
+    }
+
+    @Override public int
+    peekRead(TokenType... suspected) throws CompileException, IOException {
+
+        if (this.nextToken != null) {
+            int idx = TokenStreamImpl.indexOf(suspected, this.nextToken.type);
+            if (idx != -1) {
+                this.nextToken       = this.nextButOneToken;
+                this.nextButOneToken = null;
+            }
+            return idx;
+        }
+
+        Token t   = this.produceToken();
+        int   idx = TokenStreamImpl.indexOf(suspected, t.type);
+        if (idx != -1) return idx;
+
+        this.nextToken = t;
+        return -1;
     }
 
     private static int
@@ -292,15 +333,15 @@ class TokenStreamImpl implements TokenStream {
     compileException(String message) { return new CompileException(message, this.scanner.location()); }
 
     private static String
-    join(@Nullable String[] sa, String separator) {
+    join(@Nullable Object[] oa, String glue) {
 
-        if (sa == null) return ("(null)");
+        if (oa == null) return ("(null)");
 
-        if (sa.length == 0) return ("(zero length array)");
-        StringBuilder sb = new StringBuilder(sa[0]);
-        for (int i = 1; i < sa.length; ++i) {
-            sb.append(separator).append(sa[i]);
-        }
+        if (oa.length == 0) return ("(zero length array)");
+
+        StringBuilder sb = new StringBuilder().append(oa[0]);
+        for (int i = 1; i < oa.length; ++i) sb.append(glue).append(oa[i]);
+
         return sb.toString();
     }
 }

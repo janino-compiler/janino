@@ -331,7 +331,7 @@ class JGrep {
             if (p.peekRead("*")) {
                 sb.append('*');
             } else
-            if (p.peekIdentifier() != null) {
+            if (p.peek(TokenType.IDENTIFIER)) {
                 sb.append(p.read(TokenType.IDENTIFIER));
             } else
             {

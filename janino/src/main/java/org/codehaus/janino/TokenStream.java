@@ -45,12 +45,6 @@ interface TokenStream {
     peek() throws CompileException, IOException;
 
     /**
-     * @return The next-but-one token, but consumes neither the next nor the next-but-one token
-     */
-    Token
-    peekNextButOne() throws CompileException, IOException;
-
-    /**
      * @return Whether the value of the next token equals <var>suspected</var>; does not consume the next token
      */
     boolean
@@ -80,6 +74,12 @@ interface TokenStream {
      */
     int
     peek(TokenType... suspected) throws CompileException, IOException;
+
+    /**
+     * @return The next-but-one token, but consumes neither the next nor the next-but-one token
+     */
+    Token
+    peekNextButOne() throws CompileException, IOException;
 
     /**
      * @return Whether the value of the next-but-one token equals the <var>suspected</var>; consumes neither the next
@@ -114,32 +114,55 @@ interface TokenStream {
     read(String... expected) throws CompileException, IOException;
 
     /**
-     * @return                  The value of the next token, who's type is <var>expected</var>
-     * @throws CompileException The next token's type is not <var>expected</var>
+     * Verifies that the type of the next token is the <var>expected</var>, and consumes the token.
+     *
+     * @return                  The value of the next token
+     * @throws CompileException The next token's type is not the <var>expected</var>
      */
     String
     read(TokenType expected) throws CompileException, IOException;
 
     /**
-     * @return Whether the value of the next token equals the <var>suspected</var>; if so, it consumes the next token
-     * @throws CompileException
-     * @throws IOException
+     * Verifies that the type of the next token is one of the <var>expected</var>, and consumes the token.
+     *
+     * @return                  The index of the first of the <var>expected</var> types that is the next token's type;
+     *                          -1 if the type of the next token is none of the <var>expected</var>
+     * @throws CompileException The next token's type is none of the <var>expected</var>
+     */
+    int
+    read(TokenType... expected) throws CompileException, IOException;
+
+    /**
+     * Checks whether the value of the next token equals the <var>suspected</var>; if so, consumes the token.
      */
     boolean
     peekRead(String suspected) throws CompileException, IOException;
 
     /**
-     * @return The index of the elements that equals the next token, or -1 iff the next token is none of the
-     *         <var>suspected</var>
+     * Checks whether the value of the next token is one of the <var>suspected</var>; if so, consumes the token.
+     *
+     * @return The index of the first of the <var>suspected</var> that equals the next token's value; -1 iff the next
+     *         token's value equals none of the <var>suspected</var>
      */
     int
     peekRead(String... suspected) throws CompileException, IOException;
 
     /**
-     * @return {@code null} iff the next token is not an identifier, otherwise the value of the identifier token
+     * Checks whether the type of the next token is the <var>suspected</var>; if so, consumes the token.
+     *
+     * @return Whether the type of the next token is the <var>suspected</var>
      */
-    @Nullable String
-    peekIdentifier() throws CompileException, IOException;
+    boolean
+    peekRead(TokenType suspected) throws CompileException, IOException;
+
+    /**
+     * Checks whether the type of the next token is one of the <var>suspected</var>; if so, consumes the token.
+     *
+     * @return The index of the elements that is the next token's type, or -1 iff the type of next token is none of
+     *         the <var>suspected</var>
+     */
+    int
+    peekRead(TokenType... suspected) throws CompileException, IOException;
 
     /**
      * By default, warnings are discarded, but an application my install a {@link WarningHandler}.

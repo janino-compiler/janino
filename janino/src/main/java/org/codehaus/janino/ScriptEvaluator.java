@@ -775,7 +775,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
         // Statement?
         if (
-            (parser.peekIdentifier() != null && parser.peekNextButOne(":"))
+            (parser.peek(TokenType.IDENTIFIER) && parser.peekNextButOne(":"))
             || parser.peek(
                 "if", "for", "while", "do", "try", "switch", "synchronized",
                 "return", "throw", "break", "continue", "assert",

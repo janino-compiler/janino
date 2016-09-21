@@ -462,7 +462,7 @@ class Parser {
         if (!this.peekRead("(")) return new Java.MarkerAnnotation(type);
 
         // Single-element annotation?
-        if (this.peekIdentifier() == null || !this.peekNextButOne("=")) {
+        if (!this.peek(TokenType.IDENTIFIER) || !this.peekNextButOne("=")) {
             Java.ElementValue elementValue = this.parseElementValue();
             this.read(")");
             return new Java.SingleElementAnnotation(type, elementValue);
@@ -1229,7 +1229,7 @@ class Parser {
                 "byte", "char", "short", "int", "long", "float", "double", "boolean"
             ) != -1
             || this.peekLiteral()
-            || this.peekIdentifier() != null
+            || this.peek(TokenType.IDENTIFIER)
         ) {
             Atom a = this.parseExpression();
             if (a instanceof ConstructorInvocation) {
@@ -1237,7 +1237,7 @@ class Parser {
                 optionalConstructorInvocation = (ConstructorInvocation) a;
             } else {
                 Statement s;
-                if (this.peekIdentifier() != null) {
+                if (this.peek(TokenType.IDENTIFIER)) {
                     Type variableType = a.toTypeOrCompileException();
                     s = new LocalVariableDeclarationStatement(
                         a.getLocation(),                // location
@@ -1501,10 +1501,7 @@ class Parser {
 
         // Statement?
         if (
-            (
-                this.peekIdentifier() != null
-                && this.peekNextButOne(":")
-            )
+            (this.peek(TokenType.IDENTIFIER) && this.peekNextButOne(":"))
             || this.peek(
                 "if", "for", "while", "do", "try", "switch", "synchronized",
                 "return", "throw", "break", "continue", "assert"
@@ -1653,7 +1650,7 @@ class Parser {
      */
     public Statement
     parseStatement() throws CompileException, IOException {
-        if (this.peekIdentifier() != null && this.peekNextButOne(":")) {
+        if (this.peek(TokenType.IDENTIFIER) && this.peekNextButOne(":")) {
             return this.parseLabeledStatement();
         }
 
@@ -1756,7 +1753,7 @@ class Parser {
             ) != -1) {
                 Modifiers modifiers = this.parseModifiers();
                 Type      type      = this.parseType();
-                if (this.peekIdentifier() != null && this.peekNextButOne(":")) {
+                if (this.peek(TokenType.IDENTIFIER) && this.peekNextButOne(":")) {
 
                     // 'for' '(' [ Modifiers ] Type identifier ':' Expression ')' Statement
                     final String   name         = this.read(TokenType.IDENTIFIER);
@@ -1789,7 +1786,7 @@ class Parser {
 
             Atom a = this.parseExpression();
 
-            if (this.peekIdentifier() != null) {
+            if (this.peek(TokenType.IDENTIFIER)) {
                 if (this.peekNextButOne(":")) {
 
                     // 'for' '(' Expression identifier ':' Expression ')' Statement
@@ -2076,7 +2073,7 @@ class Parser {
         final Location location = this.location();
         this.read("break");
         String optionalLabel = null;
-        if (this.peekIdentifier() != null) optionalLabel = this.read(TokenType.IDENTIFIER);
+        if (this.peek(TokenType.IDENTIFIER)) optionalLabel = this.read(TokenType.IDENTIFIER);
         this.read(";");
         return new BreakStatement(location, optionalLabel);
     }
@@ -2091,7 +2088,7 @@ class Parser {
         final Location location = this.location();
         this.read("continue");
         String optionalLabel = null;
-        if (this.peekIdentifier() != null) optionalLabel = this.read(TokenType.IDENTIFIER);
+        if (this.peek(TokenType.IDENTIFIER)) optionalLabel = this.read(TokenType.IDENTIFIER);
         this.read(";");
         return new ContinueStatement(location, optionalLabel);
     }
@@ -2706,7 +2703,7 @@ class Parser {
 
             if (
                 this.peekLiteral()
-                || this.peekIdentifier() != null
+                || this.peek(TokenType.IDENTIFIER)
                 || this.peek("(", "~", "!") != -1
                 || this.peek("this", "super", "new") != -1
             ) {
@@ -2728,7 +2725,7 @@ class Parser {
             return this.parseLiteral();
         }
 
-        if (this.peekIdentifier() != null) {
+        if (this.peek(TokenType.IDENTIFIER)) {
             Location location = this.location();
             String[] qi       = this.parseQualifiedIdentifier();
             if (this.peek("(")) {
@@ -3140,20 +3137,19 @@ class Parser {
     // Token-level methods.
 
     // Shorthand for the various "TokenStream" methods.       SUPPRESS CHECKSTYLE LineLength|JavadocMethod:16
-    public Token            peek() throws CompileException, IOException                           { return this.tokenStream.peek(); }
-    public Token            peekNextButOne() throws CompileException, IOException                 { return this.tokenStream.peekNextButOne(); }
-    public Token            read() throws CompileException, IOException                           { return this.tokenStream.read(); }
-    public boolean          peek(String suspected) throws CompileException, IOException           { return this.tokenStream.peek(suspected); }
-    public int              peek(String... suspected) throws CompileException, IOException        { return this.tokenStream.peek(suspected); }
-    public boolean          peek(TokenType suspected) throws CompileException, IOException        { return this.tokenStream.peek(suspected); }
-    public int              peek(TokenType... suspected) throws CompileException, IOException     { return this.tokenStream.peek(suspected); }
-    public boolean          peekNextButOne(String suspected) throws CompileException, IOException { return this.tokenStream.peekNextButOne(suspected); }
-    public void             read(String expected) throws CompileException, IOException            { this.tokenStream.read(expected); }
-    public int              read(String... expected) throws CompileException, IOException         { return this.tokenStream.read(expected); }
-    public String           read(TokenType expected) throws CompileException, IOException         { return this.tokenStream.read(expected); }
-    public boolean          peekRead(String suspected) throws CompileException, IOException       { return this.tokenStream.peekRead(suspected); }
-    public int              peekRead(String... suspected) throws CompileException, IOException    { return this.tokenStream.peekRead(suspected); }
-    @Nullable public String peekIdentifier() throws CompileException, IOException                 { return this.tokenStream.peekIdentifier(); }
+    public Token   peek()                           throws CompileException, IOException { return this.tokenStream.peek(); }
+    public Token   read()                           throws CompileException, IOException { return this.tokenStream.read(); }
+    public boolean peek(String suspected)           throws CompileException, IOException { return this.tokenStream.peek(suspected); }
+    public int     peek(String... suspected)        throws CompileException, IOException { return this.tokenStream.peek(suspected); }
+    public boolean peek(TokenType suspected)        throws CompileException, IOException { return this.tokenStream.peek(suspected); }
+    public int     peek(TokenType... suspected)     throws CompileException, IOException { return this.tokenStream.peek(suspected); }
+    public Token   peekNextButOne()                 throws CompileException, IOException { return this.tokenStream.peekNextButOne(); }
+    public boolean peekNextButOne(String suspected) throws CompileException, IOException { return this.tokenStream.peekNextButOne(suspected); }
+    public void    read(String expected)            throws CompileException, IOException { this.tokenStream.read(expected); }
+    public int     read(String... expected)         throws CompileException, IOException { return this.tokenStream.read(expected); }
+    public String  read(TokenType expected)         throws CompileException, IOException { return this.tokenStream.read(expected); }
+    public boolean peekRead(String suspected)       throws CompileException, IOException { return this.tokenStream.peekRead(suspected); }
+    public int     peekRead(String... suspected)    throws CompileException, IOException { return this.tokenStream.peekRead(suspected); }
 
     public boolean
     peekLiteral() throws CompileException, IOException {

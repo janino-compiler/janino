@@ -403,11 +403,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
         assert this.classLoaderIClassLoader == null;
 
-        this.classLoaderIClassLoader = new ClassLoaderIClassLoader(this.parentClassLoader);
+        IClassLoader icl = (this.classLoaderIClassLoader = new ClassLoaderIClassLoader(this.parentClassLoader));
         try {
 
             // Compile compilation unit to class files.
-            UnitCompiler unitCompiler = new UnitCompiler(compilationUnit, this.classLoaderIClassLoader);
+            UnitCompiler unitCompiler = new UnitCompiler(compilationUnit, icl);
             unitCompiler.setCompileErrorHandler(this.optionalCompileErrorHandler);
             unitCompiler.setWarningHandler(this.optionalWarningHandler);
             ClassFile[] classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
