@@ -200,6 +200,7 @@ import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
 import org.codehaus.janino.util.Annotatable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ElementValue;
+import org.codehaus.janino.util.ClassFile.ClassFileException;
 
 /**
  * This class actually implements the Java compiler. It is associated with exactly one compilation unit which it
@@ -352,6 +353,8 @@ class UnitCompiler {
             for (PackageMemberTypeDeclaration pmtd : this.compilationUnit.packageMemberTypeDeclarations) {
                 try {
                     this.compile(pmtd);
+                } catch (ClassFileException cfe) {
+                    throw new CompileException(cfe.getMessage(), pmtd.getLocation(), cfe);
                 } catch (RuntimeException re) {
                     throw new RuntimeException("Compiling \"" + pmtd + "\": " + re.getMessage(), re);
                 }

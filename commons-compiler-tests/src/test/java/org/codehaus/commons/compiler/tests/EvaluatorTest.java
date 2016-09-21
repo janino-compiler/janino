@@ -69,7 +69,7 @@ class EvaluatorTest extends JaninoTestSuite {
     public
     EvaluatorTest(ICompilerFactory compilerFactory) { super(compilerFactory); }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({ "unused", "static-method" })
     @Before
     public void
     setUp() throws Exception {
@@ -538,7 +538,7 @@ class EvaluatorTest extends JaninoTestSuite {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
             for (int j = 0; j < repetitionss[i]; ++j) {
-                sb.append("boolean _v").append(Integer.toString(j)).append(";\n");
+                sb.append("boolean _v").append(j).append(";\n");
             }
             sb.append(postamble);
 
@@ -552,8 +552,11 @@ class EvaluatorTest extends JaninoTestSuite {
                 try {
                     sc.cook(sb.toString());
                     Assert.fail("Should have issued an error, but compiled successfully");
-                } catch (RuntimeException re) {
-                    Assert.assertTrue(re.getMessage(), re.getMessage().contains("grown past JVM limit of 0xFFFF"));
+                } catch (CompileException ce) {
+                    Assert.assertTrue(ce.getMessage(), (
+                        ce.getMessage().contains("too many constants (compiler.err.limit.pool)")
+                        || ce.getMessage().contains("grown past JVM limit of 0xFFFF")
+                    ));
                 }
             }
         }
