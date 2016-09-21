@@ -135,12 +135,12 @@ class TokenStreamImpl implements TokenStream {
     }
 
     @Override public int
-    peek(String[] suspected) throws CompileException, IOException {
+    peek(String... suspected) throws CompileException, IOException {
         return TokenStreamImpl.indexOf(suspected, this.peek().value);
     }
 
     @Override public int
-    peek(TokenType[] suspected) throws CompileException, IOException {
+    peek(TokenType... suspected) throws CompileException, IOException {
         return TokenStreamImpl.indexOf(suspected, this.peek().type);
     }
 
@@ -156,7 +156,7 @@ class TokenStreamImpl implements TokenStream {
     }
 
     @Override public int
-    read(String[] expected) throws CompileException, IOException {
+    read(String... expected) throws CompileException, IOException {
 
         Token t = this.read();
 
@@ -210,7 +210,7 @@ class TokenStreamImpl implements TokenStream {
     }
 
     @Override public int
-    peekRead(String[] suspected) throws CompileException, IOException {
+    peekRead(String... suspected) throws CompileException, IOException {
         if (this.nextToken != null) {
             int idx = TokenStreamImpl.indexOf(suspected, this.nextToken.value);
             if (idx == -1) return -1;

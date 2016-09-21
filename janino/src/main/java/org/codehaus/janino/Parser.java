@@ -339,7 +339,7 @@ class Parser {
     parsePackageMemberTypeDeclarationRest(@Nullable String optionalDocComment, Modifiers modifiers)
     throws CompileException, IOException {
 
-        switch (this.read(new String[] { "class", "enum", "interface", "@" })) {
+        switch (this.read("class", "enum", "interface", "@")) {
 
         case 0: // "class"
             if (optionalDocComment == null) this.warning("CDCM", "Class doc comment missing", this.location());
@@ -475,7 +475,7 @@ class Parser {
             List<Java.ElementValuePair> evps = new ArrayList<Java.ElementValuePair>();
             do {
                 evps.add(this.parseElementValuePair());
-            } while (this.read(new String[] { ",", ")" }) == 0);
+            } while (this.read(",", ")") == 0);
             elementValuePairs = (ElementValuePair[]) evps.toArray(new Java.ElementValuePair[evps.size()]);
         }
 
@@ -708,7 +708,7 @@ class Parser {
     parseEnumBody(Java.EnumDeclaration enumDeclaration) throws CompileException, IOException {
         this.read("{");
 
-        while (this.peek(new String[] { ";", "}" }) == -1) {
+        while (this.peek(";", "}") == -1) {
             enumDeclaration.addConstant(this.parseEnumConstant());
             if (!this.peekRead(",")) break;
         }
@@ -1223,10 +1223,10 @@ class Parser {
         ConstructorInvocation optionalConstructorInvocation = null;
         List<BlockStatement>  statements                    = new ArrayList<BlockStatement>();
         if (
-            this.peek(new String[] {
+            this.peek(
                 "this", "super", "new", "void",
-                "byte", "char", "short", "int", "long", "float", "double", "boolean",
-            }) != -1
+                "byte", "char", "short", "int", "long", "float", "double", "boolean"
+            ) != -1
             || this.peekLiteral()
             || this.peekIdentifier() != null
         ) {
@@ -1381,7 +1381,7 @@ class Parser {
         do {
             if (hasEllipsis[0]) throw this.compileException("Only the last parameter may have an ellipsis");
             l.add(this.parseFormalParameter(hasEllipsis));
-        } while (this.read(new String[] { ",", ")" }) == 0);
+        } while (this.read(",", ")") == 0);
         return new FormalParameters(
             this.location(),                                              // location
             (FormalParameter[]) l.toArray(new FormalParameter[l.size()]), // parameters
@@ -1504,11 +1504,11 @@ class Parser {
                 this.peekIdentifier() != null
                 && this.peekNextButOne(":")
             )
-            || this.peek(new String[] {
+            || this.peek(
                 "if", "for", "while", "do", "try", "switch", "synchronized",
                 "return", "throw", "break", "continue", "assert"
-            }) != -1
-            || this.peek(new String[] { "{", ";" }) != -1
+            ) != -1
+            || this.peek("{", ";") != -1
         ) return this.parseStatement();
 
         // Local class declaration?
@@ -1527,7 +1527,7 @@ class Parser {
         }
 
         // Modifiers Type VariableDeclarators ';'
-        if (this.peek(new String[] { "final", "@" }) != -1) {
+        if (this.peek("final", "@") != -1) {
             LocalVariableDeclarationStatement lvds = new LocalVariableDeclarationStatement(
                 this.location(),                // location
                 this.parseModifiers(),          // modifiers
@@ -1750,9 +1750,9 @@ class Parser {
 
             // 'for' '(' Modifiers Type VariableDeclarators
             // 'for' '(' [ Modifiers ] PrimitiveType VariableDeclarators
-            if (this.peek(new String[] {
+            if (this.peek(
                 "final", "@", "byte", "short", "char", "int", "long", "float", "double", "boolean"
-            }) != -1) {
+            ) != -1) {
                 Modifiers modifiers = this.parseModifiers();
                 Type      type      = this.parseType();
                 if (this.peekIdentifier() != null && this.peekNextButOne(":")) {
@@ -1999,7 +1999,7 @@ class Parser {
                     throw this.compileException("\"case\" or \"default\" expected");
                 }
                 this.read(":");
-            } while (this.peek(new String[] { "case", "default" }) != -1);
+            } while (this.peek("case", "default") != -1);
 
             SwitchStatement.SwitchBlockStatementGroup sbsg = new SwitchStatement.SwitchBlockStatementGroup(
                 location2,                  // location
@@ -2151,9 +2151,9 @@ class Parser {
     parseType() throws CompileException, IOException {
 
         Type res;
-        switch (this.peekRead(new String[] {
+        switch (this.peekRead(
             "byte", "short", "char", "int", "long", "float", "double", "boolean"
-        })) {
+        )) {
         case 0:  res = new PrimitiveType(this.location(), Primitive.BYTE);    break;
         case 1:  res = new PrimitiveType(this.location(), Primitive.SHORT);   break;
         case 2:  res = new PrimitiveType(this.location(), Primitive.CHAR);    break;
@@ -2193,7 +2193,7 @@ class Parser {
 
         List<TypeParameter> l = new ArrayList<TypeParameter>();
         l.add(this.parseTypeParameter());
-        while (this.read(new String[] { ",", ">" }) == 0) {
+        while (this.read(",", ">") == 0) {
             l.add(this.parseTypeParameter());
         }
         return (TypeParameter[]) l.toArray(new TypeParameter[l.size()]);
@@ -2230,7 +2230,7 @@ class Parser {
 
         List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
         typeArguments.add(this.parseTypeArgument());
-        while (this.read(new String[] { ">", "," }) == 1) {
+        while (this.read(">", ",") == 1) {
             typeArguments.add(this.parseTypeArgument());
         }
         return (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()]);
@@ -2302,7 +2302,7 @@ class Parser {
     parseAssignmentExpression() throws CompileException, IOException  {
         Atom a = this.parseConditionalExpression();
         if (this.peek(
-            new String[] { "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" }
+            "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>="
         ) != -1) {
             final Lvalue lhs      = a.toLvalueOrCompileException();
             Location     location = this.location();
@@ -2447,7 +2447,7 @@ class Parser {
     parseEqualityExpression() throws CompileException, IOException  {
         Atom a = this.parseRelationalExpression();
 
-        while (this.peek(new String[] { "==", "!=" }) != -1) {
+        while (this.peek("==", "!=") != -1) {
             a = new BinaryOperation(
                 this.location(),                                              // location
                 a.toRvalueOrCompileException(),                               // lhs
@@ -2482,7 +2482,7 @@ class Parser {
                     this.parseType()
                 );
             } else
-            if (this.peek(new String[] { "<", ">", "<=", ">=" }) != -1) {
+            if (this.peek("<", ">", "<=", ">=") != -1) {
 
                 // ambiguous-name '<' '?' ...
                 if (a instanceof Java.AmbiguousName && this.peek("<") && this.peekNextButOne("?")) {
@@ -2499,7 +2499,7 @@ class Parser {
 
                 if ("<".equals(op) && a instanceof Java.AmbiguousName) {
 
-                    if (this.peek(new String[] { "<", ">", "," }) != -1) {
+                    if (this.peek("<", ">", ",") != -1) {
                         final String[] identifiers = ((Java.AmbiguousName) a).identifiers;
 
                         // '<' ShiftExpression [ TypeArguments ] ( '<' | '>' | ',' )
@@ -2515,7 +2515,7 @@ class Parser {
 
                         List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
                         typeArguments.add(ta);
-                        while (this.read(new String[] { ">", "," }) == 1) {
+                        while (this.read(">", ",") == 1) {
                             typeArguments.add(this.parseTypeArgument());
                         }
 
@@ -2549,7 +2549,7 @@ class Parser {
     parseShiftExpression() throws CompileException, IOException  {
         Atom a = this.parseAdditiveExpression();
 
-        while (this.peek(new String[] { "<<", ">>", ">>>" }) != -1) {
+        while (this.peek("<<", ">>", ">>>") != -1) {
             a = new BinaryOperation(
                 this.location(),                                            // location
                 a.toRvalueOrCompileException(),                             // lhs
@@ -2570,7 +2570,7 @@ class Parser {
     parseAdditiveExpression() throws CompileException, IOException  {
         Atom a = this.parseMultiplicativeExpression();
 
-        while (this.peek(new String[] { "+", "-" }) != -1) {
+        while (this.peek("+", "-") != -1) {
             a = new BinaryOperation(
                 this.location(),                                                  // location
                 a.toRvalueOrCompileException(),                                   // lhs
@@ -2591,7 +2591,7 @@ class Parser {
     parseMultiplicativeExpression() throws CompileException, IOException {
         Atom a = this.parseUnaryExpression();
 
-        while (this.peek(new String[] { "*", "/", "%" }) != -1) {
+        while (this.peek("*", "/", "%") != -1) {
             a = new BinaryOperation(
                 this.location(),                                         // location
                 a.toRvalueOrCompileException(),                          // lhs
@@ -2614,7 +2614,7 @@ class Parser {
      */
     public Atom
     parseUnaryExpression() throws CompileException, IOException {
-        if (this.peek(new String[] { "++", "--" }) != -1) {
+        if (this.peek("++", "--") != -1) {
             return new Crement(
                 this.location(),                                         // location
                 this.read().value,                                       // operator
@@ -2622,7 +2622,7 @@ class Parser {
             );
         }
 
-        if (this.peek(new String[] { "+", "-", "~", "!" }) != -1) {
+        if (this.peek("+", "-", "~", "!") != -1) {
             return new UnaryOperation(
                 this.location(),                                         // location
                 this.read().value,                                       // operator
@@ -2632,11 +2632,11 @@ class Parser {
 
         Atom a = this.parsePrimary();
 
-        while (this.peek(new String[] { ".", "[" }) != -1) {
+        while (this.peek(".", "[") != -1) {
             a = this.parseSelector(a);
         }
 
-        while (this.peek(new String[] { "++", "--" }) != -1) {
+        while (this.peek("++", "--") != -1) {
             a = new Crement(
                 this.location(),                // location
                 a.toLvalueOrCompileException(), // operand
@@ -2687,7 +2687,7 @@ class Parser {
     parsePrimary() throws CompileException, IOException {
         if (this.peekRead("(")) {
             if (
-                this.peek(new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double", }) != -1
+                this.peek("boolean", "char", "byte", "short", "int", "long", "float", "double") != -1
             ) {
                 // '(' PrimitiveType { '[]' } ')' UnaryExpression
                 Type type     = this.parseType();
@@ -2706,8 +2706,8 @@ class Parser {
             if (
                 this.peekLiteral()
                 || this.peekIdentifier() != null
-                || this.peek(new String[] { "(", "~", "!", }) != -1
-                || this.peek(new String[] { "this", "super", "new", }) != -1
+                || this.peek("(", "~", "!") != -1
+                || this.peek("this", "super", "new") != -1
             ) {
                 // '(' Expression ')' UnaryExpression
                 return new Cast(
@@ -2863,7 +2863,7 @@ class Parser {
         }
 
         // PrimitiveType
-        if (this.peek(new String[] { "boolean", "char", "byte", "short", "int", "long", "float", "double" }) != -1) {
+        if (this.peek("boolean", "char", "byte", "short", "int", "long", "float", "double") != -1) {
             Type res      = this.parseType();
             int  brackets = this.parseBracketsOpt();
             for (int i = 0; i < brackets; ++i) res = new ArrayType(res);
@@ -3143,13 +3143,13 @@ class Parser {
     public Token            peekNextButOne() throws CompileException, IOException                 { return this.tokenStream.peekNextButOne(); }
     public Token            read() throws CompileException, IOException                           { return this.tokenStream.read(); }
     public boolean          peek(String suspected) throws CompileException, IOException           { return this.tokenStream.peek(suspected); }
-    public int              peek(String[] suspected) throws CompileException, IOException         { return this.tokenStream.peek(suspected); }
-    public int              peek(TokenType[] suspected) throws CompileException, IOException      { return this.tokenStream.peek(suspected); }
+    public int              peek(String... suspected) throws CompileException, IOException        { return this.tokenStream.peek(suspected); }
+    public int              peek(TokenType... suspected) throws CompileException, IOException     { return this.tokenStream.peek(suspected); }
     public boolean          peekNextButOne(String suspected) throws CompileException, IOException { return this.tokenStream.peekNextButOne(suspected); }
     public void             read(String expected) throws CompileException, IOException            { this.tokenStream.read(expected); }
-    public int              read(String[] expected) throws CompileException, IOException          { return this.tokenStream.read(expected); }
+    public int              read(String... expected) throws CompileException, IOException         { return this.tokenStream.read(expected); }
     public boolean          peekRead(String suspected) throws CompileException, IOException       { return this.tokenStream.peekRead(suspected); }
-    public int              peekRead(String[] suspected) throws CompileException, IOException     { return this.tokenStream.peekRead(suspected); }
+    public int              peekRead(String... suspected) throws CompileException, IOException    { return this.tokenStream.peekRead(suspected); }
     public boolean          peekEof() throws CompileException, IOException                        { return this.tokenStream.peekEof(); }
     @Nullable public String peekIdentifier() throws CompileException, IOException                 { return this.tokenStream.peekIdentifier(); }
     public boolean          peekLiteral() throws CompileException, IOException                    { return this.tokenStream.peekLiteral(); }

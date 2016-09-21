@@ -72,7 +72,7 @@ interface TokenStream {
      *         value of the next token equals none of the <var>suspected</var>
      */
     int
-    peek(String[] suspected) throws CompileException, IOException;
+    peek(String... suspected) throws CompileException, IOException;
 
     /**
      * Checks whether the type of the next token is any of the <var>suspected</var>; does not consume the next token.
@@ -81,7 +81,7 @@ interface TokenStream {
      *         of the next token is none of the <var>suspected</var> types
      */
     int
-    peek(TokenType[] suspected) throws CompileException, IOException;
+    peek(TokenType... suspected) throws CompileException, IOException;
 
     /**
      * @return Whether the value of the next-but-one token equals the <var>suspected</var>; consumes neither the next
@@ -107,7 +107,7 @@ interface TokenStream {
      *                          the case where the scanner is at end-of-input)
      */
     int
-    read(String[] expected) throws CompileException, IOException;
+    read(String... expected) throws CompileException, IOException;
 
     /**
      * @return Whether the value of the next token equals the <var>suspected</var>; if so, it consumes the next token
@@ -122,7 +122,7 @@ interface TokenStream {
      *         <var>suspected</var>
      */
     int
-    peekRead(String[] suspected) throws CompileException, IOException;
+    peekRead(String... suspected) throws CompileException, IOException;
 
     /**
      * @return Whether the scanner is at end-of-input
