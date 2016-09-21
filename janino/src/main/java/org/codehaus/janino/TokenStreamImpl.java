@@ -114,21 +114,6 @@ class TokenStreamImpl implements TokenStream {
         return this.nextButOneToken;
     }
 
-    @Override public Token
-    read() throws CompileException, IOException {
-
-        if (this.nextToken == null) return this.produceToken();
-
-        final Token result = this.nextToken;
-        assert result != null;
-
-        this.nextToken       = this.nextButOneToken;
-        this.nextButOneToken = null;
-        return result;
-    }
-
-    // Peek/read/peekRead convenience methods.
-
     @Override public boolean
     peek(String suspected) throws CompileException, IOException {
         return this.peek().value.equals(suspected);
@@ -152,6 +137,19 @@ class TokenStreamImpl implements TokenStream {
     @Override public boolean
     peekNextButOne(String suspected) throws CompileException, IOException {
         return this.peekNextButOne().value.equals(suspected);
+    }
+
+    @Override public Token
+    read() throws CompileException, IOException {
+
+        if (this.nextToken == null) return this.produceToken();
+
+        final Token result = this.nextToken;
+        assert result != null;
+
+        this.nextToken       = this.nextButOneToken;
+        this.nextButOneToken = null;
+        return result;
     }
 
     @Override public void

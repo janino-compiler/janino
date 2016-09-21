@@ -51,14 +51,6 @@ interface TokenStream {
     peekNextButOne() throws CompileException, IOException;
 
     /**
-     * @return The next and also consumes it, or {@code null} iff the scanner is at end-of-input
-     */
-    Token
-    read() throws CompileException, IOException;
-
-    // Peek/read/peekRead convenience methods.
-
-    /**
      * @return Whether the value of the next token equals <var>suspected</var>; does not consume the next token
      */
     boolean
@@ -95,6 +87,12 @@ interface TokenStream {
      */
     boolean
     peekNextButOne(String suspected) throws CompileException, IOException;
+
+    /**
+     * @return The next and also consumes it, or {@code null} iff the scanner is at end-of-input
+     */
+    Token
+    read() throws CompileException, IOException;
 
     /**
      * Verifies that the value of the next token equals <var>expected</var>, and consumes the token.
