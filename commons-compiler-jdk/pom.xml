@@ -37,5 +37,5 @@
       </plugin>
     </plugins>
   </build>
-  <url>http://janino-compiler.github.io/janino/</url>
+  <description>The &quot;JDK&quot; implementation of the &quot;commons-compiler&quot; API that uses the JDK's Java compiler (JAVAC) in &quot;tools.jar&quot;.</description>
 </project>

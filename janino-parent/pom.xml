@@ -99,7 +99,7 @@
           </execution>
         </executions>
         <configuration>
-          <keystore>../janino-dist/dummy-keystore</keystore>
+          <keystore>../janino-parent/dummy-keystore</keystore>
           <alias>dummy</alias>
           <storepass>storepass</storepass>
           <keypass>keypass</keypass>
@@ -185,7 +185,7 @@
     </license>
   </licenses>
   <scm>
-  	<developerConnection>See project web site http://janino-compiler.github.io/janino/</developerConnection>
+  	<developerConnection>scm:git:https://github.com/janino-compiler/janino</developerConnection>
   	<url>https://github.com/janino-compiler/janino</url>
   </scm>
 </project>
