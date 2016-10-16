@@ -258,7 +258,27 @@ class SignatureParser {
 
         @Override public String
         toString() {
-            return "*** Cannot easily be converted into String ***";
+            StringBuilder sb = new StringBuilder();
+
+            // Formal type parameters.
+            if (!this.formalTypeParameters.isEmpty()) {
+                Iterator<FormalTypeParameter> it = this.formalTypeParameters.iterator();
+                sb.append('<' + it.next().toString());
+                while (it.hasNext()) sb.append(", " + it.next().toString());
+                sb.append("> ");
+            }
+
+            sb.append('(');
+            Iterator<TypeSignature> it = this.parameterTypes.iterator();
+            if (it.hasNext()) {
+                sb.append(it.next());
+                while (it.hasNext()) sb.append(", ").append(it.next());
+            }
+            sb.append(')');
+
+            if (this.returnType != SignatureParser.VOID) sb.append(" => ").append(this.returnType.toString());
+
+            return sb.toString();
         }
     }
 

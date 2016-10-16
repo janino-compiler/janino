@@ -293,7 +293,15 @@ class ConstantPool {
 
         @Override public String
         toString() {
-            return this.name + " : " + this.descriptor;
+            try {
+                return this.name + " : " + (
+                    this.descriptor.bytes.indexOf('(') == -1
+                    ? SignatureParser.decodeFieldDescriptor(this.descriptor.bytes)
+                    : SignatureParser.decodeMethodDescriptor(this.descriptor.bytes)
+                );
+            } catch (SignatureException e) {
+                return this.name + " : " + this.descriptor;
+            }
         }
     }
 
@@ -312,9 +320,86 @@ class ConstantPool {
         ConstantUtf8Info(String bytes) { this.bytes = bytes; }
 
         @Override public String
-        toString() {
-            return this.bytes;
+        toString() { return this.bytes; }
+    }
+
+    /**
+     * Representation of a CONSTANT_MethodHandle_info entry, see JVMS8 4.4.8.
+     */
+    public static
+    class ConstantMethodHandleInfo implements ConstantPoolEntry {
+
+        public final short             referenceKind;
+        public final ConstantPoolEntry reference;
+
+        public
+        ConstantMethodHandleInfo(byte referenceKind, ConstantPoolEntry reference) {
+            this.referenceKind = referenceKind;
+            this.reference     = reference;
         }
+
+        @Override public String
+        toString() {
+            return (
+                this.referenceKind == 1 ? "REF_getField"         :
+                this.referenceKind == 2 ? "REF_getStatic"        :
+                this.referenceKind == 3 ? "REF_putField"         :
+                this.referenceKind == 4 ? "REF_putStatic"        :
+                this.referenceKind == 5 ? "REF_invokeVirtual"    :
+                this.referenceKind == 6 ? "REF_invokeStatic"     :
+                this.referenceKind == 7 ? "REF_invokeSpecial"    :
+                this.referenceKind == 8 ? "REF_newInvokeSpecial" :
+                this.referenceKind == 9 ? "REF_invokeInterface"  :
+                "REF_??? (" + this.referenceKind + ")"
+            ) + ":" + this.reference.toString(); }
+    }
+
+    /**
+     * Representation of a CONSTANT_MethodType_info entry.
+     */
+    public static
+    class ConstantMethodTypeInfo implements ConstantPoolEntry {
+
+        /**
+         * {@code CONSTANT_MethodType_info.bytes}, see JVMS8 4.4.9
+         */
+        public final ConstantUtf8Info descriptor;
+
+        public
+        ConstantMethodTypeInfo(ConstantUtf8Info descriptor) {
+            this.descriptor = descriptor;
+        }
+
+        @Override public String
+        toString() {
+            try {
+                return SignatureParser.decodeMethodDescriptor(this.descriptor.toString()).toString();
+            } catch (SignatureException e) {
+                return this.descriptor.toString();
+            }
+        }
+    }
+
+    /**
+     * Representation of a CONSTANT_InvokeDynamic_info entry.
+     */
+    public static
+    class ConstantInvokeDynamicInfo implements ConstantPoolEntry {
+
+        /**
+         * {@code CONSTANT_InvokeDynamic_info.bytes}, see JVMS8 4.4.10
+         */
+        public final short                   bootstrapMethodAttrIndex;
+        public final ConstantNameAndTypeInfo nameAndType;
+
+        public
+        ConstantInvokeDynamicInfo(short bootstrapMethodAttrIndex, ConstantNameAndTypeInfo nameAndType) {
+            this.bootstrapMethodAttrIndex = bootstrapMethodAttrIndex;
+            this.nameAndType              = nameAndType;
+        }
+
+        @Override public String
+        toString() { return this.bootstrapMethodAttrIndex + ":" + this.nameAndType.name.toString(); }
     }
 
     /**
@@ -542,6 +627,46 @@ class ConstantPool {
 
                     @Override ConstantPoolEntry
                     cook() { return new ConstantUtf8Info(this.bytes); }
+                };
+                i++;
+                break;
+
+            case 15:  // CONSTANT_MethodHandle_info
+                re = new RawEntry2() {
+
+                    final byte  referenceKind  = dis.readByte();
+                    final short referenceIndex = dis.readShort();
+
+                    @Override ConstantPoolEntry
+                    cook() { return new ConstantMethodHandleInfo(this.referenceKind, this.get(this.referenceIndex)); }
+                };
+                i++;
+                break;
+
+            case 16:  // CONSTANT_MethodType_info
+                re = new RawEntry2() {
+
+                    final short descriptorIndex = dis.readShort();
+
+                    @Override ConstantPoolEntry
+                    cook() { return new ConstantMethodTypeInfo(this.getConstantUtf8Info(this.descriptorIndex)); }
+                };
+                i++;
+                break;
+
+            case 18:  // CONSTANT_InvokeDynamic_info
+                re = new RawEntry2() {
+
+                    final short bootstrapMethodAttrIndex = dis.readShort();
+                    final short nameAndTypeIndex         = dis.readShort();
+
+                    @Override ConstantPoolEntry
+                    cook() {
+                        return new ConstantInvokeDynamicInfo(
+                            this.bootstrapMethodAttrIndex,
+                            this.getConstantNameAndTypeInfo(this.nameAndTypeIndex)
+                        );
+                    }
                 };
                 i++;
                 break;

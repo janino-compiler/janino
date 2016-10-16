@@ -34,7 +34,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
+import de.unkrig.jdisasm.ConstantPool.ConstantMethodHandleInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantNameAndTypeInfo;
+import de.unkrig.jdisasm.ConstantPool.ConstantPoolEntry;
 import de.unkrig.jdisasm.ConstantPool.ConstantUtf8Info;
 import de.unkrig.jdisasm.SignatureParser.SignatureException;
 import de.unkrig.jdisasm.commons.nullanalysis.Nullable;
@@ -101,17 +103,22 @@ class ClassFile {
     public final List<Method> methods = new ArrayList<Method>();
 
     /**
-     * The optional {@code Deprecated} attribute of this class or interface.
+     * The optional {@code BootstrapMethodsAttribute} of this class or interface.
+     */
+    @Nullable public BootstrapMethodsAttribute bootstrapMethodsAttribute;
+
+    /**
+     * The optional {@code DeprecatedAttribute} of this class or interface.
      */
     @Nullable public DeprecatedAttribute deprecatedAttribute;
 
     /**
-     * The optional {@code EnclosingMethod} attribute of this class or interface.
+     * The optional {@code EnclosingMethodAttribute} of this class or interface.
      */
     @Nullable public EnclosingMethodAttribute enclosingMethodAttribute;
 
     /**
-     * The optional {@code InnerClasses} attribute of this class or interface.
+     * The optional {@code InnerClassesAttribute} of this class or interface.
      */
     @Nullable public InnerClassesAttribute innerClassesAttribute;
 
@@ -126,17 +133,17 @@ class ClassFile {
     @Nullable public RuntimeVisibleAnnotationsAttribute runtimeVisibleAnnotationsAttribute;
 
     /**
-     * The optional {@code Signature} attribute of this class or interface.
+     * The optional {@code SignatureAttribute} of this class or interface.
      */
     @Nullable public SignatureAttribute signatureAttribute;
 
     /**
-     * The optional {@code Signature} attribute of this class or interface.
+     * The optional {@code SourceFileAttribute} of this class or interface.
      */
     @Nullable public SourceFileAttribute sourceFileAttribute;
 
     /**
-     * The optional {@code Synthetic} attribute of this class or interface.
+     * The optional {@code SyntheticAttribute} of this class or interface.
      */
     @Nullable public SyntheticAttribute syntheticAttribute;
 
@@ -236,6 +243,12 @@ class ClassFile {
 
         // Class attributes.
         this.readAttributes(dis, new AbstractAttributeVisitor() {
+
+            @Override public void
+            visit(BootstrapMethodsAttribute bma) {
+                ClassFile.this.bootstrapMethodsAttribute = bma;
+                ClassFile.this.attributes.add(bma);
+            }
 
             @Override public void
             visit(DeprecatedAttribute da) {
@@ -501,6 +514,13 @@ class ClassFile {
                 );
             }
         }
+
+        public BootstrapMethodsAttribute
+        getBootstrapMethodsAttribute() {
+            BootstrapMethodsAttribute result = ClassFile.this.bootstrapMethodsAttribute;
+            if (result == null) throw new RuntimeException("BootstrapMethods attribute missing");
+            return result;
+        }
     }
 
     /**
@@ -582,6 +602,9 @@ class ClassFile {
         if ("AnnotationDefault".equals(attributeName)) {
             visitor.visit(new AnnotationDefaultAttribute(dis, this));
         } else
+        if ("BootstrapMethods".equals(attributeName)) {
+            visitor.visit(new BootstrapMethodsAttribute(dis, this));
+        } else
         if ("ConstantValue".equals(attributeName)) {
             visitor.visit(new ConstantValueAttribute(dis, this));
         } else
@@ -659,6 +682,7 @@ class ClassFile {
         void visit(SignatureAttribute                            sa);
         void visit(SourceFileAttribute                           sfa);
         void visit(SyntheticAttribute                            sa);
+        void visit(BootstrapMethodsAttribute                     bma);
         // CHECKSTYLE MethodCheck:ON
 
         /**
@@ -678,6 +702,7 @@ class ClassFile {
          */
         public abstract void visitOther(Attribute ai);
 
+        @Override public void visit(BootstrapMethodsAttribute                     bma)   { this.visitOther(bma); }
         @Override public void visit(AnnotationDefaultAttribute                    ada)   { this.visitOther(ada); }
         @Override public void visit(CodeAttribute                                 ca)    { this.visitOther(ca); }
         @Override public void visit(ConstantValueAttribute                        cva)   { this.visitOther(cva); }
@@ -929,6 +954,55 @@ class ClassFile {
 
         @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
         @Override public String getName()                        { return "AnnotationDefault"; }
+    }
+
+    /**
+     * Representation of the "BootstrapMethods" attribute (JVMS8 4.7.23).
+     */
+    public static
+    class BootstrapMethodsAttribute implements Attribute {
+
+        /**
+         * The <a href="http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.7.20-300-C">default value
+         * of the annotation type element</a> whose default value is represented by this {@link
+         * BootstrapMethodsAttribute}.
+         */
+        public List<BootstrapMethod> bootstrapMethods = new ArrayList<BootstrapMethod>();
+
+        BootstrapMethodsAttribute(DataInputStream dis, ClassFile cf) throws IOException {
+            for (int i = dis.readShort(); i > 0; --i) {
+                this.bootstrapMethods.add(new BootstrapMethod(dis, cf));
+            }
+        }
+
+        @Override public void   accept(AttributeVisitor visitor) { visitor.visit(this); }
+        @Override public String getName()                        { return "BootstrapMethods"; }
+
+        public static
+        class BootstrapMethod {
+
+            private final ConstantMethodHandleInfo bootstrapMethod;
+            public final List<ConstantPoolEntry>   bootstrapArguments = new ArrayList<ConstantPoolEntry>();
+
+            public
+            BootstrapMethod(DataInputStream dis, ClassFile cf) throws IOException {
+                this.bootstrapMethod = cf.constantPool.get(dis.readShort(), ConstantMethodHandleInfo.class);
+                for (int i = dis.readShort(); i > 0; --i) {
+                    this.bootstrapArguments.add(cf.constantPool.get(dis.readShort(), ConstantPoolEntry.class));
+                }
+            }
+
+            @Override public String
+            toString() {
+                StringBuilder sb = new StringBuilder().append(this.bootstrapMethod).append('(');
+                Iterator<ConstantPoolEntry> it = this.bootstrapArguments.iterator();
+                if (it.hasNext()) {
+                    sb.append(it.next());
+                    while (it.hasNext()) sb.append(", ").append(it.next());
+                }
+                return sb.append(')').toString();
+            }
+        }
     }
 
     /**

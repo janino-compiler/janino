@@ -62,6 +62,8 @@ import de.unkrig.jdisasm.ClassFile.Annotation;
 import de.unkrig.jdisasm.ClassFile.AnnotationDefaultAttribute;
 import de.unkrig.jdisasm.ClassFile.Attribute;
 import de.unkrig.jdisasm.ClassFile.AttributeVisitor;
+import de.unkrig.jdisasm.ClassFile.BootstrapMethodsAttribute;
+import de.unkrig.jdisasm.ClassFile.BootstrapMethodsAttribute.BootstrapMethod;
 import de.unkrig.jdisasm.ClassFile.CodeAttribute;
 import de.unkrig.jdisasm.ClassFile.ConstantValueAttribute;
 import de.unkrig.jdisasm.ClassFile.DeprecatedAttribute;
@@ -87,6 +89,7 @@ import de.unkrig.jdisasm.ClassFile.UnknownAttribute;
 import de.unkrig.jdisasm.ConstantPool.ConstantClassInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantFieldrefInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantInterfaceMethodrefInfo;
+import de.unkrig.jdisasm.ConstantPool.ConstantInvokeDynamicInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantMethodrefInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantNameAndTypeInfo;
 import de.unkrig.jdisasm.ConstantPool.ConstantPoolEntry;
@@ -364,7 +367,9 @@ class Disassembler {
 
         // Print JDK version.
         this.println();
-        this.println("// Class file version = " + cf.getJdkName());
+        this.println(
+            "// Class file version = " + cf.majorVersion + "." + cf.minorVersion + " (" + cf.getJdkName() + ")"
+        );
 
         String tcpn = (
             this.thisClassPackageName = cf.thisClassName.substring(0, cf.thisClassName.lastIndexOf('.') + 1)
@@ -869,6 +874,14 @@ class Disassembler {
         visit(AnnotationDefaultAttribute ada) {
             Disassembler.this.println(this.prefix + "AnnotationDefault:");
             Disassembler.this.println(this.prefix + "  " + ada.defaultValue.toString());
+        }
+
+        @Override public void
+        visit(BootstrapMethodsAttribute bma) {
+            Disassembler.this.println(this.prefix + "BootstrapMethods:");
+            for (BootstrapMethod bm : bma.bootstrapMethods) {
+                Disassembler.this.println(this.prefix + "  " + bm);
+            }
         }
 
         @Override public void
@@ -1520,9 +1533,7 @@ class Disassembler {
         + "104 imul\n"
         + "116 ineg\n"
         + "193 instanceof      class2\n"
-// For Java 7; see
-// http://cr.openjdk.java.net/~jrose/pres/indy-javadoc-mlvm/java/lang/invoke/package-summary.html
-//        + "186 invokedynamic   invokedynamic2\n"
+        + "186 invokedynamic   dynamiccallsite\n"
         + "185 invokeinterface interfacemethodref2\n"
         + "183 invokespecial   methodref2\n"
         + "184 invokestatic    methodref2\n"
@@ -2020,6 +2031,30 @@ class Disassembler {
                                     sb.append(", ").append(match).append(" => ").append(d.branchTarget(offset));
                                 }
                                 return sb.toString();
+                            }
+                        };
+                    } else
+                    if ("dynamiccallsite".equals(s)) {
+                        operand = new Operand() {
+
+                            @Override public String
+                            disassemble(
+                                DataInputStream dis,
+                                int             instructionOffset,
+                                Method          method,
+                                ConstantPool    cp,
+                                Disassembler    d
+                            ) throws IOException {
+                                short index = dis.readShort();
+                                if (dis.readByte() != 0 || dis.readByte() != 0) {
+                                    throw new RuntimeException("'invokevirtual' pad byte is not zero");
+                                }
+
+                                BootstrapMethod bm = method.getBootstrapMethodsAttribute().bootstrapMethods.get(
+                                    cp.get(index, ConstantInvokeDynamicInfo.class).bootstrapMethodAttrIndex
+                                );
+
+                                return " " + bm + "." + cp.get(index, ConstantInvokeDynamicInfo.class).nameAndType;
                             }
                         };
                     } else
