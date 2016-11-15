@@ -112,6 +112,7 @@
         <version>2.10.4</version>
         <configuration>
           <quiet>true</quiet>
+          <additionalparam>-Xdoclint:none</additionalparam>
         </configuration>
         <executions>
           <execution>
