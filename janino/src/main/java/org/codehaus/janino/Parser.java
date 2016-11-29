@@ -81,6 +81,7 @@ import org.codehaus.janino.Java.Instanceof;
 import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.InterfaceDeclaration;
 import org.codehaus.janino.Java.LabeledStatement;
+import org.codehaus.janino.Java.Literal;
 import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
@@ -142,6 +143,8 @@ class Parser {
 
     private final Scanner     scanner;
     private final TokenStream tokenStream;
+
+    private List<BlockStatement> currentBlockStatements = null;
 
     public
     Parser(Scanner scanner) { this(scanner, new TokenStreamImpl(scanner)); }
@@ -1464,6 +1467,12 @@ class Parser {
         return block;
     }
 
+    private BlockStatement getLastStatementInCurrentBlock() {
+        if (currentBlockStatements == null) return null;
+        if (currentBlockStatements.size() == 0) return null;
+        return (BlockStatement) currentBlockStatements.get(currentBlockStatements.size() - 1);
+    }
+
     /**
      * <pre>
      *   BlockStatements := { BlockStatement }
@@ -1472,6 +1481,7 @@ class Parser {
     public List<BlockStatement>
     parseBlockStatements() throws CompileException, IOException {
         List<BlockStatement> l = new ArrayList<BlockStatement>();
+        currentBlockStatements = l;
         while (!this.peek("}") && !this.peek("case") && !this.peek("default")) l.add(this.parseBlockStatement());
         return l;
     }
@@ -1701,7 +1711,23 @@ class Parser {
         final Location location = this.location();
         this.read("if");
         this.read("(");
-        final Rvalue condition = this.parseExpression().toRvalueOrCompileException();
+        Rvalue condition = this.parseExpression().toRvalueOrCompileException();
+        BlockStatement lastStatement = getLastStatementInCurrentBlock();
+        if (lastStatement != null &&
+            condition instanceof AmbiguousName &&
+            lastStatement instanceof LocalVariableDeclarationStatement) {
+          VariableDeclarator[] vds = ((LocalVariableDeclarationStatement) lastStatement).variableDeclarators;
+          String conditionVariableName = ((AmbiguousName) condition).toString();
+          for (int i = 0; i < vds.length; i++) {
+            if (vds[i].name.equals(conditionVariableName) &&
+                vds[i].optionalInitializer != null &&
+                vds[i].optionalInitializer instanceof Literal) {
+                Token fakeToken = new Token(condition.getLocation(), getLiteralType((Literal) vds[i].optionalInitializer), ((Literal) vds[i].optionalInitializer).value);
+                condition = this.parseLiteral(fakeToken);
+                break;
+            }
+          }
+        }
         this.read(")");
 
         Statement thenStatement = this.parseStatement();
@@ -3103,6 +3129,11 @@ class Parser {
     public Rvalue
     parseLiteral() throws CompileException, IOException {
         Token t = this.read();
+        return parseLiteral(t);
+    }
+
+    public Rvalue
+    parseLiteral(Token t) throws CompileException, IOException {
         switch (t.type) {
         case INTEGER_LITERAL:        return new IntegerLiteral(t.getLocation(), t.value);
         case FLOATING_POINT_LITERAL: return new FloatingPointLiteral(t.getLocation(), t.value);
@@ -3112,6 +3143,25 @@ class Parser {
         case NULL_LITERAL:           return new NullLiteral(t.getLocation(), t.value);
         default:
             throw this.compileException("Literal expected");
+        }
+    }
+
+    private TokenType
+    getLiteralType(Literal l) throws CompileException, IOException {
+        if (l instanceof IntegerLiteral) {
+            return TokenType.INTEGER_LITERAL;
+        } else if (l instanceof FloatingPointLiteral) {
+            return TokenType.FLOATING_POINT_LITERAL;
+        } else if (l instanceof BooleanLiteral) {
+            return TokenType.BOOLEAN_LITERAL;
+        } else if (l instanceof CharacterLiteral) {
+            return TokenType.CHARACTER_LITERAL;
+        } else if (l instanceof StringLiteral) {
+            return TokenType.STRING_LITERAL;
+        } else if (l instanceof NullLiteral) {
+            return TokenType.NULL_LITERAL;
+        } else {
+            throw this.compileException("Unknown literal type");
         }
     }
 

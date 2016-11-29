@@ -46,6 +46,7 @@ import org.codehaus.janino.Java.ArrayLength;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BinaryOperation;
+import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.BooleanLiteral;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CharacterLiteral;
@@ -112,6 +113,21 @@ class UnparserTest {
         s = UnparserTest.replace(s, "((( ", "(");
         s = UnparserTest.replace(s, " )))", ")");
         Assert.assertEquals(expected, s);
+    }
+
+    private static void
+    helpTestBlockStatements(String input, String expected) throws Exception {
+        Parser p    = new Parser(new Scanner(null, new StringReader(input)));
+        List<BlockStatement> statements = p.parseBlockStatements();
+
+        StringWriter sw = new StringWriter();
+        Unparser     u  = new Unparser(sw);
+        u.unparseStatements(statements);
+        u.close();
+        String s = sw.toString();
+
+        String actual = UnparserTest.normalizeWhitespace(sw.toString());
+        Assert.assertEquals(expected, actual);
     }
 
     private static void
@@ -523,6 +539,27 @@ class UnparserTest {
             String expect = expr.length >= 2 && expr[1] != null ? expr[1] : input;
 
             UnparserTest.helpTestCu(input, expect);
+        }
+    }
+
+    @Test public void
+    testParseUnparseIfStatement() throws Exception {
+        final String[][] cus = {
+            //input:                                        expected output (if different from input):
+             { "boolean test = true; if (test) { callMethod1(); } else { callMethod2(); } }",
+                "boolean test = true; if (true) { callMethod1(); } else { callMethod2(); }"},
+             { "boolean test = false; if (test) { callMethod1(); } else { callMethod2(); } }",
+                "boolean test = false; if (false) { callMethod1(); } else { callMethod2(); }"},
+             { "boolean test = other; if (test) { callMethod1(); } else { callMethod2(); } }",
+                "boolean test = other; if (test) { callMethod1(); } else { callMethod2(); }"},
+        };
+
+        for (String[] expr : cus) {
+
+            String input = expr[0];
+
+            String expect = expr.length >= 2 && expr[1] != null ? expr[1] : input;
+            UnparserTest.helpTestBlockStatements(input, expect);
         }
     }
 
