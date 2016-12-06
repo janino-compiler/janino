@@ -5157,7 +5157,7 @@ class UnitCompiler {
                     @Override @Nullable public Object visitFieldAccess(FieldAccess fa)                         throws CompileException { return UnitCompiler.this.getConstantValue2(fa);    }
                     @Override @Nullable public Object visitFieldAccessExpression(FieldAccessExpression fae)                            { return UnitCompiler.this.getConstantValue2(fae);   }
                     @Override @Nullable public Object visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae)      { return UnitCompiler.this.getConstantValue2(scfae); }
-                    @Override @Nullable public Object visitLocalVariableAccess(LocalVariableAccess lva)                                { return UnitCompiler.this.getConstantValue2(lva);   }
+                    @Override @Nullable public Object visitLocalVariableAccess(LocalVariableAccess lva)        throws CompileException { return UnitCompiler.this.getConstantValue2(lva);   }
                     @Override @Nullable public Object visitParenthesizedExpression(ParenthesizedExpression pe) throws CompileException { return UnitCompiler.this.getConstantValue2(pe);    }
                 });
             }
@@ -5427,6 +5427,52 @@ class UnitCompiler {
     @Nullable private Object
     getConstantValue2(ParenthesizedExpression pe) throws CompileException {
         return this.getConstantValue(pe.value);
+    }
+
+    private @Nullable Object
+    getConstantValue2(LocalVariableAccess lva) throws CompileException {
+
+        // An optimization for the (very special case)
+        //
+        //    void method()         // Any method declarator
+        //        ...
+        //        boolean x = true; // Any local variable name allowed; also value "false"
+        //        if (x) {          // The condition expression must be exactly like this
+        //              ...
+        //
+        if (lva.getEnclosingScope() instanceof IfStatement) {
+            IfStatement is = (IfStatement) lva.getEnclosingScope();
+
+            if (is.condition instanceof AmbiguousName) {
+                Atom ra = ((AmbiguousName) is.condition).reclassified;
+
+                if (ra instanceof LocalVariableAccess) {
+                    LocalVariable lv = ((LocalVariableAccess) ra).localVariable;
+
+                    List<? extends BlockStatement> ss = (
+                        is.getEnclosingScope() instanceof MethodDeclarator
+                        ? ((MethodDeclarator) is.getEnclosingScope()).optionalStatements
+                        : is.getEnclosingScope() instanceof Block
+                        ? ((Block) is.getEnclosingScope()).statements
+                        : null
+                    );
+                    if (ss != null) {
+                        int isi = ss.indexOf(is);
+                        if (isi >= 1) {
+                            if (ss.get(isi - 1) instanceof LocalVariableDeclarationStatement) {
+                                LocalVariableDeclarationStatement lvds = (LocalVariableDeclarationStatement) ss.get(isi - 1);
+                                if (lvds.variableDeclarators.length == 1 && lvds.variableDeclarators[0].localVariable == lv) {
+                                    ArrayInitializerOrRvalue oi = lvds.variableDeclarators[0].optionalInitializer;
+                                    if (oi instanceof Rvalue) return this.getConstantValue((Rvalue) oi);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return UnitCompiler.NOT_CONSTANT;
     }
 
     @SuppressWarnings("static-method") private Object
