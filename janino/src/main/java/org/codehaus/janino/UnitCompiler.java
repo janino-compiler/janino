@@ -5459,12 +5459,16 @@ class UnitCompiler {
                     if (ss != null) {
                         int isi = ss.indexOf(is);
                         if (isi >= 1) {
-                            if (ss.get(isi - 1) instanceof LocalVariableDeclarationStatement) {
-                                LocalVariableDeclarationStatement lvds = (LocalVariableDeclarationStatement) ss.get(isi - 1);
-                                if (lvds.variableDeclarators.length == 1 && lvds.variableDeclarators[0].localVariable == lv) {
-                                    ArrayInitializerOrRvalue oi = lvds.variableDeclarators[0].optionalInitializer;
-                                    if (oi instanceof Rvalue) return this.getConstantValue((Rvalue) oi);
+                            int currentIndex = isi - 1;
+                            while (currentIndex >= 0 && ss.get(currentIndex) instanceof LocalVariableDeclarationStatement) {
+                                LocalVariableDeclarationStatement lvds = (LocalVariableDeclarationStatement) ss.get(currentIndex);
+                                for (VariableDeclarator vd: lvds.variableDeclarators) {
+                                    if (vd.localVariable == lv) {
+                                        ArrayInitializerOrRvalue oi = vd.optionalInitializer;
+                                        if (oi instanceof Rvalue) return this.getConstantValue((Rvalue) oi);
+                                    }
                                 }
+                                currentIndex--;
                             }
                         }
                     }
