@@ -1019,7 +1019,7 @@ class Unparser {
         }
     }
 
-    public void
+    private void
     unparseStatements(List<? extends Java.BlockStatement> statements) {
 
         int state = -1;
