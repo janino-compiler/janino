@@ -69,7 +69,7 @@ public class GithubPullRequestsTest {
     @Test public void
     testPullRequest10() throws CompileException, IOException {
 
-        String cut = (
+        String cut1 = (
             ""
             + "public\n"
             + "class Foo { \n"
@@ -111,7 +111,7 @@ public class GithubPullRequestsTest {
         //
         // As you see, the IF statement has been optimized away.
  
-        helpTestPullRequest10(cut, 200);
+        helpTestPullRequest10(cut1, 200);
 
         String cut2 = (
             ""
@@ -134,6 +134,28 @@ public class GithubPullRequestsTest {
 
         // With another local variable, the class file size increases by 2-byte.
         helpTestPullRequest10(cut2, 202);
- 
+
+        String cut3 = (
+            ""
+            + "public\n"
+            + "class Foo { \n"
+            + "\n"
+            + "    public static String\n"
+            + "    meth() {\n"
+            + "\n"
+            + "        boolean test = true, test1 = false;\n"
+            + "        int test3 = 1;\n"
+            + "        if (test) {\n"
+            + "            return \"true\";\n"
+            + "        } else {\n"
+            + "            return \"false\";\n"
+            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        );
+
+        // With another local variable, the class file size increases by 4-byte.
+        helpTestPullRequest10(cut3, 204);
+
     }
 }
