@@ -154,8 +154,52 @@ public class GithubPullRequestsTest {
             + "}\n"
         );
 
-        // With another local variable, the class file size increases by 4-byte.
+        // With another two local variables, the class file size increases by 4-byte.
         helpTestPullRequest10(cut3, 204);
 
+        String cut4 = (
+            ""
+            + "public\n"
+            + "class Foo { \n"
+            + "\n"
+            + "    public static String\n"
+            + "    meth() {\n"
+            + "\n"
+            + "        boolean test = true, test1 = false;\n"
+            + "        boolean test3 = test;\n"
+            + "        if (test) {\n"
+            + "            return \"true\";\n"
+            + "        } else {\n"
+            + "            return \"false\";\n"
+            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        );
+
+        // With a local variable access as initializer of another local variable, we won't do the optimization.
+        helpTestPullRequest10(cut4, 211);
+
+        String cut5 = (
+            ""
+            + "public\n"
+            + "class Foo { \n"
+            + "\n"
+            + "    public static String\n"
+            + "    meth() {\n"
+            + "\n"
+            + "        boolean test = true, test1 = false;\n"
+            + "        boolean test3 = (test = false);\n"
+            + "        if (test) {\n"
+            + "            return \"true\";\n"
+            + "        } else {\n"
+            + "            return \"false\";\n"
+            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        );
+
+        // With a local variable access as initializer of another local variable, we won't do the optimization.
+        helpTestPullRequest10(cut5, 213);
+ 
     }
 }

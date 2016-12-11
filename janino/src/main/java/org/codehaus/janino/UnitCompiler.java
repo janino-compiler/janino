@@ -5464,8 +5464,17 @@ class UnitCompiler {
                                 LocalVariableDeclarationStatement lvds = (LocalVariableDeclarationStatement) ss.get(currentIndex);
                                 for (VariableDeclarator vd: lvds.variableDeclarators) {
                                     if (vd.localVariable == lv) {
+                                        // The local variable used in If statement's condition.
                                         ArrayInitializerOrRvalue oi = vd.optionalInitializer;
                                         if (oi instanceof Rvalue) return this.getConstantValue((Rvalue) oi);
+                                    } else {
+                                        // For other local variable, we need to check its initializer.
+                                        ArrayInitializerOrRvalue oi = vd.optionalInitializer;
+                                        if ((oi instanceof Rvalue) && (this.getConstantValue((Rvalue) oi) == UnitCompiler.NOT_CONSTANT)) {
+                                            // If the initializer is a non-constant Rvalue, there is a risk that
+                                            // the Rvalue modifies the local variable of If statement's condition.
+                                            return UnitCompiler.NOT_CONSTANT;
+                                        }
                                     }
                                 }
                                 currentIndex--;
