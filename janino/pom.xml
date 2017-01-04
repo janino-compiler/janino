@@ -28,6 +28,12 @@
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>
+        <groupId>de.unkrig.jdisasm</groupId>
+        <artifactId>jdisasm</artifactId>
+        <version>1.0.0</version>
+        <scope>runtime</scope>       
+     </dependency>	  
+    <dependency>
     	<groupId>org.apache.ant</groupId>
     	<artifactId>ant</artifactId>
     	<version>1.7.1</version>
