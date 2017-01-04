@@ -101,6 +101,12 @@
         <artifactId>commons-compiler-jdk</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>de.unkrig.jdisasm</groupId>
+        <artifactId>jdisasm</artifactId>
+        <version>1.0.0</version>
+        <scope>runtime</scope>       
+      </dependency>
 
       <dependency>
         <groupId>junit</groupId>
