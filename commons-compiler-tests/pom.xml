@@ -49,6 +49,8 @@
     </plugins>
   </build>
   <packaging>jar</packaging>
-  <description>Tests that use only the &quot;commons-compiler&quot; API and are thus applicable to ALL implementations.</description>
+  <description>Tests that use only the &quot;commons-compiler&quot; API and are thus applicable to ALL implementations.
+
+NOTICE: This module is not a test for &quot;commons-compiler&quot;, but for a set of IMPLEMENTATIONS of &quot;commons-compiler&quot;!</description>
   <url>http://janino-compiler.github.io/janino/</url>
 </project>
