@@ -937,6 +937,141 @@ class JlsTest extends JaninoTestSuite {
     }
 
     @Test public void
+    test_14_11__TheSwitchStatement_String1() throws Exception {
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "String s = \"a\";\n"
+            + "\n"
+            + "switch (s) {\n"
+            + "case \"a\": case \"b\": case \"c\":\n"
+            + "    return true;\n"
+            + "case \"d\": case \"e\": case \"f\":\n"
+            + "    return false;\n"
+            + "default:\n"
+            + "    return false;"
+            + "}\n"
+        );
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement_String2() throws Exception {
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "String s = \"f\";\n"
+            + "\n"
+            + "switch (s) {\n"
+            + "case \"a\": case \"b\": case \"c\":\n"
+            + "    return false;\n"
+            + "case \"d\": case \"e\": case \"f\":\n"
+            + "    return true;\n"
+            + "default:\n"
+            + "    return false;"
+            + "}\n"
+        );
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement_String3() throws Exception {
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "String s = \"g\";\n"
+            + "\n"
+            + "switch (s) {\n"
+            + "case \"a\": case \"b\": case \"c\":\n"
+            + "    return false;\n"
+            + "case \"d\": case \"e\": case \"f\":\n"
+            + "    return false;\n"
+            + "default:\n"
+            + "    return true;"
+            + "}\n"
+        );
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement_String4() throws Exception {
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "String s = \"g\";\n"
+            + "\n"
+            + "switch (s) {\n"
+            + "case \"a\": case \"b\": case \"c\":\n"
+            + "    return false;\n"
+            + "case \"d\": case \"e\": case \"f\":\n"
+            + "    return false;\n"
+            + "}\n"
+            + "return true;"
+        );
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement_String5() throws Exception {
+
+        String s1 = "AaAaAa", s2 = "AaAaBB";
+        Assert.assertEquals(s1.hashCode(), s2.hashCode());
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "switch (\"" + s1 + "\") {\n"
+            + "case \"" + s1 + "\":\n"
+            + "    return true;\n"
+            + "}\n"
+            + "return false;"
+        );
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "switch (\"" + s1 + "\") {\n"
+            + "case \"" + s1 + "\":\n"
+            + "case \"" + s2 + "\":\n"
+            + "    return true;\n"
+            + "}\n"
+            + "return false;"
+        );
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "switch (\"" + s1 + "\") {\n"
+            + "case \"" + s1 + "\":\n"
+            + "    return true;\n"
+            + "case \"" + s2 + "\":\n"
+            + "    return false;\n"
+            + "}\n"
+            + "return false;"
+        );
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "switch (\"" + s1 + "\") {\n"
+            + "case \"" + s2 + "\":\n"
+            + "    return false;\n"
+            + "}\n"
+            + "return true;"
+        );
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement_String_DuplicateCaseValue() throws Exception {
+
+        this.assertScriptUncookable(
+            ""
+            + "String s = \"c\";\n"
+            + "\n"
+            + "switch (s) {\n"
+            + "case \"a\": case \"b\": case \"c\":\n"
+            + "    return false;\n"
+            + "case \"c\": case \"d\": case \"e\":\n"
+            + "    return false;\n"
+            + "default:\n"
+            + "    return false;"
+            + "}\n"
+        );
+    }
+
+    @Test public void
     test_14_14_2_1__TheEnhancedForStatement_Iterable() throws Exception {
         this.assertScriptReturnsTrue(
             "String x = \"A\";\n"
