@@ -44,10 +44,10 @@ import util.TestUtil;
 // CHECKSTYLE JavadocMethod:OFF
 
 /**
- * Tests for JANINO's 'sandbox mode'.
+ * Tests for accessing and subclassing other classes on the classpath.
  */
 @RunWith(Parameterized.class) public
-class SandboxTest {
+class ExternalClassesTest {
 
     private final ICompilerFactory compilerFactory;
 
@@ -57,7 +57,7 @@ class SandboxTest {
     }
 
     public
-    SandboxTest(ICompilerFactory compilerFactory) {
+    ExternalClassesTest(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
