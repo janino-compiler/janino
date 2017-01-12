@@ -31,6 +31,7 @@ import java.io.Reader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.AccessController;
+import java.security.Permissions;
 import java.security.PrivilegedAction;
 import java.util.Collections;
 
@@ -49,6 +50,7 @@ import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.Sandbox;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -65,15 +67,25 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private boolean                  debugVars;
     @Nullable private ErrorHandler   optionalCompileErrorHandler;
     @Nullable private WarningHandler optionalWarningHandler;
+    @Nullable private Permissions    permissions;
 
     /**
      * @throws IllegalStateException This {@link Cookable} is not yet cooked
      */
     @Override public ClassLoader
     getClassLoader() {
-        if (this.result != null) return this.result;
-        throw new IllegalStateException("Not yet cooked");
+
+        ClassLoader cl = this.result;
+        if (cl == null) throw new IllegalStateException("Not yet cooked");
+
+        return cl;
     }
+
+    @Override public void
+    setPermissions(Permissions permissions) { this.permissions = permissions;  }
+
+    @Override public void
+    setNoPermissions() { this.setPermissions(new Permissions()); }
 
     @Override public void
     cook(@Nullable String optionalFileName, final Reader r) throws CompileException, IOException {
@@ -206,11 +218,16 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         }
 
         // Create a ClassLoader that reads class files from our FM.
-        this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
+        ClassLoader cl = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
 
             @Override public JavaFileManagerClassLoader
             run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
         });
+
+        // Apply any configured permissions.
+        if (this.permissions != null) Sandbox.confine(cl, this.permissions);
+
+        this.result = cl;
     }
 
     @Override public void
