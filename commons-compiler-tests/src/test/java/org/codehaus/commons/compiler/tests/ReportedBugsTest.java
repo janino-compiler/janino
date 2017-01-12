@@ -43,7 +43,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import util.JaninoTestSuite;
+import util.CommonsCompilerTestSuite;
 import util.TestUtil;
 
 // CHECKSTYLE MethodName:OFF
@@ -53,7 +53,7 @@ import util.TestUtil;
  * Test cases for the bug reported on <a href="http://jira.codehaus.org/">CODEHAUS JIRA</a> for project JANINO.
  */
 @RunWith(Parameterized.class) public
-class ReportedBugsTest extends JaninoTestSuite {
+class ReportedBugsTest extends CommonsCompilerTestSuite {
 
     @Parameters(name = "CompilerFactory={0}") public static Collection<Object[]>
     compilerFactories() throws Exception {

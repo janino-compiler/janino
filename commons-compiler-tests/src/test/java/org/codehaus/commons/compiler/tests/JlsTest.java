@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import util.JaninoTestSuite;
+import util.CommonsCompilerTestSuite;
 import util.TestUtil;
 
 // CHECKSTYLE MethodName:OFF
@@ -52,7 +52,7 @@ import util.TestUtil;
  * Tests against the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7 Edition</a>.
  */
 @RunWith(Parameterized.class) public
-class JlsTest extends JaninoTestSuite {
+class JlsTest extends CommonsCompilerTestSuite {
 
     @Parameters(name = "CompilerFactory={0}") public static List<Object[]>
     compilerFactories() throws Exception {

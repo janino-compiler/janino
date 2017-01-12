@@ -44,7 +44,7 @@ import org.junit.Assert;
  * A base class for JUnit 4 test cases that provides easy-to-use functionality to test JANINO.
  */
 public
-class JaninoTestSuite {
+class CommonsCompilerTestSuite {
 
     /**
      * The {@link ICompilerFactory} in effect for this test execution.
@@ -52,7 +52,7 @@ class JaninoTestSuite {
     protected final ICompilerFactory compilerFactory;
 
     public
-    JaninoTestSuite(ICompilerFactory compilerFactory) {
+    CommonsCompilerTestSuite(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
@@ -114,7 +114,7 @@ class JaninoTestSuite {
 
         ExpressionTest(String expression) throws Exception {
             this.expression          = expression;
-            this.expressionEvaluator = JaninoTestSuite.this.compilerFactory.newExpressionEvaluator();
+            this.expressionEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newExpressionEvaluator();
         }
 
         @Override protected void
@@ -190,7 +190,7 @@ class JaninoTestSuite {
 
         public ScriptTest(String script) throws Exception {
             this.script          = script;
-            this.scriptEvaluator = JaninoTestSuite.this.compilerFactory.newScriptEvaluator();
+            this.scriptEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newScriptEvaluator();
         }
 
         @Override public void
@@ -260,7 +260,7 @@ class JaninoTestSuite {
 
         ClassBodyTest(String classBody) throws Exception {
             this.classBody          = classBody;
-            this.classBodyEvaluator = JaninoTestSuite.this.compilerFactory.newClassBodyEvaluator();
+            this.classBodyEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newClassBodyEvaluator();
         }
 
         @Override protected void
@@ -320,7 +320,7 @@ class JaninoTestSuite {
         SimpleCompilerTest(String compilationUnit, String className) throws Exception {
             this.compilationUnit = compilationUnit;
             this.className       = className;
-            this.simpleCompiler  = JaninoTestSuite.this.compilerFactory.newSimpleCompiler();
+            this.simpleCompiler  = CommonsCompilerTestSuite.this.compilerFactory.newSimpleCompiler();
         }
 
         @Override protected void

@@ -42,14 +42,14 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import de.unkrig.commons.lang.security.Sandbox;
-import util.JaninoTestSuite;
+import util.CommonsCompilerTestSuite;
 import util.TestUtil;
 
 /**
  * Test cases for the combination of JANINO with {@link de.unkrig.commons.lang.security.Sandbox}.
  */
 @RunWith(Parameterized.class) public
-class DuclsSandboxTest extends JaninoTestSuite {
+class DuclsSandboxTest extends CommonsCompilerTestSuite {
 
     private static final Permissions NO_PERMISSIONS = new Permissions();
 
@@ -164,8 +164,16 @@ class DuclsSandboxTest extends JaninoTestSuite {
     @Test(expected = AccessControlException.class) public void
     testSocketToHost() throws Exception {
 
+try {
+
         String script = "return new java.net.Socket(\"localhost\", 65000) != null;";
         this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+
+} catch (Exception e) {
+    e.printStackTrace();
+}
+
+
     }
 
     /**

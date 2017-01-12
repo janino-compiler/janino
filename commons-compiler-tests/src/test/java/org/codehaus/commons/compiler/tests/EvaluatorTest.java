@@ -51,7 +51,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import util.JaninoTestSuite;
+import util.CommonsCompilerTestSuite;
 import util.TestUtil;
 
 // CHECKSTYLE JavadocMethod:OFF
@@ -61,7 +61,7 @@ import util.TestUtil;
  * SimpleCompiler}.
  */
 @RunWith(Parameterized.class) public
-class EvaluatorTest extends JaninoTestSuite {
+class EvaluatorTest extends CommonsCompilerTestSuite {
 
     @Parameters(name = "CompilerFactory={0}") public static Collection<Object[]>
     compilerFactories() throws Exception { return TestUtil.getCompilerFactoriesForParameters(); }
