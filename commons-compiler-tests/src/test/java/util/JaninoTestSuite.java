@@ -27,6 +27,7 @@
 package util;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
@@ -181,18 +182,18 @@ class JaninoTestSuite {
         return new ScriptTest(script).getResult();
     }
 
-    private
+    public
     class ScriptTest extends CompileAndExecuteTest {
 
-        private final String           script;
-        private final IScriptEvaluator scriptEvaluator;
+        private final String             script;
+        protected final IScriptEvaluator scriptEvaluator;
 
-        ScriptTest(String script) throws Exception {
+        public ScriptTest(String script) throws Exception {
             this.script          = script;
             this.scriptEvaluator = JaninoTestSuite.this.compilerFactory.newScriptEvaluator();
         }
 
-        @Override protected void
+        @Override public void
         assertResultTrue() throws Exception {
             this.scriptEvaluator.setReturnType(boolean.class);
             super.assertResultTrue();
@@ -208,7 +209,14 @@ class JaninoTestSuite {
         compile() throws Exception { this.scriptEvaluator.cook(this.script); }
 
         @Override @Nullable protected Object
-        execute() throws Exception { return this.scriptEvaluator.evaluate(new Object[0]); }
+        execute() throws Exception {
+            try {
+                return this.scriptEvaluator.evaluate(new Object[0]);
+            } catch (InvocationTargetException ite) {
+                Throwable te = ite.getTargetException();
+                throw te instanceof Exception ? (Exception) te : ite;
+            }
+        }
     }
 
     /**
