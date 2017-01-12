@@ -27,21 +27,22 @@
 package org.codehaus.commons.compiler.tests;
 
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
 import java.net.URLConnection;
 import java.security.AccessControlException;
 import java.security.AllPermission;
 import java.security.Permissions;
 import java.util.List;
 
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.ICompilerFactory;
-import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.Sandbox;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import de.unkrig.commons.lang.security.Sandbox;
 import util.CommonsCompilerTestSuite;
 import util.TestUtil;
 
@@ -147,14 +148,29 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     }
 
     /**
-     * Verifies that even <em>creating a URL object</em> is forbidden (which, oddly enough, results in a {@link
-     * MalformedURLException} and not a {@link AccessControlException}). Consequently, it is not possible to create
-     * any {@link URLConnection}s.
+     * Verifies that creating an {@link URLConnection} is forbidden.
      */
-    @Test(expected = MalformedURLException.class) public void
+    @Test(expected = AccessControlException.class) public void
     testUrlConnection1() throws Exception {
 
-        String script = "return new java.net.URL(\"http://localhost:65000\") != null;";
+        // Java 7 and 8 have a design problem (or is it a bug?): The class initializer of
+        // "sun.net.www.protocol.http.HttpURLConnection" runs a privileged action:
+        //
+        //   static {
+        //       maxRedirects = ((Integer) AccessController.doPrivileged(
+        //           new GetIntegerAction("http.maxRedirects", 20)
+        //       )).intValue();
+        //   }
+        //
+        // As a consequence, "URL.openConnection()" throws an InvocationTargetException, caused by
+        // an ExceptionInInitializerError, caused by an AccessControlException (instead of an
+        // "AccessControlException").
+        // As a suitable workaround, we initialize the "sun.net.www.protocol.http.HttpURLConnection"
+        // class HERE:
+        new java.net.URL("http://localhost:65000").openConnection();
+
+        // Now for the actual test case:
+        String script = "return new java.net.URL(\"http://localhost:65000\").openConnection().getInputStream() != null;";
         this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
@@ -164,16 +180,8 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     @Test(expected = AccessControlException.class) public void
     testSocketToHost() throws Exception {
 
-try {
-
         String script = "return new java.net.Socket(\"localhost\", 65000) != null;";
         this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
-
-} catch (Exception e) {
-    e.printStackTrace();
-}
-
-
     }
 
     /**
@@ -189,15 +197,40 @@ try {
     }
 
     /**
-     * Verifies that it is forbidden to change the sandbox confinement.
+     * Verifies that also the {@link ISimpleCompiler} checks permissions.
      */
-    @Test(expected = SecurityException.class) public void
-    testSandboxReconfine() throws Exception {
+    @Test(expected = AccessControlException.class) public void
+    testSimpleCompiler() throws Exception {
 
-        String script = (
-            "de.unkrig.commons.lang.security.Sandbox.confine(SC.class, new java.security.Permissions()); return true;"
-        );
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedSimpleCompilerTest(
+            "public class Foo { public static void main() { System.getProperty(\"foo\"); } }",
+            "Foo",
+            DuclsSandboxTest.NO_PERMISSIONS
+        ).assertExecutable();
+    }
+
+    /**
+     * Verifies that also the {@link IClassBodyEvaluator} checks permissions.
+     */
+    @Test(expected = AccessControlException.class) public void
+    testClassBodyEvaluator() throws Exception {
+
+        this.confinedClassBodyTest(
+            "public static void main() { System.getProperty(\"foo\"); }",
+            DuclsSandboxTest.NO_PERMISSIONS
+        ).assertExecutable();
+    }
+
+    /**
+     * Verifies that also the {@link IExpressionEvaluator} checks permissions.
+     */
+    @Test(expected = AccessControlException.class) public void
+    testExpressionEvaluator() throws Exception {
+
+        this.confinedExpressionTest(
+            "System.getProperty(\"foo\")",
+            DuclsSandboxTest.NO_PERMISSIONS
+        ).assertExecutable();
     }
 
     // ====================================== END OF TEST CASES ======================================
@@ -214,13 +247,69 @@ try {
             @Override protected void
             compile() throws Exception {
                 this.scriptEvaluator.setThrownExceptions(new Class<?>[] { Exception.class });
+                this.scriptEvaluator.setPermissions(permissions);
                 super.compile();
             }
+        };
+    }
 
-            @Override @Nullable protected Object
-            execute() throws Exception {
-                Sandbox.confine(this.scriptEvaluator.getMethod().getDeclaringClass(), permissions);
-                return super.execute();
+    /**
+     * Creates and returns a {@link SimpleCompilerTest} object that executes the {@code public static void main()}
+     * method of the named class in a {@link Sandbox} with the given <var>permissions</var>.
+     */
+    private SimpleCompilerTest
+    confinedSimpleCompilerTest(
+        String            compilationUnit,
+        String            className,
+        final Permissions permissions
+    ) throws Exception {
+
+        return new SimpleCompilerTest(compilationUnit, className) {
+
+            @Override protected void
+            compile() throws Exception {
+                this.simpleCompiler.setPermissions(permissions);
+                super.compile();
+            }
+        };
+    }
+
+    /**
+     * Creates and returns a {@link ClassBodyTest} object that executes the {@code public
+     * static void main()} method in a {@link Sandbox} with the given <var>permissions</var>.
+     */
+    private ClassBodyTest
+    confinedClassBodyTest(
+        String            classBody,
+        final Permissions permissions
+    ) throws Exception {
+
+        return new ClassBodyTest(classBody) {
+
+            @Override protected void
+            compile() throws Exception {
+                this.classBodyEvaluator.setPermissions(permissions);
+                super.compile();
+            }
+        };
+    }
+
+    /**
+     * Creates and returns an {@link ExpressionTest} object that evaluates its subject expression
+     * in a {@link Sandbox} with the given <var>permissions</var>.
+     */
+    private ExpressionTest
+    confinedExpressionTest(
+        String            expression,
+        final Permissions permissions
+    ) throws Exception {
+
+        return new ExpressionTest(expression) {
+
+            @Override protected void
+            compile() throws Exception {
+                this.expressionEvaluator.setPermissions(permissions);
+                super.compile();
             }
         };
     }

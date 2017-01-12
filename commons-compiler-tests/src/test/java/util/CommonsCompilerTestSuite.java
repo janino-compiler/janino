@@ -106,12 +106,13 @@ class CommonsCompilerTestSuite {
         new ExpressionTest(expression).assertResultTrue();
     }
 
-    private
+    public
     class ExpressionTest extends CompileAndExecuteTest {
 
-        private final String               expression;
-        private final IExpressionEvaluator expressionEvaluator;
+        private final String                 expression;
+        protected final IExpressionEvaluator expressionEvaluator;
 
+        public
         ExpressionTest(String expression) throws Exception {
             this.expression          = expression;
             this.expressionEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newExpressionEvaluator();
@@ -121,7 +122,14 @@ class CommonsCompilerTestSuite {
         compile() throws Exception { this.expressionEvaluator.cook(this.expression); }
 
         @Override @Nullable protected Object
-        execute() throws Exception { return this.expressionEvaluator.evaluate(new Object[0]); }
+        execute() throws Exception {
+            try {
+                return this.expressionEvaluator.evaluate(new Object[0]);
+            } catch (InvocationTargetException ite) {
+                Throwable te = ite.getTargetException();
+                throw te instanceof Exception ? (Exception) te : ite;
+            }
+        }
     }
 
     /**
@@ -253,11 +261,13 @@ class CommonsCompilerTestSuite {
         new ClassBodyTest(classBody).assertResultTrue();
     }
 
-    private
+    public
     class ClassBodyTest extends CompileAndExecuteTest {
-        private final String              classBody;
-        private final IClassBodyEvaluator classBodyEvaluator;
 
+        private final String                classBody;
+        protected final IClassBodyEvaluator classBodyEvaluator;
+
+        public
         ClassBodyTest(String classBody) throws Exception {
             this.classBody          = classBody;
             this.classBodyEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newClassBodyEvaluator();
@@ -270,7 +280,12 @@ class CommonsCompilerTestSuite {
 
         @Override protected Object
         execute() throws Exception {
-            return this.classBodyEvaluator.getClazz().getMethod("main").invoke(null);
+            try {
+                return this.classBodyEvaluator.getClazz().getMethod("main").invoke(null);
+            } catch (InvocationTargetException ite) {
+                Throwable te = ite.getTargetException();
+                throw te instanceof Exception ? (Exception) te : ite;
+            }
         }
     }
 
@@ -310,13 +325,14 @@ class CommonsCompilerTestSuite {
         new SimpleCompilerTest(compilationUnit, className).assertResultTrue();
     }
 
-    private
+    public
     class SimpleCompilerTest extends CompileAndExecuteTest {
 
-        private final String          compilationUnit;
-        private final String          className;
-        private final ISimpleCompiler simpleCompiler;
+        private final String            compilationUnit;
+        private final String            className;
+        protected final ISimpleCompiler simpleCompiler;
 
+        public
         SimpleCompilerTest(String compilationUnit, String className) throws Exception {
             this.compilationUnit = compilationUnit;
             this.className       = className;
@@ -330,12 +346,17 @@ class CommonsCompilerTestSuite {
 
         @Override protected Object
         execute() throws Exception {
-            return (
-                this.simpleCompiler.getClassLoader()
-                .loadClass(this.className)
-                .getMethod("main", new Class[0])
-                .invoke(null, new Object[0])
-            );
+            try {
+                return (
+                    this.simpleCompiler.getClassLoader()
+                    .loadClass(this.className)
+                    .getMethod("main", new Class[0])
+                    .invoke(null, new Object[0])
+                );
+            } catch (InvocationTargetException ite) {
+                Throwable te = ite.getTargetException();
+                throw te instanceof Exception ? (Exception) te : ite;
+            }
         }
     }
 
@@ -427,7 +448,7 @@ class CommonsCompilerTestSuite {
         /**
          * Asserts that cooking and executing completes normally.
          */
-        protected void
+        public void
         assertExecutable() throws Exception {
             this.compile();
             this.execute();
