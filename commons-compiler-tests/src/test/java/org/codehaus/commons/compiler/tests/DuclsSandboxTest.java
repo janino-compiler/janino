@@ -27,6 +27,8 @@
 package org.codehaus.commons.compiler.tests;
 
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URLConnection;
 import java.security.AccessControlException;
 import java.security.AllPermission;
 import java.security.Permissions;
@@ -61,15 +63,14 @@ class DuclsSandboxTest extends JaninoTestSuite {
     compilerFactories() throws Exception { return TestUtil.getCompilerFactoriesForParameters(); }
 
     public
-    DuclsSandboxTest(ICompilerFactory compilerFactory) throws Exception {
-        super(compilerFactory);
-    }
+    DuclsSandboxTest(ICompilerFactory compilerFactory) throws Exception { super(compilerFactory); }
 
     /**
      * Verifies that a trivial script works in the no-permissions sandbox.
      */
     @Test public void
     testReturnTrue() throws Exception {
+
         String script = "return true;";
         this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
@@ -79,6 +80,7 @@ class DuclsSandboxTest extends JaninoTestSuite {
      */
     @Test(expected = AccessControlException.class) public void
     testGetSystemProperty() throws Exception {
+
         String script = "System.getProperty(\"foo\"); return true;";
         this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
@@ -88,7 +90,18 @@ class DuclsSandboxTest extends JaninoTestSuite {
      */
     @Test(expected = AccessControlException.class) public void
     testFileDelete() throws Exception {
+
         String script = "return new java.io.File(\"path/to/file.txt\").delete();";
+        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+    }
+
+    /**
+     * Verifies that it is forbidden to list a directory.
+     */
+    @Test(expected = AccessControlException.class) public void
+    testFileList() throws Exception {
+
+        String script = "return new java.io.File(\"path/to/dir\").list() != null;";
         this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
@@ -97,6 +110,7 @@ class DuclsSandboxTest extends JaninoTestSuite {
      */
     @Test public void
     testDotClass() throws Exception {
+
         String script = "return (System.class != null);";
         this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
@@ -106,6 +120,7 @@ class DuclsSandboxTest extends JaninoTestSuite {
      */
     @Test public void
     testClassForName() throws Exception {
+
         String script = "return (System.class.forName(\"java.lang.String\") != null);";
         this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
@@ -115,6 +130,7 @@ class DuclsSandboxTest extends JaninoTestSuite {
      */
     @Test(expected = AccessControlException.class) public void
     testDotClassGetDeclaredField() throws Exception {
+
         String script = "return (String.class.getDeclaredField(\"value\") != null);";
         this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
@@ -125,9 +141,55 @@ class DuclsSandboxTest extends JaninoTestSuite {
      */
     @Test public void
     testDotClassGetDeclaredFieldAllPermissions() throws Exception {
-        String.class.getDeclaredField("value").setAccessible(true);
+
         String script = "String.class.getDeclaredField(\"value\").setAccessible(true); return true;";
         this.confinedScriptTest(script, DuclsSandboxTest.ALL_PERMISSIONS).assertResultTrue();
+    }
+
+    /**
+     * Verifies that even <em>creating a URL object</em> is forbidden (which, oddly enough, results in a {@link
+     * MalformedURLException} and not a {@link AccessControlException}). Consequently, it is not possible to create
+     * any {@link URLConnection}s.
+     */
+    @Test(expected = MalformedURLException.class) public void
+    testUrlConnection1() throws Exception {
+
+        String script = "return new java.net.URL(\"http://localhost:65000\") != null;";
+        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+    }
+
+    /**
+     * Verifies that it is forbidden to resolve host names.
+     */
+    @Test(expected = AccessControlException.class) public void
+    testSocketToHost() throws Exception {
+
+        String script = "return new java.net.Socket(\"localhost\", 65000) != null;";
+        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+    }
+
+    /**
+     * Verifies that it is forbidden to connect to a numeric IPv4 address.
+     */
+    @Test(expected = AccessControlException.class) public void
+    testSocketToIpAddress() throws Exception {
+
+        String script = (
+            "return new java.net.Socket(java.net.InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }), 65000) != null;"
+        );
+        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+    }
+
+    /**
+     * Verifies that it is forbidden to change the sandbox confinement.
+     */
+    @Test(expected = SecurityException.class) public void
+    testSandboxReconfine() throws Exception {
+
+        String script = (
+            "de.unkrig.commons.lang.security.Sandbox.confine(SC.class, new java.security.Permissions()); return true;"
+        );
+        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     // ====================================== END OF TEST CASES ======================================
