@@ -97,7 +97,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </pre>
  */
 public
-interface IClassBodyEvaluator extends ICookable {
+interface IClassBodyEvaluator extends ISimpleCompiler {
 
     /**
      * Default name for the generated class.
