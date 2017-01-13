@@ -233,6 +233,57 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
         ).assertExecutable();
     }
 
+    /**
+     * Verifies that subthreads can be created and execute successfully.
+     */
+    @Test public void
+    testSubthreads() throws Exception {
+
+        // "Thread()" does some REFLECTION, so we must allow that.
+        Permissions permissions = new Permissions();
+        permissions.add(new RuntimePermission("accessDeclaredMembers"));
+
+        this.confinedScriptTest((
+            ""
+            + "final Object[] result = new Object[1];\n"
+            + "Thread t = new Thread() {\n"
+            + "    @Override public void run() { result[0] = \"howdy\"; }\n"
+            + "};\n"
+            + "t.start();\n"
+            + "t.join();\n"
+            + "return \"howdy\".equals(result[0]);\n"
+        ), permissions).assertResultTrue();
+    }
+
+    /**
+     * Verifies that also code declared in a subthread is subject to confinement.
+     */
+    @Test(expected = AccessControlException.class) public void
+    testSubthreadConfinement() throws Exception {
+
+        // "Thread()" does some REFLECTION, so we must allow that.
+        Permissions permissions = new Permissions();
+        permissions.add(new RuntimePermission("accessDeclaredMembers"));
+
+        this.confinedScriptTest((
+            ""
+            + "final Object[] result = new Object[1];\n"
+            + "Thread t = new Thread() {\n"
+            + "    @Override public void run() {\n"
+            + "        try {\n"
+            + "            result[0] = new java.io.File(\"path/to/dir\").list();\n"
+            + "        } catch (Exception e) {\n"
+            + "            result[0] = e;\n"
+            + "        }\n"
+            + "    }\n"
+            + "};\n"
+            + "t.start();\n"
+            + "t.join();\n"
+            + "if (result[0] instanceof Exception) throw (Exception) result[0];\n"
+            + "return result[0] == null;\n"
+        ), permissions).assertResultTrue();
+    }
+
     // ====================================== END OF TEST CASES ======================================
 
     /**
