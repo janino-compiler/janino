@@ -939,6 +939,11 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_11__TheSwitchStatement_String1() throws Exception {
 
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
+
         this.assertScriptReturnsTrue(
             ""
             + "String s = \"a\";\n"
@@ -956,6 +961,11 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     test_14_11__TheSwitchStatement_String2() throws Exception {
+
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
 
         this.assertScriptReturnsTrue(
             ""
@@ -975,6 +985,11 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_11__TheSwitchStatement_String3() throws Exception {
 
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
+
         this.assertScriptReturnsTrue(
             ""
             + "String s = \"g\";\n"
@@ -993,6 +1008,11 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_11__TheSwitchStatement_String4() throws Exception {
 
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
+
         this.assertScriptReturnsTrue(
             ""
             + "String s = \"g\";\n"
@@ -1009,6 +1029,11 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     test_14_11__TheSwitchStatement_String5() throws Exception {
+
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
 
         String s1 = "AaAaAa", s2 = "AaAaBB";
         Assert.assertEquals(s1.hashCode(), s2.hashCode());
@@ -1055,6 +1080,11 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     test_14_11__TheSwitchStatement_String_DuplicateCaseValue() throws Exception {
+
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
 
         this.assertScriptUncookable(
             ""
