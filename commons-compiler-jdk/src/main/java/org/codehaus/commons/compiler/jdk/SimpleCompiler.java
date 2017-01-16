@@ -154,33 +154,33 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             list(javax.tools.JavaFileManager.Location location, String packageName, Set<Kind> kinds, boolean recurse)
             throws IOException {
 
+                // We support only listing of ".class" resources.
                 if (!kinds.contains(Kind.CLASS)) return Collections.emptyList();
 
-                final String namePrefix = packageName.replace('.', '/') + '/';
-
+                final String namePrefix = packageName.isEmpty() ? "" : packageName.replace('.', '/') + '/';
 
                 Map<String, URL> allSubresources = ClassLoaders.getSubresources(
                     SimpleCompiler.this.parentClassLoader,
                     namePrefix,
-                    false // includeDirectories
+                    false, // includeDirectories
+                    recurse
                 );
 
-                Collection<JavaFileObject> result = new ArrayList<JavaFileObject>();
+                Collection<JavaFileObject> result = new ArrayList<JavaFileObject>(allSubresources.size());
                 for (Entry<String, URL> e : allSubresources.entrySet()) {
                     final String name = e.getKey();
                     final URL    url  = e.getValue();
 
                     if (!name.endsWith(".class")) continue;
 
-                    if (!recurse && name.indexOf('/', namePrefix.length()) != -1) continue;
-
                     final URI subresourceUri;
                     try {
                         subresourceUri = url.toURI();
-                    } catch (URISyntaxException e2) {
-                        continue;
+                    } catch (URISyntaxException use) {
+                        throw new AssertionError(use);
                     }
 
+                    // Cannot use "javax.tools.SimpleJavaFileObject" here, because that requires a URI with a "path".
                     result.add(new JavaFileObject() {
 
                         @Override public URI
@@ -195,6 +195,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                         @Override public Kind
                         getKind() { return Kind.CLASS; }
 
+                        // SUPPRESS CHECKSTYLE LineLength:9
                         @Override public OutputStream openOutputStream()                             { throw new UnsupportedOperationException(); }
                         @Override public Reader       openReader(boolean ignoreEncodingErrors)       { throw new UnsupportedOperationException(); }
                         @Override public CharSequence getCharContent(boolean ignoreEncodingErrors)   { throw new UnsupportedOperationException(); }
@@ -219,19 +220,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 return result.substring(0, result.lastIndexOf('.')).replace('/', '.');
             }
 
-            @NotNullByDefault(false) @Override public boolean
-            isSameFile(FileObject a, FileObject b) { throw new UnsupportedOperationException(); }
-
-            @NotNullByDefault(false) @Override public boolean
-            handleOption(String current, Iterator<String> remaining) { throw new UnsupportedOperationException(); }
-
             @Override public boolean
             hasLocation(@Nullable javax.tools.JavaFileManager.Location location) {
                 return location == StandardLocation.CLASS_PATH;
             }
-
-            @NotNullByDefault(false) @Override public int
-            isSupportedOption(String option) { throw new UnsupportedOperationException(); }
 
             @NotNullByDefault(false) @Override public JavaFileObject
             getJavaFileForInput(javax.tools.JavaFileManager.Location location, String className, Kind kind)
@@ -273,6 +265,15 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
                 return fileObject;
             }
+
+            @NotNullByDefault(false) @Override public boolean
+            isSameFile(FileObject a, FileObject b) { throw new UnsupportedOperationException(); }
+
+            @NotNullByDefault(false) @Override public boolean
+            handleOption(String current, Iterator<String> remaining) { throw new UnsupportedOperationException(); }
+
+            @NotNullByDefault(false) @Override public int
+            isSupportedOption(String option) { throw new UnsupportedOperationException(); }
 
             @NotNullByDefault(false) @Override public FileObject
             getFileForInput(javax.tools.JavaFileManager.Location location, String packageName, String relativeName) {
