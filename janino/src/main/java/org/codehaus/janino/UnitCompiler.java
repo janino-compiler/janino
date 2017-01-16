@@ -2089,8 +2089,8 @@ class UnitCompiler {
             // For STRING SWITCH, we must generate extra code that checks for string equality --
             // the strings' hash codes are not globally unique (as, e.g. MD5).
             for (Entry<Integer, CodeContext.Offset> e : caseLabelMap.entrySet()) {
-                Integer            caseHashCode = (Integer) e.getKey();
-                CodeContext.Offset offset       = (CodeContext.Offset) e.getValue();
+                final Integer            caseHashCode = (Integer) e.getKey();
+                final CodeContext.Offset offset       = (CodeContext.Offset) e.getValue();
 
                 offset.set();
 
@@ -5559,8 +5559,14 @@ class UnitCompiler {
                         int isi = ss.indexOf(is);
                         if (isi >= 1) {
                             if (ss.get(isi - 1) instanceof LocalVariableDeclarationStatement) {
-                                LocalVariableDeclarationStatement lvds = (LocalVariableDeclarationStatement) ss.get(isi - 1);
-                                if (lvds.variableDeclarators.length == 1 && lvds.variableDeclarators[0].localVariable == lv) {
+
+                                LocalVariableDeclarationStatement
+                                lvds = (LocalVariableDeclarationStatement) ss.get(isi - 1);
+
+                                if (
+                                    lvds.variableDeclarators.length == 1
+                                    && lvds.variableDeclarators[0].localVariable == lv
+                                ) {
                                     ArrayInitializerOrRvalue oi = lvds.variableDeclarators[0].optionalInitializer;
                                     if (oi instanceof Rvalue) return this.getConstantValue((Rvalue) oi);
                                 }
@@ -6882,7 +6888,7 @@ class UnitCompiler {
         // You have to check that both the class and member are accessible in this scope.
         IClass declaringIClass = member.getDeclaringIClass();
         this.checkAccessible(declaringIClass, contextScope, location);
-        this.checkAccessible(declaringIClass, member.getAccess(), contextScope, location);
+        this.checkMemberAccessible(declaringIClass, member, contextScope, location);
     }
 
     /**
@@ -6899,14 +6905,14 @@ class UnitCompiler {
      * block statement context, according to JLS7 6.6.1.4. Issue a {@link #compileError(String)} if not.
      */
     private void
-    checkAccessible(
-        IClass   iClassDeclaringMember,
-        Access   memberAccess,
-        Scope    contextScope,
-        Location location
+    checkMemberAccessible(
+        IClass         iClassDeclaringMember,
+        IClass.IMember member,
+        Scope          contextScope,
+        Location       location
     ) throws CompileException {
-        String message = this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextScope);
-        if (message != null) this.compileError(message, location);
+        String message = this.internalCheckAccessible(iClassDeclaringMember, member.getAccess(), contextScope);
+        if (message != null) this.compileError(member.toString() + ": " + message, location);
     }
 
     /**
@@ -6968,9 +6974,7 @@ class UnitCompiler {
 
         if (memberAccess == Access.DEFAULT) {
             return (
-                "Member with \""
-                + memberAccess
-                + "\" access cannot be accessed from type \""
+                "Member with \"package\" access cannot be accessed from type \""
                 + iClassDeclaringContext
                 + "\"."
             );
