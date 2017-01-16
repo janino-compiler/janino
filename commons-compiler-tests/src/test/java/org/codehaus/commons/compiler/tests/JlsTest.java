@@ -413,6 +413,16 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_6_6_1_Determining_Accessibility_member_access() throws Exception {
+
+        // SUPPRESS CHECKSTYLE Whitespace|LineLength:4
+        this.assertExpressionEvaluatesTrue("for_sandbox_tests.ClassWithFields.publicField        == 1");
+        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.protectedField     == 2", Pattern.compile("Protected member cannot be accessed|compiler.err.report.access"));
+        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.packageAccessField == 3", Pattern.compile("Member with \"package\" access cannot be accessed|compiler.err.not.def.public.cant.access"));
+        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.privateField       == 4", Pattern.compile("Private member cannot be accessed|compiler.err.report.access"));
+    }
+
+    @Test public void
     test_7_5__ImportDeclarations() throws Exception {
         // Default imports
         this.assertExpressionEvaluatesTrue(
@@ -1580,14 +1590,9 @@ class JlsTest extends CommonsCompilerTestSuite {
         //    therefore it is an ambiguous case
         //  Ref: http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.1
         //
-        //  (Note: Some versions of javac tries a bit harder,
-        //         choosing the only existing variable-arity method.
-        //         Their reasoning seems to be that
-        //         there is ambiguity amongst fixed-arity applicables, so
-        //         picking a vararg is acceptable if that means there is
-        //         no ambiguity.
-        //         I have not been able to find any piece of documentation
-        //         about this in the docs)
+        // (Note: Some versions of javac choose the variable-arity method ("return 0"). Their reasoning seems to be
+        // that there is ambiguity amongst fixed-arity applicables, so picking a vararg is acceptable if that means
+        // there is no ambiguity. I have not been able to find any piece of documentation about this in the docs.)
 
         this.assertClassBodyUncookable(
             ""
