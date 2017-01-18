@@ -148,10 +148,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         final JavaFileManager fileManager = new JavaFileManager() {
 
             @NotNullByDefault(false) @Override public ClassLoader
-            getClassLoader(javax.tools.JavaFileManager.Location location) { return null; }
+            getClassLoader(JavaFileManager.Location location) { return null; }
 
             @NotNullByDefault(false) @Override public Iterable<JavaFileObject>
-            list(javax.tools.JavaFileManager.Location location, String packageName, Set<Kind> kinds, boolean recurse)
+            list(JavaFileManager.Location location, String packageName, Set<Kind> kinds, boolean recurse)
             throws IOException {
 
                 // We support only listing of ".class" resources.
@@ -215,18 +215,18 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             }
 
             @NotNullByDefault(false) @Override public String
-            inferBinaryName(javax.tools.JavaFileManager.Location location, JavaFileObject file) {
+            inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
                 String result = file.getName();
                 return result.substring(0, result.lastIndexOf('.')).replace('/', '.');
             }
 
             @Override public boolean
-            hasLocation(@Nullable javax.tools.JavaFileManager.Location location) {
+            hasLocation(@Nullable JavaFileManager.Location location) {
                 return location == StandardLocation.CLASS_PATH;
             }
 
             @NotNullByDefault(false) @Override public JavaFileObject
-            getJavaFileForInput(javax.tools.JavaFileManager.Location location, String className, Kind kind)
+            getJavaFileForInput(JavaFileManager.Location location, String className, Kind kind)
             throws IOException {
 
                 if (location != StandardLocation.CLASS_OUTPUT) throw new UnsupportedOperationException();
@@ -238,10 +238,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
             @NotNullByDefault(false) @Override public JavaFileObject
             getJavaFileForOutput(
-                javax.tools.JavaFileManager.Location location,
-                String                               className,
-                Kind                                 kind,
-                FileObject                           sibling
+                JavaFileManager.Location location,
+                String                   className,
+                Kind                     kind,
+                FileObject               sibling
             ) throws IOException {
 
                 if (location != StandardLocation.CLASS_OUTPUT) throw new UnsupportedOperationException();
@@ -276,16 +276,16 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             isSupportedOption(String option) { throw new UnsupportedOperationException(); }
 
             @NotNullByDefault(false) @Override public FileObject
-            getFileForInput(javax.tools.JavaFileManager.Location location, String packageName, String relativeName) {
+            getFileForInput(JavaFileManager.Location location, String packageName, String relativeName) {
                 throw new UnsupportedOperationException();
             }
 
             @NotNullByDefault(false) @Override public FileObject
             getFileForOutput(
-                javax.tools.JavaFileManager.Location location,
-                String                               packageName,
-                String                               relativeName,
-                FileObject                           sibling
+                JavaFileManager.Location location,
+                String                   packageName,
+                String                   relativeName,
+                FileObject               sibling
             ) throws IOException { throw new UnsupportedOperationException(); }
 
             @Override public void
