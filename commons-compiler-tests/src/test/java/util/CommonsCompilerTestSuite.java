@@ -27,6 +27,7 @@
 package util;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
@@ -43,7 +44,7 @@ import org.junit.Assert;
  * A base class for JUnit 4 test cases that provides easy-to-use functionality to test JANINO.
  */
 public
-class JaninoTestSuite {
+class CommonsCompilerTestSuite {
 
     /**
      * The {@link ICompilerFactory} in effect for this test execution.
@@ -51,7 +52,7 @@ class JaninoTestSuite {
     protected final ICompilerFactory compilerFactory;
 
     public
-    JaninoTestSuite(ICompilerFactory compilerFactory) {
+    CommonsCompilerTestSuite(ICompilerFactory compilerFactory) {
         this.compilerFactory = compilerFactory;
     }
 
@@ -105,22 +106,30 @@ class JaninoTestSuite {
         new ExpressionTest(expression).assertResultTrue();
     }
 
-    private
+    public
     class ExpressionTest extends CompileAndExecuteTest {
 
-        private final String               expression;
-        private final IExpressionEvaluator expressionEvaluator;
+        private final String                 expression;
+        protected final IExpressionEvaluator expressionEvaluator;
 
+        public
         ExpressionTest(String expression) throws Exception {
             this.expression          = expression;
-            this.expressionEvaluator = JaninoTestSuite.this.compilerFactory.newExpressionEvaluator();
+            this.expressionEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newExpressionEvaluator();
         }
 
         @Override protected void
         compile() throws Exception { this.expressionEvaluator.cook(this.expression); }
 
         @Override @Nullable protected Object
-        execute() throws Exception { return this.expressionEvaluator.evaluate(new Object[0]); }
+        execute() throws Exception {
+            try {
+                return this.expressionEvaluator.evaluate(new Object[0]);
+            } catch (InvocationTargetException ite) {
+                Throwable te = ite.getTargetException();
+                throw te instanceof Exception ? (Exception) te : ite;
+            }
+        }
     }
 
     /**
@@ -181,18 +190,18 @@ class JaninoTestSuite {
         return new ScriptTest(script).getResult();
     }
 
-    private
+    public
     class ScriptTest extends CompileAndExecuteTest {
 
-        private final String           script;
-        private final IScriptEvaluator scriptEvaluator;
+        private final String             script;
+        protected final IScriptEvaluator scriptEvaluator;
 
-        ScriptTest(String script) throws Exception {
+        public ScriptTest(String script) throws Exception {
             this.script          = script;
-            this.scriptEvaluator = JaninoTestSuite.this.compilerFactory.newScriptEvaluator();
+            this.scriptEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newScriptEvaluator();
         }
 
-        @Override protected void
+        @Override public void
         assertResultTrue() throws Exception {
             this.scriptEvaluator.setReturnType(boolean.class);
             super.assertResultTrue();
@@ -208,7 +217,14 @@ class JaninoTestSuite {
         compile() throws Exception { this.scriptEvaluator.cook(this.script); }
 
         @Override @Nullable protected Object
-        execute() throws Exception { return this.scriptEvaluator.evaluate(new Object[0]); }
+        execute() throws Exception {
+            try {
+                return this.scriptEvaluator.evaluate(new Object[0]);
+            } catch (InvocationTargetException ite) {
+                Throwable te = ite.getTargetException();
+                throw te instanceof Exception ? (Exception) te : ite;
+            }
+        }
     }
 
     /**
@@ -245,14 +261,16 @@ class JaninoTestSuite {
         new ClassBodyTest(classBody).assertResultTrue();
     }
 
-    private
+    public
     class ClassBodyTest extends CompileAndExecuteTest {
-        private final String              classBody;
-        private final IClassBodyEvaluator classBodyEvaluator;
 
+        private final String                classBody;
+        protected final IClassBodyEvaluator classBodyEvaluator;
+
+        public
         ClassBodyTest(String classBody) throws Exception {
             this.classBody          = classBody;
-            this.classBodyEvaluator = JaninoTestSuite.this.compilerFactory.newClassBodyEvaluator();
+            this.classBodyEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newClassBodyEvaluator();
         }
 
         @Override protected void
@@ -262,7 +280,12 @@ class JaninoTestSuite {
 
         @Override protected Object
         execute() throws Exception {
-            return this.classBodyEvaluator.getClazz().getMethod("main").invoke(null);
+            try {
+                return this.classBodyEvaluator.getClazz().getMethod("main").invoke(null);
+            } catch (InvocationTargetException ite) {
+                Throwable te = ite.getTargetException();
+                throw te instanceof Exception ? (Exception) te : ite;
+            }
         }
     }
 
@@ -302,17 +325,18 @@ class JaninoTestSuite {
         new SimpleCompilerTest(compilationUnit, className).assertResultTrue();
     }
 
-    private
+    public
     class SimpleCompilerTest extends CompileAndExecuteTest {
 
-        private final String          compilationUnit;
-        private final String          className;
-        private final ISimpleCompiler simpleCompiler;
+        private final String            compilationUnit;
+        private final String            className;
+        protected final ISimpleCompiler simpleCompiler;
 
+        public
         SimpleCompilerTest(String compilationUnit, String className) throws Exception {
             this.compilationUnit = compilationUnit;
             this.className       = className;
-            this.simpleCompiler  = JaninoTestSuite.this.compilerFactory.newSimpleCompiler();
+            this.simpleCompiler  = CommonsCompilerTestSuite.this.compilerFactory.newSimpleCompiler();
         }
 
         @Override protected void
@@ -322,12 +346,17 @@ class JaninoTestSuite {
 
         @Override protected Object
         execute() throws Exception {
-            return (
-                this.simpleCompiler.getClassLoader()
-                .loadClass(this.className)
-                .getMethod("main", new Class[0])
-                .invoke(null, new Object[0])
-            );
+            try {
+                return (
+                    this.simpleCompiler.getClassLoader()
+                    .loadClass(this.className)
+                    .getMethod("main", new Class[0])
+                    .invoke(null, new Object[0])
+                );
+            } catch (InvocationTargetException ite) {
+                Throwable te = ite.getTargetException();
+                throw te instanceof Exception ? (Exception) te : ite;
+            }
         }
     }
 
@@ -419,7 +448,7 @@ class JaninoTestSuite {
         /**
          * Asserts that cooking and executing completes normally.
          */
-        protected void
+        public void
         assertExecutable() throws Exception {
             this.compile();
             this.execute();

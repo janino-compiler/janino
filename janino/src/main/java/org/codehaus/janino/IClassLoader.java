@@ -88,6 +88,8 @@ class IClassLoader {
     public IMethod METH_java_lang_Enum__ordinal;
     public IMethod METH_java_lang_Iterable__iterator;
     public IMethod METH_java_lang_String__concat__java_lang_String;
+    public IMethod METH_java_lang_String__equals__java_lang_Object;
+    public IMethod METH_java_lang_String__hashCode;
     public IMethod METH_java_lang_String__valueOf__int;
     public IMethod METH_java_lang_String__valueOf__long;
     public IMethod METH_java_lang_String__valueOf__float;
@@ -157,6 +159,8 @@ class IClassLoader {
             this.METH_java_lang_Enum__ordinal                           = IClassLoader.requireMethod(this.TYPE_java_lang_Enum,          "ordinal");
             this.METH_java_lang_Iterable__iterator                      = IClassLoader.requireMethod(this.TYPE_java_lang_Iterable,      "iterator");
             this.METH_java_lang_String__concat__java_lang_String        = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "concat",   this.TYPE_java_lang_String);
+            this.METH_java_lang_String__equals__java_lang_Object        = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "equals",   this.TYPE_java_lang_Object);
+            this.METH_java_lang_String__hashCode                        = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "hashCode");
             this.METH_java_lang_String__valueOf__int                    = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.INT);
             this.METH_java_lang_String__valueOf__long                   = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.LONG);
             this.METH_java_lang_String__valueOf__float                  = IClassLoader.requireMethod(this.TYPE_java_lang_String,        "valueOf",  IClass.FLOAT);

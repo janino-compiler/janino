@@ -27,6 +27,7 @@
 package org.codehaus.commons.compiler;
 
 import java.io.Reader;
+import java.security.Permissions;
 
 /**
  * A simplified Java compiler that can compile only a single compilation unit. (A "compilation unit" is the document
@@ -63,4 +64,30 @@ interface ISimpleCompiler extends ICookable {
      */
     ClassLoader getClassLoader();
 
+    /**
+     * Installs a security manager in the running JVM such that all generated code, when executed, will be checked
+     * against the given <var>permissions</var>.
+     * <p>
+     *   By default, generated code is executed with the <em>same</em> permissions as the rest of the running JVM,
+     *   which typically means that any generated code can easily compromise the system, e.g. by reading or deleting
+     *   files on the local file system.
+     * </p>
+     * <p>
+     *   Thus, if you compile and execute <em>any user-written code</em> and cannot be sure that the code is written
+     *   carefully, then you should definitely restrict the permissions for the generated code.
+     * </p>
+     *
+     * @see <a href="https://docs.oracle.com/javase/tutorial/essential/environment/security.html">ORACLE: Java
+     *      Essentials: The Security Manager</a>
+     */
+    void setPermissions(Permissions permissions);
+
+    /**
+     * Installs a security manager in the running JVM such that all generated code, when executed, is not allowed to
+     * execute any checked operations.
+     *
+     * @see <a href="https://docs.oracle.com/javase/tutorial/essential/environment/security.html">ORACLE: Java
+     *      Essentials: The Security Manager</a>
+     */
+    void setNoPermissions();
 }

@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Method;
 import java.security.AccessController;
+import java.security.Permissions;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +44,7 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.Sandbox;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.Type;
@@ -71,6 +73,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
     private boolean debugLines  = this.debugSource;
     private boolean debugVars   = this.debugSource;
+
+    @Nullable private Permissions permissions;
 
     public static void // SUPPRESS CHECKSTYLE JavadocMethod
     main(String[] args) throws Exception {
@@ -228,6 +232,12 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         }
         return this.assertCooked();
     }
+
+    @Override public void
+    setPermissions(Permissions permissions) { this.permissions = permissions;  }
+
+    @Override public void
+    setNoPermissions() { this.setPermissions(new Permissions()); }
 
     /**
      * Two {@link SimpleCompiler}s are regarded equal iff
@@ -419,7 +429,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             }
 
             // Create a ClassLoader that loads the generated classes.
-            this.result = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            ClassLoader cl = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
 
                 @Override public ClassLoader
                 run() {
@@ -429,7 +439,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                     );
                 }
             });
-            return this.assertCooked();
+
+            // Apply any configured permissions.
+            if (this.permissions != null) Sandbox.confine(cl, this.permissions);
+
+            return (this.result = cl);
         } finally {
             this.classLoaderIClassLoader = null;
         }
@@ -440,7 +454,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      */
     private ClassLoader
     assertCooked() {
-        if (this.result != null) return this.result;
-        throw new IllegalStateException("Must only be called after \"cook()\"");
+
+        ClassLoader cl = this.result;
+        if (cl == null) throw new IllegalStateException("Must only be called after \"cook()\"");
+
+        return cl;
     }
 }

@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import util.JaninoTestSuite;
+import util.CommonsCompilerTestSuite;
 import util.TestUtil;
 
 // CHECKSTYLE MethodName:OFF
@@ -52,7 +52,7 @@ import util.TestUtil;
  * Tests against the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7 Edition</a>.
  */
 @RunWith(Parameterized.class) public
-class JlsTest extends JaninoTestSuite {
+class JlsTest extends CommonsCompilerTestSuite {
 
     @Parameters(name = "CompilerFactory={0}") public static List<Object[]>
     compilerFactories() throws Exception {
@@ -410,6 +410,16 @@ class JlsTest extends JaninoTestSuite {
         this.assertExpressionEvaluatesTrue("7 % new Float(2.5F) == 2F");
         this.assertExpressionEvaluatesTrue("2000000000 + 2000000000L == 4000000000L");
         this.assertExpressionEvaluatesTrue("(short) 32767 + (byte) 100 == 32867");
+    }
+
+    @Test public void
+    test_6_6_1_Determining_Accessibility_member_access() throws Exception {
+
+        // SUPPRESS CHECKSTYLE Whitespace|LineLength:4
+        this.assertExpressionEvaluatesTrue("for_sandbox_tests.ClassWithFields.publicField        == 1");
+        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.protectedField     == 2", Pattern.compile("Protected member cannot be accessed|compiler.err.report.access"));
+        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.packageAccessField == 3", Pattern.compile("Member with \"package\" access cannot be accessed|compiler.err.not.def.public.cant.access"));
+        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.privateField       == 4", Pattern.compile("Private member cannot be accessed|compiler.err.report.access"));
     }
 
     @Test public void
@@ -937,6 +947,171 @@ class JlsTest extends JaninoTestSuite {
     }
 
     @Test public void
+    test_14_11__TheSwitchStatement_String1() throws Exception {
+
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "String s = \"a\";\n"
+            + "\n"
+            + "switch (s) {\n"
+            + "case \"a\": case \"b\": case \"c\":\n"
+            + "    return true;\n"
+            + "case \"d\": case \"e\": case \"f\":\n"
+            + "    return false;\n"
+            + "default:\n"
+            + "    return false;"
+            + "}\n"
+        );
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement_String2() throws Exception {
+
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "String s = \"f\";\n"
+            + "\n"
+            + "switch (s) {\n"
+            + "case \"a\": case \"b\": case \"c\":\n"
+            + "    return false;\n"
+            + "case \"d\": case \"e\": case \"f\":\n"
+            + "    return true;\n"
+            + "default:\n"
+            + "    return false;"
+            + "}\n"
+        );
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement_String3() throws Exception {
+
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "String s = \"g\";\n"
+            + "\n"
+            + "switch (s) {\n"
+            + "case \"a\": case \"b\": case \"c\":\n"
+            + "    return false;\n"
+            + "case \"d\": case \"e\": case \"f\":\n"
+            + "    return false;\n"
+            + "default:\n"
+            + "    return true;"
+            + "}\n"
+        );
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement_String4() throws Exception {
+
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "String s = \"g\";\n"
+            + "\n"
+            + "switch (s) {\n"
+            + "case \"a\": case \"b\": case \"c\":\n"
+            + "    return false;\n"
+            + "case \"d\": case \"e\": case \"f\":\n"
+            + "    return false;\n"
+            + "}\n"
+            + "return true;"
+        );
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement_String5() throws Exception {
+
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
+
+        String s1 = "AaAaAa", s2 = "AaAaBB";
+        Assert.assertEquals(s1.hashCode(), s2.hashCode());
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "switch (\"" + s1 + "\") {\n"
+            + "case \"" + s1 + "\":\n"
+            + "    return true;\n"
+            + "}\n"
+            + "return false;"
+        );
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "switch (\"" + s1 + "\") {\n"
+            + "case \"" + s1 + "\":\n"
+            + "case \"" + s2 + "\":\n"
+            + "    return true;\n"
+            + "}\n"
+            + "return false;"
+        );
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "switch (\"" + s1 + "\") {\n"
+            + "case \"" + s1 + "\":\n"
+            + "    return true;\n"
+            + "case \"" + s2 + "\":\n"
+            + "    return false;\n"
+            + "}\n"
+            + "return false;"
+        );
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "switch (\"" + s1 + "\") {\n"
+            + "case \"" + s2 + "\":\n"
+            + "    return false;\n"
+            + "}\n"
+            + "return true;"
+        );
+    }
+
+    @Test public void
+    test_14_11__TheSwitchStatement_String_DuplicateCaseValue() throws Exception {
+
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.6".equals(System.getProperty("java.specification.version"))
+        ) return;
+
+        this.assertScriptUncookable(
+            ""
+            + "String s = \"c\";\n"
+            + "\n"
+            + "switch (s) {\n"
+            + "case \"a\": case \"b\": case \"c\":\n"
+            + "    return false;\n"
+            + "case \"c\": case \"d\": case \"e\":\n"
+            + "    return false;\n"
+            + "default:\n"
+            + "    return false;"
+            + "}\n"
+        );
+    }
+
+    @Test public void
     test_14_14_2_1__TheEnhancedForStatement_Iterable() throws Exception {
         this.assertScriptReturnsTrue(
             "String x = \"A\";\n"
@@ -1415,14 +1590,9 @@ class JlsTest extends JaninoTestSuite {
         //    therefore it is an ambiguous case
         //  Ref: http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.1
         //
-        //  (Note: Some versions of javac tries a bit harder,
-        //         choosing the only existing variable-arity method.
-        //         Their reasoning seems to be that
-        //         there is ambiguity amongst fixed-arity applicables, so
-        //         picking a vararg is acceptable if that means there is
-        //         no ambiguity.
-        //         I have not been able to find any piece of documentation
-        //         about this in the docs)
+        // (Note: Some versions of javac choose the variable-arity method ("return 0"). Their reasoning seems to be
+        // that there is ambiguity amongst fixed-arity applicables, so picking a vararg is acceptable if that means
+        // there is no ambiguity. I have not been able to find any piece of documentation about this in the docs.)
 
         this.assertClassBodyUncookable(
             ""

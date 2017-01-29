@@ -26,22 +26,39 @@
 
 package org.codehaus.commons.compiler.jdk;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.AccessController;
+import java.security.Permissions;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
-import javax.tools.ForwardingJavaFileManager;
+import javax.tools.FileObject;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
+import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
 import org.codehaus.commons.compiler.CompileException;
@@ -49,7 +66,9 @@ import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.Sandbox;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -65,15 +84,25 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private boolean                  debugVars;
     @Nullable private ErrorHandler   optionalCompileErrorHandler;
     @Nullable private WarningHandler optionalWarningHandler;
+    @Nullable private Permissions    permissions;
 
     /**
      * @throws IllegalStateException This {@link Cookable} is not yet cooked
      */
     @Override public ClassLoader
     getClassLoader() {
-        if (this.result != null) return this.result;
-        throw new IllegalStateException("Not yet cooked");
+
+        ClassLoader cl = this.result;
+        if (cl == null) throw new IllegalStateException("Not yet cooked");
+
+        return cl;
     }
+
+    @Override public void
+    setPermissions(Permissions permissions) { this.permissions = permissions;  }
+
+    @Override public void
+    setNoPermissions() { this.setPermissions(new Permissions()); }
 
     @Override public void
     cook(@Nullable String optionalFileName, final Reader r) throws CompileException, IOException {
@@ -114,22 +143,156 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             );
         }
 
-        // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
-        // CLASSPATH.
-        final JavaFileManager fm = compiler.getStandardFileManager(null, null, null);
+        // Set up a JavaFileManager that reads .class files through the this.parentClassLoader, and stores .class
+        // files in byte arrays
+        final JavaFileManager fileManager = new JavaFileManager() {
 
-        // Wrap it so that the output files (in our case class files) are stored in memory rather
-        // than in files.
-        final JavaFileManager fileManager = new ForwardingJavaFileManager<JavaFileManager>(
-            new ByteArrayJavaFileManager<JavaFileManager>(fm)
-        ) {
+            @NotNullByDefault(false) @Override public ClassLoader
+            getClassLoader(JavaFileManager.Location location) { return null; }
 
-            // Unclear why the following four lines were once added - they break the commons-compiler-jdk
-            // implementation with Java 7 and 8 (although Java 6 works).
-//            @Override @Nullable public ClassLoader
-//            getClassLoader(@Nullable javax.tools.JavaFileManager.Location location) {
-//                return SimpleCompiler.this.parentClassLoader;
-//            }
+            @NotNullByDefault(false) @Override public Iterable<JavaFileObject>
+            list(JavaFileManager.Location location, String packageName, Set<Kind> kinds, boolean recurse)
+            throws IOException {
+
+                // We support only listing of ".class" resources.
+                if (!kinds.contains(Kind.CLASS)) return Collections.emptyList();
+
+                final String namePrefix = packageName.isEmpty() ? "" : packageName.replace('.', '/') + '/';
+
+                Map<String, URL> allSubresources = ClassLoaders.getSubresources(
+                    SimpleCompiler.this.parentClassLoader,
+                    namePrefix,
+                    false, // includeDirectories
+                    recurse
+                );
+
+                Collection<JavaFileObject> result = new ArrayList<JavaFileObject>(allSubresources.size());
+                for (Entry<String, URL> e : allSubresources.entrySet()) {
+                    final String name = e.getKey();
+                    final URL    url  = e.getValue();
+
+                    if (!name.endsWith(".class")) continue;
+
+                    final URI subresourceUri;
+                    try {
+                        subresourceUri = url.toURI();
+                    } catch (URISyntaxException use) {
+                        throw new AssertionError(use);
+                    }
+
+                    // Cannot use "javax.tools.SimpleJavaFileObject" here, because that requires a URI with a "path".
+                    result.add(new JavaFileObject() {
+
+                        @Override public URI
+                        toUri() { return subresourceUri; }
+
+                        @Override public String
+                        getName() { return name; }
+
+                        @Override public InputStream
+                        openInputStream() throws IOException { return url.openStream(); }
+
+                        @Override public Kind
+                        getKind() { return Kind.CLASS; }
+
+                        // SUPPRESS CHECKSTYLE LineLength:9
+                        @Override public OutputStream openOutputStream()                             { throw new UnsupportedOperationException(); }
+                        @Override public Reader       openReader(boolean ignoreEncodingErrors)       { throw new UnsupportedOperationException(); }
+                        @Override public CharSequence getCharContent(boolean ignoreEncodingErrors)   { throw new UnsupportedOperationException(); }
+                        @Override public Writer       openWriter()                                   { throw new UnsupportedOperationException(); }
+                        @Override public long         getLastModified()                              { throw new UnsupportedOperationException(); }
+                        @Override public boolean      delete()                                       { throw new UnsupportedOperationException(); }
+                        @Override public boolean      isNameCompatible(String simpleName, Kind kind) { throw new UnsupportedOperationException(); }
+                        @Override public NestingKind  getNestingKind()                               { throw new UnsupportedOperationException(); }
+                        @Override public Modifier     getAccessLevel()                               { throw new UnsupportedOperationException(); }
+
+                        @Override public String
+                        toString() { return name + " from " + this.getClass().getSimpleName(); }
+                    });
+                }
+
+                return result;
+            }
+
+            @NotNullByDefault(false) @Override public String
+            inferBinaryName(JavaFileManager.Location location, JavaFileObject file) {
+                String result = file.getName();
+                return result.substring(0, result.lastIndexOf('.')).replace('/', '.');
+            }
+
+            @Override public boolean
+            hasLocation(@Nullable JavaFileManager.Location location) {
+                return location == StandardLocation.CLASS_PATH;
+            }
+
+            @NotNullByDefault(false) @Override public JavaFileObject
+            getJavaFileForInput(JavaFileManager.Location location, String className, Kind kind)
+            throws IOException {
+
+                if (location != StandardLocation.CLASS_OUTPUT) throw new UnsupportedOperationException();
+
+                return this.classFiles.get(className);
+            }
+
+            Map<String /*className*/, JavaFileObject> classFiles = new HashMap<String, JavaFileObject>();
+
+            @NotNullByDefault(false) @Override public JavaFileObject
+            getJavaFileForOutput(
+                JavaFileManager.Location location,
+                String                   className,
+                Kind                     kind,
+                FileObject               sibling
+            ) throws IOException {
+
+                if (location != StandardLocation.CLASS_OUTPUT) throw new UnsupportedOperationException();
+                if (kind != Kind.CLASS) throw new UnsupportedOperationException();
+
+                JavaFileObject fileObject = new SimpleJavaFileObject(
+                    URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
+                    Kind.CLASS
+                ) {
+
+                    final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+                    @Override public OutputStream
+                    openOutputStream() throws IOException { return this.buffer; }
+
+                    @Override public InputStream
+                    openInputStream() throws IOException { return new ByteArrayInputStream(this.buffer.toByteArray()); }
+                };
+
+                this.classFiles.put(className, fileObject);
+
+                return fileObject;
+            }
+
+            @NotNullByDefault(false) @Override public boolean
+            isSameFile(FileObject a, FileObject b) { throw new UnsupportedOperationException(); }
+
+            @NotNullByDefault(false) @Override public boolean
+            handleOption(String current, Iterator<String> remaining) { throw new UnsupportedOperationException(); }
+
+            @NotNullByDefault(false) @Override public int
+            isSupportedOption(String option) { throw new UnsupportedOperationException(); }
+
+            @NotNullByDefault(false) @Override public FileObject
+            getFileForInput(JavaFileManager.Location location, String packageName, String relativeName) {
+                throw new UnsupportedOperationException();
+            }
+
+            @NotNullByDefault(false) @Override public FileObject
+            getFileForOutput(
+                JavaFileManager.Location location,
+                String                   packageName,
+                String                   relativeName,
+                FileObject               sibling
+            ) throws IOException { throw new UnsupportedOperationException(); }
+
+            @Override public void
+            flush() {}
+
+            @Override public void
+            close() {}
         };
 
         // Run the compiler.
@@ -203,14 +366,19 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 }
             }
             throw rte;
+        } finally {
+            fileManager.close();
         }
 
         // Create a ClassLoader that reads class files from our FM.
-        this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
+        ClassLoader cl = (this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
 
             @Override public JavaFileManagerClassLoader
             run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
-        });
+        }));
+
+        // Apply any configured permissions.
+        if (this.permissions != null) Sandbox.confine(cl, this.permissions);
     }
 
     @Override public void

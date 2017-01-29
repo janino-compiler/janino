@@ -40,6 +40,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -177,6 +178,7 @@ import org.codehaus.janino.Java.SuperConstructorInvocation;
 import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
 import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.SwitchStatement;
+import org.codehaus.janino.Java.SwitchStatement.SwitchBlockStatementGroup;
 import org.codehaus.janino.Java.SynchronizedStatement;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
@@ -1869,18 +1871,39 @@ class UnitCompiler {
         return true;
     }
 
+    enum SwitchKind { INT, ENUM, STRING }
+
     private boolean
     compile2(SwitchStatement ss) throws CompileException {
 
-        boolean isEnumSwitch;
+        SwitchKind kind;
+        short      ssvLvIndex = -1; // Only relevant if kind == STRING.
 
         // Compute condition.
         IClass switchExpressionType = this.compileGetValue(ss.condition);
+        if (this.iClassLoader.TYPE_java_lang_String == switchExpressionType) {
+
+            kind = SwitchKind.STRING;
+
+            // Store the string value in a (hidden) local variable, because after we do the SWITCH
+            // on the string's hash code, we need to check for string equality with the CASE
+            // labels.
+            this.dup(ss, 1);
+            ssvLvIndex = this.getCodeContext().allocateLocalVariable((short) 1);
+            this.store(
+                ss,                                      // locatable
+                this.iClassLoader.TYPE_java_lang_String, // lvType
+                ssvLvIndex                               // lvIndex
+            );
+
+            this.invoke(ss, this.iClassLoader.METH_java_lang_String__hashCode);
+        } else
         if (this.iClassLoader.TYPE_java_lang_Enum.isAssignableFrom(switchExpressionType)) {
-            isEnumSwitch = true;
+            kind = SwitchKind.ENUM;
             this.invoke(ss, this.iClassLoader.METH_java_lang_Enum__ordinal);
-        } else {
-            isEnumSwitch = false;
+        } else
+        {
+            kind = SwitchKind.INT;
             this.assignmentConversion(
                 ss,                   // locatable
                 switchExpressionType, // sourceType
@@ -1894,78 +1917,117 @@ class UnitCompiler {
         CodeContext.Offset                   defaultLabelOffset = null;
         CodeContext.Offset[]                 sbsgOffsets        = new CodeContext.Offset[ss.sbsgs.size()];
         for (int i = 0; i < ss.sbsgs.size(); ++i) {
-            SwitchStatement.SwitchBlockStatementGroup sbsg = (SwitchStatement.SwitchBlockStatementGroup) (
-                ss.sbsgs.get(i)
-            );
+            SwitchBlockStatementGroup sbsg = (SwitchBlockStatementGroup) ss.sbsgs.get(i);
             sbsgOffsets[i] = this.getCodeContext().new Offset();
             for (Rvalue caseLabel : sbsg.caseLabels) {
 
                 Integer civ;
 
-                CIV:
-                if (isEnumSwitch) {
-                    if (!(caseLabel instanceof Java.AmbiguousName)) {
-                        this.compileError("Case label must be an enum constant", caseLabel.getLocation());
-                        civ = 99;
-                        break CIV;
-                    }
-                    String[] identifiers = ((Java.AmbiguousName) caseLabel).identifiers;
-                    if (identifiers.length != 1) {
-                        this.compileError("Case label must be a plain enum constant", caseLabel.getLocation());
-                        civ = 99;
-                        break CIV;
-                    }
-                    String constantName = identifiers[0];
+                switch (kind) {
 
-                    int ordinal = 0;
-                    for (IField f : switchExpressionType.getDeclaredIFields()) {
-                        if (f.getAccess() != Access.PUBLIC || !f.isStatic()) continue;
-                        if (f.getName().equals(constantName)) {
-                            civ = ordinal;
-                            break CIV;
+                case ENUM:
+                    CIV: {
+                        if (!(caseLabel instanceof Java.AmbiguousName)) {
+                            this.compileError("Case label must be an enum constant", caseLabel.getLocation());
+                            civ = 99;
+                            break;
                         }
-                        ordinal++;
-                    }
+                        String[] identifiers = ((Java.AmbiguousName) caseLabel).identifiers;
+                        if (identifiers.length != 1) {
+                            this.compileError("Case label must be a plain enum constant", caseLabel.getLocation());
+                            civ = 99;
+                            break;
+                        }
+                        String constantName = identifiers[0];
 
-                    this.compileError("Unknown enum constant \"" + constantName + "\"", caseLabel.getLocation());
-                    civ = 99;
-                } else {
+                        int ordinal = 0;
+                        for (IField f : switchExpressionType.getDeclaredIFields()) {
+                            if (f.getAccess() != Access.PUBLIC || !f.isStatic()) continue;
+                            if (f.getName().equals(constantName)) {
+                                civ = ordinal;
+                                break CIV;
+                            }
+                            ordinal++;
+                        }
 
-                    // Verify that case label value is a constant.
-                    Object cv = this.getConstantValue(caseLabel);
-                    if (cv == UnitCompiler.NOT_CONSTANT) {
-                        this.compileError(
-                            "Value of 'case' label does not pose a constant value",
-                            caseLabel.getLocation()
-                        );
+                        this.compileError("Unknown enum constant \"" + constantName + "\"", caseLabel.getLocation());
                         civ = 99;
-                        break CIV;
                     }
 
-                    // Convert char, byte, short, int to "Integer".
-                    if (cv instanceof Integer) {
-                        civ = (Integer) cv;
-                    } else
-                    if (cv instanceof Number) {
-                        civ = new Integer(((Number) cv).intValue());
-                    } else
-                    if (cv instanceof Character) {
-                        civ = new Integer(((Character) cv).charValue());
-                    } else {
-                        this.compileError(
-                            "Value of case label must be a char, byte, short or int constant",
-                            caseLabel.getLocation()
-                        );
-                        civ = new Integer(99);
+                    // Store in case label map.
+                    if (caseLabelMap.containsKey(civ)) {
+                        this.compileError("Duplicate \"case\" switch label value", caseLabel.getLocation());
                     }
-                }
+                    caseLabelMap.put(civ, sbsgOffsets[i]);
+                    break;
 
-                // Store in case label map.
-                if (caseLabelMap.containsKey(civ)) {
-                    this.compileError("Duplicate \"case\" switch label value", caseLabel.getLocation());
+                case INT:
+                    {
+                        // Verify that case label value is a constant.
+                        Object cv = this.getConstantValue(caseLabel);
+                        if (cv == UnitCompiler.NOT_CONSTANT) {
+                            this.compileError(
+                                "Value of 'case' label does not pose a constant value",
+                                caseLabel.getLocation()
+                            );
+                            civ = 99;
+                            break;
+                        }
+
+                        // Convert char, byte, short, int to "Integer".
+                        if (cv instanceof Integer) {
+                            civ = (Integer) cv;
+                        } else
+                        if (cv instanceof Number) {
+                            civ = new Integer(((Number) cv).intValue());
+                        } else
+                        if (cv instanceof Character) {
+                            civ = new Integer(((Character) cv).charValue());
+                        } else {
+                            this.compileError(
+                                "Value of case label must be a char, byte, short or int constant",
+                                caseLabel.getLocation()
+                            );
+                            civ = new Integer(99);
+                        }
+                    }
+
+                    // Store in case label map.
+                    if (caseLabelMap.containsKey(civ)) {
+                        this.compileError("Duplicate \"case\" switch label value", caseLabel.getLocation());
+                    }
+                    caseLabelMap.put(civ, sbsgOffsets[i]);
+                    break;
+
+                case STRING:
+                    {
+
+                        // Verify that the case label value is a string constant.
+                        Object cv = this.getConstantValue(caseLabel);
+                        if (!(cv instanceof String)) {
+                            this.compileError(
+                                "Value of 'case' label is not a string constant",
+                                caseLabel.getLocation()
+                            );
+                            civ = 99;
+                            break;
+                        }
+
+                        // Use the string constant's hash code as the SWITCH key.
+                        civ = cv.hashCode();
+                    }
+
+                    // Store in case label map.
+                    if (!caseLabelMap.containsKey(civ)) {
+                        caseLabelMap.put(civ, this.getCodeContext().new Offset());
+                    }
+                    break;
+
+                default:
+                    throw new AssertionError(kind);
                 }
-                caseLabelMap.put(civ, sbsgOffsets[i]);
             }
+
             if (sbsg.hasDefaultLabel) {
                 if (defaultLabelOffset != null) {
                     this.compileError("Duplicate \"default\" switch label", sbsg.getLocation());
@@ -1986,8 +2048,8 @@ class UnitCompiler {
             >= (Integer) caseLabelMap.lastKey() - caseLabelMap.size()
         ) {
 
-            // The case label values are strictly consecutity or almost consecutive (at most 50% 'gaps'), so
-            // let's use a TABLESWITCH.
+            // The case label values are strictly consecutive or almost consecutive (at most 50%
+            // 'gaps'), so let's use a TABLESWITCH.
             final int low  = (Integer) caseLabelMap.firstKey();
             final int high = (Integer) caseLabelMap.lastKey();
 
@@ -2022,12 +2084,49 @@ class UnitCompiler {
             }
         }
 
+        if (kind == SwitchKind.STRING) {
+
+            // For STRING SWITCH, we must generate extra code that checks for string equality --
+            // the strings' hash codes are not globally unique (as, e.g. MD5).
+            for (Entry<Integer, CodeContext.Offset> e : caseLabelMap.entrySet()) {
+                final Integer            caseHashCode = (Integer) e.getKey();
+                final CodeContext.Offset offset       = (CodeContext.Offset) e.getValue();
+
+                offset.set();
+
+                Set<String> caseLabelValues = new HashSet<String>();
+                for (int i = 0; i < ss.sbsgs.size(); i++) {
+                    SwitchBlockStatementGroup sbsg = (SwitchBlockStatementGroup) ss.sbsgs.get(i);
+
+                    for (Rvalue caseLabel : sbsg.caseLabels) {
+
+                        String cv = (String) this.getConstantValue(caseLabel);
+                        assert cv != null;
+
+                        if (!caseLabelValues.add(cv)) {
+                            this.compileError(
+                                "Duplicate case label \"" + cv + "\"",
+                                caseLabel.getLocation()
+                            );
+                        }
+
+                        if (cv.hashCode() != caseHashCode) continue;
+
+                        this.load(sbsg, this.iClassLoader.TYPE_java_lang_String, ssvLvIndex);
+                        this.pushConstant(caseLabel, cv);
+                        this.invoke(caseLabel, this.iClassLoader.METH_java_lang_String__equals__java_lang_Object);
+                        this.writeBranch(sbsg, Opcode.IFNE, sbsgOffsets[i]);
+                    }
+                }
+
+                this.writeBranch(ss, Opcode.GOTO, defaultLabelOffset);
+            }
+        }
+
         // Compile statement groups.
         boolean canCompleteNormally = true;
         for (int i = 0; i < ss.sbsgs.size(); ++i) {
-            SwitchStatement.SwitchBlockStatementGroup sbsg = (
-                (SwitchStatement.SwitchBlockStatementGroup) ss.sbsgs.get(i)
-            );
+            SwitchBlockStatementGroup sbsg = (SwitchBlockStatementGroup) ss.sbsgs.get(i);
             sbsgOffsets[i].set();
             canCompleteNormally = true;
             for (BlockStatement bs : sbsg.blockStatements) {
@@ -3179,7 +3278,7 @@ class UnitCompiler {
     throws CompileException {
         ss.localVariables = localVars;
         Map<String, LocalVariable> vars = localVars;
-        for (SwitchStatement.SwitchBlockStatementGroup sbsg : ss.sbsgs) {
+        for (SwitchBlockStatementGroup sbsg : ss.sbsgs) {
             for (BlockStatement bs : sbsg.blockStatements) vars = this.buildLocalVariableMap(bs, vars);
         }
     }
@@ -5450,8 +5549,8 @@ class UnitCompiler {
                     LocalVariable lv = ((LocalVariableAccess) ra).localVariable;
 
                     List<? extends BlockStatement> ss = (
-                        is.getEnclosingScope() instanceof MethodDeclarator
-                        ? ((MethodDeclarator) is.getEnclosingScope()).optionalStatements
+                        is.getEnclosingScope() instanceof FunctionDeclarator
+                        ? ((FunctionDeclarator) is.getEnclosingScope()).optionalStatements
                         : is.getEnclosingScope() instanceof Block
                         ? ((Block) is.getEnclosingScope()).statements
                         : null
@@ -6796,7 +6895,7 @@ class UnitCompiler {
         // You have to check that both the class and member are accessible in this scope.
         IClass declaringIClass = member.getDeclaringIClass();
         this.checkAccessible(declaringIClass, contextScope, location);
-        this.checkAccessible(declaringIClass, member.getAccess(), contextScope, location);
+        this.checkMemberAccessible(declaringIClass, member, contextScope, location);
     }
 
     /**
@@ -6813,14 +6912,14 @@ class UnitCompiler {
      * block statement context, according to JLS7 6.6.1.4. Issue a {@link #compileError(String)} if not.
      */
     private void
-    checkAccessible(
-        IClass   iClassDeclaringMember,
-        Access   memberAccess,
-        Scope    contextScope,
-        Location location
+    checkMemberAccessible(
+        IClass         iClassDeclaringMember,
+        IClass.IMember member,
+        Scope          contextScope,
+        Location       location
     ) throws CompileException {
-        String message = this.internalCheckAccessible(iClassDeclaringMember, memberAccess, contextScope);
-        if (message != null) this.compileError(message, location);
+        String message = this.internalCheckAccessible(iClassDeclaringMember, member.getAccess(), contextScope);
+        if (message != null) this.compileError(member.toString() + ": " + message, location);
     }
 
     /**
@@ -6882,9 +6981,7 @@ class UnitCompiler {
 
         if (memberAccess == Access.DEFAULT) {
             return (
-                "Member with \""
-                + memberAccess
-                + "\" access cannot be accessed from type \""
+                "Member with \"package\" access cannot be accessed from type \""
                 + iClassDeclaringContext
                 + "\"."
             );
@@ -11946,7 +12043,7 @@ class UnitCompiler {
 
     private final CompilationUnit compilationUnit;
 
-    private final IClassLoader  iClassLoader;
+    private final IClassLoader iClassLoader;
 
     /**
      * Non-{@code null} while {@link #compileUnit(boolean, boolean, boolean)} is executing.
@@ -11975,7 +12072,12 @@ class UnitCompiler {
                 new ByteArrayInputStream(contents)
             );
         } catch (Exception e) {
-            e.printStackTrace();
+            UnitCompiler.LOGGER.log(Level.FINEST, (
+                "Notice: Could not disassemble class file for logging because "
+                + "\"de.unkrig.jdisasm.Disassembler\" is not on the classpath. "
+                + "If you are interested in disassemblies of class files generated by JANINO, "
+                + "get de.unkrig.jdisasm and put it on the classpath."
+            ));
         }
     }
 }
