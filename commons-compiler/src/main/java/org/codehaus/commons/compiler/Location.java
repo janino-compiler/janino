@@ -31,8 +31,8 @@ import java.io.Serializable;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * Immutable representation of the location of a character in a document, as defined by an optional file name, a line
- * number and a column number.
+ * Immutable representation of the location of a character in a document, as defined by an (optional) file name, a
+ * line number and a column number.
  */
 public
 class Location implements Serializable {
