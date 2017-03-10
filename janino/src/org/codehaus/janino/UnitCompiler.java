@@ -6148,7 +6148,7 @@ if (!(s.getEnclosingScope() instanceof TypeDeclaration)) {
     private IClass
     getType2(ArrayAccessExpression aae) throws CompileException {
         IClass componentType = this.getType(aae.lhs).getComponentType();
-        assert componentType != null;
+        assert componentType != null : "null component type for " + aae;
         return componentType;
     }
 
