@@ -1871,7 +1871,7 @@ class UnitCompiler {
         return true;
     }
 
-    enum SwitchKind { INT, ENUM, STRING }
+    private enum SwitchKind { INT, ENUM, STRING }
 
     private boolean
     compile2(SwitchStatement ss) throws CompileException {
