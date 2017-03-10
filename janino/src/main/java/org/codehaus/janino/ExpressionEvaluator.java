@@ -28,7 +28,6 @@ package org.codehaus.janino;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +42,7 @@ import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.BlockStatement;
+import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.util.Traverser;
 
@@ -273,25 +273,27 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
     @Override protected Class<?>
     getDefaultReturnType() { return Object.class; }
 
-    @Override protected List<BlockStatement>
-    makeStatements(int idx, Parser parser) throws CompileException, IOException {
-        List<BlockStatement> statements = new ArrayList<BlockStatement>();
+    @Override protected void
+    makeStatements(
+        int                    idx,
+        Parser                 parser,
+        List<BlockStatement>   resultStatements,
+        List<MethodDeclarator> resultMethods
+    ) throws CompileException, IOException {
 
         // Parse the expression.
         Rvalue value = parser.parseExpression().toRvalueOrCompileException();
 
         Class<?> et = this.getReturnType(idx);
         if (et == void.class) {
-            statements.add(new Java.ExpressionStatement(value));
+            resultStatements.add(new Java.ExpressionStatement(value));
         } else {
-            statements.add(new Java.ReturnStatement(parser.location(), value));
+            resultStatements.add(new Java.ReturnStatement(parser.location(), value));
         }
 
         if (!parser.peek(TokenType.END_OF_INPUT)) {
             throw new CompileException("Unexpected token \"" + parser.peek() + "\"", parser.location());
         }
-
-        return statements;
     }
 
     /**

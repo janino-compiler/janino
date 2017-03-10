@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BlockStatement;
+import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
@@ -76,6 +78,15 @@ import org.codehaus.janino.util.Traverser;
  */
 public
 class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
+
+    /**
+     * The name of the generated method(s), if no custom method name is configured with {@link
+     * #setMethodNames(String[])}.
+     * <p>
+     *   The {@code "*"} in this string is replaced with the method index, starting at 0.
+     * </p>
+     */
+    public static final String DEFAULT_METHOD_NAME = "eval*";
 
     /**
      * Whether methods override a method declared by a supertype; {@code null} means "none".
@@ -418,15 +429,6 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Override public void
     setThrownExceptions(Class<?>[] thrownExceptions) { this.setThrownExceptions(new Class[][] { thrownExceptions }); }
 
-    @Override public final void
-    cook(Scanner scanner) throws CompileException, IOException { this.cook(new Scanner[] { scanner }); }
-
-    @Override @Nullable public Object
-    evaluate(@Nullable Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
-
-    @Override public Method
-    getMethod() { return this.getMethod(0); }
-
     @Override public void
     setOverrideMethod(boolean[] overrideMethod) { this.optionalOverrideMethod = overrideMethod.clone(); }
 
@@ -456,6 +458,49 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     @Override public void
     setThrownExceptions(Class<?>[][] thrownExceptions) { this.optionalThrownExceptions = thrownExceptions.clone(); }
+
+    // ---------------------------------------------------------------
+
+    @Override public final void
+    cook(String[] strings) throws CompileException { this.cook(null, strings); }
+
+    @Override public final void
+    cook(@Nullable String[] optionalFileNames, String[] strings) throws CompileException {
+        Reader[] readers = new Reader[strings.length];
+        for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
+        try {
+            this.cook(optionalFileNames, readers);
+        } catch (IOException ex) {
+            throw new JaninoRuntimeException("SNO: IOException despite StringReader", ex);
+        }
+    }
+
+    @Override public final void
+    cook(Reader[] readers) throws CompileException, IOException {
+        this.cook(null, readers);
+    }
+
+    /**
+     * On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling 10000 expressions "a + b"
+     * (integer) takes about 4 seconds and 56 MB of main memory. The generated class file is 639203 bytes large.
+     * <p>
+     *   The number and the complexity of the scripts is restricted by the <a
+     *   href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#88659">Limitations of the Java
+     *   Virtual Machine</a>, where the most limiting factor is the 64K entries limit of the constant pool. Since every
+     *   method with a distinct name requires one entry there, you can define at best 32K (very simple) scripts.
+     * </p>
+     */
+    @Override public final void
+    cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
+        Scanner[] scanners = new Scanner[readers.length];
+        for (int i = 0; i < readers.length; ++i) {
+            scanners[i] = new Scanner(optionalFileNames == null ? null : optionalFileNames[i], readers[i]);
+        }
+        this.cook(scanners);
+    }
+
+    @Override public final void
+    cook(Scanner scanner) throws CompileException, IOException { this.cook(new Scanner[] { scanner }); }
 
     /**
      * Like {@link #cook(Scanner)}, but cooks a <em>set</em> of scripts into one class. Notice that if <em>any</em> of
@@ -495,39 +540,18 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public final void
     cook(Parser[] parsers) throws CompileException, IOException {
 
-        final Class<?>[]   orts = this.optionalReturnTypes;
-        final String[][]   opns = this.optionalParameterNames;
-        final Class<?>[][] opts = this.optionalParameterTypes;
-        final boolean[]    osm  = this.optionalStaticMethod;
-        final Class<?>[][] otes = this.optionalThrownExceptions;
-        final String[]     omns = this.optionalMethodNames;
-
         // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
         // time.
         int count = parsers.length;
 
-        // Check array sizes.
-        if (omns != null && omns.length != count) {
-            throw new IllegalStateException("methodName count");
-        }
-        if (opns != null && opns.length != count) {
-            throw new IllegalStateException("parameterNames count");
-        }
-        if (opts != null && opts.length != count) {
-            throw new IllegalStateException("parameterTypes count");
-        }
-        if (this.optionalOverrideMethod != null && this.optionalOverrideMethod.length != count) {
-            throw new IllegalStateException("overrideMethod count");
-        }
-        if (orts != null && orts.length != count) {
-            throw new IllegalStateException("returnTypes count");
-        }
-        if (osm != null && osm.length != count) {
-            throw new IllegalStateException("staticMethod count");
-        }
-        if (otes != null && otes.length != count) {
-            throw new IllegalStateException("thrownExceptions count");
-        }
+        // SUPPRESS CHECKSTYLE LineLength:7
+        final String[]     mns = ScriptEvaluator.array(this.optionalMethodNames,      count, ScriptEvaluator.DEFAULT_METHOD_NAME);
+        final String[][]   pns = ScriptEvaluator.array(this.optionalParameterNames,   count, new String[0],               String[].class);
+        final Class<?>[][] pts = ScriptEvaluator.array(this.optionalParameterTypes,   count, new Class[0],                Class[].class);
+        final boolean[]    oms = ScriptEvaluator.array(this.optionalOverrideMethod,   count, false);
+        final Class<?>[]   rts = ScriptEvaluator.array(this.optionalReturnTypes,      count, this.getDefaultReturnType(), Class.class);
+        final boolean[]    sms = ScriptEvaluator.array(this.optionalStaticMethod,     count, true);
+        final Class<?>[][] tes = ScriptEvaluator.array(this.optionalThrownExceptions, count, new Class[0],                Class[].class);
 
         // Create compilation unit.
         Java.CompilationUnit compilationUnit = this.makeCompilationUnit(count == 1 ? parsers[0] : null);
@@ -536,79 +560,71 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         final Java.AbstractClassDeclaration
         cd = this.addPackageMemberClassDeclaration(parsers[0].location(), compilationUnit);
 
-        // Determine method names.
-        String[] methodNames;
-        if (omns == null) {
-            methodNames = new String[count];
-            for (int i = 0; i < count; ++i) methodNames[i] = "eval" + i;
-        } else
-        {
-            methodNames = omns;
-        }
-
         // Create methods with one block each.
         for (int i = 0; i < count; ++i) {
+
             Parser parser = parsers[i];
 
-            List<Java.BlockStatement> statements;
-            List<MethodDeclarator>    localMethods = new ArrayList<Java.MethodDeclarator>();
+            // Create the statements of the method.
+            List<Java.BlockStatement>   statements   = new ArrayList<Java.BlockStatement>();
+            List<Java.MethodDeclarator> localMethods = new ArrayList<Java.MethodDeclarator>();
+            this.makeStatements(i, parser, statements, localMethods);
 
-            // Try "makeStatements()" first, iff that returns NULL, call "parseScript()".
-            statements = this.makeStatements(i, parser);
-            if (statements == null) {
-                statements = new ArrayList<Java.BlockStatement>();
-                this.parseScript(parser, statements, localMethods);
-            }
-
-            // Determine the following script properties AFTER the call to "makeBlock()",
-            // because "makeBlock()" may modify these script properties on-the-fly.
-            boolean staticMethod   = osm   == null || osm[i];
-            boolean overrideMethod = this.optionalOverrideMethod != null && this.optionalOverrideMethod[i];
-
-            Class<?>   returnType       = orts == null ? this.getDefaultReturnType() : orts[i];
-            String[]   parameterNames   = opns == null ? new String[0] : opns[i];
-            Class<?>[] parameterTypes   = opts == null ? new Class[0] : opts[i];
-            Class<?>[] thrownExceptions = otes == null ? new Class[0] : otes[i];
-
-            // If the method is non-static, assume that it overrides a method in a supertype.
+            // Create the method that holds the statements.
             Location loc = parser.location();
             cd.addDeclaredMethod(this.makeMethodDeclaration(
-                loc,              // location
-                (                 // annotations
-                    overrideMethod
+                loc,       // location
+                (          // annotations
+                    oms[i]     // If the method is non-static, assume that it overrides a method in a supertype
                     ? new Java.Annotation[] { new Java.MarkerAnnotation(this.classToType(loc, Override.class)) }
                     : new Java.Annotation[0]
                 ),
-                staticMethod,     // staticMethod
-                returnType,       // returnType
-                methodNames[i],   // methodName
-                parameterTypes,   // parameterTypes
-                parameterNames,   // parameterNames
-                thrownExceptions, // thrownExceptions
-                statements        // statements
+                sms[i],    // staticMethod
+                rts[i],    // returnType
+                mns[i],    // methodName
+                pts[i],    // parameterTypes
+                pns[i],    // parameterNames
+                tes[i],    // thrownExceptions
+                statements // statements
             ));
 
+            // Also add the "local methods" that a script my declare.
             for (MethodDeclarator method : localMethods) {
                 cd.addDeclaredMethod(method);
             }
         }
 
+        this.cook2(count, compilationUnit);
+    }
+
+    /**
+     * Compiles the given <var>compilationUnit</var>, defines it into a {@link ClassLoader}, loads the generated class,
+     * gets the script methods from that class, and makes them available through {@link #getMethod(int)}.
+     */
+    protected void
+    cook2(int count, CompilationUnit compilationUnit) throws CompileException {
+
         // Compile and load the compilation unit.
         Class<?> c = this.compileToClass(compilationUnit);
+
+        // SUPPRESS CHECKSTYLE LineLength:2
+        final String[]     mns = ScriptEvaluator.array(this.optionalMethodNames,    count, ScriptEvaluator.DEFAULT_METHOD_NAME);
+        final Class<?>[][] pts = ScriptEvaluator.array(this.optionalParameterTypes, count, new Class[0], Class[].class);
 
         // Find the script methods by name.
         Method[] methods = new Method[count];
         if (count <= 10) {
             for (int i = 0; i < count; ++i) {
+
+                String     methodName     = mns[i];
+                Class<?>[] parameterTypes = pts[i];
+
                 try {
-                    methods[i] = c.getDeclaredMethod(
-                        methodNames[i],
-                        opts == null ? new Class[0] : opts[i]
-                    );
+                    methods[i] = c.getDeclaredMethod(methodName, parameterTypes);
                 } catch (NoSuchMethodException ex) {
                     throw new JaninoRuntimeException((
                         "SNO: Loaded class does not declare method \""
-                        + methodNames[i]
+                        + methodName
                         + "\""
                     ), ex);
                 }
@@ -649,14 +665,15 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             Map<MethodWrapper, Method> dms = new HashMap<MethodWrapper, Method>(2 * count);
             for (Method m : ma) dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
             for (int i = 0; i < count; ++i) {
-                Method m = (Method) dms.get(new MethodWrapper(
-                    methodNames[i],
-                    opts == null ? new Class[0] : opts[i]
-                ));
+
+                String     methodName     = mns[i];
+                Class<?>[] parameterTypes = pts[i];
+
+                Method m = (Method) dms.get(new MethodWrapper(methodName, parameterTypes));
                 if (m == null) {
                     throw new JaninoRuntimeException(
                         "SNO: Loaded class does not declare method \""
-                        + methodNames[i]
+                        + methodName
                         + "\""
                     );
                 }
@@ -667,43 +684,86 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.result = methods;
     }
 
-    @Override public final void
-    cook(Reader[] readers) throws CompileException, IOException {
-        this.cook(new String[readers.length], readers);
-    }
+    private static boolean[]
+    array(@Nullable boolean[] subject, int count, boolean defaultValue) {
 
-    /**
-     * On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling 10000 expressions "a + b"
-     * (integer) takes about 4 seconds and 56 MB of main memory. The generated class file is 639203 bytes large.
-     * <p>
-     *   The number and the complexity of the scripts is restricted by the <a
-     *   href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html#88659">Limitations of the Java
-     *   Virtual Machine</a>, where the most limiting factor is the 64K entries limit of the constant pool. Since every
-     *   method with a distinct name requires one entry there, you can define at best 32K (very simple) scripts.
-     * </p>
-     */
-    @Override public final void
-    cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
-        Scanner[] scanners = new Scanner[readers.length];
-        for (int i = 0; i < readers.length; ++i) {
-            scanners[i] = new Scanner(optionalFileNames == null ? null : optionalFileNames[i], readers[i]);
+        boolean[] result;
+
+        if (subject == null) {
+            result = new boolean[count];
+            if (defaultValue) {
+                for (int i = 0; i < count; i++) result[i] = true;
+            }
+        } else {
+            if (subject.length != count) throw new IllegalStateException();
+            result = subject;
         }
-        this.cook(scanners);
+
+        return result;
     }
 
-    @Override public final void
-    cook(String[] strings) throws CompileException { this.cook(null, strings); }
+    private static String[]
+    array(@Nullable String[] subject, int count, @Nullable String defaultValue) {
 
-    @Override public final void
-    cook(@Nullable String[] optionalFileNames, String[] strings) throws CompileException {
-        Reader[] readers = new Reader[strings.length];
-        for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
+        String[] result;
+
+        if (subject == null) {
+            result = new String[count];
+        } else {
+            if (subject.length != count) throw new IllegalStateException();
+            result = subject;
+        }
+
+        if (defaultValue != null) {
+            for (int i = 0; i < count; i++) {
+                if (result[i] == null) result[i] = defaultValue.replace("*", Integer.toString(i));
+            }
+        }
+
+        return result;
+    }
+
+    @SuppressWarnings("unchecked") private static <T> T[]
+    array(@Nullable T[] subject, int count, @Nullable T defaultValue, Class<T> componentType) {
+
+        T[] result;
+
+        if (subject == null) {
+            result = (T[]) Array.newInstance(componentType, count);
+        } else {
+            if (subject.length != count) throw new IllegalStateException();
+            result = subject.clone();
+        }
+
+        if (defaultValue != null) {
+            for (int i = 0; i < count; i++) {
+                if (result[i] == null) result[i] = defaultValue;
+            }
+        }
+
+        return result;
+    }
+
+    @Override @Nullable public Object
+    evaluate(@Nullable Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
+
+    @Override @Nullable public Object
+    evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException {
+
+        Method method = this.getMethod(idx);
+
         try {
-            this.cook(optionalFileNames, readers);
-        } catch (IOException ex) {
-            throw new JaninoRuntimeException("SNO: IOException despite StringReader", ex);
+            return method.invoke(null, arguments);
+        } catch (IllegalAccessException ex) {
+            throw new JaninoRuntimeException(ex.toString(), ex);
         }
     }
+
+    @Override public Method
+    getMethod() { return this.getMethod(0); }
+
+    @Override public Method
+    getMethod(int idx) { return this.assertCooked()[idx]; }
 
     /**
      * @return {@code void.class}
@@ -728,23 +788,21 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * @throws CompileException
-     * @throws IOException
-     */
-    @Nullable protected List<BlockStatement>
-    makeStatements(int idx, Parser parser) throws CompileException, IOException {
-        return null;
-    }
-
-    /**
-     * Fills the given {@code block} by parsing statements until EOF and adding them to the block.
+     * Parses statements from the <var>parser</var> until end-of-input.
+     *
+     * @param resultStatements Is filled with the generated statements
+     * @param resultMethods    Is filled with any local methods that the script declares
      */
     protected void
-    parseScript(Parser parser, List<Java.BlockStatement> mainStatements, List<Java.MethodDeclarator> localMethods)
-    throws CompileException, IOException {
+    makeStatements(
+        int                    idx,
+        Parser                 parser,
+        List<BlockStatement>   resultStatements,
+        List<MethodDeclarator> resultMethods
+    ) throws CompileException, IOException {
 
         while (!parser.peek(TokenType.END_OF_INPUT)) {
-            ScriptEvaluator.parseScriptStatement(parser, mainStatements, localMethods);
+            ScriptEvaluator.parseScriptStatement(parser, resultStatements, resultMethods);
         }
     }
 
@@ -765,6 +823,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * <p> (3a), (3b), (3c): Local method declaration statement.</p>
      * <p> (4) Local variable declaration statement.</p>
      * <p> (5) "Expression" must pose a type.</p>
+     *
+     * @param localMethods Filled with the methods that the script declares
      */
     private static void
     parseScriptStatement(
@@ -1162,15 +1222,6 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
     }
 
-    @Override @Nullable public Object
-    evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException {
-        try {
-            return this.assertCooked()[idx].invoke(null, arguments);
-        } catch (IllegalAccessException ex) {
-            throw new JaninoRuntimeException(ex.toString(), ex);
-        }
-    }
-
     private Method[]
     assertCooked() {
 
@@ -1178,7 +1229,4 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
         throw new IllegalStateException("Must only be called after \"cook()\"");
     }
-
-    @Override public Method
-    getMethod(int idx) { return this.assertCooked()[idx]; }
 }

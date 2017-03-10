@@ -214,15 +214,72 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     /**
-     * Cooks this compilation unit directly.
-     *
-     * @see  Cookable#cook(Reader)
+     * Cooks this compilation unit directly and invokes {@link #cook(ClassFile[])}.
      */
     public void
     cook(Java.CompilationUnit compilationUnit) throws CompileException {
 
-        // Compile the classes and load them.
-        this.compileToClassLoader(compilationUnit);
+        SimpleCompiler.LOGGER.entering(null, "cook", compilationUnit);
+
+        ClassFile[] classFiles;
+
+        IClassLoader icl = (this.classLoaderIClassLoader = new ClassLoaderIClassLoader(this.parentClassLoader));
+        try {
+
+            // Compile compilation unit to class files.
+            UnitCompiler unitCompiler = new UnitCompiler(compilationUnit, icl);
+            unitCompiler.setCompileErrorHandler(this.optionalCompileErrorHandler);
+            unitCompiler.setWarningHandler(this.optionalWarningHandler);
+
+            classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
+        } finally {
+            this.classLoaderIClassLoader = null;
+        }
+
+        this.cook(classFiles);
+    }
+
+    /**
+     * Serializes the given <var>classFiles</var> as bytecode, stores them in a map, and then invokes {@link
+     * #cook(Map)}.
+     */
+    public void
+    cook(ClassFile[] classFiles) {
+
+        // Convert the class files to bytes and store them in a Map.
+        final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap<String, byte[]>();
+        for (ClassFile cf : classFiles) {
+            classes.put(cf.getThisClassName(), cf.toByteArray());
+        }
+
+        this.cook(classes);
+    }
+
+    /**
+     * Creates a {@link ClassLoader} that loads the given <var>classes</var> (lazily), and makes that class loader
+     * available through {@link #getClassLoader()}.
+     * 
+     * @param classes Maps fully qualified classes names to bytecodes
+     */
+    public void
+    cook(final Map<String /*className*/, byte[] /*bytecode*/> classes) {
+
+        // Create a ClassLoader that loads the generated classes.
+        ClassLoader cl = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+
+            @Override public ClassLoader
+            run() {
+                return new ByteArrayClassLoader(
+                    classes,                              // classes
+                    SimpleCompiler.this.parentClassLoader // parent
+                );
+            }
+        });
+
+        // Apply any configured permissions.
+        if (this.permissions != null) Sandbox.confine(cl, this.permissions);
+
+        this.result = cl;
     }
 
     @Override public ClassLoader
@@ -385,44 +442,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      */
     protected final ClassLoader
     compileToClassLoader(Java.CompilationUnit compilationUnit) throws CompileException {
-        SimpleCompiler.LOGGER.entering(null, "compileToClassLoader", compilationUnit);
-
         assert this.classLoaderIClassLoader == null;
-
-        IClassLoader icl = (this.classLoaderIClassLoader = new ClassLoaderIClassLoader(this.parentClassLoader));
-        try {
-
-            // Compile compilation unit to class files.
-            UnitCompiler unitCompiler = new UnitCompiler(compilationUnit, icl);
-            unitCompiler.setCompileErrorHandler(this.optionalCompileErrorHandler);
-            unitCompiler.setWarningHandler(this.optionalWarningHandler);
-            ClassFile[] classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
-
-            // Convert the class files to bytes and store them in a Map.
-            final Map<String /*className*/, byte[] /*bytecode*/> classes = new HashMap<String, byte[]>();
-            for (ClassFile cf : classFiles) {
-                classes.put(cf.getThisClassName(), cf.toByteArray());
-            }
-
-            // Create a ClassLoader that loads the generated classes.
-            ClassLoader cl = (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-
-                @Override public ClassLoader
-                run() {
-                    return new ByteArrayClassLoader(
-                        classes,                              // classes
-                        SimpleCompiler.this.parentClassLoader // parent
-                    );
-                }
-            });
-
-            // Apply any configured permissions.
-            if (this.permissions != null) Sandbox.confine(cl, this.permissions);
-
-            return (this.result = cl);
-        } finally {
-            this.classLoaderIClassLoader = null;
-        }
+        this.cook(compilationUnit);
+        return this.assertCooked();
     }
 
     /**
