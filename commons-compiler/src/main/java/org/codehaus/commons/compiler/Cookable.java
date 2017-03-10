@@ -38,6 +38,10 @@ import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * Base class for a simple {@link ICookable}.
+ * <p>
+ *   Basically, it implements all those {@ cook()} convewnience methods, and leaves only {@link #cook(String, Reader)}
+ *   unimplemented.
+ * </p>
  */
 public abstract
 class Cookable implements ICookable {
@@ -67,10 +71,10 @@ class Cookable implements ICookable {
         );
     }
 
-    @Override public void
+    @Override public final void
     cook(String s) throws CompileException { this.cook((String) null, s); }
 
-    @Override public void
+    @Override public final void
     cook(@Nullable String optionalFileName, String s) throws CompileException {
         try {
             this.cook(optionalFileName, new StringReader(s));
