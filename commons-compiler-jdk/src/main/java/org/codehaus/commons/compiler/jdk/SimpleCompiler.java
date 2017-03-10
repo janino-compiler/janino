@@ -371,14 +371,16 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         }
 
         // Create a ClassLoader that reads class files from our FM.
-        ClassLoader cl = (this.result = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
+        ClassLoader cl = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
 
             @Override public JavaFileManagerClassLoader
             run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
-        }));
+        });
 
         // Apply any configured permissions.
         if (this.permissions != null) Sandbox.confine(cl, this.permissions);
+
+        this.result = cl;
     }
 
     @Override public void
