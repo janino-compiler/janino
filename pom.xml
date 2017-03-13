@@ -12,7 +12,7 @@
 
   <groupId>org.codehaus.janino</groupId>
   <artifactId>janino-parent</artifactId>
-  <version>3.0.7-SNAPSHOT</version>
+  <version>3.0.8-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Janino Parent</name>
