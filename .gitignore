@@ -1,9 +1,11 @@
 # ignore bin and build dirs
 */bin/
 */build/
+*/target
 
 # ignore .project since everyone's different!
 */.project
 
 # ignore temp files
 *~
+
