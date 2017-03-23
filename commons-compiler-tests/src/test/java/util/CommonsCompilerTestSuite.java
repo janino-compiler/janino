@@ -56,8 +56,10 @@ class CommonsCompilerTestSuite {
         this.compilerFactory = compilerFactory;
     }
 
+    // ----------------------------------------------------------------------------------------------------------------
+
     /**
-     * Asserts that cooking the given <var>expression</var> issues an error.
+     * Asserts that cooking the given <var>expression</var>, when cooked, issues an error.
      */
     protected void
     assertExpressionUncookable(String expression) throws Exception {
@@ -65,8 +67,8 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that cooking the given <var>expression</var> issues an error, and the error message contains the
-     * <var>messageInfix</var>.
+     * Asserts that cooking the given <var>expression</var>, when cooked, issues an error, and the error message
+     * contains the <var>messageInfix</var>.
      */
     protected void
     assertExpressionUncookable(String expression, String messageInfix) throws Exception {
@@ -74,8 +76,8 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that cooking the given <var>expression</var> issues an error, and the error message contains a match for
-     * <var>messageRegex</var>.
+     * Asserts that cooking the given <var>expression</var>, when cooked, issues an error, and the error message
+     * contains a match for <var>messageRegex</var>.
      */
     protected void
     assertExpressionUncookable(String expression, Pattern messageRegex) throws Exception {
@@ -99,7 +101,7 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that the given <var>expression</var> evaluates to TRUE.
+     * Asserts that the given <var>expression</var> is cookable and evaluates to TRUE.
      */
     protected void
     assertExpressionEvaluatesTrue(String expression) throws Exception {
@@ -119,7 +121,7 @@ class CommonsCompilerTestSuite {
         }
 
         @Override protected void
-        compile() throws Exception { this.expressionEvaluator.cook(this.expression); }
+        cook() throws Exception { this.expressionEvaluator.cook(this.expression); }
 
         @Override @Nullable protected Object
         execute() throws Exception {
@@ -131,6 +133,8 @@ class CommonsCompilerTestSuite {
             }
         }
     }
+
+    // ----------------------------------------------------------------------------------------------------------------
 
     /**
      * Asserts that cooking the given <var>script</var> issues an error.
@@ -167,7 +171,8 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that the given <var>script</var> can be cooked and executed. (Its return value is ignored.)
+     * Asserts that the given <var>script</var> can be cooked and executed. The return type of the scipt is {@code
+     * void}.
      */
     protected void
     assertScriptExecutable(String script) throws Exception {
@@ -175,20 +180,26 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that the given <var>script</var> returns TRUE.
+     * Asserts that the given <var>script</var> can be cooked and executed.
+     *
+     * @param returnType The return type of the script
+     * @return           The return value of the script execution
      */
-    protected void
-    assertScriptReturnsTrue(String script) throws Exception {
-        new ScriptTest(script).assertResultTrue();
+    @Nullable protected <T> T
+    assertScriptExecutable(String script, Class<T> returnType) throws Exception {
+
+        ScriptTest st = new ScriptTest(script);
+        st.scriptEvaluator.setReturnType(returnType);
+
+        @SuppressWarnings("unchecked") T result = (T) st.assertExecutable();
+        return result;
     }
 
     /**
-     * Returns the result of a given <var>script</var>.
+     * Asserts that the given <var>script</var> is cookable and returns TRUE.
      */
-    @Nullable protected Object
-    getScriptResult(String script) throws Exception {
-        return new ScriptTest(script).getResult();
-    }
+    protected void
+    assertScriptReturnsTrue(String script) throws Exception { new ScriptTest(script).assertResultTrue(); }
 
     public
     class ScriptTest extends CompileAndExecuteTest {
@@ -196,7 +207,8 @@ class CommonsCompilerTestSuite {
         private final String             script;
         protected final IScriptEvaluator scriptEvaluator;
 
-        public ScriptTest(String script) throws Exception {
+        public
+        ScriptTest(String script) throws Exception {
             this.script          = script;
             this.scriptEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newScriptEvaluator();
         }
@@ -207,14 +219,17 @@ class CommonsCompilerTestSuite {
             super.assertResultTrue();
         }
 
-        @Override @Nullable protected Object
-        getResult() throws Exception {
-            this.scriptEvaluator.setReturnType(Object.class);
-            return super.getResult();
+        @Override @Nullable public <T> T
+        assertExecutable(Class<T> returnType) throws Exception {
+
+            this.scriptEvaluator.setReturnType(returnType);
+
+            @SuppressWarnings("unchecked") T result = (T) super.assertExecutable();
+            return result;
         }
 
         @Override protected void
-        compile() throws Exception { this.scriptEvaluator.cook(this.script); }
+        cook() throws Exception { this.scriptEvaluator.cook(this.script); }
 
         @Override @Nullable protected Object
         execute() throws Exception {
@@ -227,12 +242,32 @@ class CommonsCompilerTestSuite {
         }
     }
 
+    // ----------------------------------------------------------------------------------------------------------------
+
     /**
      * Asserts that cooking the given <var>classBody</var> issues an error.
      */
     protected void
     assertClassBodyUncookable(String classBody) throws Exception {
         new ClassBodyTest(classBody).assertUncookable();
+    }
+
+    /**
+     * Asserts that cooking the given <var>classBody</var> issues an error, and the error message contains the
+     * <var>messageInfix</var>.
+     */
+    protected void
+    assertClassBodyUncookable(String classBody, String messageInfix) throws Exception {
+        new ClassBodyTest(classBody).assertUncookable(messageInfix);
+    }
+
+    /**
+     * Asserts that cooking the given <var>classBody</var> issues an error, and the error message contains a match for
+     * <var>messageRegex</var>.
+     */
+    protected void
+    assertClassBodyUncookable(String classBody, Pattern messageRegex) throws Exception {
+        new ClassBodyTest(classBody).assertUncookable(messageRegex);
     }
 
     /**
@@ -244,8 +279,8 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that the given <var>classBody</var> declares a method '{@code public static }<em>any-type</em> {@code
-     * main()}' which executes and terminates normally. (The return value is ignored.)
+     * Asserts that the given <var>classBody</var> is cookable and declares a method "{@code public static
+     * }<em>any-type</em> {@code main()}" which executes and terminates normally. (The return value is ignored.)
      */
     protected void
     assertClassBodyExecutable(String classBody) throws Exception {
@@ -253,8 +288,8 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that the given <var>classBody</var> declares a method {@code public static boolean main()} which
-     * executesc and returns {@code true}.
+     * Asserts that the given <var>classBody</var> is cookable and declares a method "{@code public static boolean
+     * main()}" which executes and returns {@code true}.
      */
     protected void
     assertClassBodyMainReturnsTrue(String classBody) throws Exception {
@@ -274,7 +309,7 @@ class CommonsCompilerTestSuite {
         }
 
         @Override protected void
-        compile() throws Exception {
+        cook() throws Exception {
             this.classBodyEvaluator.cook(this.classBody);
         }
 
@@ -289,12 +324,32 @@ class CommonsCompilerTestSuite {
         }
     }
 
+    // ----------------------------------------------------------------------------------------------------------------
+
     /**
      * Asserts that cooking the given <var>compilationUnit</var> with the {@link ISimpleCompiler} issues an error.
      */
     protected void
     assertCompilationUnitUncookable(String compilationUnit) throws Exception {
         new SimpleCompilerTest(compilationUnit, "Xxx").assertUncookable();
+    }
+
+    /**
+     * Asserts that cooking the given <var>compilationUnit</var> with the {@link ISimpleCompiler} issues an error, and
+     * the error message contains the <var>messageInfix</var>.
+     */
+    protected void
+    assertCompilationUnitUncookable(String compilationUnit, String messageInfix) throws Exception {
+        new SimpleCompilerTest(compilationUnit, "Xxx").assertUncookable(messageInfix);
+    }
+
+    /**
+     * Asserts that cooking the given <var>classBody</var> with the {@link ISimpleCompiler} issues an error, and the
+     * error message contains a match for <var>messageRegex</var>.
+     */
+    protected void
+    assertCompilationUnitUncookable(String compilationUnit, Pattern messageRegex) throws Exception {
+        new SimpleCompilerTest(compilationUnit, "Xxx").assertUncookable(messageRegex);
     }
 
     /**
@@ -340,7 +395,7 @@ class CommonsCompilerTestSuite {
         }
 
         @Override protected void
-        compile() throws Exception {
+        cook() throws Exception {
             this.simpleCompiler.cook(this.compilationUnit);
         }
 
@@ -360,8 +415,11 @@ class CommonsCompilerTestSuite {
         }
     }
 
+    // ----------------------------------------------------------------------------------------------------------------
+
     /**
-     * Loads the class with the given <var>className</var> from the given <var>sourceDirectory</var>.
+     * Scans, parses, compiles and loads the class with the given <var>className</var> from the given
+     * <var>sourceDirectory</var>.
      */
     protected void
     assertJavaSourceLoadable(final File sourceDirectory, final String className) throws Exception {
@@ -370,17 +428,19 @@ class CommonsCompilerTestSuite {
         loader.loadClass(className);
     }
 
+    // ----------------------------------------------------------------------------------------------------------------
+
     /**
-     * A test case that calls its abstract methods {@link #compile()}, then {@link #execute()}, and verifies that they
-     * throw exceptions and return results as expected.
+     * A test case that calls its abstract methods {@link #cook()}, then {@link #execute()}, and verifies that they
+     * throw exceptions or return results as expected.
      */
-    abstract static
+    private abstract static
     class CompileAndExecuteTest {
 
         /**
          * @see CompileAndExecuteTest
          */
-        protected abstract void compile() throws Exception;
+        protected abstract void cook() throws Exception;
 
         /**
          * @see CompileAndExecuteTest
@@ -396,16 +456,21 @@ class CommonsCompilerTestSuite {
         assertUncookable() throws Exception {
 
             try {
-                this.compile();
+                this.cook();
             } catch (CompileException ce) {
                 return ce.getMessage();
             }
 
             try {
-                Assert.fail("Should have issued an error, but compiled successfully, and evaluated to \"" + this.execute() + "\"");
+                CommonsCompilerTestSuite.fail((
+                    "Should have issued an error, but compiled successfully, and evaluated to \""
+                    + this.execute()
+                    + "\""
+                ));
             } catch (Exception e) {
-                Assert.fail("Should have issued an error, but compiled successfully");
+                CommonsCompilerTestSuite.fail("Should have issued an error, but compiled successfully");
             }
+
             return "S.N.O.";
         }
 
@@ -419,7 +484,13 @@ class CommonsCompilerTestSuite {
             String errorMessage = this.assertUncookable();
 
             if (!errorMessage.contains(messageInfix)) {
-                Assert.fail("Error message '" + errorMessage + "' does not contain '" + messageInfix + "'");
+                CommonsCompilerTestSuite.fail((
+                    "Error message '"
+                    + errorMessage
+                    + "' does not contain '"
+                    + messageInfix
+                    + "'"
+                ));
             }
         }
 
@@ -433,7 +504,13 @@ class CommonsCompilerTestSuite {
             String errorMessage = this.assertUncookable();
 
             if (messageRegex != null && !messageRegex.matcher(errorMessage).find()) {
-                Assert.fail("Error message '" + errorMessage + "' does not contain a match of '" + messageRegex + "'");
+                CommonsCompilerTestSuite.fail((
+                    "Error message '"
+                    + errorMessage
+                    + "' does not contain a match of '"
+                    + messageRegex
+                    + "'"
+                ));
             }
         }
 
@@ -442,37 +519,54 @@ class CommonsCompilerTestSuite {
          */
         protected void
         assertCookable() throws Exception {
-            this.compile();
+            this.cook();
         }
 
         /**
          * Asserts that cooking and executing completes normally.
+         *
+         * @return The execution result
          */
-        public void
+        @Nullable public Object
         assertExecutable() throws Exception {
-            this.compile();
-            this.execute();
+            this.cook();
+            return this.execute();
         }
 
         /**
          * @return The result of the execution
          */
-        @Nullable protected Object
-        getResult() throws Exception {
-            this.compile();
-            return this.execute();
+        @Nullable protected <T> T
+        assertExecutable(Class<T> returnType) throws Exception {
+            this.cook();
+
+            @SuppressWarnings("unchecked") T result = (T) this.execute();
+            return result;
         }
 
         /**
          * Asserts that cooking completes normally and executing returns {@link Boolean#TRUE}.
          */
-        protected void
+        public void
         assertResultTrue() throws Exception {
-            this.compile();
+            this.cook();
             Object result = this.execute();
             Assert.assertNotNull("Test result not NULL", result);
             Assert.assertSame(String.valueOf(result), Boolean.class, result.getClass());
             Assert.assertTrue("Test result is FALSE", (Boolean) result);
         }
+    }
+
+    private static void
+    fail(String message) {
+
+        Assert.fail((
+            message
+            + " (java.version="
+            + System.getProperty("java.version")
+            + ", java.specification.version="
+            + System.getProperty("java.specification.version)")
+            + "+ "
+        ));
     }
 }

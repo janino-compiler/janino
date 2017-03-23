@@ -296,10 +296,10 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
         return new ScriptTest(script) {
 
             @Override protected void
-            compile() throws Exception {
+            cook() throws Exception {
                 this.scriptEvaluator.setThrownExceptions(new Class<?>[] { Exception.class });
                 this.scriptEvaluator.setPermissions(permissions);
-                super.compile();
+                super.cook();
             }
         };
     }
@@ -318,9 +318,9 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
         return new SimpleCompilerTest(compilationUnit, className) {
 
             @Override protected void
-            compile() throws Exception {
+            cook() throws Exception {
                 this.simpleCompiler.setPermissions(permissions);
-                super.compile();
+                super.cook();
             }
         };
     }
@@ -338,9 +338,9 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
         return new ClassBodyTest(classBody) {
 
             @Override protected void
-            compile() throws Exception {
+            cook() throws Exception {
                 this.classBodyEvaluator.setPermissions(permissions);
-                super.compile();
+                super.cook();
             }
         };
     }
@@ -358,9 +358,9 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
         return new ExpressionTest(expression) {
 
             @Override protected void
-            compile() throws Exception {
+            cook() throws Exception {
                 this.expressionEvaluator.setPermissions(permissions);
-                super.compile();
+                super.cook();
             }
         };
     }

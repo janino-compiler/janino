@@ -902,7 +902,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     test_14_10__TheAssertStatement() throws Exception {
         // CHECKSTYLE LineLength:OFF
         this.assertScriptExecutable("assert true;");
-        Assert.assertNull(this.getScriptResult("try { assert false;                  } catch (AssertionError ae) { return ae.getMessage();       } return \"nope\";"));
+        Assert.assertNull(this.assertScriptExecutable("try { assert false;                  } catch (AssertionError ae) { return ae.getMessage();       } return \"nope\";", String.class));
         this.assertScriptReturnsTrue("try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
         this.assertScriptReturnsTrue("try { assert false : 3;              } catch (AssertionError ae) { return \"3\".equals(ae.getMessage()); } return false;");
         this.assertScriptReturnsTrue("try { assert false : new Integer(8); } catch (AssertionError ae) { return \"8\".equals(ae.getMessage()); } return false;");
@@ -1594,7 +1594,13 @@ class JlsTest extends CommonsCompilerTestSuite {
         // that there is ambiguity amongst fixed-arity applicables, so picking a vararg is acceptable if that means
         // there is no ambiguity. I have not been able to find any piece of documentation about this in the docs.)
 
-        this.assertClassBodyUncookable(
+        // JDK 1.7.0_17 does _not_ issue an error, although it should!?
+        if (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && "1.7.0_17".equals(System.getProperty("java.version"))
+        ) return;
+
+        this.assertClassBodyUncookable((
             ""
             + "public static Object main() {\n"
             + "    return meth((byte) 1, (byte) 2);\n"
@@ -1611,7 +1617,12 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "static int meth(byte a, double b){\n"
             + "     return 2;\n"
             + "}\n"
-        );
+        ), Pattern.compile((
+            ""
+            + "Invocation of constructor/method with argument type\\(s\\) \"byte, byte\" is ambiguous"
+            + "|"
+            + "compiler\\.err\\.ref\\.ambiguous"
+        )));
     }
 
     @Test public void
