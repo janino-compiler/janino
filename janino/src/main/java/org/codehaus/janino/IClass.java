@@ -580,7 +580,7 @@ class IClass {
     getComponentType() {
         if (this.componentTypeIsCached) return this.componentTypeCache;
 
-        this.componentTypeCache = this.getComponentType2();
+        this.componentTypeCache    = this.getComponentType2();
         this.componentTypeIsCached = true;
         return this.componentTypeCache;
     }

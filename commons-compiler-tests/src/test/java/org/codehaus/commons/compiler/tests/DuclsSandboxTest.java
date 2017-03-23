@@ -170,7 +170,9 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
         new java.net.URL("http://localhost:65000").openConnection();
 
         // Now for the actual test case:
-        String script = "return new java.net.URL(\"http://localhost:65000\").openConnection().getInputStream() != null;";
+        String script = (
+            "return new java.net.URL(\"http://localhost:65000\").openConnection().getInputStream() != null;"
+        );
         this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
