@@ -41,7 +41,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @see <a href="https://github.com/janino-compiler/janino/issues/19">GITHUB issue #19</a>: Get bytecode after compile
+ * Tests that reproduce <a href="https://github.com/janino-compiler/janino/issues">the issues reported on GITHUB</a>.
  */
 public
 class GithubIssuesTest {
@@ -91,8 +91,7 @@ class GithubIssuesTest {
     }
 
     /**
-     * <a href="https://github.com/janino-compiler/janino/pull/10">Replace if condition with
-     * literal if possible to simplify if statement</a>
+     * @see <a href="https://github.com/janino-compiler/janino/issues/19">GITHUB issue #19</a>: Get bytecode after compile
      */
     @Test public void
     testCompileToBytecode() throws CompileException {
