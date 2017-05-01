@@ -75,7 +75,17 @@ class Sandbox {
 
                 if (previousSecurityManager != null) previousSecurityManager.checkPermission(perm);
 
-                for (Class<?> clasS : this.getClassContext()) {
+                final Class<?> myClass = this.getClass();
+
+                Class<?>[] classContext = this.getClassContext();
+
+                // Skip the first frame of the execution stack, because that is THIS class.
+                for (int i = 1; i < classContext.length; i++) {
+                    Class<?> clasS = classContext[i];
+
+                    // Prevent endless recursion when we call "getClassLoader()", below, which
+                    // itself indirectly calls "SecurityManager.checkPermission()".
+                    if (clasS == myClass) return;
 
                     // Check if an ACC was set for the class loader.
                     AccessControlContext
