@@ -73,7 +73,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.19.1</version>
         <configuration>
-          <jvm>${jdk16}/jre/bin/java.exe</jvm>
+          <source>1.6</source>
+          <target>1.6</target>
           <enableAssertions />
         </configuration>
       </plugin>
