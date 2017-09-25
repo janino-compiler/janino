@@ -71,7 +71,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-// CHECKSTYLE JavadocMethod:OFF
+// SUPPRESS CHECKSTYLE JavadocMethod:9999
 
 /**
  * Unit tests for the {@link SimpleCompiler}.
@@ -316,10 +316,20 @@ class CompilerTest {
             false,                                                         // debugVars
             (WarningHandler) null                                          // optionalWarningHandler
         );
+
+        compiler.setCompileErrorHandler(new ErrorHandler() {
+
+            @Override public void
+            handleError(String message, @Nullable Location optionalLocation) throws CompileException {
+                throw new CompileException(message, optionalLocation);
+            }
+        });
+
         COMPILE: {
             try {
                 compiler.compile(new Resource[] { sourceFinder.findResource("pkg/A.java") });
             } catch (CompileException ex) {
+                Assert.assertTrue(ex.getMessage().contains("Cannot determine simple type name \"E\""));
                 break COMPILE;
             }
             Assert.fail("CompileException expected");
