@@ -33,7 +33,7 @@
  *   org.codehaus.janino.util.ClassFile} object, which can write Java<sup>TM</sup> bytecode to an "OutputStream".
  * </p>
  * <p>
- *   This package implements the {@link org.codehaus.commons.compiler} API.
+ *   This package implements the {@code org.codehaus.commons.compiler} API.
  * </p>
  */
 @NotNullByDefault
