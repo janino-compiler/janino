@@ -35,11 +35,11 @@
  * </p>
  * <ul>
  *   <li>
- *     {@link org.codehaus.janino}: A lightweight, stand-alone implementation that implements Java 1.4 and most of Java
+ *     {@code org.codehaus.janino}: A lightweight, stand-alone implementation that implements Java 1.4 and most of Java
  *     5. Runs on all JREs starting at version 1.3.
  *   </li>
  *   <li>
- *     {@link org.codehaus.commons.compiler.jdk}: Uses the {@code javax.tools.JavaCompiler} API that is available
+ *     {@code org.codehaus.commons.compiler.jdk}: Uses the {@code javax.tools.JavaCompiler} API that is available
  *     since Java 1.6. Requires a JDK (not just a JRE).
  *   </li>
  * </ul>
