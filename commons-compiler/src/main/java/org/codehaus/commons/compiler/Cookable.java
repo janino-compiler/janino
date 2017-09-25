@@ -39,7 +39,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 /**
  * Base class for a simple {@link ICookable}.
  * <p>
- *   Basically, it implements all those {@ cook()} convewnience methods, and leaves only {@link #cook(String, Reader)}
+ *   Basically, it implements all those {@code cook()} convewnience methods, and leaves only {@link #cook(String, Reader)}
  *   unimplemented.
  * </p>
  */
