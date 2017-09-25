@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// SUPPRESS CHECKSTYLE JavadocMethod|MethodName:9999
+
 package org.codehaus.commons.compiler.tests;
 
 import java.io.File;
@@ -45,9 +47,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import util.CommonsCompilerTestSuite;
 import util.TestUtil;
-
-// CHECKSTYLE MethodName:OFF
-// CHECKSTYLE JavadocMethod:OFF
 
 /**
  * Test cases for the bug reported on <a href="http://jira.codehaus.org/">CODEHAUS JIRA</a> for project JANINO.

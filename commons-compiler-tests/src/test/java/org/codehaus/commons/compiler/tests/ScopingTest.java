@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// SUPPRESS CHECKSTYLE JavadocMethod:9999
+
 package org.codehaus.commons.compiler.tests;
 
 import java.lang.reflect.Method;
@@ -39,8 +41,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import util.TestUtil;
-
-// CHECKSTYLE JavadocMethod:OFF
 
 /**
  * Tests for the handling of 'scopes' within JANINO.

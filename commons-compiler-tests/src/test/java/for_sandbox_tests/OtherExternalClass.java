@@ -24,11 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// CHECKSTYLE Javadoc:OFF
+package for_sandbox_tests;
 
-package for_sandbox_tests; // SUPPRESS CHECKSTYLE PackageName
-
-public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
+public
 class OtherExternalClass {
     public static int m1() { return 7; }
 }

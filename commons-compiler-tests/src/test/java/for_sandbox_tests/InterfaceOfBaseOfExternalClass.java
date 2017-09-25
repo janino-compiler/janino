@@ -24,9 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// CHECKSTYLE Javadoc:OFF
-
-package for_sandbox_tests; // SUPPRESS CHECKSTYLE PackageName
+package for_sandbox_tests;
 
 public
 interface InterfaceOfBaseOfExternalClass {

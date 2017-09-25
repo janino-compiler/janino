@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<fileset-config file-format-version="1.2.0" simple-config="true" sync-formatter="false">
+<fileset-config file-format-version="1.2.0" simple-config="false" sync-formatter="false">
   <local-check-config name="JANINO" location="/janino-parent/checkstyle-configuration/checkstyle.xml" type="project" description="">
     <additional-data name="protect-config-file" value="false"/>
   </local-check-config>
-  <fileset name="all" enabled="true" check-config-name="JANINO" local="true">
+  <fileset name="All but test source" enabled="true" check-config-name="JANINO" local="true">
     <file-match-pattern match-pattern="." include-pattern="true"/>
+    <file-match-pattern match-pattern="src/test/java/for_sandbox_tests/.*" include-pattern="false"/>
+    <file-match-pattern match-pattern="src/test/java/org/codehaus/commons/compiler/tests/bug63/.*" include-pattern="false"/>
+    <file-match-pattern match-pattern="src/test/java/other_package/.*" include-pattern="false"/>
+    <file-match-pattern match-pattern="src/test/resources/.*\.java" include-pattern="false"/>
   </fileset>
 </fileset-config>

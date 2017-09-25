@@ -24,9 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// CHECKSTYLE Javadoc:OFF
+package other_package;
 
-package other_package; // SUPPRESS CHECKSTYLE PackageName
+import org.codehaus.commons.compiler.tests.JlsTest;
 
 /**
  * Helper class for {@link JlsTest} -- used to define accessibility tests.
@@ -70,7 +70,7 @@ class Foo {
     void
     useMembersToSuppressWarnings() {
         new Foo('c');
-        privateStaticMethod();
+        Foo.privateStaticMethod();
         this.privateMethod();
         new PrivateStaticMemberClass();
         new PrivateMemberClass();

@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// SUPPRESS CHECKSTYLE JavadocMethod|MethodName:9999
+
 package org.codehaus.commons.compiler.tests;
 
 import java.util.Arrays;
@@ -44,9 +46,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import util.CommonsCompilerTestSuite;
 import util.TestUtil;
-
-// CHECKSTYLE MethodName:OFF
-// CHECKSTYLE JavadocMethod:OFF
 
 /**
  * Tests against the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7 Edition</a>.
@@ -900,13 +899,12 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     test_14_10__TheAssertStatement() throws Exception {
-        // CHECKSTYLE LineLength:OFF
+        // SUPPRESS CHECKSTYLE LineLength:5
         this.assertScriptExecutable("assert true;");
         Assert.assertNull(this.assertScriptExecutable("try { assert false;                  } catch (AssertionError ae) { return ae.getMessage();       } return \"nope\";", String.class));
         this.assertScriptReturnsTrue("try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
         this.assertScriptReturnsTrue("try { assert false : 3;              } catch (AssertionError ae) { return \"3\".equals(ae.getMessage()); } return false;");
         this.assertScriptReturnsTrue("try { assert false : new Integer(8); } catch (AssertionError ae) { return \"8\".equals(ae.getMessage()); } return false;");
-        // CHECKSTYLE LineLength:ON
     }
 
     @Test public void

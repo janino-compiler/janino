@@ -42,8 +42,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import util.TestUtil;
 
-// CHECKSTYLE JavadocMethod:OFF
-
 /**
  * Tests for the serializability of JANINO data structures.
  */

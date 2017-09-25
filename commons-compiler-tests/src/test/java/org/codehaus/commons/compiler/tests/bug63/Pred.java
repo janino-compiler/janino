@@ -25,9 +25,6 @@
  */
 
 package org.codehaus.commons.compiler.tests.bug63;
-
-// CHECKSTYLE Javadoc:OFF
-
 public
 class Pred implements IPred {
 

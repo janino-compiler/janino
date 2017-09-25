@@ -95,7 +95,6 @@ class DemoBase {
         }
 
         if (brackets == 0) {
-            // CHECKSTYLE WhitespaceBefore:OFF
             if ("void".equals(s))    return void.class;
             if ("boolean".equals(s)) return boolean.class;
             if ("char".equals(s))    return char.class;
@@ -105,11 +104,9 @@ class DemoBase {
             if ("long".equals(s))    return long.class;
             if ("float".equals(s))   return float.class;
             if ("double".equals(s)) return double.class;
-            // CHECKSTYLE WhitespaceBefore:ON
         }
 
         // Automagically convert primitive type names.
-        // CHECKSTYLE WhitespaceBefore:OFF
         if ("void".equals(s))    { s = "V"; } else
         if ("boolean".equals(s)) { s = "Z"; } else
         if ("char".equals(s))    { s = "C"; } else
@@ -119,7 +116,6 @@ class DemoBase {
         if ("long".equals(s))    { s = "J"; } else
         if ("float".equals(s))   { s = "F"; } else
         if ("double".equals(s))  { s = "D"; }
-        // CHECKSTYLE WhitespaceBefore:ON
 
         while (--brackets >= 0) s = '[' + s;
         try {

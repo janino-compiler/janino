@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// SUPPRESS CHECKSTYLE JavadocMethod:9999
+
 package org.codehaus.commons.compiler.tests;
 
 import java.util.Collection;
@@ -40,8 +42,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import for_sandbox_tests.ExternalClass;
 import util.TestUtil;
-
-// CHECKSTYLE JavadocMethod:OFF
 
 /**
  * Tests for accessing and subclassing other classes on the classpath.

@@ -24,6 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// SUPPRESS CHECKSTYLE JavadocMethod:9999
+
 package org.codehaus.commons.compiler.tests;
 
 import java.io.FileNotFoundException;
@@ -53,8 +55,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import util.CommonsCompilerTestSuite;
 import util.TestUtil;
-
-// CHECKSTYLE JavadocMethod:OFF
 
 /**
  * Tests for JANINO's {@link ExpressionEvaluator}, {@link ScriptEvaluator}, {@link ClassBodyEvaluator} and {@link
@@ -362,26 +362,24 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
 
     public static boolean
     compare(double lhs, double rhs, String comp) {
-        // CHECKSTYLE StringLiteralEquality:OFF
+        // SUPPRESS CHECKSTYLE StringLiteralEquality:6
         if (comp == "==") { return lhs == rhs; }
         if (comp == "!=") { return lhs != rhs; }
         if (comp == "<")  { return lhs < rhs; }
         if (comp == "<=") { return lhs <= rhs; }
         if (comp == ">")  { return lhs < rhs; }
         if (comp == ">=") { return lhs <= rhs; }
-        // CHECKSTYLE StringLiteralEquality:ON
         throw new RuntimeException("Unsupported comparison");
     }
     public static boolean
     compare(float lhs, float rhs, String comp) {
-        // CHECKSTYLE StringLiteralEquality:OFF
+        // SUPPRESS CHECKSTYLE StringLiteralEquality:6
         if (comp == "==") { return lhs == rhs; }
         if (comp == "!=") { return lhs != rhs; }
         if (comp == "<")  { return lhs < rhs; }
         if (comp == "<=") { return lhs <= rhs; }
         if (comp == ">")  { return lhs < rhs; }
         if (comp == ">=") { return lhs <= rhs; }
-        // CHECKSTYLE StringLiteralEquality:ON
         throw new RuntimeException("Unsupported comparison");
     }
 
@@ -630,7 +628,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         );
 
         // If more than 500, then we'd have to increase the JVM stack size.
-        for (int repetitions : new int[] { 5, 50, 500 }) {
+        for (int repetitions : new int[] { 5, 50, 300 }) {
 
             StringBuilder sb = new StringBuilder().append(preamble);
 

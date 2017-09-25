@@ -24,9 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// CHECKSTYLE Javadoc:OFF
-
-package other_package; // SUPPRESS CHECKSTYLE PackageName
+package other_package;
 
 public abstract
 class Base {
