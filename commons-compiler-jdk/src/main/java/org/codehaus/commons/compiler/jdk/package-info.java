@@ -25,7 +25,7 @@
  */
 
 /**
- * An implementation of the {@link org.codehaus.commons.compiler} API that uses the "JAVAC" Java compiler that is
+ * An implementation of the {@code org.codehaus.commons.compiler} API that uses the "JAVAC" Java compiler that is
  * part of the "Java Development Kit" (JDK).
  */
 @NotNullByDefault
