@@ -27,7 +27,10 @@
 package org.codehaus.commons.compiler.tests;
 
 import java.lang.reflect.Field;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.security.AccessControlException;
 import java.security.AllPermission;
 import java.security.Permissions;
@@ -53,6 +56,12 @@ import util.TestUtil;
 class DuclsSandboxTest extends CommonsCompilerTestSuite {
 
     private static final Permissions NO_PERMISSIONS = new Permissions();
+    static {
+
+        // Initialize a few classes before using NO_PERMISSIONS...
+        try { InetAddress.getLocalHost(); } catch (UnknownHostException e) { throw new ExceptionInInitializerError(e); }
+        new Socket();
+    }
 
     private static final Permissions ALL_PERMISSIONS = new Permissions();
     static { DuclsSandboxTest.ALL_PERMISSIONS.add(new AllPermission()); }
