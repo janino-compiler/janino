@@ -50,7 +50,7 @@
         <artifactId>maven-bundle-plugin</artifactId>
         <configuration>
           <instructions>
-			<Export-Package>org.codehaus.janino, org.codehaus.janino.samples, org.codehaus.janino.tools, org.codehaus.janino.util</Export-Package>
+			<Export-Package>org.codehaus.janino, org.codehaus.janino.samples, org.codehaus.janino.tools, org.codehaus.janino.util, org.codehaus.janino.util.resource</Export-Package>
             <Require-Bundle>org.codehaus.janino.commons-compiler</Require-Bundle>
           </instructions>
         </configuration>

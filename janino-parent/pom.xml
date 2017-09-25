@@ -75,7 +75,18 @@
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
-          <enableAssertions />
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.0.2</version>
+        <configuration>
+          <archive>  
+
+            <!-- This line is required, otherwise the maven-bundle-plugin doesn't add the OSGi lines. -->
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive> 
         </configuration>
       </plugin>
 
@@ -84,6 +95,13 @@
         <artifactId>maven-bundle-plugin</artifactId>
         <version>2.5.4</version>
         <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>process-classes</phase>
+            <goals><goal>manifest</goal></goals>   
+          </execution>
+        </executions>
         <configuration>
           <instructions>
             <Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
