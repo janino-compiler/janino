@@ -41,7 +41,8 @@ import org.codehaus.janino.util.ClassFile;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class GithubPullRequestsTest {
+public // SUPPRESS CHECKSTYLE JavadocType
+class GithubPullRequestsTest {
 
     /**
      * <a href="https://github.com/janino-compiler/janino/pull/10">Replace if condition with
@@ -68,10 +69,10 @@ public class GithubPullRequestsTest {
             + "}\n"
         );
 
-        CompilationUnit cu  = new Parser(new Scanner(null, new StringReader(cut))).parseCompilationUnit();
-        IClassLoader    icl = new ClassLoaderIClassLoader(this.getClass().getClassLoader());
-        UnitCompiler    uc  = new UnitCompiler(cu, icl);
-        ClassFile[] classFiles = uc.compileUnit(
+        CompilationUnit cu         = new Parser(new Scanner(null, new StringReader(cut))).parseCompilationUnit();
+        IClassLoader    icl        = new ClassLoaderIClassLoader(this.getClass().getClassLoader());
+        UnitCompiler    uc         = new UnitCompiler(cu, icl);
+        ClassFile[]     classFiles = uc.compileUnit(
             false, // debugSource
             false, // debugLines
             false  // debugVars

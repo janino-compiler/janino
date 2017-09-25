@@ -57,7 +57,7 @@ import org.codehaus.janino.Unparser;
 import org.junit.Assert;
 import org.junit.Test;
 
-// CHECKSTYLE JavadocMethod:OFF
+// SUPPRESS CHECKSTYLE JavadocMethod:9999
 
 /**
  * Tests for 'programmatically created' ASTs.

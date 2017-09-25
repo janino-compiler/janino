@@ -778,7 +778,7 @@ class IClass {
                 };
             }
 
-            // CHECKSTYLE LineLength:OFF
+            // SUPPRESS CHECKSTYLE LineLength:16
             @Override public IClass.IField[]       getDeclaredIFields2()  { return new IClass.IField[0]; }
             @Override public IClass[]              getDeclaredIClasses2() { return new IClass[0]; }
             @Override @Nullable public IClass      getDeclaringIClass2()  { return null; }
@@ -795,7 +795,6 @@ class IClass {
             @Override public boolean               isPrimitive()          { return false; }
             @Override public boolean               isPrimitiveNumeric()   { return false; }
             @Override public IClass                getComponentType2()    { return componentType; }
-            // CHECKSTYLE LineLength:ON
 
             @Override public String toString() { return componentType.toString() + "[]"; }
         };

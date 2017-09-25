@@ -1,4 +1,4 @@
-// CHECKSTYLE .:OFF
+// SUPPRESS CHECKSTYLE .:9999
 
 package a;
 // ISSUE: https://github.com/codehaus/janino/issues/4

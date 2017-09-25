@@ -35,7 +35,7 @@ class Opcode {
 
     // Symbolic JVM opcodes, in alphabetical order.
 
-    // CHECKSTYLE JavadocVariable:OFF
+    // SUPPRESS CHECKSTYLE JavadocVariable:205
     public static final byte AALOAD          = 50;
     public static final byte AASTORE         = 83;
     public static final byte ACONST_NULL     = 1;
@@ -480,7 +480,6 @@ class Opcode {
      * The <var>n</var>th element of this array describes the properties of the JVM opcode <var>n</var>.
      */
     public static final short[] OPCODE_PROPERTIES = {
-        // CHECKSTYLE WrapAndIndent:OFF
 /*  0*/ /*NOP*/             Opcode.SD_P0,
         /*ACONST_NULL*/     Opcode.SD_P1,
         /*ICONST_M1*/       Opcode.SD_P1,
@@ -699,7 +698,6 @@ class Opcode {
         Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
 /*250*/ Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
         Opcode.INVALID_OPCODE, Opcode.INVALID_OPCODE,
-        // CHECKSTYLE WrapAndIndent:ON
     };
 
     /**

@@ -24,11 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// CHECKSTYLE Javadoc:OFF
+package other_package2;
 
-package other_package2; // SUPPRESS CHECKSTYLE PackageName
-
-public // SUPPRESS CHECKSTYLE HideUtilityClassConstructor
+public
 class ScopingRules {
 
     protected

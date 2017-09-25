@@ -1225,7 +1225,7 @@ class Parser {
         List<BlockStatement>  statements                    = new ArrayList<BlockStatement>();
         if (
             this.peek(
-                "this", "super", "new", "void",
+                "this", "super", "new", "void", // SUPPRESS CHECKSTYLE Wrap:1
                 "byte", "char", "short", "int", "long", "float", "double", "boolean"
             ) != -1
             || this.peekLiteral()
@@ -1503,7 +1503,7 @@ class Parser {
         if (
             (this.peek(TokenType.IDENTIFIER) && this.peekNextButOne(":"))
             || this.peek(
-                "if", "for", "while", "do", "try", "switch", "synchronized",
+                "if", "for", "while", "do", "try", "switch", "synchronized", // SUPPRESS CHECKSTYLE Wrap:1
                 "return", "throw", "break", "continue", "assert"
             ) != -1
             || this.peek("{", ";") != -1
@@ -1749,7 +1749,7 @@ class Parser {
             // 'for' '(' Modifiers Type VariableDeclarators
             // 'for' '(' [ Modifiers ] PrimitiveType VariableDeclarators
             if (this.peek(
-                "final", "@", "byte", "short", "char", "int", "long", "float", "double", "boolean"
+                "final", "@", "byte", "short", "char", "int", "long", "float", "double", "boolean" // SUPPRESS CHECKSTYLE LineLength|Wrap
             ) != -1) {
                 Modifiers modifiers = this.parseModifiers();
                 Type      type      = this.parseType();
@@ -2150,7 +2150,7 @@ class Parser {
 
         Type res;
         switch (this.peekRead(
-            "byte", "short", "char", "int", "long", "float", "double", "boolean"
+            "byte", "short", "char", "int", "long", "float", "double", "boolean" // SUPPRESS CHECKSTYLE Wrap
         )) {
         case 0:  res = new PrimitiveType(this.location(), Primitive.BYTE);    break;
         case 1:  res = new PrimitiveType(this.location(), Primitive.SHORT);   break;
@@ -2300,7 +2300,7 @@ class Parser {
     parseAssignmentExpression() throws CompileException, IOException  {
         Atom a = this.parseConditionalExpression();
         if (this.peek(
-            "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>="
+            "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" // SUPPRESS CHECKSTYLE Wrap
         ) != -1) {
             final Lvalue lhs      = a.toLvalueOrCompileException();
             Location     location = this.location();
@@ -3154,7 +3154,7 @@ class Parser {
     public boolean
     peekLiteral() throws CompileException, IOException {
         return this.peek(
-            TokenType.INTEGER_LITERAL, TokenType.FLOATING_POINT_LITERAL, TokenType.BOOLEAN_LITERAL,
+            TokenType.INTEGER_LITERAL, TokenType.FLOATING_POINT_LITERAL, TokenType.BOOLEAN_LITERAL, // SUPPRESS CHECKSTYLE LineLength|Wrap:1
             TokenType.CHARACTER_LITERAL, TokenType.STRING_LITERAL, TokenType.NULL_LITERAL
         ) != -1;
     }

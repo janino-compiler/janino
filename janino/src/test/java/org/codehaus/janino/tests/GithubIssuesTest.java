@@ -91,7 +91,8 @@ class GithubIssuesTest {
     }
 
     /**
-     * @see <a href="https://github.com/janino-compiler/janino/issues/19">GITHUB issue #19</a>: Get bytecode after compile
+     * @see <a href="https://github.com/janino-compiler/janino/issues/19">GITHUB issue #19</a>: Get bytecode after
+     *      compile
      */
     @Test public void
     testCompileToBytecode() throws CompileException {

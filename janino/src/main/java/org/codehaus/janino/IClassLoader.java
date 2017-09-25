@@ -53,9 +53,7 @@ class IClassLoader {
     // The following are constants, but cannot be declared FINAL, because they are only initialized by
     // "postConstruct()".
 
-    // CHECKSTYLE MemberName:OFF
-    // CHECKSTYLE AbbreviationAsWordInName:OFF
-    // CHECKSTYLE JavadocVariable:OFF
+    // SUPPRESS CHECKSTYLE MemberName|AbbreviationAsWordInName|JavadocVariable:57
 
     // Representations of commonly used classes.
     public IClass TYPE_java_lang_annotation_Retention;
@@ -111,10 +109,6 @@ class IClassLoader {
 
     // Representations of commonly used constrcutors.
     @Nullable public IConstructor CTOR_java_lang_StringBuilder__java_lang_String;
-
-    // CHECKSTYLE JavadocVariable:ON
-    // CHECKSTYLE AbbreviationAsWordInName:ON
-    // CHECKSTYLE MemberName:ON
 
     @SuppressWarnings("null")
     public

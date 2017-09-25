@@ -5338,7 +5338,7 @@ class UnitCompiler {
 
         // "|", "^", "&", "*", "/", "%", "+", "-", "==", "!=".
         if (
-            // CHECKSTYLE StringLiteralEquality:OFF
+            // SUPPRESS CHECKSTYLE StringLiteralEquality:10
             bo.op == "|"
             || bo.op == "^"
             || bo.op == "&"
@@ -5349,7 +5349,6 @@ class UnitCompiler {
             || bo.op == "-"
             || bo.op == "=="
             || bo.op == "!="
-            // CHECKSTYLE StringLiteralEquality:ON
         ) {
 
             // Unroll the constant operands.
@@ -5382,7 +5381,7 @@ class UnitCompiler {
                             double lhsD = ((Number) lhs).doubleValue();
                             double rhsD = ((Number) rhs).doubleValue();
                             lhs = (
-                                // CHECKSTYLE StringLiteralEquality:OFF
+                                // SUPPRESS CHECKSTYLE StringLiteralEquality:7
                                 bo.op == "*" ? new Double(lhsD * rhsD) :
                                 bo.op == "/" ? new Double(lhsD / rhsD) :
                                 bo.op == "%" ? new Double(lhsD % rhsD) :
@@ -5391,7 +5390,6 @@ class UnitCompiler {
                                 bo.op == "==" ? Boolean.valueOf(lhsD == rhsD) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsD != rhsD) :
                                 UnitCompiler.NOT_CONSTANT
-                                // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
                         }
@@ -5399,7 +5397,7 @@ class UnitCompiler {
                             float lhsF = ((Number) lhs).floatValue();
                             float rhsF = ((Number) rhs).floatValue();
                             lhs = (
-                                // CHECKSTYLE StringLiteralEquality:OFF
+                                // SUPPRESS CHECKSTYLE StringLiteralEquality:7
                                 bo.op == "*" ? new Float(lhsF * rhsF) :
                                 bo.op == "/" ? new Float(lhsF / rhsF) :
                                 bo.op == "%" ? new Float(lhsF % rhsF) :
@@ -5408,7 +5406,6 @@ class UnitCompiler {
                                 bo.op == "==" ? Boolean.valueOf(lhsF == rhsF) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsF != rhsF) :
                                 UnitCompiler.NOT_CONSTANT
-                                // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
                         }
@@ -5416,7 +5413,7 @@ class UnitCompiler {
                             long lhsL = ((Number) lhs).longValue();
                             long rhsL = ((Number) rhs).longValue();
                             lhs = (
-                                // CHECKSTYLE StringLiteralEquality:OFF
+                                // SUPPRESS CHECKSTYLE StringLiteralEquality:10
                                 bo.op == "|" ? new Long(lhsL | rhsL) :
                                 bo.op == "^" ? new Long(lhsL ^ rhsL) :
                                 bo.op == "&" ? new Long(lhsL & rhsL) :
@@ -5428,7 +5425,6 @@ class UnitCompiler {
                                 bo.op == "==" ? Boolean.valueOf(lhsL == rhsL) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsL != rhsL) :
                                 UnitCompiler.NOT_CONSTANT
-                                // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
                         }
@@ -5439,7 +5435,7 @@ class UnitCompiler {
                             int lhsI = ((Number) lhs).intValue();
                             int rhsI = ((Number) rhs).intValue();
                             lhs = (
-                                // CHECKSTYLE StringLiteralEquality:OFF
+                                // SUPPRESS CHECKSTYLE StringLiteralEquality:10
                                 bo.op == "|" ? new Integer(lhsI | rhsI) :
                                 bo.op == "^" ? new Integer(lhsI ^ rhsI) :
                                 bo.op == "&" ? new Integer(lhsI & rhsI) :
@@ -5451,7 +5447,6 @@ class UnitCompiler {
                                 bo.op == "==" ? Boolean.valueOf(lhsI == rhsI) :
                                 bo.op == "!=" ? Boolean.valueOf(lhsI != rhsI) :
                                 UnitCompiler.NOT_CONSTANT
-                                // CHECKSTYLE StringLiteralEquality:ON
                             );
                             continue;
                         }
@@ -6610,7 +6605,7 @@ class UnitCompiler {
     private IClass
     getType2(BinaryOperation bo) throws CompileException {
         if (
-            // CHECKSTYLE StringLiteralEquality:OFF
+            // SUPPRESS CHECKSTYLE StringLiteralEquality:8
             bo.op == "||"
             || bo.op == "&&"
             || bo.op == "=="
@@ -6619,7 +6614,6 @@ class UnitCompiler {
             || bo.op == ">"
             || bo.op == "<="
             || bo.op == ">="
-            // CHECKSTYLE StringLiteralEquality:ON
         ) return IClass.BOOLEAN;
 
         if (bo.op == "|" || bo.op == "^" || bo.op == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality

@@ -31,7 +31,7 @@ import org.codehaus.janino.ScriptEvaluator;
 import org.junit.Assert;
 import org.junit.Test;
 
-// CHECKSTYLE JavadocMethod:OFF
+// SUPPRESS CHECKSTYLE JavadocMethod:9999
 
 /**
  * Unit tests for the {@link ScriptEvaluator}.
