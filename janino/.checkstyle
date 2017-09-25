@@ -7,5 +7,6 @@
   <fileset name="All but test source" enabled="true" check-config-name="JANINO" local="true">
     <file-match-pattern match-pattern=".*\.java" include-pattern="true"/>
     <file-match-pattern match-pattern="src/test/java/other_package2/.*" include-pattern="false"/>
+    <file-match-pattern match-pattern="src/test/resources/a/.*\.java" include-pattern="false"/>
   </fileset>
 </fileset-config>

@@ -24,8 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/***/
 @NotNullByDefault
-package for_sandbox_tests; // SUPPRESS CHECKSTYLE PackageName
+package for_sandbox_tests;
 
 import org.codehaus.commons.nullanalysis.NotNullByDefault;

@@ -1,7 +1,5 @@
-// SUPPRESS CHECKSTYLE .:9999
 
 package a;
-
 
 // Issue #5 : ClassFormatError: Invalid start_pc 65459 in LocalVariableTable in class file
 public
