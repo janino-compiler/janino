@@ -47,10 +47,29 @@ public class GithubPullRequestsTest {
      * <a href="https://github.com/janino-compiler/janino/pull/10">Replace if condition with
      * literal if possible to simplify if statement</a>
      */
+    private void
+    helpTestPullRequest10(String cut, int size) throws CompileException, IOException {
+        CompilationUnit cu  = new Parser(new Scanner(null, new StringReader(cut))).parseCompilationUnit();
+        IClassLoader    icl = new ClassLoaderIClassLoader(this.getClass().getClassLoader());
+        UnitCompiler    uc  = new UnitCompiler(cu, icl);
+        ClassFile[] classFiles = uc.compileUnit(
+            false, // debugSource
+            false, // debugLines
+            false  // debugVars
+        );
+
+        Assert.assertEquals(1, classFiles.length);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        classFiles[0].store(baos);
+
+        Assert.assertEquals(size, baos.size());
+    }
+
     @Test public void
     testPullRequest10() throws CompileException, IOException {
 
-        String cut = (
+        String cut1 = (
             ""
             + "public\n"
             + "class Foo { \n"
@@ -67,20 +86,6 @@ public class GithubPullRequestsTest {
             + "    }\n"
             + "}\n"
         );
-
-        CompilationUnit cu  = new Parser(new Scanner(null, new StringReader(cut))).parseCompilationUnit();
-        IClassLoader    icl = new ClassLoaderIClassLoader(this.getClass().getClassLoader());
-        UnitCompiler    uc  = new UnitCompiler(cu, icl);
-        ClassFile[] classFiles = uc.compileUnit(
-            false, // debugSource
-            false, // debugLines
-            false  // debugVars
-        );
-
-        Assert.assertEquals(1, classFiles.length);
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        classFiles[0].store(baos);
 
         // The 200-byte class file disassembles to:
         //
@@ -105,6 +110,96 @@ public class GithubPullRequestsTest {
         //     }
         //
         // As you see, the IF statement has been optimized away.
-        Assert.assertEquals(200, baos.size());
+ 
+        helpTestPullRequest10(cut1, 200);
+
+        String cut2 = (
+            ""
+            + "public\n"
+            + "class Foo { \n"
+            + "\n"
+            + "    public static String\n"
+            + "    meth() {\n"
+            + "\n"
+            + "        boolean test = true;\n"
+            + "        int test2 = 1;\n"
+            + "        if (test) {\n"
+            + "            return \"true\";\n"
+            + "        } else {\n"
+            + "            return \"false\";\n"
+            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        );
+
+        // With another local variable, the class file size increases by 2-byte.
+        helpTestPullRequest10(cut2, 202);
+
+        String cut3 = (
+            ""
+            + "public\n"
+            + "class Foo { \n"
+            + "\n"
+            + "    public static String\n"
+            + "    meth() {\n"
+            + "\n"
+            + "        boolean test = true, test1 = false;\n"
+            + "        int test3 = 1;\n"
+            + "        if (test) {\n"
+            + "            return \"true\";\n"
+            + "        } else {\n"
+            + "            return \"false\";\n"
+            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        );
+
+        // With another two local variables, the class file size increases by 4-byte.
+        helpTestPullRequest10(cut3, 204);
+
+        String cut4 = (
+            ""
+            + "public\n"
+            + "class Foo { \n"
+            + "\n"
+            + "    public static String\n"
+            + "    meth() {\n"
+            + "\n"
+            + "        boolean test = true, test1 = false;\n"
+            + "        boolean test3 = test;\n"
+            + "        if (test) {\n"
+            + "            return \"true\";\n"
+            + "        } else {\n"
+            + "            return \"false\";\n"
+            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        );
+
+        // With a local variable access as initializer of another local variable, we won't do the optimization.
+        helpTestPullRequest10(cut4, 211);
+
+        String cut5 = (
+            ""
+            + "public\n"
+            + "class Foo { \n"
+            + "\n"
+            + "    public static String\n"
+            + "    meth() {\n"
+            + "\n"
+            + "        boolean test = true, test1 = false;\n"
+            + "        boolean test3 = (test = false);\n"
+            + "        if (test) {\n"
+            + "            return \"true\";\n"
+            + "        } else {\n"
+            + "            return \"false\";\n"
+            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        );
+
+        // With a local variable access as initializer of another local variable, we won't do the optimization.
+        helpTestPullRequest10(cut5, 213);
+ 
     }
 }
