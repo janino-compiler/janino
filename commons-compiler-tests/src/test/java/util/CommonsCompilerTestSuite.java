@@ -121,7 +121,12 @@ class CommonsCompilerTestSuite {
         }
 
         @Override protected void
-        cook() throws Exception { this.expressionEvaluator.cook(this.expression); }
+        cook() throws Exception {
+            this.expressionEvaluator.cook(this.expression);
+
+            // Enable assertions on the new class loader.
+            this.expressionEvaluator.getMethod().getDeclaringClass().getClassLoader().setDefaultAssertionStatus(true);
+        }
 
         @Override @Nullable protected Object
         execute() throws Exception {
@@ -229,7 +234,12 @@ class CommonsCompilerTestSuite {
         }
 
         @Override protected void
-        cook() throws Exception { this.scriptEvaluator.cook(this.script); }
+        cook() throws Exception {
+            this.scriptEvaluator.cook(this.script);
+
+            // Enable assertions on the new class loader.
+            this.scriptEvaluator.getMethod().getDeclaringClass().getClassLoader().setDefaultAssertionStatus(true);
+        }
 
         @Override @Nullable protected Object
         execute() throws Exception {
@@ -311,6 +321,9 @@ class CommonsCompilerTestSuite {
         @Override protected void
         cook() throws Exception {
             this.classBodyEvaluator.cook(this.classBody);
+
+            // Enable assertions on the new class loader.
+            this.classBodyEvaluator.getClazz().getClassLoader().setDefaultAssertionStatus(true);
         }
 
         @Override protected Object
@@ -397,6 +410,9 @@ class CommonsCompilerTestSuite {
         @Override protected void
         cook() throws Exception {
             this.simpleCompiler.cook(this.compilationUnit);
+
+            // Enable assertions on the new class loader.
+            this.simpleCompiler.getClassLoader().setDefaultAssertionStatus(true);
         }
 
         @Override protected Object
