@@ -53,7 +53,7 @@ import util.TestUtil;
  * Test cases for the combination of JANINO with {@link Sandbox}.
  */
 @RunWith(Parameterized.class) public
-class DuclsSandboxTest extends CommonsCompilerTestSuite {
+class SandboxTest extends CommonsCompilerTestSuite {
 
     private static final Permissions NO_PERMISSIONS = new Permissions();
     static {
@@ -64,7 +64,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     }
 
     private static final Permissions ALL_PERMISSIONS = new Permissions();
-    static { DuclsSandboxTest.ALL_PERMISSIONS.add(new AllPermission()); }
+    static { SandboxTest.ALL_PERMISSIONS.add(new AllPermission()); }
 
     /**
      * Get all available compiler factories for the "CompilerFactory" JUnit parameter.
@@ -73,7 +73,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     compilerFactories() throws Exception { return TestUtil.getCompilerFactoriesForParameters(); }
 
     public
-    DuclsSandboxTest(ICompilerFactory compilerFactory) throws Exception { super(compilerFactory); }
+    SandboxTest(ICompilerFactory compilerFactory) throws Exception { super(compilerFactory); }
 
     /**
      * Verifies that a trivial script works in the no-permissions sandbox.
@@ -82,7 +82,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     testReturnTrue() throws Exception {
 
         String script = "return true;";
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -92,7 +92,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     testGetSystemProperty() throws Exception {
 
         String script = "System.getProperty(\"foo\"); return true;";
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -102,7 +102,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     testFileDelete() throws Exception {
 
         String script = "return new java.io.File(\"path/to/file.txt\").delete();";
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -112,7 +112,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     testFileList() throws Exception {
 
         String script = "return new java.io.File(\"path/to/dir\").list() != null;";
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -122,7 +122,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     testDotClass() throws Exception {
 
         String script = "return (System.class != null);";
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -132,7 +132,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     testClassForName() throws Exception {
 
         String script = "return (System.class.forName(\"java.lang.String\") != null);";
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -142,7 +142,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     testDotClassGetDeclaredField() throws Exception {
 
         String script = "return (String.class.getDeclaredField(\"value\") != null);";
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -153,7 +153,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     testDotClassGetDeclaredFieldAllPermissions() throws Exception {
 
         String script = "String.class.getDeclaredField(\"value\").setAccessible(true); return true;";
-        this.confinedScriptTest(script, DuclsSandboxTest.ALL_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.ALL_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -182,7 +182,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
         String script = (
             "return new java.net.URL(\"http://localhost:65000\").openConnection().getInputStream() != null;"
         );
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -192,7 +192,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
     testSocketToHost() throws Exception {
 
         String script = "return new java.net.Socket(\"localhost\", 65000) != null;";
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -204,7 +204,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
         String script = (
             "return new java.net.Socket(java.net.InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }), 65000) != null;"
         );
-        this.confinedScriptTest(script, DuclsSandboxTest.NO_PERMISSIONS).assertResultTrue();
+        this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
     /**
@@ -216,7 +216,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
         this.confinedSimpleCompilerTest(
             "public class Foo { public static void main() { System.getProperty(\"foo\"); } }",
             "Foo",
-            DuclsSandboxTest.NO_PERMISSIONS
+            SandboxTest.NO_PERMISSIONS
         ).assertExecutable();
     }
 
@@ -228,7 +228,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
 
         this.confinedClassBodyTest(
             "public static void main() { System.getProperty(\"foo\"); }",
-            DuclsSandboxTest.NO_PERMISSIONS
+            SandboxTest.NO_PERMISSIONS
         ).assertExecutable();
     }
 
@@ -240,7 +240,7 @@ class DuclsSandboxTest extends CommonsCompilerTestSuite {
 
         this.confinedExpressionTest(
             "System.getProperty(\"foo\")",
-            DuclsSandboxTest.NO_PERMISSIONS
+            SandboxTest.NO_PERMISSIONS
         ).assertExecutable();
     }
 
