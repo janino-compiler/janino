@@ -701,7 +701,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "    public static boolean\n"
             + "    main() throws Exception {\n"
             + "        Class c = Main.class.getClassLoader().loadClass(\"MyAnno\");\n"
-            + "        System.out.println(c.getModifiers());\n"
+            + "//        System.out.println(c.getModifiers());\n"
             + "        return c.getModifiers() == 0x2601;\n" // 2000=ANNOTATION, 400=ABSTRACT, 200=INTERFACE, 1=PUBLIC
             + "    }\n"
             + "}"
@@ -899,6 +899,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     test_14_10__TheAssertStatement() throws Exception {
+
         // SUPPRESS CHECKSTYLE LineLength:5
         this.assertScriptExecutable("assert true;");
         Assert.assertNull(this.assertScriptExecutable("try { assert false;                  } catch (AssertionError ae) { return ae.getMessage();       } return \"nope\";", String.class));
