@@ -58,7 +58,7 @@ interface ISimpleCompiler extends ICookable {
      * ClassLoader} can be used for subsequent {@link ISimpleCompiler}s in order to compile compilation units that use
      * types (e.g. declare derived types) declared in the previous one.
      * <p>
-     *   This method must only be called after exactly on of the {@link #cook(String, java.io.Reader)} methods was
+     *   This method must only be called after exactly one of the {@link #cook(String, java.io.Reader)} methods was
      *   called.
      * </p>
      */
