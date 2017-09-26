@@ -50,7 +50,7 @@ import util.CommonsCompilerTestSuite;
 import util.TestUtil;
 
 /**
- * Test cases for the combination of JANINO with {@link de.unkrig.commons.lang.security.Sandbox}.
+ * Test cases for the combination of JANINO with {@link Sandbox}.
  */
 @RunWith(Parameterized.class) public
 class DuclsSandboxTest extends CommonsCompilerTestSuite {
