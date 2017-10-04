@@ -63,6 +63,30 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     ReportedBugsTest(ICompilerFactory compilerFactory) throws Exception {
         super(compilerFactory);
     }
+	
+	@Test public void
+    testBugAnnotationsStackOverflowError() throws Exception {
+        this.assertCompilationUnitMainExecutable((
+            ""
+            + "package demo;\n"
+            + "\n"
+            + "import java.io.Serializable;\n"
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4;\n"
+			+ "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4Enum;\n"
+            + "\n"
+            + "public class JaninoTestComponent implements Serializable {\n"
+            + "\n"
+            + "	private static final long serialVersionUID = 1L;\n"
+            + "\n"
+            + "	@RuntimeRetainedAnnotation4(RuntimeRetainedAnnotation4Enum.SECOND)\n"
+            + "	protected java.util.Date lastModifiedDate;\n"
+            + "\n"
+            + "	public JaninoTestComponent() {\n"
+            + "		// default constructor;\n"
+            + "	}\n"
+            + "}\n"
+        ), "demo.Service");
+    }
 
     @Test public void
     testBug48() throws Exception {
