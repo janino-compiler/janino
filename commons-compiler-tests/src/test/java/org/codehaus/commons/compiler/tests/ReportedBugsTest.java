@@ -63,29 +63,79 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     ReportedBugsTest(ICompilerFactory compilerFactory) throws Exception {
         super(compilerFactory);
     }
-	
-	@Test public void
+
+    @Test public void
     testBugAnnotationsStackOverflowError() throws Exception {
-        this.assertCompilationUnitMainExecutable((
-            ""
-            + "package demo;\n"
-            + "\n"
-            + "import java.io.Serializable;\n"
-            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4;\n"
-			+ "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4Enum;\n"
-            + "\n"
-            + "public class JaninoTestComponent implements Serializable {\n"
-            + "\n"
-            + "	private static final long serialVersionUID = 1L;\n"
-            + "\n"
-            + "	@RuntimeRetainedAnnotation4(RuntimeRetainedAnnotation4Enum.SECOND)\n"
-            + "	protected java.util.Date lastModifiedDate;\n"
-            + "\n"
-            + "	public JaninoTestComponent() {\n"
-            + "		// default constructor;\n"
-            + "	}\n"
-            + "}\n"
-        ), "demo.Service");
+        this.assertCompilationUnitCookable((
+                ""
+                        + "package demo;\n"
+                        + "\n"
+                        + "import java.io.Serializable;\n"
+                        + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4;\n"
+                        + "import static org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4Enum.SECOND;\n"
+                        + "\n"
+                        + "public class JaninoTestComponent implements Serializable {\n"
+                        + "\n"
+                        + "	private static final long serialVersionUID = 1L;\n"
+                        + "\n"
+                        + "	@RuntimeRetainedAnnotation4(SECOND)\n"
+                        + "	protected java.util.Date lastModifiedDate;\n"
+                        + "\n"
+                        + "	public JaninoTestComponent() {\n"
+                        + "		// default constructor;\n"
+                        + "	}\n"
+                        + "}\n"
+        ));
+    }
+
+    @Test public void
+    testBugAnnotationsStackOverflowError2() throws Exception {
+        this.assertCompilationUnitCookable((
+                ""
+                        + "package demo;\n"
+                        + "\n"
+                        + "import java.io.Serializable;\n"
+                        + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4;\n"
+                        + "\n"
+                        + "public class JaninoTestComponent implements Serializable {\n"
+                        + "\n"
+                        + "	private static final long serialVersionUID = 1L;\n"
+                        + "\n"
+                        + "	@RuntimeRetainedAnnotation4(org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4Enum.SECOND)\n"
+                        + "	protected java.util.Date lastModifiedDate;\n"
+                        + "\n"
+                        + "	public JaninoTestComponent() {\n"
+                        + "		// default constructor;\n"
+                        + "	}\n"
+                        + "}\n"
+        ));
+    }
+
+    @Test public void
+    testBugAnnotationsStackOverflowError3() throws Exception {
+        this.assertCompilationUnitCookable((
+                ""
+                        + "package demo;\n"
+                        + "\n"
+                        + "import java.io.Serializable;\n"
+                        + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4;\n"
+                        + "\n"
+                        + "public class JaninoTestComponent implements Serializable {\n"
+                        + "\n"
+                        + "	private static final long serialVersionUID = 1L;\n"
+                        + "\n"
+                        + "	protected java.util.Date lastModifiedDate;\n"
+                        + "\n"
+                        + "	public JaninoTestComponent() {\n"
+                        + "		// default constructor;\n"
+                        + "	}\n"
+                        + "\n"
+                        + "@RuntimeRetainedAnnotation4(org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4Enum.SECOND)\n"
+                        + "	public java.util.Date getLastModifiedDate() {\n"
+                        + "		return lastModifiedDate;\n"
+                        + "	}\n"
+                        + "}\n"
+        ));
     }
 
     @Test public void

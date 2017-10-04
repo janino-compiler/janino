@@ -30,14 +30,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * An annotation type with retention policy "Runtime".
  */
-@Target({ FIELD })
+@Target({ FIELD, METHOD })
 @Retention(RUNTIME)
 public
 @interface RuntimeRetainedAnnotation4 {
-    RuntimeRetainedAnnotation4Enum value();
+    RuntimeRetainedAnnotation4Enum value() default RuntimeRetainedAnnotation4Enum.SECOND;
 }
