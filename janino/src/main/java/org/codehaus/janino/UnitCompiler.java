@@ -9758,11 +9758,12 @@ class UnitCompiler {
      */
     IClass.IConstructor
     toIConstructor(final ConstructorDeclarator constructorDeclarator) {
+
         if (constructorDeclarator.iConstructor != null) return constructorDeclarator.iConstructor;
 
-        final IAnnotation[] ias = this.toIAnnotations(constructorDeclarator.getAnnotations());
-
         constructorDeclarator.iConstructor = this.resolve(constructorDeclarator.getDeclaringType()).new IConstructor() {
+
+            private IAnnotation[] ias;
 
             // Implement IMember.
             @Override public Access
@@ -9782,7 +9783,12 @@ class UnitCompiler {
             }
 
             @Override public IAnnotation[]
-            getAnnotations() { return ias; }
+            getAnnotations() {
+                if (ias == null) {
+                    ias = toIAnnotations(constructorDeclarator.getAnnotations());
+                }
+                return ias;
+            }
 
             // Implement IInvocable.
 
@@ -9878,9 +9884,10 @@ class UnitCompiler {
 
         if (methodDeclarator.iMethod != null) return methodDeclarator.iMethod;
 
-        final IAnnotation[] ias = this.toIAnnotations(methodDeclarator.getAnnotations());
 
         methodDeclarator.iMethod = this.resolve(methodDeclarator.getDeclaringType()).new IMethod() {
+
+            IAnnotation[] ias;
 
             // Implement IMember.
             @Override public Access
@@ -9900,7 +9907,12 @@ class UnitCompiler {
             }
 
             @Override public IAnnotation[]
-            getAnnotations() { return ias; }
+            getAnnotations() {
+                if (ias == null) {
+                    ias = toIAnnotations(methodDeclarator.getAnnotations());
+                }
+                return ias;
+            }
 
             // Implement IInvocable.
 
