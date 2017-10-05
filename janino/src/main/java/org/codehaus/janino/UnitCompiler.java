@@ -1111,10 +1111,7 @@ class UnitCompiler {
                         }
 
                         if (enumIClass.getSuperclass() != UnitCompiler.this.iClassLoader.TYPE_java_lang_Enum) {
-                            UnitCompiler.this.compileError(
-                                "\"" + enumType + "\" is not an enum",
-                                enumType.getLocation()
-                            );
+                            // ambigious value can still be a constant, break here.
                             break ENUM_CONSTANT;
                         }
 
@@ -8269,6 +8266,14 @@ class UnitCompiler {
                     }
 
                     assert scopeTypeDeclaration != null;
+                    if (scopeTbd == null && scope instanceof PackageMemberClassDeclaration) {
+                        final PackageMemberClassDeclaration classDeclaration = (PackageMemberClassDeclaration) scope;
+                        final String[] additionalIdentifiers = classDeclaration.getClassName().split("\\.");
+                        final String[] identifiers = new String[additionalIdentifiers.length + 1];
+                        System.arraycopy(additionalIdentifiers, 0, identifiers, 0, additionalIdentifiers.length);
+                        identifiers[identifiers.length - 1] = identifier;
+                        return reclassifyName(location, scope,identifiers, identifiers.length);
+                    }
                     assert scopeTbd != null;
 
                     SimpleType ct = new SimpleType(scopeTypeDeclaration.getLocation(), etd);

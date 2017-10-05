@@ -138,7 +138,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         ));
     }
 
-
     @Test public void
     testBugAnnotationsStackOverflowError4() throws Exception {
         this.assertCompilationUnitCookable((
@@ -161,6 +160,160 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
                         + "	}\n"
                         + "}\n"
         ));
+    }
+
+    @Test public void
+    testBugAnnotationsCompileExceptionIsNotAnEnum() throws Exception {
+        this.assertCompilationUnitCookable((
+                ""
+                        + "package demo;\n"
+                        + "\n"
+                        + "import java.io.Serializable;\n"
+                        + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation5;\n"
+                        + "\n"
+                        + "public class JaninoTestComponent implements Serializable {\n"
+                        + "\n"
+                        + "	private static final long serialVersionUID = 1L;\n"
+                        + "	private static final String VALUE = \"somevalue\";\n"
+                        + "\n"
+                        + "	@RuntimeRetainedAnnotation5(value = JaninoTestComponent.VALUE)\n"
+                        + "	private java.util.Date lastModifiedDate;\n"
+                        + "\n"
+                        + "	public JaninoTestComponent() {\n"
+                        + "		// default constructor;\n"
+                        + "	}\n"
+                        + "}\n"
+        ));
+    }
+
+    @Test public void
+    testBugAnnotationsCompileExceptionIsNotAnEnumLargeStringConstant() throws Exception {
+        final String ingredient = ""
+                + "package demo;\n"
+                + "\n"
+                + "import java.io.Serializable;\n"
+                + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation5;\n"
+                + "\n"
+                + "public class JaninoTestComponent implements Serializable {\n"
+                + "\n"
+                + "	private static final long serialVersionUID = 1L;\n"
+                + "	private static final String VALUE = \"\"\n"
+                + " + \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Non est igitur voluptas bonum. Que Manilium, ab iisque M. Et non ex maxima parte de tota iudicabis? Tu autem, si tibi illa probabantur, cur non propriis verbis ea tenebas? Et harum quidem rerum facilis est et expedita distinctio. Quo modo?\"\n"
+                + " + \"Inde sermone vario sex illa a Dipylo stadia confecimus. Fortemne possumus dicere eundem illum Torquatum? Sed ad rem redeamus; Tollitur beneficium, tollitur gratia, quae sunt vincla concordiae. Egone non intellego, quid sit don Graece, Latine voluptas? Nemo nostrum istius generis asotos iucunde putat vivere.\"\n"
+                + " + \"Quid autem habent admirationis, cum prope accesseris? Hoc enim constituto in philosophia constituta sunt omnia. Ut proverbia non nulla veriora sint quam vestra dogmata. Mihi vero, inquit, placet agi subtilius et, ut ipse dixisti, pressius. Quia dolori non voluptas contraria est, sed doloris privatio. Sic enim censent, oportunitatis esse beate vivere. Nunc omni virtuti vitium contrario nomine opponitur.\"\n"
+                + " + \"Quamquam id quidem licebit iis existimare, qui legerint. Sed tamen enitar et, si minus multa mihi occurrent, non fugiam ista popularia. Duo Reges: constructio interrete. Immo alio genere; Nummus in Croesi divitiis obscuratur, pars est tamen divitiarum. Videamus animi partes, quarum est conspectus illustrior; Cum audissem Antiochum, Brute, ut solebam, cum M. Ille enim occurrentia nescio quae comminiscebatur; Primum in nostrane potestate est, quid meminerimus? Rationis enim perfectio est virtus;\"\n"
+                + " + \"Ut pulsi recurrant? Tu enim ista lenius, hic Stoicorum more nos vexat. Eademne, quae restincta siti? Zenonis est, inquam, hoc Stoici. Eadem fortitudinis ratio reperietur. Falli igitur possumus.\";"
+                + "\n"
+                + "	@RuntimeRetainedAnnotation5(value = JaninoTestComponent.VALUE)\n"
+                + "	private java.util.Date lastModifiedDate;\n"
+                + "\n"
+                + "	public JaninoTestComponent() {\n"
+                + "		// default constructor;\n"
+                + "	}\n"
+                + "}\n";
+        this.assertCompilationUnitCookable(ingredient);
+    }
+
+    @Test public void
+    testBugAnnotationsCompileExceptionIsNotAnEnumLargeStringConstant2() throws Exception {
+        final String ingredient = ""
+                + "package demo;\n"
+                + "\n"
+                + "import java.io.Serializable;\n"
+                + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation5;\n"
+                + "\n"
+                + "public class JaninoTestComponent implements Serializable {\n"
+                + "\n"
+                + "	private static final long serialVersionUID = 1L;\n"
+                + "	private static final String VALUE = \"\"\n"
+                + " + \"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Non est igitur voluptas bonum. Que Manilium, ab iisque M. Et non ex maxima parte de tota iudicabis? Tu autem, si tibi illa probabantur, cur non propriis verbis ea tenebas? Et harum quidem rerum facilis est et expedita distinctio. Quo modo?\"\n"
+                + " + \"Inde sermone vario sex illa a Dipylo stadia confecimus. Fortemne possumus dicere eundem illum Torquatum? Sed ad rem redeamus; Tollitur beneficium, tollitur gratia, quae sunt vincla concordiae. Egone non intellego, quid sit don Graece, Latine voluptas? Nemo nostrum istius generis asotos iucunde putat vivere.\"\n"
+                + " + \"Quid autem habent admirationis, cum prope accesseris? Hoc enim constituto in philosophia constituta sunt omnia. Ut proverbia non nulla veriora sint quam vestra dogmata. Mihi vero, inquit, placet agi subtilius et, ut ipse dixisti, pressius. Quia dolori non voluptas contraria est, sed doloris privatio. Sic enim censent, oportunitatis esse beate vivere. Nunc omni virtuti vitium contrario nomine opponitur.\"\n"
+                + " + \"Quamquam id quidem licebit iis existimare, qui legerint. Sed tamen enitar et, si minus multa mihi occurrent, non fugiam ista popularia. Duo Reges: constructio interrete. Immo alio genere; Nummus in Croesi divitiis obscuratur, pars est tamen divitiarum. Videamus animi partes, quarum est conspectus illustrior; Cum audissem Antiochum, Brute, ut solebam, cum M. Ille enim occurrentia nescio quae comminiscebatur; Primum in nostrane potestate est, quid meminerimus? Rationis enim perfectio est virtus;\"\n"
+                + " + \"Ut pulsi recurrant? Tu enim ista lenius, hic Stoicorum more nos vexat. Eademne, quae restincta siti? Zenonis est, inquam, hoc Stoici. Eadem fortitudinis ratio reperietur. Falli igitur possumus.\";"
+                + "\n"
+                + "	@RuntimeRetainedAnnotation5(value = JaninoTestComponent.VALUE)\n"
+                + "	private java.util.Date lastModifiedDate;\n"
+                + "\n"
+                + "	public JaninoTestComponent() {\n"
+                + "		// default constructor;\n"
+                + "	}\n"
+                + "}\n";
+        this.assertCompilationUnitCookable(ingredient);
+    }
+
+
+    @Test public void
+    testBugAnnotationInAnnotation() throws Exception {
+        final String ingredient = ""
+                + "package demo;\n"
+                + "\n"
+                + "import java.io.Serializable;\n"
+                + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation6;\n"
+                + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation7;\n"
+                + "\n"
+                + "public class JaninoTestComponent implements Serializable {\n"
+                + "\n"
+                + "	private static final long serialVersionUID = 1L;\n"
+                + "\n"
+                + "	@RuntimeRetainedAnnotation6(value = {@RuntimeRetainedAnnotation7(value = \"somevalue\"),@RuntimeRetainedAnnotation7(value = \"somevalue2\")})\n"
+                + "	private java.util.Date lastModifiedDate;\n"
+                + "\n"
+                + "	public JaninoTestComponent() {\n"
+                + "		// default constructor;\n"
+                + "	}\n"
+                + "}\n";
+        this.assertCompilationUnitCookable(ingredient);
+    }
+
+    @Test public void
+    testBugAnnotationInAnnotation2() throws Exception {
+        final String ingredient = ""
+                + "package demo;\n"
+                + "\n"
+                + "import java.io.Serializable;\n"
+                + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation6;\n"
+                + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation7;\n"
+                + "\n"
+                + "public class JaninoTestComponent implements Serializable {\n"
+                + "\n"
+                + "	private static final long serialVersionUID = 1L;\n"
+                + "	private static final String ONE = \"ONE\";\n"
+                + "	private static final String TWO = \"TWO\";\n"
+                + "\n"
+                + "	@RuntimeRetainedAnnotation6(value = {@RuntimeRetainedAnnotation7(value = JaninoTestComponent.ONE),@RuntimeRetainedAnnotation7(value = JaninoTestComponent.TWO)})\n"
+                + "	private java.util.Date lastModifiedDate;\n"
+                + "\n"
+                + "	public JaninoTestComponent() {\n"
+                + "		// default constructor;\n"
+                + "	}\n"
+                + "}\n";
+        this.assertCompilationUnitCookable(ingredient);
+    }
+
+    @Test public void
+    testBugAnnotationInAnnotation3() throws Exception {
+        final String ingredient = ""
+                + "package demo;\n"
+                + "\n"
+                + "import java.io.Serializable;\n"
+                + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation6;\n"
+                + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation7;\n"
+                + "\n"
+                + "public class JaninoTestComponent implements Serializable {\n"
+                + "\n"
+                + "	private static final long serialVersionUID = 1L;\n"
+                + "	private static final String ONE = \"ONE\";\n"
+                + "	private static final String TWO = \"TWO\";\n"
+                + "\n"
+                + "	@RuntimeRetainedAnnotation6(value = {@RuntimeRetainedAnnotation7(value = ONE),@RuntimeRetainedAnnotation7(value = TWO)})\n"
+                + "	private java.util.Date lastModifiedDate;\n"
+                + "\n"
+                + "	public JaninoTestComponent() {\n"
+                + "		// default constructor;\n"
+                + "	}\n"
+                + "}\n";
+        this.assertCompilationUnitCookable(ingredient);
     }
 
     @Test public void
