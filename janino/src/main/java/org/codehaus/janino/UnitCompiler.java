@@ -7804,9 +7804,9 @@ class UnitCompiler {
         final VariableDeclarator variableDeclarator
     ) {
 
-        final IAnnotation[] ias = UnitCompiler.this.toIAnnotations(modifiers.annotations);
-
         return this.resolve(declaringType).new IField() {
+
+            private IAnnotation[] ias;
 
             // Implement IMember.
             @Override public Access
@@ -7826,7 +7826,12 @@ class UnitCompiler {
             }
 
             @Override public IAnnotation[]
-            getAnnotations() { return ias; }
+            getAnnotations() {
+                if (ias == null) {
+                    ias = UnitCompiler.this.toIAnnotations(modifiers.annotations);
+                }
+                return ias;
+             }
 
             // Implement "IField".
 
@@ -7953,7 +7958,7 @@ class UnitCompiler {
 
                 /**
                  * @return A primitive value, a {@link String}, a {@link Java.ClassLiteral} (representing a class
-                 *         literal), a {@link Code.FieldAccess} (representing an enum constant), or an {@link Object}[]
+                 *         literal), a {@link Java.FieldAccess} (representing an enum constant), or an {@link Object}[]
                  *         array containing any of the previously described
                  */
                 private Object

@@ -40,5 +40,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public
 @interface RuntimeRetainedAnnotation4 {
-    RuntimeRetainedAnnotation4Enum value() default RuntimeRetainedAnnotation4Enum.SECOND;
+    RuntimeRetainedAnnotation4Enum value();
 }

@@ -138,6 +138,31 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         ));
     }
 
+
+    @Test public void
+    testBugAnnotationsStackOverflowError4() throws Exception {
+        this.assertCompilationUnitCookable((
+                ""
+                        + "package demo;\n"
+                        + "\n"
+                        + "import java.io.Serializable;\n"
+                        + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4;\n"
+                        + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4Enum;\n"
+                        + "\n"
+                        + "public class JaninoTestComponent implements Serializable {\n"
+                        + "\n"
+                        + "	private static final long serialVersionUID = 1L;\n"
+                        + "\n"
+                        + "	@RuntimeRetainedAnnotation4(value = RuntimeRetainedAnnotation4Enum.SECOND)\n"
+                        + "	private java.util.Date lastModifiedDate;\n"
+                        + "\n"
+                        + "	public JaninoTestComponent() {\n"
+                        + "		// default constructor;\n"
+                        + "	}\n"
+                        + "}\n"
+        ));
+    }
+
     @Test public void
     testBug48() throws Exception {
         this.assertCompilationUnitMainExecutable((
