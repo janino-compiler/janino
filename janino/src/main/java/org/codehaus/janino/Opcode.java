@@ -241,7 +241,6 @@ class Opcode {
     public static final byte SWAP            = 95;
     public static final byte TABLESWITCH     = (byte) 170;
     public static final byte WIDE            = (byte) 196;
-    // CHECKSTYLE JavadocVariable:ON
 
     // Constants for the "OPCODE_PROPERTIES" array.
 
