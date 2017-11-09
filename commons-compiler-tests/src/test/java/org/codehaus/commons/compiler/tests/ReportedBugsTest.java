@@ -64,6 +64,35 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         super(compilerFactory);
     }
 
+    /**
+     * StackOverflowError when using field annotations with enum members.
+     *
+     * @see <a href="https://github.com/janino-compiler/janino/pull/31">GITHUB poll request #31</a>
+     */
+    @Test public void
+    testPullRequest31() throws Exception {
+        this.assertCompilationUnitMainExecutable((
+            ""
+            + "package demo;\n"
+            + "\n"
+            + "import java.io.Serializable;\n"
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4;\n"
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4Enum;\n"
+            + "\n"
+            + "public class JaninoTestComponent implements Serializable {\n"
+            + "\n"
+            + "    private static final long serialVersionUID = 1L;\n"
+            + "\n"
+            + "    @RuntimeRetainedAnnotation4(RuntimeRetainedAnnotation4Enum.SECOND)\n"
+            + "    protected java.util.Date lastModifiedDate;\n"
+            + "\n"
+            + "    public JaninoTestComponent() {\n"
+            + "        // default constructor;\n"
+            + "    }\n"
+            + "}\n"
+        ), "demo.Service");
+    }
+
     @Test public void
     testBug48() throws Exception {
         this.assertCompilationUnitMainExecutable((
