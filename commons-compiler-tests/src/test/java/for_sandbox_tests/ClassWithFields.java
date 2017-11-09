@@ -1,4 +1,6 @@
 
+// SUPPRESS CHECKSTYLE .:9999
+
 package for_sandbox_tests;
 
 public
