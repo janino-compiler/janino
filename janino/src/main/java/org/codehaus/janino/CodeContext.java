@@ -957,7 +957,9 @@ class CodeContext {
 
             lno.prev = cip;
             lno.next = this.currentInserter;
+
             cip.next = lno;
+
             this.currentInserter.prev = lno;
         }
 
