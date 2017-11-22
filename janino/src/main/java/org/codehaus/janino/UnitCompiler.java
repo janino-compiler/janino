@@ -5258,6 +5258,10 @@ class UnitCompiler {
      * Attempts to evaluate as a constant expression. The result is one of the following: {@link Boolean}, {@link
      * Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double}, {@link Character}, {@link
      * String}, {@code null} (representing the {@code null} literal.
+     * <p>
+     *   This method cannot be STATIC, because the constant value may refer to a constant declaration in this
+     *   compilation unit.
+     * </p>
      *
      * @return {@link #NOT_CONSTANT} iff the rvalue is not a constant value
      */
@@ -5785,6 +5789,10 @@ class UnitCompiler {
     /**
      * Attempts to evaluate the negated value of a constant {@link Rvalue}. This is particularly relevant for the
      * smallest value of an integer or long literal.
+     * <p>
+     *   This method cannot be STATIC, because the constant value may refer to a constant declaration in this
+     *   compilation unit.
+     * </p>
      *
      * @return {@link #NOT_CONSTANT} iff value is not constant; otherwise a {@link String}, {@link Byte}, {@link
      *         Short}, {@link Integer}, {@link Boolean}, {@link Character}, {@link Float}, {@link Long}, {@link Double}
