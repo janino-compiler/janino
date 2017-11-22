@@ -471,7 +471,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         try {
             this.cook(optionalFileNames, readers);
         } catch (IOException ex) {
-            throw new JaninoRuntimeException("SNO: IOException despite StringReader", ex);
+            throw new InternalCompilerException("SNO: IOException despite StringReader", ex);
         }
     }
 
@@ -622,7 +622,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 try {
                     methods[i] = c.getDeclaredMethod(methodName, parameterTypes);
                 } catch (NoSuchMethodException ex) {
-                    throw new JaninoRuntimeException((
+                    throw new InternalCompilerException((
                         "SNO: Loaded class does not declare method \""
                         + methodName
                         + "\""
@@ -671,7 +671,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
                 Method m = (Method) dms.get(new MethodWrapper(methodName, parameterTypes));
                 if (m == null) {
-                    throw new JaninoRuntimeException(
+                    throw new InternalCompilerException(
                         "SNO: Loaded class does not declare method \""
                         + methodName
                         + "\""
@@ -755,7 +755,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         try {
             return method.invoke(null, arguments);
         } catch (IllegalAccessException ex) {
-            throw new JaninoRuntimeException(ex.toString(), ex);
+            throw new InternalCompilerException(ex.toString(), ex);
         }
     }
 
@@ -960,7 +960,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         List<Java.BlockStatement> statements
     ) {
         if (parameterNames.length != parameterTypes.length) {
-            throw new JaninoRuntimeException(
+            throw new InternalCompilerException(
                 "Lengths of \"parameterNames\" ("
                 + parameterNames.length
                 + ") and \"parameterTypes\" ("
@@ -1101,7 +1101,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 parameterNames
             );
         } catch (IOException ex) {
-            throw new JaninoRuntimeException("IOException despite StringReader", ex);
+            throw new InternalCompilerException("IOException despite StringReader", ex);
         }
     }
 
@@ -1117,14 +1117,14 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     createFastEvaluator(Scanner scanner, Class<?> interfaceToImplement, String[] parameterNames)
     throws CompileException, IOException {
         if (!interfaceToImplement.isInterface()) {
-            throw new JaninoRuntimeException("\"" + interfaceToImplement + "\" is not an interface");
+            throw new InternalCompilerException("\"" + interfaceToImplement + "\" is not an interface");
         }
 
         Method methodToImplement;
         {
             Method[] methods = interfaceToImplement.getDeclaredMethods();
             if (methods.length != 1) {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "Interface \""
                     + interfaceToImplement
                     + "\" must declare exactly one method"
@@ -1152,10 +1152,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             return c.newInstance();
         } catch (InstantiationException e) {
             // SNO - Declared class is always non-abstract.
-            throw new JaninoRuntimeException(e.toString(), e);
+            throw new InternalCompilerException(e.toString(), e);
         } catch (IllegalAccessException e) {
             // SNO - interface methods are always PUBLIC.
-            throw new JaninoRuntimeException(e.toString(), e);
+            throw new InternalCompilerException(e.toString(), e);
         }
     }
 

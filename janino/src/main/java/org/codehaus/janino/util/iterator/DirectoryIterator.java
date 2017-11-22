@@ -33,7 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.JaninoRuntimeException;
+import org.codehaus.janino.InternalCompilerException;
 import org.codehaus.janino.util.Producer;
 
 /**
@@ -85,7 +85,7 @@ class DirectoryIterator extends ProducerIterator<File> {
                 State(File dir) {
                     File[] entries = dir.listFiles();
                     if (entries == null) {
-                        throw new JaninoRuntimeException("Directory \"" + dir + "\" could not be read");
+                        throw new InternalCompilerException("Directory \"" + dir + "\" could not be read");
                     }
                     List<File> directoryList = new ArrayList<File>();
                     List<File> fileList      = new ArrayList<File>();

@@ -384,65 +384,81 @@ class UnitCompiler {
 
         td.accept(new TypeDeclarationVisitor<Void, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:11
-            @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                             throws CompileException { UnitCompiler.this.compile2(acd);                                                                             return null; }
-            @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd)                                     throws CompileException { UnitCompiler.this.compile2(lcd);                                                                             return null; }
-            @Override @Nullable public Void visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd)           throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) apmcd);                                            return null; }
-            @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)                           throws CompileException { UnitCompiler.this.compile2(mid);                                                                             return null; }
-            @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid)            throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmid);                                             return null; }
-            @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd)                                   throws CompileException { UnitCompiler.this.compile2(mcd);                                                                             return null; }
-            @Override @Nullable public Void visitEnumConstant(EnumConstant ec)                                                        throws CompileException { UnitCompiler.this.compileError("Compilation of enum constant NYI", ec.getLocation());                        return null; }
-            @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med)                                     throws CompileException { UnitCompiler.this.compile2(med);                                                                             return null; }
-            @Override @Nullable public Void visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed)                      throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmed);                                             return null; }
-            @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd)                throws CompileException { UnitCompiler.this.compileError("Compilation of member annotation type declaration NYI", matd.getLocation()); return null; }
-            @Override @Nullable public Void visitPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) throws CompileException { UnitCompiler.this.compile2((PackageMemberTypeDeclaration) pmatd);                                            return null; }
+            // SUPPRESS CHECKSTYLE LineLength:9
+            @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                             throws CompileException { UnitCompiler.this.compile2(acd);                           return null; }
+            @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd)                                     throws CompileException { UnitCompiler.this.compile2(lcd);                           return null; }
+            @Override @Nullable public Void visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd)           throws CompileException { UnitCompiler.this.compile2(apmcd);                         return null; }
+            @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)                           throws CompileException { UnitCompiler.this.compile2(mid);                           return null; }
+            @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid)            throws CompileException { UnitCompiler.this.compile2(pmid);                          return null; }
+            @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd)                                   throws CompileException { UnitCompiler.this.compile2((InnerClassDeclaration) mcd);   return null; }
+            @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med)                                     throws CompileException { UnitCompiler.this.compile2((InnerClassDeclaration) med);   return null; }
+            @Override @Nullable public Void visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed)                      throws CompileException { UnitCompiler.this.compile2(pmed);                          return null; }
+            @Override @Nullable public Void visitPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) throws CompileException { UnitCompiler.this.compile2(pmatd);                         return null; }
+
+            // SUPPRESS CHECKSTYLE LineLength:2
+            @Override @Nullable public Void visitEnumConstant(EnumConstant ec)                                         throws CompileException { UnitCompiler.this.compileError("Compilation of enum constant NYI",                      ec.getLocation());   return null; }
+            @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws CompileException { UnitCompiler.this.compileError("Compilation of member annotation type declaration NYI", matd.getLocation()); return null; }
         });
     }
 
+    /**
+     * Compiles a top-level class or enum declaration.
+     */
     private void
-    compile2(PackageMemberTypeDeclaration pmtd) throws CompileException {
+    compile2(AbstractPackageMemberClassDeclaration apmcd) throws CompileException {
+        this.checkForConflictWithSingleTypeImport(apmcd.getName(), apmcd.getLocation());
+        this.checkForNameConflictWithAnotherPackageMemberTypeDeclaration(apmcd);
+        this.compile2((NamedClassDeclaration) apmcd);
+    }
+
+    /**
+     * Compiles a top-level interface or annotation type declaration.
+     */
+    private void
+    compile2(PackageMemberInterfaceDeclaration pmid) throws CompileException {
+        this.checkForConflictWithSingleTypeImport(pmid.getName(), pmid.getLocation());
+        this.checkForNameConflictWithAnotherPackageMemberTypeDeclaration(pmid);
+        this.compile2((InterfaceDeclaration) pmid);
+    }
+
+    /**
+     * @see JLS8, section 7.6, "Top Level Type Declarations"
+     */
+    private void
+    checkForNameConflictWithAnotherPackageMemberTypeDeclaration(PackageMemberTypeDeclaration pmtd)
+    throws CompileException {
+
         CompilationUnit declaringCompilationUnit = pmtd.getDeclaringCompilationUnit();
 
-        // Check for conflict with single-type-import (7.6).
-        {
-            String[] ss = this.getSingleTypeImport(pmtd.getName(), pmtd.getLocation());
-            if (ss != null) {
-                this.compileError((
-                    "Package member type declaration \""
-                    + pmtd.getName()
-                    + "\" conflicts with single-type-import \""
-                    + Java.join(ss, ".")
-                    + "\""
-                ), pmtd.getLocation());
-            }
-        }
+        String                       name      = pmtd.getName();
+        PackageMemberTypeDeclaration otherPmtd = declaringCompilationUnit.getPackageMemberTypeDeclaration(
+            name
+        );
 
-        // Check for redefinition within compilation unit (7.6).
-        {
-            PackageMemberTypeDeclaration otherPmtd = declaringCompilationUnit.getPackageMemberTypeDeclaration(
-                pmtd.getName()
+        if (otherPmtd != null && otherPmtd != pmtd) {
+            this.compileError(
+                "Redeclaration of type \"" + name + "\", previously declared in " + otherPmtd.getLocation()
+                ,
+                pmtd.getLocation()
             );
-            if (otherPmtd != null && otherPmtd != pmtd) {
-                this.compileError((
-                    "Redeclaration of type \""
-                    + pmtd.getName()
-                    + "\", previously declared in "
-                    + otherPmtd.getLocation()
-                ), pmtd.getLocation());
-            }
         }
+    }
 
-        if (pmtd instanceof PackageMemberClassDeclaration) {
-            this.compile2((NamedClassDeclaration) pmtd);
-        } else
-        if (pmtd instanceof EnumDeclaration) {
-            this.compile2((NamedClassDeclaration) pmtd);
-        } else
-        if (pmtd instanceof InterfaceDeclaration) {
-            this.compile2((InterfaceDeclaration) pmtd);
-        } else
-        {
-            throw new JaninoRuntimeException("PMTD of unexpected type " + pmtd.getClass().getName());
+    /**
+     * @see JLS8, section 7.6, "Top Level Type Declarations"
+     */
+    private void
+    checkForConflictWithSingleTypeImport(String name, Location optionalLocation) throws CompileException {
+
+        String[] ss = this.getSingleTypeImport(name, optionalLocation);
+        if (ss != null) {
+            this.compileError((
+                "Package member type declaration \""
+                + name
+                + "\" conflicts with single-type-import \""
+                + Java.join(ss, ".")
+                + "\""
+            ), optionalLocation);
         }
     }
 
@@ -486,13 +502,10 @@ class UnitCompiler {
         // Add class annotations with retention != SOURCE.
         this.compileAnnotations(cd.getAnnotations(), cf, cf);
 
-        // Add InnerClasses attribute entry for this class declaration.
-        if (cd.getEnclosingScope() instanceof CompilationUnit) {
-            ;
-        } else
         if (cd.getEnclosingScope() instanceof Block) {
 
-            // Anonymous class declaration.
+            // Add an "InnerClasses" attribute entry for this anonymous class declaration on the class file (JLS8,
+            // section 4.7.6, "The InnerClasses Attribute").
             short innerClassInfoIndex = cf.addConstantClassInfo(iClass.getDescriptor());
             short innerNameIndex      = (
                 this instanceof NamedTypeDeclaration
@@ -509,7 +522,8 @@ class UnitCompiler {
         } else
         if (cd.getEnclosingScope() instanceof TypeDeclaration) {
 
-            // Nested class-or-interface declaration.
+            // Add an "InnerClasses" attribute entry for this nested class declaration on the class file (JLS8,
+            // section 4.7.6, "The InnerClasses Attribute").
             short innerClassInfoIndex = cf.addConstantClassInfo(iClass.getDescriptor());
             short outerClassInfoIndex = cf.addConstantClassInfo(
                 this.resolve(((TypeDeclaration) cd.getEnclosingScope())).getDescriptor()
@@ -524,7 +538,7 @@ class UnitCompiler {
             ));
         }
 
-        // Set "SourceFile" attribute.
+        // Set the "SourceFile" attribute (JVMS8, section 4.7.10, "The SourceFile Attribute") on this class file.
         if (this.debugSource) {
             String sourceFileName;
             {
@@ -540,9 +554,9 @@ class UnitCompiler {
             cf.addSourceFileAttribute(sourceFileName);
         }
 
-        // Add "Deprecated" attribute (JVMS 4.7.10).
-        if (cd instanceof DocCommentable) {
-            if (((DocCommentable) cd).hasDeprecatedDocTag()) cf.addDeprecatedAttribute();
+        // Add a "Deprecated" attribute (JVMS8, section 4.7.15, "The Deprecated Attribute") on this class file.
+        if (cd instanceof DocCommentable && ((DocCommentable) cd).hasDeprecatedDocTag()) {
+            cf.addDeprecatedAttribute();
         }
 
         List<BlockStatement> classInitializationStatements = new ArrayList<BlockStatement>();
@@ -796,7 +810,7 @@ class UnitCompiler {
 
                 this.compile(ctord, cf);
                 if (syntheticFieldCount != cd.syntheticFields.size()) {
-                    throw new JaninoRuntimeException(
+                    throw new InternalCompilerException(
                         "SNO: Compilation of constructor \""
                         + ctord
                         + "\" ("
@@ -827,7 +841,7 @@ class UnitCompiler {
             }
         }
 
-        // Class and instance variables.
+        // Add class and instance variables as (static and non-static) fields.
         for (BlockStatement vdoi : cd.getVariableDeclaratorsAndInitializers()) {
             if (vdoi instanceof FieldDeclaration) this.addFields((FieldDeclaration) vdoi, cf);
         }
@@ -846,6 +860,9 @@ class UnitCompiler {
         this.addClassFile(cf);
     }
 
+    /**
+     * Adds the given {@link ClassFile} to the result set.
+     */
     private void
     addClassFile(ClassFile cf) {
 
@@ -856,7 +873,7 @@ class UnitCompiler {
     }
 
     /**
-     * Creates {@link ClassFile.FieldInfo}s for all fields declared by the given {@link FieldDeclaration}.
+     * Creates and adds {@link ClassFile.FieldInfo}s to the <var>cf</var> for all fields declared by the <var>fd</var>.
      */
     private void
     addFields(FieldDeclaration fd, ClassFile cf) throws CompileException {
@@ -904,11 +921,19 @@ class UnitCompiler {
 
     private void
     compile2(AnonymousClassDeclaration acd) throws CompileException {
+
+        // For classes that enclose surrounding scopes, trawl their field initializers looking for synthetic fields.
+        this.fakeCompileVariableDeclaratorsAndInitializers(acd);
+
         this.compile2((InnerClassDeclaration) acd);
     }
 
     private void
     compile2(LocalClassDeclaration lcd) throws CompileException {
+
+        // For classes that enclose surrounding scopes, trawl their field initializers looking for synthetic fields.
+        this.fakeCompileVariableDeclaratorsAndInitializers(lcd);
+
         this.compile2((InnerClassDeclaration) lcd);
     }
 
@@ -920,23 +945,12 @@ class UnitCompiler {
             List<TypeDeclaration> ocs     = UnitCompiler.getOuterClasses(icd);
             final int             nesting = ocs.size();
             if (nesting >= 2) {
+                TypeDeclaration immediatelyEnclosingOuterClassDeclaration = (TypeDeclaration) ocs.get(1);
                 icd.defineSyntheticField(new SimpleIField(
                     this.resolve(icd),
                     "this$" + (nesting - 2),
-                    this.resolve((TypeDeclaration) ocs.get(1))
+                    this.resolve(immediatelyEnclosingOuterClassDeclaration)
                 ));
-            }
-        }
-
-        // For classes that enclose surrounding scopes, trawl their field initializers looking for synthetic fields.
-        if (icd instanceof AnonymousClassDeclaration || icd instanceof LocalClassDeclaration) {
-            AbstractClassDeclaration cd = (AbstractClassDeclaration) icd;
-
-            // Compilation of field declarations can create synthetic variables, so we must not use an iterator.
-            List<BlockStatement> vdais = cd.variableDeclaratorsAndInitializers;
-            for (int i = 0; i < vdais.size(); i++) {
-                BlockStatement vdoi = (BlockStatement) vdais.get(i);
-                this.fakeCompile(vdoi);
             }
         }
 
@@ -944,7 +958,15 @@ class UnitCompiler {
     }
 
     private void
-    compile2(final MemberClassDeclaration mcd) throws CompileException { this.compile2((InnerClassDeclaration) mcd); }
+    fakeCompileVariableDeclaratorsAndInitializers(AbstractClassDeclaration cd) throws CompileException {
+
+        // Compilation of field declarations can create synthetic variables, so we must not use an iterator.
+        List<BlockStatement> vdais = cd.variableDeclaratorsAndInitializers;
+        for (int i = 0; i < vdais.size(); i++) {
+            BlockStatement vdoi = (BlockStatement) vdais.get(i);
+            this.fakeCompile(vdoi);
+        }
+    }
 
     private void
     compile2(InterfaceDeclaration id) throws CompileException {
@@ -2344,7 +2366,7 @@ class UnitCompiler {
                 this.compileGetValue((ArrayInitializer) initializer, fieldType);
             } else
             {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "Unexpected array initializer or rvalue class "
                     + initializer.getClass().getName()
                 );
@@ -2542,7 +2564,7 @@ class UnitCompiler {
                     this.compileGetValue((ArrayInitializer) oi, lv.type);
                 } else
                 {
-                    throw new JaninoRuntimeException(
+                    throw new InternalCompilerException(
                         "Unexpected rvalue or array initialized class "
                         + oi.getClass().getName()
                     );
@@ -3836,7 +3858,7 @@ class UnitCompiler {
                     this.writeBranch(bo, Opcode.IFEQ + opIdx, dst);
                 } else
                 {
-                    throw new JaninoRuntimeException("Unexpected promoted type \"" + promotedType + "\"");
+                    throw new InternalCompilerException("Unexpected promoted type \"" + promotedType + "\"");
                 }
                 return;
             }
@@ -4165,7 +4187,7 @@ class UnitCompiler {
                 null
             );
             if (wrapperClassDescriptor == null) {
-                throw new JaninoRuntimeException("SNO: Unidentifiable primitive type \"" + iClass + "\"");
+                throw new InternalCompilerException("SNO: Unidentifiable primitive type \"" + iClass + "\"");
             }
 
             this.writeConstantFieldrefInfo(
@@ -4197,7 +4219,7 @@ class UnitCompiler {
         if (declaringType instanceof InterfaceDeclaration) {
             statics = ((InterfaceDeclaration) declaringType).constantDeclarations;
         } else {
-            throw new JaninoRuntimeException(
+            throw new InternalCompilerException(
                 "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
             );
         }
@@ -4259,7 +4281,7 @@ class UnitCompiler {
             if (declaringType instanceof InterfaceDeclaration) {
                 ((InterfaceDeclaration) declaringType).addConstantDeclaration(fd);
             } else {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
                 );
             }
@@ -4329,7 +4351,7 @@ class UnitCompiler {
         if (
             !this.tryIdentityConversion(resultType, lhsType)
             && !this.tryNarrowingPrimitiveConversion(a, resultType, lhsType)
-        ) throw new JaninoRuntimeException("SNO: \"" + a.operator + "\" reconversion failed");
+        ) throw new InternalCompilerException("SNO: \"" + a.operator + "\" reconversion failed");
         this.dupx(a, lhsType, lhsCs);
         this.compileSet(a.lhs);
         return lhsType;
@@ -4989,7 +5011,7 @@ class UnitCompiler {
 
         IClass.IConstructor[] superclassIConstructors = sc.getDeclaredIConstructors();
         if (superclassIConstructors.length == 0) {
-            throw new JaninoRuntimeException("SNO: Superclass has no constructors");
+            throw new InternalCompilerException("SNO: Superclass has no constructors");
         }
 
         // Determine the most specific constructor of the superclass.
@@ -5190,7 +5212,7 @@ class UnitCompiler {
                 this.compileGetValue((ArrayInitializer) aiorv, ct);
             } else
             {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "Unexpected array initializer or rvalue class " + aiorv.getClass().getName()
                 );
             }
@@ -5655,13 +5677,13 @@ class UnitCompiler {
             try {
                 fv = Float.parseFloat(v);
             } catch (NumberFormatException e) {
-                throw new JaninoRuntimeException("SNO: parsing float literal \"" + v + "\": " + e.getMessage(), e);
+                throw new InternalCompilerException("SNO: parsing float literal \"" + v + "\": " + e.getMessage(), e);
             }
             if (Float.isInfinite(fv)) {
                 throw UnitCompiler.compileException(fpl, "Value of float literal \"" + v + "\" is out of range");
             }
             if (Float.isNaN(fv)) {
-                throw new JaninoRuntimeException("SNO: parsing float literal \"" + v + "\" results in NaN");
+                throw new InternalCompilerException("SNO: parsing float literal \"" + v + "\" results in NaN");
             }
 
             // Check for FLOAT underrun.
@@ -5687,13 +5709,13 @@ class UnitCompiler {
         try {
             dv = Double.parseDouble(v);
         } catch (NumberFormatException e) {
-            throw new JaninoRuntimeException("SNO: parsing double literal \"" + v + "\": " + e.getMessage(), e);
+            throw new InternalCompilerException("SNO: parsing double literal \"" + v + "\": " + e.getMessage(), e);
         }
         if (Double.isInfinite(dv)) {
             throw UnitCompiler.compileException(fpl, "Value of double literal \"" + v + "\" is out of range");
         }
         if (Double.isNaN(dv)) {
-            throw new JaninoRuntimeException("SNO: parsing double literal \"" + v + "\" results is NaN");
+            throw new InternalCompilerException("SNO: parsing double literal \"" + v + "\" results is NaN");
         }
 
         // Check for DOUBLE underrun.
@@ -5717,7 +5739,7 @@ class UnitCompiler {
     getConstantValue2(BooleanLiteral bl) {
         if (bl.value == "true")  return Boolean.TRUE;  // SUPPRESS CHECKSTYLE StringLiteralEquality
         if (bl.value == "false") return Boolean.FALSE; // SUPPRESS CHECKSTYLE StringLiteralEquality
-        throw new JaninoRuntimeException(bl.value);
+        throw new InternalCompilerException(bl.value);
     }
 
     @SuppressWarnings("static-method") private Object
@@ -6177,7 +6199,7 @@ class UnitCompiler {
         case FLOAT:   return IClass.FLOAT;
         case DOUBLE:  return IClass.DOUBLE;
         case BOOLEAN: return IClass.BOOLEAN;
-        default:      throw new JaninoRuntimeException("Invalid primitive " + bt.primitive);
+        default:      throw new InternalCompilerException("Invalid primitive " + bt.primitive);
         }
     }
     private IClass
@@ -6804,7 +6826,7 @@ class UnitCompiler {
         if (v instanceof Character) return IClass.CHAR;
         if (v instanceof String)    return this.iClassLoader.TYPE_java_lang_String;
         if (v == null)              return IClass.VOID;
-        throw new JaninoRuntimeException("Invalid SimpleLiteral value type \"" + v.getClass() + "\"");
+        throw new InternalCompilerException("Invalid SimpleLiteral value type \"" + v.getClass() + "\"");
     }
 
     // ---------------- Atom.isType() ---------------
@@ -7053,6 +7075,9 @@ class UnitCompiler {
         if (message != null) this.compileError(message, location);
     }
 
+    /**
+     * @return An error message, or {@code null}
+     */
     @Nullable private String
     internalCheckAccessible(IClass type, Scope contextScope) throws CompileException {
 
@@ -7083,8 +7108,7 @@ class UnitCompiler {
 
                 // Check whether the type is accessed from within the same package.
                 String packageDeclaringType = Descriptor.getPackageName(type.getDescriptor());
-                String
-                contextPackage = Descriptor.getPackageName(iClassDeclaringContextBlockStatement.getDescriptor());
+                String contextPackage       = Descriptor.getPackageName(iClassDeclaringContextBlockStatement.getDescriptor()); // SUPPRESS CHECKSTYLE LineLength
                 if (
                     packageDeclaringType == null
                     ? contextPackage != null
@@ -7093,7 +7117,9 @@ class UnitCompiler {
                 return null;
             } else
             {
-                throw new JaninoRuntimeException("\"" + type + "\" has unexpected access \"" + type.getAccess() + "\"");
+                throw new InternalCompilerException((
+                    "\"" + type + "\" has unexpected access \"" + type.getAccess() + "\""
+                ));
             }
         }
 
@@ -7147,7 +7173,7 @@ class UnitCompiler {
         for (IClass.IField sf : cd.getDeclaringClass().syntheticFields.values()) {
             LocalVariable syntheticParameter = (LocalVariable) cd.syntheticParameters.get(sf.getName());
             if (syntheticParameter == null) {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "SNO: Synthetic parameter for synthetic field \""
                     + sf.getName()
                     + "\" not found"
@@ -7417,7 +7443,7 @@ class UnitCompiler {
             return type;
         }
 
-        throw new JaninoRuntimeException("Unexpected operator \"" + operator + "\"");
+        throw new InternalCompilerException("Unexpected operator \"" + operator + "\"");
     }
 
     /**
@@ -7571,7 +7597,7 @@ class UnitCompiler {
         // Find constructors.
         IClass.IConstructor[] iConstructors = targetClass.getDeclaredIConstructors();
         if (iConstructors.length == 0) {
-            throw new JaninoRuntimeException(
+            throw new InternalCompilerException(
                 "SNO: Target class \"" + targetClass.getDescriptor() + "\" has no constructors"
             );
         }
@@ -7646,7 +7672,7 @@ class UnitCompiler {
 
             if (!(scopeTypeDeclaration instanceof AbstractClassDeclaration)) {
                 if (syntheticFields.length > 0) {
-                    throw new JaninoRuntimeException("SNO: Target class has synthetic fields");
+                    throw new InternalCompilerException("SNO: Target class has synthetic fields");
                 }
                 return;
             }
@@ -7746,7 +7772,7 @@ class UnitCompiler {
                                 break DETERMINE_LV;
                             }
                         }
-                        throw new JaninoRuntimeException(
+                        throw new InternalCompilerException(
                             "SNO: Synthetic field \""
                             + sf.getName()
                             + "\" neither maps a synthetic field of an enclosing instance nor a local variable"
@@ -7857,7 +7883,7 @@ class UnitCompiler {
                 case Mod.PUBLIC:
                     return Access.PUBLIC;
                 default:
-                    throw new JaninoRuntimeException("Invalid access");
+                    throw new InternalCompilerException("Invalid access");
                 }
             }
 
@@ -9057,7 +9083,7 @@ class UnitCompiler {
                             IClass theNonAbstractMethodDeclaringIClass = theNonAbstractMethod.getDeclaringIClass();
                             if (declaringIClass == theNonAbstractMethodDeclaringIClass) {
                                 if (m.getReturnType() == theNonAbstractMethod.getReturnType()) {
-                                    throw new JaninoRuntimeException(
+                                    throw new InternalCompilerException(
                                         "Two non-abstract methods \"" + m + "\" have the same parameter types, "
                                         + "declaring type and return type"
                                     );
@@ -9069,7 +9095,7 @@ class UnitCompiler {
                                     theNonAbstractMethod = m;
                                 } else
                                 {
-                                    throw new JaninoRuntimeException("Incompatible return types");
+                                    throw new InternalCompilerException("Incompatible return types");
                                 }
                             } else
                             if (declaringIClass.isAssignableFrom(theNonAbstractMethodDeclaringIClass)) {
@@ -9079,7 +9105,7 @@ class UnitCompiler {
                                 theNonAbstractMethod = m;
                             } else
                             {
-                                throw new JaninoRuntimeException(
+                                throw new InternalCompilerException(
                                     "SNO: Types declaring \""
                                     + theNonAbstractMethod
                                     + "\" are not assignable"
@@ -9447,7 +9473,7 @@ class UnitCompiler {
             isArray() { return false; }
 
             @Override protected IClass
-            getComponentType2() { throw new JaninoRuntimeException("SNO: Non-array type has no component type"); }
+            getComponentType2() { throw new InternalCompilerException("SNO: Non-array type has no component type"); }
 
             @Override public boolean
             isPrimitive() { return false; }
@@ -9517,7 +9543,7 @@ class UnitCompiler {
                     return (IClass.IField[]) l.toArray(new IClass.IField[l.size()]);
                 } else
                 {
-                    throw new JaninoRuntimeException(
+                    throw new InternalCompilerException(
                         "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
                     );
                 }
@@ -9601,7 +9627,7 @@ class UnitCompiler {
                     }
                     return res;
                 } else {
-                    throw new JaninoRuntimeException(
+                    throw new InternalCompilerException(
                         "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
                     );
                 }
@@ -9668,7 +9694,7 @@ class UnitCompiler {
             String        spn                = "this$" + (path.size() - 2);
             LocalVariable syntheticParameter = (LocalVariable) constructorDeclarator.syntheticParameters.get(spn);
             if (syntheticParameter == null) {
-                throw new JaninoRuntimeException("SNO: Synthetic parameter \"" + spn + "\" not found");
+                throw new InternalCompilerException("SNO: Synthetic parameter \"" + spn + "\" not found");
             }
             this.load(locatable, syntheticParameter);
             i = 1;
@@ -9808,7 +9834,7 @@ class UnitCompiler {
                 case Mod.PUBLIC:
                     return Access.PUBLIC;
                 default:
-                    throw new JaninoRuntimeException("Invalid access");
+                    throw new InternalCompilerException("Invalid access");
                 }
             }
 
@@ -9926,7 +9952,7 @@ class UnitCompiler {
                 case Mod.PUBLIC:
                     return Access.PUBLIC;
                 default:
-                    throw new JaninoRuntimeException("Invalid access");
+                    throw new InternalCompilerException("Invalid access");
                 }
             }
 
@@ -10197,20 +10223,20 @@ class UnitCompiler {
         try {
             classNotFoundExceptionIClass = this.iClassLoader.loadIClass("Ljava/lang/ClassNotFoundException;");
         } catch (ClassNotFoundException ex) {
-            throw new JaninoRuntimeException("Loading class \"ClassNotFoundException\": " + ex.getMessage(), ex);
+            throw new InternalCompilerException("Loading class \"ClassNotFoundException\": " + ex.getMessage(), ex);
         }
         if (classNotFoundExceptionIClass == null) {
-            throw new JaninoRuntimeException("SNO: Cannot load \"ClassNotFoundException\"");
+            throw new InternalCompilerException("SNO: Cannot load \"ClassNotFoundException\"");
         }
 
         IClass noClassDefFoundErrorIClass;
         try {
             noClassDefFoundErrorIClass = this.iClassLoader.loadIClass("Ljava/lang/NoClassDefFoundError;");
         } catch (ClassNotFoundException ex) {
-            throw new JaninoRuntimeException("Loading class \"NoClassDefFoundError\": " + ex.getMessage(), ex);
+            throw new InternalCompilerException("Loading class \"NoClassDefFoundError\": " + ex.getMessage(), ex);
         }
         if (noClassDefFoundErrorIClass == null) {
-            throw new JaninoRuntimeException("SNO: Cannot load \"NoClassFoundError\"");
+            throw new InternalCompilerException("SNO: Cannot load \"NoClassFoundError\"");
         }
 
         // catch (ClassNotFoundException e) {
@@ -10386,7 +10412,7 @@ class UnitCompiler {
             return IClass.VOID;
         }
 
-        throw new JaninoRuntimeException("Unknown literal \"" + value + "\"");
+        throw new InternalCompilerException("Unknown literal \"" + value + "\"");
     }
 
     /**
@@ -10849,7 +10875,7 @@ class UnitCompiler {
                 sourceType, // sourceType
                 pt          // targetType
             )
-        ) throw new JaninoRuntimeException("SNO: reverse unary numeric promotion failed");
+        ) throw new InternalCompilerException("SNO: reverse unary numeric promotion failed");
         if (unboxedType != null) this.boxingConversion(locatable, unboxedType, targetType);
     }
 
@@ -10881,7 +10907,7 @@ class UnitCompiler {
                 sourceType, // sourceType
                 targetType  // targetType
             )
-        ) throw new JaninoRuntimeException("SNO: Conversion failed");
+        ) throw new InternalCompilerException("SNO: Conversion failed");
     }
 
     private IClass
@@ -11560,12 +11586,12 @@ class UnitCompiler {
             break;
 
         default:
-            throw new JaninoRuntimeException("dup(" + n + ")");
+            throw new InternalCompilerException("dup(" + n + ")");
         }
     }
     private void
     dupx(Locatable locatable, IClass type, int x) {
-        if (x < 0 || x > 2) throw new JaninoRuntimeException("SNO: x has value " + x);
+        if (x < 0 || x > 2) throw new InternalCompilerException("SNO: x has value " + x);
         int dup  = Opcode.DUP  + x;
         int dup2 = Opcode.DUP2 + x;
         this.writeOpcode(locatable, type == IClass.LONG || type == IClass.DOUBLE ? dup2 : dup);
@@ -11585,7 +11611,7 @@ class UnitCompiler {
         if (t == IClass.LONG)   return 1;
         if (t == IClass.FLOAT)  return 2;
         if (t == IClass.DOUBLE) return 3;
-        throw new JaninoRuntimeException("Unexpected type \"" + t + "\"");
+        throw new InternalCompilerException("Unexpected type \"" + t + "\"");
     }
 
     private static int
@@ -11596,7 +11622,7 @@ class UnitCompiler {
         if (t == IClass.LONG)   return opcodeLong;
         if (t == IClass.FLOAT)  return opcodeFloat;
         if (t == IClass.DOUBLE) return opcodeDouble;
-        throw new JaninoRuntimeException("Unexpected type \"" + t + "\"");
+        throw new InternalCompilerException("Unexpected type \"" + t + "\"");
     }
 
     private static int
@@ -11613,7 +11639,7 @@ class UnitCompiler {
         if (t == IClass.BYTE)    return 5;
         if (t == IClass.CHAR)    return 6;
         if (t == IClass.SHORT)   return 7;
-        throw new JaninoRuntimeException("Unexpected type \"" + t + "\"");
+        throw new InternalCompilerException("Unexpected type \"" + t + "\"");
     }
 
     /**
@@ -11824,14 +11850,14 @@ class UnitCompiler {
     private void
     writeByte(int v) {
         if (v > Byte.MAX_VALUE - Byte.MIN_VALUE) {
-            throw new JaninoRuntimeException("Byte value out of legal range");
+            throw new InternalCompilerException("Byte value out of legal range");
         }
         this.getCodeContext().write((short) -1, (byte) v);
     }
     private void
     writeShort(int v) {
         if (v > Short.MAX_VALUE - Short.MIN_VALUE) {
-            throw new JaninoRuntimeException("Short value out of legal range");
+            throw new InternalCompilerException("Short value out of legal range");
         }
         this.getCodeContext().write((short) -1, (byte) (v >> 8), (byte) v);
     }

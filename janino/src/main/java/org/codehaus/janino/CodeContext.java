@@ -234,7 +234,9 @@ class CodeContext {
                 if (o instanceof LineNumberOffset) {
 
                     int offset = o.offset;
-                    if (offset > 0xffff) throw new JaninoRuntimeException("LineNumberTable entry offset out of range");
+                    if (offset > 0xffff) {
+                        throw new InternalCompilerException("LineNumberTable entry offset out of range");
+                    }
 
                     int lineNumber = ((LineNumberOffset) o).lineNumber;
                     if (lineNumber > 0xffff) lineNumber = 0xffff;
@@ -367,7 +369,7 @@ class CodeContext {
                     // Complete normally, so the .class file is created and can be examined.
                     return;
                 }
-                throw new JaninoRuntimeException(message);
+                throw new InternalCompilerException(message);
             }
 
             if (ss > this.maxStack) this.maxStack = ss;
@@ -392,7 +394,7 @@ class CodeContext {
 
             // Check current bytecode offset.
             if (offset < 0 || offset >= codeSize) {
-                throw new JaninoRuntimeException(functionName + ": Offset out of range");
+                throw new InternalCompilerException(functionName + ": Offset out of range");
             }
 
             // Have we hit an area that has already been analyzed?
@@ -406,7 +408,7 @@ class CodeContext {
                     // Complete normally, so the .class file is created and can be examined.
                     return;
                 }
-                throw new JaninoRuntimeException(message);
+                throw new InternalCompilerException(message);
             }
             if (css != CodeContext.UNEXAMINED) {
                 String message = (
@@ -424,7 +426,7 @@ class CodeContext {
                     // Complete normally, so the .class file is created and can be examined.
                     return;
                 }
-                throw new JaninoRuntimeException(message);
+                throw new InternalCompilerException(message);
             }
             stackSizes[offset] = stackSize;
 
@@ -439,7 +441,7 @@ class CodeContext {
                 props = Opcode.OPCODE_PROPERTIES[0xff & opcode];
             }
             if (props == Opcode.INVALID_OPCODE) {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     functionName
                     + ": Invalid opcode "
                     + (0xff & opcode)
@@ -495,7 +497,7 @@ class CodeContext {
                 break;
 
             default:
-                throw new JaninoRuntimeException(functionName + ": Invalid stack delta");
+                throw new InternalCompilerException(functionName + ": Invalid stack delta");
             }
 
             if (stackSize < 0) {
@@ -512,7 +514,7 @@ class CodeContext {
                     // Complete normally, so the .class file is created and can be examined.
                     return;
                 }
-                throw new JaninoRuntimeException(message);
+                throw new InternalCompilerException(message);
             }
 
             if (stackSize > CodeContext.MAX_STACK_SIZE) {
@@ -529,7 +531,7 @@ class CodeContext {
                     // Complete normally, so the .class file is created and can be examined.
                     return;
                 }
-                throw new JaninoRuntimeException(message);
+                throw new InternalCompilerException(message);
             }
 
             switch (props & Opcode.OP1_MASK) {
@@ -648,7 +650,7 @@ class CodeContext {
                 break;
 
             default:
-                throw new JaninoRuntimeException(functionName + ": Invalid OP1");
+                throw new InternalCompilerException(functionName + ": Invalid OP1");
             }
 
             switch (props & Opcode.OP2_MASK) {
@@ -666,7 +668,7 @@ class CodeContext {
                 break;
 
             default:
-                throw new JaninoRuntimeException(functionName + ": Invalid OP2");
+                throw new InternalCompilerException(functionName + ": Invalid OP2");
             }
 
             switch (props & Opcode.OP3_MASK) {
@@ -680,7 +682,7 @@ class CodeContext {
                 break;
 
             default:
-                throw new JaninoRuntimeException(functionName + ": Invalid OP3");
+                throw new InternalCompilerException(functionName + ": Invalid OP3");
             }
 
             Arrays.fill(stackSizes, offset + 1, operandOffset, CodeContext.INVALID_OFFSET);
@@ -806,7 +808,7 @@ class CodeContext {
         );
         String desc = nat.getDescriptor(this.classFile);
 
-        if (desc.charAt(0) != '(') throw new JaninoRuntimeException("Method descriptor does not start with \"(\"");
+        if (desc.charAt(0) != '(') throw new InternalCompilerException("Method descriptor does not start with \"(\"");
         int i   = 1;
         int res = 0;
         for (;;) {
@@ -823,7 +825,7 @@ class CodeContext {
                 res += 1;
                 while (desc.charAt(i) == '[') ++i;
                 if ("BCFISZDJ".indexOf(desc.charAt(i)) != -1) { ++i; break; }
-                if (desc.charAt(i) != 'L') throw new JaninoRuntimeException("Invalid char after \"[\"");
+                if (desc.charAt(i) != 'L') throw new InternalCompilerException("Invalid char after \"[\"");
                 ++i;
                 while (desc.charAt(i++) != ';');
                 break;
@@ -832,7 +834,7 @@ class CodeContext {
                 while (desc.charAt(i++) != ';');
                 break;
             default:
-                throw new JaninoRuntimeException("Invalid method descriptor");
+                throw new InternalCompilerException("Invalid method descriptor");
             }
         }
     }
@@ -974,7 +976,7 @@ class CodeContext {
             //double size to avoid horrible performance, but don't grow over our limit
             int newSize = Math.max(Math.min(oldCode.length * 2, 0xffff), oldCode.length + size);
             if (newSize > 0xffff) {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "Code of method \""
                     + this.functionName
                     + "\" of class \""
@@ -1023,7 +1025,7 @@ class CodeContext {
         @Override public boolean
         relocate() {
             if (this.destination.offset == Offset.UNSET) {
-                throw new JaninoRuntimeException("Cannot relocate branch to unset destination offset");
+                throw new InternalCompilerException("Cannot relocate branch to unset destination offset");
             }
             int offset = this.destination.offset - this.source.offset;
 
@@ -1145,7 +1147,7 @@ class CodeContext {
         @Override public boolean
         relocate() {
             if (this.source.offset == Offset.UNSET || this.destination.offset == Offset.UNSET) {
-                throw new JaninoRuntimeException("Cannot relocate offset branch to unset destination offset");
+                throw new InternalCompilerException("Cannot relocate offset branch to unset destination offset");
             }
             int    offset = this.destination.offset - this.source.offset;
             byte[] ba     = new byte[] {
@@ -1192,7 +1194,9 @@ class CodeContext {
      */
     public void
     pushInserter(Inserter ins) {
-        if (ins.nextInserter != null) throw new JaninoRuntimeException("An Inserter can only be pushed once at a time");
+        if (ins.nextInserter != null) {
+            throw new InternalCompilerException("An Inserter can only be pushed once at a time");
+        }
         ins.nextInserter     = this.currentInserter;
         this.currentInserter = ins;
     }
@@ -1203,7 +1207,7 @@ class CodeContext {
     public void
     popInserter() {
         Inserter ni = this.currentInserter.nextInserter;
-        if (ni == null) throw new JaninoRuntimeException("Code inserter stack underflow");
+        if (ni == null) throw new InternalCompilerException("Code inserter stack underflow");
         this.currentInserter.nextInserter = null; // Mark it as "unpushed".
         this.currentInserter              = ni;
     }
@@ -1240,7 +1244,9 @@ class CodeContext {
          */
         public void
         set() {
-            if (this.offset != Offset.UNSET) throw new JaninoRuntimeException("Cannot \"set()\" Offset more than once");
+            if (this.offset != Offset.UNSET) {
+                throw new InternalCompilerException("Cannot \"set()\" Offset more than once");
+            }
 
             Inserter ci = CodeContext.this.currentInserter;
 

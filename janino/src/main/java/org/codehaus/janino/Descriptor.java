@@ -69,12 +69,12 @@ class Descriptor {
 
     /**
      * @return                        The descriptor of the component of the array type <var>d</var>
-     * @throws JaninoRuntimeException <var>d</var> does not describe an array type
+     * @throws InternalCompilerException <var>d</var> does not describe an array type
      */
     public static String
     getComponentDescriptor(String d) {
         if (d.charAt(0) != '[') {
-            throw new JaninoRuntimeException(
+            throw new InternalCompilerException(
                 "Cannot determine component descriptor from non-array descriptor \""
                 + d
                 + "\""
@@ -92,7 +92,7 @@ class Descriptor {
         if (d.equals(Descriptor.VOID)) return 0;
         if (Descriptor.hasSize1(d)) return 1;
         if (Descriptor.hasSize2(d)) return 2;
-        throw new JaninoRuntimeException("No size defined for type \"" + Descriptor.toString(d) + "\"");
+        throw new InternalCompilerException("No size defined for type \"" + Descriptor.toString(d) + "\"");
     }
 
     /**
@@ -128,7 +128,7 @@ class Descriptor {
                 if (idx != 1) sb.append(", ");
                 idx = Descriptor.toString(d, idx, sb);
             }
-            if (idx >= d.length()) throw new JaninoRuntimeException("Invalid descriptor \"" + d + "\"");
+            if (idx >= d.length()) throw new InternalCompilerException("Invalid descriptor \"" + d + "\"");
             sb.append(") => ");
             ++idx;
         }
@@ -142,12 +142,12 @@ class Descriptor {
             ++dimensions;
             ++idx;
         }
-        if (idx >= d.length()) throw new JaninoRuntimeException("Invalid descriptor \"" + d + "\"");
+        if (idx >= d.length()) throw new InternalCompilerException("Invalid descriptor \"" + d + "\"");
         switch (d.charAt(idx)) {
         case 'L':
             {
                 int idx2 = d.indexOf(';', idx);
-                if (idx2 == -1) throw new JaninoRuntimeException("Invalid descriptor \"" + d + "\"");
+                if (idx2 == -1) throw new InternalCompilerException("Invalid descriptor \"" + d + "\"");
                 sb.append(d.substring(idx + 1, idx2).replace('/', '.'));
                 idx = idx2;
             }
@@ -180,7 +180,7 @@ class Descriptor {
             sb.append("boolean");
             break;
         default:
-            throw new JaninoRuntimeException("Invalid descriptor \"" + d + "\"");
+            throw new InternalCompilerException("Invalid descriptor \"" + d + "\"");
         }
         for (; dimensions > 0; --dimensions) sb.append("[]");
         return idx + 1;
@@ -226,7 +226,7 @@ class Descriptor {
             // Array type -- convert "[Ljava/lang/String;" to "[Ljava.lang.String;".
             return d.replace('/', '.');
         }
-        throw new JaninoRuntimeException("(Invalid field descriptor \"" + d + "\")");
+        throw new InternalCompilerException("(Invalid field descriptor \"" + d + "\")");
     }
 
     /**
@@ -235,7 +235,7 @@ class Descriptor {
     public static String
     toInternalForm(String d) {
         if (d.charAt(0) != 'L') {
-            throw new JaninoRuntimeException(
+            throw new InternalCompilerException(
                 "Attempt to convert non-class descriptor \""
                 + d
                 + "\" into internal form"
@@ -263,7 +263,7 @@ class Descriptor {
     @Nullable public static String
     getPackageName(String d) {
         if (d.charAt(0) != 'L') {
-            throw new JaninoRuntimeException("Attempt to get package name of non-class descriptor \"" + d + "\"");
+            throw new InternalCompilerException("Attempt to get package name of non-class descriptor \"" + d + "\"");
         }
         int idx = d.lastIndexOf('/');
         return idx == -1 ? null : d.substring(1, idx).replace('/', '.');

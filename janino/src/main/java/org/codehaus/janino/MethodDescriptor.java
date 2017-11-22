@@ -57,7 +57,7 @@ class MethodDescriptor {
      */
     public
     MethodDescriptor(String s) {
-        if (s.charAt(0) != '(') throw new JaninoRuntimeException();
+        if (s.charAt(0) != '(') throw new InternalCompilerException();
 
         int          from         = 1;
         List<String> parameterFDs = new ArrayList<String>();
@@ -71,7 +71,7 @@ class MethodDescriptor {
                 for (++to; s.charAt(to) != ';'; ++to);
                 ++to;
             } else {
-                throw new JaninoRuntimeException();
+                throw new InternalCompilerException();
             }
             parameterFDs.add(s.substring(from, to));
             from = to;

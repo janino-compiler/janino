@@ -29,11 +29,11 @@ package org.codehaus.janino;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * @deprecated Catch {@link InternalCompilerException} instead
+ * Indicates an event that is probably related to a bug in JANINO.
  */
-@Deprecated public
-class JaninoRuntimeException extends RuntimeException {
-    public JaninoRuntimeException()                                      {}
-    public JaninoRuntimeException(@Nullable String message)              { super(message); }
-    public JaninoRuntimeException(@Nullable String message, Throwable t) { super(message, t); }
+@SuppressWarnings("deprecation") public
+class InternalCompilerException extends JaninoRuntimeException {
+    public InternalCompilerException()                                      {}
+    public InternalCompilerException(@Nullable String message)              { super(message); }
+    public InternalCompilerException(@Nullable String message, Throwable t) { super(message, t); }
 }

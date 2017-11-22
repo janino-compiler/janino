@@ -238,11 +238,11 @@ class ReflectionIClass extends IClass {
             c = c.getComponentType();
         }
         String s = c.getName();
-        
+
         // Must not strip "java.lang.", because some pieces of code rely on "toString()" returning the COMPLETE
         // qualified name.
 //        if (s.startsWith("java.lang.")) s = s.substring(10);
-        
+
         while (brackets-- > 0) s += "[]";
         return s;
     }
@@ -435,10 +435,12 @@ class ReflectionIClass extends IClass {
         try {
             iClass = this.iClassLoader.loadIClass(Descriptor.fromClassName(c.getName()));
         } catch (ClassNotFoundException ex) {
-            throw new JaninoRuntimeException("Loading IClass \"" + c.getName() + "\": " + ex);
+            throw new InternalCompilerException("Loading IClass \"" + c.getName() + "\": " + ex);
         }
         if (iClass == null) {
-            throw new JaninoRuntimeException("Cannot load class \"" + c.getName() + "\" through the given ClassLoader");
+            throw new InternalCompilerException((
+                "Cannot load class \"" + c.getName() + "\" through the given ClassLoader"
+            ));
         }
         return iClass;
     }

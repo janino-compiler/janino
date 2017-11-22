@@ -154,7 +154,7 @@ class Java {
         // Implement "Scope".
 
         @Override public Scope
-        getEnclosingScope() { throw new JaninoRuntimeException("A compilation unit has no enclosing scope"); }
+        getEnclosingScope() { throw new InternalCompilerException("A compilation unit has no enclosing scope"); }
 
         /**
          * Sets the package declaration of this CU.
@@ -875,7 +875,7 @@ class Java {
         public void
         setEnclosingScope(Scope enclosingScope) {
             if (this.enclosingScope != null && enclosingScope != this.enclosingScope) {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "Enclosing scope is already set for type declaration \""
                     + this.toString()
                     + "\" at "
@@ -1066,11 +1066,11 @@ class Java {
          */
         public void
         defineSyntheticField(IClass.IField iField) throws CompileException {
-            if (!(this instanceof InnerClassDeclaration)) throw new JaninoRuntimeException();
+            if (!(this instanceof InnerClassDeclaration)) throw new InternalCompilerException();
 
             IClass.IField if2 = (IClass.IField) this.syntheticFields.get(iField.getName());
             if (if2 != null) {
-                if (iField.getType() != if2.getType()) throw new JaninoRuntimeException();
+                if (iField.getType() != if2.getType()) throw new InternalCompilerException();
                 return;
             }
             this.syntheticFields.put(iField.getName(), iField);
@@ -1771,6 +1771,9 @@ class Java {
 
     /**
      * Representation of a 'package member interface declaration', a.k.a. 'top-level interface declaration'.
+     * <p>
+     *   {@link PackageMemberAnnotationTypeDeclaration} extends this class.
+     * </p>
      */
     public static
     class PackageMemberInterfaceDeclaration
@@ -1968,7 +1971,7 @@ class Java {
         @Override public void
         setDeclaringType(TypeDeclaration declaringType) {
             if (this.declaringType != null) {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "Declaring type for type body declaration \""
                     + this.toString()
                     + "\"at "
@@ -2639,7 +2642,7 @@ class Java {
                     && "<clinit>".equals(((Java.MethodDeclarator) enclosingScope).name)
                 ) return;
 
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
 
                     "Enclosing scope is already set for statement \""
                     + this.toString()
@@ -3125,7 +3128,7 @@ class Java {
         public void
         setEnclosingTryStatement(TryStatement enclosingTryStatement) {
             if (this.enclosingTryStatement != null && enclosingTryStatement != this.enclosingTryStatement) {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "Enclosing TRY statement already set for catch clause "
                     + this.toString()
                     + " at "
@@ -3620,7 +3623,7 @@ class Java {
                     && "<clinit>".equals(((Java.MethodDeclarator) enclosingScope).name)
                 ) return;
 
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "Enclosing scope already set for type \""
                     + this.toString()
                     + "\" at "
@@ -3863,7 +3866,7 @@ class Java {
                 @Override public void
                 traverseRvalue(Java.Rvalue rv) {
                     if (rv.enclosingScope != null && enclosingScope != rv.enclosingScope) {
-                        throw new JaninoRuntimeException(
+                        throw new InternalCompilerException(
                             "Enclosing block statement for rvalue \""
                             + rv
                             + "\" at "
@@ -3882,7 +3885,7 @@ class Java {
                 @Override public void
                 traverseType(Java.Type t) {
                     if (t.enclosingScope != null && enclosingScope != t.enclosingScope) {
-                        throw new JaninoRuntimeException(
+                        throw new InternalCompilerException(
                             "Enclosing scope already set for type \""
                             + t.toString()
                             + "\" at "
@@ -4750,7 +4753,7 @@ class Java {
         @Override public void
         setEnclosingScope(Scope enclosingScope) {
             if (this.enclosingScope != null) {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "Enclosing scope is already set for statement \""
                     + this.toString()
                     + "\" at "

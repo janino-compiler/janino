@@ -556,7 +556,7 @@ class Compiler {
                 File sourceFile;
                 {
                     CompilationUnit compilationUnit = unitCompiler.getCompilationUnit();
-                    if (compilationUnit.optionalFileName == null) throw new JaninoRuntimeException();
+                    if (compilationUnit.optionalFileName == null) throw new InternalCompilerException();
                     sourceFile = new File(compilationUnit.optionalFileName);
                 }
 

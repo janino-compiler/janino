@@ -178,7 +178,7 @@ class IClassLoader {
             this.CTOR_java_lang_StringBuilder__java_lang_String = IClassLoader.requireConstructor(this.TYPE_java_lang_StringBuilder, this.TYPE_java_lang_String);
 
         } catch (Exception e) {
-            throw new JaninoRuntimeException("Cannot load simple types", e);
+            throw new InternalCompilerException("Cannot load simple types", e);
         }
     }
 
@@ -297,7 +297,7 @@ class IClassLoader {
         }
 
         if (!result.getDescriptor().equalsIgnoreCase(fieldDescriptor)) {
-            throw new JaninoRuntimeException(
+            throw new InternalCompilerException(
                 "\"findIClass()\" returned \""
                 + result.getDescriptor()
                 + "\" instead of \""
@@ -360,7 +360,7 @@ class IClassLoader {
         IClass loadedIClass = (IClass) this.loadedIClasses.get(descriptor);
         if (loadedIClass != null) {
             if (loadedIClass == iClass) return;
-            throw new JaninoRuntimeException("Non-identical definition of IClass \"" + descriptor + "\"");
+            throw new InternalCompilerException("Non-identical definition of IClass \"" + descriptor + "\"");
         }
 
         // Define.

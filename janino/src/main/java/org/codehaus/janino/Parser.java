@@ -599,7 +599,7 @@ class Parser {
             );
         } else
         {
-            throw new JaninoRuntimeException("SNO: Class declaration in unexpected context " + context);
+            throw new InternalCompilerException("SNO: Class declaration in unexpected context " + context);
         }
 
         this.parseClassBody(namedClassDeclaration);
@@ -654,7 +654,7 @@ class Parser {
             );
         } else
         {
-            throw new JaninoRuntimeException("SNO: Enum declaration in unexpected context " + context);
+            throw new InternalCompilerException("SNO: Enum declaration in unexpected context " + context);
         }
 
         this.parseEnumBody(enumDeclaration);
@@ -965,7 +965,7 @@ class Parser {
             );
         } else
         {
-            throw new JaninoRuntimeException("SNO: Interface declaration in unexpected context " + context);
+            throw new InternalCompilerException("SNO: Interface declaration in unexpected context " + context);
         }
 
         this.parseInterfaceBody(id);
@@ -1005,7 +1005,7 @@ class Parser {
             );
         } else
         {
-            throw new JaninoRuntimeException("SNO: Interface declaration in unexpected context " + context);
+            throw new InternalCompilerException("SNO: Interface declaration in unexpected context " + context);
         }
 
         this.parseInterfaceBody((InterfaceDeclaration) atd);

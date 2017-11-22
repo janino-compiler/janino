@@ -187,7 +187,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             // Now the bytecode for our class should be available.
             bytecode = (byte[]) this.precompiledClasses.remove(name);
             if (bytecode == null) {
-                throw new JaninoRuntimeException(
+                throw new InternalCompilerException(
                     "SNO: Scanning, parsing and compiling class \""
                     + name
                     + "\" did not create a class file!?"

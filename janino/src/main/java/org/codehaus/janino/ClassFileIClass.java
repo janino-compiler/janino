@@ -90,7 +90,7 @@ class ClassFileIClass extends IClass {
             try {
                 ii = this.resolveMethod(mi);
             } catch (ClassNotFoundException ex) {
-                throw new JaninoRuntimeException(ex.getMessage(), ex);
+                throw new InternalCompilerException(ex.getMessage(), ex);
             }
             if (ii instanceof IConstructor) iConstructors.add(ii);
         }
@@ -112,7 +112,7 @@ class ClassFileIClass extends IClass {
             try {
                 ii = this.resolveMethod(mi);
             } catch (ClassNotFoundException ex) {
-                throw new JaninoRuntimeException(ex.getMessage(), ex);
+                throw new InternalCompilerException(ex.getMessage(), ex);
             }
             if (ii instanceof IMethod) iMethods.add((IMethod) ii);
         }
@@ -127,7 +127,7 @@ class ClassFileIClass extends IClass {
             try {
                 ifs[i] = this.resolveField((ClassFile.FieldInfo) this.classFile.fieldInfos.get(i));
             } catch (ClassNotFoundException ex) {
-                throw new JaninoRuntimeException(ex.getMessage(), ex);
+                throw new InternalCompilerException(ex.getMessage(), ex);
             }
         }
         return ifs;
@@ -475,7 +475,7 @@ class ClassFileIClass extends IClass {
         try {
             iAnnotations = ClassFileIClass.this.toIAnnotations(methodInfo.getAnnotations(true));
         } catch (CompileException ce) {
-            throw new JaninoRuntimeException(ce.getMessage(), ce);
+            throw new InternalCompilerException(ce.getMessage(), ce);
         }
 
         if ("<init>".equals(name)) {
@@ -491,10 +491,10 @@ class ClassFileIClass extends IClass {
                     IClass outerIClass = ClassFileIClass.this.getOuterIClass();
                     if (outerIClass != null) {
                         if (parameterTypes.length < 1) {
-                            throw new JaninoRuntimeException("Inner class constructor lacks magic first parameter");
+                            throw new InternalCompilerException("Inner class constructor lacks magic first parameter");
                         }
                         if (parameterTypes[0] != outerIClass) {
-                            throw new JaninoRuntimeException(
+                            throw new InternalCompilerException(
                                 "Magic first parameter of inner class constructor has type \""
                                 + parameterTypes[0].toString()
                                 + "\" instead of that of its enclosing instance (\""
@@ -589,7 +589,7 @@ class ClassFileIClass extends IClass {
         try {
             iAnnotations = ClassFileIClass.this.toIAnnotations(fieldInfo.getAnnotations(true));
         } catch (CompileException ce) {
-            throw new JaninoRuntimeException(ce.getMessage(), ce);
+            throw new InternalCompilerException(ce.getMessage(), ce);
         }
 
         result = new IField() {

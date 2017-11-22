@@ -316,7 +316,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         try {
             return cl.loadClass(this.className);
         } catch (ClassNotFoundException ex) {
-            throw new JaninoRuntimeException((
+            throw new InternalCompilerException((
                 "SNO: Generated compilation unit does not declare class '"
                 + this.className
                 + "'"
@@ -446,7 +446,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
             );
         } catch (IllegalAccessException e) {
             // SNO - type and default constructor of generated class are PUBLIC.
-            throw new JaninoRuntimeException(e.toString(), e);
+            throw new InternalCompilerException(e.toString(), e);
         }
     }
 }

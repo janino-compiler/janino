@@ -27,7 +27,7 @@
 package org.codehaus.janino.util;
 
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.JaninoRuntimeException;
+import org.codehaus.janino.InternalCompilerException;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
 import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
 import org.codehaus.janino.Java.AbstractTypeBodyDeclaration;
@@ -981,7 +981,7 @@ class Traverser<EX extends Throwable> {
             for (ArrayInitializerOrRvalue value : values) this.traverseArrayInitializerOrRvalue(value);
         } else
         {
-            throw new JaninoRuntimeException(
+            throw new InternalCompilerException(
                 "Unexpected array initializer or rvalue class "
                 + aiorv.getClass().getName()
             );

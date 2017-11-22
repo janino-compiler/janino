@@ -1266,7 +1266,7 @@ class Unparser {
             }
         } else
         {
-            throw new JaninoRuntimeException(
+            throw new InternalCompilerException(
                 "Unexpected array initializer or rvalue class "
                 + aiorv.getClass().getName()
             );
@@ -1369,7 +1369,7 @@ class Unparser {
                 try {
                     line = br.readLine();
                 } catch (IOException e) {
-                    throw new JaninoRuntimeException(null, e);
+                    throw new InternalCompilerException(null, e);
                 }
                 if (line == null) break;
                 this.pw.println(line);

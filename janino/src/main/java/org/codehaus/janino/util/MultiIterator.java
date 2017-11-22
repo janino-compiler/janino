@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.codehaus.janino.JaninoRuntimeException;
+import org.codehaus.janino.InternalCompilerException;
 
 /**
  * An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of {@link java.util.Iterator}s.
@@ -132,7 +132,7 @@ class MultiIterator<T> implements Iterator<T> {
                 this.inner = Arrays.asList(tmp).iterator();
             } else
             {
-                throw new JaninoRuntimeException("Unexpected element type \"" + o.getClass().getName() + "\"");
+                throw new InternalCompilerException("Unexpected element type \"" + o.getClass().getName() + "\"");
             }
         }
     }
