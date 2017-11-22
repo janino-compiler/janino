@@ -948,12 +948,17 @@ class CodeContext {
                     break;
                 }
             }
-            LineNumberOffset lno = new LineNumberOffset(this.currentInserter.offset, lineNumber);
-            lno.prev = this.currentInserter.prev;
-            lno.next = this.currentInserter;
 
-            this.currentInserter.prev.next = lno;
-            this.currentInserter.prev      = lno;
+            // Insert a LineNumberOffset _before_ the current inserter.
+            LineNumberOffset lno = new LineNumberOffset(this.currentInserter.offset, lineNumber);
+
+            Offset cip = this.currentInserter.prev;
+            assert cip != null;
+
+            lno.prev = cip;
+            lno.next = this.currentInserter;
+            cip.next = lno;
+            this.currentInserter.prev = lno;
         }
 
         int ico = this.currentInserter.offset;
@@ -1235,12 +1240,18 @@ class CodeContext {
         set() {
             if (this.offset != Offset.UNSET) throw new JaninoRuntimeException("Cannot \"set()\" Offset more than once");
 
-            this.offset = CodeContext.this.currentInserter.offset;
+            Inserter ci = CodeContext.this.currentInserter;
 
-            this.prev      = CodeContext.this.currentInserter.prev;
-            this.next      = CodeContext.this.currentInserter;
-            this.prev.next = this;
-            this.next.prev = this;
+            this.offset = ci.offset;
+
+            Offset cip = ci.prev;
+            assert cip != null;
+
+            this.prev = cip;
+            this.next = ci;
+
+            cip.next = this;
+            ci.prev  = this;
         }
 
         /**
