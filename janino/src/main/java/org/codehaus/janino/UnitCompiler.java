@@ -338,8 +338,8 @@ class UnitCompiler {
         for (ImportDeclaration id : this.compilationUnit.importDeclarations) {
             id.accept(new ImportVisitor<Void, CompileException>() {
                 // SUPPRESS CHECKSTYLE LineLengthCheck:4
-                @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)                                  { return null; }
-                @Override @Nullable public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)                             { return null; }
+                @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)                                  {                                   return null; }
+                @Override @Nullable public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)                             {                                   return null; }
                 @Override @Nullable public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      throws CompileException { UnitCompiler.this.import2(ssid);  return null; }
                 @Override @Nullable public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) throws CompileException { UnitCompiler.this.import2(siodd); return null; }
             });
@@ -1770,7 +1770,7 @@ class UnitCompiler {
             }
         } else
         {
-            this.compileError("Cannot iterate over '" + expressionType + "'");
+            this.compileError("Cannot iterate over \"" + expressionType + "\"");
         }
         return true;
     }
@@ -3479,7 +3479,7 @@ class UnitCompiler {
             !this.tryIdentityConversion(resultType, lhsType)
             && !this.tryNarrowingPrimitiveConversion(a, resultType, lhsType)
             && !this.tryBoxingConversion(a, resultType, lhsType) // Java 5
-        ) this.compileError("Operand types unsuitable for '" + a.operator + "'", a.getLocation());
+        ) this.compileError("Operand types unsuitable for \"" + a.operator + "\"", a.getLocation());
 
         // Assign the result to the left operand.
         this.compileSet(a.lhs);
@@ -3879,7 +3879,7 @@ class UnitCompiler {
                 if (
                     !this.isCastReferenceConvertible(lhsType, rhsType)
                     || !this.isCastReferenceConvertible(rhsType, lhsType)
-                ) this.compileError("Incomparable types '" + lhsType + "' and '" + rhsType + "'", bo.getLocation());
+                ) this.compileError("Incomparable types \"" + lhsType + "\" and \"" + rhsType + "\"", bo.getLocation());
                 this.writeBranch(bo, Opcode.IF_ACMPEQ + opIdx, dst);
                 return;
             }
@@ -5276,8 +5276,8 @@ class UnitCompiler {
             @Override @Nullable public Object visitIntegerLiteral(IntegerLiteral il)               throws CompileException { return UnitCompiler.this.getConstantValue2(il);   }
             @Override @Nullable public Object visitFloatingPointLiteral(FloatingPointLiteral fpl)  throws CompileException { return UnitCompiler.this.getConstantValue2(fpl);  }
             @Override @Nullable public Object visitBooleanLiteral(BooleanLiteral bl)                                       { return UnitCompiler.this.getConstantValue2(bl);   }
-            @Override @Nullable public Object visitCharacterLiteral(CharacterLiteral cl)                                   { return UnitCompiler.this.getConstantValue2(cl);   }
-            @Override @Nullable public Object visitStringLiteral(StringLiteral sl)                                         { return UnitCompiler.this.getConstantValue2(sl);   }
+            @Override @Nullable public Object visitCharacterLiteral(CharacterLiteral cl)           throws CompileException { return UnitCompiler.this.getConstantValue2(cl);   }
+            @Override @Nullable public Object visitStringLiteral(StringLiteral sl)                 throws CompileException { return UnitCompiler.this.getConstantValue2(sl);   }
             @Override @Nullable public Object visitNullLiteral(NullLiteral nl)                                             { return UnitCompiler.this.getConstantValue2(nl);   }
             @Override @Nullable public Object visitSimpleConstant(SimpleConstant sl)                                       { return UnitCompiler.this.getConstantValue2(sl);   }
             @Override @Nullable public Object visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)               { return UnitCompiler.this.getConstantValue2(naci); }
@@ -5580,43 +5580,47 @@ class UnitCompiler {
 
         String v = il.value;
 
-        // Remove underscores in integer literal.
+        // Remove underscores in integer literal (JLS8, section 3.10.1).
         for (;;) {
             int ui = v.indexOf('_');
             if (ui == -1) break;
             v = v.substring(0, ui) + v.substring(ui + 1);
         }
 
+        // HexIntegerLiteral (JLS8, section 3.10.1)?
         if (v.startsWith("0x") || v.startsWith("0X")) {
 
             // Cannot use "Integer/Long.valueOf(v, 16)" here because hex literals are UNSIGNED.
             return (
                 v.endsWith("L") || v.endsWith("l")
-                ? (Object) Long.valueOf(UnitCompiler.hex2Long(il, v.substring(2, v.length() - 1)))
-                : Integer.valueOf(UnitCompiler.hex2Int(il, v.substring(2)))
+                ? (Object) Long.valueOf(UnitCompiler.hex2UnsignedLong(il, v.substring(2, v.length() - 1)))
+                : Integer.valueOf(UnitCompiler.hex2UnsignedInt(il, v.substring(2)))
             );
         }
 
+        // BinaryIntegerLiteral (JLS8, section 3.10.1)?
         if (v.startsWith("0b") || v.startsWith("0X")) {
 
             // Cannot use "Integer/Long.valueOf(v, 2)" here because binary literals are UNSIGNED.
             return (
                 v.endsWith("L") || v.endsWith("l")
-                ? (Object) Long.valueOf(UnitCompiler.bin2Long(il, v.substring(2, v.length() - 1)))
-                : Integer.valueOf(UnitCompiler.bin2Int(il, v.substring(2)))
+                ? (Object) Long.valueOf(UnitCompiler.bin2UnsignedLong(il, v.substring(2, v.length() - 1)))
+                : Integer.valueOf(UnitCompiler.bin2UnsignedInt(il, v.substring(2)))
             );
         }
 
+        // OctalIntegerLiteral (JLS8, section 3.10.1)?
         if (v.startsWith("0")) {
 
             // Cannot use "Integer/Long.valueOf(v, 8)" here because octal literals are UNSIGNED.
             return (
                 v.endsWith("L") || v.endsWith("l")
-                ? (Object) Long.valueOf(UnitCompiler.oct2Long(il, v.substring(0, v.length() - 1)))
-                : Integer.valueOf(UnitCompiler.oct2Int(il, v))
+                ? (Object) Long.valueOf(UnitCompiler.oct2UnsignedLong(il, v.substring(0, v.length() - 1)))
+                : Integer.valueOf(UnitCompiler.oct2UnsignedInt(il, v))
             );
         }
 
+        // Must be an DecimalIntegerLiteral (JLS8, section 3.10.1).
         try {
 
             // Decimal literals are SIGNED, so we can safely use "Integer/Long.valueOf(v)".
@@ -5651,13 +5655,13 @@ class UnitCompiler {
             try {
                 fv = Float.parseFloat(v);
             } catch (NumberFormatException e) {
-                throw new JaninoRuntimeException("SNO: parsing float literal '" + v + "': " + e.getMessage(), e);
+                throw new JaninoRuntimeException("SNO: parsing float literal \"" + v + "\": " + e.getMessage(), e);
             }
             if (Float.isInfinite(fv)) {
-                throw UnitCompiler.compileException(fpl, "Value of float literal '" + v + "' is out of range");
+                throw UnitCompiler.compileException(fpl, "Value of float literal \"" + v + "\" is out of range");
             }
             if (Float.isNaN(fv)) {
-                throw new JaninoRuntimeException("SNO: parsing float literal '" + v + "' results in NaN");
+                throw new JaninoRuntimeException("SNO: parsing float literal \"" + v + "\" results in NaN");
             }
 
             // Check for FLOAT underrun.
@@ -5667,7 +5671,7 @@ class UnitCompiler {
                     if ("123456789".indexOf(c) != -1) {
                         throw UnitCompiler.compileException(
                             fpl,
-                            "Literal '" + v + "' is too small to be represented as a float"
+                            "Literal \"" + v + "\" is too small to be represented as a float"
                         );
                     }
                     if (c != '0' && c != '.') break;
@@ -5683,13 +5687,13 @@ class UnitCompiler {
         try {
             dv = Double.parseDouble(v);
         } catch (NumberFormatException e) {
-            throw new JaninoRuntimeException("SNO: parsing double literal '" + v + "': " + e.getMessage(), e);
+            throw new JaninoRuntimeException("SNO: parsing double literal \"" + v + "\": " + e.getMessage(), e);
         }
         if (Double.isInfinite(dv)) {
-            throw UnitCompiler.compileException(fpl, "Value of double literal '" + v + "' is out of range");
+            throw UnitCompiler.compileException(fpl, "Value of double literal \"" + v + "\" is out of range");
         }
         if (Double.isNaN(dv)) {
-            throw new JaninoRuntimeException("SNO: parsing double literal '" + v + "' results is NaN");
+            throw new JaninoRuntimeException("SNO: parsing double literal \"" + v + "\" results is NaN");
         }
 
         // Check for DOUBLE underrun.
@@ -5699,7 +5703,7 @@ class UnitCompiler {
                 if ("123456789".indexOf(c) != -1) {
                     throw UnitCompiler.compileException(
                         fpl,
-                        "Literal '" + v + "' is too small to be represented as a double"
+                        "Literal \"" + v + "\" is too small to be represented as a double"
                     );
                 }
                 if (c != '0' && c != '.') break;
@@ -5717,15 +5721,35 @@ class UnitCompiler {
     }
 
     @SuppressWarnings("static-method") private Object
-    getConstantValue2(CharacterLiteral cl) {
+    getConstantValue2(CharacterLiteral cl) throws CompileException {
+
         String v = cl.value;
-        return Character.valueOf(UnitCompiler.unescape(v.substring(1, v.length() - 1)).charAt(0));
+
+        // Strip opening and closing single quotes.
+        v = v.substring(1, v.length() - 1);
+
+        // Decode escape sequences like "\n" and "\0377".
+        v = UnitCompiler.unescape(v, cl.getLocation());
+
+        if (v.isEmpty()) throw new CompileException("Empty character literal", cl.getLocation());
+
+        if (v.length() > 1) throw new CompileException("Invalid character literal " + cl.value, cl.getLocation());
+
+        return Character.valueOf(v.charAt(0));
     }
 
     @SuppressWarnings("static-method") private Object
-    getConstantValue2(StringLiteral sl) {
+    getConstantValue2(StringLiteral sl) throws CompileException {
+
         String v = sl.value;
-        return UnitCompiler.unescape(v.substring(1, v.length() - 1));
+
+        // Strip opening and closing double quotes.
+        v = v.substring(1, v.length() - 1);
+
+        // Decode escape sequences like "\n" and "\0377".
+        v = UnitCompiler.unescape(v, sl.getLocation());
+
+        return v;
     }
 
     @SuppressWarnings("static-method")
@@ -5817,13 +5841,25 @@ class UnitCompiler {
     }
     @Nullable private Object
     getNegatedConstantValue2(IntegerLiteral il) throws CompileException {
+
         String v = il.value;
         if (UnitCompiler.TWO_E_31_INTEGER.matcher(v).matches()) return new Integer(Integer.MIN_VALUE);
-        if (UnitCompiler.TWO_E_63_LONG.matcher(v).matches()) return new Long(Long.MIN_VALUE);
+        if (UnitCompiler.TWO_E_63_LONG.matcher(v).matches())    return new Long(Long.MIN_VALUE);
+
         return this.getNegatedConstantValue2((Rvalue) il);
     }
+
+    /**
+     * 2147483648 is the special value that can <em>not</em> be stored in an INT, but <em>its negated value</em>
+     * (-2147483648) can.
+     */
     private static final Pattern
     TWO_E_31_INTEGER = Pattern.compile("2147483648|0+20000000000|0b0*10{31}", Pattern.CASE_INSENSITIVE);
+
+    /**
+     * 9223372036854775808 is the special value that can <em>not</em> be stored in a LONG, but <em>its negated
+     * value</em> (-9223372036854775808) can.
+     */
     private static final Pattern
     TWO_E_63_LONG = Pattern.compile("9223372036854775808L|0+10{21}L|0b0*10{63}L", Pattern.CASE_INSENSITIVE);
 
@@ -6155,7 +6191,7 @@ class UnitCompiler {
             identifiers.length
         );
         if (result == null) {
-            this.compileError("Reference type '" + rt + "' not found", rt.getLocation());
+            this.compileError("Reference type \"" + rt + "\" not found", rt.getLocation());
             return this.iClassLoader.TYPE_java_lang_Object;
         }
 
@@ -6188,7 +6224,7 @@ class UnitCompiler {
                 IClass memberType     = this.findMemberType(enclosingType, memberTypeName, location);
                 if (memberType == null) {
                     this.compileError(
-                        "'" + enclosingType + "' declares no member type '" + memberTypeName + "'",
+                        "\"" + enclosingType + "\" declares no member type \"" + memberTypeName + "\"",
                         location
                     );
                     return this.iClassLoader.TYPE_java_lang_Object;
@@ -6768,7 +6804,7 @@ class UnitCompiler {
         if (v instanceof Character) return IClass.CHAR;
         if (v instanceof String)    return this.iClassLoader.TYPE_java_lang_String;
         if (v == null)              return IClass.VOID;
-        throw new JaninoRuntimeException("Invalid SimpleLiteral value type '" + v.getClass() + "'");
+        throw new JaninoRuntimeException("Invalid SimpleLiteral value type \"" + v.getClass() + "\"");
     }
 
     // ---------------- Atom.isType() ---------------
@@ -8815,9 +8851,9 @@ class UnitCompiler {
             }
             sb.append("\"");
         }
-        sb.append("; candidates are: ").append('"' + iInvocables[0].toString() + '"');
+        sb.append("; candidates are: \"").append(iInvocables[0]).append('"');
         for (int i = 1; i < iInvocables.length; ++i) {
-            sb.append(", ").append('"' + iInvocables[i].toString() + '"');
+            sb.append(", \"").append(iInvocables[i]).append('"');
         }
         this.compileError(sb.toString(), locatable.getLocation());
 
@@ -9022,7 +9058,7 @@ class UnitCompiler {
                             if (declaringIClass == theNonAbstractMethodDeclaringIClass) {
                                 if (m.getReturnType() == theNonAbstractMethod.getReturnType()) {
                                     throw new JaninoRuntimeException(
-                                        "Two non-abstract methods '" + m + "' have the same parameter types, "
+                                        "Two non-abstract methods \"" + m + "\" have the same parameter types, "
                                         + "declaring type and return type"
                                     );
                                 } else
@@ -9044,9 +9080,9 @@ class UnitCompiler {
                             } else
                             {
                                 throw new JaninoRuntimeException(
-                                    "SNO: Types declaring '"
+                                    "SNO: Types declaring \""
                                     + theNonAbstractMethod
-                                    + "' are not assignable"
+                                    + "\" are not assignable"
                                 );
                             }
                         }
@@ -9655,7 +9691,7 @@ class UnitCompiler {
     }
 
     /**
-     * Returns a list consisting of the given <var>inner</var> class and all its outer classes.
+     * Returns a list consisting of the given <var>inner</var> class and all its enclosing (outer) classes.
      *
      * @return {@link List} of {@link TypeDeclaration}
      */
@@ -10039,7 +10075,7 @@ class UnitCompiler {
 
                 if (this.findTypeByFullyQualifiedName(location, ids) == null) {
                     UnitCompiler.this.compileError(
-                        "A class '" + Java.join(ids, ".") + "' could not be found",
+                        "A class \"" + Java.join(ids, ".") + "\" could not be found",
                         stid.getLocation()
                     );
                 }
@@ -10350,11 +10386,22 @@ class UnitCompiler {
             return IClass.VOID;
         }
 
-        throw new JaninoRuntimeException("Unknown literal '" + value + "'");
+        throw new JaninoRuntimeException("Unknown literal \"" + value + "\"");
     }
 
+    /**
+     * @return                  0 through 2<sup>32</sup> - 1
+     * @throws CompileException The <var>value</var> is larger than {@code ffffffff} (2<sup>32</sup> - 1), or, in
+     *                          other words, is longer than eight characters
+     * @throws AssertionError   The <var>value</var> contains characters that are <em>not</em> hexadecimal digits
+     *                          (0-9, A-F, a-f)
+     */
     private static int
-    hex2Int(Locatable locatable, String value) throws CompileException {
+    hex2UnsignedInt(Locatable locatable, String value) throws CompileException {
+
+        // Cannot use "Integer.parseInt(String, 16)", because that throws a NumberFormatException
+        // if the value is between 2^31 and 2^32-1.
+
         int result = 0;
         for (int i = 0; i < value.length(); ++i) {
             if ((result & 0xf0000000) != 0) {
@@ -10370,14 +10417,24 @@ class UnitCompiler {
         return result;
     }
 
+    /**
+     * @return                  0 through 2<sup>32</sup> - 1
+     * @throws CompileException The <var>value</var> is larger than {@code 37777777777} (2<sup>32</sup> - 1)
+     * @throws AssertionError   The <var>value</var> contains characters that are <em>not</em> octal digits
+     *                          (0-7)
+     */
     private static int
-    oct2Int(Locatable locatable, String value) throws CompileException {
+    oct2UnsignedInt(Locatable locatable, String value) throws CompileException {
+
+        // Cannot use "Integer.parseInt(String, 8)", because that throws a NumberFormatException if
+        // the value is between 2^31 and 2^32-1.
+
         int result = 0;
         for (int i = 0; i < value.length(); ++i) {
             if ((result & 0xe0000000) != 0) {
                 throw UnitCompiler.compileException(
                     locatable,
-                    "Value of octal integer literal '" + value + "' is out of range"
+                    "Value of octal integer literal \"" + value + "\" is out of range"
                 );
             }
             int digitValue = Character.digit(value.charAt(i), 8);
@@ -10387,14 +10444,24 @@ class UnitCompiler {
         return result;
     }
 
+    /**
+     * @return                  0 through 2<sup>32</sup> - 1
+     * @throws CompileException The <var>value</var> is larger than {@code 11111111111111111111111111111111}
+     *                          (2<sup>32</sup> - 1), or, in other words, is longer than 32 characters
+     * @throws AssertionError   The <var>value</var> contains characters other than {@code '0'} and {@code '1'}
+     */
     private static int
-    bin2Int(Locatable locatable, String value) throws CompileException {
+    bin2UnsignedInt(Locatable locatable, String value) throws CompileException {
+
+        // Cannot use "Integer.parseInt(String, 2)", because that throws a NumberFormatException if
+        // the value is between 2^31 and 2^32-1.
+
         int result = 0;
         for (int i = 0; i < value.length(); ++i) {
             if ((result & 0x80000000) != 0) {
                 throw UnitCompiler.compileException(
                     locatable,
-                    "Value of binary integer literal '" + value + "' is out of range"
+                    "Value of binary integer literal \"" + value + "\" is out of range"
                 );
             }
             int digitValue = Character.digit(value.charAt(i), 2);
@@ -10404,8 +10471,19 @@ class UnitCompiler {
         return result;
     }
 
+    /**
+     * @return                  0 through 2<sup>64</sup> - 1
+     * @throws CompileException The <var>value</var> is larger than {@code ffffffffffffffff} (2<sup>64</sup> - 1), or,
+     *                          in other words, is longer than sixteen characters
+     * @throws AssertionError   The <var>value</var> contains characters that are <em>not</em> hexadecimal digits
+     *                          (0-9, A-F, a-f)
+     */
     private static long
-    hex2Long(Locatable locatable, String value) throws CompileException {
+    hex2UnsignedLong(Locatable locatable, String value) throws CompileException {
+
+        // Cannot use "Long.parseLong(String, 16)", because that throws a NumberFormatException
+        // if the value is between 2^63 and 2^64-1.
+
         long result = 0L;
         for (int i = 0; i < value.length(); ++i) {
             if ((result & 0xf000000000000000L) != 0L) {
@@ -10421,14 +10499,25 @@ class UnitCompiler {
         return result;
     }
 
+    /**
+     * @return                  0 through 2<sup>64</sup> - 1
+     * @throws CompileException The <var>value</var> is larger than {@code 1777777777777777777777} (2<sup>64</sup> -
+     *                          1)
+     * @throws AssertionError   The <var>value</var> contains characters that are <em>not</em> octal digits
+     *                          (0-7)
+     */
     private static long
-    oct2Long(Locatable locatable, String value) throws CompileException {
+    oct2UnsignedLong(Locatable locatable, String value) throws CompileException {
+
+        // Cannot use "Long.parseLong(String, 8)", because that throws a NumberFormatException
+        // if the value is between 2^63 and 2^64-1.
+
         long result = 0L;
         for (int i = 0; i < value.length(); ++i) {
             if ((result & 0xe000000000000000L) != 0) {
                 throw UnitCompiler.compileException(
                     locatable,
-                    "Value of octal long literal '" + value + "' is out of range"
+                    "Value of octal long literal \"" + value + "\" is out of range"
                 );
             }
             int digitValue = Character.digit(value.charAt(i), 8);
@@ -10438,14 +10527,25 @@ class UnitCompiler {
         return result;
     }
 
+    /**
+     * @return                  0 through 2<sup>64</sup> - 1
+     * @throws CompileException The <var>value</var> is larger than {@code
+     *                          1111111111111111111111111111111111111111111111111111111111111111} (2<sup>64</sup> -
+     *                          1), or, in other words, is longer than 64 characters
+     * @throws AssertionError   The <var>value</var> contains characters other than {@code '0'} and {@code '1'}
+     */
     private static long
-    bin2Long(Locatable locatable, String value) throws CompileException {
+    bin2UnsignedLong(Locatable locatable, String value) throws CompileException {
+
+        // Cannot use "Long.parseLong(String, 2)", because that throws a NumberFormatException
+        // if the value is between 2^63 and 2^64-1.
+
         long result = 0L;
         for (int i = 0; i < value.length(); ++i) {
             if ((result & 0x8000000000000000L) != 0) {
                 throw UnitCompiler.compileException(
                     locatable,
-                    "Value of binary long literal '" + value + "' is out of range"
+                    "Value of binary long literal \"" + value + "\" is out of range"
                 );
             }
             int digitValue = Character.digit(value.charAt(i), 2);
@@ -10706,19 +10806,18 @@ class UnitCompiler {
         }
 
         if (value == null) {
-            this.compileError((
-                "Cannot convert 'null' to type '"
-                + targetType.toString()
-                + "'"
-            ), locatable.getLocation());
+            this.compileError(
+                "Cannot convert 'null' to type \"" + targetType.toString() + "\"",
+                locatable.getLocation()
+            );
         } else
         {
             this.compileError((
-                "Cannot convert constant of type '"
+                "Cannot convert constant of type \""
                 + value.getClass().getName()
-                + "' to type '"
+                + "\" to type \""
                 + targetType.toString()
-                + "'"
+                + "\""
             ), locatable.getLocation());
         }
         return value;
@@ -11975,10 +12074,30 @@ class UnitCompiler {
         return new CompileException(message, locatable.getLocation());
     }
 
+    /**
+     * Decodes any escape sequences like {@code \n}, or {@code \377}, but <em>not</em> {@code &#92;uxxxx}.
+     *
+     * @return                           <var>s</var>, with all escape sequences replaced with their literal values
+     * @throws CompileException          <var>s</var> contains an invalid escape sequence
+     * @throws IndexOutOfBoundsException <var>s</var>ends with a backslash
+     * @see                              JLS8, section 3.10.6, "Escape Sequences for Character and String Literals"
+     */
     private static String
-    unescape(String s) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length();) {
+    unescape(String s, @Nullable Location optionalLocation) throws CompileException {
+
+        // Find the first backslash.
+        int i = s.indexOf('\\');
+
+        if (i == -1) {
+
+            // Subject string contains no backslash and thus no escape sequences; so return the original string.
+            return s;
+        }
+
+        StringBuilder sb = new StringBuilder().append(s, 0, i);
+
+        while (i < s.length()) {
+
             char c = s.charAt(i++);
             if (c != '\\') {
                 sb.append(c);
@@ -11994,27 +12113,29 @@ class UnitCompiler {
                 }
             }
 
-            {
-                int x = Character.digit(c, 8);
-                if (x == -1) throw new JaninoRuntimeException("Invalid escape sequence '\\" + c + "'");
-                if (i < s.length()) {
-                    c = s.charAt(i);
-                    int secondDigit = Character.digit(c, 8);
-                    if (secondDigit != -1) {
-                        x = 8 * x + secondDigit;
-                        i++;
-                        if (i < s.length() && x <= 037) {
-                            int thirdDigit = Character.digit(c, 8);
-                            if (thirdDigit != -1) {
-                                x = 8 * x + thirdDigit;
-                                i++;
-                            }
+            // Must be an an OctalEscape (JLS8, section 3.10.6).
+            int x = Character.digit(c, 8);
+            if (x == -1) throw new CompileException("Invalid escape sequence \"\\" + c + "\"", optionalLocation);
+
+            if (i < s.length()) {
+                c = s.charAt(i);
+                int secondDigit = Character.digit(c, 8);
+                if (secondDigit != -1) {
+                    x = 8 * x + secondDigit;
+                    i++;
+                    if (i < s.length() && x <= 037) {
+                        c = s.charAt(i);
+                        int thirdDigit = Character.digit(c, 8);
+                        if (thirdDigit != -1) {
+                            x = 8 * x + thirdDigit;
+                            i++;
                         }
                     }
                 }
-                sb.append((char) x);
             }
+            sb.append((char) x);
         }
+
         return sb.toString();
     }
 
