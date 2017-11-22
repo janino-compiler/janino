@@ -52,6 +52,11 @@ class Token {
 
     /**
      * The text of the token exactly as it appears in the source code.
+     * <p>
+     *   Iff this token represents a <em>keyword</em>, {@code true}, {@code false}, {@code null} or an operator, then
+     *   this string is {@link String#intern() interned}, so that it can be reference-compared with other interned
+     *   strings.
+     * </p>
      */
     public final String value;
 

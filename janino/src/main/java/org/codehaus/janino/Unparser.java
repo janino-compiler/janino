@@ -620,9 +620,9 @@ class Unparser {
 
                 @Override @Nullable public Void
                 visitBinaryOperation(Java.BinaryOperation bo) {
-                    Unparser.this.unparseLhs(bo.lhs, bo.op);
-                    Unparser.this.pw.print(' ' + bo.op + ' ');
-                    Unparser.this.unparseRhs(bo.rhs, bo.op);
+                    Unparser.this.unparseLhs(bo.lhs, bo.operator);
+                    Unparser.this.pw.print(' ' + bo.operator + ' ');
+                    Unparser.this.unparseRhs(bo.rhs, bo.operator);
                     return null;
                 }
 
@@ -1128,7 +1128,7 @@ class Unparser {
      * {@code (a - b) - c}.
      */
     private static boolean
-    isLeftAssociate(String op) { return Unparser.LEFT_ASSOCIATIVE_OPERATORS.contains(op); }
+    isLeftAssociate(String operator) { return Unparser.LEFT_ASSOCIATIVE_OPERATORS.contains(operator); }
 
     /**
      * Returns a value
@@ -1143,7 +1143,7 @@ class Unparser {
         if (operand instanceof Java.BinaryOperation) {
             return (
                 Unparser.getOperatorPrecedence(operator)
-                - Unparser.getOperatorPrecedence(((Java.BinaryOperation) operand).op)
+                - Unparser.getOperatorPrecedence(((Java.BinaryOperation) operand).operator)
             );
         } else
         if (operand instanceof Java.UnaryOperation) {
@@ -1190,9 +1190,8 @@ class Unparser {
     private static final Set<String>          UNARY_OPERATORS             = new HashSet<String>();
     private static final Map<String, Integer> OPERATOR_PRECEDENCE         = new HashMap<String, Integer>();
     static {
-        Object[] ops = {
-            Unparser.RIGHT_ASSOCIATIVE_OPERATORS, "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=",
-                                                        "&=", "^=", "|=", // SUPPRESS CHECKSTYLE WrapAndIndent
+        Object[] operators = {
+            Unparser.RIGHT_ASSOCIATIVE_OPERATORS, "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=", "&=", "^=", "|=", // SUPPRESS CHECKSTYLE LineLength
             Unparser.RIGHT_ASSOCIATIVE_OPERATORS, "?:",
             Unparser.LEFT_ASSOCIATIVE_OPERATORS,  "||",
             Unparser.LEFT_ASSOCIATIVE_OPERATORS,  "&&",
@@ -1212,15 +1211,15 @@ class Unparser {
         };
         int precedence = 0;
         LOOP1: for (int i = 0;;) {
-            @SuppressWarnings("unchecked") final Set<String> s = (Set<String>) ops[i++];
+            @SuppressWarnings("unchecked") final Set<String> s = (Set<String>) operators[i++];
 
             precedence++;
             for (;;) {
-                if (i == ops.length) break LOOP1;
-                if (!(ops[i] instanceof String)) break;
-                String op = (String) ops[i++];
-                s.add(op);
-                Unparser.OPERATOR_PRECEDENCE.put(op, precedence);
+                if (i == operators.length) break LOOP1;
+                if (!(operators[i] instanceof String)) break;
+                String operator = (String) operators[i++];
+                s.add(operator);
+                Unparser.OPERATOR_PRECEDENCE.put(operator, precedence);
             }
         }
     }

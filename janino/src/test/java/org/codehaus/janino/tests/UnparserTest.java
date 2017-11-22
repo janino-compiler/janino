@@ -249,7 +249,7 @@ class UnparserTest {
                 return new Java.BinaryOperation(
                     bo.getLocation(),
                     UnparserTest.stripUnnecessaryParenExprs(bo.lhs),
-                    bo.op,
+                    bo.operator,
                     UnparserTest.stripUnnecessaryParenExprs(bo.rhs)
                 );
             }

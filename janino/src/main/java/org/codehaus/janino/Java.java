@@ -51,7 +51,7 @@ import org.codehaus.janino.util.iterator.ReverseListIterator;
 /**
  * This wrapper class defines classes that represent the elements of the Java programming language.
  * <p>
- *   Notice: 'JLS7' refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
+ *   Notice: "JLS7" refers to the <a href="http://docs.oracle.com/javase/specs/">Java Language Specification, Java SE 7
  *   Edition</a>.
  * </p>
  */
@@ -61,7 +61,7 @@ class Java {
     private Java() {} // Don't instantiate me.
 
     /**
-     * Representation of a Java 'scope', e.g. a compilation unit, type, method or block.
+     * Representation of a Java "scope", e.g. a compilation unit, type, method or block.
      */
     public
     interface Scope {
@@ -98,7 +98,7 @@ class Java {
     class Located implements Locatable {
 
         /**
-         * Indication of 'no' or 'unknown' location.
+         * Indication of "no" or "unknown" location.
          */
         public static final Located NOWHERE = new Located(Location.NOWHERE) {};
 
@@ -128,7 +128,7 @@ class Java {
     class CompilationUnit implements Scope {
 
         /**
-         * A string that explains the 'file' (or similar resource) where this CU was loaded from.
+         * A string that explains the "file" (or similar resource) where this CU was loaded from.
          */
         @Nullable public final String optionalFileName;
 
@@ -208,13 +208,13 @@ class Java {
         }
 
         /**
-         * Represents a 'single-type import declaration' like '{@code import java.util.Map;}'.
+         * Represents a "single-type import declaration" like "{@code import java.util.Map;}".
          */
         public static
         class SingleTypeImportDeclaration extends ImportDeclaration {
 
             /**
-             * The identifiers that constitute the type to be imported, e.g. 'java', 'util', 'Map'.
+             * The identifiers that constitute the type to be imported, e.g. "java", "util", "Map".
              */
             public final String[] identifiers;
 
@@ -240,7 +240,7 @@ class Java {
         class TypeImportOnDemandDeclaration extends ImportDeclaration {
 
             /**
-             * The identifiers that constitute the package or type to import from, e.g. 'java', 'util'.
+             * The identifiers that constitute the package or type to import from, e.g. "java", "util".
              */
             public final String[] identifiers;
 
@@ -269,8 +269,8 @@ class Java {
         class SingleStaticImportDeclaration extends ImportDeclaration {
 
             /**
-             * The identifiers that constitute the member to be imported, e.g. 'java', 'util', 'Collections',
-             * 'EMPTY_MAP'.
+             * The identifiers that constitute the member to be imported, e.g. "java", "util", "Collections",
+             * "EMPTY_MAP".
              */
             public final String[] identifiers;
 
@@ -296,7 +296,7 @@ class Java {
         class StaticImportOnDemandDeclaration extends ImportDeclaration {
 
             /**
-             * The identifiers that constitute the type to import from, e.g. 'java', 'util', 'Collections'.
+             * The identifiers that constitute the type to import from, e.g. "java", "util", "Collections".
              */
             public final String[] identifiers;
 
@@ -322,7 +322,7 @@ class Java {
             ImportDeclaration(Location location) { super(location); }
 
             /**
-             * Invokes the '{@code visit...()}' method of {@link Visitor.ImportVisitor} for the concrete {@link
+             * Invokes the "{@code visit...()}" method of {@link Visitor.ImportVisitor} for the concrete {@link
              * ImportDeclaration} type.
              */
             @Nullable public abstract <R, EX extends Throwable> R
@@ -337,7 +337,7 @@ class Java {
     interface Annotation extends Locatable, ElementValue {
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.AnnotationVisitor} for the concrete {@link
+         * Invokes the "{@code visit...()}" method of {@link Visitor.AnnotationVisitor} for the concrete {@link
          * Annotation} type.
          */
         @Nullable <R, EX extends Throwable> R
@@ -386,7 +386,7 @@ class Java {
     }
 
     /**
-     * Representation of a 'marker annotation', i.e. an annotation without any elements in parentheses.
+     * Representation of a "marker annotation", i.e. an annotation without any elements in parentheses.
      */
     public static final
     class MarkerAnnotation extends AbstractAnnotation {
@@ -404,7 +404,7 @@ class Java {
     }
 
     /**
-     * Representation of a 'single-element annotation', i.e. an annotation followed by a single element in parentheses.
+     * Representation of a "single-element annotation", i.e. an annotation followed by a single element in parentheses.
      */
     public static final
     class SingleElementAnnotation extends AbstractAnnotation {
@@ -437,7 +437,7 @@ class Java {
     }
 
     /**
-     * A 'normal annotation', i.e. an annotation with multiple elements in parentheses and curly braces.
+     * A "normal annotation", i.e. an annotation with multiple elements in parentheses and curly braces.
      */
     public static final
     class NormalAnnotation extends AbstractAnnotation {
@@ -494,7 +494,7 @@ class Java {
         public final Annotation[] annotations;
 
         /**
-         * A 'blank' {@link Modifiers} object: No flags, no annotations.
+         * A "blank" {@link Modifiers} object: No flags, no annotations.
          */
         public
         Modifiers() {
@@ -503,7 +503,7 @@ class Java {
         }
 
         /**
-         * A 'simple' {@link Modifiers} object: Flags, but no annotations.
+         * A "simple" {@link Modifiers} object: Flags, but no annotations.
          */
         public
         Modifiers(short modifiers) {
@@ -555,7 +555,7 @@ class Java {
     }
 
     /**
-     * Representation of a 'name = value' element in a {@link NormalAnnotation}.
+     * Representation of a "name = value" element in a {@link NormalAnnotation}.
      */
     public static
     class ElementValuePair {
@@ -587,7 +587,7 @@ class Java {
     interface ElementValue extends Locatable {
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.ElementValueVisitor} for the concrete {@link
+         * Invokes the "{@code visit...()}" method of {@link Visitor.ElementValueVisitor} for the concrete {@link
          * ElementValue} type.
          */
         @Nullable <R, EX extends Throwable> R
@@ -602,8 +602,8 @@ class Java {
     }
 
     /**
-     * An element value in the form of an array initializer, e.g. '<code>SuppressWarnings({ "null", "unchecked"
-     * })</code>'.
+     * An element value in the form of an array initializer, e.g. "<code>SuppressWarnings({ "null", "unchecked"
+     * })</code>".
      */
     public static final
     class ElementValueArrayInitializer extends Located implements ElementValue {
@@ -646,7 +646,7 @@ class Java {
     class PackageDeclaration extends Located {
 
         /**
-         * The package name, e.g. '{@code com.acme.tools}'.
+         * The package name, e.g. "{@code com.acme.tools}".
          */
         public final String packageName;
 
@@ -729,15 +729,15 @@ class Java {
         String createAnonymousClassName();
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.TypeDeclarationVisitor} for the concrete {@link
+         * Invokes the "{@code visit...()}" method of {@link Visitor.TypeDeclarationVisitor} for the concrete {@link
          * TypeDeclaration} type.
          */
         @Nullable <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX;
     }
 
     /**
-     * Representation of a Java element that can be annotated with a DOC comment ('<code>&#47;** ...
-     * *&#47;</code>').
+     * Representation of a Java element that can be annotated with a DOC comment ("<code>&#47;** ...
+     * *&#47;</code>").
      */
     public
     interface DocCommentable {
@@ -1115,7 +1115,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.9.5 'anonymous class declaration'.
+     * Representation of a JLS7 15.9.5 "anonymous class declaration".
      */
     public static final
     class AnonymousClassDeclaration extends AbstractClassDeclaration implements InnerClassDeclaration {
@@ -1240,7 +1240,7 @@ class Java {
     }
 
     /**
-     * Representation of a 'member class declaration', i.e. a class declaration that appears inside another class or
+     * Representation of a "member class declaration", i.e. a class declaration that appears inside another class or
      * interface declaration.
      */
     public static
@@ -1288,7 +1288,7 @@ class Java {
     }
 
     /**
-     * Representation of a 'member enum declaration', i.e. an enum declaration that appears inside another class or
+     * Representation of a "member enum declaration", i.e. an enum declaration that appears inside another class or
      * interface declaration.
      */
     public static final
@@ -1330,7 +1330,7 @@ class Java {
     }
 
     /**
-     * Representation of a 'local class declaration' i.e. a class declaration that appears inside a method body.
+     * Representation of a "local class declaration" i.e. a class declaration that appears inside a method body.
      */
     public static final
     class LocalClassDeclaration extends NamedClassDeclaration implements InnerClassDeclaration {
@@ -1374,7 +1374,7 @@ class Java {
     }
 
     /**
-     * Implementation of a 'package member class declaration', a.k.a. 'top-level class declaration'.
+     * Implementation of a "package member class declaration", a.k.a. "top-level class declaration".
      */
     public static final
     class PackageMemberClassDeclaration extends AbstractPackageMemberClassDeclaration {
@@ -1563,7 +1563,7 @@ class Java {
     }
 
     /**
-     * Implementation of a 'package member enum declaration', a.k.a. 'top-level enum declaration'.
+     * Implementation of a "package member enum declaration", a.k.a. "top-level enum declaration".
      */
     public static final
     class PackageMemberEnumDeclaration extends AbstractPackageMemberClassDeclaration implements EnumDeclaration {
@@ -1682,7 +1682,7 @@ class Java {
     }
 
     /**
-     * Representation of a 'member interface declaration', i.e. an interface declaration that appears inside another
+     * Representation of a "member interface declaration", i.e. an interface declaration that appears inside another
      * class or interface declaration.
      */
     public static
@@ -1770,7 +1770,7 @@ class Java {
     }
 
     /**
-     * Representation of a 'package member interface declaration', a.k.a. 'top-level interface declaration'.
+     * Representation of a "package member interface declaration", a.k.a. "top-level interface declaration".
      * <p>
      *   {@link PackageMemberAnnotationTypeDeclaration} extends this class.
      * </p>
@@ -1940,7 +1940,7 @@ class Java {
         boolean isStatic();
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.TypeBodyDeclarationVisitor} for the concrete
+         * Invokes the "{@code visit...()}" method of {@link Visitor.TypeBodyDeclarationVisitor} for the concrete
          * {@link TypeBodyDeclaration} type.
          */
         @Nullable <R, EX extends Throwable> R
@@ -2006,14 +2006,14 @@ class Java {
             this.declaringType = (TypeDeclaration) enclosingScope;
         }
 
-        // Implement 'Scope'.
+        // Implement "Scope".
 
         @Override public Scope
         getEnclosingScope() { assert this.declaringType != null; return this.declaringType; }
     }
 
     /**
-     * Representation of an 'instance initializer' (JLS7 8.6) or 'static initializer' (JLS7 8.7).
+     * Representation of an "instance initializer" (JLS7 8.6) or "static initializer" (JLS7 8.7).
      */
     public static final
     class Initializer extends AbstractTypeBodyDeclaration implements BlockStatement {
@@ -2124,7 +2124,7 @@ class Java {
         }
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.FunctionDeclaratorVisitor} for the concrete
+         * Invokes the "{@code visit...()}" method of {@link Visitor.FunctionDeclaratorVisitor} for the concrete
          * {@link FunctionDeclarator} type.
          */
         @Nullable public abstract <R, EX extends Throwable> R
@@ -2176,7 +2176,7 @@ class Java {
             public final FormalParameter[] parameters;
 
             /**
-             * Whether this method has 'variable arity', i.e. its last parameter has an ellipsis ('...') after the
+             * Whether this method has "variable arity", i.e. its last parameter has an ellipsis ("...") after the
              * type.
              */
             public final boolean variableArity;
@@ -2233,7 +2233,7 @@ class Java {
             }
 
             /**
-             * @param hasEllipsis Whether this is the last function parameter and has an ellipsis ('...') after the
+             * @param hasEllipsis Whether this is the last function parameter and has an ellipsis ("...") after the
              *                    type
              */
             public String
@@ -2455,7 +2455,7 @@ class Java {
         public final Type type;
 
         /**
-         * The declarators of this field declaration, e.g. 'int a, b;'.
+         * The declarators of this field declaration, e.g. "int a, b;".
          */
         public final VariableDeclarator[] variableDeclarators;
 
@@ -2535,7 +2535,7 @@ class Java {
         public final String name;
 
         /**
-         * The number of '[]'s after the name.
+         * The number of "[]"s after the name.
          */
         public final int brackets;
 
@@ -2602,7 +2602,7 @@ class Java {
         getEnclosingScope();
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.BlockStatementVisitor} for the concrete
+         * Invokes the "{@code visit...()}" method of {@link Visitor.BlockStatementVisitor} for the concrete
          * {@link BlockStatement} type.
          */
         @Nullable <R, EX extends Throwable> R
@@ -2619,7 +2619,7 @@ class Java {
      * Everything that can occur in the body of a method or in a block. Particularly, explicit constructor invocations
      * and initializers are <b>not</b> statements in this sense.
      * <p>
-     *   This class is mis-named; according to JLS7 8.8.7 and 14.2, its name should be 'BlockStatement'.
+     *   This class is mis-named; according to JLS7 8.8.7 and 14.2, its name should be "BlockStatement".
      * </p>
      */
     public abstract static
@@ -2677,7 +2677,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 14.7 'labeled statement'.
+     * Representation of a JLS7 14.7 "labeled statement".
      */
     public static final
     class LabeledStatement extends BreakableStatement {
@@ -2783,7 +2783,7 @@ class Java {
     }
 
     /**
-     * Base class for statements that support the 'continue' statement.
+     * Base class for statements that support the "continue" statement.
      * <p>
      *   According to the JLS7 14.16, these are {@code for}, {@code do} and {@code while}.
      * </p>
@@ -2809,7 +2809,7 @@ class Java {
     }
 
     /**
-     * Representation of the JLS7 14.8 'expression statement'.
+     * Representation of the JLS7 14.8 "expression statement".
      */
     public static final
     class ExpressionStatement extends Statement {
@@ -2853,7 +2853,7 @@ class Java {
     }
 
     /**
-     * Representation of the JLS7 14.3 'local class declaration statement'.
+     * Representation of the JLS7 14.3 "local class declaration statement".
      */
     public static final
     class LocalClassDeclarationStatement extends Statement {
@@ -2890,7 +2890,7 @@ class Java {
         public final Rvalue condition;
 
         /**
-         * The 'then statement', which is executed iff the condition evaluates to TRUE.
+         * The "then statement", which is executed iff the condition evaluates to TRUE.
          */
         public final BlockStatement thenStatement;
 
@@ -2927,23 +2927,23 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 14.14.1 'basic FOR statement'.
+     * Representation of a JLS7 14.14.1 "basic FOR statement".
      */
     public static final
     class ForStatement extends ContinuableStatement {
 
         /**
-         * The optional 'init' part of the 'basic FOR statement'.
+         * The optional "init" part of the "basic FOR statement".
          */
         @Nullable public final BlockStatement optionalInit;
 
         /**
-         * The optional 'condition' part of the 'basic FOR statement'.
+         * The optional "condition" part of the "basic FOR statement".
          */
         @Nullable public final Rvalue optionalCondition;
 
         /**
-         * The optional 'update' part of the 'basic FOR statement'.
+         * The optional "update" part of the "basic FOR statement".
          */
         @Nullable public final Rvalue[] optionalUpdate;
 
@@ -2974,18 +2974,18 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 14.14.2 'enhanced FOR statement'.
+     * Representation of a JLS7 14.14.2 "enhanced FOR statement".
      */
     public static final
     class ForEachStatement extends ContinuableStatement {
 
         /**
-         * The 'current element local variable declaration' part of the 'enhanced FOR statement'.
+         * The "current element local variable declaration" part of the "enhanced FOR statement".
          */
         public final FormalParameter currentElement;
 
         /**
-         * The 'expression' part of the 'enhanced FOR statement'.
+         * The "expression" part of the "enhanced FOR statement".
          */
         public final Rvalue expression;
 
@@ -3012,7 +3012,7 @@ class Java {
     class WhileStatement extends ContinuableStatement {
 
         /**
-         * The 'condition' of the WHILE statement.
+         * The "condition" of the WHILE statement.
          */
         public final Rvalue condition;
 
@@ -3043,12 +3043,12 @@ class Java {
         public final BlockStatement body;
 
         /**
-         * The list of catch clauses (including the 'default' clause) of the TRY statement.
+         * The list of catch clauses (including the "default" clause) of the TRY statement.
          */
         public final List<Java.CatchClause> catchClauses;
 
         /**
-         * The optional 'finally' block of the TRY statement.
+         * The optional "finally" block of the TRY statement.
          */
         @Nullable public final Block optionalFinally;
 
@@ -3157,7 +3157,7 @@ class Java {
         public final Rvalue condition;
 
         /**
-         * The list of 'switch block statement groups' that pose the body of the SWITCH statement.
+         * The list of "switch block statement groups" that pose the body of the SWITCH statement.
          */
         public final List<SwitchBlockStatementGroup> sbsgs;
 
@@ -3175,18 +3175,18 @@ class Java {
         toString() { return "switch (" + this.condition + ") { (" + this.sbsgs.size() + " statement groups) }"; }
 
         /**
-         * Representation of a 'switch block statement group' as defined in JLS7 14.11.
+         * Representation of a "switch block statement group" as defined in JLS7 14.11.
          */
         public static
         class SwitchBlockStatementGroup extends Java.Located {
 
             /**
-             * The CASE labels at the top of the 'switch block statement group'.
+             * The CASE labels at the top of the "switch block statement group".
              */
             public final List<Rvalue> caseLabels;
 
             /**
-             * Whether this 'switch block statement group' includes the DEFAULT label.
+             * Whether this "switch block statement group" includes the DEFAULT label.
              */
             public final boolean hasDefaultLabel;
 
@@ -3305,7 +3305,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 14.4 'local variable declaration statement'.
+     * Representation of a JLS7 14.4 "local variable declaration statement".
      */
     public static final
     class LocalVariableDeclarationStatement extends Statement {
@@ -3321,7 +3321,7 @@ class Java {
         public final Type type;
 
         /**
-         * The (one or more) 'variable declarators' that follow the type.
+         * The (one or more) "variable declarators" that follow the type.
          */
         public final VariableDeclarator[] variableDeclarators;
 
@@ -3593,7 +3593,7 @@ class Java {
         }
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.AtomVisitor} for the concrete {@link Atom} type.
+         * Invokes the "{@code visit...()}" method of {@link Visitor.AtomVisitor} for the concrete {@link Atom} type.
          */
         @Nullable public abstract <R, EX extends Throwable> R
         accept(Visitor.AtomVisitor<R, EX> visitor) throws EX;
@@ -3643,7 +3643,7 @@ class Java {
         toType() { return this; }
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.TypeVisitor} for the concrete {@link Type} type.
+         * Invokes the "{@code visit...()}" method of {@link Visitor.TypeVisitor} for the concrete {@link Type} type.
          */
         @Nullable public abstract <R, EX extends Throwable> R
         accept(Visitor.TypeVisitor<R, EX> visitor) throws EX;
@@ -3765,7 +3765,7 @@ class Java {
     interface TypeArgument {
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.TypeArgumentVisitor} for the concrete {@link
+         * Invokes the "{@code visit...()}" method of {@link Visitor.TypeArgumentVisitor} for the concrete {@link
          * TypeArgument} type.
          */
         @Nullable <R, EX extends Throwable> R
@@ -3773,8 +3773,8 @@ class Java {
     }
 
     /**
-     * Representation of the first part of a JLS7 15.9 'Qualified class instance creation expression': The 'a.new
-     * MyClass' part of 'a.new MyClass(...)'.
+     * Representation of the first part of a JLS7 15.9 "Qualified class instance creation expression": The "{@code
+     * a.new MyClass}" part of "{@code a.new MyClass(...)}" expression.
      */
     public static final
     class RvalueMemberType extends Type {
@@ -3808,7 +3808,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 10.1 'array type'.
+     * Representation of a JLS7 10.1 "array type".
      */
     public static final
     class ArrayType extends Type implements TypeArgument {
@@ -3934,7 +3934,7 @@ class Java {
         @Nullable Object constantValue = Java.Rvalue.CONSTANT_VALUE_UNKNOWN;
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.RvalueVisitor} for the concrete {@link Rvalue}
+         * Invokes the "{@code visit...()}" method of {@link Visitor.RvalueVisitor} for the concrete {@link Rvalue}
          * type.
          */
         @Nullable public abstract <R, EX extends Throwable> R
@@ -3966,7 +3966,7 @@ class Java {
         toLvalue() { return this; }
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.LvalueVisitor} for the concrete {@link Lvalue}
+         * Invokes the "{@code visit...()}" method of {@link Visitor.LvalueVisitor} for the concrete {@link Lvalue}
          * type.
          */
         @Nullable public abstract <R, EX extends Throwable> R
@@ -3979,7 +3979,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 6.5.2 'ambiguous name'.
+     * Representation of a JLS7 6.5.2 "ambiguous name".
      * <p>
      *   This class is special: It does not extend/implement the {@link Atom} subclasses, but overrides {@link Atom}'s
      *   "{@code to...()}" methods.
@@ -4045,7 +4045,7 @@ class Java {
         }
 
         /**
-         * The result of 'ambiguous name resolution' furing compilation.
+         * The result of "ambiguous name resolution" furing compilation.
          */
         @Nullable Atom reclassified;
 
@@ -4054,13 +4054,13 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 6.5.2.1.5 'package name'.
+     * Representation of a JLS7 6.5.2.1.5 "package name".
      */
     public static final
     class Package extends Atom {
 
         /**
-         * The complete name of a package, e.g. 'java' or 'java.util'.
+         * The complete name of a package, e.g. "java" or "java.util".
          */
         public final String name;
 
@@ -4140,7 +4140,7 @@ class Java {
     }
 
     /**
-     * Representation of the JLS7 10.7 array type 'length' pseudo-member.
+     * Representation of the JLS7 10.7 array type "length" pseudo-member.
      */
     public static final
     class ArrayLength extends Rvalue {
@@ -4179,7 +4179,7 @@ class Java {
         // Compile time members.
 
         /**
-         * A cache for the type of the instance that 'this' refers to.
+         * A cache for the type of the instance that "this" refers to.
          */
         @Nullable IClass iClass;
 
@@ -4199,7 +4199,7 @@ class Java {
     class QualifiedThisReference extends Rvalue {
 
         /**
-         * The qualification left from the 'this' keyword.
+         * The qualification left from the "this" keyword.
          */
         public final Type qualification;
 
@@ -4217,7 +4217,7 @@ class Java {
         @Nullable AbstractClassDeclaration declaringClass;
 
         /**
-         * The innermost 'type body declaration' enclosing this 'qualified this reference', i.e. the method,
+         * The innermost "type body declaration" enclosing this "qualified this reference", i.e. the method,
          * type initializer or field initializer.
          */
         @Nullable TypeBodyDeclaration declaringTypeBodyDeclaration;
@@ -4237,13 +4237,13 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.8.2 'class literal'.
+     * Representation of a JLS7 15.8.2 "class literal".
      */
     public static final
     class ClassLiteral extends Rvalue {
 
         /**
-         * The type left of the '.class' suffix.
+         * The type left of the ".class" suffix.
          */
         public final Type type;
 
@@ -4274,8 +4274,8 @@ class Java {
         public final Lvalue lhs;
 
         /**
-         * The assignment operator; either the 'simple assignment operator ('=', JLS7 15.26.1) or one of the 'compound
-         * assignment operators (JLS7 15.26.2).
+         * The assignment operator, as an {@link String#intern() interned} string; either the "simple assignment
+         * operator" (JLS7 15.26.1), or one of the "compound assignment operators" (JLS7 15.26.2).
          */
         public final String operator;
 
@@ -4284,6 +4284,9 @@ class Java {
          */
         public final Rvalue rhs;
 
+        /**
+         * @param operator Must be an {@link String#intern() interned} string!
+         */
         public
         Assignment(Location location, Lvalue lhs, String operator, Rvalue rhs) {
             super(location);
@@ -4304,7 +4307,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.25 'conditional operation'.
+     * Representation of a JLS7 15.25 "conditional operation".
      */
     public static final
     class ConditionalExpression extends Rvalue {
@@ -4342,19 +4345,19 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.14.2 'postfix increment operation', a JLS7 15.14.3 'postfix decrement operation', a
-     * JLS7 15.15.1 'prefix increment operation' or a JLS7 15.15.2 'prefix decrement operation'.
+     * Representation of a JLS7 15.14.2 "postfix increment operation", a JLS7 15.14.3 "postfix decrement operation", a
+     * JLS7 15.15.1 "prefix increment operation" or a JLS7 15.15.2 "prefix decrement operation".
      */
     public static final
     class Crement extends Rvalue {
 
         /**
-         * Whether this operation is 'pre' (TRUE) or 'post' (FALSE).
+         * Whether this operation is "pre" (TRUE) or "post" (FALSE).
          */
         public final boolean pre;
 
         /**
-         * The operator; either "++" or "--".
+         * The operator; either {@code "++"} or {@code "--"}, as an {@link String#intern() interned} string.
          */
         public final String operator;
 
@@ -4363,6 +4366,10 @@ class Java {
          */
         public final Lvalue operand;
 
+        /**
+         * @param operator Must be either {@code "++"} or {@code "--"}, as an {@link String#intern() interned}
+         *                 string
+         */
         public
         Crement(Location location, String operator, Lvalue operand) {
             super(location);
@@ -4370,6 +4377,10 @@ class Java {
             this.operator = operator;
             this.operand  = operand;
         }
+
+        /**
+         * @param operator Must be either {@code "++"} or {@code "--"}, as an {@link String#intern() interned} string
+         */
         public
         Crement(Location location, Lvalue operand, String operator) {
             super(location);
@@ -4390,7 +4401,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.13 'array access expression'.
+     * Representation of a JLS7 15.13 "array access expression".
      */
     public static final
     class ArrayAccessExpression extends Lvalue {
@@ -4424,7 +4435,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.11 'field access expression', including the "array length" pseudo field access.
+     * Representation of a JLS7 15.11 "field access expression", including the "array length" pseudo field access.
      */
     public static final
     class FieldAccessExpression extends Lvalue {
@@ -4457,19 +4468,20 @@ class Java {
         accept(Visitor.LvalueVisitor<R, EX> visitor) throws EX { return visitor.visitFieldAccessExpression(this); }
 
         /**
-         * The {@link ArrayLength} or {@link FieldAccess} resulting from this 'field access expression'.
+         * The {@link ArrayLength} or {@link FieldAccess} resulting from this "field access expression".
          */
         @Nullable Rvalue value;
     }
 
     /**
-     * Representation of an JLS7 'superclass field access expression', e.g. "super.fld" and "Type.super.fld".
+     * Representation of an JLS7 "superclass field access expression", e.g. "{@code super.fld}" and "{@code
+     * Type.super.fld}".
      */
     public static final
     class SuperclassFieldAccessExpression extends Lvalue {
 
         /**
-         * The optional qualification before '.super.fld'.
+         * The optional qualification before "{@code .super.fld}".
          */
         @Nullable public final Type optionalQualification;
 
@@ -4510,14 +4522,15 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.15.3 'unary plus operator', a JLS7 15.15.4 'unary minus operator', a JLS7 15.15.5
-     * 'bitwise complement operator' or a JLS7 15.15.6 'logical complement operator'.
+     * Representation of a JLS7 15.15.3 "unary plus operator", a JLS7 15.15.4 "unary minus operator", a JLS7 15.15.5
+     * "bitwise complement operator" or a JLS7 15.15.6 "logical complement operator".
      */
     public static final
     class UnaryOperation extends BooleanRvalue {
 
         /**
-         * The operator (either "+", "-", "~" or "!").
+         * The operator; either {@code "+"}, {@code "-"}, {@code "~"} or {@code "!"}, as an {@link String#intern()
+         * interned} string.
          */
         public final String operator;
 
@@ -4526,6 +4539,10 @@ class Java {
          */
         public final Rvalue operand;
 
+        /**
+         * @param operator Either {@code "+"}, {@code "-"}, {@code "~"} or {@code "!"}; must be an {@link
+         *                 String#intern() interned} string!
+         */
         public
         UnaryOperation(Location location, String operator, Rvalue operand) {
             super(location);
@@ -4543,7 +4560,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.20.2 'type comparison operation'.
+     * Representation of a JLS7 15.20.2 "type comparison operation".
      */
     public static final
     class Instanceof extends Rvalue {
@@ -4583,32 +4600,32 @@ class Java {
      * </p>
      * <dl>
      *   <dt>||</dt>
-     *   <dd>JLS7 15.24 'conditional or operation'</dd>
+     *   <dd>JLS7 15.24 "conditional or operation"</dd>
      *   <dt>&amp;&amp;</dt>
-     *   <dd>JLS7 15.23 'conditional and operation'</dd>
+     *   <dd>JLS7 15.23 "conditional and operation"</dd>
      *   <dt>==</dt>
-     *   <dd>JLS7 15.21 'equality operation'</dd>
+     *   <dd>JLS7 15.21 "equality operation"</dd>
      *   <dt>!=</dt>
-     *   <dd>JLS7 15.22 'non-equality operation'</dd>
+     *   <dd>JLS7 15.22 "non-equality operation"</dd>
      *   <dt>&lt; &gt; &lt;= &gt;=</dt>
-     *   <dd>JLS7 15.20.1 'numerical comparison operations'</dd>
+     *   <dd>JLS7 15.20.1 "numerical comparison operations"</dd>
      * </dl>
      * <p>
      *   Operations with non-boolean result:
      * </p>
      * <dl>
      *   <dt>|</dt>
-     *   <dd>JLS7 15.22.1 'integer bitwise OR operation' and JLS7 15.22.2 'boolean logical OR operation'</dd>
+     *   <dd>JLS7 15.22.1 "integer bitwise OR operation" and JLS7 15.22.2 "boolean logical OR operation"</dd>
      *   <dt>^</dt>
-     *   <dd>JLS7 15.22.1 'integer bitwise XOR operation' and JLS7 15.22.2 'boolean logical XOR operation'</dd>
+     *   <dd>JLS7 15.22.1 "integer bitwise XOR operation" and JLS7 15.22.2 "boolean logical XOR operation"</dd>
      *   <dt>&amp;</dt>
-     *   <dd>JLS7 15.22.1 'integer bitwise AND operation' and JLS7 15.22.2 'boolean logical AND operation'</dd>
+     *   <dd>JLS7 15.22.1 "integer bitwise AND operation" and JLS7 15.22.2 "boolean logical AND operation"</dd>
      *   <dt>* / %</dt>
-     *   <dd>JLS7 15.17 'multiplicative operations'</dd>
+     *   <dd>JLS7 15.17 "multiplicative operations"</dd>
      *   <dt>+ -</dt>
-     *   <dd>JLS7 15.18 'additive operations'</dd>
+     *   <dd>JLS7 15.18 "additive operations"</dd>
      *   <dt>&lt;&lt; &gt;&gt; &gt;&gt;&gt;</dt>
-     *   <dd>JLS7 15.19 'shift operations'</dd>
+     *   <dd>JLS7 15.19 "shift operations"</dd>
      * </dl>
      */
     public static final
@@ -4620,9 +4637,11 @@ class Java {
         public final Rvalue lhs;
 
         /**
-         * The operator; one of thos described in {@link BinaryOperation}.
+         * The operator, as an {@link String#intern() interned} string.
+         *
+         * @see BinaryOperation
          */
-        public final String op;
+        public final String operator;
 
         /**
          * The right hand side operand.
@@ -4630,11 +4649,11 @@ class Java {
         public final Rvalue rhs;
 
         public
-        BinaryOperation(Location location, Rvalue lhs, String op, Rvalue rhs) {
+        BinaryOperation(Location location, Rvalue lhs, String operator, Rvalue rhs) {
             super(location);
-            this.lhs = lhs;
-            this.op  = op;
-            this.rhs = rhs;
+            this.lhs       = lhs;
+            this.operator  = operator;
+            this.rhs       = rhs;
         }
 
         // Compile time members.
@@ -4642,10 +4661,16 @@ class Java {
         // Implement "Atom".
 
         @Override public String
-        toString() { return this.lhs.toString() + ' ' + this.op + ' ' + this.rhs.toString(); }
+        toString() { return this.lhs.toString() + ' ' + this.operator + ' ' + this.rhs.toString(); }
 
         /**
-         * Returns an {@link Iterator} over a left-to-right sequence of {@link Java.Rvalue}s.
+         * Transforms this binary operation into an {@link Iterator} over a left-to-right sequence of {@link
+         * Java.Rvalue}s.
+         * <p>
+         *   That iterator produces two elements (the left-hand-side and the right-hand-side of this operation), or,
+         *   iff the left-hand-side of this operation is itself a binary operation with the same operator, then the
+         *   iterator produces the sequence of the <em>unrolled</em> operands.
+         * </p>
          */
         public Iterator<Rvalue>
         unrollLeftAssociation() {
@@ -4654,7 +4679,7 @@ class Java {
             for (;;) {
                 operands.add(bo.rhs);
                 Rvalue lhs = bo.lhs;
-                if (lhs instanceof BinaryOperation && ((BinaryOperation) lhs).op == this.op) {
+                if (lhs instanceof BinaryOperation && ((BinaryOperation) lhs).operator == this.operator) {
                     bo = (BinaryOperation) lhs;
                 } else {
                     operands.add(lhs);
@@ -4669,7 +4694,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.16 'cast expression'.
+     * Representation of a JLS7 15.16 "cast expression".
      */
     public static final
     class Cast extends Rvalue {
@@ -4703,7 +4728,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.8.5 'parenthesized expression'.
+     * Representation of a JLS7 15.8.5 "parenthesized expression".
      */
     public static final
     class ParenthesizedExpression extends Lvalue {
@@ -4719,7 +4744,7 @@ class Java {
             this.value = value;
         }
 
-        // Implement 'Atom'.
+        // Implement "Atom".
 
         @Override public String
         toString() { return '(' + this.value.toString() + ')'; }
@@ -4781,7 +4806,7 @@ class Java {
         accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitConstructorInvocation(this); }
 
         /**
-         * Invokes the '{@code visit...()}' method of {@link Visitor.ConstructorInvocationVisitor} for the concrete
+         * Invokes the "{@code visit...()}" method of {@link Visitor.ConstructorInvocationVisitor} for the concrete
          * {@link ConstructorInvocation}.
          */
         @Nullable public abstract <R, EX extends Throwable> R
@@ -4789,7 +4814,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 8.8.7.1. 'alternate constructor invocation'.
+     * Representation of a JLS7 8.8.7.1. "alternate constructor invocation".
      */
     public static final
     class AlternateConstructorInvocation extends ConstructorInvocation {
@@ -4808,14 +4833,14 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 8.8.7.1. 'superclass constructor invocation'.
+     * Representation of a JLS7 8.8.7.1. "superclass constructor invocation".
      */
     public static final
     class SuperConstructorInvocation extends ConstructorInvocation {
 
         /**
-         * The qualification for this 'qualified superclass constructor invocation', or {@code null} iff this is an
-         * 'unqualified superclass constructor invocation'.
+         * The qualification for this "qualified superclass constructor invocation", or {@code null} iff this is an
+         * "unqualified superclass constructor invocation".
          */
         @Nullable public final Rvalue optionalQualification;
 
@@ -4837,7 +4862,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.12 'method invocation expression'.
+     * Representation of a JLS7 15.12 "method invocation expression".
      */
     public static final
     class MethodInvocation extends Invocation {
@@ -4878,7 +4903,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.12.1.1.3 'superclass method invocation'.
+     * Representation of a JLS7 15.12.1.1.3 "superclass method invocation".
      */
     public static final
     class SuperclassMethodInvocation extends Invocation {
@@ -4922,13 +4947,13 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 'class instance creation expression'.
+     * Representation of a JLS7 "class instance creation expression".
      */
     public static final
     class NewClassInstance extends Rvalue {
 
         /**
-         * The qualification of this 'qualified class instance creation expression'.
+         * The qualification of this "qualified class instance creation expression".
          */
         @Nullable public final Rvalue optionalQualification;
 
@@ -4995,13 +5020,13 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.9 'anonymous class instance creation expression'.
+     * Representation of a JLS7 15.9 "anonymous class instance creation expression".
      */
     public static final
     class NewAnonymousClassInstance extends Rvalue {
 
         /**
-         * The qualification iff this a 'qualified anonymous class instance creation expression'.
+         * The qualification iff this a "qualified anonymous class instance creation expression".
          */
         @Nullable public final Rvalue optionalQualification;
 
@@ -5043,7 +5068,7 @@ class Java {
     }
 
     /**
-     * 'Artificial' operation for accessing the parameters of the synthetic constructor of an anonymous class.
+     * "Artificial" operation for accessing the parameters of the synthetic constructor of an anonymous class.
      */
     public static final
     class ParameterAccess extends Rvalue {
@@ -5069,7 +5094,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.10 'array creation expression'.
+     * Representation of a JLS7 15.10 "array creation expression".
      */
     public static final
     class NewArray extends Rvalue {
@@ -5127,7 +5152,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.10 'array creation expression'.
+     * Representation of a JLS7 15.10 "array creation expression".
      */
     public static final
     class NewInitializedArray extends Rvalue {
@@ -5178,7 +5203,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 10.6 'array initializer'.
+     * Representation of a JLS7 10.6 "array initializer".
      * <p>
      *   Allocates an array and initializes its members with (not necessarily constant) values.
      * </p>
@@ -5224,6 +5249,10 @@ class Java {
 
         /**
          * The text of the literal token, as in the source code.
+         * <p>
+         *   For {@code true}, {@code false} and {@code null}, this string value is guaranteed to be {@link
+         *   String#intern() interned}, so it can safely be reference-compared with other interned strings.
+         * </p>
          */
         public final String value;
 
@@ -5399,7 +5428,7 @@ class Java {
     }
 
     /**
-     * All local variables have a slot number; local variables that get written into the 'localvariabletable'
+     * All local variables have a slot number; local variables that get written into the "local variable table"
      * also have a start and end offset that defines the variable's extent in the bytecode. If the name is null,
      * or variable debugging is not on, then the variable won't be written into the localvariabletable and the
      * offsets can be ignored.
@@ -5439,12 +5468,12 @@ class Java {
         }
 
         /**
-         * @return The 'local variable index' associated with this local variable
+         * @return The "local variable index" associated with this local variable
          */
         public short getSlotIndex() { return this.slotIndex; }
 
         /**
-         * @param slotIndex The 'local variable index' to associate with this local variable
+         * @param slotIndex The "local variable index" to associate with this local variable
          */
         public void setSlotIndex(short slotIndex) { this.slotIndex = slotIndex; }
 
@@ -5539,7 +5568,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 4.5.1 'wildcard'.
+     * Representation of a JLS7 4.5.1 "wildcard".
      */
     public static
     class Wildcard implements TypeArgument {
@@ -5551,12 +5580,12 @@ class Java {
         public static final int BOUNDS_NONE = 0;
 
         /**
-         * Value for {@link #bounds} indicating that this wildcard has 'extends' bounds.
+         * Value for {@link #bounds} indicating that this wildcard has "extends" bounds.
          */
         public static final int BOUNDS_EXTENDS = 1;
 
         /**
-         * Value for {@link #bounds} indicating that this wildcard has 'super' bounds.
+         * Value for {@link #bounds} indicating that this wildcard has "super" bounds.
          */
         public static final int BOUNDS_SUPER = 2;
 

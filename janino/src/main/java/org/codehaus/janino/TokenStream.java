@@ -89,7 +89,7 @@ interface TokenStream {
     peekNextButOne(String suspected) throws CompileException, IOException;
 
     /**
-     * @return The next and also consumes it, or {@code null} iff the scanner is at end-of-input
+     * @return The next token, which it also consumes, or {@code null} iff the scanner is at end-of-input
      */
     Token
     read() throws CompileException, IOException;
@@ -116,7 +116,8 @@ interface TokenStream {
     /**
      * Verifies that the type of the next token is the <var>expected</var>, and consumes the token.
      *
-     * @return                  The value of the next token
+     * @return                  The value of the next token; an {@link String#intern() interned} String iff the token
+     *                          represents an identifier, {@code true}, {@code false}, {@code null}, or an operator
      * @throws CompileException The next token's type is not the <var>expected</var>
      */
     String

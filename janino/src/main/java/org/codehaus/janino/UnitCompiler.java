@@ -940,7 +940,8 @@ class UnitCompiler {
     private void
     compile2(InnerClassDeclaration icd) throws CompileException {
 
-        // Define a synthetic "this$..." field if there is an enclosing instance.
+        // Define a synthetic "this$n" field if there is an enclosing instance, where "n" designates the number of
+        // enclosing instances minus one.
         {
             List<TypeDeclaration> ocs     = UnitCompiler.getOuterClasses(icd);
             final int             nesting = ocs.size();
@@ -3695,15 +3696,15 @@ class UnitCompiler {
     private void
     compileBoolean2(BinaryOperation bo, CodeContext.Offset dst, boolean orientation) throws CompileException {
 
-        if (bo.op == "|" || bo.op == "^" || bo.op == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+        if (bo.operator == "|" || bo.operator == "^" || bo.operator == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
             this.compileBoolean2((Rvalue) bo, dst, orientation);
             return;
         }
 
-        if (bo.op == "||" || bo.op == "&&") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+        if (bo.operator == "||" || bo.operator == "&&") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             Object lhsCv = this.getConstantValue(bo.lhs);
             if (lhsCv instanceof Boolean) {
-                if (((Boolean) lhsCv).booleanValue() ^ bo.op == "||") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                if (((Boolean) lhsCv).booleanValue() ^ bo.operator == "||") { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
                     // "true && a", "false || a"
                     this.compileBoolean(
                         bo.rhs,
@@ -3723,7 +3724,7 @@ class UnitCompiler {
             }
             Object rhsCv = this.getConstantValue(bo.rhs);
             if (rhsCv instanceof Boolean) {
-                if (((Boolean) rhsCv).booleanValue() ^ bo.op == "||") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                if (((Boolean) rhsCv).booleanValue() ^ bo.operator == "||") { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
                     // "a && true", "a || false"
                     this.compileBoolean(
                         bo.lhs,
@@ -3743,7 +3744,7 @@ class UnitCompiler {
             }
 
             // SUPPRESS CHECKSTYLE StringLiteralEquality
-            if (bo.op == "||" ^ orientation == UnitCompiler.JUMP_IF_FALSE) {
+            if (bo.operator == "||" ^ orientation == UnitCompiler.JUMP_IF_FALSE) {
                 this.compileBoolean(bo.lhs, dst, UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE);
                 this.compileBoolean(bo.rhs, dst, UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE);
             } else {
@@ -3756,20 +3757,20 @@ class UnitCompiler {
         }
 
         if (
-            bo.op == "=="    // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == "!=" // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == "<=" // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == ">=" // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == "<"  // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == ">"  // SUPPRESS CHECKSTYLE StringLiteralEquality
+            bo.operator == "=="    // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == "!=" // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == "<=" // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == ">=" // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == "<"  // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == ">"  // SUPPRESS CHECKSTYLE StringLiteralEquality
         ) {
             int opIdx = (
-                bo.op == "==" ? 0 : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                bo.op == "!=" ? 1 : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                bo.op == "<"  ? 2 : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                bo.op == ">=" ? 3 : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                bo.op == ">"  ? 4 : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                bo.op == "<=" ? 5 : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == "==" ? 0 : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == "!=" ? 1 : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == "<"  ? 2 : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == ">=" ? 3 : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == ">"  ? 4 : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == "<=" ? 5 : // SUPPRESS CHECKSTYLE StringLiteralEquality
                 Integer.MIN_VALUE
             );
             if (orientation == UnitCompiler.JUMP_IF_FALSE) opIdx ^= 1;
@@ -3780,9 +3781,9 @@ class UnitCompiler {
                 boolean rhsIsNull = this.getConstantValue(bo.rhs) == null;
 
                 if (lhsIsNull || rhsIsNull) {
-                    if (bo.op != "==" && bo.op != "!=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                    if (bo.operator != "==" && bo.operator != "!=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
                         this.compileError(
-                            "Operator \"" + bo.op + "\" not allowed on operand \"null\"",
+                            "Operator \"" + bo.operator + "\" not allowed on operand \"null\"",
                             bo.getLocation()
                         );
                     }
@@ -3828,7 +3829,7 @@ class UnitCompiler {
                 this.getUnboxedType(lhsType).isPrimitiveNumeric()
                 && this.getUnboxedType(rhsType).isPrimitiveNumeric()
                 && !(
-                    (bo.op == "==" || bo.op == "!=") // SUPPRESS CHECKSTYLE StringLiteralEquality
+                    (bo.operator == "==" || bo.operator == "!=") // SUPPRESS CHECKSTYLE StringLiteralEquality
                     && !lhsType.isPrimitive()
                     && !rhsType.isPrimitive()
                 )
@@ -3842,7 +3843,7 @@ class UnitCompiler {
                     this.writeBranch(bo, Opcode.IFEQ + opIdx, dst);
                 } else
                 if (promotedType == IClass.FLOAT) {
-                    if (bo.op == ">" || bo.op == ">=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                    if (bo.operator == ">" || bo.operator == ">=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
                         this.writeOpcode(bo, Opcode.FCMPL);
                     } else {
                         this.writeOpcode(bo, Opcode.FCMPG);
@@ -3850,7 +3851,7 @@ class UnitCompiler {
                     this.writeBranch(bo, Opcode.IFEQ + opIdx, dst);
                 } else
                 if (promotedType == IClass.DOUBLE) {
-                    if (bo.op == ">" || bo.op == ">=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                    if (bo.operator == ">" || bo.operator == ">=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
                         this.writeOpcode(bo, Opcode.DCMPL);
                     } else {
                         this.writeOpcode(bo, Opcode.DCMPG);
@@ -3868,8 +3869,11 @@ class UnitCompiler {
                 (lhsType == IClass.BOOLEAN && this.getUnboxedType(rhsType) == IClass.BOOLEAN)
                 || (rhsType == IClass.BOOLEAN && this.getUnboxedType(lhsType) == IClass.BOOLEAN)
             ) {
-                if (bo.op != "==" && bo.op != "!=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-                    this.compileError("Operator \"" + bo.op + "\" not allowed on boolean operands", bo.getLocation());
+                if (bo.operator != "==" && bo.operator != "!=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                    this.compileError(
+                        "Operator \"" + bo.operator + "\" not allowed on boolean operands",
+                        bo.getLocation()
+                    );
                 }
                 IClassLoader icl = this.iClassLoader;
 
@@ -3895,8 +3899,8 @@ class UnitCompiler {
             // Reference comparison.
             // Note: Comparison with "null" is already handled above.
             if (!lhsType.isPrimitive() && !rhsType.isPrimitive()) {
-                if (bo.op != "==" && bo.op != "!=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-                    this.compileError("Operator \"" + bo.op + "\" not allowed on reference operands", bo.getLocation());
+                if (bo.operator != "==" && bo.operator != "!=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                    this.compileError("Operator \"" + bo.operator + "\" not allowed on reference operands", bo.getLocation()); // SUPPRESS CHECKSTYLE LineLength
                 }
                 if (
                     !this.isCastReferenceConvertible(lhsType, rhsType)
@@ -4299,7 +4303,7 @@ class UnitCompiler {
             new BinaryOperation(          // lhs
                 loc,                          // location
                 classDollarFieldAccess,       // lhs
-                "!=",                         // op
+                "!=",                         // operator
                 new NullLiteral(loc, "null")  // rhs
             ),
             classDollarFieldAccess,       // mhs
@@ -4553,6 +4557,9 @@ class UnitCompiler {
         this.crement(c, lv, c.operator);
     }
 
+    /**
+     * @param operator Must be either "++" or "--", as an @link {@link String#intern() interned} string
+     */
     private void
     crement(Locatable locatable, LocalVariable lv, String operator) {
         if (lv.getSlotIndex() > 255) {
@@ -4659,14 +4666,14 @@ class UnitCompiler {
     private IClass
     compileGet2(BinaryOperation bo) throws CompileException {
         if (
-            bo.op == "||"    // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == "&&" // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == "==" // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == "!=" // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == "<"  // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == ">"  // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == "<=" // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.op == ">=" // SUPPRESS CHECKSTYLE StringLiteralEquality
+            bo.operator == "||"    // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == "&&" // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == "==" // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == "!=" // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == "<"  // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == ">"  // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == "<=" // SUPPRESS CHECKSTYLE StringLiteralEquality
+            || bo.operator == ">=" // SUPPRESS CHECKSTYLE StringLiteralEquality
         ) {
             // Eventually calls "compileBoolean()".
             return this.compileGet2((BooleanRvalue) bo);
@@ -4677,7 +4684,7 @@ class UnitCompiler {
             bo,                         // locatable
             null,                       // type
             bo.unrollLeftAssociation(), // operands
-            bo.op                       // operator
+            bo.operator                 // operator
         );
     }
 
@@ -5333,13 +5340,17 @@ class UnitCompiler {
 
     @Nullable private Object
     getConstantValue2(UnaryOperation uo) throws CompileException {
-        if (uo.operator.equals("+")) return this.getConstantValue(uo.operand);
-        if (uo.operator.equals("-")) return this.getNegatedConstantValue(uo.operand);
-        if (uo.operator.equals("!")) {
+        if (uo.operator == "+") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+            return this.getConstantValue(uo.operand);
+        }
+        if (uo.operator == "-") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+            return this.getNegatedConstantValue(uo.operand);
+        }
+        if (uo.operator == "!") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             Object cv = this.getConstantValue(uo.operand);
             return (
-                cv == Boolean.TRUE ? Boolean.FALSE :
-                cv == Boolean.FALSE ? Boolean.TRUE :
+                cv == Boolean.TRUE  ? Boolean.FALSE :
+                cv == Boolean.FALSE ? Boolean.TRUE  :
                 UnitCompiler.NOT_CONSTANT
             );
         }
@@ -5365,16 +5376,16 @@ class UnitCompiler {
         // "|", "^", "&", "*", "/", "%", "+", "-", "==", "!=".
         if (
             // SUPPRESS CHECKSTYLE StringLiteralEquality:10
-            bo.op == "|"
-            || bo.op == "^"
-            || bo.op == "&"
-            || bo.op == "*"
-            || bo.op == "/"
-            || bo.op == "%"
-            || bo.op == "+"
-            || bo.op == "-"
-            || bo.op == "=="
-            || bo.op == "!="
+            bo.operator == "|"
+            || bo.operator == "^"
+            || bo.operator == "&"
+            || bo.operator == "*"
+            || bo.operator == "/"
+            || bo.operator == "%"
+            || bo.operator == "+"
+            || bo.operator == "-"
+            || bo.operator == "=="
+            || bo.operator == "!="
         ) {
 
             // Unroll the constant operands.
@@ -5395,7 +5406,7 @@ class UnitCompiler {
 
                 // String concatenation?
                 // SUPPRESS CHECKSTYLE StringLiteralEquality
-                if (bo.op == "+" && (lhs instanceof String || rhs instanceof String)) {
+                if (bo.operator == "+" && (lhs instanceof String || rhs instanceof String)) {
                     StringBuilder sb = new StringBuilder(lhs.toString()).append(rhs);
                     while (it.hasNext()) sb.append(it.next().toString());
                     return sb.toString();
@@ -5408,13 +5419,13 @@ class UnitCompiler {
                             double rhsD = ((Number) rhs).doubleValue();
                             lhs = (
                                 // SUPPRESS CHECKSTYLE StringLiteralEquality:7
-                                bo.op == "*" ? new Double(lhsD * rhsD) :
-                                bo.op == "/" ? new Double(lhsD / rhsD) :
-                                bo.op == "%" ? new Double(lhsD % rhsD) :
-                                bo.op == "+" ? new Double(lhsD + rhsD) :
-                                bo.op == "-" ? new Double(lhsD - rhsD) :
-                                bo.op == "==" ? Boolean.valueOf(lhsD == rhsD) :
-                                bo.op == "!=" ? Boolean.valueOf(lhsD != rhsD) :
+                                bo.operator == "*" ? new Double(lhsD * rhsD) :
+                                bo.operator == "/" ? new Double(lhsD / rhsD) :
+                                bo.operator == "%" ? new Double(lhsD % rhsD) :
+                                bo.operator == "+" ? new Double(lhsD + rhsD) :
+                                bo.operator == "-" ? new Double(lhsD - rhsD) :
+                                bo.operator == "==" ? Boolean.valueOf(lhsD == rhsD) :
+                                bo.operator == "!=" ? Boolean.valueOf(lhsD != rhsD) :
                                 UnitCompiler.NOT_CONSTANT
                             );
                             continue;
@@ -5424,13 +5435,13 @@ class UnitCompiler {
                             float rhsF = ((Number) rhs).floatValue();
                             lhs = (
                                 // SUPPRESS CHECKSTYLE StringLiteralEquality:7
-                                bo.op == "*" ? new Float(lhsF * rhsF) :
-                                bo.op == "/" ? new Float(lhsF / rhsF) :
-                                bo.op == "%" ? new Float(lhsF % rhsF) :
-                                bo.op == "+" ? new Float(lhsF + rhsF) :
-                                bo.op == "-" ? new Float(lhsF - rhsF) :
-                                bo.op == "==" ? Boolean.valueOf(lhsF == rhsF) :
-                                bo.op == "!=" ? Boolean.valueOf(lhsF != rhsF) :
+                                bo.operator == "*" ? new Float(lhsF * rhsF) :
+                                bo.operator == "/" ? new Float(lhsF / rhsF) :
+                                bo.operator == "%" ? new Float(lhsF % rhsF) :
+                                bo.operator == "+" ? new Float(lhsF + rhsF) :
+                                bo.operator == "-" ? new Float(lhsF - rhsF) :
+                                bo.operator == "==" ? Boolean.valueOf(lhsF == rhsF) :
+                                bo.operator == "!=" ? Boolean.valueOf(lhsF != rhsF) :
                                 UnitCompiler.NOT_CONSTANT
                             );
                             continue;
@@ -5440,16 +5451,16 @@ class UnitCompiler {
                             long rhsL = ((Number) rhs).longValue();
                             lhs = (
                                 // SUPPRESS CHECKSTYLE StringLiteralEquality:10
-                                bo.op == "|" ? new Long(lhsL | rhsL) :
-                                bo.op == "^" ? new Long(lhsL ^ rhsL) :
-                                bo.op == "&" ? new Long(lhsL & rhsL) :
-                                bo.op == "*" ? new Long(lhsL * rhsL) :
-                                bo.op == "/" ? new Long(lhsL / rhsL) :
-                                bo.op == "%" ? new Long(lhsL % rhsL) :
-                                bo.op == "+" ? new Long(lhsL + rhsL) :
-                                bo.op == "-" ? new Long(lhsL - rhsL) :
-                                bo.op == "==" ? Boolean.valueOf(lhsL == rhsL) :
-                                bo.op == "!=" ? Boolean.valueOf(lhsL != rhsL) :
+                                bo.operator == "|" ? new Long(lhsL | rhsL) :
+                                bo.operator == "^" ? new Long(lhsL ^ rhsL) :
+                                bo.operator == "&" ? new Long(lhsL & rhsL) :
+                                bo.operator == "*" ? new Long(lhsL * rhsL) :
+                                bo.operator == "/" ? new Long(lhsL / rhsL) :
+                                bo.operator == "%" ? new Long(lhsL % rhsL) :
+                                bo.operator == "+" ? new Long(lhsL + rhsL) :
+                                bo.operator == "-" ? new Long(lhsL - rhsL) :
+                                bo.operator == "==" ? Boolean.valueOf(lhsL == rhsL) :
+                                bo.operator == "!=" ? Boolean.valueOf(lhsL != rhsL) :
                                 UnitCompiler.NOT_CONSTANT
                             );
                             continue;
@@ -5462,16 +5473,16 @@ class UnitCompiler {
                             int rhsI = ((Number) rhs).intValue();
                             lhs = (
                                 // SUPPRESS CHECKSTYLE StringLiteralEquality:10
-                                bo.op == "|" ? new Integer(lhsI | rhsI) :
-                                bo.op == "^" ? new Integer(lhsI ^ rhsI) :
-                                bo.op == "&" ? new Integer(lhsI & rhsI) :
-                                bo.op == "*" ? new Integer(lhsI * rhsI) :
-                                bo.op == "/" ? new Integer(lhsI / rhsI) :
-                                bo.op == "%" ? new Integer(lhsI % rhsI) :
-                                bo.op == "+" ? new Integer(lhsI + rhsI) :
-                                bo.op == "-" ? new Integer(lhsI - rhsI) :
-                                bo.op == "==" ? Boolean.valueOf(lhsI == rhsI) :
-                                bo.op == "!=" ? Boolean.valueOf(lhsI != rhsI) :
+                                bo.operator == "|" ? new Integer(lhsI | rhsI) :
+                                bo.operator == "^" ? new Integer(lhsI ^ rhsI) :
+                                bo.operator == "&" ? new Integer(lhsI & rhsI) :
+                                bo.operator == "*" ? new Integer(lhsI * rhsI) :
+                                bo.operator == "/" ? new Integer(lhsI / rhsI) :
+                                bo.operator == "%" ? new Integer(lhsI % rhsI) :
+                                bo.operator == "+" ? new Integer(lhsI + rhsI) :
+                                bo.operator == "-" ? new Integer(lhsI - rhsI) :
+                                bo.operator == "==" ? Boolean.valueOf(lhsI == rhsI) :
+                                bo.operator == "!=" ? Boolean.valueOf(lhsI != rhsI) :
                                 UnitCompiler.NOT_CONSTANT
                             );
                             continue;
@@ -5489,8 +5500,8 @@ class UnitCompiler {
                     char lhsC = ((Character) lhs).charValue();
                     char rhsC = ((Character) rhs).charValue();
                     lhs = (
-                        bo.op == "==" ? Boolean.valueOf(lhsC == rhsC) : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                        bo.op == "!=" ? Boolean.valueOf(lhsC != rhsC) : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                        bo.operator == "==" ? Boolean.valueOf(lhsC == rhsC) : // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
+                        bo.operator == "!=" ? Boolean.valueOf(lhsC != rhsC) : // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
                         UnitCompiler.NOT_CONSTANT
                     );
                     continue;
@@ -5498,8 +5509,8 @@ class UnitCompiler {
 
                 if (lhs == null || rhs == null) {
                     lhs = (
-                        bo.op == "==" ? Boolean.valueOf(lhs == rhs) : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                        bo.op == "!=" ? Boolean.valueOf(lhs != rhs) : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                        bo.operator == "==" ? Boolean.valueOf(lhs == rhs) : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                        bo.operator == "!=" ? Boolean.valueOf(lhs != rhs) : // SUPPRESS CHECKSTYLE StringLiteralEquality
                         UnitCompiler.NOT_CONSTANT
                     );
                     continue;
@@ -5511,12 +5522,12 @@ class UnitCompiler {
         }
 
         // "&&" and "||" with constant LHS operand.
-        if (bo.op == "&&" || bo.op == "||") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+        if (bo.operator == "&&" || bo.operator == "||") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             Object lhsValue = this.getConstantValue(bo.lhs);
             if (lhsValue instanceof Boolean) {
                 boolean lhsBv = ((Boolean) lhsValue).booleanValue();
                 return (
-                    bo.op == "&&" // SUPPRESS CHECKSTYLE StringLiteralEquality
+                    bo.operator == "&&" // SUPPRESS CHECKSTYLE StringLiteralEquality
                     ? (lhsBv ? this.getConstantValue(bo.rhs) : Boolean.FALSE)
                     : (lhsBv ? Boolean.TRUE : this.getConstantValue(bo.rhs))
                 );
@@ -5601,6 +5612,9 @@ class UnitCompiler {
         return UnitCompiler.NOT_CONSTANT;
     }
 
+    /**
+     * @return An {@link Integer} or a {@link Long}
+     */
     @SuppressWarnings("static-method") private Object
     getConstantValue2(IntegerLiteral il) throws CompileException {
 
@@ -5661,6 +5675,9 @@ class UnitCompiler {
         }
     }
 
+    /**
+     * @return A {@link Float} or a {@link Double}
+     */
     @SuppressWarnings("static-method") private Object
     getConstantValue2(FloatingPointLiteral fpl) throws CompileException {
 
@@ -5739,14 +5756,14 @@ class UnitCompiler {
         return new Double(dv);
     }
 
-    @SuppressWarnings("static-method") private Object
+    @SuppressWarnings("static-method") private boolean
     getConstantValue2(BooleanLiteral bl) {
-        if (bl.value == "true")  return Boolean.TRUE;  // SUPPRESS CHECKSTYLE StringLiteralEquality
-        if (bl.value == "false") return Boolean.FALSE; // SUPPRESS CHECKSTYLE StringLiteralEquality
+        if (bl.value == "true")  return true;  // SUPPRESS CHECKSTYLE StringLiteralEquality
+        if (bl.value == "false") return false; // SUPPRESS CHECKSTYLE StringLiteralEquality
         throw new InternalCompilerException(bl.value);
     }
 
-    @SuppressWarnings("static-method") private Object
+    @SuppressWarnings("static-method") private char
     getConstantValue2(CharacterLiteral cl) throws CompileException {
 
         String v = cl.value;
@@ -5764,7 +5781,7 @@ class UnitCompiler {
         return Character.valueOf(v.charAt(0));
     }
 
-    @SuppressWarnings("static-method") private Object
+    @SuppressWarnings("static-method") private String
     getConstantValue2(StringLiteral sl) throws CompileException {
 
         String v = sl.value;
@@ -5860,8 +5877,8 @@ class UnitCompiler {
     @Nullable private Object
     getNegatedConstantValue2(UnaryOperation uo) throws CompileException {
         return (
-            uo.operator.equals("+") ? this.getNegatedConstantValue(uo.operand) :
-            uo.operator.equals("-") ? this.getConstantValue(uo.operand) :
+            uo.operator == "+" ? this.getNegatedConstantValue(uo.operand) : // SUPPRESS CHECKSTYLE StringLiteralEquality
+            uo.operator == "-" ? this.getConstantValue(uo.operand)        : // SUPPRESS CHECKSTYLE StringLiteralEquality
             UnitCompiler.NOT_CONSTANT
         );
     }
@@ -6672,17 +6689,17 @@ class UnitCompiler {
     getType2(BinaryOperation bo) throws CompileException {
         if (
             // SUPPRESS CHECKSTYLE StringLiteralEquality:8
-            bo.op == "||"
-            || bo.op == "&&"
-            || bo.op == "=="
-            || bo.op == "!="
-            || bo.op == "<"
-            || bo.op == ">"
-            || bo.op == "<="
-            || bo.op == ">="
+            bo.operator == "||"
+            || bo.operator == "&&"
+            || bo.operator == "=="
+            || bo.operator == "!="
+            || bo.operator == "<"
+            || bo.operator == ">"
+            || bo.operator == "<="
+            || bo.operator == ">="
         ) return IClass.BOOLEAN;
 
-        if (bo.op == "|" || bo.op == "^" || bo.op == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+        if (bo.operator == "|" || bo.operator == "^" || bo.operator == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
             IClass lhsType = this.getType(bo.lhs);
             return (
                 lhsType == IClass.BOOLEAN || lhsType == this.iClassLoader.TYPE_java_lang_Boolean
@@ -6691,42 +6708,43 @@ class UnitCompiler {
             );
         }
 
-        // SUPPRESS CHECKSTYLE StringLiteralEquality
-        if (bo.op == "*" || bo.op == "/" || bo.op == "%" || bo.op == "+" || bo.op == "-") {
+        if (bo.operator == "*" || bo.operator == "/" || bo.operator == "%" || bo.operator == "+" || bo.operator == "-") { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
             IClassLoader icl = this.iClassLoader;
 
             // Unroll the operands of this binary operation.
             Iterator<Rvalue> ops = bo.unrollLeftAssociation();
 
+            IClass lhsType = this.getType((Rvalue) ops.next());
+
             // Check the far left operand type.
-            IClass lhsType = this.getUnboxedType(this.getType((Rvalue) ops.next()));
-            if (bo.op == "+" && lhsType == icl.TYPE_java_lang_String) { // SUPPRESS CHECKSTYLE StringLiteralEquality
+            if (bo.operator == "+" && lhsType == icl.TYPE_java_lang_String) { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
                 return icl.TYPE_java_lang_String;
             }
 
             // Determine the expression type.
+            lhsType = this.getUnboxedType(lhsType);
             do {
                 IClass rhsType = this.getUnboxedType(this.getType((Rvalue) ops.next()));
-                if (bo.op == "+" && rhsType == icl.TYPE_java_lang_String) { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                if (bo.operator == "+" && rhsType == icl.TYPE_java_lang_String) { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
                     return icl.TYPE_java_lang_String;
                 }
                 lhsType = this.binaryNumericPromotionType(bo, lhsType, rhsType);
             } while (ops.hasNext());
+
             return lhsType;
         }
 
-        if (bo.op == "<<"  || bo.op == ">>"  || bo.op == ">>>") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+        if (bo.operator == "<<"  || bo.operator == ">>"  || bo.operator == ">>>") { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
             IClass lhsType = this.getType(bo.lhs);
             return this.unaryNumericPromotionType(bo, lhsType);
         }
 
-        this.compileError("Unexpected operator \"" + bo.op + "\"", bo.getLocation());
+        this.compileError("Unexpected operator \"" + bo.operator + "\"", bo.getLocation());
         return this.iClassLoader.TYPE_java_lang_Object;
     }
 
     /**
-     * @return Iff <var>type</var> is a primitive wrapper type, the unwrapped <var>type</var>, otherwise
-     *         <var>type</var>
+     * @return The <var>type</var>, or, iff <var>type</var> is a primitive wrapper type, the unwrapped <var>type</var>
      */
     private IClass
     getUnboxedType(IClass type) {
@@ -9727,7 +9745,7 @@ class UnitCompiler {
     /**
      * Returns a list consisting of the given <var>inner</var> class and all its enclosing (outer) classes.
      *
-     * @return {@link List} of {@link TypeDeclaration}
+     * @return {@link List} of {@link TypeDeclaration}; has length one iff <var>inner</var> has no enclosing instance
      */
     private static List<TypeDeclaration>
     getOuterClasses(TypeDeclaration inner) {

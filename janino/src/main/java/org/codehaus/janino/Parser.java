@@ -2304,7 +2304,7 @@ class Parser {
         ) != -1) {
             final Lvalue lhs      = a.toLvalueOrCompileException();
             Location     location = this.location();
-            String       operator = this.read(TokenType.OPERATOR);
+            String       operator = this.read(TokenType.OPERATOR); // An interned string!
             final Rvalue rhs      = this.parseAssignmentExpression().toRvalueOrCompileException();
             return new Assignment(location, lhs, operator, rhs);
         }
@@ -2449,7 +2449,7 @@ class Parser {
             a = new BinaryOperation(
                 this.location(),                                              // location
                 a.toRvalueOrCompileException(),                               // lhs
-                this.read().value,                                            // op
+                this.read().value,                                            // operator
                 this.parseRelationalExpression().toRvalueOrCompileException() // rhs
             );
         }
@@ -2491,11 +2491,11 @@ class Parser {
                     );
                 }
 
-                String op = this.read().value;
+                String operator = this.read().value;
 
                 Atom rhs = this.parseShiftExpression();
 
-                if ("<".equals(op) && a instanceof Java.AmbiguousName) {
+                if ("<".equals(operator) && a instanceof Java.AmbiguousName) {
 
                     if (this.peek("<", ">", ",") != -1) {
                         final String[] identifiers = ((Java.AmbiguousName) a).identifiers;
@@ -2528,7 +2528,7 @@ class Parser {
                 a = new BinaryOperation(
                     this.location(),                 // location
                     a.toRvalueOrCompileException(),  // lhs
-                    op,                              // op
+                    operator,                        // operator
                     rhs.toRvalueOrCompileException() // rhs
                 );
             } else {
@@ -2551,7 +2551,7 @@ class Parser {
             a = new BinaryOperation(
                 this.location(),                                            // location
                 a.toRvalueOrCompileException(),                             // lhs
-                this.read().value,                                          // op
+                this.read().value,                                          // operator
                 this.parseAdditiveExpression().toRvalueOrCompileException() // rhs
             );
         }
@@ -2572,7 +2572,7 @@ class Parser {
             a = new BinaryOperation(
                 this.location(),                                                  // location
                 a.toRvalueOrCompileException(),                                   // lhs
-                this.read().value,                                                // op
+                this.read().value,                                                // operator
                 this.parseMultiplicativeExpression().toRvalueOrCompileException() // rhs
             );
         }
@@ -2593,7 +2593,7 @@ class Parser {
             a = new BinaryOperation(
                 this.location(),                                         // location
                 a.toRvalueOrCompileException(),                          // lhs
-                this.read().value,                                       // op
+                this.read().value,                                       // operator
                 this.parseUnaryExpression().toRvalueOrCompileException() // rhs
             );
         }
