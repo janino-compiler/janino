@@ -54,7 +54,7 @@ import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
 public
 class CodeContext {
 
-    private  static final Logger LOGGER = Logger.getLogger(CodeContext.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CodeContext.class.getName());
 
     private static final int     INITIAL_SIZE   = 128;
     private static final byte    UNEXAMINED     = -1;
@@ -1302,7 +1302,16 @@ class CodeContext {
     }
 
     /**
-     * A class that implements an insertion point into a "Code" attribute.
+     * Represents an offset into a "Code" attribute where bytes will be inserted.
+     * <p>
+     *   At any given time, a {@link CodeContext} has one "current inserter", where all the {@link
+     *   CodeContext#write(short, byte)} methods insert bytes. Initially (and most of the time active) is the "default
+     *   inserter", which appends bytes at the end of the "Code" attribute.
+     * </p>
+     * <p>
+     *   The "current inserter" can be changed and restored with {@link CodeContext#pushInserter(Inserter)} and {@link
+     *   CodeContext#popInserter().
+     * </p>
      */
     public
     class Inserter extends Offset {
@@ -1310,7 +1319,7 @@ class CodeContext {
     }
 
     /**
-     * An {@link Offset} who#s sole purpose is to later create a 'LneNumberTable' attribute.
+     * An {@link Offset} who#s sole purpose is to later create a "LineNumberTable" attribute.
      */
     public
     class LineNumberOffset extends Offset {
@@ -1371,26 +1380,26 @@ class CodeContext {
 
         if (size == 0) return; // Short circuit.
 
-        // Shift down the bytecode past 'to'.
+        // Shift down the bytecode past "to".
         System.arraycopy(this.code, to.offset, this.code, from.offset, this.end.offset - to.offset);
 
-        // Invalidate all offsets between 'from' and 'to'.
-        // Remove all relocatables that originate between 'from' and 'to'.
+        // Invalidate all offsets between "from" and "to".
+        // Remove all relocatables that originate between "from" and "to".
         Set<Offset> invalidOffsets = new HashSet<Offset>();
         {
             Offset o = from.next;
             assert o != null;
 
-            for (; o != to;) {
+            while (o != to) {
                 assert o != null;
 
                 invalidOffsets.add(o);
 
                 // Invalidate the offset for fast failure.
                 final Offset n = o.next;
-                o.offset    = -77;
-                o.prev      = null;
-                o.next      = null;
+                o.offset = -77;
+                o.prev   = null;
+                o.next   = null;
 
                 o = n;
                 assert o != null;
