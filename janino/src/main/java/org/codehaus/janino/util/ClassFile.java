@@ -2509,6 +2509,9 @@ class ClassFile implements Annotatable {
              */
             public final short startPC, lineNumber;
 
+            /**
+             * @param lineNumber 1...65535
+             */
             public
             Entry(short startPc, short lineNumber) {
                 this.startPC    = startPc;
