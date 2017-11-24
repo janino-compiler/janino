@@ -10358,6 +10358,10 @@ class UnitCompiler {
                 this.writeOpcode(locatable, Opcode.BIPUSH);
                 this.writeByte((byte) iv);
             } else
+            if (iv >= Short.MIN_VALUE && iv <= Short.MAX_VALUE) {
+                this.writeOpcode(locatable, Opcode.SIPUSH);
+                this.writeShort((short) iv);
+            } else
             {
                 this.writeLdc(locatable, this.addConstantIntegerInfo(iv));
             }
