@@ -3233,7 +3233,7 @@ class Java {
             if (x != 0) {
                 CodeContext ca = this.getCodeContext();
                 ca.pushInserter(this);
-                ca.makeSpace((short) -1, 4 - x);
+                ca.makeSpace(-1, 4 - x);
                 ca.popInserter();
             }
         }

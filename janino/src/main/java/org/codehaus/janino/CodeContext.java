@@ -203,9 +203,7 @@ class CodeContext {
     }
 
     /**
-     * @param dos
      * @param lineNumberTableAttributeNameIndex 0 == don't generate a "LineNumberTable" attribute
-     * @throws IOException
      */
     protected void
     storeCodeAttributeBody(
@@ -238,10 +236,9 @@ class CodeContext {
                         throw new InternalCompilerException("LineNumberTable entry offset out of range");
                     }
 
-                    int lineNumber = ((LineNumberOffset) o).lineNumber;
-                    if (lineNumber > 0xffff) lineNumber = 0xffff;
+                    short lineNumber = ((LineNumberOffset) o).lineNumber;
 
-                    lnt.add(new ClassFile.LineNumberTableAttribute.Entry((short) offset, (short) lineNumber));
+                    lnt.add(new ClassFile.LineNumberTableAttribute.Entry((short) offset, lineNumber));
                 }
             }
             ClassFile.LineNumberTableAttribute.Entry[] lnte = (ClassFile.LineNumberTableAttribute.Entry[]) lnt.toArray(
@@ -394,7 +391,7 @@ class CodeContext {
 
             // Check current bytecode offset.
             if (offset < 0 || offset >= codeSize) {
-                throw new InternalCompilerException(functionName + ": Offset out of range");
+                throw new InternalCompilerException(functionName + ": Offset " + offset + " is out of range");
             }
 
             // Have we hit an area that has already been analyzed?
@@ -846,12 +843,11 @@ class CodeContext {
      * @param b
      */
     public void
-    write(short lineNumber, byte[] b) {
+    write(int lineNumber, byte[] b) {
+
         if (b.length == 0) return;
 
-        int ico = this.currentInserter.offset;
-        this.makeSpace(lineNumber, b.length);
-        System.arraycopy(b, 0, this.code, ico, b.length);
+        System.arraycopy(b, 0, this.code, this.makeSpace(lineNumber, b.length), b.length);
     }
 
     /**
@@ -864,10 +860,12 @@ class CodeContext {
      * @param b1
      */
     public void
-    write(short lineNumber, byte b1) {
-        int ico = this.currentInserter.offset;
-        this.makeSpace(lineNumber, 1);
-        this.code[ico] = b1;
+    write(int lineNumber, byte b1) {
+        int o = this.makeSpace(lineNumber, 1);
+        if (o < 0 || o >= this.code.length) {
+            System.currentTimeMillis(); // TODO TMP
+        }
+        this.code[o] = b1;
     }
 
     /**
@@ -877,15 +875,14 @@ class CodeContext {
      * </p>
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
-     * @param b1
-     * @param b2
      */
     public void
-    write(short lineNumber, byte b1, byte b2) {
-        int ico = this.currentInserter.offset;
-        this.makeSpace(lineNumber, 2);
-        this.code[ico++] = b1;
-        this.code[ico]   = b2;
+    write(int lineNumber, byte b1, byte b2) {
+
+        int o = this.makeSpace(lineNumber, 2);
+
+        this.code[o++] = b1;
+        this.code[o]   = b2;
     }
 
     /**
@@ -895,17 +892,15 @@ class CodeContext {
      * </p>
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
-     * @param b1
-     * @param b2
-     * @param b3
      */
     public void
-    write(short lineNumber, byte b1, byte b2, byte b3) {
-        int ico = this.currentInserter.offset;
-        this.makeSpace(lineNumber, 3);
-        this.code[ico++] = b1;
-        this.code[ico++] = b2;
-        this.code[ico]   = b3;
+    write(int lineNumber, byte b1, byte b2, byte b3) {
+
+        int o = this.makeSpace(lineNumber, 3);
+
+        this.code[o++] = b1;
+        this.code[o++] = b2;
+        this.code[o]   = b3;
     }
 
     /**
@@ -915,44 +910,56 @@ class CodeContext {
      * </p>
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
-     * @param b1
-     * @param b2
-     * @param b3
-     * @param b4
      */
     public void
-    write(short lineNumber, byte b1, byte b2, byte b3, byte b4) {
-        int ico = this.currentInserter.offset;
-        this.makeSpace(lineNumber, 4);
-        this.code[ico++] = b1;
-        this.code[ico++] = b2;
-        this.code[ico++] = b3;
-        this.code[ico]   = b4;
+    write(int lineNumber, byte b1, byte b2, byte b3, byte b4) {
+
+        int o = this.makeSpace(lineNumber, 4);
+
+        this.code[o++] = b1;
+        this.code[o++] = b2;
+        this.code[o++] = b3;
+        this.code[o]   = b4;
     }
 
     /**
-     * Adds space for <var>size</var> bytes at current offset. Creates {@link LineNumberOffset}s as necessary.
+     * Inserts <var>size</var> NUL bytes at the current inserter's offset, advances the current inserter's offset by
+     * <var>size</var>, creates {@link LineNumberOffset}s as necessary, and returns the current inserter's original
+     * offset (the offset of the first NUL byte that was inserted).
+     * <p>
+     *   Because the class file format does not support line numbers greater than 65535, these are treated as 65535.
+     * </p>
      *
-     * @param lineNumber The line number that corresponds to the byte code, or -1
-     * @param size       The size in bytes to inject
+     * @param lineNumber -1 indicates that no particular line in the source code corresponds to this offset
+     * @param size       The number of NUL bytes to inject
+     * @return           The offset of the first inserted byte
      */
-    public void
-    makeSpace(short lineNumber, int size) {
-        if (size == 0) return;
+    public int
+    makeSpace(int lineNumber, final int size) {
+
+        final int cio = this.currentInserter.offset;
+
+        if (size == 0) return cio;
 
         INSERT_LINE_NUMBER_OFFSET:
         if (lineNumber != -1) {
-            Offset o;
-            for (o = this.currentInserter.prev; o != this.beginning; o = o.prev) {
+
+            if (lineNumber > 0xffff) lineNumber = 0xffff;
+
+            // Find out whether the line number is different from the line number of the preceeding insertion,
+            // and, if so, insert a LineNumberOffset object, which will later lead to a LineNumberTable entry.
+            for (Offset o = this.currentInserter.prev; o != this.beginning; o = o.prev) {
                 assert o != null;
                 if (o instanceof LineNumberOffset) {
-                    if (((LineNumberOffset) o).lineNumber == lineNumber) break INSERT_LINE_NUMBER_OFFSET;
+                    if ((((LineNumberOffset) o).lineNumber & 0xffff) == lineNumber) {
+                        break INSERT_LINE_NUMBER_OFFSET;
+                    }
                     break;
                 }
             }
 
             // Insert a LineNumberOffset _before_ the current inserter.
-            LineNumberOffset lno = new LineNumberOffset(this.currentInserter.offset, lineNumber);
+            LineNumberOffset lno = new LineNumberOffset(cio, (short) lineNumber);
 
             Offset cip = this.currentInserter.prev;
             assert cip != null;
@@ -965,11 +972,11 @@ class CodeContext {
             this.currentInserter.prev = lno;
         }
 
-        int ico = this.currentInserter.offset;
         if (this.end.offset + size <= this.code.length) {
+
             // Optimization to avoid a trivial method call in the common case
-            if (ico != this.end.offset) {
-                System.arraycopy(this.code, ico, this.code, ico + size, this.end.offset - ico);
+            if (cio != this.end.offset) {
+                System.arraycopy(this.code, cio, this.code, cio + size, this.end.offset - cio);
             }
         } else {
             byte[] oldCode = this.code;
@@ -985,24 +992,26 @@ class CodeContext {
                 );
             }
             this.code = new byte[newSize];
-            System.arraycopy(oldCode, 0, this.code, 0, ico);
-            System.arraycopy(oldCode, ico, this.code, ico + size, this.end.offset - ico);
+            System.arraycopy(oldCode, 0, this.code, 0, cio);
+            System.arraycopy(oldCode, cio, this.code, cio + size, this.end.offset - cio);
         }
-        Arrays.fill(this.code, ico, ico + size, (byte) 0);
+        Arrays.fill(this.code, cio, cio + size, (byte) 0);
         for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += size;
+
+        return cio;
     }
 
     /**
      * @param lineNumber The line number that corresponds to the byte code, or -1
      */
     public void
-    writeShort(short lineNumber, int v) { this.write(lineNumber, (byte) (v >> 8), (byte) v); }
+    writeShort(int lineNumber, int v) { this.write(lineNumber, (byte) (v >> 8), (byte) v); }
 
     /**
      * @param lineNumber The line number that corresponds to the byte code, or -1
      */
     public void
-    writeBranch(short lineNumber, int opcode, final Offset dst) {
+    writeBranch(int lineNumber, int opcode, final Offset dst) {
         this.relocatables.add(new Branch(opcode, dst));
         this.write(lineNumber, (byte) opcode, (byte) -1, (byte) -1);
     }
@@ -1038,7 +1047,7 @@ class CodeContext {
                     // promotion to a wide instruction only requires 2 extra bytes
                     // everything else requires a new GOTO_W instruction after a negated if
                     CodeContext.this.makeSpace(
-                        (short) -1,
+                        -1,
                         this.opcode == Opcode.GOTO ? 2 : this.opcode == Opcode.JSR ? 2 : 5
                     );
                 }
@@ -1130,9 +1139,9 @@ class CodeContext {
      * Writes a four-byte offset (as it is used in TABLESWITCH and LOOKUPSWITCH) into this code context.
      */
     public void
-    writeOffset(short lineNumber, Offset src, final Offset dst) {
+    writeOffset(int lineNumber, Offset src, final Offset dst) {
         this.relocatables.add(new OffsetBranch(this.newOffset(), src, dst));
-        this.write(lineNumber, (byte) -1, (byte) -1, (byte) -1, (byte) -1);
+        this.makeSpace(lineNumber, 4);
     }
 
     private
@@ -1302,16 +1311,7 @@ class CodeContext {
     }
 
     /**
-     * Represents an offset into a "Code" attribute where bytes will be inserted.
-     * <p>
-     *   At any given time, a {@link CodeContext} has one "current inserter", where all the {@link
-     *   CodeContext#write(short, byte)} methods insert bytes. Initially (and most of the time active) is the "default
-     *   inserter", which appends bytes at the end of the "Code" attribute.
-     * </p>
-     * <p>
-     *   The "current inserter" can be changed and restored with {@link CodeContext#pushInserter(Inserter)} and {@link
-     *   CodeContext#popInserter().
-     * </p>
+     * A class that implements an insertion point into a "Code" attribute.
      */
     public
     class Inserter extends Offset {
@@ -1319,14 +1319,18 @@ class CodeContext {
     }
 
     /**
-     * An {@link Offset} who#s sole purpose is to later create a "LineNumberTable" attribute.
+     * An {@link Offset} who's sole purpose is to later create a 'LineNumberTable' attribute.
      */
     public
     class LineNumberOffset extends Offset {
-        private final int lineNumber;
 
+        private final short lineNumber;
+
+        /**
+         * @param lineNumber 1...65535
+         */
         public
-        LineNumberOffset(int offset, int lineNumber) {
+        LineNumberOffset(int offset, short lineNumber) {
             this.lineNumber = lineNumber;
             this.offset     = offset;
         }
@@ -1390,16 +1394,16 @@ class CodeContext {
             Offset o = from.next;
             assert o != null;
 
-            while (o != to) {
+            for (; o != to;) {
                 assert o != null;
 
                 invalidOffsets.add(o);
 
                 // Invalidate the offset for fast failure.
                 final Offset n = o.next;
-                o.offset = -77;
-                o.prev   = null;
-                o.next   = null;
+                o.offset    = -77;
+                o.prev      = null;
+                o.next      = null;
 
                 o = n;
                 assert o != null;

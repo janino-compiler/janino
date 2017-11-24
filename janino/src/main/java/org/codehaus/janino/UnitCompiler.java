@@ -358,7 +358,7 @@ class UnitCompiler {
                 } catch (ClassFileException cfe) {
                     throw new CompileException(cfe.getMessage(), pmtd.getLocation(), cfe);
                 } catch (RuntimeException re) {
-                    throw new RuntimeException("Compiling \"" + pmtd + "\": " + re.getMessage(), re);
+                    throw new InternalCompilerException("Compiling \"" + pmtd + "\": " + re.getMessage(), re);
                 }
             }
 
@@ -3103,7 +3103,7 @@ class UnitCompiler {
             try {
                 codeContext.flowAnalysis(fd.toString());
             } catch (RuntimeException re) {
-                throw new RuntimeException("Compiling \"" + fd + "\"; " + re.getMessage(), re);
+                throw new InternalCompilerException("Compiling \"" + fd + "\"; " + re.getMessage(), re);
             }
         }
 
@@ -10358,6 +10358,10 @@ class UnitCompiler {
                 this.writeOpcode(locatable, Opcode.BIPUSH);
                 this.writeByte((byte) iv);
             } else
+            if (iv >= Short.MIN_VALUE && iv <= Short.MAX_VALUE) {
+                this.writeOpcode(locatable, Opcode.SIPUSH);
+                this.writeShort((short) iv);
+            } else
             {
                 this.writeLdc(locatable, this.addConstantIntegerInfo(iv));
             }
@@ -11878,7 +11882,7 @@ class UnitCompiler {
         if (v > Byte.MAX_VALUE - Byte.MIN_VALUE) {
             throw new InternalCompilerException("Byte value out of legal range");
         }
-        this.getCodeContext().write((short) -1, (byte) v);
+        this.getCodeContext().write(-1, (byte) v);
     }
     private void
     writeShort(int v) {
@@ -11889,25 +11893,22 @@ class UnitCompiler {
     }
     private void
     writeInt(int v) {
-        this.getCodeContext().write((short) -1, (byte) (v >> 24), (byte) (v >> 16), (byte) (v >> 8), (byte) v);
+        this.getCodeContext().write(-1, (byte) (v >> 24), (byte) (v >> 16), (byte) (v >> 8), (byte) v);
     }
 
     private void
     writeOpcode(Locatable locatable, int opcode) {
-        int lineNumber = locatable.getLocation().getLineNumber();
-        this.getCodeContext().write((short) Math.min(lineNumber, 0xffff), (byte) opcode);
+        this.getCodeContext().write(locatable.getLocation().getLineNumber(), (byte) opcode);
     }
 
     private void
     writeOpcodes(Locatable locatable, byte[] opcodes) {
-        int lineNumber = locatable.getLocation().getLineNumber();
-        this.getCodeContext().write((short) Math.min(lineNumber, 0xffff), opcodes);
+        this.getCodeContext().write(locatable.getLocation().getLineNumber(), opcodes);
     }
 
     private void
     writeBranch(Locatable locatable, int opcode, final CodeContext.Offset dst) {
-        int lineNumber = locatable.getLocation().getLineNumber();
-        this.getCodeContext().writeBranch((short) Math.min(lineNumber, 0xffff), opcode, dst);
+        this.getCodeContext().writeBranch(locatable.getLocation().getLineNumber(), opcode, dst);
     }
 
     private void
@@ -11920,22 +11921,22 @@ class UnitCompiler {
     private void
     writeConstantClassInfo(String descriptor) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort((short) -1, ca.getClassFile().addConstantClassInfo(descriptor));
+        ca.writeShort(-1, ca.getClassFile().addConstantClassInfo(descriptor));
     }
     private void
     writeConstantFieldrefInfo(String classFd, String fieldName, String fieldFd) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort((short) -1, ca.getClassFile().addConstantFieldrefInfo(classFd, fieldName, fieldFd));
+        ca.writeShort(-1, ca.getClassFile().addConstantFieldrefInfo(classFd, fieldName, fieldFd));
     }
     private void
     writeConstantMethodrefInfo(String classFd, String methodName, String methodMd) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort((short) -1, ca.getClassFile().addConstantMethodrefInfo(classFd, methodName, methodMd));
+        ca.writeShort(-1, ca.getClassFile().addConstantMethodrefInfo(classFd, methodName, methodMd));
     }
     private void
     writeConstantInterfaceMethodrefInfo(String classFd, String methodName, String methodMd) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort((short) -1, ca.getClassFile().addConstantInterfaceMethodrefInfo(classFd, methodName, methodMd));
+        ca.writeShort(-1, ca.getClassFile().addConstantInterfaceMethodrefInfo(classFd, methodName, methodMd));
     }
 /* UNUSED
     private void writeConstantStringInfo(String value) {
@@ -11967,12 +11968,12 @@ class UnitCompiler {
     private void
     writeConstantLongInfo(long value) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort((short) -1, ca.getClassFile().addConstantLongInfo(value));
+        ca.writeShort(-1, ca.getClassFile().addConstantLongInfo(value));
     }
     private void
     writeConstantDoubleInfo(double value) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort((short) -1, ca.getClassFile().addConstantDoubleInfo(value));
+        ca.writeShort(-1, ca.getClassFile().addConstantDoubleInfo(value));
     }
 
     private CodeContext.Offset
