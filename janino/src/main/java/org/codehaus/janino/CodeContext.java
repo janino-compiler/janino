@@ -846,7 +846,9 @@ class CodeContext {
 
         if (b.length == 0) return;
 
-        System.arraycopy(b, 0, this.code, this.makeSpace(lineNumber, b.length), b.length);
+        // CAVEAT: "makeSpace()" may change "this.code", so make sure to call "makeSpace()" _before_ using "this.code"!
+        int o = this.makeSpace(lineNumber, b.length);
+        System.arraycopy(b, 0, this.code, o, b.length);
     }
 
     /**
@@ -860,7 +862,10 @@ class CodeContext {
      */
     public void
     write(int lineNumber, byte b1) {
-        this.code[this.makeSpace(lineNumber, 1)] = b1;
+
+        // CAVEAT: "makeSpace()" may change "this.code", so make sure to call "makeSpace()" _before_ using "this.code"!
+        int o = this.makeSpace(lineNumber, 1);
+        this.code[o] = b1;
     }
 
     /**
