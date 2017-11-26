@@ -47,7 +47,7 @@ import org.codehaus.janino.util.resource.ResourceFinder;
  * A {@link org.codehaus.janino.JavaSourceClassLoader} that uses a resource storage provided by the application to
  * cache compiled classes and thus saving unnecessary recompilations.
  * <p>
- *   The application provides access to the resource storeage through a pair of a {@link
+ *   The application provides access to the resource storage through a pair of a {@link
  *   org.codehaus.janino.util.resource.ResourceFinder} and a {@link org.codehaus.janino.util.resource.ResourceCreator}
  *   (see {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)}.
  * </p>

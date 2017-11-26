@@ -93,7 +93,7 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
         // Determine the class path.
         File[] classPath = AntCompilerAdapter.pathToFiles(this.compileClasspath, new File[] { new File(".") });
 
-        // Determine the ext dirs.
+        // Determine the ext directories.
         @Nullable File[] optionalExtDirs = AntCompilerAdapter.pathToFiles(this.extdirs);
 
         // Determine the boot class path
@@ -102,7 +102,7 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
         // Determine the encoding.
         @Nullable String optionalCharacterEncoding = this.encoding;
 
-        // Determine verbosity.
+        // Whether to use verbose output.
         boolean verbose = this.verbose;
 
         // Determine debugging information.

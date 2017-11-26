@@ -2096,7 +2096,7 @@ class UnitCompiler {
         } else
         {
 
-            // The case label values are not 'consecutive enough', so use a LOOKUPSWOTCH.
+            // The case label values are not 'consecutive enough', so use a LOOKUPSWITCH.
             this.writeOpcode(ss, Opcode.LOOKUPSWITCH);
             new Padder(this.getCodeContext()).set();
             this.writeOffset(switchOffset, defaultLabelOffset);
@@ -5116,7 +5116,7 @@ class UnitCompiler {
             }
 
             // Adjust if needed.
-            // TODO: Not doing this now because we don't need vararg-annonymous class (yet).
+            // TODO: Not doing this now because we don't need vararg-anonymous class (yet).
 
 //            Rvalue[] adjustedArgs = null;
 //            final int paramsTypeLength = iConstructor.getParameterTypes().length;
@@ -5639,7 +5639,7 @@ class UnitCompiler {
         }
 
         // BinaryIntegerLiteral (JLS8, section 3.10.1)?
-        if (v.startsWith("0b") || v.startsWith("0X")) {
+        if (v.startsWith("0b") || v.startsWith("0B")) {
 
             // Cannot use "Integer/Long.valueOf(v, 2)" here because binary literals are UNSIGNED.
             return (
@@ -7008,7 +7008,7 @@ class UnitCompiler {
         // PUBLIC members are always accessible.
         if (memberAccess == Access.PUBLIC) return null;
 
-        // At this point, the member is DEFAULT, PROECTEDED or PRIVATE accessible.
+        // At this point, the member is DEFAULT, PROTECTED or PRIVATE accessible.
 
         // Determine the class declaring the context.
         IClass iClassDeclaringContext = null;
@@ -7229,7 +7229,7 @@ class UnitCompiler {
     void
     initializeInstanceVariablesAndInvokeInstanceInitializers(ConstructorDeclarator cd) throws CompileException {
 
-        // Compilation of block statments can create synthetic variables, so we must not use an iterator.
+        // Compilation of block statements can create synthetic variables, so we must not use an iterator.
         List<BlockStatement> vdai = cd.getDeclaringClass().variableDeclaratorsAndInitializers;
         for (int i = 0; i < vdai.size(); i++) {
             BlockStatement bs = (BlockStatement) vdai.get(i);
@@ -10014,7 +10014,7 @@ class UnitCompiler {
 
                     // KLUDGE: Iff the exception type in the THROWS clause sounds like a type parameter, then
                     // ignore it. Otherwise we'd have to put
-                    //    try { ... } catch (Throwable t) { throw newn AssertionError(t); }
+                    //    try { ... } catch (Throwable t) { throw new AssertionError(t); }
                     // around all invocations of methods that use a type parameter for declaring their exception.
                     if (ti instanceof ReferenceType) {
                         String[] identifiers = ((ReferenceType) ti).identifiers;

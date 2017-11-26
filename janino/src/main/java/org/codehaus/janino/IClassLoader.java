@@ -107,7 +107,7 @@ class IClassLoader {
     public IMethod METH_java_util_Iterator__hasNext;
     public IMethod METH_java_util_Iterator__next;
 
-    // Representations of commonly used constrcutors.
+    // Representations of commonly used constructors.
     @Nullable public IConstructor CTOR_java_lang_StringBuilder__java_lang_String;
 
     @SuppressWarnings("null")
@@ -326,7 +326,7 @@ class IClassLoader {
      * </p>
      * <ul>
      *   <li>{@code I} (Integer)</li>
-     *   <li>{@code Lpkg1/pkg2/Cls;} (Class declared in package)</li>
+     *   <li>{@code Lpkg1/pkg2/Clazz;} (Class declared in package)</li>
      *   <li>{@code Lpkg1/pkg2/Outer$Inner;} Member class</li>
      * </ul>
      * <p>

@@ -860,7 +860,7 @@ class Unparser {
     }
 
     /**
-     * Where the {@code visit...()} methods print their text. Noice that this {@link PrintWriter} does not print to
+     * Where the {@code visit...()} methods print their text. Notice that this {@link PrintWriter} does not print to
      * the output directly, but through an {@link AutoIndentWriter}.
      */
     protected final PrintWriter pw;

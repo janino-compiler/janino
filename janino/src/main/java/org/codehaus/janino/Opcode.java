@@ -450,22 +450,22 @@ class Opcode {
     public static final short IO_MASK = 7 * 4096;
 
     /**
-     * The local variable wiht index 0 is the opcode's implicit operand.
+     * The local variable with index 0 is the opcode's implicit operand.
      */
     public static final short IO_LV_0 = 1 * 4096;
 
     /**
-     * The local variable wiht index 1 is the opcode's implicit operand.
+     * The local variable with index 1 is the opcode's implicit operand.
      */
     public static final short IO_LV_1 = 2 * 4096;
 
     /**
-     * The local variable wiht index 2 is the opcode's implicit operand.
+     * The local variable with index 2 is the opcode's implicit operand.
      */
     public static final short IO_LV_2 = 3 * 4096;
 
     /**
-     * The local variable wiht index 3 is the opcode's implicit operand.
+     * The local variable with index 3 is the opcode's implicit operand.
      */
     public static final short IO_LV_3 = 4 * 4096;
 

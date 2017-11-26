@@ -78,8 +78,8 @@ class CodeContext {
     private final List<Java.LocalVariableSlot> allLocalVars = new ArrayList<Java.LocalVariableSlot>();
 
     /**
-     * Each List of Java.LocalVariableSlot is the local variables allocated for a block. They are pushed and poped onto
-     * the list together to make allocation of the next local variable slot easy.
+     * Each List of Java.LocalVariableSlot is the local variables allocated for a block. They are pushed and popped
+     * onto the list together to make allocation of the next local variable slot easy.
      */
     private final List<List<Java.LocalVariableSlot>> scopedVars = new ArrayList<List<Java.LocalVariableSlot>>();
 
@@ -140,9 +140,9 @@ class CodeContext {
      * </p>
      *
      * @param size Number of slots to use (1 or 2)
-     * @param name The variable name; if {@code null}, then the variable won't be written to the localvariabletable
+     * @param name The variable name; if {@code null}, then the variable won't be written to the LocalVariableTable
      * @param type The variable type; if the <var>name</var> is not null, then the type is needed to write to the
-     *             localvariabletable
+     *             LocalVariableTable
      */
     public Java.LocalVariableSlot
     allocateLocalVariable(short size, @Nullable String name, @Nullable IClass type) {
@@ -780,7 +780,7 @@ class CodeContext {
     }
 
     /**
-     * Analyses the descriptor of the Fieldref and return its size.
+     * Analyzes the descriptor of the Fieldref and return its size.
      */
     private int
     determineFieldSize(short idx) {
@@ -791,7 +791,7 @@ class CodeContext {
     }
 
     /**
-     * Analyses the descriptor of the Methodref and returns the sum of the arguments' sizes minus the return value's
+     * Analyzes the descriptor of the Methodref and returns the sum of the arguments' sizes minus the return value's
      * size.
      */
     private int
@@ -860,11 +860,7 @@ class CodeContext {
      */
     public void
     write(int lineNumber, byte b1) {
-        int o = this.makeSpace(lineNumber, 1);
-        if (o < 0 || o >= this.code.length) {
-            System.currentTimeMillis(); // TODO TMP
-        }
-        this.code[o] = b1;
+        this.code[this.makeSpace(lineNumber, 1)] = b1;
     }
 
     /**
@@ -945,7 +941,7 @@ class CodeContext {
 
             if (lineNumber > 0xffff) lineNumber = 0xffff;
 
-            // Find out whether the line number is different from the line number of the preceeding insertion,
+            // Find out whether the line number is different from the line number of the preceding insertion,
             // and, if so, insert a LineNumberOffset object, which will later lead to a LineNumberTable entry.
             for (Offset o = this.currentInserter.prev; o != this.beginning; o = o.prev) {
                 assert o != null;
@@ -1236,7 +1232,7 @@ class CodeContext {
         int offset = Offset.UNSET;
 
         /**
-         * Links to preceding and succeding offsets. Both are {@code null} <em>before</em> {@link #set()} is called,
+         * Links to preceding and succeeding offsets. Both are {@code null} <em>before</em> {@link #set()} is called,
          * and both are non-{@code null} <em>after</em> {@link #set()} has been called. This implies that {@link
          * #set()} must be invoked at most <em>once</em>.
          */

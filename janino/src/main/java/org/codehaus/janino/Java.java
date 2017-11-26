@@ -128,22 +128,22 @@ class Java {
     class CompilationUnit implements Scope {
 
         /**
-         * A string that explains the "file" (or similar resource) where this CU was loaded from.
+         * A string that explains the "file" (or similar resource) where this compilation unit was loaded from.
          */
         @Nullable public final String optionalFileName;
 
         /**
-         * The package declaration at the very top of this CU (if any).
+         * The package declaration at the very top of this compilation unit (if any).
          */
         @Nullable public PackageDeclaration optionalPackageDeclaration;
 
         /**
-         * The IMPORT declarations in this CU.
+         * The IMPORT declarations in this compilation unit.
          */
         public final List<ImportDeclaration> importDeclarations = new ArrayList<ImportDeclaration>();
 
         /**
-         * The top-level declarations in this CU.
+         * The top-level declarations in this compilation unit.
          */
         public final List<PackageMemberTypeDeclaration>
         packageMemberTypeDeclarations = new ArrayList<PackageMemberTypeDeclaration>();
@@ -157,7 +157,7 @@ class Java {
         getEnclosingScope() { throw new InternalCompilerException("A compilation unit has no enclosing scope"); }
 
         /**
-         * Sets the package declaration of this CU.
+         * Sets the package declaration of this compilation unit.
          */
         public void
         setPackageDeclaration(PackageDeclaration packageDeclaration) {
@@ -165,7 +165,7 @@ class Java {
         }
 
         /**
-         * Adds one IMPORT declaration to this CU.
+         * Adds one IMPORT declaration to this compilation unit.
          */
         public void
         addImportDeclaration(CompilationUnit.ImportDeclaration id) {
@@ -175,7 +175,7 @@ class Java {
         }
 
         /**
-         * Adds one top-level type declaration to this CU.
+         * Adds one top-level type declaration to this compilation unit.
          */
         public void
         addPackageMemberTypeDeclaration(PackageMemberTypeDeclaration pmtd) {
@@ -2619,7 +2619,7 @@ class Java {
      * Everything that can occur in the body of a method or in a block. Particularly, explicit constructor invocations
      * and initializers are <b>not</b> statements in this sense.
      * <p>
-     *   This class is mis-named; according to JLS7 8.8.7 and 14.2, its name should be "BlockStatement".
+     *   This class is misnamed; according to JLS7 8.8.7 and 14.2, its name should be "BlockStatement".
      * </p>
      */
     public abstract static
@@ -4045,7 +4045,7 @@ class Java {
         }
 
         /**
-         * The result of "ambiguous name resolution" furing compilation.
+         * The result of "ambiguous name resolution" during compilation.
          */
         @Nullable Atom reclassified;
 
@@ -5430,7 +5430,7 @@ class Java {
     /**
      * All local variables have a slot number; local variables that get written into the "local variable table"
      * also have a start and end offset that defines the variable's extent in the bytecode. If the name is null,
-     * or variable debugging is not on, then the variable won't be written into the localvariabletable and the
+     * or variable debugging is not on, then the variable won't be written into the LocalVariableTable and the
      * offsets can be ignored.
      */
     public static

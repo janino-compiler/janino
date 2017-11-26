@@ -312,7 +312,7 @@ class IClass {
 
     /**
      * @return The {@link IConstructor} declared in this {@link IClass} with the given parameter types, or {@code null}
-     *         if an applicable constrcutor could not be found
+     *         if an applicable constructor could not be found
      */
     @Nullable public final IConstructor
     findIConstructor(IClass[] parameterTypes) throws CompileException {

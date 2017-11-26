@@ -521,7 +521,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      *   If and only if the number of scanners is one, then that single script may contain leading IMPORT directives.
      * </p>
      *
-     * @throws IllegalStateException Any of the preceeding {@code set...()} had an array size different from that
+     * @throws IllegalStateException Any of the preceding {@code set...()} had an array size different from that
      *                               of {@code scanners}
      */
     public final void

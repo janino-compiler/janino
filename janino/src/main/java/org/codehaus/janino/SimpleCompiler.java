@@ -205,7 +205,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     /**
-     * Scans, parses and ompiles a given compilation unit from the given scanner. After completion, {@link
+     * Scans, parses and compiles a given compilation unit from the given scanner. After completion, {@link
      * #getClassLoader()} returns a {@link ClassLoader} that allows for access to the compiled classes.
      */
     public void
@@ -258,7 +258,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     /**
      * Creates a {@link ClassLoader} that loads the given <var>classes</var> (lazily), and makes that class loader
      * available through {@link #getClassLoader()}.
-     * 
+     *
      * @param classes Maps fully qualified classes names to bytecodes
      */
     public void

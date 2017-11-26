@@ -41,7 +41,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * <ul>
  *   <li>{@code I} Integer
  *   <li>{@code [I} Array of integer
- *   <li>{@code Lpkg1/pkg2/Cls;} Class
+ *   <li>{@code Lpkg1/pkg2/Clazz;} Class
  *   <li>{@code Lpkg1/pkg2/Outer$Inner;} Member class
  * </ul>
  */

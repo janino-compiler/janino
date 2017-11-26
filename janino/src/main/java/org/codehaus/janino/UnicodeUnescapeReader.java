@@ -64,7 +64,7 @@ class UnicodeUnescapeReader extends FilterReader {
             this.unreadChar = -1;
         }
 
-        // Check for backslash-u escape sequence, preceeded with an even number
+        // Check for backslash-u escape sequence, preceded with an even number
         // of backslashes.
         if (c != '\\' || this.oddPrecedingBackslashes) {
             this.oddPrecedingBackslashes = false;

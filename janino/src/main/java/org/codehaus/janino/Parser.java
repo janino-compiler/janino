@@ -158,9 +158,9 @@ class Parser {
     @Nullable private String optionalDocComment;
 
     /**
-     * Gets the text of the doc comment (a.k.a. "JAVADOC comment") preceeding the next token.
+     * Gets the text of the doc comment (a.k.a. "JAVADOC comment") preceding the next token.
      *
-     * @return {@code null} if the next token is not preceeded by a doc comment
+     * @return {@code null} if the next token is not preceded by a doc comment
      */
     @Nullable public String
     doc() {
@@ -2237,7 +2237,7 @@ class Parser {
     /**
      * <pre>
      *   TypeArgument :=
-     *     ReferenceType { '[' ']' }    &lt;= The optional brackets are mising in JLS7, section 18!?
+     *     ReferenceType { '[' ']' }    &lt;= The optional brackets are missing in JLS7, section 18!?
      *     | PrimitiveType '[' ']' { '[' ']' }
      *     | '?' extends ReferenceType
      *     | '?' super ReferenceType

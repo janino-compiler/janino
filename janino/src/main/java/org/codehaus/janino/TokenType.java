@@ -90,7 +90,7 @@ enum TokenType {
 
     /**
      * The token represents "white space"; i.e. a non-empty sequence of whitespace characters. Specifically, any
-     * line terminators appear exactly as in the inut stream. JLS8 3.6
+     * line terminators appear exactly as in the input stream. JLS8 3.6
      */
     WHITE_SPACE,
 

@@ -709,7 +709,7 @@ class Compiler {
      * A specialized {@link IClassLoader} that loads {@link IClass}es from the following sources:
      * <ol>
      *   <li>An already-parsed compilation unit
-     *   <li>A class file in the output directory (if existant and younger than source file)
+     *   <li>A class file in the output directory (if existent and younger than source file)
      *   <li>A source file in any of the source path directories
      *   <li>The parent class loader
      * </ol>
@@ -808,7 +808,7 @@ class Compiler {
          * Compiler.this.parsedCompilationUnits} (it may declare other classes that are needed later), finds the
          * declaration of the type with the given <var>className</var>, and defines it in the {@link IClassLoader}.
          * <p>
-         *   Notice that the CU is not compiled here!
+         *   Notice that the compilation unit is not compiled here!
          * </p>
          */
         private IClass
