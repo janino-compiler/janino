@@ -48,6 +48,7 @@ import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.IClass;
 import org.codehaus.janino.IClassLoader;
+import org.codehaus.janino.InternalCompilerException;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Parser;
@@ -273,7 +274,7 @@ class JGrep {
                 cf = CompilerFactoryFactory.getDefaultCompilerFactory();
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new RuntimeException(e.getMessage()); // SUPPRESS CHECKSTYLE AvoidHidingCause
+                throw new InternalCompilerException("Getting default compiler factory", e);
             }
             return (MethodInvocationAction) cf.newScriptEvaluator().createFastEvaluator(
                 action,                                       // script
