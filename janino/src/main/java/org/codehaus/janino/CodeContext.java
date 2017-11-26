@@ -314,9 +314,8 @@ class CodeContext {
 
     /**
      * Checks the code for consistency; updates the "maxStack" member.
-     * <p>
-     *   Notice: On inconsistencies, a "RuntimeException" is thrown (KLUDGE).
-     * </p>
+     *
+     * @throws InternalCompilerException The bytecode is inconsistent wrt/ the operand stack
      */
     public void
     flowAnalysis(String functionName) {

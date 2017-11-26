@@ -344,13 +344,12 @@ class IClassLoader {
     findIClass(String descriptor) throws ClassNotFoundException;
 
     /**
-     * Defines an {@link IClass} in the context of this {@link IClassLoader}. If an {@link IClass} with that descriptor
-     * already exists, a {@link RuntimeException} is thrown.
+     * Defines an {@link IClass} in the context of this {@link IClassLoader}.
      * <p>
      *   This method should only be called from an implementation of {@link #findIClass(String)}.
      * </p>
      *
-     * @throws RuntimeException A different {@link IClass} object is already defined for this type
+     * @throws InternalCompilerException A different {@link IClass} object is already defined for this type
      */
     protected final void
     defineIClass(IClass iClass) {
