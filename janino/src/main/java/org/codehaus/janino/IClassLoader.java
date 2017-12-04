@@ -259,11 +259,12 @@ class IClassLoader {
             if (res != null) return res;
         }
 
-        // We need to synchronize here because "unloadableIClasses" and
-        // "loadedIClasses" are unsynchronized containers.
+        // We need to synchronize here because "unloadableIClasses" and "loadedIClasses" are unsynchronized
+        // containers. Also, "findIClass()" is not thread safe.
         IClass result;
 
         synchronized (this) {
+
             // Class could not be loaded before?
             if (this.unloadableIClasses.contains(fieldDescriptor)) return null;
 
@@ -286,13 +287,27 @@ class IClassLoader {
                 return arrayIClass;
             }
 
-            // Load the class through the {@link #findIClass(String)} method implemented by the
-            // derived class.
+            // Load the class through the {@link #findIClass(String)} method implemented by the derived class.
+            // By contract, {@link findIClass(String)} <em>must</em> invoke {@link #defineIClass(IClass)}!
             IClassLoader.LOGGER.log(Level.FINE, "About to call \"findIClass({0})\"", fieldDescriptor);
             result = this.findIClass(fieldDescriptor);
             if (result == null) {
+                if (this.loadedIClasses.containsKey(fieldDescriptor)) {
+                    throw new InternalCompilerException((
+                        "\"findIClass(\""
+                        + fieldDescriptor
+                        + "\")\" called \"defineIClass()\", but returned null!?"
+                    ));
+                }
                 this.unloadableIClasses.add(fieldDescriptor);
                 return null;
+            }
+            if (!this.loadedIClasses.containsKey(fieldDescriptor)) {
+                throw new InternalCompilerException((
+                    "\"findIClass(\""
+                    + fieldDescriptor
+                    + "\")\" did not call \"defineIClass()\"!?"
+                ));
             }
         }
 
@@ -311,8 +326,7 @@ class IClassLoader {
     }
 
     /**
-     * Finds a new {@link IClass} by descriptor; return {@code null} if a class for that {@code descriptor} could not
-     * be found.
+     * Finds a new {@link IClass} by descriptor and calls {@link #defineIClass(IClass)}.
      * <p>
      *   Similar {@link java.lang.ClassLoader#findClass(java.lang.String)}, this method must
      * </p>
@@ -334,11 +348,11 @@ class IClassLoader {
      * </p>
      * <p>
      *   Notice that this method is never called from more than one thread at a time. In other words, implementations
-     *   of this method need not be synchronized.
+     *   of this method need not be thread-safe.
      * </p>
      *
-     * @return {@code null} if a class with that descriptor could not be found
-     * @throws ClassNotFoundException if an exception was raised while loading the class
+     * @return                        {@code null} if a class with that descriptor could not be found
+     * @throws ClassNotFoundException An exception was raised while loading the class
      */
     @Nullable protected abstract IClass
     findIClass(String descriptor) throws ClassNotFoundException;
@@ -354,17 +368,15 @@ class IClassLoader {
     protected final void
     defineIClass(IClass iClass) {
         String descriptor = iClass.getDescriptor();
-
-        // Already defined?
-        IClass loadedIClass = (IClass) this.loadedIClasses.get(descriptor);
-        if (loadedIClass != null) {
-            if (loadedIClass == iClass) return;
-            throw new InternalCompilerException("Non-identical definition of IClass \"" + descriptor + "\"");
-        }
+        IClassLoader.LOGGER.log(Level.FINE, "{0}: Defined type \"{0}\"", descriptor);
 
         // Define.
-        IClassLoader.LOGGER.log(Level.FINE, "{0}: Defined type \"{0}\"", descriptor);
-        this.loadedIClasses.put(descriptor, iClass);
+        IClass prev = (IClass) this.loadedIClasses.put(descriptor, iClass);
+
+        // Previously defined?
+        if (prev != null) {
+            throw new InternalCompilerException("Non-identical definition of IClass \"" + descriptor + "\"");
+        }
     }
 
     /**
