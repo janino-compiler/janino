@@ -27,18 +27,32 @@
 package org.codehaus.commons.compiler.tests.issue32;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 
-import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import util.CommonsCompilerTestSuite;
+import util.TestUtil;
 
 // SUPPRESS CHECKSTYLE Javadoc|LineLength:9999
 
 /**
- * Attempts to reproduce the problems described in <a href="https://github.com/janino-compiler/janino/issues/32">Issue
- * #32</a>.
+ * Attempts to reproduce the problems described in <a href="https://github.com/janino-compiler/
+ * janino/issues/32">Issue #32</a>.
  */
-public
-class Issue32Test {
+@RunWith(Parameterized.class) public
+class Issue32Test extends CommonsCompilerTestSuite {
+
+    @Parameters(name = "CompilerFactory={0}") public static Collection<Object[]>
+    compilerFactories() throws Exception { return TestUtil.getCompilerFactoriesForParameters(); }
+
+    public
+    Issue32Test(ICompilerFactory compilerFactory) { super(compilerFactory); }
 
     public static
     class SpoofRowwise {
@@ -46,7 +60,7 @@ class Issue32Test {
         public
         SpoofRowwise(int a, int b, boolean c, int d) {}
 
-        public double
+        @SuppressWarnings("static-method") public double
         getValue(SideInput a, int b) { return 0; }
     }
 
@@ -64,18 +78,22 @@ class Issue32Test {
     class FastMath { public static double exp(double x) { return x; } }
 
     public static
-    class SideInput { public double[] values(int a) { return null; } }
+    class SideInput {
+        @SuppressWarnings("static-method") public double[] values(int a) { return null; }
+    }
 
     public static
     class RowType { public static final int ROW_AGG = 3; }
 
-    @SuppressWarnings("static-method") @Test public void
+    @Test public void
     test() throws Exception {
 
         final String cu = (
             ""
             + "import org.codehaus.commons.compiler.tests.issue32.Issue32Test;\n"
+            + "import org.codehaus.commons.compiler.tests.issue32.Issue32Test.FastMath;\n"
             + "import org.codehaus.commons.compiler.tests.issue32.Issue32Test.RowType;\n"
+            + "import org.codehaus.commons.compiler.tests.issue32.Issue32Test.SideInput;\n"
             + "import org.codehaus.commons.compiler.tests.issue32.Issue32Test.SpoofRowwise;\n"
             + "import org.codehaus.commons.compiler.tests.issue32.Issue32Test.LibSpoofPrimitives;\n"
             + "\n"
@@ -115,16 +133,16 @@ class Issue32Test {
             run() {
                 try {
                     this.run2();
-                } catch (Throwable t) {
+                } catch (Throwable t) { // SUPPRESS CHECKSTYLE IllegalCatch
                     if (firstThrowable[0] == null) firstThrowable[0] = t;
                 }
             }
 
             public void
             run2() throws Exception {
-                for (int i = 0; i < 1000 && firstThrowable[0] == null; i++) {
+                for (int i = 0; i < 10 && firstThrowable[0] == null; i++) {
 
-                    SimpleCompiler sc = new SimpleCompiler();
+                    ISimpleCompiler sc = Issue32Test.this.compilerFactory.newSimpleCompiler();
                     sc.cook(cu);
 
                     Class<?> c = sc.getClassLoader().loadClass("TMP14");
