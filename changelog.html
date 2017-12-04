@@ -51,10 +51,28 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.0.8-SNAPSHOT (only available as source code)</h4>
+    <h4>Version 3.0.9-SNAPSHOT (only available as source code)</h4>
     <ul>
-      <li><a href="https://github.com/janino-compiler/janino/issues/25">Stack overflow when using new
-      permission system in ClassLoader</a></li>
+      <li>...</li>
+    </ul>
+
+    <h4>Version 3.0.8, 2017-12-04</h4>
+    <ul>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/25">Stack overflow when using new permission system
+        in ClassLoader</a>
+      </li>
+      <li>Added some consistency checks in "IClassLoader.loadIClass()".</li>
+      <li>SIPUSH bytecode is not used for short integer constant #33</li>
+      <li>
+        Renamed the "JaninoRuntimeException" to "InternalCompilerException" (and left the old class for backwards
+        compatibility), because the old name was confusing.
+      </li>
+      <li>The first digit of a three-digit octal escape (e.g. "\377") was not correctly decoded.</li>
+      <li>The JUNIT test cases didn't work when executed from MAVEN... had to pre-initialize two JRE classes.</li>
+      <li>Moved the CheckStyle configuration from "de.unkrig.checkstyle" to "janino-parent/checkstyle".</li>
+      <li>Merge pull request #22 from janino-compiler/jdk_16</li>
+      <li>Fixed GITHUB issue #25 "Stack overflow when using new permission system in ClassLoader".</li>
     </ul>
 
     <h4>Version 3.0.7, 2017-03-22</h4>
