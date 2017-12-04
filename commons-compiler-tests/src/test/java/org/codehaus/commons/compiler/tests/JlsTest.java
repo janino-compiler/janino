@@ -1593,10 +1593,10 @@ class JlsTest extends CommonsCompilerTestSuite {
         // that there is ambiguity amongst fixed-arity applicables, so picking a vararg is acceptable if that means
         // there is no ambiguity. I have not been able to find any piece of documentation about this in the docs.)
 
-        // JDK 1.7.0_17 does _not_ issue an error, although it should!?
+        // JDK 1.7.0_17 and _21 do _not_ issue an error, although they should!?
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && "1.7.0_17".equals(System.getProperty("java.version"))
+            && System.getProperty("java.version").startsWith("1.7.0")
         ) return;
 
         this.assertClassBodyUncookable((
