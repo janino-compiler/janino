@@ -999,6 +999,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             methodName,                                      // name
             fps,                                             // formalParameters
             this.classesToTypes(location, thrownExceptions), // thrownExceptions
+            null,                                            // defaultValue
             statements                                       // optionalStatements
         );
     }

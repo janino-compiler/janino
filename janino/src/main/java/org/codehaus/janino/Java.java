@@ -2351,6 +2351,9 @@ class Java {
     public static final
     class MethodDeclarator extends FunctionDeclarator {
 
+        /**
+         * @param defaultValue See {@link #defaultValue}
+         */
         public
         MethodDeclarator(
             Location                                 location,
@@ -2361,6 +2364,7 @@ class Java {
             String                                   name,
             FormalParameters                         formalParameters,
             Type[]                                   thrownExceptions,
+            @Nullable ElementValue                   defaultValue,
             @Nullable List<? extends BlockStatement> optionalStatements
         ) {
             super(
@@ -2374,6 +2378,7 @@ class Java {
                 optionalStatements  // optionalStatements
             );
             this.optionalTypeParameters = optionalTypeParameters;
+            this.defaultValue           = defaultValue;
         }
 
         /**
@@ -2428,6 +2433,12 @@ class Java {
         }
 
         @Nullable private final TypeParameter[] optionalTypeParameters;
+
+        /**
+         * The optional "default value" of the declared method (only methods of annotation types can have a default
+         * value).
+         */
+        @Nullable public Java.ElementValue defaultValue;
 
         /**
          * The resolved {@link IMethod}.

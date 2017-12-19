@@ -100,6 +100,7 @@ import org.codehaus.janino.Java.ContinueStatement;
 import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.DoStatement;
 import org.codehaus.janino.Java.DocCommentable;
+import org.codehaus.janino.Java.ElementValue;
 import org.codehaus.janino.Java.ElementValueArrayInitializer;
 import org.codehaus.janino.Java.ElementValuePair;
 import org.codehaus.janino.Java.EmptyStatement;
@@ -201,7 +202,6 @@ import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
 import org.codehaus.janino.util.Annotatable;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ElementValue;
 import org.codehaus.janino.util.ClassFile.ClassFileException;
 
 /**
@@ -718,6 +718,7 @@ class UnitCompiler {
                     "values",                                         // name
                     new FormalParameters(loc),                        // parameters
                     new Type[0],                                      // thrownExceptions
+                    null,                                             // defaultValue
                     Arrays.asList(                                    // optionalStatements
 
                         // E[] tmp = new E[<number-of-constants>];
@@ -770,6 +771,7 @@ class UnitCompiler {
                         false                         // variableArity
                     ),
                     new Type[0],                                      // thrownExceptions,
+                    null,                                             // defaultValue
                     Arrays.asList(                                    // optionalStatements
 
                         // return (E) Enum.valueOf(E.class, s);
@@ -1067,7 +1069,7 @@ class UnitCompiler {
             }
 
             // Compile the annotation's element-value-pairs.
-            final Map<Short, ElementValue> evps = new HashMap<Short, ClassFile.AnnotationsAttribute.ElementValue>();
+            final Map<Short, ClassFile.ElementValue> evps = new HashMap<Short, ClassFile.ElementValue>();
             a.accept(new Visitor.AnnotationVisitor<Void, CompileException>() {
 
                 @Override @Nullable public Void
@@ -1102,15 +1104,15 @@ class UnitCompiler {
         }
     }
 
-    private ClassFile.AnnotationsAttribute.ElementValue
-    compileElementValue(org.codehaus.janino.Java.ElementValue elementValue, final ClassFile cf)
+    private ClassFile.ElementValue
+    compileElementValue(Java.ElementValue elementValue, final ClassFile cf)
     throws CompileException {
 
-        ClassFile.AnnotationsAttribute.ElementValue
-        result = (ClassFile.AnnotationsAttribute.ElementValue) elementValue.accept(
-            new ElementValueVisitor<ClassFile.AnnotationsAttribute.ElementValue, CompileException>() {
+        ClassFile.ElementValue
+        result = (ClassFile.ElementValue) elementValue.accept(
+            new ElementValueVisitor<ClassFile.ElementValue, CompileException>() {
 
-                @Override public ElementValue
+                @Override public ClassFile.ElementValue
                 visitRvalue(Rvalue rv) throws CompileException {
 
                     // Enum constant?
@@ -1141,7 +1143,7 @@ class UnitCompiler {
                             break ENUM_CONSTANT;
                         }
 
-                        return new ClassFile.AnnotationsAttribute.EnumConstValue(
+                        return new ClassFile.EnumConstValue(
                             cf.addConstantUtf8Info(enumIClass.getDescriptor()),             // typeNameIndex
                             cf.addConstantUtf8Info(enumConstantFieldAccess.field.getName()) // constNameIndex
                         );
@@ -1149,7 +1151,7 @@ class UnitCompiler {
 
                     // Class literal?
                     if (rv instanceof ClassLiteral) {
-                        return new ClassFile.AnnotationsAttribute.ClassElementValue(cf.addConstantUtf8Info(
+                        return new ClassFile.ClassElementValue(cf.addConstantUtf8Info(
                             UnitCompiler.this.getType(((ClassLiteral) rv).type).getDescriptor()
                         ));
                     }
@@ -1171,28 +1173,28 @@ class UnitCompiler {
                     }
 
                     // SUPPRESS CHECKSTYLE LineLength:9
-                    if (cv instanceof Boolean)   { return new ClassFile.AnnotationsAttribute.BooleanElementValue(cf.addConstantIntegerInfo((Boolean) cv ? 1 : 0)); }
-                    if (cv instanceof Byte)      { return new ClassFile.AnnotationsAttribute.ByteElementValue(cf.addConstantIntegerInfo((Byte) cv));               }
-                    if (cv instanceof Short)     { return new ClassFile.AnnotationsAttribute.ShortElementValue(cf.addConstantIntegerInfo((Short) cv));             }
-                    if (cv instanceof Integer)   { return new ClassFile.AnnotationsAttribute.IntElementValue(cf.addConstantIntegerInfo((Integer) cv));             }
-                    if (cv instanceof Long)      { return new ClassFile.AnnotationsAttribute.LongElementValue(cf.addConstantLongInfo((Long) cv));                  }
-                    if (cv instanceof Float)     { return new ClassFile.AnnotationsAttribute.FloatElementValue(cf.addConstantFloatInfo((Float) cv));               }
-                    if (cv instanceof Double)    { return new ClassFile.AnnotationsAttribute.DoubleElementValue(cf.addConstantDoubleInfo((Double) cv));            }
-                    if (cv instanceof Character) { return new ClassFile.AnnotationsAttribute.CharElementValue(cf.addConstantIntegerInfo((Character) cv));          }
-                    if (cv instanceof String)    { return new ClassFile.AnnotationsAttribute.StringElementValue(cf.addConstantUtf8Info((String) cv));              }
+                    if (cv instanceof Boolean)   { return new ClassFile.BooleanElementValue(cf.addConstantIntegerInfo((Boolean) cv ? 1 : 0)); }
+                    if (cv instanceof Byte)      { return new ClassFile.ByteElementValue(cf.addConstantIntegerInfo((Byte) cv));               }
+                    if (cv instanceof Short)     { return new ClassFile.ShortElementValue(cf.addConstantIntegerInfo((Short) cv));             }
+                    if (cv instanceof Integer)   { return new ClassFile.IntElementValue(cf.addConstantIntegerInfo((Integer) cv));             }
+                    if (cv instanceof Long)      { return new ClassFile.LongElementValue(cf.addConstantLongInfo((Long) cv));                  }
+                    if (cv instanceof Float)     { return new ClassFile.FloatElementValue(cf.addConstantFloatInfo((Float) cv));               }
+                    if (cv instanceof Double)    { return new ClassFile.DoubleElementValue(cf.addConstantDoubleInfo((Double) cv));            }
+                    if (cv instanceof Character) { return new ClassFile.CharElementValue(cf.addConstantIntegerInfo((Character) cv));          }
+                    if (cv instanceof String)    { return new ClassFile.StringElementValue(cf.addConstantUtf8Info((String) cv));              }
 
                     throw new AssertionError(cv);
                 }
 
-                @Override public ElementValue
+                @Override public ClassFile.ElementValue
                 visitAnnotation(Annotation a) throws CompileException {
 
                     short annotationTypeIndex = (
                         cf.addConstantClassInfo(UnitCompiler.this.getType(a.getType()).getDescriptor())
                     );
 
-                    final Map<Short, ClassFile.AnnotationsAttribute.ElementValue>
-                    evps = new HashMap<Short, ClassFile.AnnotationsAttribute.ElementValue>();
+                    final Map<Short, ClassFile.ElementValue>
+                    evps = new HashMap<Short, ClassFile.ElementValue>();
                     a.accept(new AnnotationVisitor<Void, CompileException>() {
 
                         @Override @Nullable public Void
@@ -1221,18 +1223,18 @@ class UnitCompiler {
                             return null;
                         }
                     });
-                    return new ClassFile.AnnotationsAttribute.Annotation(annotationTypeIndex, evps);
+                    return new ClassFile.Annotation(annotationTypeIndex, evps);
                 }
 
-                @Override public ElementValue
+                @Override public ClassFile.ElementValue
                 visitElementValueArrayInitializer(ElementValueArrayInitializer evai) throws CompileException {
-                    ClassFile.AnnotationsAttribute.ElementValue[]
-                    evs = new ClassFile.AnnotationsAttribute.ElementValue[evai.elementValues.length];
+                    ClassFile.ElementValue[]
+                    evs = new ClassFile.ElementValue[evai.elementValues.length];
 
                     for (int i = 0; i < evai.elementValues.length; i++) {
                         evs[i] = UnitCompiler.this.compileElementValue(evai.elementValues[i], cf);
                     }
-                    return new ClassFile.AnnotationsAttribute.ArrayElementValue(evs);
+                    return new ClassFile.ArrayElementValue(evs);
                 }
             }
         );
@@ -1266,6 +1268,7 @@ class UnitCompiler {
                 "<clinit>",                                          // name
                 new FormalParameters(td.getLocation()),              // formalParameters
                 new ReferenceType[0],                                // thrownExceptions
+                null,                                                // defaultValue
                 statements                                           // optionalStatements
             );
             md.setDeclaringType(td);
@@ -2963,6 +2966,19 @@ class UnitCompiler {
         // Add "Deprecated" attribute (JVMS 4.7.10)
         if (fd.hasDeprecatedDocTag()) {
             mi.addAttribute(new ClassFile.DeprecatedAttribute(classFile.addConstantUtf8Info("Deprecated")));
+        }
+
+        // Add "AnnotationDefault" attribute (JVMS8 4.7.22)
+        if (fd instanceof MethodDeclarator) {
+            ElementValue defaultValue = ((MethodDeclarator) fd).defaultValue;
+            if (defaultValue != null) {
+                mi.addAttribute(
+                    new ClassFile.AnnotationDefaultAttribute(
+                        classFile.addConstantUtf8Info("AnnotationDefault"),
+                        UnitCompiler.this.compileElementValue(defaultValue, classFile)
+                    )
+                );
+            }
         }
 
         if (Mod.isAbstract(fd.modifiers.accessFlags) || Mod.isNative(fd.modifiers.accessFlags)) return;
@@ -8040,8 +8056,8 @@ class UnitCompiler {
                 }
 
                 /**
-                 * @return A primitive value, a {@link String}, a {@link Java.ClassLiteral} (representing a class
-                 *         literal), a {@link Code.FieldAccess} (representing an enum constant), or an {@link Object}[]
+                 * @return A wrapped primitive value, a {@link String}, an {@link IClass} (representing a class
+                 *         literal), an {@link IClass.IField} (representing an enum constant), or an {@link Object}[]
                  *         array containing any of the previously described
                  */
                 private Object
@@ -8060,11 +8076,15 @@ class UnitCompiler {
 
                                 // Class literal?
                                 if (rv instanceof ClassLiteral) {
-                                    return rv;
+                                    ClassLiteral cl = (ClassLiteral) rv;
+                                    return UnitCompiler.this.getType(cl.type);
                                 }
 
                                 // Enum constant?
-                                if (rv instanceof FieldAccess) return ((FieldAccess) rv);
+                                if (rv instanceof FieldAccess) {
+                                    FieldAccess fa = (FieldAccess) rv;
+                                    return fa.field;
+                                }
 
                                 Object result = UnitCompiler.this.getConstantValue(rv);
                                 if (result == null) {
@@ -9659,6 +9679,9 @@ class UnitCompiler {
                 }
             }
 
+            @Override protected IAnnotation[]
+            getIAnnotations2() { return UnitCompiler.this.toIAnnotations(td.getAnnotations()); }
+
             @Override public boolean
             isAbstract() { return atd instanceof InterfaceDeclaration || Mod.isAbstract(atd.getModifierFlags()); }
 
@@ -10319,6 +10342,7 @@ class UnitCompiler {
             "class$",                                                              // name
             new FormalParameters(loc, new FormalParameter[] { parameter }, false), // parameters
             new ReferenceType[0],                                                  // thrownExceptions
+            null,                                                                  // defaultValue
             statements                                                             // optionalStatements
         );
 
@@ -12238,7 +12262,7 @@ class UnitCompiler {
                 + "\"de.unkrig.jdisasm.Disassembler\" is not on the classpath. "
                 + "If you are interested in disassemblies of class files generated by JANINO, "
                 + "get de.unkrig.jdisasm and put it on the classpath."
-            ));
+            ), e);
         }
     }
 }

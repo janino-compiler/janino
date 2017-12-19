@@ -28,9 +28,6 @@ package org.codehaus.janino.util;
 
 import java.util.Map;
 
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ElementValue;
-import org.codehaus.janino.util.ClassFile.ConstantUtf8Info;
-
 /**
  * An object in a Java class file which can have annotations (classes, methods and fields).
  */
@@ -40,20 +37,20 @@ interface Annotatable {
     /**
      * @return The annotations on this element; an empty array iff there are no annotations
      */
-    ClassFile.AnnotationsAttribute.Annotation[]
+    ClassFile.Annotation[]
     getAnnotations(boolean runtimeVisible);
 
     /**
      * Adds a "Runtime[In]visibleAnnotations" attribute to {@code this} object (if that annotation does not yet exist)
      * and adds an entry to it.
      *
-     * @param elementValuePairs Maps "elemant_name_index" ({@link ConstantUtf8Info}) to "element_value", see JVMS8
-     *                          4.7.16
+     * @param elementValuePairs Maps "elemant_name_index" ({@link ClassFile.ConstantUtf8Info}) to "element_value", see
+     *                          JVMS8 4.7.16
      */
     void
     addAnnotationsAttributeEntry(
-        boolean                  runtimeVisible,
-        String                   fieldDescriptor,
-        Map<Short, ElementValue> elementValuePairs
+        boolean                            runtimeVisible,
+        String                             fieldDescriptor,
+        Map<Short, ClassFile.ElementValue> elementValuePairs
     );
 }

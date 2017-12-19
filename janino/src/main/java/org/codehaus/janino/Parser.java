@@ -1308,9 +1308,11 @@ class Parser {
             thrownExceptions = new ReferenceType[0];
         }
 
-        if (allowDefaultClause && this.peekRead("default")) {
-            this.parseExpression();
-        }
+        ElementValue defaultValue = (
+            allowDefaultClause && this.peekRead("default")
+            ? this.parseElementValue()
+            : null
+        );
 
         List<BlockStatement> optionalStatements;
         if (this.peekRead(";")) {
@@ -1336,6 +1338,7 @@ class Parser {
             name,                   // name
             formalParameters,       // formalParameters
             thrownExceptions,       // thrownExceptions
+            defaultValue,           // defaultValue
             optionalStatements      // optionalStatements
         );
     }

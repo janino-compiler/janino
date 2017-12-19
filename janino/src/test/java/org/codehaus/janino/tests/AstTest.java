@@ -123,6 +123,7 @@ class AstTest {
             "calculate",                                 // name
             new FormalParameters(AstTest.getLocation()), // parameters
             new Type[0],                                 // thrownExceptions
+            null,                                        // defaultValue
             statements                                   // optionalStatements
         );
         clazz.addDeclaredMethod(method);

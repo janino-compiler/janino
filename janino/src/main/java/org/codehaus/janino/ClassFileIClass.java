@@ -36,21 +36,20 @@ import java.util.logging.Logger;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.Annotation;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ArrayElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.BooleanElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ByteElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.CharElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ClassElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.DoubleElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.EnumConstValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.FloatElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.IntElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.LongElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.ShortElementValue;
-import org.codehaus.janino.util.ClassFile.AnnotationsAttribute.StringElementValue;
+import org.codehaus.janino.util.ClassFile.Annotation;
+import org.codehaus.janino.util.ClassFile.ArrayElementValue;
+import org.codehaus.janino.util.ClassFile.BooleanElementValue;
+import org.codehaus.janino.util.ClassFile.ByteElementValue;
+import org.codehaus.janino.util.ClassFile.CharElementValue;
+import org.codehaus.janino.util.ClassFile.ClassElementValue;
 import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
+import org.codehaus.janino.util.ClassFile.DoubleElementValue;
+import org.codehaus.janino.util.ClassFile.EnumConstValue;
+import org.codehaus.janino.util.ClassFile.FloatElementValue;
+import org.codehaus.janino.util.ClassFile.IntElementValue;
+import org.codehaus.janino.util.ClassFile.LongElementValue;
+import org.codehaus.janino.util.ClassFile.ShortElementValue;
+import org.codehaus.janino.util.ClassFile.StringElementValue;
 
 /**
  * A wrapper object that turns a {@link ClassFile} object into an {@link IClass}.
@@ -245,7 +244,7 @@ class ClassFileIClass extends IClass {
     getIAnnotations2() throws CompileException { return this.toIAnnotations(this.classFile.getAnnotations(true)); }
 
     private IAnnotation[]
-    toIAnnotations(ClassFile.AnnotationsAttribute.Annotation[] annotations) throws CompileException {
+    toIAnnotations(ClassFile.Annotation[] annotations) throws CompileException {
 
         int count = annotations.length;
         if (count == 0) return new IAnnotation[0];
@@ -256,15 +255,15 @@ class ClassFileIClass extends IClass {
     }
 
     private IAnnotation
-    toIAnnotation(final ClassFile.AnnotationsAttribute.Annotation annotation) throws CompileException {
+    toIAnnotation(final ClassFile.Annotation annotation) throws CompileException {
 
         final Map<String, Object> evps2 = new HashMap<String, Object>();
-        for (Entry<Short, ElementValue> e : annotation.elementValuePairs.entrySet()) {
-            Short        elementNameIndex = (Short) e.getKey();
-            ElementValue elementValue     = (ElementValue) e.getValue();
+        for (Entry<Short, ClassFile.ElementValue> e : annotation.elementValuePairs.entrySet()) {
+            Short                  elementNameIndex = (Short) e.getKey();
+            ClassFile.ElementValue elementValue     = (ClassFile.ElementValue) e.getValue();
 
             Object ev = elementValue.accept(
-                new ClassFile.AnnotationsAttribute.ElementValue.Visitor<Object, CompileException>() {
+                new ClassFile.ElementValue.Visitor<Object, CompileException>() {
 
                     final ClassFile cf = ClassFileIClass.this.classFile;
 

@@ -201,14 +201,14 @@ class ClassFile implements Annotatable {
         return (AnnotationsAttribute) this.findAttribute(attributes, attributeName);
     }
 
-    @Override public AnnotationsAttribute.Annotation[]
+    @Override public Annotation[]
     getAnnotations(boolean runtimeVisible) {
 
         AnnotationsAttribute aa = this.getAnnotationsAttribute(runtimeVisible, this.attributes);
-        if (aa == null) return new AnnotationsAttribute.Annotation[0];
+        if (aa == null) return new Annotation[0];
 
-        return (AnnotationsAttribute.Annotation[]) aa.annotations.toArray(
-            new AnnotationsAttribute.Annotation[aa.annotations.size()]
+        return (Annotation[]) aa.annotations.toArray(
+            new Annotation[aa.annotations.size()]
         );
     }
 
@@ -220,9 +220,9 @@ class ClassFile implements Annotatable {
      */
     @Override public void
     addAnnotationsAttributeEntry(
-        boolean                                       runtimeVisible,
-        String                                        fieldDescriptor,
-        Map<Short, AnnotationsAttribute.ElementValue> elementValuePairs
+        boolean                            runtimeVisible,
+        String                             fieldDescriptor,
+        Map<Short, ClassFile.ElementValue> elementValuePairs
     ) { this.addAnnotationsAttributeEntry(runtimeVisible, fieldDescriptor, elementValuePairs, this.attributes); }
 
     /**
@@ -234,10 +234,10 @@ class ClassFile implements Annotatable {
      */
     private void
     addAnnotationsAttributeEntry(
-        boolean                                       runtimeVisible,
-        String                                        fieldDescriptor,
-        Map<Short, AnnotationsAttribute.ElementValue> elementValuePairs,
-        List<AttributeInfo>                           target
+        boolean                            runtimeVisible,
+        String                             fieldDescriptor,
+        Map<Short, ClassFile.ElementValue> elementValuePairs,
+        List<AttributeInfo>                target
     ) {
 
         // Find or create the "Runtime[In]visibleAnnotations" attribute.
@@ -250,7 +250,7 @@ class ClassFile implements Annotatable {
 
         // Add the new annotation.
         aa.getAnnotations().add(
-            new AnnotationsAttribute.Annotation(this.addConstantUtf8Info(fieldDescriptor), elementValuePairs)
+            new Annotation(this.addConstantUtf8Info(fieldDescriptor), elementValuePairs)
         );
     }
 
@@ -1592,15 +1592,13 @@ class ClassFile implements Annotatable {
         /**
          * @return The annotations of this method
          */
-        @Override public AnnotationsAttribute.Annotation[]
+        @Override public Annotation[]
         getAnnotations(boolean runtimeVisible) {
 
             AnnotationsAttribute aa = ClassFile.this.getAnnotationsAttribute(runtimeVisible, this.attributes);
-            if (aa == null) return new AnnotationsAttribute.Annotation[0];
+            if (aa == null) return new Annotation[0];
 
-            return (AnnotationsAttribute.Annotation[]) aa.annotations.toArray(
-                new AnnotationsAttribute.Annotation[aa.annotations.size()]
-            );
+            return (Annotation[]) aa.annotations.toArray(new Annotation[aa.annotations.size()]);
         }
 
         /**
@@ -1631,9 +1629,9 @@ class ClassFile implements Annotatable {
 
         @Override public void
         addAnnotationsAttributeEntry(
-            boolean                                       runtimeVisible,
-            String                                        fieldDescriptor,
-            Map<Short, AnnotationsAttribute.ElementValue> elementValuePairs
+            boolean                            runtimeVisible,
+            String                             fieldDescriptor,
+            Map<Short, ClassFile.ElementValue> elementValuePairs
         ) {
             ClassFile.this.addAnnotationsAttributeEntry(
                 runtimeVisible,
@@ -1692,15 +1690,13 @@ class ClassFile implements Annotatable {
         /**
          * @return The annotations of this field
          */
-        @Override public AnnotationsAttribute.Annotation[]
+        @Override public Annotation[]
         getAnnotations(boolean runtimeVisible) {
 
             AnnotationsAttribute aa = ClassFile.this.getAnnotationsAttribute(runtimeVisible, this.attributes);
-            if (aa == null) return new AnnotationsAttribute.Annotation[0];
+            if (aa == null) return new Annotation[0];
 
-            return (AnnotationsAttribute.Annotation[]) aa.annotations.toArray(
-                new AnnotationsAttribute.Annotation[aa.annotations.size()]
-            );
+            return (Annotation[]) aa.annotations.toArray(new Annotation[aa.annotations.size()]);
         }
 
         /**
@@ -1731,9 +1727,9 @@ class ClassFile implements Annotatable {
 
         @Override public void
         addAnnotationsAttributeEntry(
-            boolean                                       runtimeVisible,
-            String                                        fieldDescriptor,
-            Map<Short, AnnotationsAttribute.ElementValue> elementValuePairs
+            boolean                            runtimeVisible,
+            String                             fieldDescriptor,
+            Map<Short, ClassFile.ElementValue> elementValuePairs
         ) {
             ClassFile.this.addAnnotationsAttributeEntry(
                 runtimeVisible,
@@ -1837,6 +1833,9 @@ class ClassFile implements Annotatable {
         } else
         if ("Deprecated".equals(attributeName)) {
             result = DeprecatedAttribute.loadBody(attributeNameIndex, bdis);
+        } else
+        if ("AnnotationDefault".equals(attributeName)) {
+            result = AnnotationDefaultAttribute.loadBody(attributeNameIndex, bdis);
         } else
         if ("RuntimeVisibleAnnotations".equals(attributeName)) {
             result = AnnotationsAttribute.loadBody(attributeNameIndex, bdis);
@@ -2022,327 +2021,58 @@ class ClassFile implements Annotatable {
     public static
     class AnnotationsAttribute extends AttributeInfo {
 
-        private final List<AnnotationsAttribute.Annotation> annotations;
+        private final List<Annotation> annotations;
 
         AnnotationsAttribute(short attributeNameIndex) {
             super(attributeNameIndex);
             this.annotations = new ArrayList<Annotation>();
         }
-        AnnotationsAttribute(short attributeNameIndex, AnnotationsAttribute.Annotation[] annotations) {
+        AnnotationsAttribute(short attributeNameIndex, Annotation[] annotations) {
             super(attributeNameIndex);
             this.annotations = new ArrayList<Annotation>(Arrays.asList(annotations));
         }
 
         /**
-         * @return The {@link AnnotationsAttribute.Annotation}s contained in this {@link AnnotationsAttribute}, see
-         *         JVMS8 4.7.16/17
+         * @return The {@link Annotation}s contained in this {@link AnnotationsAttribute}, see JVMS8 4.7.16/17
          */
-        public List<AnnotationsAttribute.Annotation>
+        public List<Annotation>
         getAnnotations() { return this.annotations; }
 
         private static AttributeInfo
         loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
 
-            AnnotationsAttribute.Annotation[]
-            as = new AnnotationsAttribute.Annotation[dis.readShort()]; // num_annotations
-            for (short i = 0; i < as.length; ++i) {                    // annotations[num_annotations]
+            Annotation[]
+            as = new Annotation[dis.readShort()];   // num_annotations
+            for (short i = 0; i < as.length; ++i) { // annotations[num_annotations]
                 as[i] = AnnotationsAttribute.loadAnnotation(dis);
             }
 
             return new AnnotationsAttribute(attributeNameIndex, as);
         }
 
-        private static AnnotationsAttribute.Annotation
+        private static Annotation
         loadAnnotation(DataInputStream dis) throws IOException {
-            return new AnnotationsAttribute.Annotation(
+            return new Annotation(
                 dis.readShort(),                                // type_index
                 AnnotationsAttribute.loadElementValuePairs(dis) // num_element_value_pairs, element_value_pairs
             );
         }
 
-        private static Map<Short, AnnotationsAttribute.ElementValue>
+        private static Map<Short, ClassFile.ElementValue>
         loadElementValuePairs(DataInputStream dis) throws IOException {
 
             short numElementaluePairs = dis.readShort(); // nul_element_value_pairs
             if (numElementaluePairs == 0) return Collections.emptyMap();
 
-            Map<Short, AnnotationsAttribute.ElementValue>
-            result = new HashMap<Short, AnnotationsAttribute.ElementValue>();
+            Map<Short, ClassFile.ElementValue> result = new HashMap<Short, ClassFile.ElementValue>();
             for (int i = 0; i < numElementaluePairs; i++) {
                 result.put(
-                    dis.readShort(),                           // element_name_index
-                    AnnotationsAttribute.loadElementValue(dis) // value
+                    dis.readShort(),                // element_name_index
+                    ClassFile.loadElementValue(dis) // value
                 );
             }
 
             return result;
-        }
-
-        private static AnnotationsAttribute.ElementValue
-        loadElementValue(DataInputStream dis) throws IOException {
-
-            byte tag = dis.readByte(); // tag
-            switch (tag) {
-
-            case 'B': return new ByteElementValue(dis.readShort());
-            case 'C': return new CharElementValue(dis.readShort());
-            case 'D': return new DoubleElementValue(dis.readShort());
-            case 'F': return new FloatElementValue(dis.readShort());
-            case 'I': return new IntElementValue(dis.readShort());
-            case 'J': return new LongElementValue(dis.readShort());
-            case 'S': return new ShortElementValue(dis.readShort());
-            case 'Z': return new BooleanElementValue(dis.readShort());
-            case 's': return new StringElementValue(dis.readShort());
-            case 'e': return new EnumConstValue(dis.readShort(), dis.readShort());
-            case 'c': return new ClassElementValue(dis.readShort());
-            case '@': return AnnotationsAttribute.loadAnnotation(dis);
-
-            case '[':
-                short numValues = dis.readShort();                          // num_values
-
-                AnnotationsAttribute.ElementValue[] values = new AnnotationsAttribute.ElementValue[numValues & 0xffff];
-                for (int i = 0; i < numValues; i++) {
-                    values[i] = AnnotationsAttribute.loadElementValue(dis); // values[num_values]
-                }
-                return new ArrayElementValue(values);
-
-            default:
-                throw new ClassFileException("Invalid element-value-pair tag '" + (char) tag + "'");
-            }
-        }
-
-        /**
-         * Representation of the "element_value" structure (see JVMS8 4.7.16.1).
-         */
-        public
-        interface ElementValue {
-
-            /**
-             * @return The "tag" byte to use when storing this "value" in an "element_value" structure
-             */
-            byte getTag();
-
-            /**
-             * Writes this element value in an element-value-type dependent way; see JVMS8 4.7.16.1. The "tag" byte is
-             * s<em>not</em> part of this writing!
-             */
-            void store(DataOutputStream dos) throws IOException;
-
-            /**
-             * Invokes the respective method of the {@link AnnotationsAttribute.ElementValue.Visitor}.
-             */
-            @Nullable <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX;
-
-            /**
-             * The visitor interface for the implementation of the "visitor" pattern.
-             *
-             * @param <R>  The type of the object that the "{@code visit*()}" methods return
-             * @param <EX> The type of the exception that the "{@code visit*()}" methods may throw
-             */
-            public
-            interface Visitor<R, EX extends Throwable> extends ConstantElementValue.Visitor<R, EX> {
-
-                // SUPPRESS CHECKSTYLE JavadocMethod:3
-                R visitAnnotation(AnnotationsAttribute.Annotation subject) throws EX;
-                R visitArrayElementValue(ArrayElementValue subject) throws EX;
-                R visitEnumConstValue(EnumConstValue subject) throws EX;
-            }
-        }
-
-        /**
-         * Convenience class for element values that are constants (as opposed to annotations, enum constants and
-         * arrays).
-         */
-        public abstract static
-        class ConstantElementValue implements AnnotationsAttribute.ElementValue {
-
-            private final byte tag;
-
-            /**
-             * The index of the constant pool entry that holds the constant value for this annotation element.
-             */
-            public final short constantValueIndex;
-
-            public
-            ConstantElementValue(byte tag, short constantValueIndex) {
-                this.tag                = tag;
-                this.constantValueIndex = constantValueIndex;
-            }
-
-            @Override public byte
-            getTag() { return this.tag; }
-
-            @Override public void
-            store(DataOutputStream dos) throws IOException {
-                dos.writeShort(this.constantValueIndex); // const_value_index
-            }
-
-            @Override @Nullable public <R, EX extends Throwable> R
-            accept(AnnotationsAttribute.ElementValue.Visitor<R, EX> visitor) throws EX {
-                return this.accept((ConstantElementValue.Visitor<R, EX>) visitor);
-            }
-
-            /**
-             * Invokes the respective method of the {@link ConstantElementValue.Visitor}.
-             */
-            @Nullable protected abstract <R, EX extends Throwable> R
-            accept(ConstantElementValue.Visitor<R, EX> visitor) throws EX;
-
-            /**
-             * The visitor interface for the implementation of the "visitor" pattern.
-             *
-             * @param <R>  The type of the object that the "{@code visit*()}" methods return
-             * @param <EX> The type of the exception that the "{@code visit*()}" methods may throw
-             */
-            public
-            interface Visitor<R, EX extends Throwable> {
-
-                // SUPPRESS CHECKSTYLE JavadocMethod:10
-                R visitBooleanElementValue(BooleanElementValue subject) throws EX;
-                R visitByteElementValue(ByteElementValue subject) throws EX;
-                R visitCharElementValue(CharElementValue subject) throws EX;
-                R visitClassElementValue(ClassElementValue subject) throws EX;
-                R visitDoubleElementValue(DoubleElementValue subject) throws EX;
-                R visitFloatElementValue(FloatElementValue subject) throws EX;
-                R visitIntElementValue(IntElementValue subject) throws EX;
-                R visitLongElementValue(LongElementValue subject) throws EX;
-                R visitShortElementValue(ShortElementValue subject) throws EX;
-                R visitStringElementValue(StringElementValue subject) throws EX;
-            }
-        }
-
-        // SUPPRESS CHECKSTYLE LineLength|JavadocType:50
-        public static final
-        class ByteElementValue extends ConstantElementValue {
-            public                                          ByteElementValue(short constantValueIndex) { super((byte) 'B', constantValueIndex); }
-            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitByteElementValue(this); }
-        }
-        public static final
-        class CharElementValue extends ConstantElementValue {
-            public                                          CharElementValue(short constantValueIndex) { super((byte) 'C', constantValueIndex); }
-            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitCharElementValue(this); }
-        }
-        public static final
-        class DoubleElementValue extends ConstantElementValue {
-            public                                          DoubleElementValue(short constantValueIndex) { super((byte) 'D', constantValueIndex); }
-            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX     { return visitor.visitDoubleElementValue(this); }
-        }
-        public static final
-        class FloatElementValue extends ConstantElementValue {
-            public                                          FloatElementValue(short constantValueIndex) { super((byte) 'F', constantValueIndex); }
-            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX    { return visitor.visitFloatElementValue(this); }
-        }
-        public static final
-        class IntElementValue extends ConstantElementValue {
-            public                                          IntElementValue(short constantValueIndex) { super((byte) 'I', constantValueIndex); }
-            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX  { return visitor.visitIntElementValue(this); }
-        }
-        public static final
-        class LongElementValue extends ConstantElementValue {
-            public                                          LongElementValue(short constantValueIndex) { super((byte) 'J', constantValueIndex); }
-            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitLongElementValue(this); }
-        }
-        public static final
-        class ShortElementValue extends ConstantElementValue {
-            public                                          ShortElementValue(short constantValueIndex) { super((byte) 'S', constantValueIndex); }
-            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX    { return visitor.visitShortElementValue(this); }
-        }
-        public static final
-        class BooleanElementValue extends ConstantElementValue {
-            public                                          BooleanElementValue(short constantValueIndex) { super((byte) 'Z', constantValueIndex); }
-            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX      { return visitor.visitBooleanElementValue(this); }
-        }
-        public static final
-        class StringElementValue extends ConstantElementValue {
-            public                                          StringElementValue(short constantValueIndex) { super((byte) 's', constantValueIndex); }
-            @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX     { return visitor.visitStringElementValue(this); }
-        }
-        public static final
-        class ClassElementValue extends ConstantElementValue {
-
-            /**
-             * @param constantValueIndex Index of a constant pool entry that is a CONSTANT_Utf8_info structure
-             *                           representing a return descriptor
-             */
-            public
-            ClassElementValue(short constantValueIndex) { super((byte) 'c', constantValueIndex); }
-
-            @Override protected <R, EX extends Throwable> R
-            accept(Visitor<R, EX> visitor) throws EX { return visitor.visitClassElementValue(this); }
-        }
-
-        /**
-         * Representation of the "enum_const_value" element in the "element_value" structure.
-         */
-        public static final
-        class EnumConstValue implements AnnotationsAttribute.ElementValue {
-
-            /**
-             * {@code type_name_index}; index of a {@link ConstantUtf8Info} representing a field descriptor.
-             */
-            public final short typeNameIndex;
-
-            /**
-             * {@code const_name_index}; index of a {@link ConstantUtf8Info} giveing the simple name of the enum
-             * constant represented by this {@code element_value} structure.
-             */
-            public final short constNameIndex;
-
-            /**
-             * @param typeNameIndex  {@code type_name_index}; index of a {@link ConstantUtf8Info} representing a field
-             *                       descriptor
-             * @param constNameIndex {@code const_name_index}; index of a {@link ConstantUtf8Info} giveing the simple
-             *                       name of the enum constant represented by this {@code element_value} structure
-             */
-            public
-            EnumConstValue(short typeNameIndex, short constNameIndex) {
-                this.typeNameIndex  = typeNameIndex;
-                this.constNameIndex = constNameIndex;
-            }
-
-            @Override public byte
-            getTag() { return 'e'; }
-
-            @Override public void
-            store(DataOutputStream dos) throws IOException {
-                dos.writeShort(this.typeNameIndex);  // type_name_index
-                dos.writeShort(this.constNameIndex); // const_name_index
-            }
-
-            @Override @Nullable public <R, EX extends Throwable> R
-            accept(AnnotationsAttribute.ElementValue.Visitor<R, EX> visitor)
-            throws EX { return visitor.visitEnumConstValue(this); }
-        }
-
-        /**
-         * Representation of the "array_value" structure.
-         */
-        public static final
-        class ArrayElementValue implements AnnotationsAttribute.ElementValue {
-
-            /**
-             * The values of the elements of this array element value.
-             */
-            public final AnnotationsAttribute.ElementValue[] values;
-
-            public
-            ArrayElementValue(AnnotationsAttribute.ElementValue[] values) { this.values = values; }
-
-            @Override public byte
-            getTag() { return '['; }
-
-            @Override public void
-            store(DataOutputStream dos) throws IOException {
-                dos.writeShort(this.values.length);                        // num_values
-                for (AnnotationsAttribute.ElementValue ev : this.values) { // values[num_values]
-                    dos.writeByte(ev.getTag()); // tag
-                    ev.store(dos);              // value
-                }
-            }
-
-            @Override @Nullable public <R, EX extends Throwable> R
-            accept(AnnotationsAttribute.ElementValue.Visitor<R, EX> visitor)
-            throws EX { return visitor.visitArrayElementValue(this); }
         }
 
         // Implement "AttributeInfo".
@@ -2350,65 +2080,7 @@ class ClassFile implements Annotatable {
         storeBody(DataOutputStream dos) throws IOException {
 
             dos.writeShort(this.annotations.size()); // num_annotations
-            for (AnnotationsAttribute.Annotation a : this.annotations) a.store(dos);
-        }
-
-        /**
-         * The structure of the {@code classes} array as described in JVMS7 4.7.6.
-         */
-        public static
-        class Annotation implements AnnotationsAttribute.ElementValue {
-
-            /**
-             * The "type_index" field of the {@code annotation} type as described in JVMS8 4.7.16. The constant pool
-             * entry at that index must be a CONSTANT_Utf8_info structure representing a field descriptor.
-             */
-            public final short typeIndex;
-
-            /**
-             * The "element_value_pairs" field of the {@code annotation} type as described in JVMS8 4.7.16.
-             * Key is the "{@code element_name_index}" (a constant pool index to a {@link ConstantUtf8Info});
-             * value is an {@link AnnotationsAttribute.ElementValue}.
-             */
-            public final Map<Short, AnnotationsAttribute.ElementValue> elementValuePairs;
-
-            /**
-             * @param typeIndex         UTF 8 constant pool entry index; field descriptor
-             * @param elementValuePairs Maps element name index ({@link ConstantUtf8Info}) to {@link
-             *                          AnnotationsAttribute.ElementValue}s
-             */
-            public
-            Annotation(short typeIndex, Map<Short, AnnotationsAttribute.ElementValue> elementValuePairs) {
-                this.typeIndex         = typeIndex;
-                this.elementValuePairs = elementValuePairs;
-            }
-
-            @Override public byte
-            getTag() { return '@'; }
-
-            @Override public void
-            store(DataOutputStream dos) throws IOException {
-
-                // SUPPRESS CHECKSTYLE LineLength:4
-                dos.writeShort(this.typeIndex);                // type_index
-                dos.writeShort(this.elementValuePairs.size()); // num_element_value_pairs
-                for (                                          // element_value_pairs[num_element_value_pairs]
-                    Map.Entry<Short, AnnotationsAttribute.ElementValue> evps
-                    : this.elementValuePairs.entrySet()
-                ) {
-                    Short elementNameIndex = (Short) evps.getKey();
-                    AnnotationsAttribute.ElementValue
-                    elementValue = (AnnotationsAttribute.ElementValue) evps.getValue();
-
-                    dos.writeShort(elementNameIndex);     // element_name_index
-                    dos.writeByte(elementValue.getTag()); // value.tag
-                    elementValue.store(dos);              // value.value
-                }
-            }
-
-            @Override @Nullable public <R, EX extends Throwable> R
-            accept(AnnotationsAttribute.ElementValue.Visitor<R, EX> visitor)
-            throws EX { return visitor.visitAnnotation(this); }
+            for (Annotation a : this.annotations) a.store(dos);
         }
     }
 
@@ -2607,6 +2279,36 @@ class ClassFile implements Annotatable {
     }
 
     /**
+     * Representation of an {@code AnnotationDefault} attribute (see JVMS8 4.7.22).
+     */
+    public static
+    class AnnotationDefaultAttribute extends AttributeInfo {
+
+        private final ElementValue elementValue;
+
+        public
+        AnnotationDefaultAttribute(short attributeNameIndex, ElementValue elementValue) {
+            super(attributeNameIndex);
+            this.elementValue = elementValue;
+        }
+
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+            return new AnnotationDefaultAttribute(
+                attributeNameIndex,
+                ClassFile.loadElementValue(dis)
+            );
+        }
+
+        // Implement "AttributeInfo".
+        @Override protected void
+        storeBody(DataOutputStream dos) throws IOException {
+            dos.writeByte(this.elementValue.getTag());
+            this.elementValue.store(dos);
+        }
+    }
+
+    /**
      * Representation of an unmodifiable {@code Code} attribute, as read from a class file.
      */
     public static
@@ -2697,6 +2399,332 @@ class ClassFile implements Annotatable {
                 this.handlerPc = handlerPc;
                 this.catchType = catchType;
             }
+        }
+    }
+
+    /**
+     * Representation of the "element_value" structure (see JVMS8 4.7.16.1).
+     */
+    public
+    interface ElementValue {
+
+        /**
+         * @return The "tag" byte to use when storing this "value" in an "element_value" structure
+         */
+        byte getTag();
+
+        /**
+         * Writes this element value in an element-value-type dependent way; see JVMS8 4.7.16.1. The "tag" byte is
+         * s<em>not</em> part of this writing!
+         */
+        void store(DataOutputStream dos) throws IOException;
+
+        /**
+         * Invokes the respective method of the {@link ClassFile.ElementValue.Visitor}.
+         */
+        @Nullable <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX;
+
+        /**
+         * The visitor interface for the implementation of the "visitor" pattern.
+         *
+         * @param <R>  The type of the object that the "{@code visit*()}" methods return
+         * @param <EX> The type of the exception that the "{@code visit*()}" methods may throw
+         */
+        public
+        interface Visitor<R, EX extends Throwable> extends ClassFile.ConstantElementValue.Visitor<R, EX> {
+
+            // SUPPRESS CHECKSTYLE JavadocMethod:3
+            R visitAnnotation(Annotation subject) throws EX;
+            R visitArrayElementValue(ArrayElementValue subject) throws EX;
+            R visitEnumConstValue(EnumConstValue subject) throws EX;
+        }
+    }
+
+
+    /**
+     * Convenience class for element values that are constants (as opposed to annotations, enum constants and
+     * arrays).
+     */
+    public abstract static
+    class ConstantElementValue implements ClassFile.ElementValue {
+
+        private final byte tag;
+
+        /**
+         * The index of the constant pool entry that holds the constant value for this annotation element.
+         */
+        public final short constantValueIndex;
+
+        public
+        ConstantElementValue(byte tag, short constantValueIndex) {
+            this.tag                = tag;
+            this.constantValueIndex = constantValueIndex;
+        }
+
+        @Override public byte
+        getTag() { return this.tag; }
+
+        @Override public void
+        store(DataOutputStream dos) throws IOException {
+            dos.writeShort(this.constantValueIndex); // const_value_index
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ClassFile.ElementValue.Visitor<R, EX> visitor) throws EX {
+            return this.accept((ConstantElementValue.Visitor<R, EX>) visitor);
+        }
+
+        /**
+         * Invokes the respective method of the {@link ConstantElementValue.Visitor}.
+         */
+        @Nullable protected abstract <R, EX extends Throwable> R
+        accept(ConstantElementValue.Visitor<R, EX> visitor) throws EX;
+
+        /**
+         * The visitor interface for the implementation of the "visitor" pattern.
+         *
+         * @param <R>  The type of the object that the "{@code visit*()}" methods return
+         * @param <EX> The type of the exception that the "{@code visit*()}" methods may throw
+         */
+        public
+        interface Visitor<R, EX extends Throwable> {
+
+            // SUPPRESS CHECKSTYLE JavadocMethod:10
+            R visitBooleanElementValue(BooleanElementValue subject) throws EX;
+            R visitByteElementValue(ByteElementValue subject) throws EX;
+            R visitCharElementValue(CharElementValue subject) throws EX;
+            R visitClassElementValue(ClassElementValue subject) throws EX;
+            R visitDoubleElementValue(DoubleElementValue subject) throws EX;
+            R visitFloatElementValue(FloatElementValue subject) throws EX;
+            R visitIntElementValue(IntElementValue subject) throws EX;
+            R visitLongElementValue(LongElementValue subject) throws EX;
+            R visitShortElementValue(ShortElementValue subject) throws EX;
+            R visitStringElementValue(StringElementValue subject) throws EX;
+        }
+    }
+
+    // SUPPRESS CHECKSTYLE LineLength|JavadocType:50
+    public static final
+    class ByteElementValue extends ConstantElementValue {
+        public                                          ByteElementValue(short constantValueIndex) { super((byte) 'B', constantValueIndex); }
+        @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitByteElementValue(this); }
+    }
+    public static final
+    class CharElementValue extends ConstantElementValue {
+        public                                          CharElementValue(short constantValueIndex) { super((byte) 'C', constantValueIndex); }
+        @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitCharElementValue(this); }
+    }
+    public static final
+    class DoubleElementValue extends ConstantElementValue {
+        public                                          DoubleElementValue(short constantValueIndex) { super((byte) 'D', constantValueIndex); }
+        @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX     { return visitor.visitDoubleElementValue(this); }
+    }
+    public static final
+    class FloatElementValue extends ConstantElementValue {
+        public                                          FloatElementValue(short constantValueIndex) { super((byte) 'F', constantValueIndex); }
+        @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX    { return visitor.visitFloatElementValue(this); }
+    }
+    public static final
+    class IntElementValue extends ConstantElementValue {
+        public                                          IntElementValue(short constantValueIndex) { super((byte) 'I', constantValueIndex); }
+        @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX  { return visitor.visitIntElementValue(this); }
+    }
+    public static final
+    class LongElementValue extends ConstantElementValue {
+        public                                          LongElementValue(short constantValueIndex) { super((byte) 'J', constantValueIndex); }
+        @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitLongElementValue(this); }
+    }
+    public static final
+    class ShortElementValue extends ConstantElementValue {
+        public                                          ShortElementValue(short constantValueIndex) { super((byte) 'S', constantValueIndex); }
+        @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX    { return visitor.visitShortElementValue(this); }
+    }
+    public static final
+    class BooleanElementValue extends ConstantElementValue {
+        public                                          BooleanElementValue(short constantValueIndex) { super((byte) 'Z', constantValueIndex); }
+        @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX      { return visitor.visitBooleanElementValue(this); }
+    }
+    public static final
+    class StringElementValue extends ConstantElementValue {
+        public                                          StringElementValue(short constantValueIndex) { super((byte) 's', constantValueIndex); }
+        @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX     { return visitor.visitStringElementValue(this); }
+    }
+    public static final
+    class ClassElementValue extends ConstantElementValue {
+
+        /**
+         * @param constantValueIndex Index of a constant pool entry that is a CONSTANT_Utf8_info structure
+         *                           representing a return descriptor
+         */
+        public
+        ClassElementValue(short constantValueIndex) { super((byte) 'c', constantValueIndex); }
+
+        @Override protected <R, EX extends Throwable> R
+        accept(Visitor<R, EX> visitor) throws EX { return visitor.visitClassElementValue(this); }
+    }
+
+    /**
+     * Representation of the "enum_const_value" element in the "element_value" structure.
+     */
+    public static final
+    class EnumConstValue implements ClassFile.ElementValue {
+
+        /**
+         * {@code type_name_index}; index of a {@link ConstantUtf8Info} representing a field descriptor.
+         */
+        public final short typeNameIndex;
+
+        /**
+         * {@code const_name_index}; index of a {@link ConstantUtf8Info} giveing the simple name of the enum
+         * constant represented by this {@code element_value} structure.
+         */
+        public final short constNameIndex;
+
+        /**
+         * @param typeNameIndex  {@code type_name_index}; index of a {@link ConstantUtf8Info} representing a field
+         *                       descriptor
+         * @param constNameIndex {@code const_name_index}; index of a {@link ConstantUtf8Info} giveing the simple
+         *                       name of the enum constant represented by this {@code element_value} structure
+         */
+        public
+        EnumConstValue(short typeNameIndex, short constNameIndex) {
+            this.typeNameIndex  = typeNameIndex;
+            this.constNameIndex = constNameIndex;
+        }
+
+        @Override public byte
+        getTag() { return 'e'; }
+
+        @Override public void
+        store(DataOutputStream dos) throws IOException {
+            dos.writeShort(this.typeNameIndex);  // type_name_index
+            dos.writeShort(this.constNameIndex); // const_name_index
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ClassFile.ElementValue.Visitor<R, EX> visitor)
+        throws EX { return visitor.visitEnumConstValue(this); }
+    }
+
+    /**
+     * Representation of the "array_value" structure.
+     */
+    public static final
+    class ArrayElementValue implements ClassFile.ElementValue {
+
+        /**
+         * The values of the elements of this array element value.
+         */
+        public final ClassFile.ElementValue[] values;
+
+        public
+        ArrayElementValue(ClassFile.ElementValue[] values) { this.values = values; }
+
+        @Override public byte
+        getTag() { return '['; }
+
+        @Override public void
+        store(DataOutputStream dos) throws IOException {
+            dos.writeShort(this.values.length);             // num_values
+            for (ClassFile.ElementValue ev : this.values) { // values[num_values]
+                dos.writeByte(ev.getTag()); // tag
+                ev.store(dos);              // value
+            }
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ClassFile.ElementValue.Visitor<R, EX> visitor)
+        throws EX { return visitor.visitArrayElementValue(this); }
+    }
+
+    /**
+     * The structure of the {@code annotations} array as described in JVMS8 4.7.16.
+     */
+    public static
+    class Annotation implements ClassFile.ElementValue {
+
+        /**
+         * The "type_index" field of the {@code annotation} type as described in JVMS8 4.7.16. The constant pool
+         * entry at that index must be a CONSTANT_Utf8_info structure representing a field descriptor.
+         */
+        public final short typeIndex;
+
+        /**
+         * The "element_value_pairs" field of the {@code annotation} type as described in JVMS8 4.7.16.
+         * Key is the "{@code element_name_index}" (a constant pool index to a {@link ConstantUtf8Info});
+         * value is an {@link ClassFile.ElementValue}.
+         */
+        public final Map<Short, ClassFile.ElementValue> elementValuePairs;
+
+        /**
+         * @param typeIndex         UTF 8 constant pool entry index; field descriptor
+         * @param elementValuePairs Maps element name index ({@link ConstantUtf8Info}) to {@link
+         *                          ClassFile.ElementValue}s
+         */
+        public
+        Annotation(short typeIndex, Map<Short, ClassFile.ElementValue> elementValuePairs) {
+            this.typeIndex         = typeIndex;
+            this.elementValuePairs = elementValuePairs;
+        }
+
+        @Override public byte
+        getTag() { return '@'; }
+
+        @Override public void
+        store(DataOutputStream dos) throws IOException {
+
+            // SUPPRESS CHECKSTYLE LineLength:4
+            dos.writeShort(this.typeIndex);                // type_index
+            dos.writeShort(this.elementValuePairs.size()); // num_element_value_pairs
+            for (                                          // element_value_pairs[num_element_value_pairs]
+                Map.Entry<Short, ClassFile.ElementValue> evps
+                : this.elementValuePairs.entrySet()
+            ) {
+                Short elementNameIndex = (Short) evps.getKey();
+                ClassFile.ElementValue
+                elementValue = (ClassFile.ElementValue) evps.getValue();
+
+                dos.writeShort(elementNameIndex);     // element_name_index
+                dos.writeByte(elementValue.getTag()); // value.tag
+                elementValue.store(dos);              // value.value
+            }
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ClassFile.ElementValue.Visitor<R, EX> visitor)
+        throws EX { return visitor.visitAnnotation(this); }
+    }
+
+    private static ClassFile.ElementValue
+    loadElementValue(DataInputStream dis) throws IOException {
+
+        byte tag = dis.readByte(); // tag
+        switch (tag) {
+
+        case 'B': return new ByteElementValue(dis.readShort());
+        case 'C': return new CharElementValue(dis.readShort());
+        case 'D': return new DoubleElementValue(dis.readShort());
+        case 'F': return new FloatElementValue(dis.readShort());
+        case 'I': return new IntElementValue(dis.readShort());
+        case 'J': return new LongElementValue(dis.readShort());
+        case 'S': return new ShortElementValue(dis.readShort());
+        case 'Z': return new BooleanElementValue(dis.readShort());
+        case 's': return new StringElementValue(dis.readShort());
+        case 'e': return new EnumConstValue(dis.readShort(), dis.readShort());
+        case 'c': return new ClassElementValue(dis.readShort());
+        case '@': return AnnotationsAttribute.loadAnnotation(dis);
+
+        case '[':
+            short numValues = dis.readShort();                          // num_values
+
+            ClassFile.ElementValue[] values = new ClassFile.ElementValue[numValues & 0xffff];
+            for (int i = 0; i < numValues; i++) {
+                values[i] = ClassFile.loadElementValue(dis); // values[num_values]
+            }
+            return new ArrayElementValue(values);
+
+        default:
+            throw new ClassFileException("Invalid element-value-pair tag '" + (char) tag + "'");
         }
     }
 }

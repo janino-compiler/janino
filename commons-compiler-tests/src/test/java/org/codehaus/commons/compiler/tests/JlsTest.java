@@ -709,6 +709,33 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_9_6_2__DefaultsForAnnotationTypeElements() throws Exception {
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "import java.lang.annotation.Retention;\n"
+            + "import java.lang.annotation.RetentionPolicy;\n"
+            + "\n"
+            + "@Retention(RetentionPolicy.RUNTIME) public\n"
+            + "@interface MyAnno { boolean value() default true; }\n"
+            + "\n"
+            + "@MyAnno public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() throws Exception {\n"
+            + "        Class mc = Main.class;\n"
+            + "        System.out.printf(\"mc=%s%n\", mc.toString());\n"
+            + "        Class ac = MyAnno.class;\n"
+            + "        System.out.printf(\"ac=%s%n\", ac.toString());\n"
+            + "        Object a = mc.getAnnotation(ac);\n"
+            + "        System.out.printf(\"a=%s%n\", a);\n"
+            + "        return ((MyAnno) a).value();\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
     test_9_7_2_Marker_Annotations() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((

@@ -1319,7 +1319,7 @@ class IClass {
         IClass getAnnotationType() throws CompileException;
 
         /**
-         * Returns the value of the <var>name</var>ed element:
+         * Returns the value of the <var>name</var>d element:
          * <dl>
          *   <dt>{@link Boolean}</dt>
          *   <dt>{@link Byte}</dt>
