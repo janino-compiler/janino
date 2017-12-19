@@ -868,7 +868,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 modifiers,                                            // modifiers
                 null,                                                 // optionalTypeParameters
                 new PrimitiveType(parser.location(), Primitive.VOID), // type
-                name                                                  // name
+                name,                                                 // name
+                false                                                 // allowDefaultClause
             ));
             return;
         }
@@ -880,11 +881,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             // Modifiers Type Identifier MethodDeclarationRest ';'
             if (parser.peek(TokenType.IDENTIFIER) && parser.peekNextButOne("(")) {
                 localMethods.add(parser.parseMethodDeclarationRest(
-                    null,                             // optionalDocComment
-                    modifiers,                        // modifiers
-                    null,                             // optionalTypeParameters
-                    methodOrVariableType,             // type
-                    parser.read(TokenType.IDENTIFIER) // name
+                    null,                              // optionalDocComment
+                    modifiers,                         // modifiers
+                    null,                              // optionalTypeParameters
+                    methodOrVariableType,              // type
+                    parser.read(TokenType.IDENTIFIER), // name
+                    false                              // allowDefaultClause
                 ));
                 return;
             }
@@ -916,11 +918,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         // [ Modifiers ] Expression identifier MethodDeclarationRest
         if (parser.peek(TokenType.IDENTIFIER) && parser.peekNextButOne("(")) {
             localMethods.add(parser.parseMethodDeclarationRest(
-                null,                             // optionalDocComment
-                modifiers,                        // modifiers
-                null,                             // optionalTypeParameters
-                methodOrVariableType,             // type
-                parser.read(TokenType.IDENTIFIER) // name
+                null,                              // optionalDocComment
+                modifiers,                         // modifiers
+                null,                              // optionalTypeParameters
+                methodOrVariableType,              // type
+                parser.read(TokenType.IDENTIFIER), // name
+                false                              // allowDefaultClause
             ));
             return;
         }

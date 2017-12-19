@@ -799,7 +799,8 @@ class Parser {
                 modifiers,                                   // modifiers
                 null,                                        // optionalTypeParameters
                 new PrimitiveType(location, Primitive.VOID), // type
-                name                                         // name
+                name,                                        // name
+                false                                        // allowDefaultClause
             ));
             return;
         }
@@ -880,7 +881,8 @@ class Parser {
                 modifiers,                                          // modifiers
                 optionalTypeParameters,                             // optionalTypeParameters
                 new PrimitiveType(this.location(), Primitive.VOID), // type
-                name                                                // name
+                name,                                               // name
+                false                                               // allowDefaultClause
             ));
             return;
         }
@@ -897,7 +899,8 @@ class Parser {
                 modifiers,              // modifiers
                 optionalTypeParameters, // optionalTypeParameters
                 memberType,             // type
-                memberName              // name
+                memberName,             // name
+                false                   // allowDefaultClause
             ));
             return;
         }
@@ -1067,7 +1070,8 @@ class Parser {
                     modifiers.add(Mod.ABSTRACT | Mod.PUBLIC),    // modifiers
                     null,                                        // optionalTypeParameters
                     new PrimitiveType(location, Primitive.VOID), // type
-                    name                                         // name
+                    name,                                        // name
+                    false                                        // allowDefaultClause
                 ));
                 continue;
             }
@@ -1148,7 +1152,8 @@ class Parser {
                     modifiers.add(Mod.ABSTRACT | Mod.PUBLIC),    // modifiers
                     optionalTypeParameters,                      // optionalTypeParameters
                     new PrimitiveType(location, Primitive.VOID), // type
-                    name                                         // name
+                    name,                                        // name
+                    false                                        // allowDefaultClause
                 ));
                 continue;
             }
@@ -1165,7 +1170,8 @@ class Parser {
                     modifiers.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiers
                     optionalTypeParameters,                   // optionalTypeParameters
                     memberType,                               // type
-                    memberName                                // name
+                    memberName,                               // name
+                    true                                      // allowDefaultClause
                 ));
                 continue;
             }
@@ -1274,6 +1280,7 @@ class Parser {
      *     FormalParameters
      *     { '[' ']' }
      *     [ 'throws' ReferenceTypeList ]
+     *     [ 'default' expression ]
      *     ( ';' | MethodBody )
      * </pre>
      */
@@ -1283,7 +1290,8 @@ class Parser {
         Modifiers                 modifiers,
         @Nullable TypeParameter[] optionalTypeParameters,
         Type                      type,
-        String                    name
+        String                    name,
+        boolean                   allowDefaultClause
     ) throws CompileException, IOException {
         Location location = this.location();
 
@@ -1298,6 +1306,10 @@ class Parser {
             thrownExceptions = this.parseReferenceTypeList();
         } else {
             thrownExceptions = new ReferenceType[0];
+        }
+
+        if (allowDefaultClause && this.peekRead("default")) {
+            this.parseExpression();
         }
 
         List<BlockStatement> optionalStatements;
