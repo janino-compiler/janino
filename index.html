@@ -852,7 +852,7 @@ $</pre></div>
         </h4>
 
         <p>
-          The SimpleCompiler compiles a single "compilation unit" (a.k.a. ".java" file). Opposed to normal Java
+          The <code>SimpleCompiler</code> compiles a single "compilation unit" (a.k.a. ".java" file). Opposed to normal Java
           compilation, that compilation unit may declare <em>more than one</em> public type. Example:
         </p>
 
@@ -877,7 +877,7 @@ class Bar {
     }
 }</pre></div>
 
-        <p>It returns a ClassLoader from which you can retrieve the classes that were compiled.</p>
+        <p>It returns a <code>ClassLoader</code> from which you can retrieve the classes that were compiled.</p>
 
         <p>To run this, type:</p>
 
@@ -903,16 +903,16 @@ $</pre></div>
         <h4>
           <a id="janino-as-a-source-code-classloader" class="anchor" href="#janino-as-a-source-code-classloader"
           aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a Source Code
-          ClassLoader
+          Class Loader
         </h4>
 
         <p>
-          The JavaSourceClassLoader extends Java's java.lang.ClassLoader class with the ability to load classes
+          The <code>JavaSourceClassLoader</code> extends Java's <code>java.lang.ClassLoader</code> class with the ability to load classes
           directly from source code.
         </p>
 
         <p>
-          To be precise, if a class is loaded through this ClassLoader, it searches for a matching ".java" file in any
+          To be precise, if a class is loaded through this class loader, it searches for a matching ".java" file in any
           of the directories specified by a given "source path", reads, scans, parses and compiles it and defines the
           resulting classes in the JVM. As necessary, more classes are loaded through the parent class loader and/or
           through the source path. No intermediate files are created in the file system.
@@ -967,7 +967,7 @@ Object o = cl.loadClass("pkg1.A").newInstance();
 
         <p>
           If you have many source files and you want to reduce the compilation time, you may want to use the
-          CachingJavaSourceClassLoader, which uses a cache provided by the application to store class files for
+          <code>CachingJavaSourceClassLoader</code>, which uses a cache provided by the application to store class files for
           repeated use.
         </p>
 
@@ -1128,13 +1128,13 @@ UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
 
         <ul>
           <li>
-            Use org.codehaus.commons.compiler.jdk.ExpressionEvaluator and consorts instead of
-            org.codehaus.janino.ExpressionEvaluator; put commons-compiler-jdk.jar instead of janino.jar on your
+            Use <code>org.codehaus.commons.compiler.jdk.ExpressionEvaluator</code> and consorts instead of
+            <code>org.codehaus.janino.ExpressionEvaluator</code>; put commons-compiler-jdk.jar instead of janino.jar on your
             compile-time and runtime classpath. (commons-compiler.jar must always be on the classpath, because it
             contains the basic classes that all implementations require.)
           </li>
           <li>
-            Use org.codehaus.commons.compiler.CompilerFactoryFactory.getDefaultFactory().newExpressionEvaluator() and
+            Use <code>org.codehaus.commons.compiler.CompilerFactoryFactory.getDefaultFactory().newExpressionEvaluator()</code> and
             compile only against commons-compiler.jar (and no concrete implementation). At runtime, add one
             implementation (janino.jar or commons-compiler-jdk.jar) to the class path, and getDefaultFactory() will
             find it at runtime.
