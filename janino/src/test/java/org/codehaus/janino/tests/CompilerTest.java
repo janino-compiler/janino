@@ -97,6 +97,41 @@ class CompilerTest {
         }
     }
 
+    /**
+     * Another attempt to reproduce issue #32... still no success.
+     */
+    @Ignore
+    @Test public void
+    testSelfCompileParallel() throws Exception {
+
+        final Throwable[] ex = new Throwable[1];
+
+        Runnable r = new Runnable() {
+
+            @Override public void
+            run() {
+                try {
+                    for (int i = 0; i < 10; i++) {
+                        System.out.printf("#%d%n", i);
+                        CompilerTest.this.testSelfCompile();
+                    }
+                } catch (Throwable t) { // SUPPRESS CHECKSTYLE IllegalCatch
+                    ex[0] = t;
+                }
+            }
+        };
+
+        Thread[] ts = new Thread[10];
+        for (int i = 0; i < ts.length; i++) {
+            (ts[i] = new Thread(r)).start();
+        }
+        for (int i = 0; i < ts.length && ex[0] == null; i++) {
+            ts[i].join();
+        }
+
+        if (ex[0] != null) throw new AssertionError(ex[0]);
+    }
+
     @Test public void
     testSelfCompile() throws Exception {
 
