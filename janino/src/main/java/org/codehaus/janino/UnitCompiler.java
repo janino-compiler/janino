@@ -1152,6 +1152,7 @@ class UnitCompiler {
                         ));
                     }
 
+                    // Constant value?
                     Object cv = UnitCompiler.this.getConstantValue(rv);
 
                     if (cv == UnitCompiler.NOT_CONSTANT) {
