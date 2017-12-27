@@ -114,10 +114,10 @@ class Sandbox {
     }
 
     /**
-     * All future actions that are executed through classes that were loaded through the given {@code classLoader}
-     * will be checked against the given {@code protectionDomain}.
+     * All future actions that are executed through classes that were loaded through the given <var>classLoader</var>
+     * will be checked against the given <var>protectionDomain</var>.
      *
-     * @throws SecurityException Permissions are already confined for the {@code classLoader}
+     * @throws SecurityException Permissions are already confined for the <var>classLoader</var>
      */
     public static void
     confine(ClassLoader classLoader, ProtectionDomain protectionDomain) {
@@ -125,10 +125,10 @@ class Sandbox {
     }
 
     /**
-     * All future actions that are executed through classes that were loaded through the given {@code classLoader}
-     * will be checked against the given {@code permissions}.
+     * All future actions that are executed through classes that were loaded through the given <var>classLoader</var>
+     * will be checked against the given <var>permissions</var>.
      *
-     * @throws SecurityException Permissions are already confined for the {@code classLoader}
+     * @throws SecurityException Permissions are already confined for the <var>classLoader</var>
      */
     public static void
     confine(ClassLoader classLoader, Permissions permissions) {
