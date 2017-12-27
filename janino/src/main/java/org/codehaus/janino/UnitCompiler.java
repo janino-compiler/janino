@@ -1135,18 +1135,14 @@ class UnitCompiler {
                             break ENUM_CONSTANT;
                         }
 
-                        if (enumIClass.getSuperclass() != UnitCompiler.this.iClassLoader.TYPE_java_lang_Enum) {
-                            UnitCompiler.this.compileError(
-                                "\"" + enumType + "\" is not an enum",
-                                enumType.getLocation()
+                        if (enumIClass.getSuperclass() == UnitCompiler.this.iClassLoader.TYPE_java_lang_Enum) {
+                            return new ClassFile.EnumConstValue(
+                                cf.addConstantUtf8Info(enumIClass.getDescriptor()),             // typeNameIndex
+                                cf.addConstantUtf8Info(enumConstantFieldAccess.field.getName()) // constNameIndex
                             );
-                            break ENUM_CONSTANT;
                         }
 
-                        return new ClassFile.EnumConstValue(
-                            cf.addConstantUtf8Info(enumIClass.getDescriptor()),             // typeNameIndex
-                            cf.addConstantUtf8Info(enumConstantFieldAccess.field.getName()) // constNameIndex
-                        );
+                        // We have a constant, but it is not an ENUM constant, so fall through.
                     }
 
                     // Class literal?
@@ -7908,9 +7904,9 @@ class UnitCompiler {
         final VariableDeclarator variableDeclarator
     ) {
 
-        final IAnnotation[] ias = UnitCompiler.this.toIAnnotations(modifiers.annotations);
-
         return this.resolve(declaringType).new IField() {
+
+            @Nullable private IAnnotation[] ias;
 
             // Implement IMember.
             @Override public Access
@@ -7930,7 +7926,12 @@ class UnitCompiler {
             }
 
             @Override public IAnnotation[]
-            getAnnotations() { return ias; }
+            getAnnotations() {
+
+                if (this.ias != null) return this.ias;
+
+                return (this.ias = UnitCompiler.this.toIAnnotations(modifiers.annotations));
+            }
 
             // Implement "IField".
 
@@ -8372,10 +8373,14 @@ class UnitCompiler {
                     }
 
                     assert scopeTypeDeclaration != null;
-                    assert scopeTbd != null;
-
                     SimpleType ct = new SimpleType(scopeTypeDeclaration.getLocation(), etd);
-                    Atom       lhs;
+
+                    Atom lhs;
+                    if (scopeTbd == null) {
+
+                        // Field access in top-level type declaration context (member annotation).
+                        lhs = ct;
+                    } else
                     if (scopeTbd.isStatic()) {
 
                         // Field access in static method context.
@@ -8394,12 +8399,10 @@ class UnitCompiler {
                             lhs = new QualifiedThisReference(location, ct);
                         }
                     }
-                    Rvalue res = new FieldAccess(
-                        location,
-                        lhs,
-                        f
-                    );
+
+                    Rvalue res = new FieldAccess(location, lhs, f);
                     res.setEnclosingScope(scope);
+
                     return res;
                 }
             }
@@ -9866,9 +9869,9 @@ class UnitCompiler {
     toIConstructor(final ConstructorDeclarator constructorDeclarator) {
         if (constructorDeclarator.iConstructor != null) return constructorDeclarator.iConstructor;
 
-        final IAnnotation[] ias = this.toIAnnotations(constructorDeclarator.getAnnotations());
-
         constructorDeclarator.iConstructor = this.resolve(constructorDeclarator.getDeclaringType()).new IConstructor() {
+
+            @Nullable private IAnnotation[] ias;
 
             // Implement IMember.
             @Override public Access
@@ -9888,7 +9891,12 @@ class UnitCompiler {
             }
 
             @Override public IAnnotation[]
-            getAnnotations() { return ias; }
+            getAnnotations() {
+
+                if (this.ias != null) return this.ias;
+
+                return (this.ias = UnitCompiler.this.toIAnnotations(constructorDeclarator.getAnnotations()));
+            }
 
             // Implement IInvocable.
 
@@ -9984,9 +9992,9 @@ class UnitCompiler {
 
         if (methodDeclarator.iMethod != null) return methodDeclarator.iMethod;
 
-        final IAnnotation[] ias = this.toIAnnotations(methodDeclarator.getAnnotations());
-
         methodDeclarator.iMethod = this.resolve(methodDeclarator.getDeclaringType()).new IMethod() {
+
+            @Nullable IAnnotation[] ias;
 
             // Implement IMember.
             @Override public Access
@@ -10006,7 +10014,12 @@ class UnitCompiler {
             }
 
             @Override public IAnnotation[]
-            getAnnotations() { return ias; }
+            getAnnotations() {
+
+                if (this.ias != null) return this.ias;
+
+                return (this.ias = UnitCompiler.this.toIAnnotations(methodDeclarator.getAnnotations()));
+            }
 
             // Implement IInvocable.
 

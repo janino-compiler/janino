@@ -67,30 +67,32 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     /**
      * StackOverflowError when using field annotations with enum members.
      *
-     * @see <a href="https://github.com/janino-compiler/janino/pull/31">GITHUB poll request #31</a>
+     * @see <a href="https://github.com/janino-compiler/janino/pull/31">GITHUB pull request #31</a>
      */
     @Test public void
     testPullRequest31() throws Exception {
-        this.assertCompilationUnitMainExecutable((
+        this.assertCompilationUnitCookable((
             ""
             + "package demo;\n"
             + "\n"
             + "import java.io.Serializable;\n"
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation2;\n"
             + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4;\n"
-            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4Enum;\n"
+            + "import static org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation4Enum.SECOND;\n"
             + "\n"
             + "public class JaninoTestComponent implements Serializable {\n"
             + "\n"
+            + "    public static final String CONST = \"HOWDY\";\n"
             + "    private static final long serialVersionUID = 1L;\n"
             + "\n"
-            + "    @RuntimeRetainedAnnotation4(RuntimeRetainedAnnotation4Enum.SECOND)\n"
+            + "    @RuntimeRetainedAnnotation2(CONST)\n"
             + "    protected java.util.Date lastModifiedDate;\n"
             + "\n"
             + "    public JaninoTestComponent() {\n"
-            + "        // default constructor;\n"
+            + "            // default constructor;\n"
             + "    }\n"
             + "}\n"
-        ), "demo.Service");
+        ));
     }
 
     @Test public void
