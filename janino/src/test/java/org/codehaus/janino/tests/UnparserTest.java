@@ -84,7 +84,7 @@ import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Unparser;
 import org.codehaus.janino.Visitor;
-import org.codehaus.janino.util.Traverser;
+import org.codehaus.janino.util.AbstractTraverser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -628,7 +628,7 @@ class UnparserTest {
             listSyntaxElements(CompilationUnit cu) {
 
                 final List<Locatable> locatables = new ArrayList<Locatable>();
-                new Traverser<RuntimeException>() {
+                new AbstractTraverser<RuntimeException>() {
 
                     // Two implementations of "Locatable": "Located" and "AbstractTypeDeclaration".
                     @Override public void

@@ -45,7 +45,7 @@ import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
-import org.codehaus.janino.util.Traverser;
+import org.codehaus.janino.util.AbstractTraverser;
 import org.codehaus.janino.util.iterator.ReverseListIterator;
 
 /**
@@ -3872,7 +3872,7 @@ class Java {
         @Override
         public final void
         setEnclosingScope(final Java.Scope enclosingScope) {
-            new Traverser<RuntimeException>() {
+            new AbstractTraverser<RuntimeException>() {
 
                 @Override public void
                 traverseRvalue(Java.Rvalue rv) {

@@ -60,7 +60,7 @@ import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Parser.ClassDeclarationContext;
-import org.codehaus.janino.util.Traverser;
+import org.codehaus.janino.util.AbstractTraverser;
 
 /**
  * An implementation of {@link IScriptEvaluator} that utilizes the JANINO Java compiler.
@@ -1198,7 +1198,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         // Traverse the block for ambiguous names and guess which of them are parameter names.
         final Set<String> localVariableNames = new HashSet<String>();
         final Set<String> parameterNames     = new HashSet<String>();
-        new Traverser<RuntimeException>() {
+        new AbstractTraverser<RuntimeException>() {
 
             @Override public void
             traverseLocalVariableDeclarationStatement(Java.LocalVariableDeclarationStatement lvds) {

@@ -44,7 +44,7 @@ import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.Rvalue;
-import org.codehaus.janino.util.Traverser;
+import org.codehaus.janino.util.AbstractTraverser;
 
 /**
  * This {@link IExpressionEvaluator} is implemented by creating and compiling a temporary compilation unit defining one
@@ -377,7 +377,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
         final Set<String> parameterNames = new HashSet<String>();
-        new Traverser<RuntimeException>() {
+        new AbstractTraverser<RuntimeException>() {
 
             @Override public void
             traverseAmbiguousName(AmbiguousName an) {
