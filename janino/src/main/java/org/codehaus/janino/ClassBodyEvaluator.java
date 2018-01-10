@@ -190,7 +190,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     public ClassBodyEvaluator() {}
 
     @Override public void
-    setDefaultImports(@Nullable String[] optionalDefaultImports) {
+    setDefaultImports(@Nullable String... optionalDefaultImports) {
         this.optionalDefaultImports = optionalDefaultImports;
     }
 
