@@ -119,7 +119,7 @@ interface IClassBodyEvaluator extends ISimpleCompiler {
      *     });
      * </pre>
      */
-    void setDefaultImports(@Nullable String[] optionalDefaultImports);
+    void setDefaultImports(String... optionalDefaultImports);
 
     /**
      * Sets the name of the generated class. Defaults to {@link #DEFAULT_CLASS_NAME}. In most cases, there is no need
