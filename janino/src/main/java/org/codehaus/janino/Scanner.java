@@ -292,9 +292,9 @@ class Scanner {
         // Scan a token that begins with "/".
         if (this.peekRead('/')) {
 
-            if (this.peekRead(-1)) return TokenType.OPERATOR; // "/"
+            if (this.peekRead(-1)) return TokenType.OPERATOR; // E.g. "/"
 
-            if (this.peekRead('=')) return TokenType.OPERATOR; // "/="
+            if (this.peekRead('=')) return TokenType.OPERATOR; // E.g. "/="
 
             if (this.peekRead('/')) { // C++-style comment.
                 while (!this.peek("\r\n")) this.read();
@@ -317,7 +317,7 @@ class Scanner {
                 }
             }
 
-            return TokenType.OPERATOR; // "/"
+            return TokenType.OPERATOR; // E.g. "/"
         }
 
         // Scan identifier.
@@ -379,10 +379,12 @@ class Scanner {
     scanNumericLiteral() throws CompileException, IOException {
 
         if (this.peekRead('0')) {
-            if (
+
+            if (               // E.g. "01"...
                 Scanner.isOctalDigit(this.peek())
                 || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isOctalDigit(this.peekButOne())))
             ) {
+
                 this.read();
                 while (
                     Scanner.isOctalDigit(this.peek())
@@ -395,21 +397,18 @@ class Scanner {
                     );
                 }
                 if (this.peekRead("lL")) {
-
-                    // Octal long literal.
-                    return TokenType.INTEGER_LITERAL;
+                    return TokenType.INTEGER_LITERAL; // Octal long literal, e.g. "0123L".
                 }
 
-                // Octal int literal
-                return TokenType.INTEGER_LITERAL;
+                return TokenType.INTEGER_LITERAL; // Octal int literal, e.g. "0123".
             }
 
             if (this.peekRead("lL")) return TokenType.INTEGER_LITERAL; // "0L"
 
-            if (this.peekRead("fFdD")) return TokenType.FLOATING_POINT_LITERAL; // "0F", "0D"
+            if (this.peekRead("fFdD")) return TokenType.FLOATING_POINT_LITERAL; // "0F" or "0D"
 
             if (this.peek(".Ee")) {
-                if (this.peekRead('.')) {
+                if (this.peekRead('.')) { // "0."...
                     while (
                         Scanner.isDecimalDigit(this.peek())
                         || (
@@ -418,7 +417,7 @@ class Scanner {
                         )
                     ) this.read();
                 }
-                if (this.peekRead("eE")) {
+                if (this.peekRead("eE")) { // "0e"... and "0.123e"...
 
                     this.peekRead("-+");
 
@@ -440,7 +439,7 @@ class Scanner {
                 return TokenType.FLOATING_POINT_LITERAL;
             }
 
-            if (this.peekRead("xX")) { // "0x"
+            if (this.peekRead("xX")) { // E.g. "0x"
 
                 while (Scanner.isHexDigit(this.peek())) this.read();
 
@@ -499,7 +498,7 @@ class Scanner {
                 return TokenType.INTEGER_LITERAL;
             }
 
-            if (this.peekRead("bB")) { // "0b"
+            if (this.peekRead("bB")) { // E.g. "0b"
 
                 if (!Scanner.isBinaryDigit(this.peek())) {
                     throw new CompileException("Binary digit expected after \"0b\"", this.location());
@@ -519,10 +518,10 @@ class Scanner {
             return TokenType.INTEGER_LITERAL;
         }
 
-        if (this.peek() == '.' && Scanner.isDecimalDigit(this.peekButOne())) { // ".9"
+        if (this.peek() == '.' && Scanner.isDecimalDigit(this.peekButOne())) { // E.g. ".9"
             ;
         } else
-        if (Scanner.isDecimalDigit(this.peek())) { // "[1-9]"
+        if (Scanner.isDecimalDigit(this.peek())) { // E.g. "123"
             this.read();
 
             while (
@@ -530,11 +529,11 @@ class Scanner {
                 || (this.peek() == '_' && (this.peekButOne() == '_' || Scanner.isDecimalDigit(this.peekButOne())))
             ) this.read();
 
-            if (this.peekRead("lL")) return TokenType.INTEGER_LITERAL;
+            if (this.peekRead("lL")) return TokenType.INTEGER_LITERAL; // E.g. "123L"
 
-            if (this.peekRead("fFdD")) return TokenType.FLOATING_POINT_LITERAL;
+            if (this.peekRead("fFdD")) return TokenType.FLOATING_POINT_LITERAL; // E.g. "123D"
 
-            if (!this.peek(".eE")) return TokenType.INTEGER_LITERAL;
+            if (!this.peek(".eE")) return TokenType.INTEGER_LITERAL; // E.g. "123"
         } else
         {
             throw new CompileException(
@@ -543,9 +542,8 @@ class Scanner {
             );
         }
 
-        // ".9" or "123." or "123e"
 
-        if (this.peekRead('.')) {
+        if (this.peekRead('.')) { // E.g. ".9" or "123." or "123e"
             if (Scanner.isDecimalDigit(this.peek())) {
                 this.read();
                 while (
@@ -555,7 +553,7 @@ class Scanner {
             }
         }
 
-        if (this.peekRead("eE")) {
+        if (this.peekRead("eE")) { // E.g. "1e3"
 
             this.peekRead("-+");
 
@@ -570,7 +568,7 @@ class Scanner {
             ) this.read();
         }
 
-        this.peekRead("fFdD");
+        this.peekRead("fFdD"); // E.g. "123F"
 
         return TokenType.FLOATING_POINT_LITERAL;
     }
