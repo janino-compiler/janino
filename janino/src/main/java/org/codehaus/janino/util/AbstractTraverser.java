@@ -144,15 +144,15 @@ import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
 
 /**
- * This class traverses the subnodes of an AST. Derived classes override individual "{@code traverse*()}" methods to
- * process specific nodes.
+ * A basic implementation of {@link Traverser}; each {@code traverse*(s)} method invokes the
+ * {@code traverse*()} methods of all Java elements subordinate to {@code x}.
  * <p>
  *   Example:
  * </p>
  * <pre>
  *     LocalClassDeclaration lcd = ...;
  *
- *     new Traverser() {
+ *     new AbstractTraverser() {
  *
  *         int n = 0;
  *
@@ -403,34 +403,34 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
     @Override public void
     visitImportDeclaration(CompilationUnit.ImportDeclaration id) throws EX {
-        id.accept(AbstractTraverser.this.importTraverser);
+        id.accept(this.importTraverser);
     }
 
     @Override public void
     visitTypeDeclaration(TypeDeclaration td) throws EX {
-        td.accept(AbstractTraverser.this.typeDeclarationTraverser);
+        td.accept(this.typeDeclarationTraverser);
     }
 
     @Override public void
     visitTypeBodyDeclaration(TypeBodyDeclaration tbd) throws EX {
-        tbd.accept(AbstractTraverser.this.typeBodyDeclarationTraverser);
+        tbd.accept(this.typeBodyDeclarationTraverser);
     }
 
     @Override public void
     visitBlockStatement(BlockStatement bs) throws EX {
-        bs.accept(AbstractTraverser.this.blockStatementTraverser);
+        bs.accept(this.blockStatementTraverser);
     }
 
     @Override public void
     visitAtom(Atom a) throws EX {
-        a.accept(AbstractTraverser.this.atomTraverser);
+        a.accept(this.atomTraverser);
     }
 
     @Override public void
-    visitElementValue(ElementValue ev) throws EX { ev.accept(AbstractTraverser.this.elementValueTraverser); }
+    visitElementValue(ElementValue ev) throws EX { ev.accept(this.elementValueTraverser); }
 
     @Override public void
-    visitAnnotation(Annotation a) throws EX { a.accept(AbstractTraverser.this.annotationTraverser); }
+    visitAnnotation(Annotation a) throws EX { a.accept(this.annotationTraverser); }
 
     // These may be overridden by derived classes.
 
