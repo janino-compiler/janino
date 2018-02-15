@@ -151,6 +151,10 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertExpressionEvaluatesTrue("-1 == 0xffffffff");
         this.assertExpressionEvaluatesTrue("1 == -0xffffffff");
         this.assertExpressionEvaluatesTrue("-0xf == -15");
+
+        // https://github.com/janino-compiler/janino/issues/41 :
+        this.assertExpressionEvaluatesTrue("-(-2147483648)           == -2147483648");
+        this.assertExpressionEvaluatesTrue("-(-9223372036854775808L) == -9223372036854775808L");
     }
 
     @Test public void
