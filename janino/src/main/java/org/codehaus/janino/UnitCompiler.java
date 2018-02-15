@@ -5896,10 +5896,6 @@ class UnitCompiler {
         );
     }
     @Nullable private Object
-    getNegatedConstantValue2(ParenthesizedExpression pe) throws CompileException {
-        return this.getNegatedConstantValue(pe.value);
-    }
-    @Nullable private Object
     getNegatedConstantValue2(IntegerLiteral il) throws CompileException {
 
         String v = il.value;
