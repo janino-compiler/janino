@@ -433,6 +433,15 @@ class CompilerTest {
         s.getClassLoader().loadClass("a.TestLocalVarTable");
     }
 
+    // https://github.com/codehaus/janino/issues/41
+    @Test public void
+    testIntegerLiteralNegation() throws Exception {
+        SimpleCompiler s = new SimpleCompiler();
+        s.setDebuggingInformation(true, true, true);
+        s.cook(new FileInputStream(CompilerTest.RESOURCE_DIR + "/a/TestIntegerLiteralNegation.java"));
+        s.getClassLoader().loadClass("a.TestIntegerLiteralNegation");
+    }
+
     public static List<ClassFile>
     doCompile(
         boolean   debugSource,

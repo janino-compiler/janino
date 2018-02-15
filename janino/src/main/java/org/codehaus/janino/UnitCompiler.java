@@ -5877,8 +5877,7 @@ class UnitCompiler {
         });
     }
     @Nullable private Object
-    getNegatedConstantValue2(Rvalue rv) throws CompileException {
-        Object cv = this.getConstantValue(rv);
+    getNegatedConstantValueHelper(Object cv) {
         if (cv instanceof Byte)    return new Byte((byte) -((Byte) cv).byteValue());
         if (cv instanceof Short)   return new Short((short) -((Short) cv).shortValue());
         if (cv instanceof Integer) return new Integer(-((Integer) cv).intValue());
@@ -5888,7 +5887,16 @@ class UnitCompiler {
         return UnitCompiler.NOT_CONSTANT;
     }
     @Nullable private Object
+    getNegatedConstantValue2(Rvalue rv) throws CompileException {
+        Object cv = this.getConstantValue(rv);
+        return getNegatedConstantValueHelper(cv);
+    }
+    @Nullable private Object
     getNegatedConstantValue2(UnaryOperation uo) throws CompileException {
+        // special handling for negating Integer.MIN_VALUE or Long.MIN_VALUE
+        if (uo.operator == "-" && uo.operand instanceof IntegerLiteral) {   // SUPPRESS CHECKSTYLE StringLiteralEquality
+            return this.getNegatedConstantValueHelper(this.getNegatedConstantValue(uo.operand));
+        }
         return (
             uo.operator == "+" ? this.getNegatedConstantValue(uo.operand) : // SUPPRESS CHECKSTYLE StringLiteralEquality
             uo.operator == "-" ? this.getConstantValue(uo.operand)        : // SUPPRESS CHECKSTYLE StringLiteralEquality
