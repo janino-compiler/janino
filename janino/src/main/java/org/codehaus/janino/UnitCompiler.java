@@ -4621,7 +4621,7 @@ class UnitCompiler {
         if (uo.operator == "-") { // SUPPRESS CHECKSTYLE StringLiteralEquality
 
             {
-                Object ncv = this.getNegatedConstantValue(uo.operand);
+                Object ncv = this.getConstantValue2(uo);
                 if (ncv != UnitCompiler.NOT_CONSTANT) {
                     return this.unaryNumericPromotion(uo, this.pushConstant(uo, ncv));
                 }
@@ -5357,8 +5357,29 @@ class UnitCompiler {
             return this.getConstantValue(uo.operand);
         }
         if (uo.operator == "-") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-            return this.getNegatedConstantValue(uo.operand);
+
+            // Handle the super special cases "-2147483648" and "-9223372036854775808L" (JLS9 3.10.1).
+            if (uo.operand instanceof IntegerLiteral) {
+                String v = ((Literal) uo.operand).value;
+
+                if (UnitCompiler.TWO_E_31_INTEGER.matcher(v).matches()) return new Integer(Integer.MIN_VALUE);
+                if (UnitCompiler.TWO_E_63_LONG.matcher(v).matches())    return new Long(Long.MIN_VALUE);
+            }
+
+            Object cv = this.getConstantValue(uo.operand);
+
+            if (cv == UnitCompiler.NOT_CONSTANT) return UnitCompiler.NOT_CONSTANT;
+
+            if (cv instanceof Byte)    return new Byte((byte) -((Byte) cv).byteValue());
+            if (cv instanceof Short)   return new Short((short) -((Short) cv).shortValue());
+            if (cv instanceof Integer) return new Integer(-((Integer) cv).intValue());
+            if (cv instanceof Long)    return new Long(-((Long) cv).longValue());
+            if (cv instanceof Float)   return new Float(-((Float) cv).floatValue());
+            if (cv instanceof Double)  return new Double(-((Double) cv).doubleValue());
+
+            return UnitCompiler.NOT_CONSTANT;
         }
+
         if (uo.operator == "!") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             Object cv = this.getConstantValue(uo.operand);
             return (
@@ -5367,8 +5388,23 @@ class UnitCompiler {
                 UnitCompiler.NOT_CONSTANT
             );
         }
+
         return UnitCompiler.NOT_CONSTANT;
     }
+
+    /**
+     * 2147483648 is the special value that can <em>not</em> be stored in an INT, but <em>its negated value</em>
+     * (-2147483648) can.
+     */
+    private static final Pattern
+    TWO_E_31_INTEGER = Pattern.compile("2_*1_*4_*7_*4_*8_*3_*6_*4_*8");
+
+    /**
+     * 9223372036854775808 is the special value that can <em>not</em> be stored in a LONG, but <em>its negated
+     * value</em> (-9223372036854775808) can.
+     */
+    private static final Pattern
+    TWO_E_63_LONG = Pattern.compile("9_*2_*2_*3_*3_*7_*2_*0_*3_*6_*8_*5_*4_*7_*7_*5_*8_*0_*8[lL]");
 
     @Nullable private Object
     getConstantValue2(ConditionalExpression ce) throws CompileException {
@@ -5684,7 +5720,7 @@ class UnitCompiler {
             );
         } catch (NumberFormatException e) {
             // SUPPRESS CHECKSTYLE AvoidHidingCause
-            throw UnitCompiler.compileException(il, "Invalid integer literal \"" + v + "\"");
+            throw UnitCompiler.compileException(il, "Invalid integer literal \"" + il.value + "\"");
         }
     }
 
@@ -5815,109 +5851,6 @@ class UnitCompiler {
     @SuppressWarnings("static-method")
     @Nullable private Object
     getConstantValue2(SimpleConstant sl) { return sl.value; }
-
-    /**
-     * Attempts to evaluate the negated value of a constant {@link Rvalue}. This is particularly relevant for the
-     * smallest value of an integer or long literal.
-     * <p>
-     *   This method cannot be STATIC, because the constant value may refer to a constant declaration in this
-     *   compilation unit.
-     * </p>
-     *
-     * @return {@link #NOT_CONSTANT} iff value is not constant; otherwise a {@link String}, {@link Byte}, {@link
-     *         Short}, {@link Integer}, {@link Boolean}, {@link Character}, {@link Float}, {@link Long}, {@link Double}
-     *         or {@code null}
-     */
-    @Nullable private Object
-    getNegatedConstantValue(Rvalue rv) throws CompileException {
-
-        return rv.accept(new RvalueVisitor<Object, CompileException>() {
-
-            @Override @Nullable public Object
-            visitLvalue(Lvalue lv) throws CompileException {
-                return lv.accept(new Visitor.LvalueVisitor<Object, CompileException>() {
-
-                    // SUPPRESS CHECKSTYLE LineLengthCheck:7
-                    @Override @Nullable public Object visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(an);    }
-                    @Override @Nullable public Object visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(aae);   }
-                    @Override @Nullable public Object visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(fa);    }
-                    @Override @Nullable public Object visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(fae);   }
-                    @Override @Nullable public Object visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(scfae); }
-                    @Override @Nullable public Object visitLocalVariableAccess(LocalVariableAccess lva)                           throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(lva);   }
-                    @Override @Nullable public Object visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(pe);    }
-                });
-            }
-
-            // SUPPRESS CHECKSTYLE LineLength:25
-            @Override @Nullable public Object visitArrayLength(ArrayLength al)                                throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(al);   }
-            @Override @Nullable public Object visitAssignment(Assignment a)                                   throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(a);    }
-            @Override @Nullable public Object visitUnaryOperation(UnaryOperation uo)                          throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(uo);   }
-            @Override @Nullable public Object visitBinaryOperation(BinaryOperation bo)                        throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(bo);   }
-            @Override @Nullable public Object visitCast(Cast c)                                               throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(c);    }
-            @Override @Nullable public Object visitClassLiteral(ClassLiteral cl)                              throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(cl);   }
-            @Override @Nullable public Object visitConditionalExpression(ConditionalExpression ce)            throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(ce);   }
-            @Override @Nullable public Object visitCrement(Crement c)                                         throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(c);    }
-            @Override @Nullable public Object visitInstanceof(Instanceof io)                                  throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(io);   }
-            @Override @Nullable public Object visitMethodInvocation(MethodInvocation mi)                      throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(mi);   }
-            @Override @Nullable public Object visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(smi);  }
-            @Override @Nullable public Object visitIntegerLiteral(IntegerLiteral il)                          throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(il);   }
-            @Override @Nullable public Object visitFloatingPointLiteral(FloatingPointLiteral fpl)             throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(fpl);  }
-            @Override @Nullable public Object visitBooleanLiteral(BooleanLiteral bl)                          throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(bl);   }
-            @Override @Nullable public Object visitCharacterLiteral(CharacterLiteral cl)                      throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(cl);   }
-            @Override @Nullable public Object visitStringLiteral(StringLiteral sl)                            throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(sl);   }
-            @Override @Nullable public Object visitNullLiteral(NullLiteral nl)                                throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(nl);   }
-            @Override @Nullable public Object visitSimpleConstant(SimpleConstant sl)                          throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(sl);   }
-            @Override @Nullable public Object visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(naci); }
-            @Override @Nullable public Object visitNewArray(NewArray na)                                      throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(na);   }
-            @Override @Nullable public Object visitNewInitializedArray(NewInitializedArray nia)               throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(nia);  }
-            @Override @Nullable public Object visitNewClassInstance(NewClassInstance nci)                     throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(nci);  }
-            @Override @Nullable public Object visitParameterAccess(ParameterAccess pa)                        throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(pa);   }
-            @Override @Nullable public Object visitQualifiedThisReference(QualifiedThisReference qtr)         throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(qtr);  }
-            @Override @Nullable public Object visitThisReference(ThisReference tr)                            throws CompileException { return UnitCompiler.this.getNegatedConstantValue2(tr);   }
-        });
-    }
-    @Nullable private Object
-    getNegatedConstantValue2(Rvalue rv) throws CompileException {
-        Object cv = this.getConstantValue(rv);
-        if (cv instanceof Byte)    return new Byte((byte) -((Byte) cv).byteValue());
-        if (cv instanceof Short)   return new Short((short) -((Short) cv).shortValue());
-        if (cv instanceof Integer) return new Integer(-((Integer) cv).intValue());
-        if (cv instanceof Long)    return new Long(-((Long) cv).longValue());
-        if (cv instanceof Float)   return new Float(-((Float) cv).floatValue());
-        if (cv instanceof Double)  return new Double(-((Double) cv).doubleValue());
-        return UnitCompiler.NOT_CONSTANT;
-    }
-    @Nullable private Object
-    getNegatedConstantValue2(UnaryOperation uo) throws CompileException {
-        return (
-            uo.operator == "+" ? this.getNegatedConstantValue(uo.operand) : // SUPPRESS CHECKSTYLE StringLiteralEquality
-            uo.operator == "-" ? this.getConstantValue(uo.operand)        : // SUPPRESS CHECKSTYLE StringLiteralEquality
-            UnitCompiler.NOT_CONSTANT
-        );
-    }
-    @Nullable private Object
-    getNegatedConstantValue2(IntegerLiteral il) throws CompileException {
-
-        String v = il.value;
-        if (UnitCompiler.TWO_E_31_INTEGER.matcher(v).matches()) return new Integer(Integer.MIN_VALUE);
-        if (UnitCompiler.TWO_E_63_LONG.matcher(v).matches())    return new Long(Long.MIN_VALUE);
-
-        return this.getNegatedConstantValue2((Rvalue) il);
-    }
-
-    /**
-     * 2147483648 is the special value that can <em>not</em> be stored in an INT, but <em>its negated value</em>
-     * (-2147483648) can.
-     */
-    private static final Pattern
-    TWO_E_31_INTEGER = Pattern.compile("2147483648|0+20000000000|0b0*10{31}", Pattern.CASE_INSENSITIVE);
-
-    /**
-     * 9223372036854775808 is the special value that can <em>not</em> be stored in a LONG, but <em>its negated
-     * value</em> (-9223372036854775808) can.
-     */
-    private static final Pattern
-    TWO_E_63_LONG = Pattern.compile("9223372036854775808L|0+10{21}L|0b0*10{63}L", Pattern.CASE_INSENSITIVE);
 
     // ------------ BlockStatement.generatesCode() -------------
 

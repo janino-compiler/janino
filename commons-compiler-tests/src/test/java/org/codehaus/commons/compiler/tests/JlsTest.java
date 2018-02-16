@@ -153,8 +153,12 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertExpressionEvaluatesTrue("-0xf == -15");
 
         // https://github.com/janino-compiler/janino/issues/41 :
-        this.assertExpressionEvaluatesTrue("-(-2147483648)           == -2147483648");
-        this.assertExpressionEvaluatesTrue("-(-9223372036854775808L) == -9223372036854775808L");
+        this.assertExpressionEvaluatesTrue("-(-2147483648) == -2147483648");
+        this.assertExpressionEvaluatesTrue("- -2147483648  == -2147483648");
+
+        if (!this.isJdk6()) {
+            this.assertExpressionEvaluatesTrue("- -2147_483648  == -2147483648");
+        }
     }
 
     @Test public void
@@ -165,16 +169,21 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertExpressionUncookable("99999999999999999999999999999L");
         this.assertExpressionEvaluatable("-9223372036854775808L");
         this.assertExpressionUncookable("-9223372036854775809L");
+
+        // https://github.com/janino-compiler/janino/issues/41 :
+        this.assertExpressionEvaluatesTrue("-(-9223372036854775808L) == -9223372036854775808L");
+        this.assertExpressionEvaluatesTrue("- -9223372036854775808L  == -9223372036854775808L");
+        if (!this.isJdk6()) {
+            this.assertExpressionEvaluatesTrue("- -922337_2036854775808L == -9223372036854775808L");
+            this.assertExpressionUncookable("- -9223372036854775808_L == -9223372036854775808L");
+        }
     }
 
     @Test public void
     test_3_10_1__IntegerLiterals_binary() throws Exception {
 
         // "Binary numeric literals" is a Java 7 feature, so JDKs before 1.7 don't support it.
-        Assume.assumeFalse(
-            this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk")
-            && System.getProperty("java.version").matches("1\\.[1-6].*")
-        );
+        Assume.assumeFalse(this.isJdk6());
 
         this.assertExpressionEvaluatable("0b111");
         this.assertExpressionEvaluatesTrue("0b111 == 7");
@@ -199,13 +208,16 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // "Underscores in numeric literals" is a Java 7 feature, so JDKs before 1.7 don't support
         // it.
-        Assume.assumeFalse(
-            this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk")
-            && System.getProperty("java.version").matches("1\\.[1-6].*")
-        );
+        Assume.assumeFalse(this.isJdk6());
 
         this.assertExpressionEvaluatesTrue("1_23 == 12_3");
         this.assertExpressionEvaluatesTrue("1__3 == 13");
+        this.assertExpressionUncookable("_13 == 13"); // Leading underscor not allowed
+        this.assertExpressionUncookable("13_ == 13"); // Trailing underscore not allowed
+        this.assertExpressionEvaluatesTrue("1_23L == 12_3L");
+        this.assertExpressionEvaluatesTrue("1__3L == 13L");
+        this.assertExpressionUncookable("_13L == 13L"); // Leading underscor not allowed
+        this.assertExpressionUncookable("13_L == 13L"); // Trailing underscore not allowed
     }
 
     @Test public void
@@ -247,10 +259,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // "Underscores in numeric literals" is a Java 7 feature, so JDKs before 1.7 don't support
         // it.
-        Assume.assumeFalse(
-            this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk")
-            && System.getProperty("java.version").matches("1\\.[1-6].*")
-        );
+        Assume.assumeFalse(this.isJdk6());
 
         this.assertExpressionEvaluatesTrue("1___0.1___0 == 10.1");
     }
@@ -1625,10 +1634,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         // there is no ambiguity. I have not been able to find any piece of documentation about this in the docs.)
 
         // JDK 1.7.0_17 and _21 do _not_ issue an error, although they should!?
-        if (
-            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && System.getProperty("java.version").startsWith("1.7.0")
-        ) return;
+        Assume.assumeFalse(this.isJdk7());
 
         this.assertClassBodyUncookable((
             ""
@@ -1887,5 +1893,25 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertScriptReturnsTrue("int a = 7; a += new Integer(3); return a == 10;");
         // JANINO-155: Compound assignment does not implement boxing conversion
         this.assertScriptReturnsTrue("Double[] a = { 1.0, 2.0 }; a[0] += 1.0; return a[0] == 2.0;");
+    }
+
+    /**
+     * @return Whether we're running the JDK 6 (or earlier) compiler factory
+     */
+    private boolean isJdk6() {
+        return (
+            this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk")
+            && System.getProperty("java.version").matches("1\\.[1-6].*")
+        );
+    }
+
+    /**
+     * @return Whether we're running the JDK 7 compiler factory
+     */
+    private boolean isJdk7() {
+        return (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && System.getProperty("java.version").startsWith("1.7.0")
+        );
     }
 }
