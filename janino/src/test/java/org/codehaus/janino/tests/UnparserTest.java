@@ -111,7 +111,7 @@ class UnparserTest {
         String s = sw.toString();
         s = UnparserTest.replace(s, "((( ", "(");
         s = UnparserTest.replace(s, " )))", ")");
-        Assert.assertEquals(expected, s);
+        Assert.assertEquals(input, expected, s);
     }
 
     private static void
