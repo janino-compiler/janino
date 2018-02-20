@@ -211,7 +211,7 @@ class CodeContext {
         short            lineNumberTableAttributeNameIndex,
         short            localVariableTableAttributeNameIndex
     ) throws IOException {
-        dos.writeShort((short) this.maxStack);                                       // max_stack
+        dos.writeShort(this.maxStack);                                               // max_stack
         dos.writeShort(this.maxLocals);                                              // max_locals
         dos.writeInt(this.end.offset);                                               // code_length
         dos.write(this.code, 0, this.end.offset);                                    // code
@@ -372,14 +372,24 @@ class CodeContext {
         }
     }
 
+    /**
+     * @param functionName
+     * @param code
+     * @param codeSize
+     * @param offset       Where to start the analysis
+     * @param stackSize    Stack size on start
+     * @param stackSizes   Stack sizes at offsets within <var>code</var>; {@link #UNEXAMINED} value
+     *                     indicates that the stack size at a given offset has not yet been
+     *                     calculated
+     */
     private void
     flowAnalysis(
         String functionName,
-        byte[] code,      // Bytecode
-        int    codeSize,  // Size
-        int    offset,    // Current PC
-        int    stackSize, // Stack size on entry
-        int[]  stackSizes // Stack sizes in code
+        byte[] code,
+        int    codeSize,
+        int    offset,
+        int    stackSize,
+        int[]  stackSizes
     ) {
         for (;;) {
             CodeContext.LOGGER.entering(
@@ -465,17 +475,13 @@ class CodeContext {
             case Opcode.SD_GETFIELD:
                 --stackSize;
             case Opcode.SD_GETSTATIC: // SUPPRESS CHECKSTYLE FallThrough
-                stackSize += this.determineFieldSize((short) (
-                    CodeContext.extract16BitValue(0, operandOffset, code)
-                ));
+                stackSize += this.determineFieldSize(CodeContext.extract16BitValue(operandOffset, code));
                 break;
 
             case Opcode.SD_PUTFIELD:
                 --stackSize;
             case Opcode.SD_PUTSTATIC: // SUPPRESS CHECKSTYLE FallThrough
-                stackSize -= this.determineFieldSize((short) (
-                    CodeContext.extract16BitValue(0, operandOffset, code)
-                ));
+                stackSize -= this.determineFieldSize(CodeContext.extract16BitValue(operandOffset, code));
                 break;
 
             case Opcode.SD_INVOKEVIRTUAL:
@@ -483,9 +489,7 @@ class CodeContext {
             case Opcode.SD_INVOKEINTERFACE:
                 --stackSize;
             case Opcode.SD_INVOKESTATIC: // SUPPRESS CHECKSTYLE FallThrough
-                stackSize -= this.determineArgumentsSize((short) (
-                    CodeContext.extract16BitValue(0, operandOffset, code)
-                ));
+                stackSize -= this.determineArgumentsSize(CodeContext.extract16BitValue(operandOffset, code));
                 break;
 
             case Opcode.SD_MULTIANEWARRAY:
@@ -689,12 +693,27 @@ class CodeContext {
     }
 
     /**
-     * Extracts a 16 bit value at offset in code and adds <var>bias</var> to it.
+     * Extracts a 16 bit value at the given <var>offset</var> in the <var>code</var>.
+     */
+    private static short
+    extract16BitValue(int offset, byte[] code) {
+        CodeContext.LOGGER.entering(
+            null,
+            "extract16BitValue",
+            new Object[] { offset, code[offset], code[offset + 1] }
+            );
+
+        short result = (short) (((code[offset]) << 8) + (code[offset + 1] & 0xff));
+
+        CodeContext.LOGGER.exiting(null,  "extract16BitValue", result);
+        return result;
+    }
+
+    /**
+     * Extracts a 16 bit value at the given <var>offset</var> in the <var>code</var> and adds a
+     * <var>bias</var> to it.
      *
-     * @param bias   An int to skew the final result by (useful for calculating relative offsets)
-     * @param offset The position in the code array to extract the bytes from
-     * @param code   The array of bytes
-     * @return       An integer that treats the two bytes at position offset as an UNSIGNED SHORT
+     * @return An integer that treats the two bytes at position offset as an UNSIGNED SHORT
      */
     private static int
     extract16BitValue(int bias, int offset, byte[] code) {
@@ -780,7 +799,7 @@ class CodeContext {
     }
 
     /**
-     * Analyzes the descriptor of the Fieldref and return its size.
+     * Analyzes the descriptor of the Fieldref at index <var>idx</var> and return its size.
      */
     private int
     determineFieldSize(short idx) {

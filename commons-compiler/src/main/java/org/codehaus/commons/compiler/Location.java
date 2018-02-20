@@ -40,7 +40,7 @@ class Location implements Serializable {
     /**
      * Representation of an unspecified location.
      */
-    public static final Location NOWHERE = new Location("<internally generated location>", (short) -1, (short) -1);
+    public static final Location NOWHERE = new Location("<internally generated location>", -1, -1);
 
     @Nullable private final String optionalFileName;
     private final int              lineNumber;

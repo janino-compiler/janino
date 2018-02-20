@@ -109,10 +109,10 @@ class Scanner {
     public
     Scanner(@Nullable String optionalFileName, InputStream is) throws IOException {
         this(
-            optionalFileName,
+            optionalFileName,          // optionalFileName
             new InputStreamReader(is), // in
-            (short) 1,                 // initialLineNumber
-            (short) 0                  // initialColumnNumber
+            1,                         // initialLineNumber
+            0                          // initialColumnNumber
         );
     }
 
@@ -137,8 +137,8 @@ class Scanner {
                 ? new InputStreamReader(is)
                 : new InputStreamReader(is, optionalEncoding)
             ),
-            (short) 1,                         // initialLineNumber
-            (short) 0                          // initialColumnNumber
+            1,                                 // initialLineNumber
+            0                                  // initialColumnNumber
         );
     }
 
@@ -159,8 +159,8 @@ class Scanner {
         this(
             optionalFileName, // optionalFileName
             in,               // in
-            (short) 1,        // initialLineNumber
-            (short) 0         // initialColumnNumber
+            1,                // initialLineNumber
+            0                 // initialColumnNumber
         );
     }
 
@@ -171,8 +171,8 @@ class Scanner {
     Scanner(
         @Nullable String optionalFileName,
         Reader           in,
-        short            initialLineNumber,        // "1" is a good idea
-        short            initialColumnNumber       // "0" is a good idea
+        int              initialLineNumber,        // "1" is a good idea
+        int              initialColumnNumber       // "0" is a good idea
     ) throws IOException {
 
         // Debugging on source code level is only possible if the code comes from a "real" Java source file which the
@@ -771,19 +771,19 @@ class Scanner {
     private int                    nextChar       = -1;
     private int                    nextButOneChar = -1;
     private boolean                crLfPending;
-    private short                  nextCharLineNumber;
-    private short                  nextCharColumnNumber;
+    private int                    nextCharLineNumber;
+    private int                    nextCharColumnNumber;
 
     /**
      * Line number of the previously produced token (typically starting at one).
      */
-    private short tokenLineNumber;
+    private int tokenLineNumber;
 
     /**
      * Column number of the first character of the previously produced token (1 if token is immediately preceded by a
      * line break).
      */
-    private short tokenColumnNumber;
+    private int tokenColumnNumber;
 
     private static final Set<String> JAVA_KEYWORDS = new HashSet<String>(Arrays.asList(
 

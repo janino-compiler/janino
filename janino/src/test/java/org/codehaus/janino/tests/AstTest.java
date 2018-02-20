@@ -161,8 +161,8 @@ class AstTest {
         StackTraceElement ste = e.getStackTrace()[1]; //we only care about our caller
         return new Location(
             ste.getFileName(),
-            (short) ste.getLineNumber(),
-            (short) 0
+            ste.getLineNumber(),
+            0
         );
     }
 

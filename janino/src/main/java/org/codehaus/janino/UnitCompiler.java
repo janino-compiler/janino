@@ -5370,12 +5370,12 @@ class UnitCompiler {
 
             if (cv == UnitCompiler.NOT_CONSTANT) return UnitCompiler.NOT_CONSTANT;
 
-            if (cv instanceof Byte)    return new Byte((byte) -((Byte) cv).byteValue());
-            if (cv instanceof Short)   return new Short((short) -((Short) cv).shortValue());
-            if (cv instanceof Integer) return new Integer(-((Integer) cv).intValue());
-            if (cv instanceof Long)    return new Long(-((Long) cv).longValue());
-            if (cv instanceof Float)   return new Float(-((Float) cv).floatValue());
-            if (cv instanceof Double)  return new Double(-((Double) cv).doubleValue());
+            if (cv instanceof Byte)    return Byte   .valueOf((byte)  -((Byte)    cv));
+            if (cv instanceof Short)   return Short  .valueOf((short) -((Short)   cv));
+            if (cv instanceof Integer) return Integer.valueOf(        -((Integer) cv));
+            if (cv instanceof Long)    return Long   .valueOf(        -((Long)    cv));
+            if (cv instanceof Float)   return Float  .valueOf(        -((Float)   cv));
+            if (cv instanceof Double)  return Double .valueOf(        -((Double)  cv));
 
             return UnitCompiler.NOT_CONSTANT;
         }
@@ -10327,7 +10327,7 @@ class UnitCompiler {
             } else
             if (iv >= Short.MIN_VALUE && iv <= Short.MAX_VALUE) {
                 this.writeOpcode(locatable, Opcode.SIPUSH);
-                this.writeShort((short) iv);
+                this.writeShort(iv);
             } else
             {
                 this.writeLdc(locatable, this.addConstantIntegerInfo(iv));
@@ -11856,7 +11856,7 @@ class UnitCompiler {
         if (v > Short.MAX_VALUE - Short.MIN_VALUE) {
             throw new InternalCompilerException("Short value out of legal range");
         }
-        this.getCodeContext().write((short) -1, (byte) (v >> 8), (byte) v);
+        this.getCodeContext().write(-1, (byte) (v >> 8), (byte) v);
     }
     private void
     writeInt(int v) {
@@ -11880,7 +11880,7 @@ class UnitCompiler {
 
     private void
     writeOffset(CodeContext.Offset src, final CodeContext.Offset dst) {
-        this.getCodeContext().writeOffset((short) -1, src, dst);
+        this.getCodeContext().writeOffset(-1, src, dst);
     }
 
     // Wrappers for "ClassFile.addConstant...Info()". Saves us some coding overhead.
@@ -11907,7 +11907,7 @@ class UnitCompiler {
     }
 /* UNUSED
     private void writeConstantStringInfo(String value) {
-        this.codeContext.writeShort((short) -1, this.addConstantStringInfo(value));
+        this.codeContext.writeShort(-1, this.addConstantStringInfo(value));
     }
 */
     private short
@@ -11916,7 +11916,7 @@ class UnitCompiler {
     }
 /* UNUSED
     private void writeConstantIntegerInfo(int value) {
-        this.codeContext.writeShort((short) -1, this.addConstantIntegerInfo(value));
+        this.codeContext.writeShort(-1, this.addConstantIntegerInfo(value));
     }
 */
     private short
@@ -11925,7 +11925,7 @@ class UnitCompiler {
     }
 /* UNUSED
     private void writeConstantFloatInfo(float value) {
-        this.codeContext.writeShort((short) -1, this.addConstantFloatInfo(value));
+        this.codeContext.writeShort(-1, this.addConstantFloatInfo(value));
     }
 */
     private short
