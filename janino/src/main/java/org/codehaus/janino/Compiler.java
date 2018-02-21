@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -243,9 +244,11 @@ class Compiler {
     private final boolean                   debugVars;
     @Nullable private WarningHandler        optionalWarningHandler;
     @Nullable private ErrorHandler          optionalCompileErrorHandler;
+    private EnumSet<JaninoOption>           options = EnumSet.noneOf(JaninoOption.class);
 
     private final IClassLoader       iClassLoader;
     private final List<UnitCompiler> parsedCompilationUnits = new ArrayList<UnitCompiler>();
+
 
     /**
      * Initializes a Java compiler with the given parameters.
@@ -467,6 +470,22 @@ class Compiler {
     }
 
     /**
+     * @return A reference to the currently effective compilation options; changes to it take
+     *         effect immediately
+     */
+    public EnumSet<JaninoOption>
+    options() { return this.options; }
+
+    /**
+     * Sets the options for all future compilations.
+     */
+    public Compiler
+    options(EnumSet<JaninoOption> options) {
+        this.options = options;
+        return this;
+    }
+
+    /**
      * Reads a set of Java compilation units (a.k.a. "source files") from the file system, compiles them into a set of
      * "class files" and stores these in the file system. Additional source files are parsed and compiled on demand
      * through the "source path" set of directories.
@@ -545,7 +564,7 @@ class Compiler {
                     sourceResource.getFileName(),                   // fileName
                     new BufferedInputStream(sourceResource.open()), // inputStream
                     this.optionalCharacterEncoding                  // optionalCharacterEncoding
-                ), this.iClassLoader));
+                ), this.iClassLoader).options(this.options));
             }
 
             // Compile all parsed compilation units. The vector of parsed CUs may grow while they are being compiled,
@@ -822,7 +841,7 @@ class Compiler {
                     new BufferedInputStream(sourceResource.open()), // inputStream
                     Compiler.this.optionalCharacterEncoding         // optionalCharacterEncoding
                 );
-                uc = new UnitCompiler(cu, Compiler.this.iClassLoader);
+                uc = new UnitCompiler(cu, Compiler.this.iClassLoader).options(Compiler.this.options);
             } catch (IOException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
             } catch (CompileException ex) {

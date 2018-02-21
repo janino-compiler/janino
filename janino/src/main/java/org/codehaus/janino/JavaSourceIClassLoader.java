@@ -28,6 +28,7 @@ package org.codehaus.janino;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -55,8 +56,9 @@ class JavaSourceIClassLoader extends IClassLoader {
 
     private static final Logger LOGGER = Logger.getLogger(JavaSourceIClassLoader.class.getName());
 
-    private ResourceFinder           sourceFinder;
-    @Nullable private String         optionalCharacterEncoding;
+    private ResourceFinder        sourceFinder;
+    @Nullable private String      optionalCharacterEncoding;
+    private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
     /**
      * Collection of parsed compilation units.
@@ -65,6 +67,7 @@ class JavaSourceIClassLoader extends IClassLoader {
 
     @Nullable private ErrorHandler   optionalCompileErrorHandler;
     @Nullable private WarningHandler optionalWarningHandler;
+
 
     public
     JavaSourceIClassLoader(
@@ -120,6 +123,22 @@ class JavaSourceIClassLoader extends IClassLoader {
     }
 
     /**
+     * @return A reference to the currently effective compilation options; changes to it take
+     *         effect immediately
+     */
+    public EnumSet<JaninoOption>
+    options() { return this.options; }
+
+    /**
+     * Sets the options for all future compilations.
+     */
+    public JavaSourceIClassLoader
+    options(EnumSet<JaninoOption> options) {
+        this.options = options;
+        return this;
+    }
+
+    /**
      * @param fieldDescriptor         Field descriptor of the {@link IClass} to load, e.g. "Lpkg1/pkg2/Outer$Inner;"
      * @throws ClassNotFoundException An exception was raised while loading the {@link IClass}
      */
@@ -158,7 +177,7 @@ class JavaSourceIClassLoader extends IClassLoader {
             Java.CompilationUnit cu = this.findCompilationUnit(className);
             if (cu == null) return null;
 
-            UnitCompiler uc = new UnitCompiler(cu, this);
+            UnitCompiler uc = new UnitCompiler(cu, this).options(this.options);
             uc.setCompileErrorHandler(this.optionalCompileErrorHandler);
             uc.setWarningHandler(this.optionalWarningHandler);
 

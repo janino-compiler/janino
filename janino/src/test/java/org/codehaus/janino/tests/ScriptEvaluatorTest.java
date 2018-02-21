@@ -26,7 +26,11 @@
 
 package org.codehaus.janino.tests;
 
+import java.util.EnumSet;
+
+import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IScriptEvaluator;
+import org.codehaus.janino.JaninoOption;
 import org.codehaus.janino.ScriptEvaluator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -68,6 +72,39 @@ class ScriptEvaluatorTest {
             Assert.fail("Compilation exception expected");
         } catch (ClassFormatError cfe) {
             Assert.assertTrue(cfe.getMessage(), cfe.getMessage().contains("Duplicate method"));
+        }
+    }
+
+    @Test public void
+    testAccessibilityOfClassMembers1() throws Exception {
+
+        // Without
+        new ScriptEvaluator().cook(
+            ""
+            + "class MyClass {\n"
+            + "    private int pri;\n"
+            + "}\n"
+            + "\n"
+            + "new MyClass().pri = 7;\n"
+        );
+    }
+
+    @Test public void
+    testAccessibilityOfClassMembers2() throws Exception {
+        try {
+            new ScriptEvaluator().options(
+                EnumSet.of(JaninoOption.PRIVATE_MEMBERS_OF_ENCLOSING_AND_ENCLOSED_TYPES_INACCESSIBLE)
+            ).cook(
+                ""
+                + "class MyClass {\n"
+                + "    private int pri;\n"
+                + "}\n"
+                + "\n"
+                + "new MyClass().pri = 7;\n"
+            );
+            Assert.fail("CompileException expected");
+        } catch (CompileException ce) {
+            Assert.assertTrue(ce.getMessage().contains("Private member cannot be accessed"));
         }
     }
 }

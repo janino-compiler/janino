@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Permissions;
 import java.security.PrivilegedAction;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -75,6 +76,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private boolean debugVars   = this.debugSource;
 
     @Nullable private Permissions permissions;
+
+    private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
     public static void // SUPPRESS CHECKSTYLE JavadocMethod
     main(String[] args) throws Exception {
@@ -227,7 +230,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         try {
 
             // Compile compilation unit to class files.
-            UnitCompiler unitCompiler = new UnitCompiler(compilationUnit, icl);
+            UnitCompiler unitCompiler = new UnitCompiler(compilationUnit, icl).options(this.options);
             unitCompiler.setCompileErrorHandler(this.optionalCompileErrorHandler);
             unitCompiler.setWarningHandler(this.optionalWarningHandler);
 
@@ -326,6 +329,22 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     @Override public void
     setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
+    }
+
+    /**
+     * @return A reference to the currently effective compilation options; changes to it take
+     *         effect immediately
+     */
+    public EnumSet<JaninoOption>
+    options() { return this.options; }
+
+    /**
+     * Sets the options for all future compilations.
+     */
+    public SimpleCompiler
+    options(EnumSet<JaninoOption> options) {
+        this.options = options;
+        return this;
     }
 
     /**

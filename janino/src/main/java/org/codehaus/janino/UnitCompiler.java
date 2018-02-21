@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -247,10 +248,28 @@ class UnitCompiler {
 
     private static final Pattern LOOKS_LIKE_TYPE_PARAMETER = Pattern.compile("\\p{javaUpperCase}+");
 
+    private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
+
     public
     UnitCompiler(CompilationUnit compilationUnit, IClassLoader iClassLoader) {
         this.compilationUnit = compilationUnit;
         this.iClassLoader    = iClassLoader;
+    }
+
+    /**
+     * @return A reference to the currently effective compilation options; changes to it take
+     *         effect immediately
+     */
+    public EnumSet<JaninoOption>
+    options() { return this.options; }
+
+    /**
+     * Sets the options for all future compilations.
+     */
+    public UnitCompiler
+    options(EnumSet<JaninoOption> options) {
+        this.options = options;
+        return this;
     }
 
     /**
@@ -6965,7 +6984,10 @@ class UnitCompiler {
         if (iClassDeclaringContext == iClassDeclaringMember) return null;
 
         // Check whether the member and the context block statement are enclosed by the same top-level type.
-        if (iClassDeclaringContext != null) {
+        if (
+            iClassDeclaringContext != null
+            && !this.options.contains(JaninoOption.PRIVATE_MEMBERS_OF_ENCLOSING_AND_ENCLOSED_TYPES_INACCESSIBLE)
+        ) {
             IClass topLevelIClassEnclosingMember = iClassDeclaringMember;
             for (IClass c = iClassDeclaringMember.getDeclaringIClass(); c != null; c = c.getDeclaringIClass()) {
                 topLevelIClassEnclosingMember = c;
