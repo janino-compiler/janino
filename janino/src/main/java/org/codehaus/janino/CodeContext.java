@@ -81,7 +81,18 @@ class CodeContext {
      * Each List of Java.LocalVariableSlot is the local variables allocated for a block. They are pushed and popped
      * onto the list together to make allocation of the next local variable slot easy.
      */
-    private final List<List<Java.LocalVariableSlot>> scopedVars = new ArrayList<List<Java.LocalVariableSlot>>();
+    private LocalScope currentLocalScope = null;
+
+    static class LocalScope {
+        final LocalScope parent;
+        final short startingLocalVariableSlot;
+        final List<Java.LocalVariableSlot> localVars = new ArrayList<Java.LocalVariableSlot>();
+
+        LocalScope(LocalScope parent, short startingLocalSlot) {
+            this.parent = parent;
+            this.startingLocalVariableSlot = startingLocalSlot;
+        }
+    }
 
     private short                   nextLocalVariableSlot;
     private final List<Relocatable> relocatables = new ArrayList<Relocatable>();
@@ -148,10 +159,11 @@ class CodeContext {
     allocateLocalVariable(short size, @Nullable String name, @Nullable IClass type) {
         List<Java.LocalVariableSlot> currentVars = null;
 
-        if (this.scopedVars.size() == 0) {
+        if (this.currentLocalScope == null) {
             throw new Error("saveLocalVariables must be called first");
         } else {
-            currentVars = (List<Java.LocalVariableSlot>) this.scopedVars.get(this.scopedVars.size() - 1);
+            LocalScope currentScope = this.currentLocalScope;
+            currentVars = currentScope.localVars;
         }
 
         Java.LocalVariableSlot slot = new Java.LocalVariableSlot(name, this.nextLocalVariableSlot, type);
@@ -178,10 +190,10 @@ class CodeContext {
     saveLocalVariables() {
 
         // Push empty list on the stack to hold a new block's local vars.
-        List<Java.LocalVariableSlot> l = new ArrayList<LocalVariableSlot>();
-        this.scopedVars.add(l);
+        LocalScope newScope = new LocalScope(this.currentLocalScope, this.nextLocalVariableSlot);
+        this.currentLocalScope = newScope;
 
-        return l;
+        return newScope.localVars;
     }
 
     /**
@@ -192,14 +204,18 @@ class CodeContext {
     restoreLocalVariables() {
 
         // Pop the list containing the current block's local vars.
-        List<Java.LocalVariableSlot>
-        slots = (List<Java.LocalVariableSlot>) this.scopedVars.remove(this.scopedVars.size() - 1);
+        LocalScope scopeToPop = this.currentLocalScope;
+        this.currentLocalScope = scopeToPop.parent;
+        List<Java.LocalVariableSlot> slots = scopeToPop.localVars;
 
         for (Java.LocalVariableSlot slot : slots) {
             if (slot.getName() != null) {
                 slot.setEnd(this.newOffset());
             }
         }
+
+        // reuse local variable slots of the popped scope
+        this.nextLocalVariableSlot = scopeToPop.startingLocalVariableSlot;
     }
 
     /**
