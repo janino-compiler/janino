@@ -26,6 +26,7 @@
 
 			<doctitle>JANINO ${project.parent.version}</doctitle>
 
+			<arg value="-notimestamp" />
 			<arg value="-Xdoclint:none" />
 			<arg value="-overview" /><arg file="../janino/src/main/javadoc/overview.html" />
 
