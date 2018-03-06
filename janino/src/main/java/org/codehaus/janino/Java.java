@@ -2908,28 +2908,29 @@ class Java {
         /**
          * The optional ELSE statement, which is executed iff the condition evaluates to FALSE.
          */
-        @Nullable public final BlockStatement optionalElseStatement;
+        @Nullable public final BlockStatement elseStatement;
 
-        /**
-         * Notice that the {@code elseStatement} is mandatory; for an if statement without an {@code else} clause, a
-         * dummy {@link Java.EmptyStatement} should be passed.
-         */
+        public
+        IfStatement(Location location, Rvalue condition, BlockStatement thenStatement) {
+            this(location, condition, thenStatement, null);
+        }
+
         public
         IfStatement(
             Location                 location,
             Rvalue                   condition,
             BlockStatement           thenStatement,
-            @Nullable BlockStatement optionalElseStatement
+            @Nullable BlockStatement elseStatement
         ) {
             super(location);
-            (this.condition             = condition).setEnclosingScope(this);
-            (this.thenStatement         = thenStatement).setEnclosingScope(this);
-            this.optionalElseStatement = optionalElseStatement;
-            if (optionalElseStatement != null) optionalElseStatement.setEnclosingScope(this);
+            (this.condition     = condition).setEnclosingScope(this);
+            (this.thenStatement = thenStatement).setEnclosingScope(this);
+            this.elseStatement  = elseStatement;
+            if (elseStatement != null) elseStatement.setEnclosingScope(this);
         }
 
         @Override public String
-        toString() { return this.optionalElseStatement == null ? "if" : "if ... else"; }
+        toString() { return this.elseStatement == null ? "if" : "if ... else"; }
 
         // Compile time members:
 
@@ -3049,6 +3050,59 @@ class Java {
     class TryStatement extends Statement {
 
         /**
+         * Representation of a JLS9 14.20.2 "resource" in a TRY-with-resources statement.
+         */
+        public static final
+        class Resource extends Located {
+
+            /**
+             * The resource variable modifiers (annotations and/or flags like FINAL).
+             */
+            public final Modifiers modifiers;
+
+            /**
+             * The declared type of the resource variable.
+             */
+            public final Type type;
+
+            /**
+             * The "variable declarator" that follows the type.
+             */
+            public final VariableDeclarator variableDeclarator;
+
+            /**
+             * @param modifiers Only {@code final} allowed
+             */
+            public
+            Resource(Location location, Modifiers modifiers, Type type, VariableDeclarator variableDeclarator) {
+                super(location);
+                this.modifiers          = modifiers;
+                this.type               = type;
+                this.variableDeclarator = variableDeclarator;
+            }
+
+            public void
+            setEnclosingTryStatement(TryStatement ts) {
+                this.type.setEnclosingScope(ts);
+                this.variableDeclarator.setEnclosingScope(ts);
+            }
+
+            // Compile time members:
+
+            @Override public String
+            toString() {
+                StringBuilder sb = new StringBuilder();
+                for (Annotation a : this.modifiers.annotations) sb.append(a.toString());
+                if (this.modifiers.accessFlags != Mod.NONE) {
+                    sb.append(Mod.shortToString(this.modifiers.accessFlags)).append(' ');
+                }
+                return sb.append(this.type).append(' ').append(this.variableDeclarator).append(';').toString();
+            }
+        }
+
+        public final List<Resource> resources;
+
+        /**
          * The body of the TRY statement.
          */
         public final BlockStatement body;
@@ -3061,20 +3115,41 @@ class Java {
         /**
          * The optional "finally" block of the TRY statement.
          */
-        @Nullable public final Block optionalFinally;
+        @Nullable public final Block finallY;
+
+        /**
+         * A TRY statement with no resources and no FINALLY clause.
+         */
+        public
+        TryStatement(Location location, BlockStatement body, List<CatchClause> catchClauses) {
+            this(location, Collections.<TryStatement.Resource>emptyList(), body, catchClauses, null);
+        }
+
+        /**
+         * A TRY statement without a FINALLY clause.
+         */
+        public
+        TryStatement(
+            Location          location,
+            List<Resource>    resources,
+            BlockStatement    body,
+            List<CatchClause> catchClauses
+        ) { this(location, resources, body, catchClauses, null); }
 
         public
         TryStatement(
             Location          location,
+            List<Resource>    resources,
             BlockStatement    body,
             List<CatchClause> catchClauses,
-            @Nullable Block   optionalFinally
+            @Nullable Block   finallY
         ) {
             super(location);
+            for (Resource r : (this.resources = resources)) r.setEnclosingTryStatement(this);
             (this.body = body).setEnclosingScope(this);
             for (CatchClause cc : (this.catchClauses = catchClauses)) cc.setEnclosingTryStatement(this);
-            this.optionalFinally = optionalFinally;
-            if (optionalFinally != null) optionalFinally.setEnclosingScope(this);
+            this.finallY = finallY;
+            if (finallY != null) finallY.setEnclosingScope(this);
         }
 
         @Override public String
@@ -3082,7 +3157,7 @@ class Java {
             return (
                 "try ... "
                 + this.catchClauses.size()
-                + (this.optionalFinally == null ? " catches" : " catches ... finally")
+                + (this.finallY == null ? " catches" : " catches ... finally")
             );
         }
 
@@ -3112,7 +3187,7 @@ class Java {
         /**
          * Body of the CATCH clause.
          */
-        public final Block body;
+        public final BlockStatement body;
 
         /**
          * Link to the enclosing TRY statement.
@@ -3127,7 +3202,7 @@ class Java {
         public boolean reachable;
 
         public
-        CatchClause(Location location, FormalParameter caughtException, Block body) {
+        CatchClause(Location location, FormalParameter caughtException, BlockStatement body) {
             super(location);
             (this.caughtException = caughtException).type.setEnclosingScope(this);
             (this.body            = body).setEnclosingScope(this);
@@ -5342,7 +5417,7 @@ class Java {
      */
     public static final
     class NullLiteral extends Literal {
-        public NullLiteral(Location location, String value) { super(location, value); }
+        public NullLiteral(Location location) { super(location, "null"); }
 
         @Override @Nullable public <R, EX extends Throwable> R
         accept(Visitor.RvalueVisitor<R, EX> visitor) throws EX { return visitor.visitNullLiteral(this); }

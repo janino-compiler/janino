@@ -83,32 +83,33 @@ class IClassLoader {
     public IClass TYPE_java_util_Iterator;
 
     // Representations of commonly used methods.
-    public IMethod METH_java_lang_Enum__ordinal;
-    public IMethod METH_java_lang_Iterable__iterator;
-    public IMethod METH_java_lang_String__concat__java_lang_String;
-    public IMethod METH_java_lang_String__equals__java_lang_Object;
-    public IMethod METH_java_lang_String__hashCode;
-    public IMethod METH_java_lang_String__valueOf__int;
-    public IMethod METH_java_lang_String__valueOf__long;
-    public IMethod METH_java_lang_String__valueOf__float;
-    public IMethod METH_java_lang_String__valueOf__double;
-    public IMethod METH_java_lang_String__valueOf__char;
-    public IMethod METH_java_lang_String__valueOf__boolean;
-    public IMethod METH_java_lang_String__valueOf__java_lang_Object;
-    public IMethod METH_java_lang_StringBuilder__append__int;
-    public IMethod METH_java_lang_StringBuilder__append__long;
-    public IMethod METH_java_lang_StringBuilder__append__float;
-    public IMethod METH_java_lang_StringBuilder__append__double;
-    public IMethod METH_java_lang_StringBuilder__append__char;
-    public IMethod METH_java_lang_StringBuilder__append__boolean;
-    public IMethod METH_java_lang_StringBuilder__append__java_lang_Object;
-    public IMethod METH_java_lang_StringBuilder__append__java_lang_String;
-    public IMethod METH_java_lang_StringBuilder__toString;
-    public IMethod METH_java_util_Iterator__hasNext;
-    public IMethod METH_java_util_Iterator__next;
+    public IMethod           METH_java_lang_Enum__ordinal;
+    public IMethod           METH_java_lang_Iterable__iterator;
+    public IMethod           METH_java_lang_String__concat__java_lang_String;
+    public IMethod           METH_java_lang_String__equals__java_lang_Object;
+    public IMethod           METH_java_lang_String__hashCode;
+    public IMethod           METH_java_lang_String__valueOf__int;
+    public IMethod           METH_java_lang_String__valueOf__long;
+    public IMethod           METH_java_lang_String__valueOf__float;
+    public IMethod           METH_java_lang_String__valueOf__double;
+    public IMethod           METH_java_lang_String__valueOf__char;
+    public IMethod           METH_java_lang_String__valueOf__boolean;
+    public IMethod           METH_java_lang_String__valueOf__java_lang_Object;
+    public IMethod           METH_java_lang_StringBuilder__append__int;
+    public IMethod           METH_java_lang_StringBuilder__append__long;
+    public IMethod           METH_java_lang_StringBuilder__append__float;
+    public IMethod           METH_java_lang_StringBuilder__append__double;
+    public IMethod           METH_java_lang_StringBuilder__append__char;
+    public IMethod           METH_java_lang_StringBuilder__append__boolean;
+    public IMethod           METH_java_lang_StringBuilder__append__java_lang_Object;
+    public IMethod           METH_java_lang_StringBuilder__append__java_lang_String;
+    public IMethod           METH_java_lang_StringBuilder__toString;
+    @Nullable public IMethod METH_java_lang_Throwable__addSuppressed;
+    public IMethod           METH_java_util_Iterator__hasNext;
+    public IMethod           METH_java_util_Iterator__next;
 
     // Representations of commonly used constructors.
-    @Nullable public IConstructor CTOR_java_lang_StringBuilder__java_lang_String;
+    public IConstructor CTOR_java_lang_StringBuilder__java_lang_String;
 
     @SuppressWarnings("null")
     public
@@ -171,6 +172,7 @@ class IClassLoader {
             this.METH_java_lang_StringBuilder__append__java_lang_Object = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   this.TYPE_java_lang_Object);
             this.METH_java_lang_StringBuilder__append__java_lang_String = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "append",   this.TYPE_java_lang_String);
             this.METH_java_lang_StringBuilder__toString                 = IClassLoader.requireMethod(this.TYPE_java_lang_StringBuilder, "toString");
+            this.METH_java_lang_Throwable__addSuppressed                = IClassLoader.getMethod(this.TYPE_java_lang_Throwable, "addSuppressed", this.TYPE_java_lang_Throwable);
             this.METH_java_util_Iterator__hasNext                       = IClassLoader.requireMethod(this.TYPE_java_util_Iterator,      "hasNext");
             this.METH_java_util_Iterator__next                          = IClassLoader.requireMethod(this.TYPE_java_util_Iterator,      "next");
 
@@ -197,19 +199,34 @@ class IClassLoader {
         throw new AssertionError("Required type \"" + descriptor + "\" not found");
     }
 
-    private static IMethod
-    requireMethod(IClass declaringType, String name, IClass... parameterTypes) {
+    /**
+     * @return {@code null} iff the <var>declaringType</var> does not declare a method with that name and parameter
+     *         types
+     */
+    @Nullable private static IMethod
+    getMethod(IClass declaringType, String name, IClass... parameterTypes) {
 
-        IMethod result;
         try {
-            result = declaringType.findIMethod(name, parameterTypes);
+            return declaringType.findIMethod(name, parameterTypes);
         } catch (CompileException ce) {
             throw new AssertionError(ce);
         }
+    }
 
-        if (result != null) return result;
+    /**
+     * @throws AssertionError The <var>declaringType</var> does not declare a method with that name and parameter
+     *         types
+     */
+    private static IMethod
+    requireMethod(IClass declaringType, String name, IClass... parameterTypes) {
 
-        throw new AssertionError("Required method \"" + name + "\" not found in \"" + declaringType + "\"");
+        IMethod result = IClassLoader.getMethod(declaringType, name, parameterTypes);
+
+        if (result == null) {
+            throw new AssertionError("Required method \"" + name + "\" not found in \"" + declaringType + "\"");
+        }
+
+        return result;
     }
 
     private static IConstructor

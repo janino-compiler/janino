@@ -1721,16 +1721,13 @@ class Parser {
 
         Statement thenStatement = this.parseStatement();
 
-        Statement optionalElseStatement = null;
-        if (this.peekRead("else")) {
-            optionalElseStatement = this.parseStatement();
-        }
+        Statement elseStatement = this.peekRead("else") ? this.parseStatement() : null;
 
         return new IfStatement(
-            location,             // location
-            condition,            // condition
-            thenStatement,        // thenStatement
-            optionalElseStatement // optionalElseStatement
+            location,      // location
+            condition,     // condition
+            thenStatement, // thenStatement
+            elseStatement  // optionalElseStatement
         );
     }
 
@@ -1939,6 +1936,24 @@ class Parser {
         Location location = this.location();
         this.read("try");
 
+        // '(' Resource { ';' Resource } [ ';' ] ')'
+        List<TryStatement.Resource> resources = new ArrayList<TryStatement.Resource>();
+        if (this.peekRead("(")) {
+            resources.add(this.parseResource());
+            RESOURCES: for (;;) {
+                switch (this.read(";", ")")) {
+                case 0:
+                    if (this.peekRead(")")) break RESOURCES;
+                    resources.add(this.parseResource());
+                    break;
+                case 1:
+                    break RESOURCES;
+                default:
+                    throw new AssertionError();
+                }
+            }
+        }
+
         final Block body = this.parseBlock();
 
         // { CatchClause }
@@ -1956,21 +1971,39 @@ class Parser {
                 this.parseBlock() // body
             ));
         }
-        Block optionalFinally = null;
-        if (this.peekRead("finally")) {
-            optionalFinally = this.parseBlock();
-        }
-        if (ccs.size() == 0 && optionalFinally == null) {
+
+        // [ 'finally' block ]
+        Block finallY = this.peekRead("finally") ? this.parseBlock() : null;
+
+        if (resources.isEmpty() && ccs.isEmpty() && finallY == null) {
             throw this.compileException(
-                "\"try\" statement must have at least one \"catch\" clause or a \"finally\" clause"
+                "\"try\" statement must have at least one resource, \"catch\" clause or \"finally\" clause"
             );
         }
 
         return new TryStatement(
-            location,       // location
-            body,           // body
-            ccs,            // catchClauses
-            optionalFinally // optionalFinally
+            location,  // location
+            resources, // resources
+            body,      // body
+            ccs,       // catchClauses
+            finallY    // finallY
+        );
+    }
+
+    /**
+     * <pre>
+     * Resource :=
+     *     Modifiers Type VariableDeclarator
+     *     | VariableAccess                        // <= NYI
+     * </pre>
+     */
+    private TryStatement.Resource
+    parseResource() throws CompileException, IOException {
+        return new TryStatement.Resource(
+            this.location(),               // location
+            this.parseModifiers(),         // modifiers
+            this.parseType(),              // type
+            this.parseVariableDeclarator() // variableDeclarator
         );
     }
 
@@ -3124,7 +3157,7 @@ class Parser {
         case BOOLEAN_LITERAL:        return new BooleanLiteral(t.getLocation(), t.value);
         case CHARACTER_LITERAL:      return new CharacterLiteral(t.getLocation(), t.value);
         case STRING_LITERAL:         return new StringLiteral(t.getLocation(), t.value);
-        case NULL_LITERAL:           return new NullLiteral(t.getLocation(), t.value);
+        case NULL_LITERAL:           return new NullLiteral(t.getLocation());
         default:
             throw this.compileException("Literal expected");
         }

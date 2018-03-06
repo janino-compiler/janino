@@ -1379,6 +1379,123 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_14_20_2__Execution_of_try_finally_and_try_catch_finally__1() throws Exception {
+
+        this.assertScriptReturnsNull(
+            ""
+            + "int x = 7;\n"
+            + "System.out.println(\"A\" + x);\n"
+            + "try {\n"
+            + "    System.out.println(\"B\" + x);\n"
+            + "    if (x != 7) return x;\n"
+            + "    System.out.println(\"C\" + x);\n"
+            + "    x++;\n"
+            + "    System.out.println(\"D\" + x);\n"
+            + "} finally {\n"
+            + "    System.out.println(\"E\" + x);\n"
+            + "    if (x != 8) return x;\n"
+            + "    System.out.println(\"F\" + x);\n"
+            + "    x++;\n"
+            + "    System.out.println(\"G\" + x);\n"
+            + "}\n"
+            + "System.out.println(\"H\" + x);\n"
+            + "if (x != 9) return x;\n"
+            + "return null;\n"
+        );
+    }
+
+    @Test public void
+    test_14_20_3__try_with_resources__1() throws Exception {
+
+        if (this.isJdk6()) return;
+
+        this.assertScriptReturnsNull(
+            ""
+            + "final int[] closed = new int[1];\n"
+            + "class MyCloseable implements java.io.Closeable {\n"
+            + "    public void close() { closed[0]++; }\n"
+            + "}\n"
+            + "\n"
+            + "try (MyCloseable mc = new MyCloseable()) {\n"
+            + "    if (closed[0] != 0) return closed[0];\n"
+            + "    System.currentTimeMillis();\n"
+            + "}\n"
+            + "if (closed[0] != 1) return closed[0];\n"
+            + "return null;\n"
+        );
+    }
+
+    @Test public void
+    test_14_20_3__try_with_resources__2() throws Exception {
+
+        if (this.isJdk6()) return;
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "final int[] closed = new int[1];\n"
+            + "class MyCloseable implements java.io.Closeable {\n"
+            + "    public void close() { closed[0]++; }\n"
+            + "}\n"
+            + "\n"
+            + "try (\n"
+            + "    MyCloseable mc1 = new MyCloseable();\n"
+            + "    MyCloseable mc2 = new MyCloseable();\n"
+            + "    MyCloseable mc3 = new MyCloseable()\n"
+            + ") {\n"
+            + "    if (closed[0] != 0) return false;\n"
+            + "    System.currentTimeMillis();\n"
+            + "}\n"
+            + "if (closed[0] != 3) return false;\n"
+            + "return true;\n"
+        );
+    }
+
+    @Test public void
+    test_14_20_3__try_with_resources__2a() throws Exception {
+
+        if (this.isJdk6()) return;
+
+        this.assertScriptExecutable(
+            ""
+            + "class MyCloseable implements java.io.Closeable {\n"
+            + "    public void close() {}\n"
+            + "}\n"
+            + "\n"
+            + "try (\n"
+            + "    MyCloseable mc1 = new MyCloseable();\n"
+            + "    MyCloseable mc2 = new MyCloseable()\n"
+            + ") {\n"
+            + "    System.currentTimeMillis();\n"
+            + "}\n"
+        );
+    }
+
+    @Test public void
+    test_14_20_3__try_with_resources__3() throws Exception {
+
+        if (this.isJdk6()) return;
+
+        this.assertScriptReturnsTrue(
+            ""
+            + "final int[] closed = new int[1];\n"
+            + "class MyCloseable implements java.io.Closeable {\n"
+            + "    public void close() { closed[0]++; }\n"
+            + "}\n"
+            + "\n"
+            + "try (\n"
+            + "    MyCloseable mc1 = new MyCloseable();\n"
+            + "    MyCloseable mc2 = null;\n"
+            + "    MyCloseable mc3 = new MyCloseable()\n"
+            + ") {\n"
+            + "    if (closed[0] != 0) return false;\n"
+            + "    System.currentTimeMillis();\n"
+            + "}\n"
+            + "if (closed[0] != 2) return false;\n"
+            + "return true;\n"
+        );
+    }
+
+    @Test public void
     test_14_21__UnreachableStatements() throws Exception {
         this.assertClassBodyUncookable(
             ""

@@ -206,6 +206,9 @@ class CommonsCompilerTestSuite {
     protected void
     assertScriptReturnsTrue(String script) throws Exception { new ScriptTest(script).assertResultTrue(); }
 
+    protected void
+    assertScriptReturnsNull(String script) throws Exception { new ScriptTest(script).assertResultNull(); }
+
     public
     class ScriptTest extends CompileAndExecuteTest {
 
@@ -222,6 +225,12 @@ class CommonsCompilerTestSuite {
         assertResultTrue() throws Exception {
             this.scriptEvaluator.setReturnType(boolean.class);
             super.assertResultTrue();
+        }
+
+        @Override public void
+        assertResultNull() throws Exception {
+            this.scriptEvaluator.setReturnType(Object.class);
+            super.assertResultNull();
         }
 
         @Override @Nullable public <T> T
@@ -570,6 +579,16 @@ class CommonsCompilerTestSuite {
             Assert.assertNotNull("Test result not NULL", result);
             Assert.assertSame(String.valueOf(result), Boolean.class, result.getClass());
             Assert.assertTrue("Test result is FALSE", (Boolean) result);
+        }
+
+        /**
+         * Asserts that cooking completes normally and executing returns {@code null}.
+         */
+        public void
+        assertResultNull() throws Exception {
+            this.cook();
+            Object result = this.execute();
+            Assert.assertNull(String.valueOf(result), result);
         }
     }
 

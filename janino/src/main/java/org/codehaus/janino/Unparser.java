@@ -63,6 +63,7 @@ import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.Rvalue;
+import org.codehaus.janino.Java.TryStatement;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.util.AutoIndentWriter;
@@ -326,10 +327,10 @@ class Unparser {
             Unparser.this.pw.print(") ");
             Unparser.this.unparseBlockStatement(is.thenStatement);
 
-            BlockStatement oes = is.optionalElseStatement;
-            if (oes != null) {
+            BlockStatement es = is.elseStatement;
+            if (es != null) {
                 Unparser.this.pw.println(" else");
-                Unparser.this.unparseBlockStatement(oes);
+                Unparser.this.unparseBlockStatement(es);
             }
 
             return null;
@@ -425,6 +426,15 @@ class Unparser {
         @Override @Nullable public Void
         visitTryStatement(Java.TryStatement ts) {
             Unparser.this.pw.print("try ");
+            if (!ts.resources.isEmpty()) {
+                Unparser.this.pw.print("(");
+                Unparser.this.unparseResource(ts.resources.get(0));
+                for (int i = 1; i < ts.resources.size(); i++) {
+                    Unparser.this.pw.print("; ");
+                    Unparser.this.unparseResource(ts.resources.get(0));
+                }
+                Unparser.this.pw.print(") ");
+            }
             Unparser.this.unparseBlockStatement(ts.body);
             for (Java.CatchClause cc : ts.catchClauses) {
                 Unparser.this.pw.print(" catch (");
@@ -433,10 +443,10 @@ class Unparser {
                 Unparser.this.unparseBlockStatement(cc.body);
             }
 
-            Block of = ts.optionalFinally;
-            if (of != null) {
+            Block f = ts.finallY;
+            if (f != null) {
                 Unparser.this.pw.print(" finally ");
-                Unparser.this.unparseBlockStatement(of);
+                Unparser.this.unparseBlockStatement(f);
             }
 
             return null;
@@ -1467,5 +1477,14 @@ class Unparser {
             @Override @Nullable public Void visitConstructorDeclarator(ConstructorDeclarator cd) { Unparser.this.unparseConstructorDeclarator(cd); return null; }
             @Override @Nullable public Void visitMethodDeclarator(MethodDeclarator md)           { Unparser.this.unparseMethodDeclarator(md);      return null; }
         });
+    }
+
+    private void
+    unparseResource(TryStatement.Resource r) {
+        Unparser.this.unparseAnnotations(r.modifiers.annotations);
+        Unparser.this.unparseModifiers(r.modifiers.accessFlags);
+        Unparser.this.unparseType(r.type);
+        Unparser.this.pw.print(' ');
+        Unparser.this.unparseVariableDeclarator(r.variableDeclarator);
     }
 }

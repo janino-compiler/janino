@@ -550,7 +550,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     traverseIfStatement(IfStatement is) throws EX {
         is.condition.accept(this.rvalueTraverser);
         is.thenStatement.accept(this.blockStatementTraverser);
-        if (is.optionalElseStatement != null) is.optionalElseStatement.accept(this.blockStatementTraverser);
+        if (is.elseStatement != null) is.elseStatement.accept(this.blockStatementTraverser);
         this.traverseStatement(is);
     }
 
@@ -582,9 +582,14 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
     @Override public void
     traverseTryStatement(TryStatement ts) throws EX {
+        for (TryStatement.Resource r : ts.resources) {
+            r.type.accept(this.atomTraverser);
+            ArrayInitializerOrRvalue i = r.variableDeclarator.optionalInitializer;
+            if (i != null) this.traverseArrayInitializerOrRvalue(i);
+        }
         ts.body.accept(this.blockStatementTraverser);
         for (CatchClause cc : ts.catchClauses) cc.body.accept(this.blockStatementTraverser);
-        if (ts.optionalFinally != null) ts.optionalFinally.accept(this.blockStatementTraverser);
+        if (ts.finallY != null) ts.finallY.accept(this.blockStatementTraverser);
         this.traverseStatement(ts);
     }
 

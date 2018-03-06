@@ -2409,8 +2409,8 @@ class UnitCompiler {
     compile2(IfStatement is) throws CompileException {
         Object         cv = this.getConstantValue(is.condition);
         BlockStatement es = (
-            is.optionalElseStatement != null
-            ? is.optionalElseStatement
+            is.elseStatement != null
+            ? is.elseStatement
             : new EmptyStatement(is.thenStatement.getLocation())
         );
         if (cv instanceof Boolean) {
@@ -2729,25 +2729,197 @@ class UnitCompiler {
         return false;
     }
 
+    interface Compilable2 { boolean compile() throws CompileException; }
+
     private boolean
-    compile2(TryStatement ts) throws CompileException {
+    compile2(final TryStatement ts) throws CompileException {
+
+        return this.compileTryCatchFinallyWithResources(
+            ts,
+            ts.resources,
+            new Compilable2() {
+
+                @Override public boolean
+                compile() throws CompileException { return UnitCompiler.this.compile(ts.body); }
+            },
+            ts.finallY
+        );
+    }
+
+    /**
+     * Generates code for a TRY statement with (possibly zero) resources and an (optional) FINALLY clause.
+     *
+     * @return Whether the code can complete normally
+     */
+    private boolean
+    compileTryCatchFinallyWithResources(
+        final TryStatement          ts,
+        List<TryStatement.Resource> resources,
+        final Compilable2           compileBody,
+        @Nullable final Block       finallY
+    ) throws CompileException {
+
+        if (resources.isEmpty()) {
+
+            // Short-circuit for zero resources.
+            return this.compileTryCatchFinally(ts, compileBody, finallY);
+        }
+
+        // Prepare recursion for all declared resources.
+        TryStatement.Resource             firstResource      = (TryStatement.Resource) resources.get(0);
+        final List<TryStatement.Resource> followingResources = resources.subList(1, resources.size());
+
+        Location loc = firstResource.getLocation();
+        IClass   tt  = this.iClassLoader.TYPE_java_lang_Throwable;
+
+        this.getCodeContext().saveLocalVariables();
+        try {
+
+            // final {VariableModifierNoFinal} R Identifier = Expression;
+            LocalVariable identifier = new LocalVariable(true, this.getType(firstResource.type));
+            identifier.setSlot(
+                this.getCodeContext().allocateLocalVariable(
+                    Descriptor.size(this.getType(firstResource.type).getDescriptor()), // size
+                    null,                                                              // name
+                    this.getType(firstResource.type)                                   // type
+                )
+            );
+            ArrayInitializerOrRvalue oi = firstResource.variableDeclarator.optionalInitializer;
+            if (oi instanceof Rvalue) {
+                this.compileGetValue((Rvalue) oi);
+            } else
+            if (oi instanceof ArrayInitializer) {
+                this.compileGetValue((ArrayInitializer) oi, this.getType(firstResource.type));
+            } else
+            {
+                throw new InternalCompilerException(String.valueOf(oi));
+            }
+            this.store(ts, identifier);
+
+            // Throwable #primaryExc = null;
+            LocalVariable primaryExc = new LocalVariable(true, tt);
+            primaryExc.setSlot(
+                this.getCodeContext().allocateLocalVariable(
+                    Descriptor.size(tt.getDescriptor()),
+                    null, // name
+                    tt
+                )
+            );
+            this.pushConstant(ts, null);
+            this.store(ts, primaryExc);
+
+            FormalParameter suppressedException = new FormalParameter(
+                loc,                        // location
+                false,                      // finaL
+                new SimpleType(loc, tt),    // type
+                "___"                       // name
+            );
+
+            // Generate the FINALLY clause for the TRY-with-resources statement; see JLS9 14.20.3.1.
+            // if (Identifier != null) {
+            //     if (#primaryExc != null) {
+            //         try {
+            //             Identifier.close();
+            //         } catch (Throwable #suppressedExc) {
+            //             // Only iff Java >= 7:
+            //             #primaryExc.addSuppressed(#suppressedExc);
+            //         }
+            //     } else {
+            //         Identifier.close();
+            //     }
+            // }
+            BlockStatement afterClose = (
+                this.iClassLoader.METH_java_lang_Throwable__addSuppressed == null
+                ? (BlockStatement) new EmptyStatement(loc)
+                : new ExpressionStatement(
+                    new MethodInvocation(
+                        loc,                                      // location
+                        new LocalVariableAccess(loc, primaryExc), // optionalTarget
+                        "addSuppressed",                          // methodName
+                        new Rvalue[] {                            // arguments
+                            new LocalVariableAccess(loc, this.getLocalVariable(suppressedException)),
+                        }
+                    )
+                )
+            );
+            BlockStatement f = new IfStatement(
+                loc,                 // location
+                new BinaryOperation( // condition
+                    loc,                                      // location
+                    new LocalVariableAccess(loc, identifier), // lhs
+                    "!=",                                     // operator
+                    new NullLiteral(loc)                      // rhs
+                ),
+                new IfStatement(     // thenStatement
+                    loc,                         // location
+                    new BinaryOperation(         // condition
+                        loc,                                      // location
+                        new LocalVariableAccess(loc, primaryExc), // lhs
+                        "==",                                     // operator
+                        new NullLiteral(loc)                      // rhs
+                    ),
+                    new TryStatement(            // thenStatement
+                        loc,                                            // location
+                        Collections.<TryStatement.Resource>emptyList(), // resources
+                        new ExpressionStatement(                        // body
+                            new MethodInvocation(loc, new LocalVariableAccess(loc, identifier), "close", new Rvalue[0])
+                        ),
+                        Collections.singletonList(new CatchClause(      // catchClauses
+                            loc,                   // location
+                            suppressedException,   // caughtException
+                            afterClose             // body
+                        ))
+                    ),
+                    new ExpressionStatement(     // elseStatement
+                        new MethodInvocation(loc, new LocalVariableAccess(loc, identifier), "close", new Rvalue[0])
+                    )
+                )
+            );
+            f.setEnclosingScope(ts);
+
+            return this.compileTryCatchFinally(
+                ts,                 // ts
+                new Compilable2() { // compileBody
+
+                    @Override public boolean
+                    compile() throws CompileException {
+                        return UnitCompiler.this.compileTryCatchFinallyWithResources(ts, followingResources, compileBody, finallY);
+                    }
+                },
+                f                   // finallY
+            );
+        } finally {
+            this.getCodeContext().restoreLocalVariables();
+        }
+    }
+
+    /**
+     * Generates code for a TRY statement without resources, but with an (optional) FINALLY clause.
+     *
+     * @return Whether the code can complete normally
+     */
+    private boolean
+    compileTryCatchFinally(
+        final TryStatement       ts,
+        final Compilable2        compileBody,
+        @Nullable BlockStatement finallY
+    ) throws CompileException {
 
         final CodeContext.Offset beginningOfBody = this.getCodeContext().newOffset();
         final CodeContext.Offset afterStatement  = this.getCodeContext().new Offset();
 
         boolean canCompleteNormally;
 
-        Block of = ts.optionalFinally;
-        if (of == null) {
-
-            canCompleteNormally = this.compileTryWithoutFinally(ts, beginningOfBody, afterStatement);
+        if (finallY == null) {
+            canCompleteNormally = this.compileTryCatch(ts, compileBody, beginningOfBody, afterStatement);
         } else {
 
             // Compile a TRY statement *with* a FINALLY clause.
-            CodeContext.Offset finallyClause = (ts.finallyOffset = this.getCodeContext().new Offset());
 
             this.getCodeContext().saveLocalVariables();
             try {
+
+                final Offset fo = (ts.finallyOffset = this.getCodeContext().new Offset());
 
                 // Allocate a LV for the JSR of the FINALLY clause.
                 //
@@ -2758,48 +2930,60 @@ class UnitCompiler {
                 //   See bug #56.
                 final short pcLvIndex = this.getCodeContext().allocateLocalVariable((short) 1);
 
-                canCompleteNormally = this.compileTryWithoutFinally(ts, beginningOfBody, afterStatement);
+                canCompleteNormally = this.compileTryCatch(ts, new Compilable2() {
 
-                CodeContext.Offset here = this.getCodeContext().newOffset();
-                this.getCodeContext().addExceptionTableEntry(
-                    beginningOfBody, // startPC
-                    here,            // endPC
-                    here,            // handlerPC
-                    null             // catchTypeFD
-                );
+                    @Override
+                    public boolean compile() throws CompileException {
+                        boolean canCompleteNormally = compileBody.compile();
+                        if (canCompleteNormally) {
+                            UnitCompiler.this.writeBranch(ts, Opcode.JSR, fo);
+                        }
+                        return canCompleteNormally;
+                    }}, beginningOfBody, afterStatement);
 
+                // Generate the "catch (Throwable) {" clause that invokes the FINALLY subroutine.
                 this.getCodeContext().saveLocalVariables();
                 try {
+
+                    CodeContext.Offset here = this.getCodeContext().newOffset();
+                    this.getCodeContext().addExceptionTableEntry(
+                        beginningOfBody, // startPC
+                        here,            // endPC
+                        here,            // handlerPC
+                        null             // catchTypeFD
+                    );
 
                     // Save the exception object in an anonymous local variable.
                     short evi = this.getCodeContext().allocateLocalVariable((short) 1);
                     this.store(
-                        of,                                      // locatable
+                        finallY,                         // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // lvType
                         evi                                      // lvIndex
                     );
-                    this.writeBranch(of, Opcode.JSR, finallyClause);
+                    this.writeBranch(finallY, Opcode.JSR, fo);
                     this.load(
-                        of,                                      // locatable
+                        finallY,                         // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // type
                         evi                                      // index
                     );
-                    this.writeOpcode(of, Opcode.ATHROW);
+                    this.writeOpcode(finallY, Opcode.ATHROW);
 
-                    // Compile the "finally" body.
-                    finallyClause.set();
+                    // Generate the "finally" subroutine.
+                    fo.set();
+                    ts.finallyOffset = null;
+
                     this.store(
-                        of,                                      // locatable
+                        finallY,                         // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // lvType
                         pcLvIndex                                // lvIndex
                     );
-                    if (this.compile(of)) {
+                    if (this.compile(finallY)) {
                         if (pcLvIndex > 255) {
-                            this.writeOpcode(of, Opcode.WIDE);
-                            this.writeOpcode(of, Opcode.RET);
+                            this.writeOpcode(finallY, Opcode.WIDE);
+                            this.writeOpcode(finallY, Opcode.RET);
                             this.writeShort(pcLvIndex);
                         } else {
-                            this.writeOpcode(of, Opcode.RET);
+                            this.writeOpcode(finallY, Opcode.RET);
                             this.writeByte(pcLvIndex);
                         }
                     }
@@ -2816,14 +3000,19 @@ class UnitCompiler {
         }
 
         afterStatement.set();
-        if (canCompleteNormally) this.leave(ts, null);
+//        if (canCompleteNormally) this.leave(ts, null);
         return canCompleteNormally;
-
     }
 
+    /**
+     * Generates code for a TRY statement without resources and without a FINALLY clause.
+     *
+     * @return Whether the code can complete normally
+     */
     private boolean
-    compileTryWithoutFinally(
+    compileTryCatch(
         TryStatement             tryStatement,
+        Compilable2              compileBody,
         final CodeContext.Offset beginningOfBody,
         final CodeContext.Offset afterStatement
     ) throws CompileException {
@@ -2841,11 +3030,15 @@ class UnitCompiler {
             );
         }
 
-        boolean canCompleteNormally = this.compile(tryStatement.body);
+        boolean canCompleteNormally = compileBody.compile();
 
         CodeContext.Offset afterBody = this.getCodeContext().newOffset();
 
         if (canCompleteNormally) {
+//            if (tryStatement.finallyOffset != null) {
+//                this.writeBranch(tryStatement, Opcode.JSR, tryStatement.finallyOffset);
+//            }
+
             this.writeBranch(tryStatement, Opcode.GOTO, afterStatement);
         }
 
@@ -2887,12 +3080,14 @@ class UnitCompiler {
                             evi                  // lvIndex
                         );
 
-
                         if (this.compile(catchClause.body)) {
                             canCompleteNormally = true;
+                            if (tryStatement.finallyOffset != null) {
+                                this.writeBranch(tryStatement, Opcode.JSR, tryStatement.finallyOffset);
+                            }
                             if (
                                 i < tryStatement.catchClauses.size() - 1
-                                || tryStatement.optionalFinally != null
+                                || tryStatement.finallyOffset != null
                             ) this.writeBranch(catchClause, Opcode.GOTO, afterStatement);
                         }
                     } finally {
@@ -3318,8 +3513,8 @@ class UnitCompiler {
     buildLocalVariableMap(IfStatement is, final Map<String, LocalVariable> localVars) throws CompileException {
         is.localVariables = localVars;
         this.buildLocalVariableMap(is.thenStatement, localVars);
-        if (is.optionalElseStatement != null) {
-            this.buildLocalVariableMap(is.optionalElseStatement, localVars);
+        if (is.elseStatement != null) {
+            this.buildLocalVariableMap(is.elseStatement, localVars);
         }
     }
 
@@ -3351,8 +3546,8 @@ class UnitCompiler {
         ts.localVariables = localVars;
         this.buildLocalVariableMap(ts.body, localVars);
         for (CatchClause cc : ts.catchClauses) this.buildLocalVariableMap(cc, localVars);
-        if (ts.optionalFinally != null) {
-            this.buildLocalVariableMap(ts.optionalFinally, localVars);
+        if (ts.finallY != null) {
+            this.buildLocalVariableMap(ts.finallY, localVars);
         }
     }
 
@@ -4333,10 +4528,10 @@ class UnitCompiler {
         ConditionalExpression ce = new ConditionalExpression(
             loc,                          // location
             new BinaryOperation(          // lhs
-                loc,                          // location
-                classDollarFieldAccess,       // lhs
-                "!=",                         // operator
-                new NullLiteral(loc, "null")  // rhs
+                loc,                    // location
+                classDollarFieldAccess, // lhs
+                "!=",                   // operator
+                new NullLiteral(loc)    // rhs
             ),
             classDollarFieldAccess,       // mhs
             new Assignment(               // rhs
@@ -7211,7 +7406,8 @@ class UnitCompiler {
 
     /**
      * Statements that jump out of blocks ({@code return}, {@code break}, {@code continue}) must call this method to
-     * make sure that the {@code finally} clauses of all {@code try ... catch} statements are executed.
+     * make sure that the {@code finally} clauses of all {@code try ... catch} and {@code synchronized} statements are
+     * executed.
      */
     private void
     leaveStatements(Scope from, Scope to, @Nullable IClass optionalStackValueType) {
@@ -7515,10 +7711,7 @@ class UnitCompiler {
         this.writeConstantClassInfo(Descriptor.JAVA_LANG_STRINGBUILDER);
         this.writeOpcode(locatable, Opcode.DUP_X1);
         this.writeOpcode(locatable, Opcode.SWAP);
-
-        IConstructor ctor = this.iClassLoader.CTOR_java_lang_StringBuilder__java_lang_String;
-        assert ctor != null;
-        this.invoke(locatable, ctor);
+        this.invoke(locatable, this.iClassLoader.CTOR_java_lang_StringBuilder__java_lang_String);
 
         for (Iterator<Rvalue> it = tmp.iterator(); it.hasNext();) {
             Rvalue operand = (Rvalue) it.next();
@@ -7526,13 +7719,13 @@ class UnitCompiler {
             // "sb.append(operand)"
             IClass t = UnitCompiler.this.compileGetValue(operand);
             this.invoke(locatable, (
-                t == IClass.BYTE    ? this.iClassLoader.METH_java_lang_StringBuilder__append__int :
-                t == IClass.SHORT   ? this.iClassLoader.METH_java_lang_StringBuilder__append__int :
-                t == IClass.INT     ? this.iClassLoader.METH_java_lang_StringBuilder__append__int :
-                t == IClass.LONG    ? this.iClassLoader.METH_java_lang_StringBuilder__append__long :
-                t == IClass.FLOAT   ? this.iClassLoader.METH_java_lang_StringBuilder__append__float :
-                t == IClass.DOUBLE  ? this.iClassLoader.METH_java_lang_StringBuilder__append__double :
-                t == IClass.CHAR    ? this.iClassLoader.METH_java_lang_StringBuilder__append__char :
+                t == IClass.BYTE    ? this.iClassLoader.METH_java_lang_StringBuilder__append__int     :
+                t == IClass.SHORT   ? this.iClassLoader.METH_java_lang_StringBuilder__append__int     :
+                t == IClass.INT     ? this.iClassLoader.METH_java_lang_StringBuilder__append__int     :
+                t == IClass.LONG    ? this.iClassLoader.METH_java_lang_StringBuilder__append__long    :
+                t == IClass.FLOAT   ? this.iClassLoader.METH_java_lang_StringBuilder__append__float   :
+                t == IClass.DOUBLE  ? this.iClassLoader.METH_java_lang_StringBuilder__append__double  :
+                t == IClass.CHAR    ? this.iClassLoader.METH_java_lang_StringBuilder__append__char    :
                 t == IClass.BOOLEAN ? this.iClassLoader.METH_java_lang_StringBuilder__append__boolean :
                 this.iClassLoader.METH_java_lang_StringBuilder__append__java_lang_Object
             ));
@@ -8606,8 +8799,10 @@ class UnitCompiler {
     }
 
     /**
-     * Finds named methods of "targetType", examine the argument types and choose the most specific method. Check that
-     * only the allowed exceptions are thrown.
+     * Finds methods of the <var>mi</var>{@code .}{@link MethodInvocation#optionalTarget
+     * optionalTarget} named <var>mi</var>{@code .}{@link Invocation#methodName methodName},
+     * examines the argument types and chooses the most specific method. Checks that only the
+     * allowed exceptions are thrown.
      * <p>
      *   Notice that the returned {@link IClass.IMethod} may be declared in an enclosing type.
      * </p>
@@ -10270,8 +10465,7 @@ class UnitCompiler {
             }
         )));
 
-        List<CatchClause> l = new ArrayList<CatchClause>();
-        l.add(new CatchClause(
+        CatchClause cc = new CatchClause(
             loc,                 // location
             new FormalParameter( // caughtException
                 loc,                                               // location
@@ -10280,12 +10474,11 @@ class UnitCompiler {
                 "ex"                                               // name
             ),
             b                    // body
-        ));
+        );
         TryStatement ts = new TryStatement(
             loc,                          // location
             new ReturnStatement(loc, mi), // body
-            l,                            // catchClauses
-            null                          // optionalFinally
+            Collections.singletonList(cc) // catchClauses
         );
 
         List<BlockStatement> statements = new ArrayList<BlockStatement>();
