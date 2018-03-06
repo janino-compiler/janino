@@ -8,8 +8,8 @@
 		message='Please create a file "local_build.properties" and define a property "maven.repo".'
 	/>
 
-	<!-- Read the POM to calculate the "${project.parent.version}". -->
-	<xmlproperty file="../janino/pom.xml" />
+	<xmlproperty file="../janino-parent/pom.xml" prefix="pom.xml" />
+	<property name="janino.version" value="${pom.xml.project.version}" />
 
 	<target name="default" depends="generate.apidocs.for.publication" />
 
@@ -24,7 +24,7 @@
 				<pathelement location="${maven.repo}/org/apache/ant/ant/${org.apache.ant.version}/ant-${org.apache.ant.version}.jar" />
 			</classpath>
 
-			<doctitle>JANINO ${project.parent.version}</doctitle>
+			<doctitle>JANINO ${janino.version}</doctitle>
 
 			<arg value="-notimestamp" />
 			<arg value="-Xdoclint:none" />
