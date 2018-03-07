@@ -669,4 +669,26 @@ class Visitor {
          */
         @Nullable R visitArrayType(Java.ArrayType arrayType) throws EX;
     }
+
+    /**
+     * The visitor for all kinds of {@link Java.TryStatement.Resource}s.
+     *
+     * @param <R>  The type of the object returned by the {@code visit*()} methods
+     * @param <EX> The exception that the {@code visit*()} methods may throw
+     */
+    public
+    interface TryStatementResourceVisitor<R, EX extends Throwable> {
+
+        /**
+         * Invoked by {@link Java.TryStatement.LocalVariableDeclaratorResource#accept(Visitor.TryStatementResourceVisitor)}
+         */
+        @Nullable R
+        visitLocalVariableDeclaratorResource(Java.TryStatement.LocalVariableDeclaratorResource lvdr) throws EX;
+
+        /**
+         * Invoked by {@link Java.TryStatement.VariableAccessResource#accept(Visitor.TryStatementResourceVisitor)}
+         */
+        @Nullable R
+        visitVariableAccessResource(Java.TryStatement.VariableAccessResource var) throws EX;
+    }
 }

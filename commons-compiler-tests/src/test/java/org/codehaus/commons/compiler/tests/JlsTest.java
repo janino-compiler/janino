@@ -1495,6 +1495,95 @@ class JlsTest extends CommonsCompilerTestSuite {
         );
     }
 
+    /**
+     * Tests the "enhanced try-with-resources statement" that was introduced with Java 9 with a "local variable
+     * declarator resource".
+     */
+    @Test public void
+    test_14_20_3__try_with_resources__10a() throws Exception {
+
+        if (this.isJdk678()) return;
+
+        this.assertScriptExecutable(
+            ""
+            + "import java.io.Closeable;\n"
+            + "import java.io.IOException;\n"
+            + "import org.junit.Assert;\n"
+            + "try {\n"
+            + "    final int[] x = new int[1];\n"
+            + "    Closeable lv = new Closeable() {\n"
+            + "        public void close() { Assert.assertEquals(99, ++x[0]); }\n"
+            + "    };\n"
+            + "    \n"
+            + "    try (lv) {\n"
+            + "        Assert.assertEquals(1, ++x[0]);\n"
+            + "    }\n"
+            + "    Assert.assertEquals(3, ++x[0]);\n"
+            + "} catch (IOException ioe) {\n"
+            + "    Assert.fail(ioe.toString());\n"
+            + "}\n"
+        );
+    }
+
+    /**
+     * Tests the "enhanced try-with-resources statement" that was introduced with Java 9 with a "variable access
+     * resource".
+     */
+    @Test public void
+    test_14_20_3__try_with_resources__10b() throws Exception {
+
+        if (this.isJdk678()) return;
+
+        this.assertClassBodyExecutable(
+            ""
+            + "import java.io.Closeable;\n"
+            + "import java.io.IOException;\n"
+            + "import org.junit.Assert;\n"
+            + "\n"
+            + "public static final Closeable sf = new Closeable() {\n"
+            + "    public void close() { Assert.assertEquals(99, ++x[0]); }\n"
+            + "};\n"
+            + "public static final int[] x = new int[1];\n"
+            + "\n"
+            + "public static void main() {\n"
+            + "    try {\n"
+            + "        \n"
+            + "        try (sf) {\n"
+            + "            Assert.assertEquals(1, ++x[0]);\n"
+            + "        }\n"
+            + "        Assert.assertEquals(3, ++x[0]);\n"
+            + "    } catch (IOException ioe) {\n"
+            + "        Assert.fail(ioe.toString());\n"
+            + "    }\n"
+            + "}\n"
+        );
+    }
+
+    /**
+     * Tests the "enhanced try-with-resources statement" that was introduced with Java 9 with a "local variable
+     * declarator resource".
+     */
+    @Test public void
+    test_14_20_3__try_with_resources__10c() throws Exception {
+
+        if (this.isJdk678()) return;
+
+        this.assertScriptUncookable(
+            (
+                ""
+                + "import java.io.Closeable;\n"
+                + "import java.io.IOException;\n"
+                + "try {\n"
+                + "    try (new Closeable() { public void close() {} }) {\n"
+                + "    }\n"
+                + "} catch (IOException ioe) {\n"
+                + "    Assert.fail(ioe.toString());\n"
+                + "}\n"
+            ),
+            "NewAnonymousClassInstance rvalue not allowed as a resource"
+        );
+    }
+
     @Test public void
     test_14_21__UnreachableStatements() throws Exception {
         this.assertClassBodyUncookable(
@@ -2015,7 +2104,8 @@ class JlsTest extends CommonsCompilerTestSuite {
     /**
      * @return Whether we're running the JDK 6 (or earlier) compiler factory
      */
-    private boolean isJdk6() {
+    private boolean
+    isJdk6() {
         return (
             this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk")
             && System.getProperty("java.version").matches("1\\.[1-6].*")
@@ -2025,10 +2115,28 @@ class JlsTest extends CommonsCompilerTestSuite {
     /**
      * @return Whether we're running the JDK 7 compiler factory
      */
-    private boolean isJdk7() {
+    private boolean
+    isJdk7() {
         return (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
             && System.getProperty("java.version").startsWith("1.7.0")
         );
     }
+
+    /**
+     * @return Whether we're running the JDK 8 compiler factory
+     */
+    private boolean
+    isJdk8() {
+        return (
+            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
+            && System.getProperty("java.version").startsWith("1.8.0")
+        );
+    }
+
+    /**
+     * @return Whether we're running the JDK 6, 7 or 8 compiler factory
+     */
+    private boolean
+    isJdk678() { return this.isJdk6() || this.isJdk7() || this.isJdk8(); }
 }

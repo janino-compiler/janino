@@ -64,6 +64,8 @@ import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.TryStatement;
+import org.codehaus.janino.Java.TryStatement.LocalVariableDeclaratorResource;
+import org.codehaus.janino.Java.TryStatement.VariableAccessResource;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.util.AutoIndentWriter;
@@ -1481,10 +1483,24 @@ class Unparser {
 
     private void
     unparseResource(TryStatement.Resource r) {
-        Unparser.this.unparseAnnotations(r.modifiers.annotations);
-        Unparser.this.unparseModifiers(r.modifiers.accessFlags);
-        Unparser.this.unparseType(r.type);
-        Unparser.this.pw.print(' ');
-        Unparser.this.unparseVariableDeclarator(r.variableDeclarator);
+
+        r.accept(new Visitor.TryStatementResourceVisitor<Void, RuntimeException>() {
+
+            @Override @Nullable public Void
+            visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) {
+                Unparser.this.unparseAnnotations(lvdr.modifiers.annotations);
+                Unparser.this.unparseModifiers(lvdr.modifiers.accessFlags);
+                Unparser.this.unparseType(lvdr.type);
+                Unparser.this.pw.print(' ');
+                Unparser.this.unparseVariableDeclarator(lvdr.variableDeclarator);
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitVariableAccessResource(VariableAccessResource var) {
+                Unparser.this.unparseAtom(var.variableAccess);
+                return null;
+            }
+        });
     }
 }

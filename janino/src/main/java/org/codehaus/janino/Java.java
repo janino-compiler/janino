@@ -44,6 +44,7 @@ import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
+import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
 import org.codehaus.janino.util.AbstractTraverser;
 import org.codehaus.janino.util.iterator.ReverseListIterator;
@@ -3052,8 +3053,21 @@ class Java {
         /**
          * Representation of a JLS9 14.20.2 "resource" in a TRY-with-resources statement.
          */
-        public static final
+        public static abstract
         class Resource extends Located {
+            protected Resource(Location location) { super(location); }
+
+            public abstract void setEnclosingTryStatement(TryStatement tryStatement);
+
+            @Nullable public abstract <R, EX extends Throwable> R
+            accept(TryStatementResourceVisitor<R, EX> visitor) throws EX;
+        }
+
+        /**
+         * Representation of a JLS9 14.20.2 "local-variable-declarator resource" in a TRY-with-resources statement.
+         */
+        public static
+        class LocalVariableDeclaratorResource extends Resource {
 
             /**
              * The resource variable modifiers (annotations and/or flags like FINAL).
@@ -3074,20 +3088,28 @@ class Java {
              * @param modifiers Only {@code final} allowed
              */
             public
-            Resource(Location location, Modifiers modifiers, Type type, VariableDeclarator variableDeclarator) {
+            LocalVariableDeclaratorResource(
+                Location           location,
+                Modifiers          modifiers,
+                Type               type,
+                VariableDeclarator variableDeclarator
+            ) {
                 super(location);
                 this.modifiers          = modifiers;
                 this.type               = type;
                 this.variableDeclarator = variableDeclarator;
             }
 
-            public void
+            @Override public void
             setEnclosingTryStatement(TryStatement ts) {
                 this.type.setEnclosingScope(ts);
                 this.variableDeclarator.setEnclosingScope(ts);
             }
 
-            // Compile time members:
+            @Override@Nullable public <R, EX extends Throwable> R
+            accept(TryStatementResourceVisitor<R, EX> visitor) throws EX {
+                return visitor.visitLocalVariableDeclaratorResource(this);
+            }
 
             @Override public String
             toString() {
@@ -3096,10 +3118,44 @@ class Java {
                 if (this.modifiers.accessFlags != Mod.NONE) {
                     sb.append(Mod.shortToString(this.modifiers.accessFlags)).append(' ');
                 }
-                return sb.append(this.type).append(' ').append(this.variableDeclarator).append(';').toString();
+                return sb.append(this.type).append(' ').append(this.variableDeclarator).toString();
             }
         }
 
+        /**
+         * Representation of a JLS9 14.20.2 "variable-access resource" in a TRY-with-resources statement.
+         */
+        public static
+        class VariableAccessResource extends Resource {
+
+            public final Rvalue variableAccess;
+
+            /**
+             * @param modifiers Only {@code final} allowed
+             */
+            public
+            VariableAccessResource(Location location, Rvalue variableAccess) {
+                super(location);
+                this.variableAccess = variableAccess;
+            }
+
+            @Override public void
+            setEnclosingTryStatement(TryStatement ts) {
+                this.variableAccess.setEnclosingScope(ts);
+            }
+
+            @Override@Nullable public <R, EX extends Throwable> R
+            accept(TryStatementResourceVisitor<R, EX> visitor) throws EX {
+                return visitor.visitVariableAccessResource(this);
+            }
+
+            @Override public String
+            toString() { return this.variableAccess.toString(); }
+        }
+
+        /**
+         * The "resources" managed by the TRY-with-resources statement.
+         */
         public final List<Resource> resources;
 
         /**

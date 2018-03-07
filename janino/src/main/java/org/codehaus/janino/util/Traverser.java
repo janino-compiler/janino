@@ -126,6 +126,8 @@ import org.codehaus.janino.Java.SynchronizedStatement;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
+import org.codehaus.janino.Java.TryStatement.LocalVariableDeclaratorResource;
+import org.codehaus.janino.Java.TryStatement.VariableAccessResource;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeBodyDeclaration;
 import org.codehaus.janino.Java.TypeDeclaration;
@@ -488,4 +490,10 @@ interface Traverser<EX extends Throwable> {
 
     void
     traverseLocated(Located l) throws EX;
+
+    void
+    traverseLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws EX;
+
+    void
+    traverseVariableAccessResource(VariableAccessResource var) throws EX;
 }

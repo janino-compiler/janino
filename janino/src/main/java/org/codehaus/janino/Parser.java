@@ -68,6 +68,7 @@ import org.codehaus.janino.Java.ElementValue;
 import org.codehaus.janino.Java.ElementValuePair;
 import org.codehaus.janino.Java.EmptyStatement;
 import org.codehaus.janino.Java.ExpressionStatement;
+import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
 import org.codehaus.janino.Java.FieldDeclaration;
 import org.codehaus.janino.Java.FloatingPointLiteral;
@@ -1994,17 +1995,34 @@ class Parser {
      * <pre>
      * Resource :=
      *     Modifiers Type VariableDeclarator
-     *     | VariableAccess                        // <= NYI
+     *     | VariableAccess
      * </pre>
      */
     private TryStatement.Resource
     parseResource() throws CompileException, IOException {
-        return new TryStatement.Resource(
-            this.location(),               // location
-            this.parseModifiers(),         // modifiers
-            this.parseType(),              // type
-            this.parseVariableDeclarator() // variableDeclarator
-        );
+        Location loc = this.location();
+
+        Modifiers modifiers = this.parseModifiers();
+        Atom      a         = this.parseExpression();
+        if (modifiers != Parser.NO_MODIFIERS || this.peek(TokenType.IDENTIFIER)) {
+
+            // Modifiers Type VariableDeclarator
+            return new TryStatement.LocalVariableDeclaratorResource(
+                loc,                           // location
+                modifiers,                     // modifiers
+                a.toTypeOrCompileException(),  // type
+                this.parseVariableDeclarator() // variableDeclarator
+            );
+        }
+
+        // VariableAccess
+        Rvalue rv = a.toRvalueOrCompileException();
+
+        if (!(rv instanceof FieldAccess)) {
+            this.compileException("Rvalue " + rv.getClass().getSimpleName() + " disallowed as a resource");
+        }
+
+        return new TryStatement.VariableAccessResource(loc, rv);
     }
 
     /**

@@ -185,6 +185,8 @@ import org.codehaus.janino.Java.SynchronizedStatement;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
+import org.codehaus.janino.Java.TryStatement.LocalVariableDeclaratorResource;
+import org.codehaus.janino.Java.TryStatement.VariableAccessResource;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeArgument;
 import org.codehaus.janino.Java.TypeBodyDeclaration;
@@ -2775,26 +2777,62 @@ class UnitCompiler {
         this.getCodeContext().saveLocalVariables();
         try {
 
-            // final {VariableModifierNoFinal} R Identifier = Expression;
-            LocalVariable identifier = new LocalVariable(true, this.getType(firstResource.type));
-            identifier.setSlot(
-                this.getCodeContext().allocateLocalVariable(
-                    Descriptor.size(this.getType(firstResource.type).getDescriptor()), // size
-                    null,                                                              // name
-                    this.getType(firstResource.type)                                   // type
-                )
+            LocalVariable
+            identifier = (LocalVariable) firstResource.accept(
+                new Visitor.TryStatementResourceVisitor<LocalVariable, CompileException>() {
+
+                    @Override @Nullable public LocalVariable
+                    visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws CompileException {
+
+                        // final {VariableModifierNoFinal} R Identifier = Expression
+                        IClass        lvType = UnitCompiler.this.getType(lvdr.type);
+                        LocalVariable result = new LocalVariable(true, lvType);
+                        result.setSlot(
+                            UnitCompiler.this.getCodeContext().allocateLocalVariable(
+                                Descriptor.size(lvType.getDescriptor()), // size
+                                null,                                    // name
+                                lvType                                   // type
+                            )
+                        );
+                        ArrayInitializerOrRvalue oi = lvdr.variableDeclarator.optionalInitializer;
+                        if (oi instanceof Rvalue) {
+                            UnitCompiler.this.compileGetValue((Rvalue) oi);
+                        } else
+                        if (oi instanceof ArrayInitializer) {
+                            UnitCompiler.this.compileGetValue((ArrayInitializer) oi, lvType);
+                        } else
+                        {
+                            throw new InternalCompilerException(String.valueOf(oi));
+                        }
+                        UnitCompiler.this.store(ts, result);
+                        return result;
+                    }
+
+                    @Override @Nullable public LocalVariable
+                    visitVariableAccessResource(VariableAccessResource var) throws CompileException {
+
+                        // Expression
+                        if (!(var.variableAccess instanceof AmbiguousName)) {
+                            throw new CompileException(
+                                var.variableAccess.getClass().getSimpleName() + " rvalue not allowed as a resource",
+                                var.getLocation()
+                            );
+                        }
+                        IClass        lvType = UnitCompiler.this.compileGetValue(var.variableAccess);
+                        LocalVariable result = new LocalVariable(true, lvType);
+                        result.setSlot(
+                            UnitCompiler.this.getCodeContext().allocateLocalVariable(
+                                Descriptor.size(lvType.getDescriptor()), // size
+                                null,                                    // name
+                                lvType                                   // type
+                            )
+                        );
+                        UnitCompiler.this.store(ts, result);
+                        return result;
+                    }
+                }
             );
-            ArrayInitializerOrRvalue oi = firstResource.variableDeclarator.optionalInitializer;
-            if (oi instanceof Rvalue) {
-                this.compileGetValue((Rvalue) oi);
-            } else
-            if (oi instanceof ArrayInitializer) {
-                this.compileGetValue((ArrayInitializer) oi, this.getType(firstResource.type));
-            } else
-            {
-                throw new InternalCompilerException(String.valueOf(oi));
-            }
-            this.store(ts, identifier);
+            assert identifier != null;
 
             // Throwable #primaryExc = null;
             LocalVariable primaryExc = new LocalVariable(true, tt);
@@ -2859,12 +2897,11 @@ class UnitCompiler {
                         new NullLiteral(loc)                      // rhs
                     ),
                     new TryStatement(            // thenStatement
-                        loc,                                            // location
-                        Collections.<TryStatement.Resource>emptyList(), // resources
-                        new ExpressionStatement(                        // body
+                        loc,                                       // location
+                        new ExpressionStatement(                   // body
                             new MethodInvocation(loc, new LocalVariableAccess(loc, identifier), "close", new Rvalue[0])
                         ),
-                        Collections.singletonList(new CatchClause(      // catchClauses
+                        Collections.singletonList(new CatchClause( // catchClauses
                             loc,                   // location
                             suppressedException,   // caughtException
                             afterClose             // body

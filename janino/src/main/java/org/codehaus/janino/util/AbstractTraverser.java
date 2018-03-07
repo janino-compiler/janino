@@ -132,6 +132,8 @@ import org.codehaus.janino.Java.SynchronizedStatement;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
+import org.codehaus.janino.Java.TryStatement.LocalVariableDeclaratorResource;
+import org.codehaus.janino.Java.TryStatement.VariableAccessResource;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeBodyDeclaration;
 import org.codehaus.janino.Java.TypeDeclaration;
@@ -142,6 +144,7 @@ import org.codehaus.janino.Visitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
+import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 
 /**
  * A basic implementation of {@link Traverser}; each {@code traverse*(s)} method invokes the
@@ -401,6 +404,12 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         @Override @Nullable public Void visitSingleElementAnnotation(SingleElementAnnotation sea) throws EX { AbstractTraverser.this.delegate.traverseSingleElementAnnotation(sea); return null; }
     };
 
+    private final TryStatementResourceVisitor<Void, EX>
+    resourceTraverser = new TryStatementResourceVisitor<Void, EX>() {
+        @Override @Nullable public Void visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws EX { AbstractTraverser.this.delegate.traverseLocalVariableDeclaratorResource(lvdr);  return null; }
+        @Override @Nullable public Void visitVariableAccessResource(VariableAccessResource var)                    throws EX { AbstractTraverser.this.delegate.traverseVariableAccessResource(var);            return null; }
+    };
+
     @Override public void
     visitImportDeclaration(CompilationUnit.ImportDeclaration id) throws EX {
         id.accept(this.importTraverser);
@@ -583,9 +592,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     @Override public void
     traverseTryStatement(TryStatement ts) throws EX {
         for (TryStatement.Resource r : ts.resources) {
-            r.type.accept(this.atomTraverser);
-            ArrayInitializerOrRvalue i = r.variableDeclarator.optionalInitializer;
-            if (i != null) this.traverseArrayInitializerOrRvalue(i);
+            r.accept(this.resourceTraverser);
         }
         ts.body.accept(this.blockStatementTraverser);
         for (CatchClause cc : ts.catchClauses) cc.body.accept(this.blockStatementTraverser);
@@ -1061,4 +1068,16 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
     @SuppressWarnings("unused") @Override public void
     traverseLocated(Located l) throws EX {}
+
+    @Override public void
+    traverseLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws EX {
+        lvdr.type.accept(this.atomTraverser);
+        ArrayInitializerOrRvalue i = lvdr.variableDeclarator.optionalInitializer;
+        if (i != null) this.traverseArrayInitializerOrRvalue(i);
+    }
+
+    @Override public void
+    traverseVariableAccessResource(VariableAccessResource var) throws EX {
+        var.variableAccess.accept(this.rvalueTraverser);
+    }
 }
