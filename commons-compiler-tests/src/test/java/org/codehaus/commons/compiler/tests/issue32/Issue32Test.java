@@ -31,6 +31,7 @@ import java.util.Collection;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -79,7 +80,7 @@ class Issue32Test extends CommonsCompilerTestSuite {
 
     public static
     class SideInput {
-        @SuppressWarnings("static-method") public double[] values(int a) { return null; }
+        @SuppressWarnings("static-method") @Nullable public double[] values(int a) { return null; }
     }
 
     public static
