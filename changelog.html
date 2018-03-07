@@ -53,17 +53,30 @@ h5 {
 
     <h4>Version 3.0.9-SNAPSHOT (only available as source code)</h4>
     <ul>
-      <li>Added "default values" for annotation types' methods</li>
+      <li>Implemented the TRY-with-resources statement (including Java 9's "enhanced try-with-resources statement")</li>
+      <li>
+        Removed the (pretty bad) "JGrep" tool here, and re-incarnated it as <a
+        href="https://github.com/aunkrig/jgrep/tree/master/jgrep">https://github.com/aunkrig/jgrep/tree/master/jgrep</a>.
+      </li>
+      <li>Renamed class "Traverser" to class "AbstractTraverser", and extracted an interface "Traverser".</li>
+      <li>
+        Merged <a href="https://github.com/janino-compiler/janino/pull/31">pull request #31: StackOverflowError when
+        using field annotations with enum members</a>.
+      </li>
+      <li>Implemented "default values" for annotation types' methods</li>
     </ul>
 
     <h4>Version 3.0.8, 2017-12-04</h4>
     <ul>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/25">Stack overflow when using new permission system
-        in ClassLoader</a>
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/25">issue #308: Stack overflow when using new
+        permission system in ClassLoader</a>
       </li>
       <li>Added some consistency checks in "IClassLoader.loadIClass()".</li>
-      <li>SIPUSH bytecode is not used for short integer constant #33</li>
+      <li>
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/33">issue #33: SIPUSH bytecode is not used for
+        short integer constant</a>
+      </li>
       <li>
         Renamed the "JaninoRuntimeException" to "InternalCompilerException" (and left the old class for backwards
         compatibility), because the old name was confusing.
@@ -71,30 +84,36 @@ h5 {
       <li>The first digit of a three-digit octal escape (e.g. "\377") was not correctly decoded.</li>
       <li>The JUNIT test cases didn't work when executed from MAVEN... had to pre-initialize two JRE classes.</li>
       <li>Moved the CheckStyle configuration from "de.unkrig.checkstyle" to "janino-parent/checkstyle".</li>
-      <li>Merge pull request #22 from janino-compiler/jdk_16</li>
-      <li>Fixed GITHUB issue #25 "Stack overflow when using new permission system in ClassLoader".</li>
+      <li>
+        Merged <a href="https://github.com/janino-compiler/janino/pull/22">pull request #22: use version rather than
+        hard-coding path</a> from janino-compiler/jdk_16
+      </li>
+      <li>
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/25">issue #25: Stack overflow when using new
+        permission system in ClassLoader</a>.
+      </li>
     </ul>
 
     <h4>Version 3.0.7, 2017-03-22</h4>
     <ul>
       <li>Implemented STRING SWITCH (JLS 14.11).</li>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/13">#13: Undeclared runtime dependency on
+        <a href="https://github.com/janino-compiler/janino/issues/13">issue #13: Undeclared runtime dependency on
         de.unkrig.jdiasm.Disassembler</a>
       </li>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/9">#9: High security mode</a>: Added
+        <a href="https://github.com/janino-compiler/janino/issues/9">issue #9: High security mode</a>: Added
         "ISimpleCompiler.setPermissions()"
       </li>
       <li>
         The JDK implementation now honors the "parentClassLoader" properly, at last.
       </li>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/13">#16: Error message should include variable/field
-        names for clarity</a>
+        <a href="https://github.com/janino-compiler/janino/issues/13">issue #16: Error message should include
+        variable/field names for clarity</a>
       </li>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/19">#19: Get bytecode after compile</a>
+        <a href="https://github.com/janino-compiler/janino/issues/19">issue #19: Get bytecode after compile</a>
       </li>
     </ul>
 

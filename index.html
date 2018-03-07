@@ -59,6 +59,7 @@
         <ul>
           <li><a href="#getting_started">Getting Started</a></li>
           <li><a href="#properties">Properties</a></li>
+          <li><a href="#requirements">Requirements</a></li>
           <li><a href="#limitations">Limitations</a></li>
           <li><a href="#license">License</a></li>
           <li>
@@ -239,7 +240,7 @@
               <li>Static imports (single and on-demand; fields, types and methods)</li>
               <li>Annotations</li>
               <li>Covariant return types</li>
-              <li><code><a href="https://github.com/Override" class="user-mention">@Override</a></code> annotation</li>
+              <li><code>@Override</code> annotation</li>
               <li>Hexadecimal floating point literals</li>
             </ul>
           </li>
@@ -249,11 +250,35 @@
             <ul>
               <li>Binary integer literal (JLS7 3.10.1)</li>
               <li>Underscores in numeric literals (JLS7 3.10.1)</li>
-              <li>Strings in <code>switch</code> statement (JLS7 14.11)</li>
+              <li>String <code>switch</code> statement (JLS7 14.11)</li>
               <li><code>try</code>-with-resources statement (JLS7 14.20.3)</li>
             </ul>
           </li>
+
+          <li>
+            Java 9 language features:
+            <ul>
+              <li>
+                Enhanced <code>try</code>-with-resources statement, allowing <code>VariableAccess</code>es as
+                resources (JLS9 14.20.3)
+              </li>
+            </ul>
+          </li>
         </ul>
+
+        <p>
+          JANINO supports all these language features, even if it runs in an older JRE!
+        </p>
+
+        <h2>
+          <a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span aria-hidden="true"
+          class="octicon octicon-link"></span></a>Requirements
+        </h2>
+
+        <p>
+          JANINO only requires a Java 6 (or later) JRE or later, not a JDK. It has no dependencies whatsoever on any
+          third-party libraries.
+        </p>
 
         <h2>
           <a id="limitations" class="anchor" href="#limitations" aria-hidden="true"><span aria-hidden="true"
@@ -307,6 +332,13 @@
               <li>Type annotations</li>
             </ul>
           </li>
+
+          <li>
+            Java 9 language features:
+            <ul>
+              <li>...</li>
+            </ul>
+          </li>
         </ul>
 
         <h2>
@@ -335,10 +367,10 @@
 &lt;dependency&gt;
     &lt;groupId&gt;org.codehaus.janino&lt;/groupId&gt;
     &lt;artifactId&gt;janino&lt;/artifactId&gt;
-    &lt;version&gt;2.7.5&lt;/version&gt;
+    &lt;version&gt;<var>***</var>&lt;/version&gt;
 &lt;/dependency&gt;</pre></div>
 
-        <p>(Replace "2.7.5" with the latest version of JANINO.)</p>
+        <p>(Replace "<var>***</var>" with the latest version of JANINO.)</p>
 
         <p>If you are not using MAVEN, do the following instead:</p>
 
