@@ -2000,11 +2000,16 @@ class Parser {
      */
     private TryStatement.Resource
     parseResource() throws CompileException, IOException {
-        Location loc = this.location();
 
+        Location  loc       = this.location();
         Modifiers modifiers = this.parseModifiers();
         Atom      a         = this.parseExpression();
+
         if (modifiers != Parser.NO_MODIFIERS || this.peek(TokenType.IDENTIFIER)) {
+
+            if ((modifiers.accessFlags & ~Mod.FINAL) != 0) {
+                throw this.compileException("Only modifier FINAL allowed in this place");
+            }
 
             // Modifiers Type VariableDeclarator
             return new TryStatement.LocalVariableDeclaratorResource(

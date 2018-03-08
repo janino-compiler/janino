@@ -41,4 +41,9 @@ public enum JaninoOption {
      * enclosed by the accessing code, or enclosed by the same top-level type as the accessing code.
      */
     PRIVATE_MEMBERS_OF_ENCLOSING_AND_ENCLOSED_TYPES_INACCESSIBLE,
+
+    /**
+     * Contrary to the JLS, allow <em>any</em> expression as a resource in a TRY-with-resources statement.
+     */
+    EXPRESSIONS_IN_TRY_WITH_RESOURCES_ALLOWED,
 }

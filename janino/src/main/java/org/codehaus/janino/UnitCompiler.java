@@ -2812,7 +2812,14 @@ class UnitCompiler {
                     visitVariableAccessResource(VariableAccessResource var) throws CompileException {
 
                         // Expression
-                        if (!(var.variableAccess instanceof AmbiguousName)) {
+                        if (
+                            !UnitCompiler.this.options.contains(
+                                JaninoOption.EXPRESSIONS_IN_TRY_WITH_RESOURCES_ALLOWED
+                            )
+                            && !(var.variableAccess instanceof AmbiguousName)
+                            && !(var.variableAccess instanceof FieldAccessExpression)
+                            && !(var.variableAccess instanceof SuperclassFieldAccessExpression)
+                        ) {
                             throw new CompileException(
                                 var.variableAccess.getClass().getSimpleName() + " rvalue not allowed as a resource",
                                 var.getLocation()
