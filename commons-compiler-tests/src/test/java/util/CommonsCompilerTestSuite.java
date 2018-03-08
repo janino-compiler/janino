@@ -28,6 +28,8 @@ package util;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
@@ -298,7 +300,7 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that the given <var>classBody</var> is cookable and declares a method "{@code public static
+     * Asserts that the given <var>classBody</var> is cookable and declares a method "{@code public [ static ]
      * }<em>any-type</em> {@code main()}" which executes and terminates normally. (The return value is ignored.)
      */
     protected void
@@ -307,7 +309,7 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that the given <var>classBody</var> is cookable and declares a method "{@code public static boolean
+     * Asserts that the given <var>classBody</var> is cookable and declares a method "{@code public [ static ] boolean
      * main()}" which executes and returns {@code true}.
      */
     protected void
@@ -338,7 +340,9 @@ class CommonsCompilerTestSuite {
         @Override protected Object
         execute() throws Exception {
             try {
-                return this.classBodyEvaluator.getClazz().getMethod("main").invoke(null);
+                Class<?> cbeClass   = this.classBodyEvaluator.getClazz();
+                Method   mainMethod = cbeClass.getMethod("main");
+                return mainMethod.invoke(Modifier.isStatic(mainMethod.getModifiers()) ? null : cbeClass.newInstance());
             } catch (InvocationTargetException ite) {
                 Throwable te = ite.getTargetException();
                 throw te instanceof Exception ? (Exception) te : ite;
@@ -510,11 +514,11 @@ class CommonsCompilerTestSuite {
 
             if (!errorMessage.contains(messageInfix)) {
                 CommonsCompilerTestSuite.fail((
-                    "Error message '"
+                    "Compilation error message \""
                     + errorMessage
-                    + "' does not contain '"
+                    + "\" does not contain \""
                     + messageInfix
-                    + "'"
+                    + "\""
                 ));
             }
         }
