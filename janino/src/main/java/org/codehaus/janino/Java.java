@@ -3130,9 +3130,6 @@ class Java {
 
             public final Rvalue variableAccess;
 
-            /**
-             * @param modifiers Only {@code final} allowed
-             */
             public
             VariableAccessResource(Location location, Rvalue variableAccess) {
                 super(location);
