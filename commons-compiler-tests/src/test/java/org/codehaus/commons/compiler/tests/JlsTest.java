@@ -1497,7 +1497,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     /**
      * Tests the "enhanced try-with-resources statement" that was introduced with Java 9 with a "local variable
-     * declarator resource".
+     * declarator resource" with a local variable access.
      */
     @Test public void
     test_14_20_3__try_with_resources__10a() throws Exception {
@@ -1527,7 +1527,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     /**
      * Tests the "enhanced try-with-resources statement" that was introduced with Java 9 with a "variable access
-     * resource".
+     * resource" with a static field access.
      */
     @Test public void
     test_14_20_3__try_with_resources__10b() throws Exception {
@@ -1548,7 +1548,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "public static void main() {\n"
             + "    try {\n"
             + "        \n"
-            + "        try (sf) {\n"
+            + "        try (SC.sf) {\n"
             + "            Assert.assertEquals(1, ++x[0]);\n"
             + "        }\n"
             + "        Assert.assertEquals(3, ++x[0]);\n"
@@ -1560,11 +1560,45 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     /**
-     * Tests the "enhanced try-with-resources statement" that was introduced with Java 9 with a "local variable
-     * declarator resource".
+     * Tests the "enhanced try-with-resources statement" that was introduced with Java 9 with a "variable access
+     * resource" with a non-static field access.
      */
     @Test public void
     test_14_20_3__try_with_resources__10c() throws Exception {
+
+        if (this.isJdk678()) return;
+
+        this.assertClassBodyExecutable(
+            ""
+            + "import java.io.Closeable;\n"
+            + "import java.io.IOException;\n"
+            + "import org.junit.Assert;\n"
+            + "\n"
+            + "public final Closeable sf = new Closeable() {\n"
+            + "    public void close() { Assert.assertEquals(99, ++SC.this.x[0]); }\n"
+            + "};\n"
+            + "public final int[] x = new int[1];\n"
+            + "\n"
+            + "public void main() {\n"
+            + "    try {\n"
+            + "        \n"
+            + "        try (this.sf) {\n"
+            + "            Assert.assertEquals(1, ++this.x[0]);\n"
+            + "        }\n"
+            + "        Assert.assertEquals(3, ++this.x[0]);\n"
+            + "    } catch (IOException ioe) {\n"
+            + "        Assert.fail(ioe.toString());\n"
+            + "    }\n"
+            + "}\n"
+        );
+    }
+
+    /**
+     * Tests the "enhanced try-with-resources statement" that was introduced with Java 9 with a "local variable
+     * declarator resource" with an invalid variable access.
+     */
+    @Test public void
+    test_14_20_3__try_with_resources__10d() throws Exception {
 
         if (this.isJdk678()) return;
 
@@ -1573,10 +1607,11 @@ class JlsTest extends CommonsCompilerTestSuite {
                 ""
                 + "import java.io.Closeable;\n"
                 + "import java.io.IOException;\n"
+                + "import org.junit.Assert;\n"
                 + "try {\n"
                 + "    try (new Closeable() { public void close() {} }) {\n"
                 + "    }\n"
-                + "} catch (IOException ioe) {\n"
+                + "} catch (Exception ioe) {\n"
                 + "    Assert.fail(ioe.toString());\n"
                 + "}\n"
             ),
