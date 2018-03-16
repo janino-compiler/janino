@@ -68,7 +68,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     setUp() throws Exception {
 
         // Optionally print class file disassemblies to the console.
-        if (Boolean.parseBoolean(System.getProperty("disasm"))) {
+        if (Boolean.getBoolean("disasm")) {
             Logger scl = Logger.getLogger("org.codehaus.janino.UnitCompiler");
             for (Handler h : scl.getHandlers()) {
                 h.setLevel(Level.FINEST);
