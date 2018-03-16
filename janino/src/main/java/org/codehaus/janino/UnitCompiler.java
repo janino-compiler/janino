@@ -2900,7 +2900,7 @@ class UnitCompiler {
                     new BinaryOperation(         // condition
                         loc,                                      // location
                         new LocalVariableAccess(loc, primaryExc), // lhs
-                        "==",                                     // operator
+                        "!=",                                     // operator
                         new NullLiteral(loc)                      // rhs
                     ),
                     new TryStatement(            // thenStatement
