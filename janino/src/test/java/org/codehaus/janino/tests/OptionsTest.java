@@ -55,7 +55,7 @@ class OptionsTest {
     setUp() throws Exception {
 
         // Optionally print class file disassemblies to the console.
-        if (Boolean.parseBoolean(System.getProperty("disasm"))) {
+        if (Boolean.getBoolean("disasm")) {
             Logger scl = Logger.getLogger(UnitCompiler.class.getName());
             for (Handler h : scl.getHandlers()) {
                 h.setLevel(Level.FINEST);
@@ -74,14 +74,17 @@ class OptionsTest {
             + "import java.io.Closeable;\n"
             + "import java.io.IOException;\n"
             + "import org.junit.Assert;\n"
+            + "\n"
             + "final int[] x = new int[1];\n"
-            + "try {\n"
-            + "    try (new Closeable() { public void close() { Assert.assertEquals(99, ++x[0]); } }) {\n"
-            + "        Assert.assertEquals(1, ++x[0]);\n"
+            + "\n"
+            + "try (new Closeable() {\n"
+            + "    public void close() {\n"
+            + "        Assert.assertEquals(2, ++x[0]);\n"
             + "    }\n"
-            + "} catch (Exception ioe) {\n"
-            + "    Assert.fail(ioe.toString());\n"
+            + "}) {\n"
+            + "    Assert.assertEquals(1, ++x[0]);\n"
             + "}\n"
+            + "\n"
             + "Assert.assertEquals(3, ++x[0]);\n"
         );
 
@@ -92,8 +95,9 @@ class OptionsTest {
 
     private static void
     assertScriptExecutable(String script, JaninoOption... options)
-        throws CompileException, InvocationTargetException {
+    throws CompileException, InvocationTargetException {
         ScriptEvaluator se = new ScriptEvaluator();
+        se.setDebuggingInformation(true, true, true);
         se.options(EnumSet.copyOf(Arrays.asList(options)));
         se.cook(script);
         se.evaluate(null);
