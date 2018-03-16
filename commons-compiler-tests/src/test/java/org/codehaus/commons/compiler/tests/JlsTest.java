@@ -988,6 +988,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_11__TheSwitchStatement_String1() throws Exception {
 
+        // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
             && "1.6".equals(System.getProperty("java.specification.version"))
@@ -1011,6 +1012,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_11__TheSwitchStatement_String2() throws Exception {
 
+        // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
             && "1.6".equals(System.getProperty("java.specification.version"))
@@ -1034,6 +1036,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_11__TheSwitchStatement_String3() throws Exception {
 
+        // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
             && "1.6".equals(System.getProperty("java.specification.version"))
@@ -1057,6 +1060,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_11__TheSwitchStatement_String4() throws Exception {
 
+        // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
             && "1.6".equals(System.getProperty("java.specification.version"))
@@ -1079,6 +1083,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_11__TheSwitchStatement_String5() throws Exception {
 
+        // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
             && "1.6".equals(System.getProperty("java.specification.version"))
@@ -1130,6 +1135,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_11__TheSwitchStatement_String_DuplicateCaseValue() throws Exception {
 
+        // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
             && "1.6".equals(System.getProperty("java.specification.version"))
@@ -1512,7 +1518,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "try {\n"
             + "    final int[] x = new int[1];\n"
             + "    Closeable lv = new Closeable() {\n"
-            + "        public void close() { Assert.assertEquals(99, ++x[0]); }\n"
+            + "        public void close() { Assert.assertEquals(2, ++x[0]); }\n"
             + "    };\n"
             + "    \n"
             + "    try (lv) {\n"
@@ -1541,7 +1547,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "import org.junit.Assert;\n"
             + "\n"
             + "public static final Closeable sf = new Closeable() {\n"
-            + "    public void close() { Assert.assertEquals(99, ++x[0]); }\n"
+            + "    public void close() { Assert.assertEquals(2, ++x[0]); }\n"
             + "};\n"
             + "public static final int[] x = new int[1];\n"
             + "\n"
@@ -1575,7 +1581,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "import org.junit.Assert;\n"
             + "\n"
             + "public final Closeable sf = new Closeable() {\n"
-            + "    public void close() { Assert.assertEquals(99, ++SC.this.x[0]); }\n"
+            + "    public void close() { Assert.assertEquals(2, ++SC.this.x[0]); }\n"
             + "};\n"
             + "public final int[] x = new int[1];\n"
             + "\n"
@@ -1719,8 +1725,8 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_11__FieldAccessExpressions() throws Exception {
-        // 15.11.2 Accessing Superclass Members using super
+    test_15_11_2__Accessing_Superclass_Members_using_super() throws Exception {
+
         this.assertCompilationUnitMainReturnsTrue((
             ""
             + "public class T1            { int x = 1; }\n"
@@ -1742,32 +1748,6 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         ), "T3");
-    }
-
-    @Test public void
-    test_15_12__MethodInvocationExpressions() throws Exception {
-        // 15.12.2.2 Choose the Most Specific Method
-        this.assertCompilationUnitUncookable(
-            ""
-            + "public class Main { public static boolean test() { return new A().meth(\"x\", \"y\"); } }\n"
-            + "public class A {\n"
-            + "    public boolean meth(String s, Object o) { return true; }\n"
-            + "    public boolean meth(Object o, String s) { return false; }\n"
-            + "}\n"
-        );
-
-        // The following case is tricky: JLS7 says that the invocation is AMBIGUOUS, but only JAVAC 1.2 issues an
-        // error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring type and invoke "A.meth(String)".
-        // JLS7 is not clear about this. For compatibility with JAVA 1.4.1, 1.5.0 and 1.6.0, JANINO also ignores the
-        // declaring type.
-        //
-        // See also JANINO-79 and "IClass.IInvocable.isMoreSpecificThan()".
-        this.assertCompilationUnitMainReturnsTrue((
-            ""
-            + "public class Main        { public static boolean main()  { return new B().meth(\"x\"); } }\n"
-            + "public class A           { public boolean meth(String s) { return true; } }\n"
-            + "public class B extends A { public boolean meth(Object o) { return false; } }\n"
-        ), "Main");
     }
 
     @Test public void
@@ -1835,6 +1815,32 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "if (new LocalClass(\"\", 1, 2).x != 2) return false;\n"
             + "return true;\n"
         );
+    }
+
+    @Test public void
+    test_15_12_2_5__Choose_the_Most_Specific_Method() throws Exception {
+
+        this.assertCompilationUnitUncookable(
+            ""
+            + "public class Main { public static boolean test() { return new A().meth(\"x\", \"y\"); } }\n"
+            + "public class A {\n"
+            + "    public boolean meth(String s, Object o) { return true; }\n"
+            + "    public boolean meth(Object o, String s) { return false; }\n"
+            + "}\n"
+        );
+
+        // The following case is tricky: JLS7 says that the invocation is AMBIGUOUS, but only JAVAC 1.2 issues an
+        // error; JAVAC 1.4.1, 1.5.0 and 1.6.0 obviously ignore the declaring type and invoke "A.meth(String)".
+        // JLS7 is not clear about this. For compatibility with JAVA 1.4.1, 1.5.0 and 1.6.0, JANINO also ignores the
+        // declaring type.
+        //
+        // See also JANINO-79 and "IClass.IInvocable.isMoreSpecificThan()".
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "public class Main        { public static boolean main()  { return new B().meth(\"x\"); } }\n"
+            + "public class A           { public boolean meth(String s) { return true; } }\n"
+            + "public class B extends A { public boolean meth(Object o) { return false; } }\n"
+        ), "Main");
     }
 
     @Test public void
