@@ -60,6 +60,11 @@ public
 class ClassFile implements Annotatable {
 
     /**
+     * The maximum number of slots allowed for parameters, as defined by JVMS7 4.11, bullet 7.
+     */
+    public static final int MAX_PARAMETERS = 255;
+
+    /**
      * Unchecked exception that represents an error condition that could occur during processing of class files, e.g.
      * reading a corrupt class file, or an overflow of the constant pool.
      */
