@@ -309,7 +309,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "public class Test {\n"
             + "    public static void main() {\n"
             + "        Object foo = baz();\n"
-            + "        System.out.println(\"hello\");\n"
+            + "//        System.out.println(\"hello\");\n"
             + "    }\n"
             + "    public static Object baz() {\n"
             + "        final Test test = new Test();\n"
@@ -412,7 +412,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "import java.util.List;\n"
             + "\n"
             + "List list = new ArrayList();\n"
-            + "System.out.println(list.getClass());\n"
+            + "/*System.out.println(*/list.getClass()/*)*/;\n"
         );
     }
 
@@ -432,9 +432,9 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    static { x += 0; }\n"
             + "    static int a = 7;\n"
             + "    static { x += a; }\n"
-            + "    static { System.out.println(\"HELLO\");\n }\n"
+            + "//    static { System.out.println(\"HELLO\"); }\n"
             + "    public static boolean main() {\n"
-            + "        System.out.println(\">>>\" + x + \"<<<\");\n"
+            + "//        System.out.println(\">>>\" + x + \"<<<\");\n"
             + "        return x.equals(\"07\");\n"
             + "    }\n"
             + "}"
