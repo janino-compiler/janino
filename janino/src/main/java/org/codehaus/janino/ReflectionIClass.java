@@ -299,14 +299,14 @@ class ReflectionIClass extends IClass {
             return parameterTypes;
         }
 
-        @Override public String
+        @Override public MethodDescriptor
         getDescriptor2() {
             Class<?>[] parameterTypes       = this.constructor.getParameterTypes();
             String[]   parameterDescriptors = new String[parameterTypes.length];
             for (int i = 0; i < parameterDescriptors.length; ++i) {
                 parameterDescriptors[i] = Descriptor.fromClassName(parameterTypes[i].getName());
             }
-            return new MethodDescriptor(parameterDescriptors, Descriptor.VOID).toString();
+            return new MethodDescriptor(Descriptor.VOID, parameterDescriptors);
         }
 
         @Override public IClass[]

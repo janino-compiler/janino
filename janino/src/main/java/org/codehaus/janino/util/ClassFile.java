@@ -43,6 +43,7 @@ import java.util.Map;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
+import org.codehaus.janino.MethodDescriptor;
 import org.codehaus.janino.Mod;
 
 /**
@@ -576,12 +577,12 @@ class ClassFile implements Annotatable {
      * ({@code Code}, {@code Deprecated}, {@code Exceptions}, ...) to the method.
      */
     public MethodInfo
-    addMethodInfo(short accessFlags, String methodName, String methodMd) {
+    addMethodInfo(short accessFlags, String methodName, MethodDescriptor methodMd) {
         MethodInfo mi = new MethodInfo(
-            accessFlags,                          // accessFlags
-            this.addConstantUtf8Info(methodName), // nameIndex
-            this.addConstantUtf8Info(methodMd),   // desriptorIndex
-            new ArrayList<AttributeInfo>()        // attributes
+            accessFlags,                                   // accessFlags
+            this.addConstantUtf8Info(methodName),          // nameIndex
+            this.addConstantUtf8Info(methodMd.toString()), // desriptorIndex
+            new ArrayList<AttributeInfo>()                 // attributes
         );
         this.methodInfos.add(mi);
         return mi;

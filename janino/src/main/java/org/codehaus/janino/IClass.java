@@ -245,8 +245,8 @@ class IClass {
 
         SCAN_DECLARED_METHODS:
         for (IMethod candidate : ms) {
-            String  candidateDescriptor = candidate.getDescriptor();
-            String  candidateName       = candidate.getName();
+            MethodDescriptor candidateDescriptor = candidate.getDescriptor();
+            String           candidateName       = candidate.getName();
 
             // Check if a method with the same name and descriptor has been added before.
             for (IMethod oldMethod : result) {
@@ -977,17 +977,17 @@ class IClass {
         /**
          * Returns the method descriptor of this constructor or method. This method is fast.
          */
-        public final String
+        public final MethodDescriptor
         getDescriptor() throws CompileException {
             if (this.descriptorCache != null) return this.descriptorCache;
             return (this.descriptorCache = this.getDescriptor2());
         }
-        @Nullable private String descriptorCache;
+        @Nullable private MethodDescriptor descriptorCache;
 
         /**
          * Uncached implementation of {@link #getDescriptor()}.
          */
-        public abstract String
+        public abstract MethodDescriptor
         getDescriptor2() throws CompileException;
 
         /**
@@ -1146,7 +1146,7 @@ class IClass {
     public abstract
     class IConstructor extends IInvocable {
 
-        @Override public String
+        @Override public MethodDescriptor
         getDescriptor2() throws CompileException {
 
             IClass[] parameterTypes = this.getParameterTypes();
@@ -1173,7 +1173,7 @@ class IClass {
                 parameterFds = tmp;
             }
 
-            return new MethodDescriptor(parameterFds, Descriptor.VOID).toString();
+            return new MethodDescriptor(Descriptor.VOID, parameterFds);
         }
 
         @Override public String
@@ -1220,12 +1220,12 @@ class IClass {
          */
         public abstract String getName();
 
-        @Override public String
+        @Override public MethodDescriptor
         getDescriptor2() throws CompileException {
             return new MethodDescriptor(
-                IClass.getDescriptors(this.getParameterTypes()),
-                this.getReturnType().getDescriptor()
-            ).toString();
+                this.getReturnType().getDescriptor(),
+                IClass.getDescriptors(this.getParameterTypes())
+            );
         }
 
         @Override public String

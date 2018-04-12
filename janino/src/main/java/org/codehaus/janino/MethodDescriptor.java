@@ -27,7 +27,10 @@
 package org.codehaus.janino;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * Representation of a "method descriptor" (JVMS 4.3.3).
@@ -47,7 +50,7 @@ class MethodDescriptor {
 
     /***/
     public
-    MethodDescriptor(String[] parameterFds, String returnFd) {
+    MethodDescriptor(String returnFd, String... parameterFds) {
         this.parameterFds = parameterFds;
         this.returnFd     = returnFd;
     }
@@ -80,6 +83,19 @@ class MethodDescriptor {
         this.returnFd     = s.substring(++from);
     }
 
+
+    @Override public boolean
+    equals(@Nullable Object obj) {
+        if (obj == this) return true;
+        if (!(obj instanceof MethodDescriptor)) return false;
+        MethodDescriptor that = (MethodDescriptor) obj;
+
+        return Arrays.equals(this.parameterFds, that.parameterFds) && this.returnFd.equals(that.returnFd);
+    }
+
+    @Override public int
+    hashCode() { return Arrays.hashCode(this.parameterFds) ^ this.returnFd.hashCode(); }
+
     /**
      * @return The "method descriptor" (JVMS 4.3.3)
      */
@@ -91,8 +107,15 @@ class MethodDescriptor {
     }
 
     /**
-     * Patches an additional parameter into a given method descriptor.
+     * @return A {@link MethodDescriptor} equal to {@code this}, but with another parameter inserted at position zero
      */
-    public static String
-    prependParameter(String md, String parameterFd) { return '(' + parameterFd + md.substring(1); }
+    public MethodDescriptor
+    prependParameter(String parameterFd) {
+
+        String[] tmp = new String[1 + this.parameterFds.length];
+        tmp[0] = parameterFd;
+        System.arraycopy(this.parameterFds, 0, tmp, 1, this.parameterFds.length);
+
+        return new MethodDescriptor(this.returnFd, tmp);
+    }
 }

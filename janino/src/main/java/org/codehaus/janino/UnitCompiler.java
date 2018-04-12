@@ -2771,8 +2771,8 @@ class UnitCompiler {
         TryStatement.Resource             firstResource      = (TryStatement.Resource) resources.get(0);
         final List<TryStatement.Resource> followingResources = resources.subList(1, resources.size());
 
-        Location loc = firstResource.getLocation();
-        IClass   tt  = this.iClassLoader.TYPE_java_lang_Throwable;
+        final Location loc = firstResource.getLocation();
+        final IClass   tt  = this.iClassLoader.TYPE_java_lang_Throwable;
 
         this.getCodeContext().saveLocalVariables();
         try {
@@ -2927,7 +2927,12 @@ class UnitCompiler {
 
                     @Override public boolean
                     compile() throws CompileException {
-                        return UnitCompiler.this.compileTryCatchFinallyWithResources(ts, followingResources, compileBody, finallY);
+                        return UnitCompiler.this.compileTryCatchFinallyWithResources(
+                            ts,
+                            followingResources,
+                            compileBody,
+                            finallY
+                        );
                     }
                 },
                 f                   // finallY
@@ -2976,14 +2981,15 @@ class UnitCompiler {
 
                 canCompleteNormally = this.compileTryCatch(ts, new Compilable2() {
 
-                    @Override
-                    public boolean compile() throws CompileException {
+                    @Override public boolean
+                    compile() throws CompileException {
                         boolean canCompleteNormally = compileBody.compile();
                         if (canCompleteNormally) {
                             UnitCompiler.this.writeBranch(ts, Opcode.JSR, fo);
                         }
                         return canCompleteNormally;
-                    }}, beginningOfBody, afterStatement);
+                    }
+                }, beginningOfBody, afterStatement);
 
                 // Generate the "catch (Throwable) {" clause that invokes the FINALLY subroutine.
                 this.getCodeContext().saveLocalVariables();
@@ -3000,13 +3006,13 @@ class UnitCompiler {
                     // Save the exception object in an anonymous local variable.
                     short evi = this.getCodeContext().allocateLocalVariable((short) 1);
                     this.store(
-                        finallY,                         // locatable
+                        finallY,                                 // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // lvType
                         evi                                      // lvIndex
                     );
                     this.writeBranch(finallY, Opcode.JSR, fo);
                     this.load(
-                        finallY,                         // locatable
+                        finallY,                                 // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // type
                         evi                                      // index
                     );
@@ -3017,7 +3023,7 @@ class UnitCompiler {
                     ts.finallyOffset = null;
 
                     this.store(
-                        finallY,                         // locatable
+                        finallY,                                 // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // lvType
                         pcLvIndex                                // lvIndex
                     );
@@ -3168,11 +3174,12 @@ class UnitCompiler {
                 accessFlags |= Mod.STATIC;
 
                 mi = classFile.addMethodInfo(
-                    accessFlags,                                           // accessFlags
-                    fd.name + '$',                                         // methodName
-                    MethodDescriptor.prependParameter(                     // methodMD
-                        this.toIMethod((MethodDeclarator) fd).getDescriptor(), // md
-                        this.resolve(fd.getDeclaringType()).getDescriptor()    // parameterFD
+                    accessFlags,   // accessFlags
+                    fd.name + '$', // methodName
+                    (              // methodMd
+                        this.toIMethod((MethodDeclarator) fd)
+                        .getDescriptor()
+                        .prependParameter(this.resolve(fd.getDeclaringType()).getDescriptor())
                     )
                 );
             } else
@@ -5134,8 +5141,7 @@ class UnitCompiler {
                 this.writeConstantMethodrefInfo(
                     iMethod.getDeclaringIClass().getDescriptor(), // classFD
                     iMethod.getName() + '$',                      // methodName
-                    MethodDescriptor.prependParameter(            // methodMD
-                        iMethod.getDescriptor(),
+                    iMethod.getDescriptor().prependParameter(     // methodMD
                         iMethod.getDeclaringIClass().getDescriptor()
                     )
                 );
@@ -5628,6 +5634,7 @@ class UnitCompiler {
 
             if (cv == UnitCompiler.NOT_CONSTANT) return UnitCompiler.NOT_CONSTANT;
 
+            // SUPPRESS CHECKSTYLE DOT__SELECTOR|L_PAREN__METH_INVOCATION:6
             if (cv instanceof Byte)    return Byte   .valueOf((byte)  -((Byte)    cv));
             if (cv instanceof Short)   return Short  .valueOf((short) -((Short)   cv));
             if (cv instanceof Integer) return Integer.valueOf(        -((Integer) cv));
@@ -10091,7 +10098,7 @@ class UnitCompiler {
 
             // Implement IInvocable.
 
-            @Override public String
+            @Override public MethodDescriptor
             getDescriptor2() throws CompileException {
 
                 if (!(constructorDeclarator.getDeclaringClass() instanceof InnerClassDeclaration)) {
@@ -10119,9 +10126,9 @@ class UnitCompiler {
                 for (IClass pt : this.getParameterTypes2()) parameterFds.add(pt.getDescriptor());
 
                 return new MethodDescriptor(
-                    (String[]) parameterFds.toArray(new String[parameterFds.size()]), // parameterFds
-                    Descriptor.VOID                                                   // returnFd
-                ).toString();
+                    Descriptor.VOID,                                                 // returnFd
+                    (String[]) parameterFds.toArray(new String[parameterFds.size()]) // parameterFds
+                );
             }
 
             @Override public boolean
@@ -11630,9 +11637,12 @@ class UnitCompiler {
         if (targetType.hasIMethod("valueOf", new IClass[] { sourceType })) {
             this.writeOpcode(locatable, Opcode.INVOKESTATIC);
             this.writeConstantMethodrefInfo(
-                targetType.getDescriptor(),                                         // classFD
-                "valueOf",                                                          // methodName
-                '(' + sourceType.getDescriptor() + ')' + targetType.getDescriptor() // methodFD
+                targetType.getDescriptor(), // classFD
+                "valueOf",                  // methodName
+                new MethodDescriptor(       // methodFD
+                    targetType.getDescriptor(), // returnFd
+                    sourceType.getDescriptor()  // parameterFds...
+                )
             );
             return;
         }
@@ -11650,9 +11660,12 @@ class UnitCompiler {
         }
         this.writeOpcode(locatable, Opcode.INVOKESPECIAL);
         this.writeConstantMethodrefInfo(
-            targetType.getDescriptor(),                              // classFd
-            "<init>",                                                // methodName
-            '(' + sourceType.getDescriptor() + ')' + Descriptor.VOID // methodMd
+            targetType.getDescriptor(), // classFd
+            "<init>",                   // methodName
+            new MethodDescriptor(       // methodFD
+                Descriptor.VOID,           // returnFd
+                sourceType.getDescriptor() // parameterFds...
+            )
         );
     }
 
@@ -11726,9 +11739,9 @@ class UnitCompiler {
         // "source.targetValue()"
         this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
         this.writeConstantMethodrefInfo(
-            sourceType.getDescriptor(),       // classFD
-            targetType.toString() + "Value",  // methodName
-            "()" + targetType.getDescriptor() // methodFD
+            sourceType.getDescriptor(),                                     // classFD
+            targetType.toString() + "Value",                                // methodName
+            new MethodDescriptor(targetType.getDescriptor(), new String[0]) // methodFD
         );
     }
 
@@ -12155,14 +12168,17 @@ class UnitCompiler {
         ca.writeShort(-1, ca.getClassFile().addConstantFieldrefInfo(classFd, fieldName, fieldFd));
     }
     private void
-    writeConstantMethodrefInfo(String classFd, String methodName, String methodMd) {
+    writeConstantMethodrefInfo(String classFd, String methodName, MethodDescriptor methodMd) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort(-1, ca.getClassFile().addConstantMethodrefInfo(classFd, methodName, methodMd));
+        ca.writeShort(-1, ca.getClassFile().addConstantMethodrefInfo(classFd, methodName, methodMd.toString()));
     }
     private void
-    writeConstantInterfaceMethodrefInfo(String classFd, String methodName, String methodMd) {
+    writeConstantInterfaceMethodrefInfo(String classFd, String methodName, MethodDescriptor methodMd) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort(-1, ca.getClassFile().addConstantInterfaceMethodrefInfo(classFd, methodName, methodMd));
+        ca.writeShort(
+            -1, // lineNumber
+            ca.getClassFile().addConstantInterfaceMethodrefInfo(classFd, methodName, methodMd.toString())
+        );
     }
 /* UNUSED
     private void writeConstantStringInfo(String value) {
