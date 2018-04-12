@@ -3057,8 +3057,15 @@ class Java {
         class Resource extends Located {
             protected Resource(Location location) { super(location); }
 
+            /**
+             * Sets the enclosing scope for this object and all subordinate {@link Resource} objects.
+             */
             public abstract void setEnclosingTryStatement(TryStatement tryStatement);
 
+            /**
+             * Invokes the "{@code visit...()}" method of {@link TryStatementResourceVisitor} for the concrete {@link
+             * Resource} type.
+             */
             @Nullable public abstract <R, EX extends Throwable> R
             accept(TryStatementResourceVisitor<R, EX> visitor) throws EX;
         }
@@ -3128,6 +3135,9 @@ class Java {
         public static
         class VariableAccessResource extends Resource {
 
+            /**
+             * The rvalue of this resource.
+             */
             public final Rvalue variableAccess;
 
             public

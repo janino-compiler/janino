@@ -2731,20 +2731,23 @@ class UnitCompiler {
         return false;
     }
 
+    /**
+     * Interface for delayed code generation.
+     */
     interface Compilable2 { boolean compile() throws CompileException; }
 
     private boolean
     compile2(final TryStatement ts) throws CompileException {
 
         return this.compileTryCatchFinallyWithResources(
-            ts,
-            ts.resources,
-            new Compilable2() {
+            ts,                 // ts
+            ts.resources,       // resources
+            new Compilable2() { // compileBody
 
                 @Override public boolean
                 compile() throws CompileException { return UnitCompiler.this.compile(ts.body); }
             },
-            ts.finallY
+            ts.finallY          // finallY
         );
     }
 
