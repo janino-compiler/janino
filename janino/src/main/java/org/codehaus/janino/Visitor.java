@@ -680,7 +680,8 @@ class Visitor {
     interface TryStatementResourceVisitor<R, EX extends Throwable> {
 
         /**
-         * Invoked by {@link Java.TryStatement.LocalVariableDeclaratorResource#accept(Visitor.TryStatementResourceVisitor)}
+         * Invoked by {@link
+         * Java.TryStatement.LocalVariableDeclaratorResource#accept(Visitor.TryStatementResourceVisitor)}.
          */
         @Nullable R
         visitLocalVariableDeclaratorResource(Java.TryStatement.LocalVariableDeclaratorResource lvdr) throws EX;

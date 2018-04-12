@@ -1934,7 +1934,8 @@ class Parser {
      */
     public Statement
     parseTryStatement() throws CompileException, IOException {
-        Location location = this.location();
+        final Location location = this.location();
+
         this.read("try");
 
         // '(' Resource { ';' Resource } [ ';' ] ')'
