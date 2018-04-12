@@ -12160,25 +12160,22 @@ class UnitCompiler {
     private void
     writeConstantClassInfo(String descriptor) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort(-1, ca.getClassFile().addConstantClassInfo(descriptor));
+        ca.writeShort(ca.getClassFile().addConstantClassInfo(descriptor));
     }
     private void
     writeConstantFieldrefInfo(String classFd, String fieldName, String fieldFd) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort(-1, ca.getClassFile().addConstantFieldrefInfo(classFd, fieldName, fieldFd));
+        ca.writeShort(ca.getClassFile().addConstantFieldrefInfo(classFd, fieldName, fieldFd));
     }
     private void
     writeConstantMethodrefInfo(String classFd, String methodName, MethodDescriptor methodMd) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort(-1, ca.getClassFile().addConstantMethodrefInfo(classFd, methodName, methodMd.toString()));
+        ca.writeShort(ca.getClassFile().addConstantMethodrefInfo(classFd, methodName, methodMd.toString()));
     }
     private void
     writeConstantInterfaceMethodrefInfo(String classFd, String methodName, MethodDescriptor methodMd) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort(
-            -1, // lineNumber
-            ca.getClassFile().addConstantInterfaceMethodrefInfo(classFd, methodName, methodMd.toString())
-        );
+        ca.writeShort(ca.getClassFile().addConstantInterfaceMethodrefInfo(classFd, methodName, methodMd.toString()));
     }
 /* UNUSED
     private void writeConstantStringInfo(String value) {
@@ -12210,12 +12207,12 @@ class UnitCompiler {
     private void
     writeConstantLongInfo(long value) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort(-1, ca.getClassFile().addConstantLongInfo(value));
+        ca.writeShort(ca.getClassFile().addConstantLongInfo(value));
     }
     private void
     writeConstantDoubleInfo(double value) {
         CodeContext ca = this.getCodeContext();
-        ca.writeShort(-1, ca.getClassFile().addConstantDoubleInfo(value));
+        ca.writeShort(ca.getClassFile().addConstantDoubleInfo(value));
     }
 
     private CodeContext.Offset

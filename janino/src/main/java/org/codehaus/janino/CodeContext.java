@@ -1021,10 +1021,9 @@ class CodeContext {
     }
 
     /**
-     * @param lineNumber The line number that corresponds to the byte code, or -1
      */
     public void
-    writeShort(int lineNumber, int v) { this.write(lineNumber, (byte) (v >> 8), (byte) v); }
+    writeShort(int v) { this.write(-1, (byte) (v >> 8), (byte) v); }
 
     /**
      * @param lineNumber The line number that corresponds to the byte code, or -1
