@@ -578,6 +578,22 @@ class ClassFile implements Annotatable {
      */
     public MethodInfo
     addMethodInfo(short accessFlags, String methodName, MethodDescriptor methodMd) {
+
+        int parameterCount = Mod.isStatic(accessFlags) ? 0 : 1;
+        for (String fd : methodMd.parameterFds) parameterCount += Descriptor.size(fd);
+
+        // JVMS8 4.3.3
+        // See https://github.com/janino-compiler/janino/pull/46
+        if (parameterCount > 255) {
+            throw new ClassFileException((
+                "Method \""
+                + methodName
+                + "\" has too many parameters ("
+                + parameterCount
+                + ")"
+            ));
+        }
+
         MethodInfo mi = new MethodInfo(
             accessFlags,                                   // accessFlags
             this.addConstantUtf8Info(methodName),          // nameIndex
