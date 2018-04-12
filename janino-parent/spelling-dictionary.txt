@@ -497,3 +497,6 @@ unparse
 johnson
 vlissides
 issue32test
+jls7
+jls8
+jls9

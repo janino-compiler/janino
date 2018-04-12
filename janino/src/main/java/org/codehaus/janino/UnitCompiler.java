@@ -2740,7 +2740,7 @@ class UnitCompiler {
     compile2(final TryStatement ts) throws CompileException {
 
         return this.compileTryCatchFinallyWithResources(
-            ts,                 // ts
+            ts,                 // tryStatement
             ts.resources,       // resources
             new Compilable2() { // compileBody
 
@@ -2925,7 +2925,7 @@ class UnitCompiler {
             f.setEnclosingScope(ts);
 
             return this.compileTryCatchFinally(
-                ts,                 // ts
+                ts,                 // tryStatement
                 new Compilable2() { // compileBody
 
                     @Override public boolean
