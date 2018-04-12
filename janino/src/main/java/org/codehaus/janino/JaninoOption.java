@@ -34,7 +34,8 @@ package org.codehaus.janino;
  * @see JavaSourceIClassLoader#options()
  * @see SimpleCompiler#options()
  */
-public enum JaninoOption {
+public
+enum JaninoOption {
 
     /**
      * Contrary to the JLS, disallow access to {@code private} members of types enclosed by the the accessing code, or

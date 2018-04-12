@@ -406,6 +406,8 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
     private final TryStatementResourceVisitor<Void, EX>
     resourceTraverser = new TryStatementResourceVisitor<Void, EX>() {
+
+        // SUPPRESS CHECKSTYLE LineLength:2
         @Override @Nullable public Void visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws EX { AbstractTraverser.this.delegate.traverseLocalVariableDeclaratorResource(lvdr);  return null; }
         @Override @Nullable public Void visitVariableAccessResource(VariableAccessResource var)                    throws EX { AbstractTraverser.this.delegate.traverseVariableAccessResource(var);            return null; }
     };

@@ -701,7 +701,7 @@ class CodeContext {
             null,
             "extract16BitValue",
             new Object[] { offset, code[offset], code[offset + 1] }
-            );
+        );
 
         short result = (short) (((code[offset]) << 8) + (code[offset + 1] & 0xff));
 

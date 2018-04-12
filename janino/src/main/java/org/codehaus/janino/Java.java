@@ -3053,7 +3053,7 @@ class Java {
         /**
          * Representation of a JLS9 14.20.2 "resource" in a TRY-with-resources statement.
          */
-        public static abstract
+        public abstract static
         class Resource extends Located {
             protected Resource(Location location) { super(location); }
 
