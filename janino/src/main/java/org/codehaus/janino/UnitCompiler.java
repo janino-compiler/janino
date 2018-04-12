@@ -3213,6 +3213,13 @@ class UnitCompiler {
             );
         }
 
+        {
+            MethodDescriptor md = new MethodDescriptor(mi.getDescriptor());
+            if (md.parameterSize() > ClassFile.MAX_PARAMETERS) {
+                throw new InternalCompilerException("too many arguments: \"" + md.toString() + "\"");
+            }
+        }
+
         // Add method annotations with retention != SOURCE.
         this.compileAnnotations(fd.modifiers.annotations, mi, classFile);
 

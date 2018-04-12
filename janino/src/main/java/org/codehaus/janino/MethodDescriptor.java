@@ -97,6 +97,19 @@ class MethodDescriptor {
     hashCode() { return Arrays.hashCode(this.parameterFds) ^ this.returnFd.hashCode(); }
 
     /**
+     * @return The number of slots required for invoking this method.
+     */
+    public int
+    parameterSize() {
+        int paramSize = 0;
+        String[] paramFds = this.parameterFds;
+        for (int i = 0; i < paramFds.length; i++) {
+            paramSize += Descriptor.size(paramFds[i]);
+        }
+        return paramSize;
+    }
+
+    /**
      * @return The "method descriptor" (JVMS 4.3.3)
      */
     @Override public String
