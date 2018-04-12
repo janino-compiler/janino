@@ -96,6 +96,34 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    testPullRequest46() throws Exception {
+        String params254 = (
+            ""
+            + "long arg000, long arg001, long arg002, long arg003, long arg004, long arg005, long arg006, long arg007, "
+            + "long arg008, long arg009, long arg010, long arg011, long arg012, long arg013, long arg014, long arg015, "
+            + "long arg016, long arg017, long arg018, long arg019, long arg020, long arg021, long arg022, long arg023, "
+            + "long arg024, long arg025, long arg026, long arg027, long arg028, long arg029, long arg030, long arg031, "
+            + "long arg032, long arg033, long arg034, long arg035, long arg036, long arg037, long arg038, long arg039, "
+            + "long arg040, long arg041, long arg042, long arg043, long arg044, long arg045, long arg046, long arg047, "
+            + "long arg048, long arg049, long arg050, long arg051, long arg052, long arg053, long arg054, long arg055, "
+            + "long arg056, long arg057, long arg058, long arg059, long arg060, long arg061, long arg062, long arg063, "
+            + "long arg064, long arg065, long arg066, long arg067, long arg068, long arg069, long arg070, long arg071, "
+            + "long arg072, long arg073, long arg074, long arg075, long arg076, long arg077, long arg078, long arg079, "
+            + "long arg080, long arg081, long arg082, long arg083, long arg084, long arg085, long arg086, long arg087, "
+            + "long arg088, long arg089, long arg090, long arg091, long arg092, long arg093, long arg094, long arg095, "
+            + "long arg096, long arg097, long arg098, long arg099, long arg100, long arg101, long arg102, long arg103, "
+            + "long arg104, long arg105, long arg106, long arg107, long arg108, long arg109, long arg110, long arg111, "
+            + "long arg112, long arg113, long arg114, long arg115, long arg116, long arg117, long arg118, long arg119, "
+            + "long arg120, long arg121, long arg122, long arg123, long arg124, long arg125, long arg126"
+        );
+
+        this.assertClassBodyCookable("public void foo(" + params254 + ") {}");
+        this.assertClassBodyUncookable("public void foo(" + params254 + ", int a) {}");
+        this.assertClassBodyCookable("public static void foo(" + params254 + ", int a) {}");
+        this.assertClassBodyUncookable("public static void foo(" + params254 + ", long a) {}");
+    }
+
+    @Test public void
     testBug48() throws Exception {
         this.assertCompilationUnitMainExecutable((
             ""
