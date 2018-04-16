@@ -9401,8 +9401,23 @@ class UnitCompiler {
                 }
             }
 
+            // JLS7 1.12.2.5.BL2.B1.BL.B2: "... the most specific method is chosen arbitrarily among the subset of the
+            // maximally specific methods that have the most specific return type".
+            final IClass.IMethod im;
+            {
+                Iterator<IInvocable> it2                              = maximallySpecificIInvocables.iterator();
+                IClass.IMethod       methodWithMostSpecificReturnType = (IMethod) it2.next();
+
+                while (it2.hasNext()) {
+                    IMethod im2 = (IMethod) it2.next();
+                    if (methodWithMostSpecificReturnType.getReturnType().isAssignableFrom(im2.getReturnType())) {
+                        methodWithMostSpecificReturnType = im2;
+                    }
+                }
+                im = methodWithMostSpecificReturnType;
+            }
+
             // Return a "dummy" method.
-            final IClass.IMethod im  = (IClass.IMethod) maximallySpecificIInvocables.get(0);
             final IClass[]       tes = (IClass[]) s.toArray(new IClass[s.size()]);
             return im.getDeclaringIClass().new IMethod() {
 
