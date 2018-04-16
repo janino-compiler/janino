@@ -49,7 +49,9 @@ import util.CommonsCompilerTestSuite;
 import util.TestUtil;
 
 /**
- * Test cases for the bug reported on <a href="http://jira.codehaus.org/">CODEHAUS JIRA</a> for project JANINO.
+ * Test cases for the bugs reported on CODEHAUS JIRA (which ceased to exist in 2015) and <a
+ * href="https://github.com/janino-compiler/janino/issues">issues</a> and <a
+ * href="https://github.com/janino-compiler/janino/pulls">pull requests</a> on GITHUB for project JANINO.
  */
 @RunWith(Parameterized.class) public
 class ReportedBugsTest extends CommonsCompilerTestSuite {
