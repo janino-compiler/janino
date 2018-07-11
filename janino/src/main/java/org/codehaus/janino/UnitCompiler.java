@@ -4014,7 +4014,12 @@ class UnitCompiler {
                     );
                 } else {
                     // "a && false", "a || true"
+
+                    // Compile the LHS ("a"), and discard the result.
                     this.pop(bo.lhs, this.compileGetValue(bo.lhs));
+
+                    // Compile the RHS and branch conditionally (although the RHS is a constant). This prevents trouble with
+                    // "unreachable code".
                     this.compileBoolean(
                         bo.rhs,
                         dst,
