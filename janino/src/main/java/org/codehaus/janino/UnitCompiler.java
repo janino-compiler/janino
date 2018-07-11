@@ -3880,12 +3880,18 @@ class UnitCompiler {
     }
 
     /**
-     * Some {@link Rvalue}s compile more efficiently when their value is the condition for a branch.
+     * Compiles an {@link Rvalue} and branches, depending on the value.
      * <p>
-     *   Notice that if "this" is a constant, then either <var>dst</var> is never branched to, or it is unconditionally
-     *   branched to. "Unexamined code" errors may result during bytecode validation.
+     *   Many {@link Rvalue}s compile more efficiently when their value is the condition for a branch, thus
+     *   this method generally produces more efficient bytecode than {@link #compile(Rvalue)} followed by {@link
+     *   #writeBranch(Locatable, int, Offset)}.
+     * </p>
+     * <p>
+     *   Notice that if <var>rv</var> is a constant, then either <var>dst</var> is never branched to, or it is
+     *   unconditionally branched to; "Unexamined code" errors may result during bytecode validation.
      * </p>
      *
+     * @param rv          The value that determines whether to branch or not
      * @param dst         Where to jump
      * @param orientation {@link #JUMP_IF_TRUE} or {@link #JUMP_IF_FALSE}
      */
@@ -3990,14 +3996,14 @@ class UnitCompiler {
                     this.compileBoolean(
                         bo.rhs,
                         dst,
-                        UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE
+                        orientation
                     );
                 } else {
                     // "false && a", "true || a"
                     this.compileBoolean(
                         bo.lhs,
                         dst,
-                        UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE
+                        orientation
                     );
                     this.fakeCompile(bo.rhs);
                 }
@@ -4010,7 +4016,7 @@ class UnitCompiler {
                     this.compileBoolean(
                         bo.lhs,
                         dst,
-                        UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE
+                        orientation
                     );
                 } else {
                     // "a && false", "a || true"
@@ -4023,7 +4029,7 @@ class UnitCompiler {
                     this.compileBoolean(
                         bo.rhs,
                         dst,
-                        UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE
+                        orientation
                     );
                 }
                 return;
@@ -4031,12 +4037,12 @@ class UnitCompiler {
 
             // SUPPRESS CHECKSTYLE StringLiteralEquality
             if (bo.operator == "||" ^ orientation == UnitCompiler.JUMP_IF_FALSE) {
-                this.compileBoolean(bo.lhs, dst, UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE);
-                this.compileBoolean(bo.rhs, dst, UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE);
+                this.compileBoolean(bo.lhs, dst, orientation);
+                this.compileBoolean(bo.rhs, dst, orientation);
             } else {
                 CodeContext.Offset end = this.getCodeContext().new Offset();
-                this.compileBoolean(bo.lhs, end, UnitCompiler.JUMP_IF_FALSE ^ orientation == UnitCompiler.JUMP_IF_FALSE); // SUPPRESS CHECKSTYLE LineLength
-                this.compileBoolean(bo.rhs, dst, UnitCompiler.JUMP_IF_TRUE ^ orientation == UnitCompiler.JUMP_IF_FALSE);
+                this.compileBoolean(bo.lhs, end, !orientation);
+                this.compileBoolean(bo.rhs, dst, orientation);
                 end.set();
             }
             return;
