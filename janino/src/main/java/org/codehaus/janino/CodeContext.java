@@ -1026,7 +1026,11 @@ class CodeContext {
     writeShort(int v) { this.write(-1, (byte) (v >> 8), (byte) v); }
 
     /**
+     * Generates a "branch" instruction.
+     *
      * @param lineNumber The line number that corresponds to the byte code, or -1
+     * @param opcode     One {@link Opcode#GOTO}, {@link Opcode#JSR} and <code>Opcode.IF*</code>
+     * @param dst        Where to branch
      */
     public void
     writeBranch(int lineNumber, int opcode, final Offset dst) {
@@ -1042,7 +1046,8 @@ class CodeContext {
             this.source      = CodeContext.this.newInserter();
             this.destination = destination;
             if (opcode == Opcode.JSR_W || opcode == Opcode.GOTO_W) {
-                //no need to expand wide opcodes
+
+                // No need to expand wide opcodes.
                 this.expanded = true;
             } else {
                 this.expanded = false;
