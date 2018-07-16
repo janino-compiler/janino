@@ -111,10 +111,12 @@ class IClassLoader {
     // Representations of commonly used constructors.
     public IConstructor CTOR_java_lang_StringBuilder__java_lang_String;
 
-    @SuppressWarnings("null")
-    public
-    IClassLoader(@Nullable IClassLoader optionalParentIClassLoader) {
-        this.optionalParentIClassLoader = optionalParentIClassLoader;
+    /**
+     * @param parentIClassLoader {@code null} iff this {@link IClassLoader} has no parent
+     */
+    @SuppressWarnings("null") public
+    IClassLoader(@Nullable IClassLoader parentIClassLoader) {
+        this.parentIClassLoader = parentIClassLoader;
     }
 
     /**
@@ -271,8 +273,8 @@ class IClassLoader {
         }
 
         // Ask parent IClassLoader first.
-        if (this.optionalParentIClassLoader != null) {
-            IClass res = this.optionalParentIClassLoader.loadIClass(fieldDescriptor);
+        if (this.parentIClassLoader != null) {
+            IClass res = this.parentIClassLoader.loadIClass(fieldDescriptor);
             if (res != null) return res;
         }
 
@@ -444,7 +446,7 @@ class IClassLoader {
         return icl;
     }
 
-    @Nullable private final IClassLoader             optionalParentIClassLoader;
+    @Nullable private final IClassLoader             parentIClassLoader;
     private final Map<String /*descriptor*/, IClass> loadedIClasses     = new HashMap<String, IClass>();
     private final Set<String /*descriptor*/>         unloadableIClasses = new HashSet<String>();
 }
