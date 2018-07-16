@@ -29,11 +29,11 @@ package org.codehaus.janino.tests;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +44,10 @@ import java.util.logging.Logger;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICookable;
+import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.ByteArrayClassLoader;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.Compiler;
 import org.codehaus.janino.IClassLoader;
@@ -146,25 +147,17 @@ class CompilerTest {
             new DirectoryResourceFinder(new File(CompilerTest.JANINO_SRC)),
             new DirectoryResourceFinder(new File(CompilerTest.COMMONS_COMPILER_SRC)),
         }));
-        boolean verbose     = false;
-        boolean debugSource = true, debugLines = true, debugVars = false;
 
         Benchmark b = new Benchmark(true);
         b.beginReporting("Compile Janino from scratch");
         MapResourceCreator classFileResources1 = new MapResourceCreator();
         {
             Compiler c = new Compiler(
-                sourceFinder,                                      // sourceFinder
-                new ClassLoaderIClassLoader(bootstrapClassLoader), // iClassLoader
-                ResourceFinder.EMPTY_RESOURCE_FINDER,              // classFileFinder
-                classFileResources1,                               // classFileCreator
-                (String) null,                                     // optionalCharacterEncoding
-                verbose,                                           // verbose
-                debugSource,                                       // debugSource
-                debugLines,                                        // debugLines
-                debugVars,                                         // debugVars
-                (WarningHandler) null                              // optionalWarningHandler
+                sourceFinder,                                     // sourceFinder
+                new ClassLoaderIClassLoader(bootstrapClassLoader) // iClassLoader
             );
+
+            c.setClassFileCreator(classFileResources1);
             c.setCompileErrorHandler(new ErrorHandler() {
 
                 @Override public void
@@ -186,17 +179,11 @@ class CompilerTest {
         classFileFinder.setLastModified(System.currentTimeMillis());
         {
             Compiler c = new Compiler(
-                sourceFinder,                                       // sourceFinder
-                new ClassLoaderIClassLoader(bootstrapClassLoader),  // iClassLoader
-                classFileFinder,                                    // classFileFinder
-                classFileResources2,                                // classFileCreator
-                (String) null,                                      // optionalCharacterEncoding
-                verbose,                                            // verbose
-                true,                                               // debugSource
-                true,                                               // debugLines
-                false,                                              // debugVars
-                (WarningHandler) null                               // optionalWarningHandler
+                sourceFinder,                                     // sourceFinder
+                new ClassLoaderIClassLoader(bootstrapClassLoader) // iClassLoader
             );
+            c.setClassFileFinder(classFileFinder);
+            c.setClassFileCreator(classFileResources2);
             c.setCompileErrorHandler(new ErrorHandler() {
 
                 @Override public void
@@ -270,29 +257,32 @@ class CompilerTest {
             );
 
             Object compiler = l.instantiate(Compiler.class, new Class[] {
-                l.loadClass(ResourceFinder.class),  // sourceFinder
-                l.loadClass(IClassLoader.class),    // iClassLoader
-                l.loadClass(ResourceFinder.class),  // classFileResourceFinder
-                l.loadClass(ResourceCreator.class), // classFileResourceCreator
-                String.class,                       // optionalCharacterEncoding
-                boolean.class,                      // verbose
-                boolean.class,                      // debugSource
-                boolean.class,                      // debugLines
-                boolean.class,                      // debugVars
-                l.loadClass(WarningHandler.class),  // optionalWarningHandler
+                l.loadClass(ResourceFinder.class), // sourceFinder
+                l.loadClass(IClassLoader.class)    // iClassLoader
             }, new Object[] {
-                sf,                                     // sourceFinder
-                icl,                                    // iClassLoader
-                cfrf,                                   // classFileResourceFinder
-                cfrc,                                   // classFileResourceCreator
-                null,                                   // optionalCharacterEncoding
-                verbose ? Boolean.TRUE : Boolean.FALSE, // verbose
-                new Boolean(debugSource),               // debugSource
-                new Boolean(debugLines),                // debugLines
-                new Boolean(debugVars),                 // debugVars
-                null,                                   // optionalWarningHandler
+                sf, // sourceFinder
+                icl // iClassLoader
             });
-            l.invoke(compiler, "compile", new Class[] { File[].class }, new Object[] { sourceFiles });
+
+            l.invoke(
+                compiler,
+                "setClassFileFinder",
+                new Class[] { l.loadClass(ResourceFinder.class) },
+                new Object[] { cfrf }
+            );
+            l.invoke(
+                compiler,
+                "setClassFileCreator",
+                new Class[] { l.loadClass(ResourceCreator.class) },
+                new Object[] { cfrc }
+            );
+
+            l.invoke(
+                compiler,
+                "compile",
+                new Class[] { File[].class },
+                new Object[] { sourceFiles }
+            );
         }
         b.endReporting("Generated " + classFileMap3.size() + " class files.");
 
@@ -306,8 +296,10 @@ class CompilerTest {
 
     @Test public void
     testCompileErrors() throws Exception {
-        Map<String, byte[]> sources = new HashMap<String, byte[]>();
-        sources.put("pkg/A.java", ( // Class A uses class B, C, D.
+
+        MapResourceFinder sourceFinder = new MapResourceFinder();
+
+        sourceFinder.addResource("pkg/A.java", ( // Class A uses class B, C, D.
             ""
             + "package pkg;\n"
             + "public class A {\n"
@@ -317,102 +309,117 @@ class CompilerTest {
             + "        new D();\n"
             + "    }\n"
             + "}\n"
-        ).getBytes());
-        sources.put("pkg/B.java", (
+        ));
+        sourceFinder.addResource("pkg/B.java", (
             ""
             + "package pkg;\n"
             + "public class B {\n"
             + "}\n"
-        ).getBytes());
-        sources.put("pkg/C.java", ( // Class C contains a compile error.
+        ));
+        sourceFinder.addResource("pkg/C.java", ( // Class C contains a compile error.
             ""
             + "package pkg;\n"
             + "public class C extends E {\n" // Compile error, because a class "E" is not defined.
             + "}\n"
-        ).getBytes());
-        sources.put("pkg/D.java", (
+        ));
+        sourceFinder.addResource("pkg/D.java", (
             ""
             + "package pkg;\n"
             + "public class D {\n"
             + "}\n"
-        ).getBytes());
-        ResourceFinder sourceFinder = new MapResourceFinder(sources);
+        ));
 
-        Map<String, byte[]> classes  = new HashMap<String, byte[]>();
-        Compiler            compiler = new Compiler(
-            sourceFinder,                                                  // sourceFinder
-            new ClassLoaderIClassLoader(this.getClass().getClassLoader()), // iClassLoader
-            ResourceFinder.EMPTY_RESOURCE_FINDER,                          // classFileFinder
-            new MapResourceCreator(classes),                               // classFileCreator
-            (String) null,                                                 // optionalCharacterEncoding
-            false,                                                         // verbose
-            true,                                                          // debugSource
-            true,                                                          // debugLines
-            false,                                                         // debugVars
-            (WarningHandler) null                                          // optionalWarningHandler
-        );
-
-        compiler.setCompileErrorHandler(new ErrorHandler() {
-
-            @Override public void
-            handleError(String message, @Nullable Location optionalLocation) throws CompileException {
-                throw new CompileException(message, optionalLocation);
-            }
-        });
-
-        COMPILE: {
-            try {
-                compiler.compile(new Resource[] { sourceFinder.findResource("pkg/A.java") });
-            } catch (CompileException ex) {
-                Assert.assertTrue(ex.getMessage().contains("Cannot determine simple type name \"E\""));
-                break COMPILE;
-            }
+        try {
+            CompilerTest.compile(sourceFinder);
             Assert.fail("CompileException expected");
+        } catch (CompileException ex) {
+            Assert.assertTrue(
+                ex.getMessage(),
+                ex.getMessage().contains("Cannot determine simple type name \"E\"")
+            );
         }
+    }
 
-        Assert.assertEquals(
-            new HashSet<Object>(Arrays.asList("pkg/A.class", "pkg/B.class")),
-            classes.keySet()
+    @Test public void
+    testInMemoryCompilation() throws Exception {
+
+        // Set of compilation units.
+        MapResourceFinder sourceFinder = new MapResourceFinder();
+        sourceFinder.addResource("pkg1/A.java", (
+            ""
+            + "package pkg1;\n"
+            + "\n"
+            + "import pkg2.*;\n"
+            + "\n"
+            + "public\n"
+            + "class A {\n"
+            + "    public static String main() { return B.meth(); }\n"
+            + "    public static String meth() { return \"HELLO\"; }\n"
+            + "}\n"
+        ));
+        sourceFinder.addResource("pkg2/B.java", (
+            ""
+            + "package pkg2;\n"
+            + "\n"
+            + "import pkg1.*;\n"
+            + "\n"
+            + "public\n"
+            + "class B {\n"
+            + "    public static String meth() { return A.meth(); }\n"
+            + "}\n"
+        ));
+
+        final Map<String, byte[]> classes = CompilerTest.compile(sourceFinder);
+
+        // Set up a class loader that finds and defined the generated classes.
+        ClassLoader cl = new ByteArrayClassLoader(classes);
+
+        // Now invoke "pkg1.A.main()" and assert that it returns "HELLO".
+        Assert.assertEquals("HELLO", cl.loadClass("pkg1.A").getMethod("main").invoke(null));
+    }
+
+    private static Map<String, byte[]>
+    compile(MapResourceFinder sourceFinder) throws CompileException, IOException {
+
+        // Set up the compiler.
+        Compiler compiler = new Compiler(
+            sourceFinder,                                                    // sourceFinder
+            new ClassLoaderIClassLoader(CompilerTest.class.getClassLoader()) // parentIClassLoader
         );
+
+        // Storage for generated bytecode.
+        final Map<String, byte[]> classes = new HashMap<String, byte[]>();
+        compiler.setClassFileCreator(new MapResourceCreator(classes));
+        compiler.setClassFileFinder(new MapResourceFinder(classes));
+
+        // Compile all sources.
+        compiler.compile(sourceFinder.resources().toArray(new Resource[0]));
+
+        return classes;
     }
 
     @Test public void
     testImplicitCastTernaryOperator() throws Exception {
-         Map<String, byte[]> sources = new HashMap<String, byte[]>();
-         sources.put("pkg/A.java", ( // Class A uses class B, C, D.
-             ""
-             + "package pkg;\n"
-             + "public class A {\n"
-             + "    public static final Boolean wrap(boolean b) { return Boolean.valueOf(b); }\n"
-             + "    public java.lang.Object one() { \n"
-             + "       return this.f == (byte) 2 ? null : wrap(this.f == (byte) 1);\n"
-             + "    }\n"
-             + ""
-             + "    public void two() {\n"
-             + "       byte b =  (byte) ((( (byte) 2 == (byte) 2 ? (byte) 2 : (byte) 1 ^ (byte) 2 )));\n"
-             + "    }\n"
-             + ""
-             + "    public byte f = (byte) 2;\n"
-             + "}\n"
-         ).getBytes());
 
-         ResourceFinder sourceFinder = new MapResourceFinder(sources);
+        String cu = (
+            ""
+            + "package pkg;\n"
+            + "public class A {\n"
+            + "    public static final Boolean wrap(boolean b) { return Boolean.valueOf(b); }\n"
+            + "    public java.lang.Object one() { \n"
+            + "       return this.f == (byte) 2 ? null : wrap(this.f == (byte) 1);\n"
+            + "    }\n"
+            + ""
+            + "    public void two() {\n"
+            + "       byte b = (byte) ((((byte) 2 == (byte) 2 ? (byte) 2 : (byte) 1 ^ (byte) 2)));\n"
+            + "    }\n"
+            + ""
+            + "    public byte f = (byte) 2;\n"
+            + "}\n"
+        );
 
-         Map<String, byte[]> classes  = new HashMap<String, byte[]>();
-         Compiler            compiler = new Compiler(
-             sourceFinder,                                                  // sourceFinder
-             new ClassLoaderIClassLoader(this.getClass().getClassLoader()), // iClassLoader
-             ResourceFinder.EMPTY_RESOURCE_FINDER,                          // classFileFinder
-             new MapResourceCreator(classes),                               // classFileCreator
-             (String) null,                                                 // optionalCharacterEncoding
-             false,                                                         // verbose
-             true,                                                          // debugSource
-             true,                                                          // debugLines
-             false,                                                         // debugVars
-             (WarningHandler) null                                          // optionalWarningHandler
-         );
-         compiler.compile(new Resource[] { sourceFinder.findResource("pkg/A.java") });
-         Assert.assertEquals(new HashSet<Object>(Arrays.asList("pkg/A.class")), classes.keySet());
+        ISimpleCompiler sc = new SimpleCompiler();
+        sc.cook(cu);
     }
 
 

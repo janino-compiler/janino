@@ -28,7 +28,10 @@ package org.codehaus.janino.util.resource;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -38,27 +41,50 @@ import org.codehaus.commons.nullanalysis.Nullable;
  */
 public
 class MapResourceFinder extends ResourceFinder {
-    private final Map<String, byte[]> map;
-    private long                      lastModified;
+
+    private final Map<String, Resource> map = new HashMap<String, Resource>();
+    private long                        lastModified;
 
     public
-    MapResourceFinder(Map<String, byte[]> map) { this.map = map; }
+    MapResourceFinder() {}
+
+    public
+    MapResourceFinder(Map<String, byte[]> map) {
+        for (Entry<String, byte[]> me : map.entrySet()) {
+            this.addResource(me.getKey(), me.getValue());
+        }
+    }
+
+    public void
+    addResource(final String fileName, final byte[] data) {
+        this.map.put(fileName, new Resource() {
+            @Override public InputStream open()         { return new ByteArrayInputStream(data);      }
+            @Override public String      getFileName()  { return fileName;                            }
+            @Override public long        lastModified() { return MapResourceFinder.this.lastModified; }
+        });
+    }
+
+    public void
+    addResource(String fileName, String data) {
+        this.addResource(fileName, data.getBytes());
+    }
+
+    public void
+    addResource(final Resource resource) {
+        this.map.put(resource.getFileName(), resource);
+    }
+
+    public Collection<Resource>
+    resources() { return this.map.values(); }
 
     /**
-     * @param lastModified The return value of {@link Resource#lastModified()} for the next resources found
+     * @param lastModified The return value of {@link Resource#lastModified()} for the next resources added
      */
     public final void
     setLastModified(long lastModified) { this.lastModified = lastModified; }
 
     @Override @Nullable public final Resource
     findResource(final String resourceName) {
-        final byte[] ba = (byte[]) this.map.get(resourceName);
-        if (ba == null) return null;
-
-        return new Resource() {
-            @Override public InputStream open()         { return new ByteArrayInputStream(ba); }
-            @Override public String      getFileName()  { return resourceName; }
-            @Override public long        lastModified() { return MapResourceFinder.this.lastModified; }
-        };
+        return this.map.get(resourceName);
     }
 }
