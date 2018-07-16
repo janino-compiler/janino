@@ -4462,10 +4462,9 @@ class UnitCompiler {
 
     private IClass
     compileGet2(ClassLiteral cl) throws CompileException {
-        final Location     loc    = cl.getLocation();
-        final IClassLoader icl    = this.iClassLoader;
-        IClass             iClass = this.getType(cl.type);
+        final Location loc = cl.getLocation();
 
+        IClass iClass = this.getType(cl.type);
         if (iClass.isPrimitive()) {
 
             // Primitive class literal.
@@ -4491,7 +4490,7 @@ class UnitCompiler {
                 "TYPE",                 // fieldName
                 "Ljava/lang/Class;"     // fieldFD
             );
-            return icl.TYPE_java_lang_Class;
+            return this.iClassLoader.TYPE_java_lang_Class;
         }
 
         // Non-primitive class literal.
@@ -4556,7 +4555,7 @@ class UnitCompiler {
                 }
             }
 
-            Type             classType = new SimpleType(loc, icl.TYPE_java_lang_Class);
+            Type             classType = new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class);
             FieldDeclaration fd        = new FieldDeclaration(
                 loc,                       // location
                 null,                      // optionalDocComment
