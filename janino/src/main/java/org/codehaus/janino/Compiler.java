@@ -226,9 +226,9 @@ class Compiler {
     );
 
     /**
-     * Special value for "classFileResourceFinder".
+     * Special value for {@link #classFileFinder}.
      */
-    @Nullable public static final ResourceFinder  FIND_NEXT_TO_SOURCE_FILE = null;
+    @Nullable public static final ResourceFinder FIND_NEXT_TO_SOURCE_FILE = null;
 
     /**
      * Special value for {@link #classFileCreator}: Indicates that each .class file is to be creted in the same
@@ -385,14 +385,6 @@ class Compiler {
     public static final StringPattern[] DEFAULT_WARNING_HANDLE_PATTERNS = StringPattern.PATTERNS_NONE;
 
     /**
-     * To mimic the behavior of JAVAC with a missing "-d" command line option, pass {@link #FIND_NEXT_TO_SOURCE_FILE}
-     * as the <var>classFileResourceFinder</var> and {@link #CREATE_NEXT_TO_SOURCE_FILE} as the
-     * <var>classFileResourceCreator</var>.
-     * <p>
-     *   If it is impossible to check whether an already-compiled class file exists, or if you want to enforce
-     *   recompilation, pass {@link ResourceFinder#EMPTY_RESOURCE_FINDER} as the <var>classFileResourceFinder</var>.
-     * </p>
-     *
      * @param sourceFinder       Finds extra Java compilation units that need to be compiled (a.k.a. "-sourcepath")
      * @param parentIClassLoader Loads auxiliary {@link IClass}es (a.k.a. "-classpath"), e.g. {@code new
      *                           ClassLoaderIClassLoader(ClassLoader)}
@@ -675,6 +667,9 @@ class Compiler {
     }
 
     /**
+     * If it is impossible to check whether an already-compiled class file exists, or if you want to enforce
+     * recompilation, pass {@link ResourceFinder#EMPTY_RESOURCE_FINDER} as the <var>classFileFinder</var>.
+     *
      * @param classFileFinder Where to look for up-to-date class files that need not be compiled (a.k.a. "-d")
      */
     public void
