@@ -46,6 +46,9 @@ class MapResourceCreator implements ResourceCreator {
     public
     MapResourceCreator() { this.map = new HashMap<String, byte[]>(); }
 
+    /**
+     * @param map String fileName =&gt; byte[] data
+     */
     public
     MapResourceCreator(Map<String, byte[]> map) { this.map = map; }
 
