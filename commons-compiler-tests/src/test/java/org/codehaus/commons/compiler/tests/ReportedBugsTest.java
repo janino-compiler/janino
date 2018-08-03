@@ -31,7 +31,10 @@ package org.codehaus.commons.compiler.tests;
 import java.io.File;
 import java.io.StringReader;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
@@ -40,6 +43,7 @@ import org.codehaus.commons.compiler.tests.bug180.UnaryDoubleFunction;
 import org.codehaus.commons.compiler.tests.bug63.IPred;
 import org.codehaus.commons.compiler.tests.bug63.Pred;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -64,6 +68,20 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     public
     ReportedBugsTest(ICompilerFactory compilerFactory) throws Exception {
         super(compilerFactory);
+    }
+
+    @SuppressWarnings("static-method") // JUNIT does not like it when "setUp()" is STATIC.
+    @Before public void
+    setUp() throws Exception {
+
+        // Optionally print class file disassemblies to the console.
+        if (Boolean.getBoolean("disasm")) {
+            Logger scl = Logger.getLogger("org.codehaus.janino.UnitCompiler");
+//            for (Handler h : scl.getHandlers()) {
+//                h.setLevel(Level.FINEST);
+//            }
+            scl.setLevel(Level.FINEST);
+        }
     }
 
     /**
@@ -852,4 +870,26 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "}\n"
         );
     }
+
+    /**
+     * <a href="https://github.com/janino-compiler/janino/issues/53">Issue #53: Cannot compile enums</a>
+     * @throws Exception
+     */
+    @Test public void
+    testIssue53() throws Exception {
+        AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader();
+
+        jscl.setSourcePath(new File[] { new File("src/test/resources/issue53") });
+
+        String cfid = this.compilerFactory.getId();
+        String fieldName = (
+            cfid.equals("org.codehaus.janino")               ? "ENUM$VALUES" :
+            cfid.equals("org.codehaus.commons.compiler.jdk") ? "$VALUES"     :
+            "???"
+        );
+
+        Assert.assertTrue(jscl.loadClass("pkg1.Enum1").getDeclaredField(fieldName).getType().isArray());
+        Assert.assertTrue(jscl.loadClass("pkg2.Enum1").getDeclaredField(fieldName).getType().isArray());
+    }
+
 }
