@@ -28,7 +28,7 @@ package org.codehaus.commons.compiler;
 
 import java.security.AccessControlContext;
 import java.security.Permission;
-import java.security.Permissions;
+import java.security.PermissionCollection;
 import java.security.ProtectionDomain;
 import java.util.Collections;
 import java.util.Map;
@@ -42,9 +42,9 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * <p>
  *   "To execute through a class" means that the execution stack includes the class. E.g., if a method of class {@code
  *   A} invokes a method of class {@code B}, which then invokes a method of class {@code C}, and any of the three
- *   classes were loaded by a previously {@link #confine(ClassLoader, Permissions) confined} class loader, then for
- *   all actions that are executed by class {@code C} the <i>intersection</i> of the three {@link Permissions}
- *   applies.
+ *   classes were loaded by a previously {@link #confine(ClassLoader, PermissionCollection) confined} class loader,
+ *   then for all actions that are executed by class {@code C} the <i>intersection</i> of the three {@link
+ *   PermissionCollection}s applies.
  * </p>
  * <p>
  *   Once the permissions for a class loader are confined, they cannot be changed; this prevents any attempts (e.g.
@@ -131,7 +131,7 @@ class Sandbox {
      * @throws SecurityException Permissions are already confined for the <var>classLoader</var>
      */
     public static void
-    confine(ClassLoader classLoader, Permissions permissions) {
+    confine(ClassLoader classLoader, PermissionCollection permissions) {
         Sandbox.confine(classLoader, new ProtectionDomain(null, permissions));
     }
 }
