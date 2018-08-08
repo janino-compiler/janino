@@ -131,7 +131,7 @@ class AstTest {
 
 
     private static LocalVariableDeclarationStatement
-    createVarDecl(String name, String fPValue) {
+    createVarDecl(String name, String fPValue) throws CompileException {
         return new Java.LocalVariableDeclarationStatement(
             AstTest.getLocation(),
             new Java.Modifiers(Mod.NONE),
