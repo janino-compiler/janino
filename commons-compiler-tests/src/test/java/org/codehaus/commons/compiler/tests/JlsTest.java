@@ -700,6 +700,55 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_9_4_Method_Declarations__1() throws Exception {
+
+        this.assertCompilationUnitCookable((
+            ""
+            + "public interface A {\n"
+            + "    A meth1();\n"
+            + "}\n"
+        ));
+    }
+
+    @Test public void
+    test_9_4_Method_Declarations__2() throws Exception {
+
+        // Static interface methods MUST declare a body.
+        this.assertCompilationUnitUncookable((
+            ""
+            + "public interface A {\n"
+            + "    static A meth1();\n"
+            + "}\n"
+        ));
+    }
+
+    @Test public void
+    test_9_4_Method_Declarations__3() throws Exception {
+
+        String cu = (
+            ""
+            + "public interface A {\n"
+            + "    static A meth1() { return null; }\n"
+            + "}\n"
+            + "\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static Object\n"
+            + "    main() {\n"
+            + "        return A.meth1() == null;\n"
+            + "    }\n"
+            + "}\n"
+        );
+
+        if (this.isJanino()) {
+            this.assertCompilationUnitUncookable(cu, "Static interface methods not implemented");
+        } else {
+            this.assertCompilationUnitMainReturnsTrue(cu, "Main");
+        }
+    }
+
+    @Test public void
     test_9_6_Annotation_Types() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
@@ -2180,4 +2229,10 @@ class JlsTest extends CommonsCompilerTestSuite {
      */
     private boolean
     isJdk678() { return this.isJdk6() || this.isJdk7() || this.isJdk8(); }
+
+    /**
+     * @return Whether we're using the JANINO compiler factory
+     */
+    private boolean
+    isJanino() { return "org.codehaus.janino".equals(this.compilerFactory.getId()); }
 }
