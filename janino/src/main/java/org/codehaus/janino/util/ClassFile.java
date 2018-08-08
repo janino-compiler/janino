@@ -87,11 +87,11 @@ class ClassFile implements Annotatable {
     public
     ClassFile(short accessFlags, String thisClassFd, @Nullable String superclassFd, String[] interfaceFds) {
 
-        // Must not set these to "..._1_5", for otherwise "EvaluatorTests.testCovariantClone()" and
-        // "JlsTests.test_8_4_8_3__Requirements_in_Overriding_and_Hiding()" choke.
-        // Further investigation required.
-        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_5;
-        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_5;
+        // Must not set these to "..._1_7", because then the JVM insists on a StackMapTable (JVMS9 4.7.4), which
+        // JANINO currently does not produce. ("jre -noverify" removes that requirement, but we
+        // cannot force our users to run their JVMs with that option.)
+        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_6;
+        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_6;
 
         this.constantPool  = new ArrayList<ConstantPoolInfo>();
         this.constantPool.add(null); // Add fake "0" index entry.
