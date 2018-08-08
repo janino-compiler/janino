@@ -700,7 +700,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_4_Method_Declarations__1() throws Exception {
+    test_9_4__Method_Declarations__1() throws Exception {
 
         this.assertCompilationUnitCookable((
             ""
@@ -711,7 +711,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_4_Method_Declarations__2() throws Exception {
+    test_9_4__Method_Declarations__2() throws Exception {
 
         // Static interface methods MUST declare a body.
         this.assertCompilationUnitUncookable((
@@ -723,7 +723,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_4_Method_Declarations__3() throws Exception {
+    test_9_4__Method_Declarations__3() throws Exception {
 
         String cu = (
             ""
@@ -743,6 +743,23 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         if (this.isJanino()) {
             this.assertCompilationUnitUncookable(cu, "Static interface methods not implemented");
+        } else {
+            this.assertCompilationUnitMainReturnsTrue(cu, "Main");
+        }
+    }
+
+    @Test public void
+    test_9_4__Method_Declarations__4() throws Exception {
+
+        String cu = (
+            ""
+            + "public interface A {\n"
+            + "    default A meth1() { return null; }\n"
+            + "}\n"
+        );
+
+        if (this.isJanino()) {
+            this.assertCompilationUnitUncookable(cu, "Default interface methods not implemented");
         } else {
             this.assertCompilationUnitMainReturnsTrue(cu, "Main");
         }
