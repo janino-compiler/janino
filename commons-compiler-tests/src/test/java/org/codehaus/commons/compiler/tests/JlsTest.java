@@ -761,7 +761,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         if (this.isJanino()) {
             this.assertCompilationUnitUncookable(cu, "Default interface methods not implemented");
         } else {
-            this.assertCompilationUnitMainReturnsTrue(cu, "Main");
+            this.assertCompilationUnitCookable(cu);
         }
     }
 
