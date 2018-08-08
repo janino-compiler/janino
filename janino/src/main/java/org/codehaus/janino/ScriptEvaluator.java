@@ -938,18 +938,6 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         parser.read(";");
     }
 
-    /**
-     * To the given {@link Java.AbstractClassDeclaration}, adds
-     * <ul>
-     *   <li>
-     *     A public method declaration with the given return type, name, parameter names and values and thrown
-     *     exceptions
-     *   </li>
-     *   <li>A block</li>
-     * </ul>
-     *
-     * @param returnType Return type of the declared method
-     */
     protected Java.MethodDeclarator
     makeMethodDeclaration(
         Location                  location,
@@ -992,7 +980,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             null,                                            // optionalDocComment
             new Java.Modifiers(                              // modifiers
                 staticMethod ? (short) (Mod.PUBLIC | Mod.STATIC) : Mod.PUBLIC,
-                annotations
+                annotations,
+                false // isDefault
             ),
             null,                                            // optionalTypeParameters
             this.classToType(location, returnType),          // type

@@ -495,27 +495,35 @@ class Java {
         public final Annotation[] annotations;
 
         /**
+         * The {@code default} modifier first appeared in JLS8 9.4.
+         */
+        public final boolean isDefault;
+
+        /**
          * A "blank" {@link Modifiers} object: No flags, no annotations.
          */
         public
         Modifiers() {
             this.accessFlags = Mod.NONE;
             this.annotations = new Annotation[0];
+            this.isDefault   = false;
         }
 
         /**
          * A "simple" {@link Modifiers} object: Flags, but no annotations.
          */
         public
-        Modifiers(short modifiers) {
-            this.accessFlags = modifiers;
+        Modifiers(short accessFlags) {
+            this.accessFlags = accessFlags;
             this.annotations = new Annotation[0];
+            this.isDefault   = false;
         }
 
         public
-        Modifiers(short modifiers, Annotation[] annotations) {
-            this.accessFlags = modifiers;
+        Modifiers(short accessFlags, Annotation[] annotations, boolean isDefault) {
+            this.accessFlags = accessFlags;
             this.annotations = annotations;
+            this.isDefault   = isDefault;
         }
 
         /**
@@ -531,7 +539,7 @@ class Java {
          */
         public Modifiers
         add(int modifiersToAdd) {
-            return new Modifiers((short) (this.accessFlags | modifiersToAdd), this.annotations);
+            return new Modifiers((short) (this.accessFlags | modifiersToAdd), this.annotations, this.isDefault);
         }
 
         /**
@@ -539,7 +547,7 @@ class Java {
          */
         public Modifiers
         remove(int modifiersToRemove) {
-            return new Modifiers((short) (this.accessFlags & ~modifiersToRemove), this.annotations);
+            return new Modifiers((short) (this.accessFlags & ~modifiersToRemove), this.annotations, this.isDefault);
         }
 
         /**
@@ -548,7 +556,7 @@ class Java {
          */
         public Modifiers
         changeAccess(int newAccess) {
-            return new Modifiers((short) (this.accessFlags & ~Mod.PPP | newAccess), this.annotations);
+            return new Modifiers((short) (this.accessFlags & ~Mod.PPP | newAccess), this.annotations, this.isDefault);
         }
 
         public boolean
@@ -3483,8 +3491,11 @@ class Java {
             Modifiers            modifiers,
             Type                 type,
             VariableDeclarator[] variableDeclarators
-        ) {
+        ) throws CompileException {
             super(location);
+
+            if (modifiers.isDefault) this.throwCompileException("Modifier \"default\" not allowed for local variable");
+
             this.modifiers           = modifiers;
             this.type                = type;
             this.variableDeclarators = variableDeclarators;

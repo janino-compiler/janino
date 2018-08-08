@@ -3212,7 +3212,7 @@ class UnitCompiler {
 
                 // Static interface methods would require Java 8 class file format, but JANINO is still tied to Java
                 // 7 class file format.
-                if (Mod.isStatic(afs) && !"<clinit>".equals(fd.name)) {
+                if (Mod.isStatic(afs) && !"<clinit>".equals(fd.name) && !"class$".equals(fd.name)) {
                     this.compileError("Static interface methods not implemented", fd.getLocation());
                 }
 
@@ -3264,8 +3264,20 @@ class UnitCompiler {
             || Mod.isAbstract(fd.modifiers.accessFlags)
             || Mod.isNative(fd.modifiers.accessFlags)
         ) {
-            if (fd.optionalStatements != null) this.compileError("Method must not declare a body", fd.getLocation());
-            return;
+            if (fd.modifiers.isDefault) {
+                if (!(fd.getDeclaringType() instanceof InterfaceDeclaration)) {
+                    this.compileError("Only interface method declarations may have the \"default\" modifier", fd.getLocation());
+                } else
+                if (Mod.isStatic(fd.modifiers.accessFlags)) {
+                    this.compileError("Static interface method declarations must not have the \"default\" modifier", fd.getLocation());
+                } else
+                if (fd.optionalStatements == null) {
+                    this.compileError("Default method declarations must have a body", fd.getLocation());
+                }
+            } else {
+                if (fd.optionalStatements != null) this.compileError("Method must not declare a body", fd.getLocation());
+                return;
+            }
         }
 
         // Create CodeContext.
