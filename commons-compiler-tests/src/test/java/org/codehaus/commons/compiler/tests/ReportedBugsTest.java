@@ -892,4 +892,28 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         Assert.assertTrue(jscl.loadClass("pkg2.Enum1").getDeclaredField(fieldName).getType().isArray());
     }
 
+    /**
+     * <a href="https://github.com/janino-compiler/janino/issues/47">Issue #47: UnitCompiler fails with
+     * CompileException when parent interface method is overridden in child interface with subtype return type</a>
+     */
+    @Test public void
+    testIssue47() throws Exception {
+        ISimpleCompiler s = this.compilerFactory.newSimpleCompiler();
+        s.setDebuggingInformation(true, true, true);
+        s.cook(
+            ""
+            + "package pkg;\n"
+            + "\n"
+            + "import org.codehaus.commons.compiler.tests.ReportedBugsTest.B;\n"
+            + "\n"
+            + "public class D {\n"
+            + "    public Object one(B b) {\n"
+            + "       return b.theFirstMethod().theSecondMethod();\n"
+            + "    }\n"
+            + "}\n"
+        );
+        s.getClassLoader().loadClass("pkg.D");
+    }
+    public interface A           { A           theFirstMethod();                           }
+    public interface B extends A { @Override B theFirstMethod(); Object theSecondMethod(); }
 }
