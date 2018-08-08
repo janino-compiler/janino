@@ -1167,12 +1167,12 @@ class Parser {
             if (this.peek("(")) {
                 if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                    optionalDocComment,                       // optionalDocComment
-                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC), // modifiers
-                    optionalTypeParameters,                   // optionalTypeParameters
-                    memberType,                               // type
-                    memberName,                               // name
-                    true                                      // allowDefaultClause
+                    optionalDocComment,        // optionalDocComment
+                    modifiers.add(Mod.PUBLIC), // modifiers
+                    optionalTypeParameters,    // optionalTypeParameters
+                    memberType,                // type
+                    memberName,                // name
+                    true                       // allowDefaultClause
                 ));
                 continue;
             }
@@ -1317,9 +1317,6 @@ class Parser {
 
         List<BlockStatement> optionalStatements;
         if (this.peekRead(";")) {
-            if (!Mod.isAbstract(modifiers.accessFlags) && !Mod.isNative(modifiers.accessFlags)) {
-                throw this.compileException("Non-abstract, non-native method must have a body");
-            }
             optionalStatements = null;
         } else {
             if (Mod.isAbstract(modifiers.accessFlags) || Mod.isNative(modifiers.accessFlags)) {

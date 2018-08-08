@@ -3207,7 +3207,11 @@ class UnitCompiler {
             // Non-PRIVATE function.
 
             mi = classFile.addMethodInfo(
-                fd.modifiers.accessFlags,             // accessFlags
+                (                                     // accessFlags
+                    fd.getDeclaringType() instanceof InterfaceDeclaration
+                    ? (short) (fd.modifiers.accessFlags | Mod.ABSTRACT)
+                    : fd.modifiers.accessFlags
+                ),
                 fd.name,                              // methodName
                 this.toIInvocable(fd).getDescriptor() // methodMD
             );
@@ -3246,7 +3250,14 @@ class UnitCompiler {
             }
         }
 
-        if (Mod.isAbstract(fd.modifiers.accessFlags) || Mod.isNative(fd.modifiers.accessFlags)) return;
+        if (
+            (fd.getDeclaringType() instanceof InterfaceDeclaration && !Mod.isStatic(fd.modifiers.accessFlags))
+            || Mod.isAbstract(fd.modifiers.accessFlags)
+            || Mod.isNative(fd.modifiers.accessFlags)
+        ) {
+            if (fd.optionalStatements != null) this.compileError("Method must not declare a body", fd.getLocation());
+            return;
+        }
 
         // Create CodeContext.
         final CodeContext codeContext = new CodeContext(mi.getClassFile(), mi.getName() + mi.getDescriptor());
