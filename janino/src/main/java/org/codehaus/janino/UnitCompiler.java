@@ -3206,12 +3206,21 @@ class UnitCompiler {
 
             // Non-PRIVATE function.
 
+            short afs = fd.modifiers.accessFlags;
+
+            if (fd.getDeclaringType() instanceof InterfaceDeclaration) {
+
+                // Static interface methods would require Java 8 class file format, but JANINO is still tied to Java
+                // 7 class file format.
+                if (Mod.isStatic(afs) && !"<clinit>".equals(fd.name)) {
+                    this.compileError("Static interface methods not implemented", fd.getLocation());
+                }
+
+                afs |= Mod.ABSTRACT;
+            }
+
             mi = classFile.addMethodInfo(
-                (                                     // accessFlags
-                    fd.getDeclaringType() instanceof InterfaceDeclaration
-                    ? (short) (fd.modifiers.accessFlags | Mod.ABSTRACT)
-                    : fd.modifiers.accessFlags
-                ),
+                afs,                                  // accessFlags
                 fd.name,                              // methodName
                 this.toIInvocable(fd).getDescriptor() // methodMD
             );
