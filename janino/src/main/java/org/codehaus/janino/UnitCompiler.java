@@ -9311,7 +9311,7 @@ class UnitCompiler {
             }
         }
 
-        // Choose the most specific invocable (15.12.2.2).
+        // Choose the most specific invocable (15.12.2.5).
         if (applicableIInvocables.size() == 1) {
             return (IInvocable) applicableIInvocables.get(0);
         }
@@ -9356,50 +9356,52 @@ class UnitCompiler {
 
         if (maximallySpecificIInvocables.size() == 1) return (IInvocable) maximallySpecificIInvocables.get(0);
 
-        ONE_NON_ABSTRACT_INVOCABLE:
+        ONE_CONCRETE_INVOCABLE:
         if (maximallySpecificIInvocables.size() > 1 && iInvocables[0] instanceof IClass.IMethod) {
 
             // Check if all methods have the same signature (i.e. the types of all their parameters are identical) and
-            // exactly one of the methods is non-abstract (JLS7 15.12.2.2.BL2.B1).
-            IClass.IMethod theNonAbstractMethod = null;
+            // exactly one of the methods is concrete (JLS8 15.12.2.5.B8.B2).
+            IClass.IMethod theConcreteMethod = null;
             {
                 Iterator<IClass.IInvocable> it                          = maximallySpecificIInvocables.iterator();
                 IClass.IMethod              m                           = (IClass.IMethod) it.next();
                 final IClass[]              parameterTypesOfFirstMethod = m.getParameterTypes();
                 for (;;) {
-                    if (!m.isAbstract()) {
-                        if (theNonAbstractMethod == null) {
-                            theNonAbstractMethod = m;
+                    if (!m.isAbstract() && !m.getDeclaringIClass().isInterface()) {
+                        if (theConcreteMethod == null) {
+                            theConcreteMethod = m;
                         } else {
                             IClass declaringIClass                     = m.getDeclaringIClass();
-                            IClass theNonAbstractMethodDeclaringIClass = theNonAbstractMethod.getDeclaringIClass();
-                            if (declaringIClass == theNonAbstractMethodDeclaringIClass) {
-                                if (m.getReturnType() == theNonAbstractMethod.getReturnType()) {
+                            IClass theConcreteMethodDeclaringIClass = theConcreteMethod.getDeclaringIClass();
+                            if (declaringIClass == theConcreteMethodDeclaringIClass) {
+                                if (m.getReturnType() == theConcreteMethod.getReturnType()) {
+                                    // JLS8 15.12.2.5.B9
+                                    // "Otherwise, the method invocation is ambiguous, and a compile-time error occurs."
                                     throw new InternalCompilerException(
-                                        "Two non-abstract methods \"" + m + "\" have the same parameter types, "
+                                        "Two concrete methods \"" + m + "\" have the same parameter types, "
                                         + "declaring type and return type"
                                     );
                                 } else
-                                if (m.getReturnType().isAssignableFrom(theNonAbstractMethod.getReturnType())) {
+                                if (m.getReturnType().isAssignableFrom(theConcreteMethod.getReturnType())) {
                                     ;
                                 } else
-                                if (theNonAbstractMethod.getReturnType().isAssignableFrom(m.getReturnType())) {
-                                    theNonAbstractMethod = m;
+                                if (theConcreteMethod.getReturnType().isAssignableFrom(m.getReturnType())) {
+                                    theConcreteMethod = m;
                                 } else
                                 {
                                     throw new InternalCompilerException("Incompatible return types");
                                 }
                             } else
-                            if (declaringIClass.isAssignableFrom(theNonAbstractMethodDeclaringIClass)) {
+                            if (declaringIClass.isAssignableFrom(theConcreteMethodDeclaringIClass)) {
                                 ;
                             } else
-                            if (theNonAbstractMethodDeclaringIClass.isAssignableFrom(declaringIClass)) {
-                                theNonAbstractMethod = m;
+                            if (theConcreteMethodDeclaringIClass.isAssignableFrom(declaringIClass)) {
+                                theConcreteMethod = m;
                             } else
                             {
                                 throw new InternalCompilerException(
                                     "SNO: Types declaring \""
-                                    + theNonAbstractMethod
+                                    + theConcreteMethod
                                     + "\" are not assignable"
                                 );
                             }
@@ -9410,15 +9412,15 @@ class UnitCompiler {
                     m = (IClass.IMethod) it.next();
                     IClass[] pts = m.getParameterTypes();
                     for (int i = 0; i < pts.length; ++i) {
-                        if (pts[i] != parameterTypesOfFirstMethod[i]) break ONE_NON_ABSTRACT_INVOCABLE;
+                        if (pts[i] != parameterTypesOfFirstMethod[i]) break ONE_CONCRETE_INVOCABLE;
                     }
                 }
             }
 
-            // JLS7 15.12.2.2.BL2.B1.B1
-            if (theNonAbstractMethod != null) return theNonAbstractMethod;
+            // JLS8 15.12.2.5.B8.B2
+            if (theConcreteMethod != null) return theConcreteMethod;
 
-            // JLS7 15.12.2.2.BL2.B1.B2
+            // JLS8 15.12.2.5.B8.B2
             // Check "that exception [te1] is declared in the THROWS clause of each of the maximally specific methods".
             Set<IClass> s = new HashSet<IClass>();
             {
@@ -9443,7 +9445,7 @@ class UnitCompiler {
                 }
             }
 
-            // JLS7 1.12.2.5.BL2.B1.BL.B2: "... the most specific method is chosen arbitrarily among the subset of the
+            // JLS8 15.12.2.5.B8.B2: "... the most specific method is chosen arbitrarily among the subset of the
             // maximally specific methods that have the most specific return type".
             final IClass.IMethod im;
             {
@@ -9466,7 +9468,8 @@ class UnitCompiler {
                 // SUPPRESS CHECKSTYLE LineLength:9
                 @Override public String        getName()                                    { return im.getName();           }
                 @Override public IClass        getReturnType()      throws CompileException { return im.getReturnType();     }
-                @Override public boolean       isAbstract()                                 { return im.isAbstract();        }
+                // JLS8 15.12.2.5.B8.B2: "In this case, the most specific method is considered to be abstract"
+                @Override public boolean       isAbstract()                                 { return true;        }
                 @Override public boolean       isStatic()                                   { return im.isStatic();          }
                 @Override public Access        getAccess()                                  { return im.getAccess();         }
                 @Override public boolean       isVarargs()                                  { return im.isVarargs();         }
@@ -9478,7 +9481,7 @@ class UnitCompiler {
 
         if (!boxingPermitted) return null; // To try again.
 
-        // JLS7 15.12.2.2.BL2.B2
+        // JLS8 15.12.2.5.B8.B2
         {
             StringBuilder sb = new StringBuilder("Invocation of constructor/method with argument type(s) \"");
             for (int i = 0; i < argumentTypes.length; ++i) {
