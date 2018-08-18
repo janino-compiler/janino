@@ -53,6 +53,9 @@ import util.TestUtil;
 @RunWith(Parameterized.class) public
 class JlsTest extends CommonsCompilerTestSuite {
 
+    private static double
+    javaSpecificationVersion = Double.parseDouble(System.getProperty("java.specification.version"));
+
     @Parameters(name = "CompilerFactory={0}") public static List<Object[]>
     compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
@@ -1057,7 +1060,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && "1.6".equals(System.getProperty("java.specification.version"))
+            && JlsTest.javaSpecificationVersion == 1.6
         ) return;
 
         this.assertScriptReturnsTrue(
@@ -1081,7 +1084,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && "1.6".equals(System.getProperty("java.specification.version"))
+            && JlsTest.javaSpecificationVersion == 1.6
         ) return;
 
         this.assertScriptReturnsTrue(
@@ -1105,7 +1108,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && "1.6".equals(System.getProperty("java.specification.version"))
+            && JlsTest.javaSpecificationVersion == 1.6
         ) return;
 
         this.assertScriptReturnsTrue(
@@ -1129,7 +1132,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && "1.6".equals(System.getProperty("java.specification.version"))
+            && JlsTest.javaSpecificationVersion == 1.6
         ) return;
 
         this.assertScriptReturnsTrue(
@@ -1152,7 +1155,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && "1.6".equals(System.getProperty("java.specification.version"))
+            && JlsTest.javaSpecificationVersion == 1.6
         ) return;
 
         String s1 = "AaAaAa", s2 = "AaAaBB";
@@ -1204,7 +1207,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         // JDK 6 does not support string SWITCH.
         if (
             "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && "1.6".equals(System.getProperty("java.specification.version"))
+            && JlsTest.javaSpecificationVersion == 1.6
         ) return;
 
         this.assertScriptUncookable(
