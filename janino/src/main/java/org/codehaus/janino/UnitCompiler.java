@@ -9367,7 +9367,7 @@ class UnitCompiler {
                 IClass.IMethod              m                           = (IClass.IMethod) it.next();
                 final IClass[]              parameterTypesOfFirstMethod = m.getParameterTypes();
                 for (;;) {
-                    if (!m.isAbstract()) {
+                    if (!m.isAbstract() && !m.getDeclaringIClass().isInterface()) {
                         if (theNonAbstractMethod == null) {
                             theNonAbstractMethod = m;
                         } else {
@@ -9375,6 +9375,9 @@ class UnitCompiler {
                             IClass theNonAbstractMethodDeclaringIClass = theNonAbstractMethod.getDeclaringIClass();
                             if (declaringIClass == theNonAbstractMethodDeclaringIClass) {
                                 if (m.getReturnType() == theNonAbstractMethod.getReturnType()) {
+
+                                    // JLS8 15.12.2.5.B9: "Otherwise, the method invocation is ambiguous, and a
+                                    // compile-time error occurs."
                                     throw new InternalCompilerException(
                                         "Two non-abstract methods \"" + m + "\" have the same parameter types, "
                                         + "declaring type and return type"
@@ -9463,10 +9466,11 @@ class UnitCompiler {
             final IClass[]       tes = (IClass[]) s.toArray(new IClass[s.size()]);
             return im.getDeclaringIClass().new IMethod() {
 
-                // SUPPRESS CHECKSTYLE LineLength:9
+                // SUPPRESS CHECKSTYLE LineLength:10
                 @Override public String        getName()                                    { return im.getName();           }
                 @Override public IClass        getReturnType()      throws CompileException { return im.getReturnType();     }
-                @Override public boolean       isAbstract()                                 { return im.isAbstract();        }
+                // JLS8 15.12.2.5.B8.B2: "In this case, the most specific method is considered to be abstract"
+                @Override public boolean       isAbstract()                                 { return true;                   }
                 @Override public boolean       isStatic()                                   { return im.isStatic();          }
                 @Override public Access        getAccess()                                  { return im.getAccess();         }
                 @Override public boolean       isVarargs()                                  { return im.isVarargs();         }
