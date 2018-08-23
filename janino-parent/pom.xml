@@ -22,7 +22,7 @@
 
   <groupId>org.codehaus.janino</groupId>
   <packaging>pom</packaging>
-  <version>3.0.9-SNAPSHOT</version>
+  <version>3.0.9</version>
   <dependencyManagement>
   	<dependencies>
   		<dependency>
