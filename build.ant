@@ -13,7 +13,7 @@
 
 	<target name="default" depends="generate.apidocs.for.publication" />
 
-		<target name="generate.apidocs.for.publication">
+	<target name="generate.apidocs.for.publication">
 
 		<delete dir="apidocs" failonerror="false" />
 
