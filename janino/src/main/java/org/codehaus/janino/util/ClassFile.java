@@ -647,9 +647,8 @@ class ClassFile implements Annotatable {
      */
     private static short[]
     readShortArray(DataInputStream dis) throws IOException {
-        short   count  = dis.readShort();
-        short[] result = new short[count];
-        for (int i = 0; i < count; ++i) result[i] = dis.readShort();
+        short[] result = new short[dis.readUnsignedShort()];
+        for (int i = 0; i < result.length; ++i) result[i] = dis.readShort();
         return result;
     }
 
@@ -661,12 +660,12 @@ class ClassFile implements Annotatable {
         this.constantPool.clear();
         this.constantPoolMap.clear();
 
-        short constantPoolCount = dis.readShort(); // constant_pool_count
+        int constantPoolCount = dis.readUnsignedShort(); // constant_pool_count
         this.constantPool.add(null);
-        for (short i = 1; i < constantPoolCount; ++i) {
+        for (int i = 1; i < constantPoolCount; ++i) {
             ConstantPoolInfo cpi = ConstantPoolInfo.loadConstantPoolInfo(dis);
             this.constantPool.add(cpi);
-            this.constantPoolMap.put(cpi, new Short(i));
+            this.constantPoolMap.put(cpi, (short) i);
             if (cpi.isWide()) {
                 this.constantPool.add(null);
                 ++i;
@@ -682,8 +681,8 @@ class ClassFile implements Annotatable {
 
         List<FieldInfo> result = new ArrayList<FieldInfo>();
 
-        for (int i = dis.readShort(); i > 0; i--) { // fields_count
-            result.add(new FieldInfo(               // fields[field_count]
+        for (int i = dis.readUnsignedShort(); i > 0; i--) { // fields_count
+            result.add(new FieldInfo(                       // fields[field_count]
                 dis.readShort(),         // access_flags
                 dis.readShort(),         // name_index
                 dis.readShort(),         // descriptor_index
@@ -699,7 +698,7 @@ class ClassFile implements Annotatable {
      */
     private List<MethodInfo>
     loadMethods(DataInputStream dis) throws IOException {
-        short            methodsCount = dis.readShort();
+        int              methodsCount = dis.readUnsignedShort();
         List<MethodInfo> methods      = new ArrayList<MethodInfo>(methodsCount);
         for (int i = 0; i < methodsCount; ++i) methods.add(this.loadMethodInfo(dis));
         return methods;
@@ -710,7 +709,7 @@ class ClassFile implements Annotatable {
      */
     private List<AttributeInfo>
     loadAttributes(DataInputStream dis) throws IOException {
-        short               attributesCount = dis.readShort();
+        int                 attributesCount = dis.readUnsignedShort();
         List<AttributeInfo> attributes      = new ArrayList<AttributeInfo>(attributesCount);
         for (int i = 0; i < attributesCount; ++i) attributes.add(this.loadAttribute(dis));
         return attributes;
@@ -1981,8 +1980,8 @@ class ClassFile implements Annotatable {
         private static AttributeInfo
         loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
 
-            Entry[] ics = new Entry[dis.readShort()]; // number_of_classes
-            for (short i = 0; i < ics.length; ++i) {  // classes
+            Entry[] ics = new Entry[dis.readUnsignedShort()]; // number_of_classes
+            for (short i = 0; i < ics.length; ++i) {          // classes
                 ics[i] = new InnerClassesAttribute.Entry(
                     dis.readShort(), // innerClassInfoIndex
                     dis.readShort(), // outerClassInfoIndex
@@ -2058,9 +2057,8 @@ class ClassFile implements Annotatable {
         private static AttributeInfo
         loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
 
-            Annotation[]
-            as = new Annotation[dis.readShort()];   // num_annotations
-            for (short i = 0; i < as.length; ++i) { // annotations[num_annotations]
+            Annotation[] as = new Annotation[dis.readUnsignedShort()]; // num_annotations
+            for (short i = 0; i < as.length; ++i) {                    // annotations[num_annotations]
                 as[i] = AnnotationsAttribute.loadAnnotation(dis);
             }
 
@@ -2078,7 +2076,7 @@ class ClassFile implements Annotatable {
         private static Map<Short, ClassFile.ElementValue>
         loadElementValuePairs(DataInputStream dis) throws IOException {
 
-            short numElementaluePairs = dis.readShort(); // nul_element_value_pairs
+            int numElementaluePairs = dis.readUnsignedShort(); // nul_element_value_pairs
             if (numElementaluePairs == 0) return Collections.emptyMap();
 
             Map<Short, ClassFile.ElementValue> result = new HashMap<Short, ClassFile.ElementValue>();
@@ -2167,8 +2165,8 @@ class ClassFile implements Annotatable {
         private static AttributeInfo
         loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
 
-            Entry[] lntes = new Entry[dis.readShort()]; // line_number_table_length
-            for (short i = 0; i < lntes.length; ++i) {  // line_number_table
+            Entry[] lntes = new Entry[dis.readUnsignedShort()]; // line_number_table_length
+            for (short i = 0; i < lntes.length; ++i) {          // line_number_table
                 lntes[i] = new LineNumberTableAttribute.Entry(
                     dis.readShort(), // startPC
                     dis.readShort()  // lineNumber
@@ -2225,8 +2223,8 @@ class ClassFile implements Annotatable {
 
         private static AttributeInfo
         loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
-            Entry[] lvtes = new Entry[dis.readShort()]; // local_variable_table_length
-            for (short i = 0; i < lvtes.length; ++i) {  // local_variable_table
+            Entry[] lvtes = new Entry[dis.readUnsignedShort()]; // local_variable_table_length
+            for (short i = 0; i < lvtes.length; ++i) {          // local_variable_table
                 lvtes[i] = new LocalVariableTableAttribute.Entry(
                     dis.readShort(), // startPC
                     dis.readShort(), // length
@@ -2356,12 +2354,12 @@ class ClassFile implements Annotatable {
         private static AttributeInfo
         loadBody(short attributeNameIndex, ClassFile classFile, DataInputStream dis) throws IOException {
 
-            final short  maxStack  = dis.readShort();                              // max_stack
-            final short  maxLocals = dis.readShort();                              // max_locals
-            final byte[] code      = ClassFile.readLengthAndBytes(dis);            // code_length, code
+            final short  maxStack  = dis.readShort();                                      // max_stack
+            final short  maxLocals = dis.readShort();                                      // max_locals
+            final byte[] code      = ClassFile.readLengthAndBytes(dis);                    // code_length, code
 
-            ExceptionTableEntry[] etes = new ExceptionTableEntry[dis.readShort()]; // exception_table_length
-            for (int i = 0; i < etes.length; ++i) {                                // exception_table
+            ExceptionTableEntry[] etes = new ExceptionTableEntry[dis.readUnsignedShort()]; // exception_table_length
+            for (int i = 0; i < etes.length; ++i) {                                        // exception_table
                 etes[i] = new ExceptionTableEntry(
                     dis.readShort(), // startPC
                     dis.readShort(), // endPC
@@ -2370,8 +2368,8 @@ class ClassFile implements Annotatable {
                 );
             }
 
-            AttributeInfo[] attributes = new AttributeInfo[dis.readShort()];       // attributes_count
-            for (int i = 0; i < attributes.length; ++i) {                          // attributes
+            AttributeInfo[] attributes = new AttributeInfo[dis.readUnsignedShort()];       // attributes_count
+            for (int i = 0; i < attributes.length; ++i) {                                  // attributes
                 attributes[i] = classFile.loadAttribute(dis);
             }
 
@@ -2732,12 +2730,8 @@ class ClassFile implements Annotatable {
         case '@': return AnnotationsAttribute.loadAnnotation(dis);
 
         case '[':
-            short numValues = dis.readShort();                          // num_values
-
-            ClassFile.ElementValue[] values = new ClassFile.ElementValue[numValues & 0xffff];
-            for (int i = 0; i < numValues; i++) {
-                values[i] = ClassFile.loadElementValue(dis); // values[num_values]
-            }
+            ClassFile.ElementValue[] values = new ClassFile.ElementValue[dis.readUnsignedShort()]; // num_values
+            for (int i = 0; i < values.length; i++) values[i] = ClassFile.loadElementValue(dis);   // values[num_values]
             return new ArrayElementValue(values);
 
         default:
