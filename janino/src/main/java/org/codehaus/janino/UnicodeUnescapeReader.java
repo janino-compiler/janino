@@ -90,7 +90,7 @@ class UnicodeUnescapeReader extends FilterReader {
         ca[0] = (char) c;
         if (this.in.read(ca, 1, 3) != 3) throw new UnicodeUnescapeException("Incomplete escape sequence");
         try {
-            return 0xffff & Integer.parseInt(new String(ca), 16);
+            return Integer.parseInt(new String(ca), 16);
         } catch (NumberFormatException ex) {
             throw new UnicodeUnescapeException("Invalid escape sequence \"\\u" + new String(ca) + "\"", ex);
         }
