@@ -8,7 +8,7 @@
     <groupId>org.codehaus.janino</groupId>
     <artifactId>janino-parent</artifactId>
     <relativePath>../janino-parent</relativePath>
-    <version>3.0.10-SNAPSHOT</version>
+    <version>3.0.10</version>
   </parent>
 
   <artifactId>commons-compiler-jdk</artifactId>
