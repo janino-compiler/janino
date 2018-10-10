@@ -34,6 +34,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -83,7 +84,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * The name of the generated method(s), if no custom method name is configured with {@link
      * #setMethodNames(String[])}.
      * <p>
-     *   The {@code "*"} in this string is replaced with the method index, starting at 0.
+     *   The {@code '*'} in this string is replaced with the method index, starting at 0.
      * </p>
      */
     public static final String DEFAULT_METHOD_NAME = "eval*";
@@ -521,8 +522,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      *   If and only if the number of scanners is one, then that single script may contain leading IMPORT directives.
      * </p>
      *
-     * @throws IllegalStateException Any of the preceding {@code set...()} had an array size different from that
-     *                               of {@code scanners}
+     * @throws IllegalStateException Any of the preceding {@code set...()} had an array size different from that of
+     *                               {@code scanners}
      */
     public final void
     cook(Scanner[] scanners) throws CompileException, IOException {
@@ -600,6 +601,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     /**
      * Compiles the given <var>compilationUnit</var>, defines it into a {@link ClassLoader}, loads the generated class,
      * gets the script methods from that class, and makes them available through {@link #getMethod(int)}.
+     *
+     * @param count The number of scripts that are declared in the compilation unit
      */
     protected void
     cook2(int count, CompilationUnit compilationUnit) throws CompileException {
@@ -607,101 +610,126 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         // Compile and load the compilation unit.
         Class<?> c = this.compileToClass(compilationUnit);
 
-        // SUPPRESS CHECKSTYLE LineLength:2
-        final String[]     mns = ScriptEvaluator.array(this.optionalMethodNames,    count, ScriptEvaluator.DEFAULT_METHOD_NAME);
-        final Class<?>[][] pts = ScriptEvaluator.array(this.optionalParameterTypes, count, new Class[0], Class[].class);
+        final String[]
+        methodNames = ScriptEvaluator.array(this.optionalMethodNames, count, ScriptEvaluator.DEFAULT_METHOD_NAME);
 
-        // Find the script methods by name.
-        Method[] methods = new Method[count];
-        if (count <= 10) {
-            for (int i = 0; i < count; ++i) {
+        final Class<?>[][]
+        parameterTypes = ScriptEvaluator.array(this.optionalParameterTypes, count, new Class[0], Class[].class);
 
-                String     methodName     = mns[i];
-                Class<?>[] parameterTypes = pts[i];
-
-                try {
-                    methods[i] = c.getDeclaredMethod(methodName, parameterTypes);
-                } catch (NoSuchMethodException ex) {
-                    throw new InternalCompilerException((
-                        "SNO: Loaded class does not declare method \""
-                        + methodName
-                        + "\""
-                    ), ex);
-                }
-            }
-        } else
+        // Find the script methods by name and parameter types.
+        Method[] methods;
         {
-            class MethodWrapper {
+            methods = new Method[count];
 
-                private final String     name;
-                private final Class<?>[] parameterTypes;
+            // "Class.getDeclaredMethod(name, parameterTypes)" is slow when the class declares MANY methods (say, in
+            // the thousands). So let's use "Class.getDeclaredMethods()" instead.
 
-                MethodWrapper(String name, Class<?>[] parameterTypes) {
-                    this.name           = name;
-                    this.parameterTypes = parameterTypes;
-                }
-
-                @Override public boolean
-                equals(@Nullable Object o) {
-                    if (!(o instanceof MethodWrapper)) return false;
-                    MethodWrapper that = (MethodWrapper) o;
-                    if (!this.name.equals(that.name)) return false;
-                    int cnt = this.parameterTypes.length;
-                    if (cnt != that.parameterTypes.length) return false;
-                    for (int i = 0; i < cnt; ++i) {
-                        if (!this.parameterTypes[i].equals(that.parameterTypes[i])) return false;
-                    }
-                    return true;
-                }
-
-                @Override public int
-                hashCode() {
-                    int hc = this.name.hashCode();
-                    for (Class<?> parameterType : this.parameterTypes) hc ^= parameterType.hashCode();
-                    return hc;
+            // Create a (temporyr) mapping of method key to method index.
+            Map<Object /*methodKey*/, Integer /*methodIndex*/> dms = new HashMap<Object, Integer>(2 * count);
+            for (int i = 0; i < count; ++i) {
+                Integer prev = dms.put(ScriptEvaluator.methodKey(methodNames[i], parameterTypes[i]), i);
+                if (prev != null) {
+                    throw new CompileException((
+                        "Duplicate method name and parameter types configured: "
+                        + methodNames[i]
+                        + " at indexes "
+                        + prev
+                        + " and "
+                        + i
+                        + "; see \"setMethodNames(String[])\" and \"setParameters(Class[][])\""
+                    ), null);
                 }
             }
-            Method[]                   ma  = c.getDeclaredMethods();
-            Map<MethodWrapper, Method> dms = new HashMap<MethodWrapper, Method>(2 * count);
-            for (Method m : ma) dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
+
+            // Now invoke "Class.getDeclaredMethods()" and filter "our" methods from the result.
+            for (Method m : c.getDeclaredMethods()) {
+
+                Object key = ScriptEvaluator.methodKey(m.getName(), m.getParameterTypes());
+                Integer idx = dms.get(key);
+                if (idx == null) continue;
+
+                assert methods[idx] == null;
+                methods[idx] = m;
+            }
+
+            // Verify that the class declared "all our" methods.
             for (int i = 0; i < count; ++i) {
-
-                String     methodName     = mns[i];
-                Class<?>[] parameterTypes = pts[i];
-
-                Method m = (Method) dms.get(new MethodWrapper(methodName, parameterTypes));
-                if (m == null) {
+                if (methods[i] == null) {
                     throw new InternalCompilerException(
-                        "SNO: Loaded class does not declare method \""
-                        + methodName
-                        + "\""
+                        "SNO: Generated class does not declare method \""
+                        + methodNames[i]
+                        + "\" (index "
+                        + i
+                        + ")"
                     );
                 }
-                methods[i] = m;
             }
         }
 
         this.result = methods;
     }
 
-    private static boolean[]
-    array(@Nullable boolean[] subject, int count, boolean defaultValue) {
+    private static Object
+    methodKey(String methodName, Class<?>[] parameterTypes) {
+        return Arrays.asList(ScriptEvaluator.cat(methodName, parameterTypes, Object.class));
+    }
 
-        boolean[] result;
+    /**
+     * @return A copy of the <var>followingElements</var>, prepended with the <var>firstElement</var>
+     */
+    private static <T> T[]
+    cat(T firstElement, T[] followingElements, Class<T> componentType) {
 
-        if (subject == null) {
-            result = new boolean[count];
-            if (defaultValue) {
-                for (int i = 0; i < count; i++) result[i] = true;
-            }
-        } else {
-            if (subject.length != count) throw new IllegalStateException();
-            result = subject;
-        }
+        @SuppressWarnings("unchecked") T[]
+        result = (T[]) Array.newInstance(componentType, 1 + followingElements.length);
+
+        result[0] = firstElement;
+        System.arraycopy(followingElements, 0, result, 1, followingElements.length);
 
         return result;
     }
 
+    /**
+     * Returns an array of <var>count</var> {@code boolean}s.
+     * <p>
+     *   Iff <var>subject</var> is not {@code null}, then the <var>subject</var> is returned.
+     * </p>
+     * <p>
+     *   Otherwise, a new array is allocated, and all elements are initialized to <var>defaultValue</var>.
+     * </p>
+     *
+     * @throws IllegalArgumentException <var>subject</var> {@code != null &&} <var>subject</var>{@code .length !=}
+     *                                  <var>count</var>
+     */
+    private static boolean[]
+    array(@Nullable boolean[] subject, int count, boolean defaultValue) {
+
+        if (subject != null) {
+            if (subject.length != count) throw new IllegalArgumentException();
+            return subject;
+        }
+
+        boolean[] result = new boolean[count];
+        if (defaultValue) Arrays.fill(result, true);
+
+        return result;
+    }
+
+    /**
+     * Returns an array of <var>count</var> strings.
+     * <p>
+     *   Iff <var>subject</var> is {@code null}, then a new array is allocated, otherwise the <var>subject</var>
+     *   is cloned.
+     * </p>
+     * <p>
+     *   Then, the {@code null} entries in the array are replaced with the <var>defaultValue</var>, with all
+     *   occurrences of {@code '*'} replaced with {@code 0} ... <var>count</var> {@code - 1}
+     *   (the non-{@code null} entries are left as they are).
+     * </p>
+     *
+     * @throws IllegalArgumentException <var>subject</var> {@code != null &&} <var>subject</var>{@code .length !=}
+     *                                  <var>count</var>
+     */
     private static String[]
     array(@Nullable String[] subject, int count, @Nullable String defaultValue) {
 
@@ -710,8 +738,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         if (subject == null) {
             result = new String[count];
         } else {
-            if (subject.length != count) throw new IllegalStateException();
-            result = subject;
+            if (subject.length != count) throw new IllegalArgumentException();
+            result = subject.clone();
         }
 
         if (defaultValue != null) {
@@ -723,6 +751,20 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         return result;
     }
 
+    /**
+     * Returns an array of <var>count</var> objects of type <var>componentType</var>.
+     * <p>
+     *   Iff <var>subject</var> is {@code null}, then a new array is allocated, otherwise the <var>subject</var>
+     *   is cloned.
+     * </p>
+     * <p>
+     *   Then, the {@code null} entries in the array are replaced with the <var>defaultValue</var>
+     *   (the non-{@code null} entries are left as they are).
+     * </p>
+     *
+     * @throws IllegalArgumentException <var>subject</var> {@code != null &&} <var>subject</var>{@code .length !=}
+     *                                  <var>count</var>
+     */
     @SuppressWarnings("unchecked") private static <T> T[]
     array(@Nullable T[] subject, int count, @Nullable T defaultValue, Class<T> componentType) {
 
@@ -731,7 +773,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         if (subject == null) {
             result = (T[]) Array.newInstance(componentType, count);
         } else {
-            if (subject.length != count) throw new IllegalStateException();
+            if (subject.length != count) throw new IllegalArgumentException();
             result = subject.clone();
         }
 
