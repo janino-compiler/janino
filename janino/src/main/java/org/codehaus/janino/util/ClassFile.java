@@ -306,10 +306,7 @@ class ClassFile implements Annotatable {
      * @return The fully qualified name of this class, e.g. "pkg1.pkg2.Outer$Inner"
      */
     public String
-    getThisClassName() {
-        ConstantClassInfo cci = (ConstantClassInfo) this.getConstantPoolInfo(this.thisClass);
-        return cci.getName(this).replace('/', '.');
-    }
+    getThisClassName() { return this.getConstantClassInfo(this.thisClass).getName(this).replace('/', '.'); }
 
     /**
      * Sets the major and minor class file version numbers (JVMS 4.1). The class file version defaults to the JDK 1.1
@@ -611,7 +608,61 @@ class ClassFile implements Annotatable {
     getConstantPoolInfo(short index) { return (ConstantPoolInfo) this.constantPool.get(0xffff & index); }
 
     /**
-     * @return The (read-only) constant value pool entry indexed by <var>index</var>
+     * @return The (read-only) constant class info indexed by <var>index</var>
+     */
+    public ConstantClassInfo
+    getConstantClassInfo(short index) { return (ConstantClassInfo) this.getConstantPoolInfo(index); }
+
+    /**
+     * @return The (read-only) constant fieldref info indexed by <var>index</var>
+     */
+    public ConstantFieldrefInfo
+    getConstantFieldrefInfo(short index) { return (ConstantFieldrefInfo) this.getConstantPoolInfo(index); }
+
+    /**
+     * @return The (read-only) constant interface methodref info indexed by <var>index</var>
+     */
+    public ConstantInterfaceMethodrefInfo
+    getConstantInterfaceMethodrefInfo(short index) { return (ConstantInterfaceMethodrefInfo) this.getConstantPoolInfo(index); }
+
+    /**
+     * @return The (read-only) constant invoke dynamic info indexed by <var>index</var>
+     */
+    public ConstantInvokeDynamicInfo
+    getConstantInvokeDynamicInfo(short index) { return (ConstantInvokeDynamicInfo) this.getConstantPoolInfo(index); }
+
+    /**
+     * @return The (read-only) constant method handle info indexed by <var>index</var>
+     */
+    public ConstantMethodHandleInfo
+    getConstantMethodHandleInfo(short index) { return (ConstantMethodHandleInfo) this.getConstantPoolInfo(index); }
+
+    /**
+     * @return The (read-only) constant methodref info indexed by <var>index</var>
+     */
+    public ConstantMethodrefInfo
+    getConstantMethodrefInfo(short index) { return (ConstantMethodrefInfo) this.getConstantPoolInfo(index); }
+
+    /**
+     * @return The (read-only) constant method type info indexed by <var>index</var>
+     */
+    public ConstantMethodTypeInfo
+    getConstantMethodTypeInfo(short index) { return (ConstantMethodTypeInfo) this.getConstantPoolInfo(index); }
+
+    /**
+     * @return The (read-only) constant name and type info indexed by <var>index</var>
+     */
+    public ConstantNameAndTypeInfo
+    getConstantNameAndTypeInfo(short index) { return (ConstantNameAndTypeInfo) this.getConstantPoolInfo(index); }
+
+    /**
+     * @return The (read-only) constant utf8 info indexed by <var>index</var>
+     */
+    public ConstantUtf8Info
+    getConstantUtf8Info(short index) { return (ConstantUtf8Info) this.getConstantPoolInfo(index); }
+
+    /**
+     * @return The (read-only) constant value pool info indexed by <var>index</var>
      */
     public ConstantValuePoolInfo
     getConstantValuePoolInfo(short index) { return (ConstantValuePoolInfo) this.getConstantPoolInfo(index); }
@@ -623,14 +674,13 @@ class ClassFile implements Annotatable {
     getConstantPoolSize() { return this.constantPool.size(); }
 
     /**
+     * Shorthand for {@code getConstantUtf8Info(index).s}.
+     *
      * @param index Index to a {@code CONSTANT_Utf8_info} in the constant pool
      * @return      The string represented by the structure
      */
     public String
-    getConstantUtf8(short index) {
-        ConstantUtf8Info cui = (ConstantUtf8Info) this.getConstantPoolInfo(index);
-        return cui.s;
-    }
+    getConstantUtf8(short index) { return this.getConstantUtf8Info(index).s; }
 
     /**
      * u4 length, u1[length]
@@ -1061,7 +1111,7 @@ class ClassFile implements Annotatable {
          */
         public ConstantNameAndTypeInfo
         getNameAndType(ClassFile classFile) {
-            return (ClassFile.ConstantNameAndTypeInfo) classFile.getConstantPoolInfo(this.nameAndTypeIndex);
+            return classFile.getConstantNameAndTypeInfo(this.nameAndTypeIndex);
         }
 
         // Implement ConstantPoolInfo.
@@ -1108,9 +1158,7 @@ class ClassFile implements Annotatable {
          * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantMethodrefInfo}
          */
         public ConstantNameAndTypeInfo
-        getNameAndType(ClassFile classFile) {
-            return (ClassFile.ConstantNameAndTypeInfo) classFile.getConstantPoolInfo(this.nameAndTypeIndex);
-        }
+        getNameAndType(ClassFile classFile) { return classFile.getConstantNameAndTypeInfo(this.nameAndTypeIndex); }
 
         // Implement ConstantPoolInfo.
 
@@ -1155,9 +1203,7 @@ class ClassFile implements Annotatable {
          * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantInterfaceMethodrefInfo}
          */
         public ConstantNameAndTypeInfo
-        getNameAndType(ClassFile classFile) {
-            return (ClassFile.ConstantNameAndTypeInfo) classFile.getConstantPoolInfo(this.nameAndTypeIndex);
-        }
+        getNameAndType(ClassFile classFile) { return classFile.getConstantNameAndTypeInfo(this.nameAndTypeIndex); }
 
         // Implement ConstantPoolInfo.
 
@@ -1367,12 +1413,16 @@ class ClassFile implements Annotatable {
         }
 
         /**
+         * @return The name of the field or method
+         */
+        public String
+        getName(ClassFile classFile) { return classFile.getConstantUtf8(this.nameIndex); }
+
+        /**
          * @return The (field or method) descriptor related to the name
          */
         public String
-        getDescriptor(ClassFile classFile) {
-            return classFile.getConstantUtf8(this.descriptorIndex);
-        }
+        getDescriptor(ClassFile classFile) { return classFile.getConstantUtf8(this.descriptorIndex); }
 
         // Implement ConstantPoolInfo.
 
@@ -1894,9 +1944,7 @@ class ClassFile implements Annotatable {
          * @return The constant value contained in this attribute
          */
         public ConstantValuePoolInfo
-        getConstantValue(ClassFile classFile) {
-            return (ConstantValuePoolInfo) classFile.getConstantPoolInfo(this.constantValueIndex);
-        }
+        getConstantValue(ClassFile classFile) { return classFile.getConstantValuePoolInfo(this.constantValueIndex); }
 
         private static AttributeInfo
         loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
@@ -1933,9 +1981,7 @@ class ClassFile implements Annotatable {
         public ConstantClassInfo[]
         getExceptions(ClassFile classFile) {
             ConstantClassInfo[] es = new ConstantClassInfo[this.exceptionIndexes.length];
-            for (int i = 0; i < es.length; i++) {
-                es[i] = (ConstantClassInfo) classFile.getConstantPoolInfo(this.exceptionIndexes[i]);
-            }
+            for (int i = 0; i < es.length; i++) es[i] = classFile.getConstantClassInfo(this.exceptionIndexes[i]);
             return es;
         }
 

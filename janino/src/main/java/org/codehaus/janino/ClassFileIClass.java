@@ -397,7 +397,7 @@ class ClassFileIClass extends IClass {
     resolveClass(short index) throws ClassNotFoundException {
         ClassFileIClass.LOGGER.entering(null, "resolveClass", index);
 
-        ConstantClassInfo cci = (ConstantClassInfo) this.classFile.getConstantPoolInfo(index);
+        ConstantClassInfo cci = this.classFile.getConstantClassInfo(index);
         return this.resolveClass(Descriptor.fromInternalForm(cci.getName(this.classFile)));
     }
 

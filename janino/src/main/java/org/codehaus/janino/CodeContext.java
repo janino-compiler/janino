@@ -800,13 +800,18 @@ class CodeContext {
 
     /**
      * Analyzes the descriptor of the Fieldref at index <var>idx</var> and return its size.
+     *
+     * @see Descriptor#size(String)
      */
     private int
     determineFieldSize(short idx) {
-        ClassFile.ConstantFieldrefInfo cfi = (
-            (ClassFile.ConstantFieldrefInfo) this.classFile.getConstantPoolInfo(idx)
+        return Descriptor.size(
+            this
+            .classFile
+            .getConstantFieldrefInfo(idx)
+            .getNameAndType(this.classFile)
+            .getDescriptor(this.classFile)
         );
-        return Descriptor.size(cfi.getNameAndType(this.classFile).getDescriptor(this.classFile));
     }
 
     /**
