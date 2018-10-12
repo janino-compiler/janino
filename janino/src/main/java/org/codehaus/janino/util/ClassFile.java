@@ -77,7 +77,7 @@ class ClassFile implements Annotatable {
     /**
      * Constructs a class with no fields and methods.
      * An application would typically add these through {@link ClassFile#addFieldInfo(short, String, String, Object)}
-     * and {@link ClassFile#addMethodInfo(short, String, String)} before saving it.
+     * and {@link ClassFile#addMethodInfo(short, String, MethodDescriptor)} before saving it.
      *
      * @param accessFlags as defined by {@link org.codehaus.janino.Mod}
      * @param thisClassFd the field descriptor for this class
@@ -1103,7 +1103,16 @@ class ClassFile implements Annotatable {
             this.classIndex       = classIndex;
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
-
+    
+    
+        /**
+         * @return The {@link ConstantClassInfo} of this {@link ConstantMethodrefInfo}
+         */
+        public ConstantClassInfo
+        getClassInfo(ClassFile classFile) {
+            return (ClassFile.ConstantClassInfo) classFile.getConstantPoolInfo(this.classIndex);
+        }
+        
         /**
          * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantMethodrefInfo}
          */
@@ -1365,7 +1374,15 @@ class ClassFile implements Annotatable {
             this.nameIndex       = nameIndex;
             this.descriptorIndex = descriptorIndex;
         }
-
+    
+        /**
+         * @return The name
+         */
+        public String
+        getName(ClassFile classFile) {
+            return classFile.getConstantUtf8(this.nameIndex);
+        }
+        
         /**
          * @return The (field or method) descriptor related to the name
          */
