@@ -116,10 +116,13 @@ interface IClassBodyEvaluator extends ISimpleCompiler {
      *         "java.io.*",                              // Type-import-on-demand
      *         "static java.util.Collections.EMPTY_MAP", // Single static import
      *         "static java.util.Collections.*",         // Static-import-on-demand
-     *     });
-     * </pre>
+     *     });</pre>
+     * <p>
+     *   Passing {@code null} as the argument is equivalent with {@code new String[0]}, i.e. <em>no</em> default
+     *   imports.
+     * </p>
      */
-    void setDefaultImports(String... optionalDefaultImports);
+    void setDefaultImports(@Nullable String... optionalDefaultImports);
 
     /**
      * Sets the name of the generated class. Defaults to {@link #DEFAULT_CLASS_NAME}. In most cases, there is no need
