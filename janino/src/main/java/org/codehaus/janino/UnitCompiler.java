@@ -5059,6 +5059,7 @@ class UnitCompiler {
     compileGet2(MethodInvocation mi) throws CompileException {
         IClass.IMethod iMethod = this.findIMethod(mi);
 
+        // Compute the objectref for an instance method.
         Atom ot = mi.optionalTarget;
         if (ot == null) {
 
@@ -5107,25 +5108,48 @@ class UnitCompiler {
         } else {
 
             // 6.5.7.2
-            boolean staticContext = this.isType(ot);
-            if (staticContext) {
-                this.getType(this.toTypeOrCompileException(ot));
-            } else
-            {
-                this.compileGetValue(this.toRvalueOrCompileException(ot));
-            }
-            if (iMethod.isStatic()) {
-                if (!staticContext) {
+            if (this.isType(ot)) {
 
-                    // JLS7 15.12.4.1.2.1
-                    this.pop(ot, this.getType(ot));
-                }
-            } else {
-                if (staticContext) {
+                // The target is a type; thus the method must be static.
+                // JLS9 15.12.4.1.2:
+                this.getType(this.toTypeOrCompileException(ot));
+                if (!iMethod.isStatic()) {
                     this.compileError(
                         "Instance method \"" + mi.methodName + "\" cannot be invoked in static context",
                         mi.getLocation()
                     );
+                }
+            } else
+            {
+
+                // The target is an rvalue.
+                Rvalue rot = this.toRvalueOrCompileException(ot);
+                if (iMethod.isStatic()) {
+
+                    // JLS9 15.12.4.1.3.1 and .4.1:
+                    if (
+                        rot instanceof ClassLiteral
+                        || rot instanceof AmbiguousName
+                        || rot instanceof Literal
+                        || rot instanceof LocalVariableAccess
+                        || rot instanceof ParameterAccess
+                        || rot instanceof SimpleConstant
+                        || rot instanceof SuperclassFieldAccessExpression
+                        || rot instanceof ThisReference
+                    ) {
+
+                        // These rvalues are guaranteed to have no side effects, so we can save the code to evaluate
+                        // them and then discard the result.
+                        ;
+                    } else {
+
+                        // Evaluate the target expression and then discard the result.
+                        this.pop(ot, this.compileGetValue(rot));
+                    }
+                } else {
+
+                    // JLS9 15.12.4.1.3.2 and .4.2
+                    this.compileGetValue(rot);
                 }
             }
         }
@@ -12112,7 +12136,7 @@ class UnitCompiler {
      * CompileException}, but it may as well decide to return normally. Consequently, the calling code must be prepared
      * that {@link #compileError(String, Location)} returns normally, and must attempt to continue compiling.
      *
-     * @param message The message to report
+     * @param message          The message to report
      * @param optionalLocation The location to report
      */
     private void
