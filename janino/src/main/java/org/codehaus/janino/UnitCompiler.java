@@ -5127,19 +5127,10 @@ class UnitCompiler {
                 if (iMethod.isStatic()) {
 
                     // JLS9 15.12.4.1.3.1 and .4.1:
-                    if (
-                        rot instanceof ClassLiteral
-                        || rot instanceof AmbiguousName
-                        || rot instanceof Literal
-                        || rot instanceof LocalVariableAccess
-                        || rot instanceof ParameterAccess
-                        || rot instanceof SimpleConstant
-                        || rot instanceof SuperclassFieldAccessExpression
-                        || rot instanceof ThisReference
-                    ) {
+                    if (!UnitCompiler.mayHaveSideEffects(rot)) {
 
-                        // These rvalues are guaranteed to have no side effects, so we can save the code to evaluate
-                        // them and then discard the result.
+                        // The rvalue is guaranteed to have no side effects, so we can save the code to evaluate it
+                        // and then discard the result.
                         ;
                     } else {
 
@@ -5221,6 +5212,74 @@ class UnitCompiler {
         }
         return iMethod.getReturnType();
     }
+
+    private static boolean
+    mayHaveSideEffects(Rvalue rot) {
+        Boolean result = (Boolean) rot.accept(UnitCompiler.MAY_HAVE_SIDE_EFFECTS_VISITOR);
+        assert result != null;
+        return result;
+    }
+
+    /*@SuppressWarnings("null")*/ private static final Visitor.RvalueVisitor<Boolean, RuntimeException>
+    MAY_HAVE_SIDE_EFFECTS_VISITOR = new Visitor.RvalueVisitor<Boolean, RuntimeException>() {
+
+        final Visitor.LvalueVisitor<Boolean, RuntimeException>
+        lvalueVisitor = new Visitor.LvalueVisitor<Boolean, RuntimeException>() {
+
+            @Override @Nullable public Boolean visitAmbiguousName(AmbiguousName an)                                        { return false; }
+            @Override @Nullable public Boolean visitArrayAccessExpression(ArrayAccessExpression aae)                       { return UnitCompiler.mayHaveSideEffects(aae.lhs) || UnitCompiler.mayHaveSideEffects(aae.index); }
+            @Override @Nullable public Boolean visitFieldAccess(FieldAccess fa)                                            { return false; }
+            @Override @Nullable public Boolean visitFieldAccessExpression(FieldAccessExpression fae)                       { return false; }
+            @Override @Nullable public Boolean visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return false; }
+            @Override @Nullable public Boolean visitLocalVariableAccess(LocalVariableAccess lva)                           { return false; }
+            @Override @Nullable public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    { return UnitCompiler.mayHaveSideEffects(pe.value); }
+        };
+
+        @Override @Nullable public Boolean visitLvalue(Lvalue lv)                                          { return (Boolean) lv.accept(this.lvalueVisitor); }
+        @Override @Nullable public Boolean visitArrayLength(ArrayLength al)                                { return UnitCompiler.mayHaveSideEffects(al.lhs); }
+        @Override @Nullable public Boolean visitAssignment(Assignment a)                                   { return true; }
+        @Override @Nullable public Boolean visitUnaryOperation(UnaryOperation uo)                          { return UnitCompiler.mayHaveSideEffects(uo.operand); }
+        @Override @Nullable public Boolean visitBinaryOperation(BinaryOperation bo)                        { return UnitCompiler.mayHaveSideEffects(bo.lhs) || UnitCompiler.mayHaveSideEffects(bo.rhs); }
+        @Override @Nullable public Boolean visitCast(Cast c)                                               { return UnitCompiler.mayHaveSideEffects(c.value); }
+        @Override @Nullable public Boolean visitClassLiteral(ClassLiteral cl)                              { return false; }
+        @Override @Nullable public Boolean visitConditionalExpression(ConditionalExpression ce)            { return UnitCompiler.mayHaveSideEffects(ce.lhs) || UnitCompiler.mayHaveSideEffects(ce.mhs) || UnitCompiler.mayHaveSideEffects(ce.rhs); }
+        @Override @Nullable public Boolean visitCrement(Crement c)                                         { return true; }
+        @Override @Nullable public Boolean visitInstanceof(Instanceof io)                                  { return false; }
+        @Override @Nullable public Boolean visitMethodInvocation(MethodInvocation mi)                      { return true; }
+        @Override @Nullable public Boolean visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) { return true; }
+        @Override @Nullable public Boolean visitIntegerLiteral(IntegerLiteral il)                          { return false; }
+        @Override @Nullable public Boolean visitFloatingPointLiteral(FloatingPointLiteral fpl)             { return false; }
+        @Override @Nullable public Boolean visitBooleanLiteral(BooleanLiteral bl)                          { return false; }
+        @Override @Nullable public Boolean visitCharacterLiteral(CharacterLiteral cl)                      { return false; }
+        @Override @Nullable public Boolean visitStringLiteral(StringLiteral sl)                            { return false; }
+        @Override @Nullable public Boolean visitNullLiteral(NullLiteral nl)                                { return false; }
+        @Override @Nullable public Boolean visitSimpleConstant(SimpleConstant sl)                          { return false; }
+        @Override @Nullable public Boolean visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  { return true; }
+        @Override @Nullable public Boolean visitNewArray(NewArray na)                                      { for (Rvalue de : na.dimExprs) { if (UnitCompiler.mayHaveSideEffects(de)) return true; } return false; }
+        @Override @Nullable public Boolean visitNewInitializedArray(NewInitializedArray nia)               { return this.mayHaveSideEffects(nia.arrayInitializer); }
+        @Override @Nullable public Boolean visitNewClassInstance(NewClassInstance nci)                     { return true; }
+        @Override @Nullable public Boolean visitParameterAccess(ParameterAccess pa)                        { return false; }
+        @Override @Nullable public Boolean visitQualifiedThisReference(QualifiedThisReference qtr)         { return false; }
+        @Override @Nullable public Boolean visitThisReference(ThisReference tr)                            { return false; }
+
+        private boolean
+        mayHaveSideEffects(ArrayInitializer arrayInitializer) {
+
+            for (ArrayInitializerOrRvalue aiorv : arrayInitializer.values) {
+                if (aiorv instanceof Rvalue) {
+                    if (UnitCompiler.mayHaveSideEffects((Rvalue) aiorv)) return true;
+                } else
+                if (aiorv instanceof ArrayInitializer) {
+                    if (this.mayHaveSideEffects((ArrayInitializer) aiorv)) return true;
+                } else
+                {
+                    throw new AssertionError(aiorv);
+                }
+            }
+
+            return false;
+        }
+    };
 
     private IClass
     compileGet2(SuperclassMethodInvocation scmi) throws CompileException {
