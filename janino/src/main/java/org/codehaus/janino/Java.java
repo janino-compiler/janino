@@ -3227,7 +3227,7 @@ class Java {
         toString() {
             return (
                 "try ... "
-                + this.catchClauses.size()
+                + (this.catchClauses == null ? "???" : Integer.toString(this.catchClauses.size()))
                 + (this.finallY == null ? " catches" : " catches ... finally")
             );
         }
@@ -3329,7 +3329,7 @@ class Java {
         }
 
         @Override public String
-        toString() { return "switch (" + this.condition + ") { (" + this.sbsgs.size() + " statement groups) }"; }
+        toString() { return "switch (" + this.condition + ") { (" + (this.sbsgs == null ? "???" : Integer.toString(this.sbsgs.size())) + " statement groups) }"; }
 
         /**
          * Representation of a "switch block statement group" as defined in JLS7 14.11.
