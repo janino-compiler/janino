@@ -2291,7 +2291,7 @@ class Java {
             FormalParameters                formalParameters,
             Type[]                          thrownExceptions,
             @Nullable ConstructorInvocation optionalConstructorInvocation,
-            List<BlockStatement>            statements
+            List<? extends BlockStatement>  statements
         ) {
             super(
                 location,                                    // location
@@ -2441,7 +2441,7 @@ class Java {
             return visitor.visitMethodDeclarator(this);
         }
 
-        @Nullable private final TypeParameter[] optionalTypeParameters;
+        @Nullable public final TypeParameter[] optionalTypeParameters;
 
         /**
          * The optional "default value" of the declared method (only methods of annotation types can have a default
@@ -5333,7 +5333,7 @@ class Java {
         @Nullable public final IClass arrayIClass;
 
         public
-        NewInitializedArray(Location location, ArrayType arrayType, ArrayInitializer arrayInitializer) {
+        NewInitializedArray(Location location, @Nullable ArrayType arrayType, ArrayInitializer arrayInitializer) {
             super(location);
             this.arrayType        = arrayType;
             this.arrayInitializer = arrayInitializer;
