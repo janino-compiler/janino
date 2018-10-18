@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
 import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayType;
@@ -61,6 +60,7 @@ import org.codehaus.janino.Java.MemberEnumDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
+import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.TryStatement;
@@ -114,8 +114,8 @@ class Unparser {
         }
 
         @Override @Nullable public Void
-        visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd) {
-            Unparser.this.unparseNamedClassDeclaration(apmcd);
+        visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd) {
+            Unparser.this.unparseNamedClassDeclaration(pmcd);
             return null;
         }
 

@@ -27,7 +27,7 @@
 package org.codehaus.janino;
 
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
+import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 
 /**
  * The basis for the "visitor" pattern as described in "Gamma, Helm, Johnson, Vlissides: Design Patterns".
@@ -93,7 +93,7 @@ class Visitor {
         /**
          * Invoked by {@link Java.PackageMemberClassDeclaration#accept(Visitor.TypeDeclarationVisitor)}
          */
-        @Nullable R visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd) throws EX;
+        @Nullable R visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd) throws EX;
 
         /**
          * Invoked by {@link Java.MemberInterfaceDeclaration#accept(Visitor.TypeDeclarationVisitor)}

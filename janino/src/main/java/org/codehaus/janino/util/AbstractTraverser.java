@@ -108,6 +108,7 @@ import org.codehaus.janino.Java.NormalAnnotation;
 import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.Package;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
+import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
 import org.codehaus.janino.Java.PackageMemberInterfaceDeclaration;
 import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
@@ -210,7 +211,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         // SUPPRESS CHECKSTYLE LineLength:11
         @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                             throws EX { AbstractTraverser.this.delegate.traverseAnonymousClassDeclaration(acd);                return null; }
         @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd)                                     throws EX { AbstractTraverser.this.delegate.traverseLocalClassDeclaration(lcd);                    return null; }
-        @Override @Nullable public Void visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd)           throws EX { AbstractTraverser.this.delegate.traversePackageMemberClassDeclaration(apmcd);          return null; }
+        @Override @Nullable public Void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)                    throws EX { AbstractTraverser.this.delegate.traversePackageMemberClassDeclaration(pmcd);           return null; }
         @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid)            throws EX { AbstractTraverser.this.delegate.traversePackageMemberInterfaceDeclaration(pmid);       return null; }
         @Override @Nullable public Void visitEnumConstant(EnumConstant ec)                                                        throws EX { AbstractTraverser.this.delegate.traverseEnumConstant(ec);                              return null; }
         @Override @Nullable public Void visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed)                      throws EX { AbstractTraverser.this.delegate.traversePackageMemberEnumDeclaration(pmed);            return null; }

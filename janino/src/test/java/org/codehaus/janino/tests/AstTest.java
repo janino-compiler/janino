@@ -26,6 +26,7 @@
 
 package org.codehaus.janino.tests;
 
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -37,11 +38,13 @@ import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Block;
+import org.codehaus.janino.Java.BreakStatement;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Java.IntegerLiteral;
+import org.codehaus.janino.Java.LabeledStatement;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
@@ -52,8 +55,11 @@ import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Statement;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Mod;
+import org.codehaus.janino.Parser;
+import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.Unparser;
+import org.codehaus.janino.util.AbstractTraverser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -337,7 +343,6 @@ class AstTest {
         Assert.assertEquals("x = 1 * ((( 2 + 3 )));", sw.toString());
     }
 
-
     @Test public void
     testFullyQualifiedFieldRef() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
@@ -356,6 +361,42 @@ class AstTest {
                 "publicStaticDouble"
             )
         ));
+
+        AstTest.createMethod(clazz, body, AstTest.createDoubleType());
+
+        Object res = AstTest.compileAndEval(cu);
+        Assert.assertEquals(other_package2.ScopingRules.publicStaticDouble, res);
+    }
+
+    @Test public void
+    testManipulation() throws Exception {
+
+        Block mb = new Parser(new Scanner(null, new StringReader("{ int a = 7; return; }"))).parseMethodBody();
+
+        new AbstractTraverser<RuntimeException>() {
+
+            @Override
+            public void traverseLabeledStatement(LabeledStatement ls) throws RuntimeException {
+                if (ls.body instanceof ReturnStatement) ls.body = new BreakStatement(ls.body.getLocation(), "lbl");
+                super.traverseLabeledStatement(ls);
+            }
+        }.traverseBlock(mb);
+        CompilationUnit cu = new CompilationUnit("AstTests.java");
+
+        PackageMemberClassDeclaration clazz = AstTest.createClass(cu);
+
+        List<Java.Statement> body = new ArrayList<Statement>();
+        body.add(new Java.ReturnStatement(
+            AstTest.getLocation(),
+            new Java.FieldAccessExpression(
+                AstTest.getLocation(),
+                new Java.AmbiguousName(
+                    AstTest.getLocation(),
+                    new String[] { "other_package2", "ScopingRules" }
+                    ),
+                "publicStaticDouble"
+                )
+            ));
 
         AstTest.createMethod(clazz, body, AstTest.createDoubleType());
 

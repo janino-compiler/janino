@@ -408,7 +408,7 @@ class UnitCompiler {
             // SUPPRESS CHECKSTYLE LineLength:9
             @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                             throws CompileException { UnitCompiler.this.compile2(acd);                           return null; }
             @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd)                                     throws CompileException { UnitCompiler.this.compile2(lcd);                           return null; }
-            @Override @Nullable public Void visitPackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration apmcd)           throws CompileException { UnitCompiler.this.compile2(apmcd);                         return null; }
+            @Override @Nullable public Void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)                    throws CompileException { UnitCompiler.this.compile2(pmcd);                          return null; }
             @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)                           throws CompileException { UnitCompiler.this.compile2(mid);                           return null; }
             @Override @Nullable public Void visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid)            throws CompileException { UnitCompiler.this.compile2(pmid);                          return null; }
             @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd)                                   throws CompileException { UnitCompiler.this.compile2((InnerClassDeclaration) mcd);   return null; }
