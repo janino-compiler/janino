@@ -161,7 +161,7 @@ class Java {
          * Sets the package declaration of this compilation unit.
          */
         public void
-        setPackageDeclaration(PackageDeclaration packageDeclaration) {
+        setPackageDeclaration(@Nullable PackageDeclaration packageDeclaration) {
             this.optionalPackageDeclaration = packageDeclaration;
         }
 
@@ -2758,7 +2758,7 @@ class Java {
          * Adds a list of statements to the end of the block.
          */
         public void
-        addStatements(List<BlockStatement> statements) {
+        addStatements(List<? extends BlockStatement> statements) {
             this.statements.addAll(statements);
             for (BlockStatement bs : statements) bs.setEnclosingScope(this);
         }
@@ -5140,7 +5140,7 @@ class Java {
         /**
          * The resolved {@link #type}.
          */
-        @Nullable protected IClass iClass;
+        @Nullable public IClass iClass;
 
         public
         NewClassInstance(Location location, @Nullable Rvalue optionalQualification, IClass iClass, Rvalue[] arguments) {
@@ -5764,17 +5764,19 @@ class Java {
         @Nullable public final ReferenceType referenceType;
 
         public
-        Wildcard() {
-            this.bounds        = Wildcard.BOUNDS_NONE;
-            this.referenceType = null;
-        }
+        Wildcard() { this(Wildcard.BOUNDS_NONE, null); }
 
         public
-        Wildcard(int bounds, ReferenceType referenceType) {
-            assert bounds == Wildcard.BOUNDS_EXTENDS || bounds == Wildcard.BOUNDS_SUPER;
-            this.bounds = bounds;
-            assert referenceType != null;
-            this.referenceType = referenceType;
+        Wildcard(int bounds, @Nullable ReferenceType referenceType) {
+            if (referenceType == null) {
+                assert bounds == Wildcard.BOUNDS_NONE;
+                this.bounds = bounds;
+                this.referenceType = null;
+            } else {
+                assert bounds == Wildcard.BOUNDS_EXTENDS || bounds == Wildcard.BOUNDS_SUPER;
+                this.bounds = bounds;
+                this.referenceType = referenceType;
+            }
         }
 
         @Override @Nullable public final <R, EX extends Throwable> R

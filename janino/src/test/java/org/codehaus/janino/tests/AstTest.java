@@ -26,6 +26,10 @@
 
 package org.codehaus.janino.tests;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
@@ -34,11 +38,12 @@ import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Block;
-import org.codehaus.janino.Java.BreakStatement;
+import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FloatingPointLiteral;
@@ -59,7 +64,7 @@ import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.Unparser;
-import org.codehaus.janino.util.AbstractTraverser;
+import org.codehaus.janino.util.DeepCopier;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -369,38 +374,142 @@ class AstTest {
     }
 
     @Test public void
-    testManipulation() throws Exception {
+    testDeepCopier() throws Exception {
 
-        Block mb = new Parser(new Scanner(null, new StringReader("{ int a = 7; return; }"))).parseMethodBody();
+        for (File f : UnparserTest.findJaninoJavaFiles()) {
 
-        new AbstractTraverser<RuntimeException>() {
+            // Parse the compilation unit.
+            CompilationUnit cu1 = AstTest.parseCompilationUnit(f);
 
-            @Override
-            public void traverseLabeledStatement(LabeledStatement ls) throws RuntimeException {
-                if (ls.body instanceof ReturnStatement) ls.body = new BreakStatement(ls.body.getLocation(), "lbl");
-                super.traverseLabeledStatement(ls);
-            }
-        }.traverseBlock(mb);
-        CompilationUnit cu = new CompilationUnit("AstTests.java");
+            // Use the "DeepCopier" to copy it.
+            CompilationUnit cu2 = new DeepCopier().copyCompilationUnit(cu1);
 
-        PackageMemberClassDeclaration clazz = AstTest.createClass(cu);
+            // Assert that the copy is identical with the original.
+            Assert.assertEquals(f.getPath(), AstTest.unparse(cu1), AstTest.unparse(cu2));
+        }
+    }
 
-        List<Java.Statement> body = new ArrayList<Statement>();
-        body.add(new Java.ReturnStatement(
-            AstTest.getLocation(),
-            new Java.FieldAccessExpression(
-                AstTest.getLocation(),
-                new Java.AmbiguousName(
-                    AstTest.getLocation(),
-                    new String[] { "other_package2", "ScopingRules" }
-                    ),
-                "publicStaticDouble"
-                )
-            ));
+    private static CompilationUnit
+    parseCompilationUnit(File f) throws CompileException, IOException {
 
-        AstTest.createMethod(clazz, body, AstTest.createDoubleType());
+        Reader r = new FileReader(f);
+        try {
+            return AstTest.parseCompilationUnit(f.getPath(), r);
+        } finally {
+            try { r.close(); } catch (Throwable t) {}
+        }
+    }
 
-        Object res = AstTest.compileAndEval(cu);
-        Assert.assertEquals(other_package2.ScopingRules.publicStaticDouble, res);
+    private static CompilationUnit
+    parseCompilationUnit(@Nullable String optionalFileName, Reader in) throws CompileException, IOException {
+        return new Parser(new Scanner(optionalFileName, in)).parseCompilationUnit();
+    }
+
+    @Test public void
+    testMethodToLabeledStatement() throws Exception {
+        String text1 = (
+            ""
+            + "public void eval() {\n"
+            + "    if (in.isSet == 0 || in.end == in.start) {\n"
+            + "        out.isSet = 0;\n"
+            + "        return;\n"
+            + "    }\n"
+            + "    out.isSet = 1;\n"
+            + "    out.start = 0;\n"
+            + "    out.scale = scale.value;\n"
+            + "    out.precision = precision.value;\n"
+            + "\n"
+            + "    byte[] buf = new byte[in.end - in.start];\n"
+            + "\n"
+            + "    in.buffer.getBytes(in.start, buf, 0, in.end - in.start);\n"
+            + "\n"
+            + "    String s = new String(buf, com.google.common.base.Charsets.UTF_8);\n"
+            + "    java.math.BigDecimal bd = new java.math.BigDecimal(s);\n"
+            + "\n"
+            + "    org.apache.drill.exec.util.DecimalUtility.checkValueOverflow(bd, precision.value, scale.value);\n"
+            + "    bd = bd.setScale(scale.value, java.math.RoundingMode.HALF_UP);\n"
+            + "\n"
+            + "    byte[] bytes = bd.unscaledValue().toByteArray();\n"
+            + "    int len = bytes.length;\n"
+            + "\n"
+            + "    out.buffer = buffer.reallocIfNeeded(len);\n"
+            + "    out.buffer.setBytes(out.start, bytes);\n"
+            + "    out.end = out.start + len;\n"
+            + "}"
+        );
+
+        String text2 = (
+            ""
+            + "CastEmptyStringNullableVarCharToNullableVarDecimal_eval: {\n"
+            + "    if (in.isSet == 0 || in.end == in.start) {\n"
+            + "        out.isSet = 0;\n"
+            + "        break CastEmptyStringNullableVarCharToNullableVarDecimal_eval;\n"
+            + "    }\n"
+            + "    out.isSet = 1;\n"
+            + "    out.start = 0;\n"
+            + "    out.scale = scale.value;\n"
+            + "    out.precision = precision.value;\n"
+            + "\n"
+            + "    byte[] buf = new byte[in.end - in.start];\n"
+            + "\n"
+            + "    in.buffer.getBytes(in.start, buf, 0, in.end - in.start);\n"
+            + "\n"
+            + "    String s = new String(buf, com.google.common.base.Charsets.UTF_8);\n"
+            + "    java.math.BigDecimal bd = new java.math.BigDecimal(s);\n"
+            + "\n"
+            + "    org.apache.drill.exec.util.DecimalUtility.checkValueOverflow(bd, precision.value, scale.value);\n"
+            + "    bd = bd.setScale(scale.value, java.math.RoundingMode.HALF_UP);\n"
+            + "\n"
+            + "    byte[] bytes = bd.unscaledValue().toByteArray();\n"
+            + "    int len = bytes.length;\n"
+            + "\n"
+            + "    out.buffer = buffer.reallocIfNeeded(len);\n"
+            + "    out.buffer.setBytes(out.start, bytes);\n"
+            + "    out.end = out.start + len;\n"
+            + "}"
+        );
+
+        // Parse the method and get its body.
+        MethodDeclarator md1 = new Parser(new Scanner(null, new StringReader(text1))).parseMethodDeclaration();
+        List<? extends BlockStatement> ss = md1.optionalStatements;
+        assert ss != null;
+
+        // Now generate a "labeled statement".
+        LabeledStatement ls2;
+        {
+            final String label = "CastEmptyStringNullableVarCharToNullableVarDecimal_" + md1.name;
+            Block b = new Block(md1.getLocation());
+            b.addStatements(new DeepCopier() {
+
+                @Override public BlockStatement
+                copyReturnStatement(ReturnStatement subject) {
+                    return new Java.BreakStatement(subject.getLocation(), label);
+                }
+
+            }.copyBlockStatements(ss));
+            ls2 = new LabeledStatement(md1.getLocation(), label, b);
+        }
+
+        // Unparse the labeled statement.
+        String actual;
+        {
+            StringWriter sw = new StringWriter();
+            Unparser unparser = new Unparser(sw);
+            unparser.unparseBlockStatement(ls2);
+            unparser.close();
+            actual = sw.toString();
+        }
+
+        Assert.assertEquals(
+            UnparserTest.normalizeWhitespace(text2),
+            UnparserTest.normalizeWhitespace(actual)
+        );
+    }
+
+    public static String
+    unparse(CompilationUnit cu) {
+        StringWriter sw = new StringWriter();
+        Unparser.unparse(cu, sw);
+        return sw.toString();
     }
 }

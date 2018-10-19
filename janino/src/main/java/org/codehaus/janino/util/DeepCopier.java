@@ -33,7 +33,7 @@ import java.util.List;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.InternalCompilerException;
-import org.codehaus.janino.Java.AbstractTypeBodyDeclaration;
+import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Annotation;
@@ -50,9 +50,7 @@ import org.codehaus.janino.Java.BinaryOperation;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.BooleanLiteral;
-import org.codehaus.janino.Java.BooleanRvalue;
 import org.codehaus.janino.Java.BreakStatement;
-import org.codehaus.janino.Java.BreakableStatement;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CatchClause;
 import org.codehaus.janino.Java.CharacterLiteral;
@@ -62,7 +60,6 @@ import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.ConditionalExpression;
 import org.codehaus.janino.Java.ConstructorDeclarator;
 import org.codehaus.janino.Java.ConstructorInvocation;
-import org.codehaus.janino.Java.ContinuableStatement;
 import org.codehaus.janino.Java.ContinueStatement;
 import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.DoStatement;
@@ -85,8 +82,6 @@ import org.codehaus.janino.Java.IfStatement;
 import org.codehaus.janino.Java.Initializer;
 import org.codehaus.janino.Java.Instanceof;
 import org.codehaus.janino.Java.IntegerLiteral;
-import org.codehaus.janino.Java.InterfaceDeclaration;
-import org.codehaus.janino.Java.Invocation;
 import org.codehaus.janino.Java.LabeledStatement;
 import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
@@ -102,7 +97,6 @@ import org.codehaus.janino.Java.MemberTypeDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.Modifiers;
-import org.codehaus.janino.Java.NamedClassDeclaration;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
 import org.codehaus.janino.Java.NewClassInstance;
@@ -110,6 +104,7 @@ import org.codehaus.janino.Java.NewInitializedArray;
 import org.codehaus.janino.Java.NormalAnnotation;
 import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.Package;
+import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.PackageMemberEnumDeclaration;
@@ -138,32 +133,40 @@ import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
 import org.codehaus.janino.Java.TryStatement.LocalVariableDeclaratorResource;
+import org.codehaus.janino.Java.TryStatement.Resource;
 import org.codehaus.janino.Java.TryStatement.VariableAccessResource;
 import org.codehaus.janino.Java.Type;
+import org.codehaus.janino.Java.TypeArgument;
 import org.codehaus.janino.Java.TypeBodyDeclaration;
 import org.codehaus.janino.Java.TypeDeclaration;
 import org.codehaus.janino.Java.TypeParameter;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
+import org.codehaus.janino.Java.Wildcard;
 import org.codehaus.janino.Visitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
 import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
+import org.codehaus.janino.Visitor.TypeArgumentVisitor;
+import org.codehaus.janino.tests.AstTest;
 
 /**
  * Creates deep copies of AST elements.
+ * <p>
+ *   The main purpose of this class is to <em>extend</em> it, and <em>modify</em> the AST while it is being copied.
+ *   For an example, see {@link AstTest#testMethodToLabeledStatement()}.
+ * </p>
  */
-public
+@SuppressWarnings("unused") public
 class DeepCopier {
 
     public
     DeepCopier() {}
 
-    /**
-     * Invokes the "{@code copy*()}" method for the concrete {@link ImportDeclaration}.
-     */
+    // ------------------------- Visitors that implement the copying of abstract AST elements
+
     private final Visitor.ImportVisitor<ImportDeclaration, CompileException>
     importCopier = new Visitor.ImportVisitor<ImportDeclaration, CompileException>() {
 
@@ -174,9 +177,6 @@ class DeepCopier {
         @Override @Nullable public ImportDeclaration visitStaticImportOnDemandDeclaration(CompilationUnit.StaticImportOnDemandDeclaration siodd) throws CompileException { return DeepCopier.this.copyStaticImportOnDemandDeclaration(siodd); }
     };
 
-    /**
-     * Invokes the "{@code copy*()}" method for the concrete {@link TypeDeclaration}.
-     */
     private final Visitor.TypeDeclarationVisitor<TypeDeclaration, CompileException>
     typeDeclarationCopier = new Visitor.TypeDeclarationVisitor<TypeDeclaration, CompileException>() {
 
@@ -194,28 +194,11 @@ class DeepCopier {
         @Override @Nullable public TypeDeclaration visitMemberClassDeclaration(MemberClassDeclaration mcd)                                   throws CompileException { return DeepCopier.this.copyMemberClassDeclaration(mcd);                    }
     };
 
-    /**
-     * Invokes the "{@code copy*()}" method for the concrete {@link Rvalue}.
-     */
     private final Visitor.RvalueVisitor<Rvalue, CompileException>
     rvalueCopier = new Visitor.RvalueVisitor<Rvalue, CompileException>() {
 
-        @Override public Rvalue
-        visitLvalue(Lvalue lv) throws CompileException {
-            return DeepCopier.assertNotNull(lv.accept(new Visitor.LvalueVisitor<Lvalue, CompileException>() {
-
-                // SUPPRESS CHECKSTYLE LineLength:7
-                @Override @Nullable public Lvalue visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return DeepCopier.this.copyAmbiguousName(an);                       }
-                @Override @Nullable public Lvalue visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return DeepCopier.this.copyArrayAccessExpression(aae);              }
-                @Override @Nullable public Lvalue visitFieldAccess(FieldAccess fa)                                            throws CompileException { return DeepCopier.this.copyFieldAccess(fa);                         }
-                @Override @Nullable public Lvalue visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return DeepCopier.this.copyFieldAccessExpression(fae);              }
-                @Override @Nullable public Lvalue visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return DeepCopier.this.copySuperclassFieldAccessExpression(scfae);  }
-                @Override @Nullable public Lvalue visitLocalVariableAccess(LocalVariableAccess lva)                           throws CompileException { return DeepCopier.this.copyLocalVariableAccess(lva);                }
-                @Override @Nullable public Lvalue visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return DeepCopier.this.copyParenthesizedExpression(pe);             }
-            }));
-        }
-
-        // SUPPRESS CHECKSTYLE LineLength:25
+        // SUPPRESS CHECKSTYLE LineLength:26
+        @Override public Rvalue visitLvalue(Lvalue lv)                                          throws CompileException { return DeepCopier.this.copyLvalue(lv);                              }
         @Override public Rvalue visitArrayLength(ArrayLength al)                                throws CompileException { return DeepCopier.this.copyArrayLength(al);                         }
         @Override public Rvalue visitAssignment(Assignment a)                                   throws CompileException { return DeepCopier.this.copyAssignment(a);                           }
         @Override public Rvalue visitUnaryOperation(UnaryOperation uo)                          throws CompileException { return DeepCopier.this.copyUnaryOperation(uo);                      }
@@ -243,341 +226,449 @@ class DeepCopier {
         @Override public Rvalue visitThisReference(ThisReference tr)                            throws CompileException { return DeepCopier.this.copyThisReference(tr);                       }
     };
 
-    /**
-     * Invokes the "{@code copy*()}" method for the concrete {@link TypeBodyDeclaration}.
-     */
+    private final Visitor.LvalueVisitor<Lvalue, CompileException>
+    lvalueCopier = new Visitor.LvalueVisitor<Lvalue, CompileException>() {
+
+        // SUPPRESS CHECKSTYLE LineLength:7
+        @Override @Nullable public Lvalue visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return DeepCopier.this.copyAmbiguousName(an);                       }
+        @Override @Nullable public Lvalue visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return DeepCopier.this.copyArrayAccessExpression(aae);              }
+        @Override @Nullable public Lvalue visitFieldAccess(FieldAccess fa)                                            throws CompileException { return DeepCopier.this.copyFieldAccess(fa);                         }
+        @Override @Nullable public Lvalue visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return DeepCopier.this.copyFieldAccessExpression(fae);              }
+        @Override @Nullable public Lvalue visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return DeepCopier.this.copySuperclassFieldAccessExpression(scfae);  }
+        @Override @Nullable public Lvalue visitLocalVariableAccess(LocalVariableAccess lva)                           throws CompileException { return DeepCopier.this.copyLocalVariableAccess(lva);                }
+        @Override @Nullable public Lvalue visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return DeepCopier.this.copyParenthesizedExpression(pe);             }
+    };
+
     private final Visitor.TypeBodyDeclarationVisitor<TypeBodyDeclaration, CompileException>
     typeBodyDeclarationCopier = new Visitor.TypeBodyDeclarationVisitor<TypeBodyDeclaration, CompileException>() {
 
-        @Override public TypeBodyDeclaration
-        visitFunctionDeclarator(FunctionDeclarator fd) throws CompileException {
-            return DeepCopier.assertNotNull(fd.accept(new Visitor.FunctionDeclaratorVisitor<FunctionDeclarator, CompileException>() {
-
-                // SUPPRESS CHECKSTYLE LineLength:2
-                @Override public FunctionDeclarator visitConstructorDeclarator(ConstructorDeclarator cd) throws CompileException { return DeepCopier.this.copyConstructorDeclarator(cd);  }
-                @Override public FunctionDeclarator visitMethodDeclarator(MethodDeclarator md)           throws CompileException { return DeepCopier.this.copyMethodDeclarator(md);       }
-            }));
-        }
-
-        // SUPPRESS CHECKSTYLE LineLength:6
-        @Override public TypeBodyDeclaration visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws CompileException { return DeepCopier.this.copyMemberAnnotationTypeDeclaration(matd);  }
-        @Override public TypeBodyDeclaration visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)            throws CompileException { return DeepCopier.this.copyMemberInterfaceDeclaration(mid);        }
-        @Override public TypeBodyDeclaration visitMemberClassDeclaration(MemberClassDeclaration mcd)                    throws CompileException { return DeepCopier.this.copyMemberClassDeclaration(mcd);            }
-        @Override public TypeBodyDeclaration visitMemberEnumDeclaration(MemberEnumDeclaration med)                      throws CompileException { return DeepCopier.this.copyMemberEnumDeclaration(med);             }
-        @Override public TypeBodyDeclaration visitInitializer(Initializer i)                                            throws CompileException { return DeepCopier.this.copyInitializer(i);                         }
-        @Override public TypeBodyDeclaration visitFieldDeclaration(FieldDeclaration fd)                                 throws CompileException { return DeepCopier.this.copyFieldDeclaration(fd);                   }
+        // SUPPRESS CHECKSTYLE LineLength:7
+        @Override public TypeBodyDeclaration visitFunctionDeclarator(FunctionDeclarator fd)                             throws CompileException { return DeepCopier.this.copyFunctionDeclarator(fd);                }
+        @Override public TypeBodyDeclaration visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws CompileException { return DeepCopier.this.copyMemberAnnotationTypeDeclaration(matd); }
+        @Override public TypeBodyDeclaration visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)            throws CompileException { return DeepCopier.this.copyMemberInterfaceDeclaration(mid);       }
+        @Override public TypeBodyDeclaration visitMemberClassDeclaration(MemberClassDeclaration mcd)                    throws CompileException { return DeepCopier.this.copyMemberClassDeclaration(mcd);           }
+        @Override public TypeBodyDeclaration visitMemberEnumDeclaration(MemberEnumDeclaration med)                      throws CompileException { return DeepCopier.this.copyMemberEnumDeclaration(med);            }
+        @Override public TypeBodyDeclaration visitInitializer(Initializer i)                                            throws CompileException { return DeepCopier.this.copyInitializer(i);                        }
+        @Override public TypeBodyDeclaration visitFieldDeclaration(FieldDeclaration fd)                                 throws CompileException { return DeepCopier.this.copyFieldDeclaration(fd);                  }
     };
 
-    /**
-     * Invokes the "{@code copy*()}" method for the concrete {@link BlockStatement}.
-     */
+    private final Visitor.FunctionDeclaratorVisitor<FunctionDeclarator, CompileException>
+    functionDeclaratorCopier = new Visitor.FunctionDeclaratorVisitor<FunctionDeclarator, CompileException>() {
+
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override public FunctionDeclarator visitConstructorDeclarator(ConstructorDeclarator cd) throws CompileException { return DeepCopier.this.copyConstructorDeclarator(cd);  }
+        @Override public FunctionDeclarator visitMethodDeclarator(MethodDeclarator md)           throws CompileException { return DeepCopier.this.copyMethodDeclarator(md);       }
+    };
+
     private final Visitor.BlockStatementVisitor<BlockStatement, CompileException>
     blockStatementCopier = new BlockStatementVisitor<BlockStatement, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:23
-        @Override public BlockStatement visitInitializer(Initializer i)                                                throws CompileException { return DeepCopier.this.copyInitializer(i);                           }
-        @Override public BlockStatement visitFieldDeclaration(FieldDeclaration fd)                                     throws CompileException { return DeepCopier.this.copyFieldDeclaration(fd);                     }
-        @Override public BlockStatement visitLabeledStatement(LabeledStatement ls)                                     throws CompileException { return DeepCopier.this.copyLabeledStatement(ls);                     }
-        @Override public BlockStatement visitBlock(Block b)                                                            throws CompileException { return DeepCopier.this.copyBlock(b);                                 }
-        @Override public BlockStatement visitExpressionStatement(ExpressionStatement es)                               throws CompileException { return DeepCopier.this.copyExpressionStatement(es);                  }
-        @Override public BlockStatement visitIfStatement(IfStatement is)                                               throws CompileException { return DeepCopier.this.copyIfStatement(is);                          }
-        @Override public BlockStatement visitForStatement(ForStatement fs)                                             throws CompileException { return DeepCopier.this.copyForStatement(fs);                         }
-        @Override public BlockStatement visitForEachStatement(ForEachStatement fes)                                    throws CompileException { return DeepCopier.this.copyForEachStatement(fes);                    }
-        @Override public BlockStatement visitWhileStatement(WhileStatement ws)                                         throws CompileException { return DeepCopier.this.copyWhileStatement(ws);                       }
-        @Override public BlockStatement visitTryStatement(TryStatement ts)                                             throws CompileException { return DeepCopier.this.copyTryStatement(ts);                         }
-        @Override public BlockStatement visitSwitchStatement(SwitchStatement ss)                                       throws CompileException { return DeepCopier.this.copySwitchStatement(ss);                      }
-        @Override public BlockStatement visitSynchronizedStatement(SynchronizedStatement ss)                           throws CompileException { return DeepCopier.this.copySynchronizedStatement(ss);                }
-        @Override public BlockStatement visitDoStatement(DoStatement ds)                                               throws CompileException { return DeepCopier.this.copyDoStatement(ds);                          }
-        @Override public BlockStatement visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) throws CompileException { return DeepCopier.this.copyLocalVariableDeclarationStatement(lvds);  }
-        @Override public BlockStatement visitReturnStatement(ReturnStatement rs)                                       throws CompileException { return DeepCopier.this.copyReturnStatement(rs);                      }
-        @Override public BlockStatement visitThrowStatement(ThrowStatement ts)                                         throws CompileException { return DeepCopier.this.copyThrowStatement(ts);                       }
-        @Override public BlockStatement visitBreakStatement(BreakStatement bs)                                         throws CompileException { return DeepCopier.this.copyBreakStatement(bs);                       }
-        @Override public BlockStatement visitContinueStatement(ContinueStatement cs)                                   throws CompileException { return DeepCopier.this.copyContinueStatement(cs);                    }
-        @Override public BlockStatement visitAssertStatement(AssertStatement as)                                       throws CompileException { return DeepCopier.this.copyAssertStatement(as);                      }
-        @Override public BlockStatement visitEmptyStatement(EmptyStatement es)                                         throws CompileException { return DeepCopier.this.copyEmptyStatement(es);                       }
-        @Override public BlockStatement visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       throws CompileException { return DeepCopier.this.copyLocalClassDeclarationStatement(lcds);     }
-        @Override public BlockStatement visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        throws CompileException { return DeepCopier.this.copyAlternateConstructorInvocation(aci);      }
-        @Override public BlockStatement visitSuperConstructorInvocation(SuperConstructorInvocation sci)                throws CompileException { return DeepCopier.this.copySuperConstructorInvocation(sci);          }
+        @Override public BlockStatement visitInitializer(Initializer i)                                                throws CompileException { return DeepCopier.this.copyInitializer(i);                          }
+        @Override public BlockStatement visitFieldDeclaration(FieldDeclaration fd)                                     throws CompileException { return DeepCopier.this.copyFieldDeclaration(fd);                    }
+        @Override public BlockStatement visitLabeledStatement(LabeledStatement ls)                                     throws CompileException { return DeepCopier.this.copyLabeledStatement(ls);                    }
+        @Override public BlockStatement visitBlock(Block b)                                                            throws CompileException { return DeepCopier.this.copyBlock(b);                                }
+        @Override public BlockStatement visitExpressionStatement(ExpressionStatement es)                               throws CompileException { return DeepCopier.this.copyExpressionStatement(es);                 }
+        @Override public BlockStatement visitIfStatement(IfStatement is)                                               throws CompileException { return DeepCopier.this.copyIfStatement(is);                         }
+        @Override public BlockStatement visitForStatement(ForStatement fs)                                             throws CompileException { return DeepCopier.this.copyForStatement(fs);                        }
+        @Override public BlockStatement visitForEachStatement(ForEachStatement fes)                                    throws CompileException { return DeepCopier.this.copyForEachStatement(fes);                   }
+        @Override public BlockStatement visitWhileStatement(WhileStatement ws)                                         throws CompileException { return DeepCopier.this.copyWhileStatement(ws);                      }
+        @Override public BlockStatement visitTryStatement(TryStatement ts)                                             throws CompileException { return DeepCopier.this.copyTryStatement(ts);                        }
+        @Override public BlockStatement visitSwitchStatement(SwitchStatement ss)                                       throws CompileException { return DeepCopier.this.copySwitchStatement(ss);                     }
+        @Override public BlockStatement visitSynchronizedStatement(SynchronizedStatement ss)                           throws CompileException { return DeepCopier.this.copySynchronizedStatement(ss);               }
+        @Override public BlockStatement visitDoStatement(DoStatement ds)                                               throws CompileException { return DeepCopier.this.copyDoStatement(ds);                         }
+        @Override public BlockStatement visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) throws CompileException { return DeepCopier.this.copyLocalVariableDeclarationStatement(lvds); }
+        @Override public BlockStatement visitReturnStatement(ReturnStatement rs)                                       throws CompileException { return DeepCopier.this.copyReturnStatement(rs);                     }
+        @Override public BlockStatement visitThrowStatement(ThrowStatement ts)                                         throws CompileException { return DeepCopier.this.copyThrowStatement(ts);                      }
+        @Override public BlockStatement visitBreakStatement(BreakStatement bs)                                         throws CompileException { return DeepCopier.this.copyBreakStatement(bs);                      }
+        @Override public BlockStatement visitContinueStatement(ContinueStatement cs)                                   throws CompileException { return DeepCopier.this.copyContinueStatement(cs);                   }
+        @Override public BlockStatement visitAssertStatement(AssertStatement as)                                       throws CompileException { return DeepCopier.this.copyAssertStatement(as);                     }
+        @Override public BlockStatement visitEmptyStatement(EmptyStatement es)                                         throws CompileException { return DeepCopier.this.copyEmptyStatement(es);                      }
+        @Override public BlockStatement visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       throws CompileException { return DeepCopier.this.copyLocalClassDeclarationStatement(lcds);    }
+        @Override public BlockStatement visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        throws CompileException { return DeepCopier.this.copyAlternateConstructorInvocation(aci);     }
+        @Override public BlockStatement visitSuperConstructorInvocation(SuperConstructorInvocation sci)                throws CompileException { return DeepCopier.this.copySuperConstructorInvocation(sci);         }
     };
 
     private final Visitor.TypeVisitor<Type, CompileException>
     typeCopier = new Visitor.TypeVisitor<Type, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:5
-        @Override public Type visitArrayType(ArrayType at)                throws CompileException { return DeepCopier.this.copyArrayType(at);          }
-        @Override public Type visitPrimitiveType(PrimitiveType bt)        throws CompileException { return DeepCopier.this.copyPrimitiveType(bt);      }
-        @Override public Type visitReferenceType(ReferenceType rt)        throws CompileException { return DeepCopier.this.copyReferenceType(rt);      }
-        @Override public Type visitRvalueMemberType(RvalueMemberType rmt) throws CompileException { return DeepCopier.this.copyRvalueMemberType(rmt);  }
-        @Override public Type visitSimpleType(SimpleType st)              throws CompileException { return DeepCopier.this.copySimpleType(st);         }
+        @Override public Type visitArrayType(ArrayType at)                throws CompileException { return DeepCopier.this.copyArrayType(at);         }
+        @Override public Type visitPrimitiveType(PrimitiveType bt)        throws CompileException { return DeepCopier.this.copyPrimitiveType(bt);     }
+        @Override public Type visitReferenceType(ReferenceType rt)        throws CompileException { return DeepCopier.this.copyReferenceType(rt);     }
+        @Override public Type visitRvalueMemberType(RvalueMemberType rmt) throws CompileException { return DeepCopier.this.copyRvalueMemberType(rmt); }
+        @Override public Type visitSimpleType(SimpleType st)              throws CompileException { return DeepCopier.this.copySimpleType(st);        }
     };
 
-    /**
-     * Invokes the "{@code copy*()}" method for the concrete {@link Atom}.
-     */
     private final Visitor.AtomVisitor<Atom, CompileException>
     atomCopier = new Visitor.AtomVisitor<Atom, CompileException>() {
 
-        @Override public Atom
-        visitRvalue(Rvalue rv) throws CompileException {
-            return DeepCopier.assertNotNull(rv.accept(DeepCopier.this.rvalueCopier));
-        }
-
-        @Override public Atom
-        visitPackage(Package p) throws CompileException {
-            return DeepCopier.this.copyPackage(p);
-        }
-
-        @Override public Atom
-        visitType(Type t) throws CompileException {
-            return DeepCopier.this.copyType(t);
-        }
-
-        @Override public Atom
-        visitConstructorInvocation(ConstructorInvocation ci) throws CompileException {
-
-            return DeepCopier.assertNotNull(ci.accept(new Visitor.ConstructorInvocationVisitor<Atom, CompileException>() {
-
-                // SUPPRESS CHECKSTYLE LineLength:2
-                @Override public Atom visitAlternateConstructorInvocation(AlternateConstructorInvocation aci) throws CompileException { return DeepCopier.this.copyAlternateConstructorInvocation(aci);  }
-                @Override public Atom visitSuperConstructorInvocation(SuperConstructorInvocation sci)         throws CompileException { return DeepCopier.this.copySuperConstructorInvocation(sci);      }
-            }));
-        }
+        @Override public Atom visitRvalue(Rvalue rv)                               throws CompileException { return DeepCopier.this.copyRvalue(rv);                }
+        @Override public Atom visitPackage(Package p)                              throws CompileException { return DeepCopier.this.copyPackage(p);                }
+        @Override public Atom visitType(Type t)                                    throws CompileException { return DeepCopier.this.copyType(t);                   }
+        @Override public Atom visitConstructorInvocation(ConstructorInvocation ci) throws CompileException { return DeepCopier.this.copyConstructorInvocation(ci); }
     };
 
-    /**
-     * Invokes the "{@code copy*()}" method for the concrete {@link ElementValue}.
-     */
+    private final Visitor.ConstructorInvocationVisitor<ConstructorInvocation, CompileException>
+    constructorInvocationCopier = new Visitor.ConstructorInvocationVisitor<ConstructorInvocation, CompileException>() {
+
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override public ConstructorInvocation visitAlternateConstructorInvocation(AlternateConstructorInvocation aci) throws CompileException { return DeepCopier.this.copyAlternateConstructorInvocation(aci); }
+        @Override public ConstructorInvocation visitSuperConstructorInvocation(SuperConstructorInvocation sci)         throws CompileException { return DeepCopier.this.copySuperConstructorInvocation(sci);     }
+    };
+
     private final ElementValueVisitor<ElementValue, CompileException>
     elementValueCopier = new ElementValueVisitor<ElementValue, CompileException>() {
 
-        @Override public ElementValue
-        visitRvalue(Rvalue rv) throws CompileException {
-            return DeepCopier.assertNotNull(rv.accept(DeepCopier.this.rvalueCopier));
-        }
-
-        // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public ElementValue visitElementValueArrayInitializer(ElementValueArrayInitializer evai) throws CompileException { return DeepCopier.this.copyElementValueArrayInitializer(evai);  }
-        @Override public ElementValue visitAnnotation(Annotation a)                                        throws CompileException { return DeepCopier.this.copyAnnotation(a);                       }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override public ElementValue visitRvalue(Rvalue rv)                                               throws CompileException { return DeepCopier.this.copyRvalue(rv);                         }
+        @Override public ElementValue visitElementValueArrayInitializer(ElementValueArrayInitializer evai) throws CompileException { return DeepCopier.this.copyElementValueArrayInitializer(evai); }
+        @Override public ElementValue visitAnnotation(Annotation a)                                        throws CompileException { return DeepCopier.this.copyAnnotation(a);                      }
     };
 
-    /**
-     * Invokes the "{@code copy*()}" method for the concrete {@link Annotation}.
-     */
     private final AnnotationVisitor<Annotation, CompileException>
     annotationCopier = new AnnotationVisitor<Annotation, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:3
-        @Override public Annotation visitMarkerAnnotation(MarkerAnnotation ma)                throws CompileException { return DeepCopier.this.copyMarkerAnnotation(ma);          }
-        @Override public Annotation visitNormalAnnotation(NormalAnnotation na)                throws CompileException { return DeepCopier.this.copyNormalAnnotation(na);          }
-        @Override public Annotation visitSingleElementAnnotation(SingleElementAnnotation sea) throws CompileException { return DeepCopier.this.copySingleElementAnnotation(sea);  }
+        @Override public Annotation visitMarkerAnnotation(MarkerAnnotation ma)                throws CompileException { return DeepCopier.this.copyMarkerAnnotation(ma);         }
+        @Override public Annotation visitNormalAnnotation(NormalAnnotation na)                throws CompileException { return DeepCopier.this.copyNormalAnnotation(na);         }
+        @Override public Annotation visitSingleElementAnnotation(SingleElementAnnotation sea) throws CompileException { return DeepCopier.this.copySingleElementAnnotation(sea); }
     };
 
     private final TryStatementResourceVisitor<TryStatement.Resource, CompileException>
     resourceCopier = new TryStatementResourceVisitor<TryStatement.Resource, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:2
-        @Override public TryStatement.Resource visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws CompileException { return DeepCopier.this.copyLocalVariableDeclaratorResource(lvdr);   }
-        @Override public TryStatement.Resource visitVariableAccessResource(VariableAccessResource var)                    throws CompileException { return DeepCopier.this.copyVariableAccessResource(var);             }
+        @Override public TryStatement.Resource visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws CompileException { return DeepCopier.this.copyLocalVariableDeclaratorResource(lvdr); }
+        @Override public TryStatement.Resource visitVariableAccessResource(VariableAccessResource var)                    throws CompileException { return DeepCopier.this.copyVariableAccessResource(var);           }
     };
 
-//    public void
-//    visitImportDeclaration(CompilationUnit.ImportDeclaration id) throws CompileException {
-//        id.accept(this.importCopier);
-//    }
-//
-//    public void
-//    visitTypeDeclaration(TypeDeclaration td) throws CompileException {
-//        td.accept(this.typeDeclarationCopier);
-//    }
-//
-//    public void
-//    visitTypeBodyDeclaration(TypeBodyDeclaration tbd) throws CompileException {
-//        tbd.accept(this.typeBodyDeclarationCopier);
-//    }
-//
-//    public void
-//    visitBlockStatement(BlockStatement bs) throws CompileException {
-//        bs.accept(this.blockStatementCopier);
-//    }
-//
-//    public void
-//    visitAtom(Atom a) throws CompileException {
-//        a.accept(this.atomCopier);
-//    }
-//
-//    public void
-//    visitElementValue(ElementValue ev) throws CompileException { ev.accept(this.elementValueCopier); }
-//
-//    public void
-//    visitAnnotation(Annotation a) throws CompileException { a.accept(this.annotationCopier); }
+    private final TypeArgumentVisitor<TypeArgument, CompileException>
+    typeArgumentCopier = new TypeArgumentVisitor<Java.TypeArgument, CompileException>() {
 
-    // These may be overridden by derived classes.
+        @Override @Nullable public TypeArgument visitWildcard(Wildcard w)            throws CompileException { return DeepCopier.this.copyWildcard(w);       }
+        @Override @Nullable public TypeArgument visitReferenceType(ReferenceType rt) throws CompileException { return DeepCopier.this.copyReferenceType(rt); }
+        @Override @Nullable public TypeArgument visitArrayType(ArrayType at)         throws CompileException { return DeepCopier.this.copyArrayType(at);     }
+    };
 
-    public void
-    copyCompilationUnit(CompilationUnit cu) throws CompileException {
+    // ------------------------------ "copy*()" methods on abstract types
 
-        // The optionalPackageDeclaration is considered an integral part of
-        // the compilation unit and is thus not copied.
+    public ImportDeclaration     copyImportDeclaration(ImportDeclaration subject)         throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.importCopier));                }
+    public TypeDeclaration       copyTypeDeclaration(TypeDeclaration subject)             throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeDeclarationCopier));       }
+    public TypeBodyDeclaration   copyTypeBodyDeclaration(TypeBodyDeclaration subject)     throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeBodyDeclarationCopier));   }
+    public FunctionDeclarator    copyFunctionDeclarator(FunctionDeclarator subject)       throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.functionDeclaratorCopier));    }
+    public BlockStatement        copyBlockStatement(BlockStatement subject)               throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.blockStatementCopier));        }
+    public Resource              copyResource(Resource subject)                           throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.resourceCopier));              }
+    public TypeArgument          copyTypeArgument(TypeArgument subject)                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeArgumentCopier));          }
+    public ConstructorInvocation copyConstructorInvocation(ConstructorInvocation subject) throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.constructorInvocationCopier)); }
+    public ElementValue          copyElementValue(ElementValue subject)                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.elementValueCopier));          }
+    public Annotation            copyAnnotation(Annotation subject)                       throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.annotationCopier));            }
+    public Rvalue                copyRvalue(Rvalue subject)                               throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.rvalueCopier));                }
+    public Lvalue                copyLvalue(Lvalue subject)                               throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.lvalueCopier));                }
+    public Type                  copyType(Type subject)                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeCopier));                  }
+    public Atom                  copyAtom(Atom subject)                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.atomCopier));                  }
 
-        for (CompilationUnit.ImportDeclaration id : cu.importDeclarations) {
-            id.accept(this.importCopier);
-        }
+    public PackageMemberTypeDeclaration copyPackageMemberTypeDeclaration(PackageMemberTypeDeclaration subject) throws CompileException { return (PackageMemberTypeDeclaration) this.copyTypeDeclaration(subject); }
+    public MemberTypeDeclaration        copyMemberTypeDeclaration(MemberTypeDeclaration subject)               throws CompileException { return (MemberTypeDeclaration)        this.copyTypeDeclaration(subject); }
+    public Statement                    copyStatement(Statement subject)                                       throws CompileException { return (Statement)                    this.copyBlockStatement(subject);  }
 
-        for (PackageMemberTypeDeclaration pmtd : cu.packageMemberTypeDeclarations) {
-            pmtd.accept(this.typeDeclarationCopier);
-        }
+    // ------------------------------ "copyOptional*()" methods
+
+    @Nullable public PackageDeclaration       copyOptionalPackageDeclaration(@Nullable PackageDeclaration subject)             throws CompileException { return subject == null ? null : this.copyPackageDeclaration(subject);       }
+    @Nullable public BlockStatement           copyOptionalBlockStatement(@Nullable BlockStatement subject)                     throws CompileException { return subject == null ? null : this.copyBlockStatement(subject);           }
+    @Nullable public Block                    copyOptionalBlock(@Nullable Block subject)                                       throws CompileException { return subject == null ? null : this.copyBlock(subject);                    }
+    @Nullable public ArrayInitializer         copyOptionalArrayInitializer(@Nullable ArrayInitializer subject)                 throws CompileException { return subject == null ? null : this.copyArrayInitializer(subject);         }
+    @Nullable public ArrayType                copyOptionalArrayType(@Nullable ArrayType subject)                               throws CompileException { return subject == null ? null : this.copyArrayType(subject);                }
+    @Nullable public ReferenceType            copyOptionalReferenceType(@Nullable ReferenceType subject)                       throws CompileException { return subject == null ? null : this.copyReferenceType(subject);            }
+    @Nullable public ConstructorInvocation    copyOptionalConstructorInvocation(@Nullable ConstructorInvocation subject)       throws CompileException { return subject == null ? null : this.copyConstructorInvocation(subject);    }
+    @Nullable public ElementValue             copyOptionalElementValue(@Nullable ElementValue subject)                         throws CompileException { return subject == null ? null : this.copyElementValue(subject);             }
+    @Nullable public Rvalue                   copyOptionalRvalue(@Nullable Rvalue subject)                                     throws CompileException { return subject == null ? null : this.copyRvalue(subject);                   }
+    @Nullable public Type                     copyOptionalType(@Nullable Type subject)                                         throws CompileException { return subject == null ? null : this.copyType(subject);                     }
+    @Nullable public Atom                     copyOptionalAtom(@Nullable Atom subject)                                         throws CompileException { return subject == null ? null : this.copyAtom(subject);                     }
+    @Nullable public ArrayInitializerOrRvalue copyOptionalArrayInitializerOrRvalue(@Nullable ArrayInitializerOrRvalue subject) throws CompileException { return subject == null ? null : this.copyArrayInitializerOrRvalue(subject); }
+
+    @Nullable public ReferenceType[]          copyOptionalReferenceTypes(@Nullable ReferenceType[] subject)                    throws CompileException { return subject == null ? null : this.copyReferenceTypes(subject);           }
+    @Nullable public TypeArgument[]           copyOptionalTypeArguments(@Nullable TypeArgument[] subject)                      throws CompileException { return subject == null ? null : this.copyTypeArguments(subject);            }
+    @Nullable public Rvalue[]                 copyOptionalRvalues(@Nullable Rvalue[] subject)                                  throws CompileException { return subject == null ? null : this.copyRvalues(subject);                  }
+    @Nullable public TypeParameter[]          copyOptionalTypeParameters(@Nullable TypeParameter[] subject)                    throws CompileException { return subject == null ? null : this.copyTypeParameters(subject);           }
+
+    @Nullable public List<BlockStatement>     copyOptionalStatements(@Nullable Collection<? extends BlockStatement> subject)   throws CompileException { return subject == null ? null : this.copyStatements(subject);               }
+
+    // ------------------------------ "copy*s()" methods for arrays
+
+    public TypeArgument[]             copyTypeArguments(TypeArgument[] subject)                         throws CompileException { TypeArgument[]             result = new TypeArgument[subject.length];               for (int i = 0; i < subject.length; i++) result[i] = this.copyTypeArgument(subject[i]);                     return result; }
+    public VariableDeclarator[]       copyVariableDeclarators(VariableDeclarator[] subject)             throws CompileException { VariableDeclarator[]       result = new VariableDeclarator[subject.length];         for (int i = 0; i < subject.length; i++) result[i] = this.copyVariableDeclarator(subject[i]);               return result; }
+    public ArrayInitializerOrRvalue[] copyArrayInitializerOrRvalues(ArrayInitializerOrRvalue[] subject) throws CompileException { ArrayInitializerOrRvalue[] result = new ArrayInitializerOrRvalue[subject.length];   for (int i = 0; i < subject.length; i++) result[i] = this.copyOptionalArrayInitializerOrRvalue(subject[i]); return result; }
+    public ReferenceType[]            copyReferenceTypes(ReferenceType[] subject)                       throws CompileException { ReferenceType[]            result = new ReferenceType[subject.length];              for (int i = 0; i < subject.length; i++) result[i] = this.copyReferenceType(subject[i]);                    return result; }
+    public ElementValue[]             copyElementValues(ElementValue[] subject)                         throws CompileException { ElementValue[]             result = new ElementValue[subject.length];               for (int i = 0; i < subject.length; i++) result[i] = this.copyOptionalElementValue(subject[i]);             return result; }
+    public ElementValuePair[]         copyElementValuePairs(ElementValuePair[] subject)                 throws CompileException { ElementValuePair[]         result = new ElementValuePair[subject.length];           for (int i = 0; i < subject.length; i++) result[i] = this.copyElementValuePair(subject[i]);                 return result; }
+    public Type[]                     copyTypes(Type[] subject)                                         throws CompileException { Type[]                     result = new Type[subject.length];                       for (int i = 0; i < subject.length; i++) result[i] = this.copyType(subject[i]);                             return result; }
+    public TypeParameter[]            copyTypeParameters(TypeParameter[] subject)                       throws CompileException { TypeParameter[]            result = new TypeParameter[subject.length];              for (int i = 0; i < subject.length; i++) result[i] = this.copyTypeParameter(subject[i]);                    return result; }
+
+    public Annotation[] copyAnnotations(Annotation[] subject) throws CompileException { return this.copyAnnotations(Arrays.asList(subject)).toArray(new Annotation[0]); }
+    public Rvalue[]     copyRvalues(Rvalue[] subject)         throws CompileException { return this.copyRvalues(Arrays.asList(subject)).toArray(new Rvalue[0]);         }
+
+    public FormalParameters
+    copyFormalParameters(FunctionDeclarator.FormalParameters subject) throws CompileException {
+        FormalParameter[] result = new FormalParameter[subject.parameters.length];
+        for (int i = 0; i < result.length; i++) result[i] = this.copyFormalParameter(subject.parameters[i]);
+        return new FormalParameters(subject.getLocation(), result, subject.variableArity);
     }
 
-    /**
-     * @throws CompileException
-     */
+    // ------------------------------ "copy*s()" methods for collections
+
+    public List<BlockStatement>            copyBlockStatements(Collection<? extends BlockStatement> subject)                       throws CompileException { List<BlockStatement>            result = new ArrayList<BlockStatement>(subject.size());                            for (BlockStatement bs              : subject) result.add(this.copyBlockStatement(bs));              return result; }
+    public List<Resource>                  copyResources(Collection<? extends Resource> subject)                                   throws CompileException { List<Resource>                  result = new ArrayList<Resource>(subject.size());                                  for (Resource r                     : subject) result.add(this.copyResource(r));                     return result; }
+    public List<CatchClause>               copyCatchClauses(Collection<? extends CatchClause> subject)                             throws CompileException { List<CatchClause>               result = new ArrayList<CatchClause>(subject.size());                               for (CatchClause sbgs               : subject) result.add(this.copyCatchClause(sbgs));               return result; }
+    public List<SwitchBlockStatementGroup> copySwitchBlockStatementGroups(Collection<? extends SwitchBlockStatementGroup> subject) throws CompileException { List<SwitchBlockStatementGroup> result = new ArrayList<SwitchStatement.SwitchBlockStatementGroup>(subject.size()); for (SwitchBlockStatementGroup sbgs : subject) result.add(this.copySwitchBlockStatementGroup(sbgs)); return result; }
+    public List<Annotation>                copyAnnotations(Collection<? extends Annotation> subject)                               throws CompileException { List<Annotation>                result = new ArrayList<Annotation>(subject.size());                                for (Annotation a                   : subject) result.add(this.copyAnnotation(a));                   return result; }
+    public List<BlockStatement>            copyStatements(Collection<? extends BlockStatement> subject)                            throws CompileException { List<BlockStatement>            result = new ArrayList<BlockStatement>(subject.size());                            for (BlockStatement bs              : subject) result.add(this.copyBlockStatement(bs));              return result; }
+    public List<Rvalue>                    copyRvalues(Collection<? extends Rvalue> subject)                                       throws CompileException { List<Rvalue>                    result = new ArrayList<Rvalue>(subject.size());                                    for (Rvalue rv                      : subject) result.add(this.copyRvalue(rv));                      return result; }
+
+    // ------------------------------ "copy*()" methods on final types
+
+    public CompilationUnit
+    copyCompilationUnit(CompilationUnit subject) throws CompileException {
+
+        CompilationUnit result = new CompilationUnit(subject.optionalFileName);
+
+        result.setPackageDeclaration(this.copyOptionalPackageDeclaration(subject.optionalPackageDeclaration));
+
+        for (ImportDeclaration id : subject.importDeclarations) {
+            result.addImportDeclaration(this.copyImportDeclaration(id));
+        }
+        for (PackageMemberTypeDeclaration pmtd : subject.packageMemberTypeDeclarations) {
+            result.addPackageMemberTypeDeclaration(this.copyPackageMemberTypeDeclaration(pmtd));
+        }
+
+        return result;
+    }
+
+    public TypeArgument
+    copyWildcard(Wildcard subject) throws CompileException {
+        return new Wildcard(subject.bounds, this.copyOptionalReferenceType(subject.referenceType));
+    }
+
+    public PackageDeclaration
+    copyPackageDeclaration(PackageDeclaration subject) throws CompileException {
+        return new PackageDeclaration(subject.getLocation(), subject.packageName);
+    }
+
     public ImportDeclaration
     copySingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid) throws CompileException {
-        return new CompilationUnit.SingleTypeImportDeclaration(
-            stid.getLocation(),
-            stid.identifiers.clone()
-        );
+        return new CompilationUnit.SingleTypeImportDeclaration(stid.getLocation(), stid.identifiers.clone());
     }
 
-    /**
-     * @throws CompileException
-     */
     public ImportDeclaration
     copyTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd) throws CompileException {
         return new CompilationUnit.TypeImportOnDemandDeclaration(tiodd.getLocation(), tiodd.identifiers.clone());
     }
 
-    /**
-     * @throws CompileException
-     */
     public ImportDeclaration
     copySingleStaticImportDeclaration(CompilationUnit.SingleStaticImportDeclaration stid) throws CompileException {
         return new CompilationUnit.SingleStaticImportDeclaration(stid.getLocation(), stid.identifiers.clone());
     }
 
-    /**
-     * @throws CompileException
-     */
     public ImportDeclaration
     copyStaticImportOnDemandDeclaration(CompilationUnit.StaticImportOnDemandDeclaration siodd) throws CompileException {
         return new CompilationUnit.StaticImportOnDemandDeclaration(siodd.getLocation(), siodd.identifiers.clone());
     }
 
     public AnonymousClassDeclaration
-    copyAnonymousClassDeclaration(AnonymousClassDeclaration acd) throws CompileException {
-        return new AnonymousClassDeclaration(acd.getLocation(), this.copyType(acd.baseType));
+    copyAnonymousClassDeclaration(AnonymousClassDeclaration subject) throws CompileException {
+
+        AnonymousClassDeclaration result = new AnonymousClassDeclaration(subject.getLocation(), this.copyType(subject.baseType));
+
+        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
+            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        }
+        for (ConstructorDeclarator cd : subject.constructors) {
+            result.addConstructor(this.copyConstructorDeclarator(cd));
+        }
+        for (MethodDeclarator md : subject.getMethodDeclarations()) {
+            result.addDeclaredMethod(this.copyMethodDeclarator(md));
+        }
+        for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+            result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
+        }
+
+        return result;
+    }
+
+    public LocalClassDeclaration
+    copyLocalClassDeclaration(LocalClassDeclaration subject) throws CompileException {
+
+        LocalClassDeclaration result = new LocalClassDeclaration(
+            subject.getLocation(),
+            subject.getDocComment(),
+            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            subject.name,
+            subject.getOptionalTypeParameters(),
+            subject.optionalExtendedType,
+            subject.implementedTypes
+        );
+
+        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
+            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        }
+        for (ConstructorDeclarator cd : subject.constructors) {
+            result.addConstructor(this.copyConstructorDeclarator(cd));
+        }
+        for (MethodDeclarator md : subject.getMethodDeclarations()) {
+            result.addDeclaredMethod(this.copyMethodDeclarator(md));
+        }
+        for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+            result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
+        }
+
+        return result;
     }
 
     public TypeDeclaration
-    copyLocalClassDeclaration(LocalClassDeclaration lcd) throws CompileException {
-        return new LocalClassDeclaration(
-            lcd.getLocation(),
-            lcd.getDocComment(),
-            new Modifiers(lcd.getModifierFlags(), this.copyAnnotations(lcd.getAnnotations()), false),
-            lcd.name,
-            lcd.getOptionalTypeParameters(),
-            lcd.optionalExtendedType,
-            lcd.implementedTypes
+    copyPackageMemberClassDeclaration(PackageMemberClassDeclaration subject) throws CompileException {
+        PackageMemberClassDeclaration result = new PackageMemberClassDeclaration(
+            subject.getLocation(),
+            subject.getDocComment(),
+            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            subject.name,
+            this.copyOptionalTypeParameters(subject.getOptionalTypeParameters()),
+            this.copyOptionalType(subject.optionalExtendedType),
+            this.copyTypes(subject.implementedTypes)
         );
-    }
-
-    public TypeDeclaration
-    copyPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd) throws CompileException {
-        return new PackageMemberClassDeclaration(
-            pmcd.getLocation(),
-            pmcd.getDocComment(),
-            new Modifiers(pmcd.getModifierFlags(), this.copyAnnotations(pmcd.getAnnotations()), false),
-            pmcd.name,
-            pmcd.getOptionalTypeParameters(),
-            pmcd.optionalExtendedType,
-            pmcd.implementedTypes
-        );
+        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
+            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        }
+        for (ConstructorDeclarator cd : subject.constructors) {
+            result.addConstructor(this.copyConstructorDeclarator(cd));
+        }
+        for (MethodDeclarator md : subject.getMethodDeclarations()) {
+            result.addDeclaredMethod(this.copyMethodDeclarator(md));
+        }
+        for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+            result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
+        }
+        return result;
     }
 
     public MemberTypeDeclaration
-    copyMemberInterfaceDeclaration(MemberInterfaceDeclaration mid) throws CompileException {
-        return new MemberInterfaceDeclaration(
-            mid.getLocation(),
-            mid.getDocComment(),
-            new Modifiers(mid.getModifierFlags(), this.copyAnnotations(mid.getAnnotations()), false),
-            mid.name,
-            mid.getOptionalTypeParameters(),
-            mid.extendedTypes
+    copyMemberInterfaceDeclaration(MemberInterfaceDeclaration subject) throws CompileException {
+
+        MemberInterfaceDeclaration result = new MemberInterfaceDeclaration(
+            subject.getLocation(),
+            subject.getDocComment(),
+            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            subject.name,
+            this.copyOptionalTypeParameters(subject.getOptionalTypeParameters()),
+            this.copyTypes(subject.extendedTypes)
         );
+
+        for (MethodDeclarator md : subject.getMethodDeclarations()) {
+            result.addDeclaredMethod(this.copyMethodDeclarator(md));
+        }
+        for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+            result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
+        }
+
+        return result;
     }
 
     public TypeDeclaration
-    copyPackageMemberInterfaceDeclaration(final PackageMemberInterfaceDeclaration pmid) throws CompileException {
-        return new PackageMemberInterfaceDeclaration(
-            pmid.getLocation(),
-            pmid.getDocComment(),
-            new Modifiers(pmid.getModifierFlags(), this.copyAnnotations(pmid.getAnnotations()), false),
-            pmid.name,
-            pmid.getOptionalTypeParameters(),
-            pmid.extendedTypes
+    copyPackageMemberInterfaceDeclaration(final PackageMemberInterfaceDeclaration subject) throws CompileException {
+
+        PackageMemberInterfaceDeclaration result = new PackageMemberInterfaceDeclaration(
+            subject.getLocation(),
+            subject.getDocComment(),
+            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            subject.name,
+            this.copyOptionalTypeParameters(subject.getOptionalTypeParameters()),
+            this.copyTypes(subject.extendedTypes)
         );
+
+        for (MethodDeclarator md : subject.getMethodDeclarations()) {
+            result.addDeclaredMethod(this.copyMethodDeclarator(md));
+        }
+        for (Java.MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+            result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
+        }
+        for (FieldDeclaration cd : subject.constantDeclarations) {
+            result.addConstantDeclaration(this.copyFieldDeclaration(cd));
+        }
+
+        return result;
     }
 
     public MemberTypeDeclaration
-    copyMemberClassDeclaration(MemberClassDeclaration mcd) throws CompileException {
-        return new MemberClassDeclaration(
-            mcd.getLocation(),
-            mcd.getDocComment(),
-            new Modifiers(mcd.getModifierFlags(), this.copyAnnotations(mcd.getAnnotations()), false),
-            mcd.name,
-            mcd.getOptionalTypeParameters(),
-            mcd.optionalExtendedType,
-            mcd.implementedTypes
+    copyMemberClassDeclaration(MemberClassDeclaration subject) throws CompileException {
+
+        MemberClassDeclaration result = new MemberClassDeclaration(
+            subject.getLocation(),
+            subject.getDocComment(),
+            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            subject.name,
+            this.copyOptionalTypeParameters(subject.getOptionalTypeParameters()),
+            this.copyOptionalType(subject.optionalExtendedType),
+            this.copyTypes(subject.implementedTypes)
         );
+
+        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
+            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        }
+        for (ConstructorDeclarator cd : subject.constructors) {
+            result.addConstructor(this.copyConstructorDeclarator(cd));
+        }
+        for (MethodDeclarator md : subject.getMethodDeclarations()) {
+            result.addDeclaredMethod(this.copyMethodDeclarator(md));
+        }
+        for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+            result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
+        }
+
+        return result;
     }
 
-    public FunctionDeclarator
-    copyConstructorDeclarator(ConstructorDeclarator cd) throws CompileException {
+    public ConstructorDeclarator
+    copyConstructorDeclarator(ConstructorDeclarator subject) throws CompileException {
         return new ConstructorDeclarator(
-            cd.getLocation(),
-            cd.getDocComment(),
-            this.copyModifiers(cd.modifiers),
-            cd.formalParameters,
-            cd.thrownExceptions, cd.optionalConstructorInvocation, DeepCopier.assertNotNull(cd.optionalStatements));
+            subject.getLocation(),
+            subject.getDocComment(),
+            this.copyModifiers(subject.modifiers),
+            this.copyFormalParameters(subject.formalParameters),
+            this.copyTypes(subject.thrownExceptions),
+            this.copyOptionalConstructorInvocation(subject.optionalConstructorInvocation),
+            this.copyBlockStatements(DeepCopier.assertNotNull(subject.optionalStatements))
+        );
     }
 
     public Initializer
-    copyInitializer(Initializer i) throws CompileException {
-        return new Initializer(i.getLocation(), i.isStatic(), this.copyBlock(i.block));
+    copyInitializer(Initializer subject) throws CompileException {
+        return new Initializer(subject.getLocation(), subject.isStatic(), this.copyBlock(subject.block));
     }
 
-    public FunctionDeclarator
-    copyMethodDeclarator(MethodDeclarator md) throws CompileException {
+    public MethodDeclarator
+    copyMethodDeclarator(MethodDeclarator subject) throws CompileException {
         return new MethodDeclarator(
-            md.getLocation(),
-            md.getDocComment(),
-            this.copyModifiers(md.modifiers),
-            DeepCopier.copyTypeParameters(md.optionalTypeParameters),
-            this.copyType(md.type),
-            md.name,
-            this.copyFormalParameters(md.formalParameters),
-            this.copyTypes(md.thrownExceptions),
-            this.copyElementValue(md.defaultValue),
-            this.copyStatements(md.optionalStatements)
+            subject.getLocation(),
+            subject.getDocComment(),
+            this.copyModifiers(subject.modifiers),
+            this.copyOptionalTypeParameters(subject.optionalTypeParameters),
+            this.copyType(subject.type),
+            subject.name,
+            this.copyFormalParameters(subject.formalParameters),
+            this.copyTypes(subject.thrownExceptions),
+            this.copyOptionalElementValue(subject.defaultValue),
+            this.copyOptionalStatements(subject.optionalStatements)
         );
     }
 
     public FieldDeclaration
-    copyFieldDeclaration(FieldDeclaration fd) throws CompileException {
+    copyFieldDeclaration(FieldDeclaration subject) throws CompileException {
         return new FieldDeclaration(
-            fd.getLocation(),
-            fd.getDocComment(),
-            this.copyModifiers(fd.modifiers),
-            this.copyType(fd.type),
-            this.copyVariableDeclarators(fd.variableDeclarators)
+            subject.getLocation(),
+            subject.getDocComment(),
+            this.copyModifiers(subject.modifiers),
+            this.copyType(subject.type),
+            this.copyVariableDeclarators(subject.variableDeclarators)
         );
-    }
-
-    private VariableDeclarator[]
-    copyVariableDeclarators(VariableDeclarator[] subject) throws CompileException {
-        VariableDeclarator[] result = new VariableDeclarator[subject.length];
-        for (int i = 0; i < subject.length; i++) result[i] = this.copyVariableDeclarator(subject[i]);
-        return result;
     }
 
     public VariableDeclarator
@@ -586,25 +677,8 @@ class DeepCopier {
             subject.getLocation(),
             subject.name,
             subject.brackets,
-            this.copyArrayInitializerOrRvalue(subject.optionalInitializer)
+            this.copyOptionalArrayInitializerOrRvalue(subject.optionalInitializer)
         );
-    }
-
-    private List<BlockStatement>
-    copyBlockStatements(List<BlockStatement> subject) throws CompileException {
-        List<BlockStatement> result = new ArrayList<BlockStatement>(subject.size());
-        for (BlockStatement bs : subject) result.add(this.copyBlockStatement(bs));
-        return result;
-    }
-
-    private BlockStatement
-    copyBlockStatement(BlockStatement subject) throws CompileException {
-        return DeepCopier.assertNotNull(subject.accept(this.blockStatementCopier));
-    }
-
-    @Nullable private BlockStatement
-    copyOptionalBlockStatement(@Nullable BlockStatement subject) throws CompileException {
-        return subject == null ? null : this.copyBlockStatement(subject);
     }
 
     public BlockStatement
@@ -666,25 +740,31 @@ class DeepCopier {
 
     public BlockStatement
     copyTryStatement(TryStatement ts) throws CompileException {
-        for (TryStatement.Resource r : ts.resources) {
-            r.accept(this.resourceCopier);
-        }
-        ts.body.accept(this.blockStatementCopier);
-        for (CatchClause cc : ts.catchClauses) cc.body.accept(this.blockStatementCopier);
-        if (ts.finallY != null) ts.finallY.accept(this.blockStatementCopier);
-        return this.copyStatement(ts);
+        return new TryStatement(
+            ts.getLocation(),
+            this.copyResources(ts.resources),
+            this.copyBlockStatement(ts.body),
+            this.copyCatchClauses(ts.catchClauses),
+            this.copyOptionalBlock(ts.finallY)
+        );
+    }
+
+    public CatchClause
+    copyCatchClause(CatchClause subject) throws CompileException {
+        return new CatchClause(
+            subject.getLocation(),
+            this.copyFormalParameter(subject.caughtException),
+            this.copyBlockStatement(subject.body)
+        );
     }
 
     public BlockStatement
     copySwitchStatement(SwitchStatement subject) throws CompileException {
-        return new SwitchStatement(subject.getLocation(), this.copyRvalue(subject.condition), this.copySwitchBlockStatementGroups(subject.sbsgs));
-    }
-
-    private List<SwitchBlockStatementGroup>
-    copySwitchBlockStatementGroups(List<SwitchBlockStatementGroup> subject) throws CompileException {
-        List<SwitchBlockStatementGroup> result = new ArrayList<SwitchStatement.SwitchBlockStatementGroup>(subject.size());
-        for (SwitchBlockStatementGroup sbgs : subject) result.add(this.copySwitchBlockStatementGroup(sbgs));
-        return result;
+        return new SwitchStatement(
+            subject.getLocation(),
+            this.copyRvalue(subject.condition),
+            this.copySwitchBlockStatementGroups(subject.sbsgs)
+        );
     }
 
     public SwitchBlockStatementGroup
@@ -698,10 +778,12 @@ class DeepCopier {
     }
 
     public BlockStatement
-    copySynchronizedStatement(SynchronizedStatement ss) throws CompileException {
-        ss.expression.accept(this.rvalueCopier);
-        ss.body.accept(this.blockStatementCopier);
-        return this.copyStatement(ss);
+    copySynchronizedStatement(SynchronizedStatement subject) throws CompileException {
+        return new SynchronizedStatement(
+            subject.getLocation(),
+            this.copyRvalue(subject.expression),
+            this.copyBlockStatement(subject.body)
+        );
     }
 
     public BlockStatement
@@ -724,58 +806,62 @@ class DeepCopier {
     }
 
     public BlockStatement
-    copyReturnStatement(ReturnStatement rs) throws CompileException {
-        if (rs.optionalReturnValue != null) rs.optionalReturnValue.accept(this.rvalueCopier);
-        return this.copyStatement(rs);
+    copyReturnStatement(ReturnStatement subject) throws CompileException {
+        return new ReturnStatement(subject.getLocation(), this.copyOptionalRvalue(subject.optionalReturnValue));
     }
 
     public BlockStatement
-    copyThrowStatement(ThrowStatement ts) throws CompileException {
-        ts.expression.accept(this.rvalueCopier);
-        return this.copyStatement(ts);
+    copyThrowStatement(ThrowStatement subject) throws CompileException {
+        return new ThrowStatement(subject.getLocation(), this.copyRvalue(subject.expression));
     }
 
     public BlockStatement
-    copyBreakStatement(BreakStatement bs) throws CompileException { return this.copyStatement(bs); }
-
-    public BlockStatement
-    copyContinueStatement(ContinueStatement cs) throws CompileException { return this.copyStatement(cs); }
-
-    public BlockStatement
-    copyAssertStatement(AssertStatement as) throws CompileException {
-        as.expression1.accept(this.rvalueCopier);
-        if (as.optionalExpression2 != null) as.optionalExpression2.accept(this.rvalueCopier);
-        return this.copyStatement(as);
+    copyBreakStatement(BreakStatement subject) throws CompileException {
+        return new BreakStatement(subject.getLocation(), subject.optionalLabel);
     }
 
     public BlockStatement
-    copyEmptyStatement(EmptyStatement es) throws CompileException { return this.copyStatement(es); }
-
-    public BlockStatement
-    copyLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds) throws CompileException {
-        lcds.lcd.accept(this.typeDeclarationCopier);
-        return this.copyStatement(lcds);
+    copyContinueStatement(ContinueStatement subject) throws CompileException {
+        return new ContinueStatement(subject.getLocation(), subject.optionalLabel);
     }
 
-    /**
-     * @throws CompileException
-     */
+    public BlockStatement
+    copyAssertStatement(AssertStatement subject) throws CompileException {
+        return new AssertStatement(
+            subject.getLocation(),
+            this.copyRvalue(subject.expression1),
+            this.copyOptionalRvalue(subject.optionalExpression2)
+        );
+    }
+
+    public BlockStatement
+    copyEmptyStatement(EmptyStatement subject) throws CompileException {
+        return new EmptyStatement(subject.getLocation());
+    }
+
+    public BlockStatement
+    copyLocalClassDeclarationStatement(LocalClassDeclarationStatement subject) throws CompileException {
+        return new LocalClassDeclarationStatement(this.copyLocalClassDeclaration(subject.lcd));
+    }
+
     public Atom
     copyPackage(Package subject) throws CompileException {
         return new Package(subject.getLocation(), subject.name);
     }
 
     public Rvalue
-    copyArrayLength(ArrayLength al) throws CompileException {
-        al.lhs.accept(this.rvalueCopier);
-        return this.copyRvalue(al);
+    copyArrayLength(ArrayLength subject) throws CompileException {
+        return new ArrayLength(subject.getLocation(), this.copyRvalue(subject.lhs));
     }
 
     public Rvalue
-    copyAssignment(Assignment a) throws CompileException {
-        a.lhs.accept(this.rvalueCopier);
-        a.rhs.accept(this.rvalueCopier);
-        return this.copyRvalue(a);
+    copyAssignment(Assignment subject) throws CompileException {
+        return new Assignment(
+            subject.getLocation(),
+            this.copyLvalue(subject.lhs),
+            subject.operator,
+            this.copyRvalue(subject.rhs)
+        );
     }
 
     public Rvalue
@@ -809,7 +895,8 @@ class DeepCopier {
 
     public Rvalue
     copyConditionalExpression(ConditionalExpression subject) throws CompileException {
-        return new ConditionalExpression(subject.getLocation(),
+        return new ConditionalExpression(
+            subject.getLocation(),
             this.copyRvalue(subject.lhs),
             this.copyRvalue(subject.mhs),
             this.copyRvalue(subject.rhs)
@@ -849,45 +936,36 @@ class DeepCopier {
         );
     }
 
-    /**
-     * @throws CompileException
-     */
     public Rvalue
-    copyIntegerLiteral(IntegerLiteral subject) throws CompileException { return new IntegerLiteral(subject.getLocation(), subject.value); }
+    copyIntegerLiteral(IntegerLiteral subject) throws CompileException {
+        return new IntegerLiteral(subject.getLocation(), subject.value);
+    }
 
-    /**
-     * @throws CompileException
-     */
     public Rvalue
-    copyFloatingPointLiteral(FloatingPointLiteral subject) throws CompileException { return new FloatingPointLiteral(subject.getLocation(), subject.value); }
+    copyFloatingPointLiteral(FloatingPointLiteral subject) throws CompileException {
+        return new FloatingPointLiteral(subject.getLocation(), subject.value);
+    }
 
-    /**
-     * @throws CompileException
-     */
     public Rvalue
-    copyBooleanLiteral(BooleanLiteral subject) throws CompileException { return new BooleanLiteral(subject.getLocation(), subject.value); }
+    copyBooleanLiteral(BooleanLiteral subject) throws CompileException {
+        return new BooleanLiteral(subject.getLocation(), subject.value);
+    }
 
-    /**
-     * @throws CompileException
-     */
     public Rvalue
-    copyCharacterLiteral(CharacterLiteral subject) throws CompileException { return new CharacterLiteral(subject.getLocation(), subject.value); }
+    copyCharacterLiteral(CharacterLiteral subject) throws CompileException {
+        return new CharacterLiteral(subject.getLocation(), subject.value);
+    }
 
-    /**
-     * @throws CompileException
-     */
     public Rvalue
-    copyStringLiteral(StringLiteral subject) throws CompileException { return new StringLiteral(subject.getLocation(), subject.value); }
+    copyStringLiteral(StringLiteral subject) throws CompileException {
+        return new StringLiteral(subject.getLocation(), subject.value);
+    }
 
-    /**
-     * @throws CompileException
-     */
     public Rvalue
-    copyNullLiteral(NullLiteral subject) throws CompileException { return new NullLiteral(subject.getLocation()); }
+    copyNullLiteral(NullLiteral subject) throws CompileException {
+        return new NullLiteral(subject.getLocation());
+    }
 
-    /**
-     * @throws CompileException
-     */
     public Rvalue
     copySimpleLiteral(SimpleConstant subject) throws CompileException { throw new AssertionError(); }
 
@@ -902,10 +980,13 @@ class DeepCopier {
     }
 
     public Rvalue
-    copyNewArray(NewArray na) throws CompileException {
-        na.type.accept(this.atomCopier);
-        for (Rvalue dimExpr : na.dimExprs) dimExpr.accept(this.rvalueCopier);
-        return this.copyRvalue(na);
+    copyNewArray(NewArray subject) throws CompileException {
+        return new NewArray(
+            subject.getLocation(),
+            this.copyType(subject.type),
+            this.copyRvalues(subject.dimExprs),
+            subject.dims
+        );
     }
 
     public Rvalue
@@ -922,22 +1003,8 @@ class DeepCopier {
         return new ArrayInitializer(subject.getLocation(), this.copyArrayInitializerOrRvalues(subject.values));
     }
 
-    @Nullable public ArrayInitializer
-    copyOptionalArrayInitializer(@Nullable ArrayInitializer subject) throws CompileException {
-        return subject == null ? null : this.copyArrayInitializer(subject);
-    }
-
-    private ArrayInitializerOrRvalue[]
-    copyArrayInitializerOrRvalues(ArrayInitializerOrRvalue[] subject) throws CompileException {
-        ArrayInitializerOrRvalue[] result = new ArrayInitializerOrRvalue[subject.length];
-        for (int i = 0; i < subject.length; i++) result[i] = this.copyArrayInitializerOrRvalue(subject[i]);
-        return result;
-    }
-
-    @Nullable public ArrayInitializerOrRvalue
-    copyArrayInitializerOrRvalue(@Nullable ArrayInitializerOrRvalue subject) throws CompileException {
-
-        if (subject == null) return null;
+    public ArrayInitializerOrRvalue
+    copyArrayInitializerOrRvalue(ArrayInitializerOrRvalue subject) throws CompileException {
 
         if (subject instanceof Rvalue) return this.copyRvalue((Rvalue) subject);
 
@@ -950,51 +1017,63 @@ class DeepCopier {
     }
 
     public Rvalue
-    copyNewClassInstance(NewClassInstance nci) throws CompileException {
-        if (nci.optionalQualification != null) {
-            nci.optionalQualification.accept(this.rvalueCopier);
-        }
-        if (nci.type != null) nci.type.accept(this.atomCopier);
-        for (Rvalue argument : nci.arguments) argument.accept(this.rvalueCopier);
-        return this.copyRvalue(nci);
+    copyNewClassInstance(NewClassInstance subject) throws CompileException {
+        return (
+            subject.type != null
+            ? new NewClassInstance(
+                subject.getLocation(),
+                this.copyOptionalRvalue(subject.optionalQualification),
+                this.copyType(DeepCopier.assertNotNull(subject.type)),
+                this.copyRvalues(subject.arguments)
+            )
+            : new NewClassInstance(
+                subject.getLocation(),
+                this.copyOptionalRvalue(subject.optionalQualification),
+                DeepCopier.assertNotNull(subject.iClass),
+                this.copyRvalues(subject.arguments)
+            )
+        );
     }
 
     public Rvalue
     copyParameterAccess(ParameterAccess pa) throws CompileException { return this.copyRvalue(pa); }
 
     public Rvalue
-    copyQualifiedThisReference(QualifiedThisReference qtr) throws CompileException {
-        qtr.qualification.accept(this.atomCopier);
-        return this.copyRvalue(qtr);
+    copyQualifiedThisReference(QualifiedThisReference subject) throws CompileException {
+        return new QualifiedThisReference(subject.getLocation(), this.copyType(subject.qualification));
     }
 
     public Rvalue
-    copyThisReference(ThisReference tr) throws CompileException { return this.copyRvalue(tr); }
+    copyThisReference(ThisReference subject) throws CompileException {
+        return new ThisReference(subject.getLocation());
+    }
 
     public ArrayType
     copyArrayType(ArrayType subject) throws CompileException {
         return new ArrayType(this.copyType(subject.componentType));
     }
 
-    @Nullable private ArrayType
-    copyOptionalArrayType(@Nullable ArrayType subject) throws CompileException {
-        return subject == null ? null : this.copyArrayType(subject);
+    public Type
+    copyPrimitiveType(PrimitiveType bt) throws CompileException {
+        return new PrimitiveType(bt.getLocation(), bt.primitive);
+    }
+
+    public ReferenceType
+    copyReferenceType(ReferenceType subject) throws CompileException {
+        return new ReferenceType(
+            subject.getLocation(),
+            subject.identifiers,
+            this.copyOptionalTypeArguments(subject.optionalTypeArguments)
+        );
     }
 
     public Type
-    copyPrimitiveType(PrimitiveType bt) throws CompileException { return this.copyType(bt); }
-
-    public Type
-    copyReferenceType(ReferenceType rt) throws CompileException { return this.copyType(rt); }
-
-    public Type
-    copyRvalueMemberType(RvalueMemberType rmt) throws CompileException {
-        rmt.rvalue.accept(this.rvalueCopier);
-        return this.copyType(rmt);
+    copyRvalueMemberType(RvalueMemberType subject) throws CompileException {
+        return new RvalueMemberType(subject.getLocation(), this.copyRvalue(subject.rvalue), subject.identifier);
     }
 
     public Type
-    copySimpleType(SimpleType st) throws CompileException { return this.copyType(st); }
+    copySimpleType(SimpleType st) throws CompileException { return new SimpleType(st.getLocation(), st.iClass); }
 
     public ConstructorInvocation
     copyAlternateConstructorInvocation(AlternateConstructorInvocation subject) throws CompileException {
@@ -1010,280 +1089,229 @@ class DeepCopier {
         );
     }
 
-    /**
-     * @throws CompileException
-     */
     public Lvalue
     copyAmbiguousName(AmbiguousName subject) throws CompileException {
         return new AmbiguousName(subject.getLocation(), Arrays.copyOf(subject.identifiers, subject.n));
     }
 
     public Lvalue
-    copyArrayAccessExpression(ArrayAccessExpression aae) throws CompileException {
-        aae.lhs.accept(this.rvalueCopier);
-        aae.index.accept(this.atomCopier);
-        return this.copyLvalue(aae);
+    copyArrayAccessExpression(ArrayAccessExpression subject) throws CompileException {
+        return new ArrayAccessExpression(
+            subject.getLocation(),
+            this.copyRvalue(subject.lhs),
+            this.copyRvalue(subject.index)
+        );
     }
 
     public Lvalue
-    copyFieldAccess(FieldAccess fa) throws CompileException {
-        fa.lhs.accept(this.atomCopier);
-        return this.copyLvalue(fa);
+    copyFieldAccess(FieldAccess subject) throws CompileException {
+        return new FieldAccess(subject.getLocation(), this.copyAtom(subject.lhs), subject.field);
     }
 
     public Lvalue
-    copyFieldAccessExpression(FieldAccessExpression fae) throws CompileException {
-        fae.lhs.accept(this.atomCopier);
-        return this.copyLvalue(fae);
+    copyFieldAccessExpression(FieldAccessExpression subject) throws CompileException {
+        return new FieldAccessExpression(subject.getLocation(), this.copyAtom(subject.lhs), subject.fieldName);
     }
 
     public Lvalue
-    copySuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException {
-        if (scfae.optionalQualification != null) {
-            scfae.optionalQualification.accept(this.atomCopier);
-        }
-        return this.copyLvalue(scfae);
+    copySuperclassFieldAccessExpression(SuperclassFieldAccessExpression subject) throws CompileException {
+        return new SuperclassFieldAccessExpression(
+            subject.getLocation(),
+            this.copyOptionalType(subject.optionalQualification),
+            subject.fieldName
+        );
     }
 
     public Lvalue
-    copyLocalVariableAccess(LocalVariableAccess lva) throws CompileException { return this.copyLvalue(lva); }
+    copyLocalVariableAccess(LocalVariableAccess subject) throws CompileException {
+        throw new AssertionError();
+    }
 
     public Lvalue
-    copyParenthesizedExpression(ParenthesizedExpression pe) throws CompileException {
-        pe.value.accept(this.rvalueCopier);
-        return this.copyLvalue(pe);
+    copyParenthesizedExpression(ParenthesizedExpression subject) throws CompileException {
+        return new ParenthesizedExpression(subject.getLocation(), this.copyRvalue(subject.value));
     }
 
     public ElementValue
-    copyElementValueArrayInitializer(ElementValueArrayInitializer evai) throws CompileException {
-        for (ElementValue elementValue : evai.elementValues) elementValue.accept(this.elementValueCopier);
-        return this.copyElementValue(evai);
-    }
-
-    @Nullable public ElementValue
-    copyElementValue(@Nullable ElementValue ev) throws CompileException {
-        if (ev == null) return null;
-        return DeepCopier.assertNotNull(ev.accept(this.elementValueCopier));
-    }
-
-    private Annotation[]
-    copyAnnotations(Annotation[] subject) throws CompileException {
-        Annotation[] result = new Annotation[subject.length];
-        for (int i = 0; i < subject.length; i++) result[i] = this.copyAnnotation(subject[i]);
-        return result;
+    copyElementValueArrayInitializer(ElementValueArrayInitializer subject) throws CompileException {
+        return new ElementValueArrayInitializer(this.copyElementValues(subject.elementValues), subject.getLocation());
     }
 
     public Annotation
-    copyAnnotation(Annotation a) throws CompileException {
-        return DeepCopier.assertNotNull(a.accept(this.annotationCopier));
+    copySingleElementAnnotation(SingleElementAnnotation subject) throws CompileException {
+        return new SingleElementAnnotation(
+            this.copyReferenceType((ReferenceType) subject.type),
+            this.copyElementValue(subject.elementValue)
+        );
     }
 
     public Annotation
-    copySingleElementAnnotation(SingleElementAnnotation sea) throws CompileException {
-        sea.type.accept(this.atomCopier);
-        sea.elementValue.accept(this.elementValueCopier);
-        return this.copyAnnotation(sea);
+    copyNormalAnnotation(NormalAnnotation subject) throws CompileException {
+        return new NormalAnnotation(
+            this.copyReferenceType((ReferenceType) subject.type),
+            this.copyElementValuePairs(subject.elementValuePairs)
+        );
+    }
+
+    public  ElementValuePair
+    copyElementValuePair(ElementValuePair subject) throws CompileException {
+        return new ElementValuePair(subject.identifier, this.copyElementValue(subject.elementValue));
     }
 
     public Annotation
-    copyNormalAnnotation(NormalAnnotation na) throws CompileException {
-        na.type.accept(this.atomCopier);
-        for (ElementValuePair elementValuePair : na.elementValuePairs) {
-            elementValuePair.elementValue.accept(this.elementValueCopier);
-        }
-        return this.copyAnnotation(na);
-    }
-
-    public Annotation
-    copyMarkerAnnotation(MarkerAnnotation ma) throws CompileException {
-        ma.type.accept(this.atomCopier);
-        return this.copyAnnotation(ma);
-    }
-
-    public void
-    copyNamedClassDeclaration(NamedClassDeclaration ncd) throws CompileException {
-        for (Type implementedType : ncd.implementedTypes) {
-            implementedType.accept(this.atomCopier);
-        }
-        if (ncd.optionalExtendedType != null) ncd.optionalExtendedType.accept(this.atomCopier);
-        return this.copyClassDeclaration(ncd);
-    }
-
-    public void
-    copyInterfaceDeclaration(InterfaceDeclaration id) throws CompileException {
-        for (TypeBodyDeclaration cd : id.constantDeclarations) cd.accept(this.typeBodyDeclarationCopier);
-        for (Type extendedType : id.extendedTypes) extendedType.accept(this.atomCopier);
-        return this.copyAbstractTypeDeclaration(id);
-    }
-
-    public void
-    copyFunctionDeclarator(FunctionDeclarator fd) throws CompileException {
-        return this.copyFormalParameters(fd.formalParameters);
-        if (fd.optionalStatements != null) {
-            for (BlockStatement bs : fd.optionalStatements) this.copyBlockStatement(bs);
-        }
-    }
-
-    public FormalParameters
-    copyFormalParameters(FunctionDeclarator.FormalParameters subject) throws CompileException {
-        FormalParameter[] fps = new FormalParameter[subject.parameters.length];
-        for (int i = 0; i < fps.length; i++) fps[i] = this.copyFormalParameter(subject.parameters[i]);
-        return new FormalParameters(subject.getLocation(), fps, subject.variableArity);
+    copyMarkerAnnotation(MarkerAnnotation subject) throws CompileException {
+        return new MarkerAnnotation(this.copyType(subject.type));
     }
 
     public FunctionDeclarator.FormalParameter
-    copyFormalParameter(FunctionDeclarator.FormalParameter formalParameter) throws CompileException {
-        formalParameter.type.accept(this.atomCopier);
+    copyFormalParameter(FunctionDeclarator.FormalParameter subject) throws CompileException {
+        return new FormalParameter(subject.getLocation(), subject.finaL, this.copyType(subject.type), subject.name);
     }
 
-    public void
-    copyAbstractTypeBodyDeclaration(AbstractTypeBodyDeclaration atbd) throws CompileException { return this.copyLocated(atbd); }
+    public EnumConstant
+    copyEnumConstant(EnumConstant subject) throws CompileException {
 
-    @Nullable private List<BlockStatement>
-    copyStatements(@Nullable List<? extends BlockStatement> subject) throws CompileException {
+        EnumConstant result = new EnumConstant(
+            subject.getLocation(),
+            subject.optionalDocComment,
+            this.copyAnnotations(subject.annotations),
+            subject.name,
+            this.copyOptionalRvalues(subject.optionalArguments)
+        );
 
-        if (subject == null) return null;
-
-        List<BlockStatement> result = new ArrayList<BlockStatement>(subject.size());
-        for (BlockStatement bs : subject) result.add(this.copyBlockStatement(bs));
-        return result;
-    }
-
-    public Statement
-    copyStatement(Statement s) throws CompileException { return this.copyLocated(s); }
-
-    public void
-    copyBreakableStatement(BreakableStatement bs) throws CompileException { return this.copyStatement(bs); }
-
-    public void
-    copyContinuableStatement(ContinuableStatement cs) throws CompileException { return this.copyBreakableStatement(cs); }
-
-    private Rvalue[]
-    copyRvalues(Rvalue[] subject) throws CompileException {
-        return this.copyRvalues(Arrays.asList(subject)).toArray(new Rvalue[0]);
-    }
-
-    private List<Rvalue>
-    copyRvalues(Collection<? extends Rvalue> subject) throws CompileException {
-        List<Rvalue> result = new ArrayList<Rvalue>(subject.size());
-        for (Rvalue rv : subject) result.add(this.copyRvalue(rv));
-        return result;
-    }
-
-    @Nullable private Rvalue[]
-    copyOptionalRvalues(@Nullable Rvalue[] subject) throws CompileException {
-        return subject == null ? null : this.copyRvalues(subject);
-    }
-
-    public Rvalue
-    copyRvalue(Rvalue subject) throws CompileException { return this.copyAtom(subject); }
-
-    @Nullable public Rvalue
-    copyOptionalRvalue(@Nullable Rvalue subject) throws CompileException {
-        return subject == null ? null : this.copyRvalue(subject);
-    }
-
-    public void
-    copyBooleanRvalue(BooleanRvalue brv) throws CompileException { return this.copyRvalue(brv); }
-
-    public void
-    copyInvocation(Invocation i) throws CompileException {
-        for (Rvalue argument : i.arguments) argument.accept(this.rvalueCopier);
-        return this.copyRvalue(i);
-    }
-
-    public void
-    copyConstructorInvocation(ConstructorInvocation ci) throws CompileException {
-        for (Rvalue argument : ci.arguments) argument.accept(this.rvalueCopier);
-        return this.copyAtom(ci);
-    }
-
-    public TypeDeclaration
-    copyEnumConstant(EnumConstant ec) throws CompileException {
-
-        for (ConstructorDeclarator cd : ec.constructors) return this.copyConstructorDeclarator(cd);
-
-        if (ec.optionalArguments != null) {
-            for (Rvalue a : ec.optionalArguments) return this.copyRvalue(a);
+        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
+            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
         }
 
-        return this.copyAbstractTypeDeclaration(ec);
-    }
-
-    public TypeDeclaration
-    copyPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed) throws CompileException {
-        return this.copyPackageMemberClassDeclaration(pmed);
-    }
-
-    public MemberTypeDeclaration
-    copyMemberEnumDeclaration(MemberEnumDeclaration med) throws CompileException {
-        return this.copyMemberClassDeclaration(med);
-    }
-
-    public TypeDeclaration
-    copyPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) throws CompileException {
-        return this.copyPackageMemberInterfaceDeclaration(pmatd);
-    }
-
-    public MemberTypeDeclaration
-    copyMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws CompileException {
-        return this.copyMemberInterfaceDeclaration(matd);
-    }
-
-    public Lvalue
-    copyLvalue(Lvalue lv) throws CompileException { return this.copyRvalue(lv); }
-
-    private Type[]
-    copyTypes(Type[] subject) throws CompileException {
-        Type[] result = new Type[subject.length];
-        for (int i = 0; i < subject.length; i++) result[i] = this.copyType(subject[i]);
         return result;
     }
 
-    public Type
-    copyType(Type subject) throws CompileException {
-        return DeepCopier.assertNotNull(subject.accept(this.typeCopier));
+    public TypeDeclaration
+    copyPackageMemberEnumDeclaration(PackageMemberEnumDeclaration subject) throws CompileException {
+
+        PackageMemberEnumDeclaration result = new PackageMemberEnumDeclaration(
+            subject.getLocation(),
+            subject.getDocComment(),
+            new Modifiers(subject.getModifierFlags(), subject.getAnnotations(), false),
+            subject.name,
+            this.copyTypes(subject.implementedTypes)
+        );
+
+        for (EnumConstant ec : subject.getConstants()) {
+            result.addConstant(this.copyEnumConstant(ec));
+        }
+        for (ConstructorDeclarator cd : subject.constructors) {
+            result.addConstructor(this.copyConstructorDeclarator(cd));
+        }
+        for (MethodDeclarator md : subject.getMethodDeclarations()) {
+            result.addDeclaredMethod(this.copyMethodDeclarator(md));
+        }
+        for (Java.MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+            result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
+        }
+        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
+            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        }
+
+        return result;
     }
 
-    public Atom
-    copyAtom(Atom subject) throws CompileException {
-        return DeepCopier.assertNotNull(subject.accept(this.atomCopier));
+    public MemberTypeDeclaration
+    copyMemberEnumDeclaration(MemberEnumDeclaration subject) throws CompileException {
+
+        MemberEnumDeclaration result = new MemberEnumDeclaration(
+            subject.getLocation(),
+            subject.getDocComment(),
+            new Modifiers(subject.getModifierFlags(), subject.getAnnotations(), false),
+            subject.name,
+            this.copyTypes(subject.implementedTypes)
+        );
+
+        for (EnumConstant ec : subject.getConstants()) {
+            result.addConstant(this.copyEnumConstant(ec));
+        }
+        for (ConstructorDeclarator cd : subject.constructors) {
+            result.addConstructor(this.copyConstructorDeclarator(cd));
+        }
+        for (MethodDeclarator md : subject.getMethodDeclarations()) {
+            result.addDeclaredMethod(this.copyMethodDeclarator(md));
+        }
+        for (Java.MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+            result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
+        }
+        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
+            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        }
+
+        return result;
     }
 
-    @Nullable private Atom
-    copyOptionalAtom(@Nullable Atom subject) {
-        return subject == null ? null : this.copyAtom(subject);
+    public TypeDeclaration
+    copyPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration subject) throws CompileException {
+
+        PackageMemberAnnotationTypeDeclaration result = new PackageMemberAnnotationTypeDeclaration(
+            subject.getLocation(),
+            subject.getDocComment(),
+            new Modifiers(subject.getModifierFlags(), subject.getAnnotations(), false),
+            subject.name
+        );
+
+        for (FieldDeclaration fd : subject.constantDeclarations) {
+            result.addConstantDeclaration(this.copyFieldDeclaration(fd));
+        }
+
+        return result;
+    }
+
+    public MemberTypeDeclaration
+    copyMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration subject) throws CompileException {
+
+        MemberAnnotationTypeDeclaration result = new MemberAnnotationTypeDeclaration(
+            subject.getLocation(),
+            subject.getDocComment(),
+            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            subject.name
+        );
+
+        for (FieldDeclaration cd : subject.constantDeclarations) {
+            result.addConstantDeclaration(this.copyFieldDeclaration(cd));
+        }
+        for (MethodDeclarator md : subject.getMethodDeclarations()) {
+            result.addDeclaredMethod(this.copyMethodDeclarator(md));
+        }
+        for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+            result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
+        }
+
+        return result;
     }
 
     public TryStatement.Resource
-    copyLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws CompileException {
-        lvdr.type.accept(this.atomCopier);
-        ArrayInitializerOrRvalue i = lvdr.variableDeclarator.optionalInitializer;
-        if (i != null) return this.copyArrayInitializerOrRvalue(i);
+    copyLocalVariableDeclaratorResource(LocalVariableDeclaratorResource subject) throws CompileException {
+        return new LocalVariableDeclaratorResource(
+            subject.getLocation(),
+            this.copyModifiers(subject.modifiers),
+            this.copyType(subject.type),
+            this.copyVariableDeclarator(subject.variableDeclarator)
+        );
     }
 
     public TryStatement.Resource
-    copyVariableAccessResource(VariableAccessResource var) throws CompileException {
-        var.variableAccess.accept(this.rvalueCopier);
+    copyVariableAccessResource(VariableAccessResource subject) throws CompileException {
+        return new VariableAccessResource(subject.getLocation(), this.copyRvalue(subject.variableAccess));
     }
 
-    private Modifiers
+    public Modifiers
     copyModifiers(Modifiers subject) throws CompileException {
         return new Modifiers(subject.accessFlags, this.copyAnnotations(subject.annotations), subject.isDefault);
     }
 
-    @Nullable private static TypeParameter[]
-    copyTypeParameters(@Nullable TypeParameter[] subject) {
-        if (subject == null) return null;
-        TypeParameter[] result = new TypeParameter[subject.length];
-        for (int i = 0; i < subject.length; i++) result[i] = DeepCopier.copyTypeParameter(subject[i]);
-        return result;
+    public TypeParameter
+    copyTypeParameter(TypeParameter subject) throws CompileException {
+        return new TypeParameter(subject.name, this.copyOptionalReferenceTypes(subject.optionalBound));
     }
 
-    private static TypeParameter
-    copyTypeParameter(TypeParameter subject) {
-        return new TypeParameter(subject.name, subject.optionalBound);
-    }
+    // -----------------------------------
 
     private static <T> T
     assertNotNull(@Nullable T subject) {

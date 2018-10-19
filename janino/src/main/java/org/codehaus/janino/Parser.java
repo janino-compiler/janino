@@ -1327,6 +1327,24 @@ class Parser {
         );
     }
 
+    public MethodDeclarator
+    parseMethodDeclaration() throws CompileException, IOException {
+
+        return this.parseMethodDeclarationRest(
+            this.doc(),                      // optionalDocComment
+            this.parseModifiers(),           // modifiers
+            this.parseTypeParametersOpt(),   // optionalTypeParameters
+            this.parseVoidOrType(),          // type
+            this.read(TokenType.IDENTIFIER), // name
+            true                             // allowDefaultClause
+        );
+    }
+
+    public Type
+    parseVoidOrType() throws CompileException, IOException {
+        return this.peekRead("void") ? new PrimitiveType(this.location(), Primitive.VOID): this.parseType();
+    }
+
     /**
      * <pre>
      *   MethodDeclarationRest :=

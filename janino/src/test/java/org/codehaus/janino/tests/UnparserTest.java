@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
@@ -129,7 +130,7 @@ class UnparserTest {
         Assert.assertEquals(expected, actual);
     }
 
-    private static String
+    public static String
     normalizeWhitespace(String input) { return input.replaceAll("\\s+", " ").trim(); }
 
     private static String
@@ -551,9 +552,72 @@ class UnparserTest {
     @Test public void
     testParseUnparseParseJanino() throws Exception {
 
+        for (File f : UnparserTest.findJaninoJavaFiles()) {
+
+            try {
+
+                // Parse the source file once.
+                CompilationUnit cu1;
+                {
+                    InputStream is = new FileInputStream(f);
+                    cu1 = new Parser(new Scanner(f.toString(), is)).parseCompilationUnit();
+                    is.close();
+                }
+
+                // Unparse the compilation unit.
+                String text;
+                {
+                    StringWriter sw = new StringWriter();
+                    Unparser.unparse(cu1, sw);
+                    text = sw.toString();
+                }
+
+                // Then parse again.
+                CompilationUnit cu2  = new Parser(
+                    new Scanner(f.toString(), new StringReader(text))
+                ).parseCompilationUnit();
+
+                // Compare the two ASTs.
+                Java.Locatable[] elements1 = UnparserTest.listSyntaxElements(cu1);
+                Java.Locatable[] elements2 = UnparserTest.listSyntaxElements(cu2);
+                for (int i = 0;; ++i) {
+                    if (i == elements1.length) {
+                        if (i == elements2.length) break;
+                        Assert.fail("Extra element " + elements2[i]);
+                    }
+                    Locatable locatable1 = elements1[i];
+
+                    if (i == elements2.length) {
+                        Assert.fail("Element missing: " + locatable1);
+                    }
+                    Locatable locatable2 = elements2[i];
+
+                    String s1 = locatable1.toString();
+                    String s2 = locatable2.toString();
+                    if (!s1.equals(s2)) {
+                        Assert.fail(
+                            locatable1.getLocation().toString()
+                            + ": Expected \""
+                            + s1
+                            + "\", was \""
+                            + s2
+                            + "\""
+                        );
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public static Collection<File>
+    findJaninoJavaFiles() {
+        final Collection<File> result = new ArrayList<File>();
+
         // Process all "*.java" files in the JANINO source tree.
         // Must use the "janino" project directory, because that is pre-Java 5.
-        this.find(new File("../janino/src/main/java"), new FileFilter() {
+        UnparserTest.find(new File("../janino/src/main/java"), new FileFilter() {
 
             @Override public boolean
             accept(@Nullable File f) {
@@ -561,102 +625,49 @@ class UnparserTest {
 
                 if (f.isDirectory()) return true;
 
-                if (f.getName().endsWith(".java") && f.isFile()) {
+                if (f.getName().endsWith(".java") && f.isFile()) result.add(f);
 
-                    try {
-
-                        // Parse the source file once.
-                        CompilationUnit cu1;
-                        {
-                            InputStream is = new FileInputStream(f);
-                            cu1 = new Parser(new Scanner(f.toString(), is)).parseCompilationUnit();
-                            is.close();
-                        }
-
-                        // Unparse the compilation unit.
-                        String text;
-                        {
-                            StringWriter sw = new StringWriter();
-                            Unparser.unparse(cu1, sw);
-                            text = sw.toString();
-                        }
-
-                        // Then parse again.
-                        CompilationUnit cu2  = new Parser(
-                            new Scanner(f.toString(), new StringReader(text))
-                        ).parseCompilationUnit();
-
-                        // Compare the two ASTs.
-                        Java.Locatable[] elements1 = this.listSyntaxElements(cu1);
-                        Java.Locatable[] elements2 = this.listSyntaxElements(cu2);
-                        for (int i = 0;; ++i) {
-                            if (i == elements1.length) {
-                                if (i == elements2.length) break;
-                                Assert.fail("Extra element " + elements2[i]);
-                            }
-                            Locatable locatable1 = elements1[i];
-
-                            if (i == elements2.length) {
-                                Assert.fail("Element missing: " + locatable1);
-                            }
-                            Locatable locatable2 = elements2[i];
-
-                            String s1 = locatable1.toString();
-                            String s2 = locatable2.toString();
-                            if (!s1.equals(s2)) {
-                                Assert.fail(
-                                    locatable1.getLocation().toString()
-                                    + ": Expected \""
-                                    + s1
-                                    + "\", was \""
-                                    + s2
-                                    + "\""
-                                );
-                            }
-                        }
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
                 return false;
             }
-
-            /**
-             * Traverses the given {@link CompilationUnit} and collect a list of all its syntactical elements.
-             */
-            private Locatable[]
-            listSyntaxElements(CompilationUnit cu) {
-
-                final List<Locatable> locatables = new ArrayList<Locatable>();
-                new AbstractTraverser<RuntimeException>() {
-
-                    // Two implementations of "Locatable": "Located" and "AbstractTypeDeclaration".
-                    @Override public void
-                    traverseLocated(Located l) {
-                        locatables.add(l);
-                        super.traverseLocated(l);
-                    }
-
-                    @Override public void
-                    traverseAbstractTypeDeclaration(AbstractTypeDeclaration atd) {
-                        locatables.add(atd);
-                        super.traverseAbstractTypeDeclaration(atd);
-                    }
-                }.traverseCompilationUnit(cu);
-
-                return locatables.toArray(new Java.Locatable[locatables.size()]);
-            }
         });
+
+        return result;
+    }
+
+    /**
+     * Traverses the given {@link CompilationUnit} and collect a list of all its syntactical elements.
+     */
+    private static Locatable[]
+    listSyntaxElements(CompilationUnit cu) {
+
+        final List<Locatable> locatables = new ArrayList<Locatable>();
+        new AbstractTraverser<RuntimeException>() {
+
+            // Two implementations of "Locatable": "Located" and "AbstractTypeDeclaration".
+            @Override public void
+            traverseLocated(Located l) {
+                locatables.add(l);
+                super.traverseLocated(l);
+            }
+
+            @Override public void
+            traverseAbstractTypeDeclaration(AbstractTypeDeclaration atd) {
+                locatables.add(atd);
+                super.traverseAbstractTypeDeclaration(atd);
+            }
+        }.traverseCompilationUnit(cu);
+
+        return locatables.toArray(new Java.Locatable[locatables.size()]);
     }
 
     /**
      * Invokes <var>fileFilter</var> for all files and subdirectories in the given <var>directory</var>. If {@link
      * FileFilter#accept(File)} returns {@code true}, recurse with that file/directory.
      */
-    private void
+    private static void
     find(File directory, FileFilter fileFilter) {
         File[] subDirectories = directory.listFiles(fileFilter);
         if (subDirectories == null) throw new AssertionError(directory + " is not a directory");
-        for (File subDirectorie : subDirectories) this.find(subDirectorie, fileFilter);
+        for (File subDirectorie : subDirectories) UnparserTest.find(subDirectorie, fileFilter);
     }
 }
