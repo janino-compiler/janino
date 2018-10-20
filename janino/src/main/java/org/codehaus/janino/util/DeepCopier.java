@@ -14,10 +14,10 @@
  *    3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
  *       products derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY CompileExceptionPRESS OR IMPLIED WARRANTIES,
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, CompileExceptionEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -150,13 +150,12 @@ import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
 import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
-import org.codehaus.janino.tests.AstTest;
 
 /**
  * Creates deep copies of AST elements.
  * <p>
  *   The main purpose of this class is to <em>extend</em> it, and <em>modify</em> the AST while it is being copied.
- *   For an example, see {@link AstTest#testMethodToLabeledStatement()}.
+ *   For an example, see {@link org.codehaus.janino.tests.AstTest#testMethodToLabeledStatement()}.
  * </p>
  */
 @SuppressWarnings("unused") public
@@ -303,6 +302,7 @@ class DeepCopier {
     private final Visitor.AtomVisitor<Atom, CompileException>
     atomCopier = new Visitor.AtomVisitor<Atom, CompileException>() {
 
+        // SUPPRESS CHECKSTYLE LineLengthCheck:4
         @Override public Atom visitRvalue(Rvalue rv)                               throws CompileException { return DeepCopier.this.copyRvalue(rv);                }
         @Override public Atom visitPackage(Package p)                              throws CompileException { return DeepCopier.this.copyPackage(p);                }
         @Override public Atom visitType(Type t)                                    throws CompileException { return DeepCopier.this.copyType(t);                   }
@@ -346,6 +346,7 @@ class DeepCopier {
     private final TypeArgumentVisitor<TypeArgument, CompileException>
     typeArgumentCopier = new TypeArgumentVisitor<Java.TypeArgument, CompileException>() {
 
+        // SUPPRESS CHECKSTYLE LineLengthCheck:3
         @Override @Nullable public TypeArgument visitWildcard(Wildcard w)            throws CompileException { return DeepCopier.this.copyWildcard(w);       }
         @Override @Nullable public TypeArgument visitReferenceType(ReferenceType rt) throws CompileException { return DeepCopier.this.copyReferenceType(rt); }
         @Override @Nullable public TypeArgument visitArrayType(ArrayType at)         throws CompileException { return DeepCopier.this.copyArrayType(at);     }
@@ -353,6 +354,7 @@ class DeepCopier {
 
     // ------------------------------ "copy*()" methods on abstract types
 
+    // SUPPRESS CHECKSTYLE LineLengthCheck:14
     public ImportDeclaration     copyImportDeclaration(ImportDeclaration subject)         throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.importCopier));                }
     public TypeDeclaration       copyTypeDeclaration(TypeDeclaration subject)             throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeDeclarationCopier));       }
     public TypeBodyDeclaration   copyTypeBodyDeclaration(TypeBodyDeclaration subject)     throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeBodyDeclarationCopier));   }
@@ -368,12 +370,14 @@ class DeepCopier {
     public Type                  copyType(Type subject)                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeCopier));                  }
     public Atom                  copyAtom(Atom subject)                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.atomCopier));                  }
 
+    // SUPPRESS CHECKSTYLE LineLengthCheck:3
     public PackageMemberTypeDeclaration copyPackageMemberTypeDeclaration(PackageMemberTypeDeclaration subject) throws CompileException { return (PackageMemberTypeDeclaration) this.copyTypeDeclaration(subject); }
     public MemberTypeDeclaration        copyMemberTypeDeclaration(MemberTypeDeclaration subject)               throws CompileException { return (MemberTypeDeclaration)        this.copyTypeDeclaration(subject); }
     public Statement                    copyStatement(Statement subject)                                       throws CompileException { return (Statement)                    this.copyBlockStatement(subject);  }
 
     // ------------------------------ "copyOptional*()" methods
 
+    // SUPPRESS CHECKSTYLE LineLengthCheck:19
     @Nullable public PackageDeclaration       copyOptionalPackageDeclaration(@Nullable PackageDeclaration subject)             throws CompileException { return subject == null ? null : this.copyPackageDeclaration(subject);       }
     @Nullable public BlockStatement           copyOptionalBlockStatement(@Nullable BlockStatement subject)                     throws CompileException { return subject == null ? null : this.copyBlockStatement(subject);           }
     @Nullable public Block                    copyOptionalBlock(@Nullable Block subject)                                       throws CompileException { return subject == null ? null : this.copyBlock(subject);                    }
@@ -396,6 +400,7 @@ class DeepCopier {
 
     // ------------------------------ "copy*s()" methods for arrays
 
+    // SUPPRESS CHECKSTYLE LineLengthCheck:8
     public TypeArgument[]             copyTypeArguments(TypeArgument[] subject)                         throws CompileException { TypeArgument[]             result = new TypeArgument[subject.length];               for (int i = 0; i < subject.length; i++) result[i] = this.copyTypeArgument(subject[i]);                     return result; }
     public VariableDeclarator[]       copyVariableDeclarators(VariableDeclarator[] subject)             throws CompileException { VariableDeclarator[]       result = new VariableDeclarator[subject.length];         for (int i = 0; i < subject.length; i++) result[i] = this.copyVariableDeclarator(subject[i]);               return result; }
     public ArrayInitializerOrRvalue[] copyArrayInitializerOrRvalues(ArrayInitializerOrRvalue[] subject) throws CompileException { ArrayInitializerOrRvalue[] result = new ArrayInitializerOrRvalue[subject.length];   for (int i = 0; i < subject.length; i++) result[i] = this.copyOptionalArrayInitializerOrRvalue(subject[i]); return result; }
@@ -405,6 +410,7 @@ class DeepCopier {
     public Type[]                     copyTypes(Type[] subject)                                         throws CompileException { Type[]                     result = new Type[subject.length];                       for (int i = 0; i < subject.length; i++) result[i] = this.copyType(subject[i]);                             return result; }
     public TypeParameter[]            copyTypeParameters(TypeParameter[] subject)                       throws CompileException { TypeParameter[]            result = new TypeParameter[subject.length];              for (int i = 0; i < subject.length; i++) result[i] = this.copyTypeParameter(subject[i]);                    return result; }
 
+    // SUPPRESS CHECKSTYLE LineLengthCheck:2
     public Annotation[] copyAnnotations(Annotation[] subject) throws CompileException { return this.copyAnnotations(Arrays.asList(subject)).toArray(new Annotation[0]); }
     public Rvalue[]     copyRvalues(Rvalue[] subject)         throws CompileException { return this.copyRvalues(Arrays.asList(subject)).toArray(new Rvalue[0]);         }
 
@@ -417,6 +423,7 @@ class DeepCopier {
 
     // ------------------------------ "copy*s()" methods for collections
 
+    // SUPPRESS CHECKSTYLE LineLengthCheck:7
     public List<BlockStatement>            copyBlockStatements(Collection<? extends BlockStatement> subject)                       throws CompileException { List<BlockStatement>            result = new ArrayList<BlockStatement>(subject.size());                            for (BlockStatement bs              : subject) result.add(this.copyBlockStatement(bs));              return result; }
     public List<Resource>                  copyResources(Collection<? extends Resource> subject)                                   throws CompileException { List<Resource>                  result = new ArrayList<Resource>(subject.size());                                  for (Resource r                     : subject) result.add(this.copyResource(r));                     return result; }
     public List<CatchClause>               copyCatchClauses(Collection<? extends CatchClause> subject)                             throws CompileException { List<CatchClause>               result = new ArrayList<CatchClause>(subject.size());                               for (CatchClause sbgs               : subject) result.add(this.copyCatchClause(sbgs));               return result; }
@@ -477,7 +484,8 @@ class DeepCopier {
     public AnonymousClassDeclaration
     copyAnonymousClassDeclaration(AnonymousClassDeclaration subject) throws CompileException {
 
-        AnonymousClassDeclaration result = new AnonymousClassDeclaration(subject.getLocation(), this.copyType(subject.baseType));
+        AnonymousClassDeclaration
+        result = new AnonymousClassDeclaration(subject.getLocation(), this.copyType(subject.baseType));
 
         for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
             result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
