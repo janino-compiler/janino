@@ -644,8 +644,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             // Now invoke "Class.getDeclaredMethods()" and filter "our" methods from the result.
             for (Method m : c.getDeclaredMethods()) {
 
-                Object key = ScriptEvaluator.methodKey(m.getName(), m.getParameterTypes());
-                Integer idx = dms.get(key);
+                Integer idx = dms.get(ScriptEvaluator.methodKey(m.getName(), m.getParameterTypes()));
                 if (idx == null) continue;
 
                 assert methods[idx] == null;
@@ -980,7 +979,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         parser.read(";");
     }
 
-    protected Java.MethodDeclarator
+    private Java.MethodDeclarator
     makeMethodDeclaration(
         Location                  location,
         Java.Annotation[]         annotations,
