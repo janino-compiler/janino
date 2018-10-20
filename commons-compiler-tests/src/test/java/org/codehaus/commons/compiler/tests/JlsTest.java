@@ -300,7 +300,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     test_xxx1() throws Exception {
-        this.assertExpressionEvaluatesTrue("\"FOO\".equals(System.currentTimeMillis() == 13 ? \"\" : \"BAR\")");
+        this.assertExpressionEvaluatesTrue("\"FOO\".equals(System.currentTimeMillis() == 13 ? \"\" : \"FOO\")");
     }
 
     @Test public void

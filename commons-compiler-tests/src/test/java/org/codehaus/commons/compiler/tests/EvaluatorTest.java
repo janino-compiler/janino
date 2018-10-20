@@ -529,7 +529,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         [65534] ConstantUtf8Info     "_v65523"
         */
 
-        final int[]     repetitionss = new int[]     { 1,    100,  65524, 65525 };
+        final int[]     repetitionss = new int[]     { 1,    100,  65523, 65524 };
         final boolean[] cookable     = new boolean[] { true, true, true,  false };
 
         for (int i = 0; i < repetitionss.length; i++) {
