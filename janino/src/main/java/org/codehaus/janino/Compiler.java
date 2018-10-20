@@ -725,7 +725,8 @@ class Compiler {
         }
 
         /**
-         * @param type                    field descriptor of the {@link IClass} to load, e.g. {@code "Lpkg1/pkg2/Outer$Inner;"}
+         * @param type                    field descriptor of the {@link IClass} to load, e.g. {@code
+         *                                "Lpkg1/pkg2/Outer$Inner;"}
          * @return                        {@code null} if a the type could not be found
          * @throws ClassNotFoundException An exception was raised while loading the {@link IClass}
          */
