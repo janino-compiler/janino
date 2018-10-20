@@ -213,7 +213,11 @@ class Parser {
 
         while (this.peek("import")) {
             if (modifiers.isDefault) {
-                this.warning("import.defaultModifier", "No \"default\" modifier allowed on import declaration", this.location());
+                this.warning(
+                    "import.defaultModifier",
+                    "No \"default\" modifier allowed on import declaration",
+                    this.location()
+                );
             }
             if (modifiers.accessFlags != 0) {
                 this.warning("import.accessFlags", "No access flags allowed on import declarations", this.location());
@@ -403,7 +407,7 @@ class Parser {
 
     /**
      * <pre>
-     *   ModifiersAndAnnotations := {
+     *   Modifiers := {
      *       'public' | 'protected' | 'private' | 'static' | 'abstract' | 'final' | 'native'
      *       | 'synchronized' | 'transient' | 'volatile' | 'strictfp'
      *       | Annotation
@@ -803,9 +807,9 @@ class Parser {
     parseClassBodyDeclaration(AbstractClassDeclaration classDeclaration) throws CompileException, IOException {
         if (this.peekRead(";")) return;
 
-        String    optionalDocComment = this.doc();
-        Modifiers modifiers          = this.parseModifiers();
+        final String optionalDocComment = this.doc();
 
+        Modifiers modifiers = this.parseModifiers();
         if (modifiers.isDefault) {
             throw this.compileException("Modifier \"default\" not allowed on class member");
         }
@@ -1123,7 +1127,7 @@ class Parser {
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseClassDeclarationRest(
                         optionalDocComment,                      // optionalDocComment
-                        modifiers.add(Mod.STATIC | Mod.PUBLIC),  // ModifiersAndAnnotations
+                        modifiers.add(Mod.STATIC | Mod.PUBLIC),  // modifiers
                         ClassDeclarationContext.TYPE_DECLARATION // context
                     )
                 );
@@ -1141,7 +1145,7 @@ class Parser {
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseClassDeclarationRest(
                         optionalDocComment,                                // optionalDocComment
-                        modifiers.add(Mod.STATIC | Mod.PUBLIC | Mod.ENUM), // ModifiersAndAnnotations
+                        modifiers.add(Mod.STATIC | Mod.PUBLIC | Mod.ENUM), // modifiers
                         ClassDeclarationContext.TYPE_DECLARATION           // context
                     )
                 );
@@ -1159,7 +1163,7 @@ class Parser {
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                         optionalDocComment,                                // optionalDocComment
-                        modifiers.add(Mod.STATIC | Mod.PUBLIC),            // ModifiersAndAnnotations
+                        modifiers.add(Mod.STATIC | Mod.PUBLIC),            // modifiers
                         InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
                     )
                 );
@@ -1181,7 +1185,7 @@ class Parser {
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                         optionalDocComment,                                      // optionalDocComment
-                        modifiers.add(Mod.STATIC | Mod.PUBLIC | Mod.ANNOTATION), // ModifiersAndAnnotations
+                        modifiers.add(Mod.STATIC | Mod.PUBLIC | Mod.ANNOTATION), // modifiers
                         InterfaceDeclarationContext.NAMED_TYPE_DECLARATION       // context
                     )
                 );
@@ -1327,8 +1331,17 @@ class Parser {
         );
     }
 
+    /**
+     * <pre>
+     *   MethodDeclaration :=
+     *     [ DocComment ] Modifiers [ TypeParameters ] VoidOrType Identifier MethodDeclarationRest
+     * </pre>
+     *
+     * @param allowDefaultClause Whether a "default clause" for an "annotation type element" (JLS8 9.6.2) should be
+     *                           parsed
+     */
     public MethodDeclarator
-    parseMethodDeclaration() throws CompileException, IOException {
+    parseMethodDeclaration(boolean allowDefaultClause) throws CompileException, IOException {
 
         return this.parseMethodDeclarationRest(
             this.doc(),                      // optionalDocComment
@@ -1336,13 +1349,18 @@ class Parser {
             this.parseTypeParametersOpt(),   // optionalTypeParameters
             this.parseVoidOrType(),          // type
             this.read(TokenType.IDENTIFIER), // name
-            true                             // allowDefaultClause
+            allowDefaultClause               // allowDefaultClause
         );
     }
 
+    /**
+     * <pre>
+     *   VoidOrType := 'void' | Type
+     * </pre>
+     */
     public Type
     parseVoidOrType() throws CompileException, IOException {
-        return this.peekRead("void") ? new PrimitiveType(this.location(), Primitive.VOID): this.parseType();
+        return this.peekRead("void") ? new PrimitiveType(this.location(), Primitive.VOID) : this.parseType();
     }
 
     /**
