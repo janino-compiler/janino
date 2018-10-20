@@ -244,9 +244,12 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertExpressionUncookable("2e-324D");
     }
 
+    /**
+     * Hex float literals, JLS8 3.10.2
+     */
     @Test public void
     test_3_10_2__FloatingPointLiterals_hexadecimal() throws Exception {
-        this.assertExpressionEvaluatesTrue("0x1D == 29"); // "D" is NOT a float fixxif, but a hex digit!
+        this.assertExpressionEvaluatesTrue("0x1D == 29"); // "D" is NOT a float type suffix, but a hex digit!
         this.assertExpressionEvaluatesTrue("0x1p0D == 1");
         this.assertExpressionEvaluatesTrue("0x.8p0 == 0.5");
         this.assertExpressionEvaluatesTrue("0x1p0 == 1");
@@ -293,6 +296,16 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertExpressionUncookable("\"aaa\rbbb\"");
         this.assertExpressionEvaluatesTrue("\"aaa\" == \"aaa\"");
         this.assertExpressionEvaluatesTrue("\"aaa\" != \"bbb\"");
+    }
+
+    @Test public void
+    test_xxx1() throws Exception {
+        this.assertExpressionEvaluatesTrue("\"FOO\".equals(System.currentTimeMillis() == 13 ? \"\" : \"BAR\")");
+    }
+
+    @Test public void
+    test_xxx2() throws Exception {
+        this.assertExpressionEvaluatesTrue("\"'\".charAt(0) == 39"); // Unescaped single quote is allowed!
     }
 
     @Test public void
