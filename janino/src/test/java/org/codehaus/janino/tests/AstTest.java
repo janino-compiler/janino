@@ -396,7 +396,7 @@ class AstTest {
         try {
             return AstTest.parseCompilationUnit(f.getPath(), r);
         } finally {
-            try { r.close(); } catch (Throwable t) {}
+            try { r.close(); } catch (Exception e) {}
         }
     }
 
@@ -405,6 +405,11 @@ class AstTest {
         return new Parser(new Scanner(optionalFileName, in)).parseCompilationUnit();
     }
 
+    /**
+     * Parses a method declaration and transforms it into a labeled statement.
+     *
+     * @see <a href="https://github.com/janino-compiler/janino/issues/61">Issue #61</a>
+     */
     @Test public void
     testMethodToLabeledStatement() throws Exception {
         String text1 = (
@@ -470,7 +475,8 @@ class AstTest {
         );
 
         // Parse the method and get its body.
-        MethodDeclarator md1 = new Parser(new Scanner(null, new StringReader(text1))).parseMethodDeclaration();
+        MethodDeclarator md1 = new Parser(new Scanner(null, new StringReader(text1))).parseMethodDeclaration(false);
+
         List<? extends BlockStatement> ss = md1.optionalStatements;
         assert ss != null;
 
