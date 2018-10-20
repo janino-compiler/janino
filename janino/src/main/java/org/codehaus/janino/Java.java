@@ -2441,6 +2441,9 @@ class Java {
             return visitor.visitMethodDeclarator(this);
         }
 
+        /**
+         * The type parameters declared for the method.
+         */
         @Nullable public final TypeParameter[] optionalTypeParameters;
 
         /**
@@ -3223,7 +3226,7 @@ class Java {
             if (finallY != null) finallY.setEnclosingScope(this);
         }
 
-        @Override public String
+        @SuppressWarnings("null") @Override public String
         toString() {
             return (
                 "try ... "
@@ -3328,8 +3331,16 @@ class Java {
             }
         }
 
-        @Override public String
-        toString() { return "switch (" + this.condition + ") { (" + (this.sbsgs == null ? "???" : Integer.toString(this.sbsgs.size())) + " statement groups) }"; }
+        @SuppressWarnings("null") @Override public String
+        toString() {
+            return (
+                "switch ("
+                + this.condition
+                + ") { ("
+                + (this.sbsgs == null ? "???" : Integer.toString(this.sbsgs.size()))
+                + " statement groups) }"
+            );
+        }
 
         /**
          * Representation of a "switch block statement group" as defined in JLS7 14.11.
@@ -5770,11 +5781,11 @@ class Java {
         Wildcard(int bounds, @Nullable ReferenceType referenceType) {
             if (referenceType == null) {
                 assert bounds == Wildcard.BOUNDS_NONE;
-                this.bounds = bounds;
+                this.bounds        = bounds;
                 this.referenceType = null;
             } else {
                 assert bounds == Wildcard.BOUNDS_EXTENDS || bounds == Wildcard.BOUNDS_SUPER;
-                this.bounds = bounds;
+                this.bounds        = bounds;
                 this.referenceType = referenceType;
             }
         }
