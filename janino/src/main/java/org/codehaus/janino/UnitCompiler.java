@@ -31,6 +31,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1473,7 +1474,7 @@ class UnitCompiler {
 
             @Override protected void
             storeBody(DataOutputStream dos) throws IOException {
-                codeContext.storeCodeAttributeBody(dos, (short) 0, (short) 0);
+                codeContext.storeCodeAttributeBody(dos, (short) 0, (short) 0, (short) 0);
             }
         });
     }
@@ -3266,16 +3267,16 @@ class UnitCompiler {
         ) {
             if (fd.modifiers.isDefault) {
                 if (!(fd.getDeclaringType() instanceof InterfaceDeclaration)) {
-                    this.compileError("Only interface method declarations may have the \"default\" modifier", fd.getLocation());
+                    this.compileError("Only interface method declarations may have the \"default\" modifier", fd.getLocation()); // SUPPRESS CHECKSTYLE LineLength
                 } else
                 if (Mod.isStatic(fd.modifiers.accessFlags)) {
-                    this.compileError("Static interface method declarations must not have the \"default\" modifier", fd.getLocation());
+                    this.compileError("Static interface method declarations must not have the \"default\" modifier", fd.getLocation()); // SUPPRESS CHECKSTYLE LineLength
                 } else
                 if (fd.optionalStatements == null) {
                     this.compileError("Default method declarations must have a body", fd.getLocation());
                 }
             } else {
-                if (fd.optionalStatements != null) this.compileError("Method must not declare a body", fd.getLocation());
+                if (fd.optionalStatements != null) this.compileError("Method must not declare a body", fd.getLocation()); // SUPPRESS CHECKSTYLE LineLength
                 return;
             }
         }
@@ -3435,12 +3436,14 @@ class UnitCompiler {
             lvtani = 0;
         }
 
+        final short smtani = classFile.addConstantUtf8Info("StackMapTable");
+
         // Add the code context as a code attribute to the MethodInfo.
         mi.addAttribute(new ClassFile.AttributeInfo(classFile.addConstantUtf8Info("Code")) {
 
             @Override protected void
             storeBody(DataOutputStream dos) throws IOException {
-                codeContext.storeCodeAttributeBody(dos, lntani, lvtani);
+                codeContext.storeCodeAttributeBody(dos, lntani, lvtani, smtani);
             }
         });
     }
@@ -4056,8 +4059,8 @@ class UnitCompiler {
                     // Compile the LHS ("a"), and discard the result.
                     this.pop(bo.lhs, this.compileGetValue(bo.lhs));
 
-                    // Compile the RHS and branch conditionally (although the RHS is a constant). This prevents trouble with
-                    // "unreachable code".
+                    // Compile the RHS and branch conditionally (although the RHS is a constant). This prevents
+                    // trouble with "unreachable code".
                     this.compileBoolean(
                         bo.rhs,
                         dst,
@@ -5226,6 +5229,7 @@ class UnitCompiler {
         final Visitor.LvalueVisitor<Boolean, RuntimeException>
         lvalueVisitor = new Visitor.LvalueVisitor<Boolean, RuntimeException>() {
 
+            // SUPPRESS CHECKSTYLE LineLengthCheck:7
             @Override @Nullable public Boolean visitAmbiguousName(AmbiguousName an)                                        { return false; }
             @Override @Nullable public Boolean visitArrayAccessExpression(ArrayAccessExpression aae)                       { return UnitCompiler.mayHaveSideEffects(aae.lhs) || UnitCompiler.mayHaveSideEffects(aae.index); }
             @Override @Nullable public Boolean visitFieldAccess(FieldAccess fa)                                            { return false; }
@@ -5235,6 +5239,7 @@ class UnitCompiler {
             @Override @Nullable public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    { return UnitCompiler.mayHaveSideEffects(pe.value); }
         };
 
+        // SUPPRESS CHECKSTYLE LineLengthCheck:26
         @Override @Nullable public Boolean visitLvalue(Lvalue lv)                                          { return (Boolean) lv.accept(this.lvalueVisitor); }
         @Override @Nullable public Boolean visitArrayLength(ArrayLength al)                                { return UnitCompiler.mayHaveSideEffects(al.lhs); }
         @Override @Nullable public Boolean visitAssignment(Assignment a)                                   { return true; }

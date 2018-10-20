@@ -209,7 +209,8 @@ class CodeContext {
     storeCodeAttributeBody(
         DataOutputStream dos,
         short            lineNumberTableAttributeNameIndex,
-        short            localVariableTableAttributeNameIndex
+        short            localVariableTableAttributeNameIndex,
+        short            stackMapTableAttributeNameIndex
     ) throws IOException {
         dos.writeShort(this.maxStack);                                               // max_stack
         dos.writeShort(this.maxLocals);                                              // max_locals
@@ -256,6 +257,39 @@ class CodeContext {
 
             if (ai != null) attributes.add(ai);
         }
+
+//        // Add "StackMapTable" attribute.
+//        attributes.add(new ClassFile.AttributeInfo(stackMapTableAttributeNameIndex) {
+//            @Override protected void
+//            storeBody(DataOutputStream dos) throws IOException {
+//                if (CodeContext.this.functionName.equals("eval0()Ljava/lang/Object;")) {
+//                    short occi = CodeContext.this.getClassFile().addConstantClassInfo("Ljava/lang/Object;");
+//                    short scci = CodeContext.this.getClassFile().addConstantClassInfo("Ljava/lang/String;");
+//                    dos.write(new byte[] {
+//
+//                        // xxx1:
+//                        0, 3,    // number_of_entries
+//                        66,      // entries[0]: 3: same_locals_1_stack_item_frame(stack=String)
+//                            7, (byte) (scci >> 8), (byte) scci,
+//                        78,      // entries[1]: 17: same_locals_1_stack_item_frame(stack=String)
+//                            7, (byte) (scci >> 8), (byte) scci,
+//                        -1,      // entries[2]: 19: full_frame(offsetDelta=1, locals=[], stack=[String, Object])
+//                            0, 1,                               // offset_delta
+//                            0, 0,                               // number_of_locals
+//                            0, 2,                               // number_of_stack_items
+//                            7, (byte) (scci >> 8), (byte) scci, // stack[0]: String
+//                            7, (byte) (occi >> 8), (byte) occi, // stack[1]: Object
+//
+////                        // xxx2:
+////                        0, 2,    // number_of_entries
+////                        15,      // entries[0]: 15: same_frame
+////                        64, 1,   // entries[1]: 16: same_locals_1_stack_item_frame(stack=int)
+//                    });
+//                } else {
+//                    dos.writeShort(0);
+//                }
+//            }
+//        });
 
         dos.writeShort(attributes.size());                     // attributes_count
         for (ClassFile.AttributeInfo attribute : attributes) { // attributes;
@@ -1034,7 +1068,7 @@ class CodeContext {
      * Generates a "branch" instruction.
      *
      * @param lineNumber The line number that corresponds to the byte code, or -1
-     * @param opcode     One {@link Opcode#GOTO}, {@link Opcode#JSR} and <code>Opcode.IF*</code>
+     * @param opcode     One of {@link Opcode#GOTO}, {@link Opcode#JSR} and <code>Opcode.IF*</code>
      * @param dst        Where to branch
      */
     public void
@@ -1072,11 +1106,11 @@ class CodeContext {
                 final int pos = this.source.offset;
                 CodeContext.this.pushInserter(this.source);
                 {
-                    // promotion to a wide instruction only requires 2 extra bytes
-                    // everything else requires a new GOTO_W instruction after a negated if
+                    // Promotion to a wide instruction only requires 2 extra bytes. Everything else requires a new
+                    // GOTO_W instruction after a negated if (5 extra bytes).
                     CodeContext.this.makeSpace(
                         -1,
-                        this.opcode == Opcode.GOTO ? 2 : this.opcode == Opcode.JSR ? 2 : 5
+                        this.opcode == Opcode.GOTO || this.opcode == Opcode.JSR ? 2 : 5
                     );
                 }
                 CodeContext.this.popInserter();
