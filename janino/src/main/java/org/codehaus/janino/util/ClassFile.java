@@ -88,8 +88,12 @@ class ClassFile implements Annotatable {
     ClassFile(short accessFlags, String thisClassFd, @Nullable String superclassFd, String[] interfaceFds) {
 
         // Must not set these to "..._1_7", because then the JVM insists on a StackMapTable (JVMS9 4.7.4), which
-        // JANINO currently does not produce. ("jre -noverify" removes that requirement, but we
-        // cannot force our users to run their JVMs with that option.)
+        // JANINO currently does not produce:
+        //
+        //    java.lang.VerifyError: Expecting a stackmap frame at branch target 13
+        //
+        // ("jre -noverify" removes that requirement, but we cannot force our users to run their JVMs with that
+        // option.)
         this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_6;
         this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_6;
 
@@ -623,7 +627,9 @@ class ClassFile implements Annotatable {
      * @return The (read-only) constant interface methodref info indexed by <var>index</var>
      */
     public ConstantInterfaceMethodrefInfo
-    getConstantInterfaceMethodrefInfo(short index) { return (ConstantInterfaceMethodrefInfo) this.getConstantPoolInfo(index); }
+    getConstantInterfaceMethodrefInfo(short index) {
+        return (ConstantInterfaceMethodrefInfo) this.getConstantPoolInfo(index);
+    }
 
     /**
      * @return The (read-only) constant invoke dynamic info indexed by <var>index</var>
