@@ -128,7 +128,7 @@ class Issue32Test extends CommonsCompilerTestSuite {
         );
 
         final Throwable[] firstThrowable = new Throwable[1];
-        Runnable r = new Runnable() {
+        Runnable          r              = new Runnable() {
 
             @Override public void
             run() {
