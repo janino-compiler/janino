@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -116,18 +117,21 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             } catch (URISyntaxException use) {
                 throw new RuntimeException(use);
             }
+
+            // Must read source code in advance so that "openReader()" and "getCharContent()" are idempotent. If they
+            // are not, then "diagnostic.get(Line|Column)Number()" will return wrong results.
+            final String text = Cookable.readString(r);
+
             compilationUnit = new SimpleJavaFileObject(uri, Kind.SOURCE) {
 
                 @Override public boolean
                 isNameCompatible(@Nullable String simpleName, @Nullable Kind kind) { return true; }
 
                 @Override public Reader
-                openReader(boolean ignoreEncodingErrors) throws IOException { return r; }
+                openReader(boolean ignoreEncodingErrors) throws IOException { return new StringReader(text); }
 
                 @Override public CharSequence
-                getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                    return Cookable.readString(this.openReader(ignoreEncodingErrors));
-                }
+                getCharContent(boolean ignoreEncodingErrors) throws IOException { return text; }
 
                 @Override public String
                 toString() { return String.valueOf(this.uri); }
