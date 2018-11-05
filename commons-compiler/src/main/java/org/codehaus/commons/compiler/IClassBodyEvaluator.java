@@ -111,12 +111,12 @@ interface IClassBodyEvaluator extends ISimpleCompiler {
      *   Notice that JDK 5 "static imports" are also supported, as shown here:
      * </p>
      * <pre>
-     *     sc.setDefaultImports(new String[] {
+     *     sc.setDefaultImports(
      *         "java.util.Map",                          // Single type import
      *         "java.io.*",                              // Type-import-on-demand
      *         "static java.util.Collections.EMPTY_MAP", // Single static import
      *         "static java.util.Collections.*",         // Static-import-on-demand
-     *     });</pre>
+     *     );</pre>
      * <p>
      *   Passing {@code null} as the argument is equivalent with {@code new String[0]}, i.e. <em>no</em> default
      *   imports.
