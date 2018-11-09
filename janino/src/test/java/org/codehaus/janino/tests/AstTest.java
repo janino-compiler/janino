@@ -443,7 +443,7 @@ class AstTest {
             + "}"
         );
 
-        String text2 = (
+        final String text2 = (
             ""
             + "CastEmptyStringNullableVarCharToNullableVarDecimal_eval: {\n"
             + "    if (in.isSet == 0 || in.end == in.start) {\n"
@@ -484,7 +484,8 @@ class AstTest {
         LabeledStatement ls2;
         {
             final String label = "CastEmptyStringNullableVarCharToNullableVarDecimal_" + md1.name;
-            Block b = new Block(md1.getLocation());
+            Block        b     = new Block(md1.getLocation());
+
             b.addStatements(new DeepCopier() {
 
                 @Override public BlockStatement
@@ -499,8 +500,9 @@ class AstTest {
         // Unparse the labeled statement.
         String actual;
         {
-            StringWriter sw = new StringWriter();
-            Unparser unparser = new Unparser(sw);
+            StringWriter sw       = new StringWriter();
+            Unparser     unparser = new Unparser(sw);
+
             unparser.unparseBlockStatement(ls2);
             unparser.close();
             actual = sw.toString();
