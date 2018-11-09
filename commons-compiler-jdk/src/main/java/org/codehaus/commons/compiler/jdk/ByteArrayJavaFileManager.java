@@ -83,7 +83,7 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
         String     relativeName,
         FileObject sibling
     ) {
-        throw new UnsupportedOperationException("getFileForInput");
+        throw new UnsupportedOperationException("getFileForOutput");
     }
 
     @Override public JavaFileObject
@@ -167,10 +167,11 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
         Set<Kind> kinds,
         boolean   recurse
     ) throws IOException {
+
         Map<Kind, Map<String, JavaFileObject>> locationFiles = this.javaFiles.get(location);
         if (locationFiles == null) return super.list(location, packageName, kinds, recurse);
 
-        String               prefix = packageName.length() == 0 ? "" : packageName + ".";
+        String               prefix = packageName.isEmpty() ? "" : packageName + ".";
         int                  pl     = prefix.length();
         List<JavaFileObject> result = new ArrayList<JavaFileObject>();
         for (Kind kind : kinds) {
