@@ -90,26 +90,86 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public static final String DEFAULT_METHOD_NAME = "eval*";
 
     /**
-     * Whether methods override a method declared by a supertype; {@code null} means "none".
+     * Represents one script that this {@link ScriptEvaluator} declares. Typically there exactly <em>one</em> such
+     * script, but there can be two or more - see {@link ScriptEvaluator#ScriptEvaluator()}.
      */
-    @Nullable protected boolean[] optionalOverrideMethod;
+    class Script {
+
+        /**
+         * Whether the generated method overrides a method declared by a supertype; defaults to {@code false}.
+         */
+        protected boolean overrideMethod;
+
+        /**
+         * Whether the method is generated {@code static}; defaults to {@code true}.
+         */
+        protected boolean staticMethod = true;
+
+        /**
+         * The generated method's return type. Defaults to {@link ScriptEvaluator#getDefaultReturnType()}.
+         */
+        protected Class<?> returnType = ScriptEvaluator.this.getDefaultReturnType();
+
+        /**
+         * The name of the generated method.
+         */
+        private String methodName;
+
+        private String[] parameterNames = new String[0];
+
+        private Class<?>[] parameterTypes = new Class<?>[0];
+
+        private Class<?>[] thrownExceptions = new Class<?>[0];
+
+        @Nullable private Method result; // null=uncooked
+
+        Script(String methodName) { this.methodName = methodName; }
+
+        /**
+         * @return                       The generated method
+         * @throws IllegalStateException The {@link ScriptEvaluator} has not yet be cooked
+         */
+        public Method
+        getResult() {
+            if (this.result != null) return this.result;
+            throw new IllegalStateException("Script is not yet cooked");
+        }
+    }
 
     /**
-     * Whether methods are static; {@code null} means "all".
+     * The scripts to compile. Is initialized on the first call to {@link
+     * #setStaticMethod(boolean[])} or one of its friends.
      */
-    @Nullable protected boolean[] optionalStaticMethod;
+    @Nullable private Script[] scripts;
 
     /**
-     * The methods' return types; {@code null} means "none".
+     * @throws IllegalArgumentException <var>count</var> is different from previous invocations of
+     *                                  this method
      */
-    @Nullable protected Class<?>[] optionalReturnTypes;
+    public void
+    setScriptCount(int count) {
 
-    @Nullable private String[]     optionalMethodNames;
-    @Nullable private String[][]   optionalParameterNames;
-    @Nullable private Class<?>[][] optionalParameterTypes;
-    @Nullable private Class<?>[][] optionalThrownExceptions;
+        Script[] ss = this.scripts;
 
-    @Nullable private Method[] result; // null=uncooked
+        if (ss == null) {
+            this.scripts = (ss = new Script[count]);
+            for (int i = 0; i < count; i++) {
+                ss[i] = new Script(ScriptEvaluator.DEFAULT_METHOD_NAME.replace("*", Integer.toString(i)));
+            }
+        } else {
+            if (count != ss.length) {
+                throw new IllegalArgumentException(
+                    "Inconsistent script count; previously " + ss.length + ", now " + count
+                );
+            }
+        }
+    }
+
+    private Script
+    getScript(int index) {
+        if (this.scripts != null) return this.scripts[index];
+        throw new IllegalStateException("\"getScript()\" invoked befor \"setScriptCount()\"");
+    }
 
     /**
      * Equivalent to
@@ -401,6 +461,34 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     public ScriptEvaluator() {}
 
+    /**
+     * Constructs a script evaluator with the given number of scripts.
+     * <p>
+     *   The argument of all following invocations of
+     *   {@link #setMethodNames(String[])},
+     *   {@link #setOverrideMethod(boolean[])},
+     *   {@link #setParameters(String[][], Class[][])},
+     *   {@link #setReturnTypes(Class[])},
+     *   {@link #setStaticMethod(boolean[])},
+     *   {@link #setThrownExceptions(Class[][])},
+     *   {@link #cook(org.codehaus.janino.util.ClassFile[])},
+     *   {@link #cook(Parser[])},
+     *   {@link #cook(Reader[])},
+     *   {@link #cook(Scanner[])},
+     *   {@link #cook(String[])},
+     *   {@link #cook(String[], Reader[])} and
+     *   {@link #cook(String[], String[])}
+     *   must be arrays with exactly that length.
+     * </p>
+     * <p>
+     *   If a different constructor is used, then the first invocation of one of the above method implicitly sets the
+     *   script count.
+     * </p>
+     */
+    public ScriptEvaluator(int count) { this.setScriptCount(count); }
+
+    // ================= SINGLE SCRIPT CONFIGURATION SETTERS =================
+
     @Override public void
     setOverrideMethod(boolean overrideMethod) { this.setOverrideMethod(new boolean[] { overrideMethod }); }
 
@@ -428,13 +516,23 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     @Override public void
-    setThrownExceptions(Class<?>[] thrownExceptions) { this.setThrownExceptions(new Class[][] { thrownExceptions }); }
+    setThrownExceptions(Class<?>[] thrownExceptions) {
+        this.setThrownExceptions(new Class<?>[][] { thrownExceptions });
+    }
+
+    // ================= MULTIPLE SCRIPT CONFIGURATION SETTERS =================
 
     @Override public void
-    setOverrideMethod(boolean[] overrideMethod) { this.optionalOverrideMethod = overrideMethod.clone(); }
+    setOverrideMethod(boolean[] overrideMethod) {
+        this.setScriptCount(overrideMethod.length);
+        for (int i = 0; i < overrideMethod.length; i++) this.getScript(i).overrideMethod = overrideMethod[i];
+    }
 
     @Override public void
-    setStaticMethod(boolean[] staticMethod) { this.optionalStaticMethod = staticMethod.clone(); }
+    setStaticMethod(boolean[] staticMethod) {
+        this.setScriptCount(staticMethod.length);
+        for (int i = 0; i < staticMethod.length; i++) this.getScript(i).staticMethod = staticMethod[i];
+    }
 
     /**
      * Defines the return types of the generated methods.
@@ -446,19 +544,40 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @see               ExpressionEvaluator#getDefaultReturnType()
      */
     @Override public void
-    setReturnTypes(Class<?>[] returnTypes) { this.optionalReturnTypes = returnTypes.clone(); }
+    setReturnTypes(Class<?>[] returnTypes) {
+        this.setScriptCount(returnTypes.length);
+        for (int i = 0; i < returnTypes.length; i++) {
+            this.getScript(i).returnType = ScriptEvaluator.or(
+                returnTypes[i],
+                ScriptEvaluator.this.getDefaultReturnType()
+            );
+        }
+    }
+
+    private static <T> T
+    or(@Nullable T lhs, T rhs) { return lhs != null ? lhs : rhs; }
 
     @Override public void
-    setMethodNames(String[] methodNames) { this.optionalMethodNames = methodNames.clone(); }
-
-    @Override public void
-    setParameters(String[][] parameterNames, Class<?>[][] parameterTypes) {
-        this.optionalParameterNames = parameterNames.clone();
-        this.optionalParameterTypes = parameterTypes.clone();
+    setMethodNames(String[] methodNames) {
+        this.setScriptCount(methodNames.length);
+        for (int i = 0; i < methodNames.length; i++) this.getScript(i).methodName = methodNames[i];
     }
 
     @Override public void
-    setThrownExceptions(Class<?>[][] thrownExceptions) { this.optionalThrownExceptions = thrownExceptions.clone(); }
+    setParameters(String[][] parameterNames, Class<?>[][] parameterTypes) {
+
+        this.setScriptCount(parameterNames.length);
+        for (int i = 0; i < parameterNames.length; i++) this.getScript(i).parameterNames = parameterNames[i].clone();
+
+        this.setScriptCount(parameterTypes.length);
+        for (int i = 0; i < parameterTypes.length; i++) this.getScript(i).parameterTypes = parameterTypes[i].clone();
+    }
+
+    @Override public void
+    setThrownExceptions(Class<?>[][] thrownExceptions) {
+        this.setScriptCount(thrownExceptions.length);
+        for (int i = 0; i < thrownExceptions.length; i++) this.getScript(i).thrownExceptions = thrownExceptions[i];
+    }
 
     // ---------------------------------------------------------------
 
@@ -493,6 +612,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     @Override public final void
     cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
+
+        if (optionalFileNames != null) this.setScriptCount(optionalFileNames.length);
+        this.setScriptCount(readers.length);
+
         Scanner[] scanners = new Scanner[readers.length];
         for (int i = 0; i < readers.length; ++i) {
             scanners[i] = new Scanner(optionalFileNames == null ? null : optionalFileNames[i], readers[i]);
@@ -528,10 +651,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public final void
     cook(Scanner[] scanners) throws CompileException, IOException {
 
+        this.setScriptCount(scanners.length);
+
         Parser[] parsers = new Parser[scanners.length];
-        for (int i = 0; i < scanners.length; ++i) {
-            parsers[i] = new Parser(scanners[i]);
-        }
+        for (int i = 0; i < scanners.length; ++i) parsers[i] = new Parser(scanners[i]);
+
         this.cook(parsers);
     }
 
@@ -541,29 +665,19 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public final void
     cook(Parser[] parsers) throws CompileException, IOException {
 
-        // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
-        // time.
-        int count = parsers.length;
-
-        // SUPPRESS CHECKSTYLE LineLength:7
-        final String[]     mns = ScriptEvaluator.array(this.optionalMethodNames,      count, ScriptEvaluator.DEFAULT_METHOD_NAME);
-        final String[][]   pns = ScriptEvaluator.array(this.optionalParameterNames,   count, new String[0],               String[].class);
-        final Class<?>[][] pts = ScriptEvaluator.array(this.optionalParameterTypes,   count, new Class[0],                Class[].class);
-        final boolean[]    oms = ScriptEvaluator.array(this.optionalOverrideMethod,   count, false);
-        final Class<?>[]   rts = ScriptEvaluator.array(this.optionalReturnTypes,      count, this.getDefaultReturnType(), Class.class);
-        final boolean[]    sms = ScriptEvaluator.array(this.optionalStaticMethod,     count, true);
-        final Class<?>[][] tes = ScriptEvaluator.array(this.optionalThrownExceptions, count, new Class[0],                Class[].class);
+        this.setScriptCount(parsers.length);
 
         // Create compilation unit.
-        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(count == 1 ? parsers[0] : null);
+        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(parsers.length == 1 ? parsers[0] : null);
 
         // Create class declaration.
         final Java.AbstractClassDeclaration
         cd = this.addPackageMemberClassDeclaration(parsers[0].location(), compilationUnit);
 
         // Create methods with one block each.
-        for (int i = 0; i < count; ++i) {
+        for (int i = 0; i < parsers.length; ++i) {
 
+            Script es     = this.getScript(i);
             Parser parser = parsers[i];
 
             // Create the statements of the method.
@@ -574,19 +688,19 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             // Create the method that holds the statements.
             Location loc = parser.location();
             cd.addDeclaredMethod(this.makeMethodDeclaration(
-                loc,       // location
-                (          // annotations
-                    oms[i]     // If the method is non-static, assume that it overrides a method in a supertype
+                loc,                 // location
+                (                    // annotations
+                    es.overrideMethod
                     ? new Java.Annotation[] { new Java.MarkerAnnotation(this.classToType(loc, Override.class)) }
                     : new Java.Annotation[0]
                 ),
-                sms[i],    // staticMethod
-                rts[i],    // returnType
-                mns[i],    // methodName
-                pts[i],    // parameterTypes
-                pns[i],    // parameterNames
-                tes[i],    // thrownExceptions
-                statements // statements
+                es.staticMethod,     // staticMethod
+                es.returnType,       // returnType
+                es.methodName,       // methodName
+                es.parameterTypes,   // parameterTypes
+                es.parameterNames,   // parameterNames
+                es.thrownExceptions, // thrownExceptions
+                statements           // statements
             ));
 
             // Also add the "local methods" that a script my declare.
@@ -595,77 +709,61 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             }
         }
 
-        this.cook2(count, compilationUnit);
+        this.cook2(compilationUnit);
     }
 
     /**
      * Compiles the given <var>compilationUnit</var>, defines it into a {@link ClassLoader}, loads the generated class,
      * gets the script methods from that class, and makes them available through {@link #getMethod(int)}.
-     *
-     * @param count The number of scripts that are declared in the compilation unit
      */
     protected void
-    cook2(int count, CompilationUnit compilationUnit) throws CompileException {
+    cook2(CompilationUnit compilationUnit) throws CompileException {
 
         // Compile and load the compilation unit.
-        Class<?> c = this.compileToClass(compilationUnit);
-
-        final String[]
-        methodNames = ScriptEvaluator.array(this.optionalMethodNames, count, ScriptEvaluator.DEFAULT_METHOD_NAME);
-
-        final Class<?>[][]
-        parameterTypes = ScriptEvaluator.array(this.optionalParameterTypes, count, new Class[0], Class[].class);
+        final Class<?> c = this.compileToClass(compilationUnit);
 
         // Find the script methods by name and parameter types.
-        Method[] methods;
-        {
-            methods = new Method[count];
+        assert this.scripts != null;
+        int count = this.scripts.length;
 
-            // "Class.getDeclaredMethod(name, parameterTypes)" is slow when the class declares MANY methods (say, in
-            // the thousands). So let's use "Class.getDeclaredMethods()" instead.
+        // Clear the generated methods.
+        for (int i = 0; i < count; ++i) this.getScript(i).result = null;
 
-            // Create a (temporyr) mapping of method key to method index.
-            Map<Object /*methodKey*/, Integer /*methodIndex*/> dms = new HashMap<Object, Integer>(2 * count);
-            for (int i = 0; i < count; ++i) {
-                Integer prev = dms.put(ScriptEvaluator.methodKey(methodNames[i], parameterTypes[i]), i);
-                if (prev != null) {
-                    throw new CompileException((
-                        "Duplicate method name and parameter types configured: "
-                        + methodNames[i]
-                        + " at indexes "
-                        + prev
-                        + " and "
-                        + i
-                        + "; see \"setMethodNames(String[])\" and \"setParameters(Class[][])\""
-                    ), null);
-                }
-            }
+        // "Class.getDeclaredMethod(name, parameterTypes)" is slow when the class declares MANY methods (say, in
+        // the thousands). So let's use "Class.getDeclaredMethods()" instead.
 
-            // Now invoke "Class.getDeclaredMethods()" and filter "our" methods from the result.
-            for (Method m : c.getDeclaredMethods()) {
-
-                Integer idx = dms.get(ScriptEvaluator.methodKey(m.getName(), m.getParameterTypes()));
-                if (idx == null) continue;
-
-                assert methods[idx] == null;
-                methods[idx] = m;
-            }
-
-            // Verify that the class declared "all our" methods.
-            for (int i = 0; i < count; ++i) {
-                if (methods[i] == null) {
-                    throw new InternalCompilerException(
-                        "SNO: Generated class does not declare method \""
-                        + methodNames[i]
-                        + "\" (index "
-                        + i
-                        + ")"
-                    );
-                }
-            }
+        // Create a (temporary) mapping of method key to method index.
+        Map<Object /*methodKey*/, Integer /*methodIndex*/> dms = new HashMap<Object, Integer>(2 * count);
+        for (int i = 0; i < count; ++i) {
+            Script  es   = this.getScript(i);
+            Integer prev = dms.put(ScriptEvaluator.methodKey(es.methodName, es.parameterTypes), i);
+            assert prev == null;
         }
 
-        this.result = methods;
+        // Now invoke "Class.getDeclaredMethods()" and filter "our" methods from the result.
+        for (Method m : c.getDeclaredMethods()) {
+
+            Integer idx = dms.get(ScriptEvaluator.methodKey(m.getName(), m.getParameterTypes()));
+            if (idx == null) continue;
+
+            Script es = this.getScript(idx);
+            assert es.result == null;
+            es.result = m;
+        }
+
+        // Verify that the class declared "all our" methods.
+        for (int i = 0; i < count; ++i) {
+            Script es = this.getScript(i);
+            if (es.result == null) {
+                throw new InternalCompilerException(
+                    "SNO: Generated class does not declare method \""
+                    + es.methodName
+                    + "\" (index "
+                    + i
+                    + ")"
+                );
+            }
+        }
     }
 
     private static Object
@@ -684,103 +782,6 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
         result[0] = firstElement;
         System.arraycopy(followingElements, 0, result, 1, followingElements.length);
-
-        return result;
-    }
-
-    /**
-     * Returns an array of <var>count</var> {@code boolean}s.
-     * <p>
-     *   Iff <var>subject</var> is not {@code null}, then the <var>subject</var> is returned.
-     * </p>
-     * <p>
-     *   Otherwise, a new array is allocated, and all elements are initialized to <var>defaultValue</var>.
-     * </p>
-     *
-     * @throws IllegalArgumentException <var>subject</var> {@code != null &&} <var>subject</var>{@code .length !=}
-     *                                  <var>count</var>
-     */
-    private static boolean[]
-    array(@Nullable boolean[] subject, int count, boolean defaultValue) {
-
-        if (subject != null) {
-            if (subject.length != count) throw new IllegalArgumentException();
-            return subject;
-        }
-
-        boolean[] result = new boolean[count];
-        if (defaultValue) Arrays.fill(result, true);
-
-        return result;
-    }
-
-    /**
-     * Returns an array of <var>count</var> strings.
-     * <p>
-     *   Iff <var>subject</var> is {@code null}, then a new array is allocated, otherwise the <var>subject</var>
-     *   is cloned.
-     * </p>
-     * <p>
-     *   Then, the {@code null} entries in the array are replaced with the <var>defaultValue</var>, with all
-     *   occurrences of {@code '*'} replaced with {@code 0} ... <var>count</var> {@code - 1}
-     *   (the non-{@code null} entries are left as they are).
-     * </p>
-     *
-     * @throws IllegalArgumentException <var>subject</var> {@code != null &&} <var>subject</var>{@code .length !=}
-     *                                  <var>count</var>
-     */
-    private static String[]
-    array(@Nullable String[] subject, int count, @Nullable String defaultValue) {
-
-        String[] result;
-
-        if (subject == null) {
-            result = new String[count];
-        } else {
-            if (subject.length != count) throw new IllegalArgumentException();
-            result = subject.clone();
-        }
-
-        if (defaultValue != null) {
-            for (int i = 0; i < count; i++) {
-                if (result[i] == null) result[i] = defaultValue.replace("*", Integer.toString(i));
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Returns an array of <var>count</var> objects of type <var>componentType</var>.
-     * <p>
-     *   Iff <var>subject</var> is {@code null}, then a new array is allocated, otherwise the <var>subject</var>
-     *   is cloned.
-     * </p>
-     * <p>
-     *   Then, the {@code null} entries in the array are replaced with the <var>defaultValue</var>
-     *   (the non-{@code null} entries are left as they are).
-     * </p>
-     *
-     * @throws IllegalArgumentException <var>subject</var> {@code != null &&} <var>subject</var>{@code .length !=}
-     *                                  <var>count</var>
-     */
-    @SuppressWarnings("unchecked") private static <T> T[]
-    array(@Nullable T[] subject, int count, @Nullable T defaultValue, Class<T> componentType) {
-
-        T[] result;
-
-        if (subject == null) {
-            result = (T[]) Array.newInstance(componentType, count);
-        } else {
-            if (subject.length != count) throw new IllegalArgumentException();
-            result = subject.clone();
-        }
-
-        if (defaultValue != null) {
-            for (int i = 0; i < count; i++) {
-                if (result[i] == null) result[i] = defaultValue;
-            }
-        }
 
         return result;
     }
@@ -804,7 +805,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     getMethod() { return this.getMethod(0); }
 
     @Override public Method
-    getMethod(int idx) { return this.assertCooked()[idx]; }
+    getMethod(int idx) { return this.getScript(idx).getResult(); }
 
     /**
      * @return {@code void.class}
@@ -817,16 +818,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * @return The return type of the indexed script.
      */
     protected final Class<?>
-    getReturnType(int i) {
-
-        if (this.optionalReturnTypes != null) {
-            Class<?> rt = this.optionalReturnTypes[i];
-            assert rt != null;
-            return rt;
-        }
-
-        return this.getDefaultReturnType();
-    }
+    getReturnType(int index) { return this.getScript(index).returnType; }
 
     /**
      * Parses statements from the <var>parser</var> until end-of-input.
@@ -1254,13 +1246,5 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }.visitBlockStatement(block);
 
         return (String[]) parameterNames.toArray(new String[parameterNames.size()]);
-    }
-
-    private Method[]
-    assertCooked() {
-
-        if (this.result != null) return this.result;
-
-        throw new IllegalStateException("Must only be called after \"cook()\"");
     }
 }
