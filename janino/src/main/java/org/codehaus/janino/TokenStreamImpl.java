@@ -191,7 +191,9 @@ class TokenStreamImpl implements TokenStream {
     read(TokenType expected) throws CompileException, IOException {
 
         Token t = this.read();
-        if (t.type != expected) throw this.compileException(expected + " expected instead of '" + t.value + "'");
+        if (t.type != expected) {
+            throw new CompileException(expected + " expected instead of '" + t.value + "'", t.getLocation());
+        }
 
         return t.value;
     }
