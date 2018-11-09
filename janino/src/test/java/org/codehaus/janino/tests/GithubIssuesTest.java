@@ -104,7 +104,7 @@ class GithubIssuesTest {
 
         // Override this method to prevent the retrieval of the generated java.lang.Classes.
         @Override protected void
-        cook2(int count, CompilationUnit compilationUnit) throws CompileException {
+        cook2(CompilationUnit compilationUnit) throws CompileException {
             this.cook(compilationUnit);
         }
     }
@@ -163,6 +163,7 @@ class GithubIssuesTest {
                 switch (i) {
 
                 // All these invocations are expected to throw an IllegalStateException.
+                // SUPPRESS CHECKSTYLE LineLength:8
                 case 0: ec.createFastEvaluator(new StringReader(e), interfaceToImplement, parameterNames);                    break;
                 case 1: ec.createFastEvaluator(new Scanner(null, new StringReader(e)), interfaceToImplement, parameterNames); break;
                 case 2: ec.createFastEvaluator(e, interfaceToImplement, parameterNames);                                      break;

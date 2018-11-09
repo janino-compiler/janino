@@ -95,4 +95,12 @@ class ExpressionEvaluatorTest {
         ee.cook("\"HELLO\"");
         Assert.assertEquals("HELLO", ee.evaluate(null));
     }
+
+    @Test public void
+    testMultipleExpressions() throws Exception {
+        ExpressionEvaluator ee = new ExpressionEvaluator();
+//        ee.setStaticMethod(false);
+        ee.setStaticMethod(new boolean[] { false, false });
+        ee.cook("9*3;7+1".split(";"));
+    }
 }
