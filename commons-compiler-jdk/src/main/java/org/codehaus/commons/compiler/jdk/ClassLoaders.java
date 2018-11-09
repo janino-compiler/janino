@@ -28,12 +28,15 @@ package org.codehaus.commons.compiler.jdk;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.module.ModuleFinder;
+import java.lang.module.ModuleReference;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -88,38 +91,64 @@ class ClassLoaders {
         assert classLoader != null;
 
         URL r = classLoader.getResource(name);
-        if (r == null) {
-            if (name.startsWith("java/") && name.endsWith("/")) {
+        if (r != null) return ClassLoaders.getSubresourcesOf(r, name, includeDirectories, recurse);
 
-                // The "rt.jar" (the basic source of the BOOTCLASS) lacks directory entries; to work around this we
-                // have to get well-known resource. After that, we can list the JAR.
-                r = classLoader.getResource("java/lang/Object.class");
-                if (r != null) {
-                    String protocol = r.getProtocol();
-                    if ("jar".equalsIgnoreCase(protocol)) {
-
-                        JarURLConnection juc = (JarURLConnection) r.openConnection();
-                        juc.setUseCaches(false);
-
-                        URL      jarFileUrl = juc.getJarFileURL();
-                        JarFile  jarFile    = juc.getJarFile();
-
-                        Map<String, URL> result = ClassLoaders.getSubresources(
-                            jarFileUrl,
-                            jarFile,
-                            name,
-                            includeDirectories,
-                            recurse
-                        );
-
-                        return result;
-                    }
-                }
-            }
+        if (!name.startsWith("java/") || !name.endsWith("/")) {
             return Collections.emptyMap();
         }
 
-        return ClassLoaders.getSubresourcesOf(r, name, includeDirectories, recurse);
+        // The "rt.jar" (the basic source of the BOOTCLASS) lacks directory entries; to work around this we
+        // have to get a well-known resource. After that, we can list the JAR.
+        r = classLoader.getResource("java/lang/Object.class");
+        if (r == null) return Collections.emptyMap();
+
+        String protocol = r.getProtocol();
+        if ("jar".equalsIgnoreCase(protocol)) {
+
+            // Pre-Java-9 bootstrap classpath.
+            JarURLConnection juc = (JarURLConnection) r.openConnection();
+            juc.setUseCaches(false);
+
+            URL      jarFileUrl = juc.getJarFileURL();
+            JarFile  jarFile    = juc.getJarFile();
+
+            Map<String, URL> result = ClassLoaders.getSubresources(
+                jarFileUrl,
+                jarFile,
+                name,
+                includeDirectories,
+                recurse
+            );
+
+            return result;
+        }
+
+        if ("jrt".equalsIgnoreCase(protocol)) { // For Java 9+.
+
+            Map<String, URL> result = new HashMap<>();
+
+            Set<ModuleReference> ms = ModuleFinder.ofSystem().findAll();
+            for (ModuleReference m : ms) {
+                m.open().list().forEach(s -> {
+                    try {
+                        if (
+                            s.startsWith(name)
+                            && (recurse || s.lastIndexOf('/') == name.length() - 1)
+                        ) {
+                            URL classFileUrl = new URL(m.location().get() + "/" + s);
+                            URL prev         = result.put(s, classFileUrl);
+                            assert prev == null;
+                        }
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+
+            return result;
+        }
+
+        return Collections.emptyMap();
     }
 
     /**

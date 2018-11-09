@@ -37,6 +37,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.Permissions;
 import java.security.PrivilegedAction;
@@ -44,7 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -54,6 +55,7 @@ import javax.lang.model.element.NestingKind;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
+import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -147,19 +149,72 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             );
         }
 
+        final CompileException[] caughtCompileException = new CompileException[1];
+
+        final DiagnosticListener<JavaFileObject>
+        dl = new DiagnosticListener<JavaFileObject>() {
+
+            @Override public void
+            report(@Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
+                assert diagnostic != null;
+
+                Location loc = new Location(
+                    null,
+                    (short) diagnostic.getLineNumber(),
+                    (short) diagnostic.getColumnNumber()
+                );
+                String message = diagnostic.getMessage(null) + " (" + diagnostic.getCode() + ")";
+
+                try {
+                    switch (diagnostic.getKind()) {
+
+                    case ERROR:
+                        ErrorHandler oceh = SimpleCompiler.this.optionalCompileErrorHandler;
+                        if (oceh == null) throw new CompileException(message, loc);
+                        oceh.handleError(message, loc);
+                        break;
+
+                    case MANDATORY_WARNING:
+                    case WARNING:
+                        WarningHandler owh = SimpleCompiler.this.optionalWarningHandler;
+                        if (owh != null) owh.handleWarning(null, message, loc);
+                        break;
+
+                    case NOTE:
+                    case OTHER:
+                    default:
+                        break;
+                    }
+                } catch (CompileException ce) {
+                    if (caughtCompileException[0] == null) caughtCompileException[0] = ce;
+                }
+            }
+        };
+
         // Set up a JavaFileManager that reads .class files through the this.parentClassLoader, and stores .class
         // files in byte arrays
-        final JavaFileManager fileManager = new JavaFileManager() {
+        final JavaFileManager
+        fileManager = new ForwardingJavaFileManager<JavaFileManager>(
+            ToolProvider
+            .getSystemJavaCompiler()
+            .getStandardFileManager(dl, Locale.US, Charset.forName("UTF-8"))
+        ) {
 
             @NotNullByDefault(false) @Override public ClassLoader
-            getClassLoader(JavaFileManager.Location location) { return null; }
+            getClassLoader(JavaFileManager.Location location) { return /*null*/super.getClassLoader(location); }
 
             @NotNullByDefault(false) @Override public Iterable<JavaFileObject>
             list(JavaFileManager.Location location, String packageName, Set<Kind> kinds, boolean recurse)
             throws IOException {
-
+System.err.println("packageName=" + packageName);
                 // We support only listing of ".class" resources.
-                if (!kinds.contains(Kind.CLASS)) return Collections.emptyList();
+                if (!kinds.contains(Kind.CLASS)) return super.list(location, packageName, kinds, recurse);
+
+                if (false) {
+                    Iterable<JavaFileObject> l = super.list(location, packageName, kinds, recurse);
+                    System.err.println("l=" + l);
+                    return l;
+                }
 
                 final String namePrefix = packageName.isEmpty() ? "" : packageName.replace('.', '/') + '/';
 
@@ -224,18 +279,15 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 return result.substring(0, result.lastIndexOf('.')).replace('/', '.');
             }
 
-            @Override public boolean
-            hasLocation(@Nullable JavaFileManager.Location location) {
-                return location == StandardLocation.CLASS_PATH;
-            }
-
             @NotNullByDefault(false) @Override public JavaFileObject
             getJavaFileForInput(JavaFileManager.Location location, String className, Kind kind)
             throws IOException {
 
-                if (location != StandardLocation.CLASS_OUTPUT) throw new UnsupportedOperationException();
+                if (location == StandardLocation.CLASS_OUTPUT) {
+                    return this.classFiles.get(className);
+                }
 
-                return this.classFiles.get(className);
+                return super.getJavaFileForInput(location, className, kind);
             }
 
             Map<String /*className*/, JavaFileObject> classFiles = new HashMap<String, JavaFileObject>();
@@ -248,7 +300,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 FileObject               sibling
             ) throws IOException {
 
-                if (location != StandardLocation.CLASS_OUTPUT) throw new UnsupportedOperationException();
+                if (location != StandardLocation.CLASS_OUTPUT) {
+                    return super.getJavaFileForOutput(location, className, kind, sibling);
+                }
+
                 if (kind != Kind.CLASS) throw new UnsupportedOperationException();
 
                 JavaFileObject fileObject = new SimpleJavaFileObject(
@@ -269,80 +324,15 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
                 return fileObject;
             }
-
-            @NotNullByDefault(false) @Override public boolean
-            isSameFile(FileObject a, FileObject b) { throw new UnsupportedOperationException(); }
-
-            @NotNullByDefault(false) @Override public boolean
-            handleOption(String current, Iterator<String> remaining) { throw new UnsupportedOperationException(); }
-
-            @NotNullByDefault(false) @Override public int
-            isSupportedOption(String option) { throw new UnsupportedOperationException(); }
-
-            @NotNullByDefault(false) @Override public FileObject
-            getFileForInput(JavaFileManager.Location location, String packageName, String relativeName) {
-                throw new UnsupportedOperationException();
-            }
-
-            @NotNullByDefault(false) @Override public FileObject
-            getFileForOutput(
-                JavaFileManager.Location location,
-                String                   packageName,
-                String                   relativeName,
-                FileObject               sibling
-            ) throws IOException { throw new UnsupportedOperationException(); }
-
-            @Override public void
-            flush() {}
-
-            @Override public void
-            close() {}
         };
 
         // Run the compiler.
         try {
-            final CompileException[] caughtCompileException = new CompileException[1];
+
             if (!compiler.getTask(
                 null,                                      // out
                 fileManager,                               // fileManager
-                new DiagnosticListener<JavaFileObject>() { // diagnosticListener
-
-                    @Override public void
-                    report(@Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
-                        assert diagnostic != null;
-
-                        Location loc = new Location(
-                            null,
-                            (short) diagnostic.getLineNumber(),
-                            (short) diagnostic.getColumnNumber()
-                        );
-                        String message = diagnostic.getMessage(null) + " (" + diagnostic.getCode() + ")";
-
-                        try {
-                            switch (diagnostic.getKind()) {
-
-                            case ERROR:
-                                ErrorHandler oceh = SimpleCompiler.this.optionalCompileErrorHandler;
-                                if (oceh == null) throw new CompileException(message, loc);
-                                oceh.handleError(message, loc);
-                                break;
-
-                            case MANDATORY_WARNING:
-                            case WARNING:
-                                WarningHandler owh = SimpleCompiler.this.optionalWarningHandler;
-                                if (owh != null) owh.handleWarning(null, message, loc);
-                                break;
-
-                            case NOTE:
-                            case OTHER:
-                            default:
-                                break;
-                            }
-                        } catch (CompileException ce) {
-                            if (caughtCompileException[0] == null) caughtCompileException[0] = ce;
-                        }
-                    }
-                },
+                dl,                                        // diagnosticListener
                 Collections.singletonList(                 // options
                     this.debugSource
                     ? "-g:source" + (this.debugLines ? ",lines" : "") + (this.debugVars ? ",vars" : "")
