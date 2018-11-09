@@ -29,6 +29,9 @@ package org.codehaus.janino.tests;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.ClassLoaderIClassLoader;
@@ -39,10 +42,24 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.util.ClassFile;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-public // SUPPRESS CHECKSTYLE JavadocType
+public // SUPPRESS CHECKSTYLE Javadoc:9999
 class GithubPullRequestsTest {
+
+    @Before public void
+    setUp() throws Exception {
+
+        // Optionally print class file disassemblies to the console.
+        if (Boolean.parseBoolean(System.getProperty("disasm"))) {
+            Logger scl = Logger.getLogger(UnitCompiler.class.getName());
+            for (Handler h : scl.getHandlers()) {
+                h.setLevel(Level.FINEST);
+            }
+            scl.setLevel(Level.FINEST);
+        }
+    }
 
     /**
      * <a href="https://github.com/janino-compiler/janino/pull/10">Replace if condition with
@@ -87,7 +104,7 @@ class GithubPullRequestsTest {
         //
         //     // *** Disassembly of 'C:\workspaces\janino\janino\Foo.class'.
         //
-        //     // Class file version = 49.0 (J2SE 5.0)
+        //     // Class file version = 50.0 (J2SE 6.0)
         //
         //     public class Foo {
         //
@@ -106,6 +123,6 @@ class GithubPullRequestsTest {
         //     }
         //
         // As you see, the IF statement has been optimized away.
-        Assert.assertEquals(200, baos.size());
+        Assert.assertEquals(216, baos.size());
     }
 }
