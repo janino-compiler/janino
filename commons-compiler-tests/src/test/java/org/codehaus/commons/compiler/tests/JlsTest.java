@@ -760,6 +760,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         if (this.isJanino()) {
             this.assertCompilationUnitUncookable(cu, "Static interface methods not implemented");
         } else {
+            if (JlsTest.javaSpecificationVersion <= 6.0) return;
             this.assertCompilationUnitMainReturnsTrue(cu, "Main");
         }
     }
@@ -777,6 +778,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         if (this.isJanino()) {
             this.assertCompilationUnitUncookable(cu, "Default interface methods not implemented");
         } else {
+            if (JlsTest.javaSpecificationVersion <= 6.0) return;
             this.assertCompilationUnitCookable(cu);
         }
     }
@@ -1703,7 +1705,11 @@ class JlsTest extends CommonsCompilerTestSuite {
                 + "    Assert.fail(ioe.toString());\n"
                 + "}\n"
             ),
-            "NewAnonymousClassInstance rvalue not allowed as a resource"
+            Pattern.compile((
+                "compiler.err.try.with.resources.expr.needs.var"
+                + "|"
+                + "NewAnonymousClassInstance rvalue not allowed as a resource"
+            ))
         );
     }
 
