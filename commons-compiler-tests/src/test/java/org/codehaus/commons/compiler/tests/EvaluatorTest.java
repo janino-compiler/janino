@@ -529,7 +529,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         [65534] ConstantUtf8Info     "_v65523"
         */
 
-        final int[]     repetitionss = new int[]     { 1,    100,  65523, 65524 };
+        final int[]     repetitionss = new int[]     { 1,    100,  65523, 65525 };
         final boolean[] cookable     = new boolean[] { true, true, true,  false };
 
         for (int i = 0; i < repetitionss.length; i++) {
@@ -549,7 +549,9 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             } else {
                 try {
                     sc.cook(sb.toString());
-                    Assert.fail("Should have issued an error, but compiled successfully");
+                    Assert.fail(
+                        repetitionss[i] + " repetitions: Should have issued an error, but compiled successfully"
+                    );
                 } catch (CompileException ce) {
                     Assert.assertTrue(ce.getMessage(), (
                         ce.getMessage().contains("too many constants (compiler.err.limit.pool)")
