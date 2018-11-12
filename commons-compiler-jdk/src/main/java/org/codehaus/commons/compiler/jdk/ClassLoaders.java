@@ -114,18 +114,13 @@ class ClassLoaders {
             JarURLConnection juc = (JarURLConnection) r.openConnection();
             juc.setUseCaches(false);
 
-            URL      jarFileUrl = juc.getJarFileURL();
-            JarFile  jarFile    = juc.getJarFile();
-
-            Map<String, URL> result = ClassLoaders.getSubresources(
-                jarFileUrl,
-                jarFile,
-                name,
-                includeDirectories,
-                recurse
+            return ClassLoaders.getSubresources(
+                juc.getJarFileURL(), // jarFileUrl
+                juc.getJarFile(),    // jarFile
+                name,                // namePrefix
+                includeDirectories,  // includeDirectories
+                recurse              // recurse
             );
-
-            return result;
         }
 
         if ("jrt".equalsIgnoreCase(protocol)) { // For Java 9+.
@@ -137,14 +132,14 @@ class ClassLoaders {
                 m.open().list().forEach(new Consumer<String>() {
 
                     @Override
-                    public void accept(String s) {
+                    public void accept(String resourceName) {
                         try {
                             if (
-                                s.startsWith(name)
-                                && (recurse || s.lastIndexOf('/') == name.length() - 1)
+                                resourceName.startsWith(name)
+                                && (recurse || resourceName.lastIndexOf('/') == name.length() - 1)
                             ) {
-                                URL classFileUrl = new URL(m.location().get() + "/" + s);
-                                URL prev         = result.put(s, classFileUrl);
+                                URL classFileUrl = new URL(m.location().get() + "/" + resourceName);
+                                URL prev         = result.put(resourceName, classFileUrl);
                                 assert prev == null;
                             }
                         } catch (MalformedURLException e) {
