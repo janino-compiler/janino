@@ -37,6 +37,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,13 +89,14 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
 
     @Override public JavaFileObject
     getJavaFileForInput(Location location, String className, Kind kind) throws IOException {
+
         Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
-        if (locationJavaFiles == null) return null;
+        if (locationJavaFiles != null) {
+            Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
+            if (kindJavaFiles != null) return kindJavaFiles.get(className);
+        }
 
-        Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
-        if (kindJavaFiles == null) return null;
-
-        return kindJavaFiles.get(className);
+        return super.getJavaFileForInput(location, className, kind);
     }
 
     @Override public JavaFileObject
