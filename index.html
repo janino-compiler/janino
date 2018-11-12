@@ -488,8 +488,8 @@ System.out.println(ee.evaluate(null)); // Prints "7".</pre></div>
         </h3>
 
         <p>
-          The full JAVADOC documentation for JANINO is available <a href="apidocs/">online</a> for the latest version, and for
-          <a href="http://repo1.maven.org/maven2/org/codehaus/janino/">download</a> for all versions.
+          The full JAVADOC documentation for JANINO is available <a href="apidocs/">online</a> for the latest version,
+          and for <a href="http://repo1.maven.org/maven2/org/codehaus/janino/">download</a> for all versions.
         </p>
 
         <h3>
@@ -908,8 +908,8 @@ $</pre></div>
         </h4>
 
         <p>
-          The <code>SimpleCompiler</code> compiles a single "compilation unit" (a.k.a. ".java" file). Opposed to normal Java
-          compilation, that compilation unit may declare <em>more than one</em> public type. Example:
+          The <code>SimpleCompiler</code> compiles a single "compilation unit" (a.k.a. ".java" file). Opposed to normal
+          Java compilation, that compilation unit may declare <em>more than one</em> public type. Example:
         </p>
 
         <div class="highlight highlight-text-xml"><pre class="brush: java">
@@ -963,8 +963,8 @@ $</pre></div>
         </h4>
 
         <p>
-          The <code>JavaSourceClassLoader</code> extends Java's <code>java.lang.ClassLoader</code> class with the ability to load classes
-          directly from source code.
+          The <code>JavaSourceClassLoader</code> extends Java's <code>java.lang.ClassLoader</code> class with the
+          ability to load classes directly from source code.
         </p>
 
         <p>
@@ -1023,8 +1023,8 @@ Object o = cl.loadClass("pkg1.A").newInstance();
 
         <p>
           If you have many source files and you want to reduce the compilation time, you may want to use the
-          <code>CachingJavaSourceClassLoader</code>, which uses a cache provided by the application to store class files for
-          repeated use.
+          <code>CachingJavaSourceClassLoader</code>, which uses a cache provided by the application to store class
+          files for repeated use.
         </p>
 
         <h4>
@@ -1178,7 +1178,7 @@ UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
           JANINO can be configured to use not its own Java compiler, but an alternative implementation. Alternative
           implementations must basically implement the interface ICompilerFactory. One such alternative implementation
           is based on the javax.tools API, and is shipped as part of the JANINO distribution: commons-compiler-jdk.jar.
-          As of 8/2018, that implementation does not work with JDKs 9 and later.
+          That implementation was (successfully) tested with all JDKs from version 1.6 to 12.
         </p>
 
         <p>Basically there are two ways to switch implementations:</p>
@@ -1186,13 +1186,14 @@ UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
         <ul>
           <li>
             Use <code>org.codehaus.commons.compiler.jdk.ExpressionEvaluator</code> and consorts instead of
-            <code>org.codehaus.janino.ExpressionEvaluator</code>; put commons-compiler-jdk.jar instead of janino.jar on your
-            compile-time and runtime classpath. (commons-compiler.jar must always be on the classpath, because it
+            <code>org.codehaus.janino.ExpressionEvaluator</code>; put commons-compiler-jdk.jar instead of janino.jar on
+            your compile-time and runtime classpath. (commons-compiler.jar must always be on the classpath, because it
             contains the basic classes that all implementations require.)
           </li>
           <li>
-            Use <code>org.codehaus.commons.compiler.CompilerFactoryFactory.getDefaultFactory().newExpressionEvaluator()</code> and
-            compile only against commons-compiler.jar (and no concrete implementation). At runtime, add one
+            Use
+            <code>org.codehaus.commons.compiler.CompilerFactoryFactory.getDefaultFactory().newExpressionEvaluator()</code>
+            and compile only against commons-compiler.jar (and no concrete implementation). At runtime, add one
             implementation (janino.jar or commons-compiler-jdk.jar) to the class path, and getDefaultFactory() will
             find it at runtime.
           </li>
