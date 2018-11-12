@@ -28,8 +28,6 @@ package org.codehaus.commons.compiler.jdk;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.module.ModuleFinder;
-import java.lang.module.ModuleReference;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,6 +38,9 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.codehaus.commons.compiler.jdk.java9.java.lang.module.ModuleFinder;
+import org.codehaus.commons.compiler.jdk.java9.java.lang.module.ModuleReference;
+import org.codehaus.commons.compiler.jdk.java9.java.util.function.Consumer;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -84,8 +85,12 @@ class ClassLoaders {
      *                    resources"
      */
     public static Map<String, URL>
-    getSubresources(@Nullable ClassLoader classLoader, String name, boolean includeDirectories, boolean recurse)
-    throws IOException {
+    getSubresources(
+        @Nullable ClassLoader classLoader,
+        final String          name,
+        boolean               includeDirectories,
+        final boolean         recurse
+    ) throws IOException {
 
         if (classLoader == null) classLoader = ClassLoader.getSystemClassLoader();
         assert classLoader != null;
@@ -125,22 +130,26 @@ class ClassLoaders {
 
         if ("jrt".equalsIgnoreCase(protocol)) { // For Java 9+.
 
-            Map<String, URL> result = new HashMap<>();
+            final Map<String, URL> result = new HashMap<String, URL>();
 
             Set<ModuleReference> ms = ModuleFinder.ofSystem().findAll();
-            for (ModuleReference m : ms) {
-                m.open().list().forEach(s -> {
-                    try {
-                        if (
-                            s.startsWith(name)
-                            && (recurse || s.lastIndexOf('/') == name.length() - 1)
-                        ) {
-                            URL classFileUrl = new URL(m.location().get() + "/" + s);
-                            URL prev         = result.put(s, classFileUrl);
-                            assert prev == null;
+            for (final ModuleReference m : ms) {
+                m.open().list().forEach(new Consumer<String>() {
+
+                    @Override
+                    public void accept(String s) {
+                        try {
+                            if (
+                                s.startsWith(name)
+                                && (recurse || s.lastIndexOf('/') == name.length() - 1)
+                            ) {
+                                URL classFileUrl = new URL(m.location().get() + "/" + s);
+                                URL prev         = result.put(s, classFileUrl);
+                                assert prev == null;
+                            }
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
                         }
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
                     }
                 });
             }

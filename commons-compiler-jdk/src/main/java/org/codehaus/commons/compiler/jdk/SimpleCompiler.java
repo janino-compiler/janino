@@ -206,15 +206,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             @NotNullByDefault(false) @Override public Iterable<JavaFileObject>
             list(JavaFileManager.Location location, String packageName, Set<Kind> kinds, boolean recurse)
             throws IOException {
-System.err.println("packageName=" + packageName);
+
                 // We support only listing of ".class" resources.
                 if (!kinds.contains(Kind.CLASS)) return super.list(location, packageName, kinds, recurse);
-
-                if (false) {
-                    Iterable<JavaFileObject> l = super.list(location, packageName, kinds, recurse);
-                    System.err.println("l=" + l);
-                    return l;
-                }
 
                 final String namePrefix = packageName.isEmpty() ? "" : packageName.replace('.', '/') + '/';
 
