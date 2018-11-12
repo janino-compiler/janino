@@ -259,14 +259,14 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     createInstance(Reader reader) throws CompileException, IOException {
         this.cook(reader);
         try {
-            return this.getClazz().newInstance();
+            return this.getClazz().getConstructor().newInstance();
         } catch (InstantiationException ie) {
             throw new CompileException((
                 "Class is abstract, an interface, an array class, a primitive type, or void; "
                 + "or has no zero-parameter constructor"
             ), null, ie);
-        } catch (IllegalAccessException iae) {
-            throw new CompileException("The class or its zero-parameter constructor is not accessible", null, iae);
+        } catch (Exception e) {
+            throw new CompileException("Instantiating \"" + this.getClazz().getName() + "\"", null, e);
         }
     }
 }

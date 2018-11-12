@@ -25,6 +25,7 @@
 
 package org.codehaus.commons.compiler.jdk.java9.java.util.function;
 
-public interface Consumer<T> {
+public
+interface Consumer<T> {
     void accept(T t);
 }

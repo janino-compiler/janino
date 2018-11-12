@@ -35,14 +35,17 @@ import org.codehaus.commons.nullanalysis.NotNullByDefault;
 public
 class Stream<T> {
 
+    // SUPPRESS CHECKSTYLE ConstantName|LineLength:2
     private static final Class<?> java_util_stream_Stream     = Stream.loadClass("java.util.stream.Stream");
     private static final Class<?> java_util_function_Consumer = Stream.loadClass("java.util.function.Consumer");
 
+    // SUPPRESS CHECKSTYLE ConstantName|LineLength:1
     private static final Method java_util_stream_Stream_forEach = Stream.getDeclaredMethod(Stream.java_util_stream_Stream, "forEach", Stream.java_util_function_Consumer);
 
     private final /*java.util.stream.Stream<T>*/ Object delegate;
 
-    public Stream(/*java.util.stream.Stream<T>*/ Object delegate) {
+    public
+    Stream(/*java.util.stream.Stream<T>*/ Object delegate) {
         this.delegate = delegate;
     }
 

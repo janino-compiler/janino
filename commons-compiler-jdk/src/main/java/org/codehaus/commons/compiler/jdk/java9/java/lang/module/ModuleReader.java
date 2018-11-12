@@ -31,15 +31,19 @@ import java.lang.reflect.Method;
 
 import org.codehaus.commons.compiler.jdk.java9.java.util.Stream;
 
-public class ModuleReader {
+public
+class ModuleReader {
 
+    // SUPPRESS CHECKSTYLE ConstantName|LineLength:1
     private static final Class<?> java_lang_module_ModuleReader = ModuleReader.loadClass("java.lang.module.ModuleReader");
 
+    // SUPPRESS CHECKSTYLE ConstantName|LineLength:1
     private static final Method java_lang_module_ModuleReader_list = ModuleReader.getDeclaredMethod(ModuleReader.java_lang_module_ModuleReader, "list");
 
     private final /*java.lang.module.ModuleReader*/ Object delegate;
 
-    public ModuleReader(/*java.lang.module.ModuleReader*/ Object delegate) {
+    public
+    ModuleReader(/*java.lang.module.ModuleReader*/ Object delegate) {
         this.delegate = delegate;
     }
 

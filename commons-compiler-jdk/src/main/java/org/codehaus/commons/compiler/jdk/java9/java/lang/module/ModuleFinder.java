@@ -37,10 +37,12 @@ import org.codehaus.commons.compiler.jdk.java9.java.util.Optional;
 public
 class ModuleFinder {
 
+    // SUPPRESS CHECKSTYLE ConstantName|LineLength:3
     private static final Class<?> java_lang_module_ModuleFinder    = ModuleFinder.loadClass("java.lang.module.ModuleFinder");
     private static final Class<?> java_lang_module_ModuleReference = ModuleFinder.loadClass("java.lang.module.ModuleReference");
     private static final Class<?> java_util_Optional               = ModuleFinder.loadClass("java.util.Optional");
 
+    // SUPPRESS CHECKSTYLE ConstantName|LineLength:5
     private static final Method java_lang_module_ModuleFinder_ofSystem    = ModuleFinder.getDeclaredMethod(ModuleFinder.java_lang_module_ModuleFinder,    "ofSystem");
     private static final Method java_lang_module_ModuleFinder_findAll     = ModuleFinder.getDeclaredMethod(ModuleFinder.java_lang_module_ModuleFinder,    "findAll");
     private static final Method java_lang_module_ModuleReference_location = ModuleFinder.getDeclaredMethod(ModuleFinder.java_lang_module_ModuleReference, "location");
@@ -60,8 +62,12 @@ class ModuleFinder {
 
 
 //          for (final java.lang.module.ModuleReference mref : java.lang.module.ModuleFinder.ofSystem().findAll()) {
-            /*java.lang.module.ModuleFinder*/ Object mf = ModuleFinder.java_lang_module_ModuleFinder_ofSystem.invoke(null);
-            for (final /*java.lang.module.ModuleReference*/ Object mref : (Set<?>) ModuleFinder.java_lang_module_ModuleFinder_findAll.invoke(mf)) {
+            /*java.lang.module.ModuleFinder*/ Object
+            moduleFinder = ModuleFinder.java_lang_module_ModuleFinder_ofSystem.invoke(null);
+            for (
+                final /*java.lang.module.ModuleReference*/ Object mref
+                : (Set<?>) ModuleFinder.java_lang_module_ModuleFinder_findAll.invoke(moduleFinder)
+            ) {
 
                 result.add(new ModuleReference() {
 
@@ -71,6 +77,7 @@ class ModuleFinder {
                         try {
 
 //                          return new Optional<URI>(mref.location().get());
+                            // SUPPRESS CHECKSTYLE LineLength:2
                             Object /*java.util.Optional<URI>*/ optional = ModuleFinder.java_lang_module_ModuleReference_location.invoke(mref);
                             URI                                uri      = (URI) ModuleFinder.java_util_Optional_get.invoke(optional);
                             return new Optional<URI>(uri);

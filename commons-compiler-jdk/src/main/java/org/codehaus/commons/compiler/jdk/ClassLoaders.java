@@ -131,8 +131,8 @@ class ClassLoaders {
             for (final ModuleReference m : ms) {
                 m.open().list().forEach(new Consumer<String>() {
 
-                    @Override
-                    public void accept(String resourceName) {
+                    @Override public void
+                    accept(String resourceName) {
                         try {
                             if (
                                 resourceName.startsWith(name)

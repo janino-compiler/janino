@@ -566,11 +566,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.cook(r);
         Class<?> c = this.getMethod().getDeclaringClass();
         try {
-            return c.newInstance();
+            return c.getConstructor().newInstance();
         } catch (InstantiationException e) {
             throw new RuntimeException("SNO - Declared class is always non-abstract", e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("SNO - interface methods are always PUBLIC", e);
+        } catch (Exception e) {
+            throw new CompileException("Instantiating \"" + c.getName() + "\"", null, e);
         }
     }
 

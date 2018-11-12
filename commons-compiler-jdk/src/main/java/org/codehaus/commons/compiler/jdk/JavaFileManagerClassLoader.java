@@ -103,7 +103,7 @@ class JavaFileManagerClassLoader extends ClassLoader {
         try {
             Class<?> disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
             disassemblerClass.getMethod("disasm", InputStream.class).invoke(
-                disassemblerClass.newInstance(),
+                disassemblerClass.getConstructor().newInstance(),
                 new ByteArrayInputStream(contents)
             );
         } catch (Exception e) {
