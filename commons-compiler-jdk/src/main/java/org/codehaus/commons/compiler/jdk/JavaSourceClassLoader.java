@@ -226,7 +226,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                 );
 
                 if (classFileObject == null) {
-                    throw new ClassNotFoundException(className + ": Class file not created by compilation");
+                    throw new ClassNotFoundException(className + ": Class file \"" + className + "\" not created by compilation");
                 }
             }
 
