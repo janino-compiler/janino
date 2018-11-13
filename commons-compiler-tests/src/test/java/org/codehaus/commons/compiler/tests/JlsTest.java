@@ -299,16 +299,6 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_xxx1() throws Exception {
-        this.assertExpressionEvaluatesTrue("\"FOO\".equals(System.currentTimeMillis() == 13 ? \"\" : \"FOO\")");
-    }
-
-    @Test public void
-    test_xxx2() throws Exception {
-        this.assertExpressionEvaluatesTrue("\"'\".charAt(0) == 39"); // Unescaped single quote is allowed!
-    }
-
-    @Test public void
     test_3_10_6__EscapeSequencesForCharacterAndStringLiterals() throws Exception {
         this.assertExpressionUncookable("'\\u000a'"); // 0x000a is LF
         this.assertExpressionEvaluatesTrue("'\\b' == 8");
