@@ -47,6 +47,7 @@ import org.codehaus.janino.Java.ArrayLength;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BinaryOperation;
+import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BooleanLiteral;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CharacterLiteral;
@@ -113,6 +114,24 @@ class UnparserTest {
         s = UnparserTest.replace(s, "((( ", "(");
         s = UnparserTest.replace(s, " )))", ")");
         Assert.assertEquals(input, expected, s);
+    }
+
+    private static void
+    helpTestScript(String input) throws Exception {
+        UnparserTest.helpTestScript(input, input);
+    }
+
+    private static void
+    helpTestScript(String expected, String input) throws Exception {
+        Parser p    = new Parser(new Scanner(null, new StringReader(input)));
+        Block  block = p.parseMethodBody();
+
+        StringWriter sw = new StringWriter();
+        Unparser     u  = new Unparser(sw);
+        u.unparseBlock(block);
+        u.close();
+        String s = sw.toString();
+        Assert.assertEquals(input, UnparserTest.normalizeWhitespace(expected), UnparserTest.normalizeWhitespace(s));
     }
 
     private static void
@@ -547,6 +566,23 @@ class UnparserTest {
 
             UnparserTest.helpTestCu(input, expect);
         }
+    }
+
+    @Test public void
+    testParseUnparseJava5() throws Exception {
+
+        // Type arguments.
+        UnparserTest.helpTestScript("{ java.util.Set<String> set = new java.util.HashSet<String>(); }");
+    }
+
+    @Test public void
+    testParseUnparseJava7() throws Exception {
+
+        // Catching and rethrowing multiple exception types.
+        UnparserTest.helpTestScript("{ try {} catch (java.io.IOException | RuntimeException e) { throw e; } }");
+
+        // Type inference for generic instance creation.
+        UnparserTest.helpTestScript("{ java.util.Map<String, Integer> map = new java.util.HashMap<>(); }");
     }
 
     @Test public void

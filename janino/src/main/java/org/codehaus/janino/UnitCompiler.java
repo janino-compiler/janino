@@ -85,6 +85,7 @@ import org.codehaus.janino.Java.BreakStatement;
 import org.codehaus.janino.Java.BreakableStatement;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CatchClause;
+import org.codehaus.janino.Java.CatchParameter;
 import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
@@ -2856,11 +2857,11 @@ class UnitCompiler {
             this.pushConstant(ts, null);
             this.store(ts, primaryExc);
 
-            FormalParameter suppressedException = new FormalParameter(
-                loc,                        // location
-                false,                      // finaL
-                new SimpleType(loc, tt),    // type
-                "___"                       // name
+            CatchParameter suppressedException = new CatchParameter(
+                loc,                                    // location
+                false,                                  // finaL
+                new Type[] { new SimpleType(loc, tt) }, // types
+                "___"                                   // name
             );
 
             // Generate the FINALLY clause for the TRY-with-resources statement; see JLS9 14.20.3.1.
@@ -3072,15 +3073,18 @@ class UnitCompiler {
 
         // Initialize all catch clauses as "unreachable" only to check later that they ARE indeed reachable.
         for (CatchClause catchClause : tryStatement.catchClauses) {
-            IClass caughtExceptionType = this.getType(catchClause.caughtException.type);
-            catchClause.reachable = (
-                // Superclass or subclass of "java.lang.Error"?
-                this.iClassLoader.TYPE_java_lang_Error.isAssignableFrom(caughtExceptionType)
-                || caughtExceptionType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_Error)
-                // Superclass or subclass of "java.lang.RuntimeException"?
-                || this.iClassLoader.TYPE_java_lang_RuntimeException.isAssignableFrom(caughtExceptionType)
-                || caughtExceptionType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_RuntimeException)
-            );
+            catchClause.reachable = false;
+            for (Type t : catchClause.catchParameter.types) {
+                IClass caughtExceptionType = this.getType(t);
+                catchClause.reachable |= (
+                    // Superclass or subclass of "java.lang.Error"?
+                    this.iClassLoader.TYPE_java_lang_Error.isAssignableFrom(caughtExceptionType)
+                    || caughtExceptionType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_Error)
+                    // Superclass or subclass of "java.lang.RuntimeException"?
+                    || this.iClassLoader.TYPE_java_lang_RuntimeException.isAssignableFrom(caughtExceptionType)
+                    || caughtExceptionType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_RuntimeException)
+                );
+            }
         }
 
         boolean canCompleteNormally = compileBody.compile();
@@ -3102,8 +3106,12 @@ class UnitCompiler {
                     try {
                         this.getCodeContext().saveLocalVariables();
 
-                        CatchClause catchClause         = (CatchClause) tryStatement.catchClauses.get(i);
-                        IClass      caughtExceptionType = this.getType(catchClause.caughtException.type);
+                        CatchClause catchClause = (CatchClause) tryStatement.catchClauses.get(i);
+
+                        if (catchClause.catchParameter.types.length != 1) {
+                            throw UnitCompiler.compileException(catchClause, "Multi-type CATCH parameter NYI");
+                        }
+                        IClass caughtExceptionType = this.getType(catchClause.catchParameter.types[0]);
 
                         // Verify that the CATCH clause is reachable.
                         if (!catchClause.reachable) {
@@ -3113,13 +3121,13 @@ class UnitCompiler {
                         // Allocate the "exception variable".
                         LocalVariableSlot exceptionVarSlot = this.getCodeContext().allocateLocalVariable(
                             (short) 1,
-                            catchClause.caughtException.name,
+                            catchClause.catchParameter.name,
                             caughtExceptionType
                         );
                         final short evi = exceptionVarSlot.getSlotIndex();
 
                         // Kludge: Treat the exception variable like a local variable of the catch clause body.
-                        this.getLocalVariable(catchClause.caughtException).setSlot(exceptionVarSlot);
+                        this.getLocalVariable(catchClause.catchParameter).setSlot(exceptionVarSlot);
 
                         this.getCodeContext().addExceptionTableEntry(
                             beginningOfBody,                    // startPC
@@ -3675,8 +3683,8 @@ class UnitCompiler {
     buildLocalVariableMap(CatchClause catchClause, Map<String, LocalVariable> localVars) throws CompileException {
         Map<String, LocalVariable> vars = new HashMap<String, LocalVariable>();
         vars.putAll(localVars);
-        LocalVariable lv = this.getLocalVariable(catchClause.caughtException);
-        vars.put(catchClause.caughtException.name, lv);
+        LocalVariable lv = this.getLocalVariable(catchClause.catchParameter);
+        vars.put(catchClause.catchParameter.name, lv);
         this.buildLocalVariableMap(catchClause.body, vars);
     }
 
@@ -3694,8 +3702,8 @@ class UnitCompiler {
      * @return                         The {@link LocalVariable} corresponding with the <var>parameter</var>
      */
     public LocalVariable
-    getLocalVariable(FormalParameter parameter, boolean isVariableArityParameter)
-    throws CompileException {
+    getLocalVariable(FormalParameter parameter, boolean isVariableArityParameter) throws CompileException {
+
         if (parameter.localVariable != null) return parameter.localVariable;
 
         assert parameter.type != null;
@@ -3703,6 +3711,22 @@ class UnitCompiler {
         if (isVariableArityParameter) {
             parameterType = parameterType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
         }
+
+        return (parameter.localVariable = new LocalVariable(parameter.finaL, parameterType));
+    }
+
+    /**
+     * @return The {@link LocalVariable} corresponding with the <var>parameter</var>
+     */
+    public LocalVariable
+    getLocalVariable(CatchParameter parameter) throws CompileException {
+
+        if (parameter.localVariable != null) return parameter.localVariable;
+
+        if (parameter.types.length != 1) {
+            throw UnitCompiler.compileException(parameter, "Multi-type CATCH parameters NYI");
+        }
+        IClass parameterType = this.getType(parameter.types[0]);
 
         return (parameter.localVariable = new LocalVariable(parameter.finaL, parameterType));
     }
@@ -9682,30 +9706,33 @@ class UnitCompiler {
                 TryStatement ts = (TryStatement) scope;
                 for (int i = 0; i < ts.catchClauses.size(); ++i) {
                     CatchClause cc         = (CatchClause) ts.catchClauses.get(i);
-                    IClass      caughtType = this.getType(cc.caughtException.type);
-                    if (caughtType.isAssignableFrom(type)) {
+                    for (Type ct : cc.catchParameter.types) {
+                        IClass caughtType = this.getType(ct);
 
-                        // This catch clause definitely catches the exception.
-                        cc.reachable = true;
-                        return;
-                    }
+                        if (caughtType.isAssignableFrom(type)) {
 
-                    CATCH_SUBTYPE:
-                    if (type.isAssignableFrom(caughtType)) {
-
-                        // This catch clause catches only a subtype of the exception type.
-                        for (int j = 0; j < i; ++j) {
-                            if (this.getType(
-                                ((CatchClause) ts.catchClauses.get(j)).caughtException.type
-                            ).isAssignableFrom(caughtType)) {
-
-                                // A preceding catch clause is more general than this catch clause.
-                                break CATCH_SUBTYPE;
-                            }
+                            // This catch clause definitely catches the exception.
+                            cc.reachable = true;
+                            return;
                         }
 
-                        // This catch clause catches PART OF the actual exceptions.
-                        cc.reachable = true;
+                        CATCH_SUBTYPE:
+                        if (type.isAssignableFrom(caughtType)) {
+
+                            // This catch clause catches only a subtype of the exception type.
+                            for (int j = 0; j < i; ++j) {
+                                for (Type ct2 : ((CatchClause) ts.catchClauses.get(j)).catchParameter.types) {
+                                    if (this.getType(ct2).isAssignableFrom(caughtType)) {
+
+                                        // A preceding catch clause is more general than this catch clause.
+                                        break CATCH_SUBTYPE;
+                                    }
+                                }
+                            }
+
+                            // This catch clause catches PART OF the actual exceptions.
+                            cc.reachable = true;
+                        }
                     }
                 }
             } else
@@ -10668,14 +10695,14 @@ class UnitCompiler {
         )));
 
         CatchClause cc = new CatchClause(
-            loc,                 // location
-            new FormalParameter( // caughtException
-                loc,                                               // location
-                true,                                              // finaL
-                new SimpleType(loc, classNotFoundExceptionIClass), // type
-                "ex"                                               // name
+            loc,                // location
+            new CatchParameter( // catchParameter
+                loc,                                                              // location
+                true,                                                             // finaL
+                new Type[] { new SimpleType(loc, classNotFoundExceptionIClass) }, // types
+                "ex"                                                              // name
             ),
-            b                    // body
+            b                   // body
         );
         TryStatement ts = new TryStatement(
             loc,                          // location

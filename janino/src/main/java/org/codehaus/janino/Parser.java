@@ -54,6 +54,7 @@ import org.codehaus.janino.Java.BooleanLiteral;
 import org.codehaus.janino.Java.BreakStatement;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CatchClause;
+import org.codehaus.janino.Java.CatchParameter;
 import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
@@ -448,6 +449,7 @@ class Parser {
             short  af  = Parser.ACCESS_FLAG_CODES[idx];
 
             if ((afs & af) != 0) throw this.compileException("Duplicate access flag \"" + afn + "\"");
+
             for (short meafs : Parser.MUTUALLY_EXCLUSIVE_ACCESS_FLAGS) {
                 if ((af & meafs) != 0 && (afs & meafs) != 0) {
                     throw this.compileException("Only one of \"" + Mod.shortToString(meafs) + "\" allowed");
@@ -1533,6 +1535,54 @@ class Parser {
 
     /**
      * <pre>
+     *   CatchFormalParameter      := { VariableModifier } CatchType VariableDeclaratorId
+     *   CatchType                 := UnannClassType { '|' ClassType }
+     *   VariableModifier          := Annotation | 'final'
+     *   VariableDeclaratorId      := Identifier [ Dims ]
+     *   Dims                      := { Annotation } '[' ']' { { Annotation } '[' ']' }
+     *   UnannClassType            :=
+     *       Identifier [ TypeArguments ]
+     *       | UnannClassOrInterfaceType '.' { Annotation } Identifier [ TypeArguments ]
+     *   UnannInterfaceType        := UnannClassType
+     *   UnannClassOrInterfaceType := UnannClassType | UnannInterfaceType
+     *   ClassType                 :=
+     *       { Annotation } Identifier [ TypeArguments ]
+     *       | ClassOrInterfaceType '.' { Annotation } Identifier [ TypeArguments ]
+     * </pre>
+     */
+    public CatchParameter
+    parseCatchParameter() throws CompileException, IOException {
+
+        final boolean finaL;
+        {
+            Modifiers modifiers = this.parseModifiers();
+            if (modifiers.isDefault) {
+                throw this.compileException("Modifier \"default\" not allowed on catch parameters");
+            }
+            if ((modifiers.accessFlags & ~Mod.FINAL) != 0) {
+                throw this.compileException("Only \"final\" and annotations allowed on catch parameter declaration");
+            }
+            finaL = (modifiers.accessFlags & Mod.FINAL) != 0;
+        }
+
+        List<ReferenceType> catchTypes = new ArrayList<ReferenceType>();
+        catchTypes.add(this.parseReferenceType());
+        while (this.peekRead("|")) catchTypes.add(this.parseReferenceType());
+
+        Location location = this.location();
+        String   name     = this.read(TokenType.IDENTIFIER);
+        this.verifyIdentifierIsConventionalLocalVariableOrParameterName(name, location);
+
+        return new CatchParameter(
+            location,
+            finaL,
+            (ReferenceType[]) catchTypes.toArray(new ReferenceType[catchTypes.size()]),
+            name
+        );
+    }
+
+    /**
+     * <pre>
      *   BracketsOpt := { '[' ']' }
      * </pre>
      */
@@ -2052,13 +2102,11 @@ class Parser {
         while (this.peekRead("catch")) {
             final Location loc = this.location();
             this.read("(");
-            boolean[]             hasEllipsis     = new boolean[1];
-            final FormalParameter caughtException = this.parseFormalParameter(hasEllipsis);
-            if (hasEllipsis[0]) throw this.compileException("Catch clause parameter must not have an ellipsis");
+            final CatchParameter catchParameter = this.parseCatchParameter();
             this.read(")");
             ccs.add(new CatchClause(
                 loc,              // location
-                caughtException,  // caughtException
+                catchParameter,   // catchParameter
                 this.parseBlock() // body
             ));
         }
@@ -2379,7 +2427,7 @@ class Parser {
 
     /**
      * <pre>
-     *   TypeArguments := '<' TypeArgument { ',' TypeArgument } '>'
+     *   TypeArguments := '<' [ TypeArgument { ',' TypeArgument } ] '>'
      * </pre>
      *
      * @return {@code null} iff there are no type arguments
@@ -2388,6 +2436,8 @@ class Parser {
     parseTypeArgumentsOpt() throws CompileException, IOException {
 
         if (!this.peekRead("<")) return null;
+
+        if (this.peekRead(">")) return new TypeArgument[0];
 
         List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
         typeArguments.add(this.parseTypeArgument());

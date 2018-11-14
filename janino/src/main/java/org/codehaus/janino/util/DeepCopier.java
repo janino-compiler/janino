@@ -53,6 +53,7 @@ import org.codehaus.janino.Java.BooleanLiteral;
 import org.codehaus.janino.Java.BreakStatement;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CatchClause;
+import org.codehaus.janino.Java.CatchParameter;
 import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
@@ -761,7 +762,7 @@ class DeepCopier {
     copyCatchClause(CatchClause subject) throws CompileException {
         return new CatchClause(
             subject.getLocation(),
-            this.copyFormalParameter(subject.caughtException),
+            this.copyCatchParameter(subject.catchParameter),
             this.copyBlockStatement(subject.body)
         );
     }
@@ -1174,6 +1175,11 @@ class DeepCopier {
     public FunctionDeclarator.FormalParameter
     copyFormalParameter(FunctionDeclarator.FormalParameter subject) throws CompileException {
         return new FormalParameter(subject.getLocation(), subject.finaL, this.copyType(subject.type), subject.name);
+    }
+
+    public CatchParameter
+    copyCatchParameter(CatchParameter subject) throws CompileException {
+        return new CatchParameter(subject.getLocation(), subject.finaL, this.copyTypes(subject.types), subject.name);
     }
 
     public EnumConstant

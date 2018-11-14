@@ -215,14 +215,7 @@ class Unparser {
 
         @Override @Nullable public Void
         visitBlock(Java.Block b) {
-            if (b.statements.isEmpty()) {
-                Unparser.this.pw.print("{}");
-                return null;
-            }
-            Unparser.this.pw.println('{');
-            Unparser.this.pw.print(AutoIndentWriter.INDENT);
-            Unparser.this.unparseStatements(b.statements);
-            Unparser.this.pw.print(AutoIndentWriter.UNINDENT + "}");
+            Unparser.this.unparseBlock(b);
             return null;
         }
 
@@ -440,7 +433,7 @@ class Unparser {
             Unparser.this.unparseBlockStatement(ts.body);
             for (Java.CatchClause cc : ts.catchClauses) {
                 Unparser.this.pw.print(" catch (");
-                Unparser.this.unparseFormalParameter(cc.caughtException, false);
+                Unparser.this.unparseCatchParameter(cc.catchParameter);
                 Unparser.this.pw.print(") ");
                 Unparser.this.unparseBlockStatement(cc.body);
             }
@@ -1071,7 +1064,32 @@ class Unparser {
         this.pw.print(" " + AutoIndentWriter.TABULATOR + fp.name);
     }
 
+    private void
+    unparseCatchParameter(Java.CatchParameter cp) {
+
+        if (cp.finaL) this.pw.print("final ");
+
+        this.pw.write(cp.types[0].toString());
+        for (int i = 1; i < cp.types.length; i++) {
+            this.pw.write(" | ");
+            this.pw.write(cp.types[i].toString());
+        }
+
+        this.pw.print(" " + AutoIndentWriter.TABULATOR + cp.name);
+    }
+
     // Helpers
+    public void
+    unparseBlock(Java.Block b) {
+        if (b.statements.isEmpty()) {
+            this.pw.print("{}");
+            return;
+        }
+        this.pw.println('{');
+        this.pw.print(AutoIndentWriter.INDENT);
+        this.unparseStatements(b.statements);
+        this.pw.print(AutoIndentWriter.UNINDENT + "}");
+    }
 
     public void
     unparseBlockStatement(Java.BlockStatement bs) { bs.accept(this.blockStatementUnparser); }

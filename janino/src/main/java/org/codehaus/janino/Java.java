@@ -2268,6 +2268,58 @@ class Java {
     }
 
     /**
+     * Representation of a "catch" parameter.
+     */
+    public static final
+    class CatchParameter extends Located {
+
+        /**
+         * Whether the parameter is declared FINAL.
+         */
+        public final boolean finaL;
+
+        /**
+         * The types of the parameter.
+         */
+        public final Type[] types;
+
+        /**
+         * The name of the parameter.
+         */
+        public final String name;
+
+        /**
+         * The local variable associated with this parameter.
+         */
+        @Nullable public Java.LocalVariable localVariable;
+
+        public
+        CatchParameter(Location location, boolean finaL, Type[] types, String name) {
+            super(location);
+            this.finaL = finaL;
+            this.types = types;
+            this.name  = name;
+        }
+
+        @Override public String
+        toString() {
+            StringBuilder sb = new StringBuilder();
+
+            if (this.finaL) sb.append("final ");
+
+            sb.append(this.types[0]);
+            for (int i = 1; i < this.types.length; i++) sb.append(" | ").append(this.types[i]);
+
+            return sb.append(" ").append(this.name).toString();
+        }
+
+        public void
+        setEnclosingScope(Scope enclosingScope) {
+            for (Type t : this.types) t.setEnclosingScope(enclosingScope);
+        }
+    }
+
+    /**
      * Representation of a constructor declarator.
      */
     public static final
@@ -3254,9 +3306,9 @@ class Java {
     class CatchClause extends Located implements Scope {
 
         /**
-         * Container for the type and the name of the caught exception.
+         * Container for the types and the name of the caught exception.
          */
-        public final FormalParameter caughtException;
+        public final CatchParameter catchParameter;
 
         /**
          * Body of the CATCH clause.
@@ -3276,10 +3328,10 @@ class Java {
         public boolean reachable;
 
         public
-        CatchClause(Location location, FormalParameter caughtException, BlockStatement body) {
+        CatchClause(Location location, CatchParameter catchParameter, BlockStatement body) {
             super(location);
-            (this.caughtException = caughtException).type.setEnclosingScope(this);
-            (this.body            = body).setEnclosingScope(this);
+            (this.catchParameter = catchParameter).setEnclosingScope(this);
+            (this.body           = body).setEnclosingScope(this);
         }
 
         /**
@@ -3302,7 +3354,7 @@ class Java {
         getEnclosingScope() { assert this.enclosingTryStatement != null; return this.enclosingTryStatement; }
 
         @Override public String
-        toString() { return "catch (" + this.caughtException + ") " + this.body; }
+        toString() { return "catch (" + this.catchParameter + ") " + this.body; }
     }
 
     /**
