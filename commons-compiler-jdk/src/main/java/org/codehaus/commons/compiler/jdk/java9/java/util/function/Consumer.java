@@ -25,6 +25,9 @@
 
 package org.codehaus.commons.compiler.jdk.java9.java.util.function;
 
+/**
+ * Pre-Java-9-compatible facade for Java 9's {@code java.util.function.Consumer} interface.
+ */
 public
 interface Consumer<T> {
     void accept(T t);

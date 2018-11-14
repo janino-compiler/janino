@@ -25,6 +25,9 @@
 
 package org.codehaus.commons.compiler.jdk.java9.java.util;
 
+/**
+ * Pre-Java-9-compatible facade for Java 9's {@code java.util.Optional} class.
+ */
 public
 class Optional<T> {
 

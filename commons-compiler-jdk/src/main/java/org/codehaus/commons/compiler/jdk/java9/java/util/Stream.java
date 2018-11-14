@@ -32,6 +32,9 @@ import java.lang.reflect.Proxy;
 import org.codehaus.commons.compiler.jdk.java9.java.util.function.Consumer;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
+/**
+ * Pre-Java-9-compatible facade for Java 9's {@code java.util.Stream} class.
+ */
 public
 class Stream<T> {
 

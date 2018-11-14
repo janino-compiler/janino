@@ -34,6 +34,9 @@ import java.util.Set;
 
 import org.codehaus.commons.compiler.jdk.java9.java.util.Optional;
 
+/**
+ * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleFinder} class.
+ */
 public
 class ModuleFinder {
 

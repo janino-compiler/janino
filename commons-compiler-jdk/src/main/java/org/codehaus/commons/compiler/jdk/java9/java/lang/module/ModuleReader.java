@@ -31,6 +31,9 @@ import java.lang.reflect.Method;
 
 import org.codehaus.commons.compiler.jdk.java9.java.util.Stream;
 
+/**
+ * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleReader} class.
+ */
 public
 class ModuleReader {
 

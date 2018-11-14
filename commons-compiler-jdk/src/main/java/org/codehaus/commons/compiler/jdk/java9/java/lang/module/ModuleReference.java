@@ -30,6 +30,9 @@ import java.net.URI;
 
 import org.codehaus.commons.compiler.jdk.java9.java.util.Optional;
 
+/**
+ * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleReference} interface.
+ */
 public
 interface ModuleReference {
     Optional<URI> location();
