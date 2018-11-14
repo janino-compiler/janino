@@ -1067,6 +1067,7 @@ class ClassFile implements Annotatable {
      */
     public static
     class ConstantClassInfo extends ConstantPoolInfo {
+
         private final short nameIndex;
 
         public ConstantClassInfo(short nameIndex) { this.nameIndex = nameIndex; }
@@ -1111,6 +1112,12 @@ class ClassFile implements Annotatable {
             this.classIndex       = classIndex;
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
+
+        /**
+         * @return The {@link ConstantClassInfo} of this {@link ConstantFieldrefInfo}
+         */
+        public ConstantClassInfo
+        getClassInfo(ClassFile classFile) { return classFile.getConstantClassInfo(this.classIndex); }
 
         /**
          * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantFieldrefInfo}
@@ -1161,6 +1168,12 @@ class ClassFile implements Annotatable {
         }
 
         /**
+         * @return The {@link ConstantClassInfo} of this {@link ConstantMethodrefInfo}
+         */
+        public ConstantClassInfo
+        getClassInfo(ClassFile classFile) { return classFile.getConstantClassInfo(this.classIndex); }
+
+        /**
          * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantMethodrefInfo}
          */
         public ConstantNameAndTypeInfo
@@ -1206,6 +1219,12 @@ class ClassFile implements Annotatable {
         }
 
         /**
+         * @return The {@link ConstantClassInfo} of this {@link ConstantInterfaceMethodrefInfo}
+         */
+        public ConstantClassInfo
+        getClassInfo(ClassFile classFile) { return classFile.getConstantClassInfo(this.classIndex); }
+
+        /**
          * @return The {@link ConstantNameAndTypeInfo} of this {@link ConstantInterfaceMethodrefInfo}
          */
         public ConstantNameAndTypeInfo
@@ -1241,6 +1260,7 @@ class ClassFile implements Annotatable {
      */
     static
     class ConstantStringInfo extends ConstantValuePoolInfo {
+
         private final short stringIndex;
 
         ConstantStringInfo(short stringIndex) { this.stringIndex = stringIndex; }
@@ -1274,6 +1294,7 @@ class ClassFile implements Annotatable {
      */
     private static
     class ConstantIntegerInfo extends ConstantValuePoolInfo {
+
         private final int value;
 
         ConstantIntegerInfo(int value) { this.value = value; }
@@ -1313,7 +1334,8 @@ class ClassFile implements Annotatable {
         ConstantFloatInfo(float value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
-        @Override public Object getValue(ClassFile classFile) { return new Float(this.value); }
+        @Override public Object
+        getValue(ClassFile classFile) { return new Float(this.value); }
 
         // Implement ConstantPoolInfo.
 
@@ -1346,7 +1368,8 @@ class ClassFile implements Annotatable {
         ConstantLongInfo(long value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
-        @Override public Object getValue(ClassFile classFile) { return this.value; }
+        @Override public Object
+        getValue(ClassFile classFile) { return this.value; }
 
         // Implement ConstantPoolInfo.
 
@@ -1460,6 +1483,7 @@ class ClassFile implements Annotatable {
      */
     public static
     class ConstantUtf8Info extends ConstantPoolInfo {
+
         private final String s;
 
         public
@@ -1555,7 +1579,7 @@ class ClassFile implements Annotatable {
             this.descriptorIndex = descriptorIndex;
         }
 
-        public short getdescriptorIndex() { return this.descriptorIndex; }
+        public short getDescriptorIndex() { return this.descriptorIndex; }
 
         // Implement ConstantPoolInfo.
 
