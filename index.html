@@ -252,13 +252,17 @@
               <li>Underscores in numeric literals (JLS7 3.10.1)</li>
               <li>String <code>switch</code> statement (JLS7 14.11)</li>
               <li><code>try</code>-with-resources statement (JLS7 14.20.3)</li>
+              <li>
+                <code>catch</code>ing and rethrowing multiple exception types: Partially implemented; parsed and
+                unparsed, but not compilable
+              </li>
             </ul>
           </li>
 
           <li>
             Java 8 language features:
             <ul>
-              <li>(none)</li>
+              <li>Lambda expressions: Partially implemented; parsed and unparsed, but not compilable</li>
             </ul>
           </li>
 
@@ -336,7 +340,10 @@
           <li>
             Java 7 language features:
             <ul>
-              <li><code>catch</code>ing and rethrowing multiple exception types</li>
+              <li>
+                <code>catch</code>ing and rethrowing multiple exception types: Partially implemented; parsed and
+                unparsed, but not compilable
+              </li>
               <li>
                 Type inference for generic instance creation (e.g. "<code>Map&lt;String, Integer&gt; map = new
                 HashMap&lt;&gt;();</code>")
