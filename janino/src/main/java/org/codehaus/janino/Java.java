@@ -44,6 +44,9 @@ import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
+import org.codehaus.janino.Visitor.LambdaBodyVisitor;
+import org.codehaus.janino.Visitor.LambdaParametersVisitor;
+import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
 import org.codehaus.janino.util.AbstractTraverser;
@@ -5488,6 +5491,103 @@ class Java {
 
         @Override public String
         toString() { return this.value; }
+    }
+
+    public static
+    class LambdaExpression extends Rvalue {
+
+        public final LambdaParameters parameters;
+        public final LambdaBody       body;
+
+        public
+        LambdaExpression(Location location, LambdaParameters parameters, LambdaBody body) {
+            super(location);
+            this.parameters = parameters;
+            this.body       = body;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(RvalueVisitor<R, EX> rvv) throws EX { return rvv.visitLambdaExpression(this); }
+
+        @Override public String
+        toString() { return this.parameters + " -> " + this.body; }
+    }
+
+    public
+    interface LambdaParameters {
+
+        @Nullable <R, EX extends Throwable> R
+        accept(LambdaParametersVisitor<R, EX> lpv) throws EX;
+    }
+
+    public static
+    class IdentifierLambdaParameters implements LambdaParameters {
+
+        public final String identifier;
+
+        public
+        IdentifierLambdaParameters(String identifier) { this.identifier = identifier; }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(LambdaParametersVisitor<R, EX> lpv) throws EX { return lpv.visitIdentifierLambdaParameters(this); }
+    }
+
+    public static
+    class FormalLambdaParameters implements LambdaParameters {
+
+        public final FormalParameters formalParameters;
+
+        public
+        FormalLambdaParameters(FormalParameters formalParameters) { this.formalParameters = formalParameters; }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(LambdaParametersVisitor<R, EX> lpv) throws EX { return lpv.visitFormalLambdaParameters(this); }
+
+        @Override public String
+        toString() { return this.formalParameters.toString(); }
+    }
+
+    public static
+    class InferredLambdaParameters implements LambdaParameters {
+
+        public final String[] names;
+
+        public
+        InferredLambdaParameters(String[] names) { this.names = names; }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(LambdaParametersVisitor<R, EX> lpv) throws EX { return lpv.visitInferredLambdaParameters(this); }
+    }
+
+    public
+    interface LambdaBody {
+
+        @Nullable public <R, EX extends Throwable> R
+        accept(LambdaBodyVisitor<R, EX> lbv) throws EX;
+    }
+
+    public static
+    class BlockLambdaBody implements LambdaBody {
+
+        public final Block block;
+
+        public
+        BlockLambdaBody(Block block) { this.block = block; }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(LambdaBodyVisitor<R, EX> lbv) throws EX { return lbv.visitBlockLambdaBody(this); }
+    }
+
+    public static
+    class ExpressionLambdaBody implements LambdaBody {
+
+        public final Rvalue expression;
+
+        public
+        ExpressionLambdaBody(Rvalue expression) { this.expression = expression; }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(LambdaBodyVisitor<R, EX> lbv) throws EX { return lbv.visitExpressionLambdaBody(this); }
     }
 
     /**

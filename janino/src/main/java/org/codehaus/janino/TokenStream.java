@@ -151,9 +151,10 @@ interface TokenStream {
     /**
      * Checks whether the type of the next token is the <var>suspected</var>; if so, consumes the token.
      *
-     * @return Whether the type of the next token is the <var>suspected</var>
+     * @return The value of the next token; an {@link String#intern() interned} String iff the token represents an
+     *         identifier, {@code true}, {@code false}, {@code null}, or an operator
      */
-    boolean
+    @Nullable String
     peekRead(TokenType suspected) throws CompileException, IOException;
 
     /**

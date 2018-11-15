@@ -84,6 +84,7 @@ import org.codehaus.janino.Java.Initializer;
 import org.codehaus.janino.Java.Instanceof;
 import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.LabeledStatement;
+import org.codehaus.janino.Java.LambdaExpression;
 import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
 import org.codehaus.janino.Java.LocalVariableAccess;
@@ -224,6 +225,7 @@ class DeepCopier {
         @Override public Rvalue visitParameterAccess(ParameterAccess pa)                        throws CompileException { return DeepCopier.this.copyParameterAccess(pa);                     }
         @Override public Rvalue visitQualifiedThisReference(QualifiedThisReference qtr)         throws CompileException { return DeepCopier.this.copyQualifiedThisReference(qtr);             }
         @Override public Rvalue visitThisReference(ThisReference tr)                            throws CompileException { return DeepCopier.this.copyThisReference(tr);                       }
+        @Override public Rvalue visitLambdaExpression(LambdaExpression le)                      throws CompileException { return DeepCopier.this.copyLambdaExpression(le);                    }
     };
 
     private final Visitor.LvalueVisitor<Lvalue, CompileException>
@@ -1055,6 +1057,11 @@ class DeepCopier {
     public Rvalue
     copyThisReference(ThisReference subject) throws CompileException {
         return new ThisReference(subject.getLocation());
+    }
+
+    public Rvalue
+    copyLambdaExpression(LambdaExpression subject) {
+        return new LambdaExpression(subject.getLocation(), subject.parameters, subject.body);
     }
 
     public ArrayType

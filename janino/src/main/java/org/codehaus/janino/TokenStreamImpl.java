@@ -249,21 +249,21 @@ class TokenStreamImpl implements TokenStream {
         return -1;
     }
 
-    @Override public boolean
+    @Override @Nullable public String
     peekRead(TokenType suspected) throws CompileException, IOException {
 
-        if (this.nextToken != null) {
-            if (this.nextToken.type != suspected) return false;
+        Token nt = this.nextToken;
+        if (nt != null) {
+            if (nt.type != suspected) return null;
             this.nextToken       = this.nextButOneToken;
             this.nextButOneToken = null;
-            return true;
+            return nt.value;
         }
 
-        Token t = this.produceToken();
-        if (t.type == suspected) return true;
+        nt = this.produceToken();
+        if (nt.type == suspected) return nt.value;
 
-        this.nextToken = t;
-        return false;
+        return (this.nextToken = nt).value;
     }
 
     @Override public int
@@ -309,6 +309,9 @@ class TokenStreamImpl implements TokenStream {
 
     // Used for elaborate warning handling.
     @Nullable private WarningHandler optionalWarningHandler;
+
+    @Override public String
+    toString() { return this.nextToken + "/" + this.nextButOneToken + "/" + this.scanner.location(); }
 
     /**
      * Issues a warning with the given message and location and returns. This is done through

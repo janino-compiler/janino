@@ -46,14 +46,23 @@ import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Block;
+import org.codehaus.janino.Java.BlockLambdaBody;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.ConstructorDeclarator;
 import org.codehaus.janino.Java.ConstructorInvocation;
 import org.codehaus.janino.Java.EnumConstant;
+import org.codehaus.janino.Java.ExpressionLambdaBody;
 import org.codehaus.janino.Java.FieldDeclaration;
+import org.codehaus.janino.Java.FormalLambdaParameters;
 import org.codehaus.janino.Java.FunctionDeclarator;
+import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
+import org.codehaus.janino.Java.IdentifierLambdaParameters;
+import org.codehaus.janino.Java.InferredLambdaParameters;
 import org.codehaus.janino.Java.Initializer;
+import org.codehaus.janino.Java.LambdaBody;
+import org.codehaus.janino.Java.LambdaExpression;
+import org.codehaus.janino.Java.LambdaParameters;
 import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.MemberEnumDeclaration;
@@ -68,6 +77,8 @@ import org.codehaus.janino.Java.TryStatement.LocalVariableDeclaratorResource;
 import org.codehaus.janino.Java.TryStatement.VariableAccessResource;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
+import org.codehaus.janino.Visitor.LambdaBodyVisitor;
+import org.codehaus.janino.Visitor.LambdaParametersVisitor;
 import org.codehaus.janino.util.AutoIndentWriter;
 
 /**
@@ -742,6 +753,14 @@ class Unparser {
                 visitThisReference(Java.ThisReference tr) { Unparser.this.pw.print("this"); return null; }
 
                 @Override @Nullable public Void
+                visitLambdaExpression(LambdaExpression le) {
+                    Unparser.this.unparseLambdaParameters(le.parameters);
+                    Unparser.this.pw.print(" -> ");
+                    Unparser.this.unparseLambdaBody(le.body);
+                    return null;
+                }
+
+                @Override @Nullable public Void
                 visitUnaryOperation(Java.UnaryOperation uo) {
                     Unparser.this.pw.print(uo.operator);
                     Unparser.this.unparseUnaryOperation(uo.operand, uo.operator + "x");
@@ -840,6 +859,45 @@ class Unparser {
             Unparser.this.pw.append('@').append(sea.type.toString()).append('(');
             sea.elementValue.accept(Unparser.this.elementValueUnparser);
             Unparser.this.pw.append(") ");
+            return null;
+        }
+    };
+
+    private final LambdaParametersVisitor<Void, RuntimeException>
+    lambdaParametersUnparser = new LambdaParametersVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitIdentifierLambdaParameters(IdentifierLambdaParameters ilp) {
+            Unparser.this.pw.print(ilp.identifier);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitFormalLambdaParameters(FormalLambdaParameters flp) {
+            Unparser.this.unparseFormalParameters(flp.formalParameters);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitInferredLambdaParameters(InferredLambdaParameters ilp) {
+            Unparser.this.pw.print(ilp.names[0]);
+            for (int i = 1; i < ilp.names.length; i++) Unparser.this.pw.print(ilp.names[i]);
+            return null;
+        }
+    };
+
+    private final LambdaBodyVisitor<Void, RuntimeException>
+    lambdaBodyUnparser = new LambdaBodyVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitBlockLambdaBody(BlockLambdaBody blb) {
+            Unparser.this.unparseBlock(blb.block);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitExpressionLambdaBody(ExpressionLambdaBody elb) {
+            Unparser.this.unparse(elb.expression, true);
             return null;
         }
     };
@@ -1079,6 +1137,13 @@ class Unparser {
     }
 
     // Helpers
+
+    public void
+    unparseLambdaParameters(LambdaParameters lp) { lp.accept(this.lambdaParametersUnparser); }
+
+    public void
+    unparseLambdaBody(LambdaBody body) { body.accept(this.lambdaBodyUnparser); }
+
     public void
     unparseBlock(Java.Block b) {
         if (b.statements.isEmpty()) {
@@ -1371,10 +1436,18 @@ class Unparser {
     }
     private void
     unparseFunctionDeclaratorRest(Java.FunctionDeclarator fd) {
-        boolean big = fd.formalParameters.parameters.length >= 4;
+        this.unparseFormalParameters(fd.formalParameters);
+        if (fd.thrownExceptions.length > 0) this.pw.print(" throws " + Java.join(fd.thrownExceptions, ", "));
+    }
+
+    private void
+    unparseFormalParameters(FormalParameters fps) {
+
+        boolean big = fps.parameters.length >= 4;
+
         this.pw.print('(');
         if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.INDENT); }
-        for (int i = 0; i < fd.formalParameters.parameters.length; ++i) {
+        for (int i = 0; i < fps.parameters.length; ++i) {
             if (i > 0) {
                 if (big) {
                     this.pw.println(',');
@@ -1384,13 +1457,12 @@ class Unparser {
                 }
             }
             this.unparseFormalParameter(
-                fd.formalParameters.parameters[i],
-                i == fd.formalParameters.parameters.length - 1 && fd.formalParameters.variableArity
+                fps.parameters[i],
+                i == fps.parameters.length - 1 && fps.variableArity
             );
         }
         if (big) { this.pw.println(); this.pw.print(AutoIndentWriter.UNINDENT); }
         this.pw.print(')');
-        if (fd.thrownExceptions.length > 0) this.pw.print(" throws " + Java.join(fd.thrownExceptions, ", "));
     }
 
     private void

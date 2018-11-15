@@ -127,6 +127,7 @@ import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.InterfaceDeclaration;
 import org.codehaus.janino.Java.Invocation;
 import org.codehaus.janino.Java.LabeledStatement;
+import org.codehaus.janino.Java.LambdaExpression;
 import org.codehaus.janino.Java.Literal;
 import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
@@ -3799,6 +3800,7 @@ class UnitCompiler {
             @Override @Nullable public Void visitParameterAccess(ParameterAccess pa)                        throws CompileException { UnitCompiler.this.compile2(pa);    return null; }
             @Override @Nullable public Void visitQualifiedThisReference(QualifiedThisReference qtr)         throws CompileException { UnitCompiler.this.compile2(qtr);   return null; }
             @Override @Nullable public Void visitThisReference(ThisReference tr)                            throws CompileException { UnitCompiler.this.compile2(tr);    return null; }
+            @Override @Nullable public Void visitLambdaExpression(LambdaExpression le)                      throws CompileException { UnitCompiler.this.compile2(le);    return null; }
         });
     }
 
@@ -4000,6 +4002,7 @@ class UnitCompiler {
             @Override @Nullable public Void visitParameterAccess(ParameterAccess pa)                        throws CompileException { UnitCompiler.this.compileBoolean2(pa,   dst, orientation); return null; }
             @Override @Nullable public Void visitQualifiedThisReference(QualifiedThisReference qtr)         throws CompileException { UnitCompiler.this.compileBoolean2(qtr,  dst, orientation); return null; }
             @Override @Nullable public Void visitThisReference(ThisReference tr)                            throws CompileException { UnitCompiler.this.compileBoolean2(tr,   dst, orientation); return null; }
+            @Override @Nullable public Void visitLambdaExpression(LambdaExpression le)                      throws CompileException { UnitCompiler.this.compileBoolean2(le,   dst, orientation); return null; }
         });
     }
 
@@ -4328,6 +4331,7 @@ class UnitCompiler {
             @Override public Integer visitParameterAccess(ParameterAccess pa)                        { return UnitCompiler.this.compileContext2(pa);   }
             @Override public Integer visitQualifiedThisReference(QualifiedThisReference qtr)         { return UnitCompiler.this.compileContext2(qtr);  }
             @Override public Integer visitThisReference(ThisReference tr)                            { return UnitCompiler.this.compileContext2(tr);   }
+            @Override public Integer visitLambdaExpression(LambdaExpression le)                      { return UnitCompiler.this.compileContext2(le);   }
         });
 
         assert result != null;
@@ -4460,6 +4464,7 @@ class UnitCompiler {
             @Override public IClass visitParameterAccess(ParameterAccess pa)                        throws CompileException { return UnitCompiler.this.compileGet2(pa);   }
             @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr)         throws CompileException { return UnitCompiler.this.compileGet2(qtr);  }
             @Override public IClass visitThisReference(ThisReference tr)                            throws CompileException { return UnitCompiler.this.compileGet2(tr);   }
+            @Override public IClass visitLambdaExpression(LambdaExpression le)                      throws CompileException { return UnitCompiler.this.compileGet2(le);   }
         });
 
         assert result != null;
@@ -4505,6 +4510,11 @@ class UnitCompiler {
     compileGet2(ThisReference tr) throws CompileException {
         this.referenceThis(tr);
         return this.getIClass(tr);
+    }
+
+    @SuppressWarnings("static-method") private IClass
+    compileGet2(LambdaExpression le) throws CompileException {
+        throw UnitCompiler.compileException(le, "Compilation of lambda expression NYI");
     }
 
     private IClass
@@ -5289,6 +5299,7 @@ class UnitCompiler {
         @Override @Nullable public Boolean visitParameterAccess(ParameterAccess pa)                        { return false; }
         @Override @Nullable public Boolean visitQualifiedThisReference(QualifiedThisReference qtr)         { return false; }
         @Override @Nullable public Boolean visitThisReference(ThisReference tr)                            { return false; }
+        @Override @Nullable public Boolean visitLambdaExpression(LambdaExpression le)                      { return true; }
 
         private boolean
         mayHaveSideEffects(ArrayInitializer arrayInitializer) {
@@ -5753,6 +5764,7 @@ class UnitCompiler {
             @Override @Nullable public Object visitParameterAccess(ParameterAccess pa)                                     { return UnitCompiler.this.getConstantValue2(pa);   }
             @Override @Nullable public Object visitQualifiedThisReference(QualifiedThisReference qtr)                      { return UnitCompiler.this.getConstantValue2(qtr);  }
             @Override @Nullable public Object visitThisReference(ThisReference tr)                                         { return UnitCompiler.this.getConstantValue2(tr);   }
+            @Override @Nullable public Object visitLambdaExpression(LambdaExpression le)                                   { return UnitCompiler.this.getConstantValue2(le);   }
         }));
     }
 
@@ -6554,6 +6566,7 @@ class UnitCompiler {
                     @Override public IClass visitParameterAccess(ParameterAccess pa)                        throws CompileException { return UnitCompiler.this.getType2(pa);   }
                     @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr)         throws CompileException { return UnitCompiler.this.getType2(qtr);  }
                     @Override public IClass visitThisReference(ThisReference tr)                            throws CompileException { return UnitCompiler.this.getType2(tr);   }
+                    @Override @Nullable public IClass visitLambdaExpression(LambdaExpression le)            throws CompileException { return UnitCompiler.this.getType2(le);   }
                 });
             }
 
@@ -6906,6 +6919,11 @@ class UnitCompiler {
     private IClass
     getType2(ThisReference tr) throws CompileException {
         return this.getIClass(tr);
+    }
+
+    @SuppressWarnings("static-method") private IClass
+    getType2(LambdaExpression le) throws CompileException {
+        throw UnitCompiler.compileException(le, "Compilation of lambda expression NYI");
     }
 
     private IClass
@@ -7288,6 +7306,7 @@ class UnitCompiler {
                     @Override public Boolean visitParameterAccess(ParameterAccess pa)                        { return UnitCompiler.this.isType2(pa);   }
                     @Override public Boolean visitQualifiedThisReference(QualifiedThisReference qtr)         { return UnitCompiler.this.isType2(qtr);  }
                     @Override public Boolean visitThisReference(ThisReference tr)                            { return UnitCompiler.this.isType2(tr);   }
+                    @Override public Boolean visitLambdaExpression(LambdaExpression le)                      { return UnitCompiler.this.isType2(le);   }
                 });
             }
 

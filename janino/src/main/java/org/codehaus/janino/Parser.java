@@ -49,6 +49,7 @@ import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BinaryOperation;
 import org.codehaus.janino.Java.Block;
+import org.codehaus.janino.Java.BlockLambdaBody;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.BooleanLiteral;
 import org.codehaus.janino.Java.BreakStatement;
@@ -68,6 +69,7 @@ import org.codehaus.janino.Java.DoStatement;
 import org.codehaus.janino.Java.ElementValue;
 import org.codehaus.janino.Java.ElementValuePair;
 import org.codehaus.janino.Java.EmptyStatement;
+import org.codehaus.janino.Java.ExpressionLambdaBody;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
@@ -75,14 +77,20 @@ import org.codehaus.janino.Java.FieldDeclaration;
 import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.ForEachStatement;
 import org.codehaus.janino.Java.ForStatement;
+import org.codehaus.janino.Java.FormalLambdaParameters;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
+import org.codehaus.janino.Java.IdentifierLambdaParameters;
 import org.codehaus.janino.Java.IfStatement;
+import org.codehaus.janino.Java.InferredLambdaParameters;
 import org.codehaus.janino.Java.Initializer;
 import org.codehaus.janino.Java.Instanceof;
 import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.InterfaceDeclaration;
 import org.codehaus.janino.Java.LabeledStatement;
+import org.codehaus.janino.Java.LambdaBody;
+import org.codehaus.janino.Java.LambdaExpression;
+import org.codehaus.janino.Java.LambdaParameters;
 import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
@@ -1475,20 +1483,37 @@ class Parser {
 
     /**
      * <pre>
-     *   FormalParameters := '(' [ FormalParameter { ',' FormalParameter } ] ')'
+     *   FormalParameters := '(' [ FormalParameterList ] ')'
      * </pre>
      */
     public FormalParameters
     parseFormalParameters() throws CompileException, IOException {
+
         this.read("(");
+
         if (this.peekRead(")")) return new FormalParameters(this.location());
+
+        FormalParameters result = this.parseFormalParameterList();
+
+        this.read(")");
+
+        return result;
+    }
+
+    /**
+     * <pre>
+     *   FormalParameterList := FormalParameter { ',' FormalParameter }
+     * </pre>
+     */
+    public FormalParameters
+    parseFormalParameterList() throws CompileException, IOException {
 
         List<FormalParameter> l           = new ArrayList<FormalParameter>();
         final boolean[]       hasEllipsis = new boolean[1];
         do {
             if (hasEllipsis[0]) throw this.compileException("Only the last parameter may have an ellipsis");
             l.add(this.parseFormalParameter(hasEllipsis));
-        } while (this.read(",", ")") == 0);
+        } while (this.peekRead(","));
         return new FormalParameters(
             this.location(),                                              // location
             (FormalParameter[]) l.toArray(new FormalParameter[l.size()]), // parameters
@@ -1498,7 +1523,32 @@ class Parser {
 
     /**
      * <pre>
-     *   FormalParameter := [ 'final' ] Type [ '.' '.' '.' ] Identifier BracketsOpt
+     *   FormalParameterListRest := Identifier { ',' FormalParameter }
+     * </pre>
+     */
+    public FormalParameters
+    parseFormalParameterListRest(Type firstParameterType) throws CompileException, IOException {
+
+        List<FormalParameter> l           = new ArrayList<FormalParameter>();
+        final boolean[]       hasEllipsis = new boolean[1];
+
+        l.add(this.parseFormalParameterRest(false, firstParameterType, hasEllipsis));
+
+        while (this.peekRead(",")) {
+            if (hasEllipsis[0]) throw this.compileException("Only the last parameter may have an ellipsis");
+            l.add(this.parseFormalParameter(hasEllipsis));
+        }
+
+        return new FormalParameters(
+            this.location(),                                              // location
+            (FormalParameter[]) l.toArray(new FormalParameter[l.size()]), // parameters
+            hasEllipsis[0]                                                // variableArity
+        );
+    }
+
+    /**
+     * <pre>
+     *   FormalParameter := [ 'final' ] Type FormalParameterRest
      * </pre>
      */
     public FormalParameter
@@ -1520,11 +1570,23 @@ class Parser {
 
         Type type = this.parseType(); // SUPPRESS CHECKSTYLE UsageDistance
 
+        return this.parseFormalParameterRest(finaL, type, hasEllipsis);
+    }
+
+    /**
+     * <pre>
+     *   FormalParameterRest := [ '.' '.' '.' ] Identifier BracketsOpt
+     * </pre>
+     */
+    public FormalParameter
+    parseFormalParameterRest(boolean finaL, Type type, boolean[] hasEllipsis) throws CompileException, IOException {
+
         if (this.peekRead(".")) {
             this.read(".");
             this.read(".");
             hasEllipsis[0] = true;
         }
+
         Location location = this.location();
         String   name     = this.read(TokenType.IDENTIFIER);
         this.verifyIdentifierIsConventionalLocalVariableOrParameterName(name, location);
@@ -2491,11 +2553,17 @@ class Parser {
 
     /**
      * <pre>
-     *   Expression := AssignmentExpression
+     *   Expression := AssignmentExpression | LambdaExpression
      * </pre>
+     * <p>
+     *   Notice that all other kinds of lambda expressions are parsed in {@link #parsePrimary()}.
+     * </p>
      */
     public Atom
     parseExpression() throws CompileException, IOException  {
+
+        if (this.peek(TokenType.IDENTIFIER) && this.peekNextButOne("->")) return this.parseLambdaExpression();
+
         return this.parseAssignmentExpression();
     }
 
@@ -2510,7 +2578,7 @@ class Parser {
      * </pre>
      */
     public Atom
-    parseAssignmentExpression() throws CompileException, IOException  {
+    parseAssignmentExpression() throws CompileException, IOException {
         Atom a = this.parseConditionalExpression();
         if (this.peek(
             "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" // SUPPRESS CHECKSTYLE Wrap|LineLength
@@ -2896,10 +2964,14 @@ class Parser {
      */
     public Atom
     parsePrimary() throws CompileException, IOException {
+
         if (this.peekRead("(")) {
+
             if (
                 this.peek("boolean", "char", "byte", "short", "int", "long", "float", "double") != -1
+                && !this.peekNextButOne(TokenType.IDENTIFIER)
             ) {
+
                 // '(' PrimitiveType { '[]' } ')' UnaryExpression
                 Type type     = this.parseType();
                 int  brackets = this.parseBracketsOpt();
@@ -2911,7 +2983,55 @@ class Parser {
                     this.parseUnaryExpression().toRvalueOrCompileException() // value
                 );
             }
-            Atom a = this.parseExpression();
+
+            // '(' ')'
+            if (this.peekRead(")")) {
+                LambdaParameters parameters = new FormalLambdaParameters(new FormalParameters(this.location()));
+                Location loc = this.location();
+                this.read("->");
+                return new LambdaExpression(loc, parameters, this.parseLambdaBody());
+            }
+
+            Atom a;
+            if (this.peek(TokenType.IDENTIFIER) && (this.peekNextButOne(",") || this.peekNextButOne(")"))) {
+
+                // '(' Identifier { ',' Identifier } ')' ->
+                String[] names;
+                {
+                    List<String> l = new ArrayList<String>();
+                    l.add(this.read(TokenType.IDENTIFIER));
+                    while (this.peekRead(",")) l.add(this.read(TokenType.IDENTIFIER));
+                    names = (String[]) l.toArray(new String[l.size()]);
+                }
+
+                Location loc = this.location();
+                if (this.peek(")") && this.peekNextButOne("->")) {
+                    this.read();
+                    this.read();
+                    return new LambdaExpression(
+                        loc,
+                        new InferredLambdaParameters(names),
+                        this.parseLambdaBody()
+                    );
+                }
+
+                if (names.length != 1) throw this.compileException("Lambda expected");
+                a = new AmbiguousName(loc, new String[] { names[0] });
+            } else {
+                a = this.parseExpression();
+            }
+
+            // '(' FormalParameterList ')'
+            if (this.peek(TokenType.IDENTIFIER)) {
+                FormalParameters fpl = this.parseFormalParameterListRest(a.toTypeOrCompileException());
+                this.read(")");
+                LambdaParameters parameters = new FormalLambdaParameters(fpl);
+                Location loc = this.location();
+                this.read("->");
+                return new LambdaExpression(loc, parameters, this.parseLambdaBody());
+            }
+
+            // '(' atom ')'
             this.read(")");
 
             if (
@@ -3330,6 +3450,71 @@ class Parser {
 
     /**
      * <pre>
+     *   LambdaExpression := LambdaParameters '->' LambdaBody
+     * </pre>
+     */
+    private LambdaExpression
+    parseLambdaExpression() throws CompileException, IOException {
+
+        LambdaParameters parameters = this.parseLambdaParameters();
+        Location loc = this.location();
+        this.read("->");
+        LambdaBody body = this.parseLambdaBody();
+
+        return new LambdaExpression(loc, parameters, body);
+    }
+
+    /**
+     * <pre>
+     *   LambdaParameters :=
+     *       Identifier
+     *       | '(' [ FormalParameterList ] ')'
+     *       | '(' InferredFormalParameterList ')'
+     * </pre>
+     */
+    private LambdaParameters
+    parseLambdaParameters() throws CompileException, IOException {
+
+        // Identifier
+        String identifier = this.peekRead(TokenType.IDENTIFIER);
+        if (identifier != null) return new IdentifierLambdaParameters(identifier);
+
+        this.read("(");
+
+        // '(' ')'
+        if (this.peekRead(")")) return new FormalLambdaParameters(new FormalParameters(this.location()));
+
+        // '(' Identifier { ',' Identifier } ')'
+        if (this.peek(TokenType.IDENTIFIER) && (this.peekNextButOne(",") || this.peekNextButOne(")"))) {
+            List<String> names = new ArrayList<String>();
+            names.add(this.read(TokenType.IDENTIFIER));
+            while (this.peekRead(",")) names.add(this.read(TokenType.IDENTIFIER));
+            this.read(")");
+            return new InferredLambdaParameters((String[]) names.toArray(new String[names.size()]));
+        }
+
+        // '(' FormalParameterList ')'
+        FormalParameters fpl = this.parseFormalParameterList();
+        this.read(")");
+        return new FormalLambdaParameters(fpl);
+    }
+
+    /**
+     * <pre>
+     *   LambdaBody :=
+     * </pre>
+     */
+    private LambdaBody
+    parseLambdaBody() throws CompileException, IOException {
+        return (
+            this.peek("{")
+            ? (LambdaBody) new BlockLambdaBody(this.parseBlock())
+            : new ExpressionLambdaBody(this.parseExpression().toRvalueOrCompileException())
+        );
+    }
+
+    /**
+     * <pre>
      *   ExpressionStatement := Expression ';'
      * </pre>
      */
@@ -3350,19 +3535,21 @@ class Parser {
     // Token-level methods.
 
     // Shorthand for the various "TokenStream" methods.       SUPPRESS CHECKSTYLE LineLength|JavadocMethod:16
-    public Token   peek()                           throws CompileException, IOException { return this.tokenStream.peek(); }
-    public Token   read()                           throws CompileException, IOException { return this.tokenStream.read(); }
-    public boolean peek(String suspected)           throws CompileException, IOException { return this.tokenStream.peek(suspected); }
-    public int     peek(String... suspected)        throws CompileException, IOException { return this.tokenStream.peek(suspected); }
-    public boolean peek(TokenType suspected)        throws CompileException, IOException { return this.tokenStream.peek(suspected); }
-    public int     peek(TokenType... suspected)     throws CompileException, IOException { return this.tokenStream.peek(suspected); }
-    public Token   peekNextButOne()                 throws CompileException, IOException { return this.tokenStream.peekNextButOne(); }
-    public boolean peekNextButOne(String suspected) throws CompileException, IOException { return this.tokenStream.peekNextButOne(suspected); }
-    public void    read(String expected)            throws CompileException, IOException { this.tokenStream.read(expected); }
-    public int     read(String... expected)         throws CompileException, IOException { return this.tokenStream.read(expected); }
-    public String  read(TokenType expected)         throws CompileException, IOException { return this.tokenStream.read(expected); }
-    public boolean peekRead(String suspected)       throws CompileException, IOException { return this.tokenStream.peekRead(suspected); }
-    public int     peekRead(String... suspected)    throws CompileException, IOException { return this.tokenStream.peekRead(suspected); }
+    public Token            peek()                              throws CompileException, IOException { return this.tokenStream.peek(); }
+    public Token            read()                              throws CompileException, IOException { return this.tokenStream.read(); }
+    public boolean          peek(String suspected)              throws CompileException, IOException { return this.tokenStream.peek(suspected); }
+    public int              peek(String... suspected)           throws CompileException, IOException { return this.tokenStream.peek(suspected); }
+    public boolean          peek(TokenType suspected)           throws CompileException, IOException { return this.tokenStream.peek(suspected); }
+    public int              peek(TokenType... suspected)        throws CompileException, IOException { return this.tokenStream.peek(suspected); }
+    public Token            peekNextButOne()                    throws CompileException, IOException { return this.tokenStream.peekNextButOne(); }
+    public boolean          peekNextButOne(String suspected)    throws CompileException, IOException { return this.tokenStream.peekNextButOne(suspected); }
+    public boolean          peekNextButOne(TokenType suspected) throws CompileException, IOException { return this.tokenStream.peekNextButOne().type == suspected; }
+    public void             read(String expected)               throws CompileException, IOException { this.tokenStream.read(expected); }
+    public int              read(String... expected)            throws CompileException, IOException { return this.tokenStream.read(expected); }
+    public String           read(TokenType expected)            throws CompileException, IOException { return this.tokenStream.read(expected); }
+    public boolean          peekRead(String suspected)          throws CompileException, IOException { return this.tokenStream.peekRead(suspected); }
+    public int              peekRead(String... suspected)       throws CompileException, IOException { return this.tokenStream.peekRead(suspected); }
+    @Nullable public String peekRead(TokenType suspected)       throws CompileException, IOException { return this.tokenStream.peekRead(suspected); }
 
     public boolean
     peekLiteral() throws CompileException, IOException {

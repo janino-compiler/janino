@@ -80,6 +80,7 @@ import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.InterfaceDeclaration;
 import org.codehaus.janino.Java.Invocation;
 import org.codehaus.janino.Java.LabeledStatement;
+import org.codehaus.janino.Java.LambdaExpression;
 import org.codehaus.janino.Java.Literal;
 import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
@@ -358,6 +359,9 @@ interface Traverser<EX extends Throwable> {
 
     void
     traverseThisReference(ThisReference tr) throws EX;
+
+    void
+    traverseLambdaExpression(LambdaExpression le) throws EX;
 
     void
     traverseArrayType(ArrayType at) throws EX;

@@ -84,6 +84,7 @@ import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.InterfaceDeclaration;
 import org.codehaus.janino.Java.Invocation;
 import org.codehaus.janino.Java.LabeledStatement;
+import org.codehaus.janino.Java.LambdaExpression;
 import org.codehaus.janino.Java.Literal;
 import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
@@ -270,6 +271,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         @Override @Nullable public Void visitParameterAccess(ParameterAccess pa)                        throws EX { AbstractTraverser.this.delegate.traverseParameterAccess(pa);                    return null; }
         @Override @Nullable public Void visitQualifiedThisReference(QualifiedThisReference qtr)         throws EX { AbstractTraverser.this.delegate.traverseQualifiedThisReference(qtr);            return null; }
         @Override @Nullable public Void visitThisReference(ThisReference tr)                            throws EX { AbstractTraverser.this.delegate.traverseThisReference(tr);                      return null; }
+        @Override @Nullable public Void visitLambdaExpression(LambdaExpression le)                      throws EX { AbstractTraverser.this.delegate.traverseLambdaExpression(le);                   return null;  }
     };
 
     /**
@@ -830,6 +832,9 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
     @Override public void
     traverseThisReference(ThisReference tr) throws EX { this.traverseRvalue(tr); }
+
+    @Override public void
+    traverseLambdaExpression(LambdaExpression le) throws EX { this.traverseRvalue(le); }
 
     @Override public void
     traverseArrayType(ArrayType at) throws EX {

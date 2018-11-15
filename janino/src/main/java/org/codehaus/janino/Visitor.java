@@ -27,6 +27,12 @@
 package org.codehaus.janino;
 
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.Java.BlockLambdaBody;
+import org.codehaus.janino.Java.ExpressionLambdaBody;
+import org.codehaus.janino.Java.FormalLambdaParameters;
+import org.codehaus.janino.Java.IdentifierLambdaParameters;
+import org.codehaus.janino.Java.InferredLambdaParameters;
+import org.codehaus.janino.Java.LambdaExpression;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 
 /**
@@ -530,6 +536,11 @@ class Visitor {
          * Invoked by {@link Java.ArrayLength#accept(Visitor.RvalueVisitor)}
          */
         @Nullable R visitThisReference(Java.ThisReference tr) throws EX;
+
+        /**
+         * Invoked by {@link Java.LambdaExpression#accept(Visitor.RvalueVisitor)}
+         */
+        @Nullable R visitLambdaExpression(LambdaExpression le) throws EX;
     }
 
     /**
@@ -668,6 +679,21 @@ class Visitor {
          * Invoked by {@link Java.ArrayType#accept(Visitor.TypeArgumentVisitor)}
          */
         @Nullable R visitArrayType(Java.ArrayType arrayType) throws EX;
+    }
+
+    public
+    interface LambdaParametersVisitor<R, EX extends Throwable> {
+
+        @Nullable R visitIdentifierLambdaParameters(IdentifierLambdaParameters ilp) throws EX;
+        @Nullable R visitFormalLambdaParameters(FormalLambdaParameters flp)         throws EX;
+        @Nullable R visitInferredLambdaParameters(InferredLambdaParameters ilp)     throws EX;
+    }
+
+    public
+    interface LambdaBodyVisitor<R, EX extends Throwable> {
+
+        @Nullable R visitBlockLambdaBody(BlockLambdaBody blockLambdaBody)                throws EX;
+        @Nullable R visitExpressionLambdaBody(ExpressionLambdaBody expressionLambdaBody) throws EX;
     }
 
     /**

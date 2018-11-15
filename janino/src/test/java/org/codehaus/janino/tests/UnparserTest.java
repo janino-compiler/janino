@@ -60,6 +60,7 @@ import org.codehaus.janino.Java.FieldAccessExpression;
 import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.Instanceof;
 import org.codehaus.janino.Java.IntegerLiteral;
+import org.codehaus.janino.Java.LambdaExpression;
 import org.codehaus.janino.Java.LocalVariableAccess;
 import org.codehaus.janino.Java.Locatable;
 import org.codehaus.janino.Java.Located;
@@ -393,6 +394,9 @@ class UnparserTest {
             @Override public Rvalue
             visitThisReference(ThisReference tr) { return tr; }
 
+            @Override @Nullable public Rvalue
+            visitLambdaExpression(LambdaExpression lambdaExpression) { return lambdaExpression; }
+
             @Override public Rvalue
             visitUnaryOperation(UnaryOperation uo) {
                 return new Java.UnaryOperation(
@@ -583,6 +587,17 @@ class UnparserTest {
 
         // Type inference for generic instance creation.
         UnparserTest.helpTestScript("{ java.util.Map<String, Integer> map = new java.util.HashMap<>(); }");
+    }
+
+    @Test public void
+    testParseUnparseJava8() throws Exception {
+
+        // Lambda expressions.
+        UnparserTest.helpTestScript("{ new Thread(()         -> {});   }");
+        UnparserTest.helpTestScript("{ return ()             -> {};    }");
+        UnparserTest.helpTestScript("{ return a              -> {};    }");
+        UnparserTest.helpTestScript("{ return (int a, int b) -> {};    }");
+        UnparserTest.helpTestScript("{ return ()             -> 3 + 7; }");
     }
 
     @Test public void
