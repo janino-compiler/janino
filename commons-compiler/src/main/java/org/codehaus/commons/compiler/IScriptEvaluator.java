@@ -34,7 +34,7 @@ import java.lang.reflect.Method;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * An engine that executes a script in Java bytecode.
+ * An engine that executes a script in JVM bytecode.
  * <p>
  *   The syntax of the script to compile is a sequence of import declarations (not allowed if you compile many scripts
  *   at a time, see below) followed by a sequence of statements, as defined in the <a

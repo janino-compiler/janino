@@ -27,7 +27,7 @@
 package org.codehaus.janino;
 
 /**
- * Definitions of Java bytecode opcodes.
+ * Definitions of JVM bytecode opcodes.
  */
 final
 class Opcode {

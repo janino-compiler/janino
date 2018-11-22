@@ -27,10 +27,11 @@
 /**
  * The core of the Janino Java<sup>TM</sup> compiler.
  * <p>
- *   The package comprises a scanner ({@link org.codehaus.janino.Scanner}, a parser ({@link org.codehaus.janino.Parser})
- *   and a class file library. The parser builds a syntax tree from the "Java.*" classes that represents the parsed
- *   code. The {@link org.codehaus.janino.UnitCompiler#compileUnit} method compiles this syntax tree into a {@link
- *   org.codehaus.janino.util.ClassFile} object, which can write Java<sup>TM</sup> bytecode to an "OutputStream".
+ *   The package comprises a scanner ({@link org.codehaus.janino.Scanner}, a parser ({@link
+ *   org.codehaus.janino.Parser}) and a class file library. The parser builds a syntax tree from the "Java.*" classes
+ *   that represents the parsed code. The {@link org.codehaus.janino.UnitCompiler#compileUnit(boolean, boolean,
+ *   boolean)} method compiles this syntax tree into a {@link org.codehaus.janino.util.ClassFile} object, which can
+ *   write JVM bytecode to an {@link OutputStream}.
  * </p>
  * <p>
  *   This package implements the {@code org.codehaus.commons.compiler} API.

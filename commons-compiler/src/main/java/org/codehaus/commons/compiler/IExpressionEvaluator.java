@@ -33,7 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * An engine that evaluates expressions in Java bytecode.
+ * An engine that evaluates expressions in JVM bytecode.
  * <p>
  *   The syntax of the expression to compile is that of a Java expression, as defined in JLS7, section 15. Notice
  *   that a Java expression does not have a concluding semicolon.

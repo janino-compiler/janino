@@ -53,7 +53,7 @@ import org.codehaus.janino.Mod;
  *   from it.
  * </p>
  * <p>
- *   {@link #store(OutputStream)} generates Java bytecode which is suitable for being processed by a Java
+ *   {@link #store(OutputStream)} generates JVM bytecode which is suitable for being processed by a Java
  *   virtual machine, and writes it to an {@link OutputStream}.
  * </p>
  */
