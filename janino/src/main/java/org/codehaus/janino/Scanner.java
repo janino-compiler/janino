@@ -227,10 +227,10 @@ class Scanner {
     close() throws IOException { this.in.close(); }
 
     /**
-     * @return The {@link Location} of the next character
+     * @return The {@link Location} of the previously read (or peeked) token.
      */
     public Location
-    location() { return new Location(this.optionalFileName, this.nextCharLineNumber, this.nextCharColumnNumber); }
+    location() { return new Location(this.optionalFileName, this.tokenLineNumber, this.tokenColumnNumber); }
 
     private Token
     token(TokenType type, String value) {
@@ -758,8 +758,13 @@ class Scanner {
                 this.nextCharColumnNumber = 0;
             }
         } else
+        if (result == '\t') {
+            this.nextCharColumnNumber = this.nextCharColumnNumber - this.nextCharColumnNumber % 8 + 8;
+            this.crLfPending = false;
+        } else
         {
             ++this.nextCharColumnNumber;
+            this.crLfPending = false;
         }
 
         return result;
