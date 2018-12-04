@@ -37,7 +37,9 @@ import java.util.logging.Logger;
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.tests.bug172.First;
@@ -900,26 +902,84 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
      */
     @Test public void
     testIssue65() throws Exception {
-        try {
-            this.compilerFactory.newSimpleCompiler().cook(
+        ReportedBugsTest.assertUncookableLocation(
+            "File 'FILENAME', Line 5, Column 9",
+            this.compilerFactory.newSimpleCompiler(),
+            (
                 ""
                 + "public class Example {\n"
-                + "  public static void main(String[] unused) {\r\n"
-                + "\r\n"
-                + "\r\n"
-                + "    test\r\n"
-                + "\r\n"
-                + "\r\n"
-                + "  }\r\n"
-                + "\r\n"
-                + "\r\n"
-                + "}\r\n"
-            );
-        } catch (CompileException ce) {
-            Location loc = ce.getLocation();
-            Assert.assertNotNull(loc);
-            Assert.assertTrue(loc.getLineNumber() == 5 || loc.getLineNumber() == 8);
-        }
+                + "    public static void main(String[] unused) {\n"
+                + "\n"
+                + "\n"
+                + "        )\n"
+                + "\n"
+                + "\n"
+                + "    }\n"
+                + "\n"
+                + "\n"
+                + "}\n"
+            )
+        );
+    }
+
+    @Test public void
+    testIssue65_tabWidth() throws Exception {
+        ReportedBugsTest.assertUncookableLocation(
+            "File 'FILENAME', Line 5, Column 25",
+            this.compilerFactory.newSimpleCompiler(),
+            (
+                ""
+                + "public class Example {\n"
+                + "    public static void main(String[] unused) {\n"
+                + "\n"
+                + "\n"
+                + "  \t\t\t)\n" // <= Three TABs expand to 3x8=24 columns
+                + "\n"
+                + "\n"
+                + "    }\n"
+                + "\n"
+                + "\n"
+                + "}\n"
+            )
+        );
+    }
+
+    @Test public void
+    testIssue65_classBodyEvaluator() throws Exception {
+        ReportedBugsTest.assertUncookableLocation(
+            "File 'FILENAME', Line 4, Column 5",
+            this.compilerFactory.newClassBodyEvaluator(),
+            (
+                ""
+                + "public static void main(String[] unused) {\n"
+                + "\n"
+                + "\n"
+                + "    )\n"
+                + "\n"
+                + "\n"
+                + "}\n"
+            )
+        );
+    }
+
+    @Test public void
+    testIssue65_scriptEvaluator() throws Exception {
+        ReportedBugsTest.assertUncookableLocation(
+            "File 'FILENAME', Line 1, Column 7",
+            this.compilerFactory.newScriptEvaluator(),
+            "      )   \n"
+        );
+    }
+
+    @Test public void
+    testIssue65_scriptEvaluators() throws Exception {
+        ReportedBugsTest.assertUncookableLocation(
+            "File 'FILENAME2', Line 4, Column 7",
+            this.compilerFactory.newScriptEvaluator(),
+            ";",
+            "   ;",
+            "   \r \n \r\n      )" // <= FILENAME2
+        );
     }
 
     /**
@@ -948,4 +1008,32 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     // SUPPRESS CHECKSTYLE Javadoc:2
     public interface A           { A           theFirstMethod();                           }
     public interface B extends A { @Override B theFirstMethod(); Object theSecondMethod(); }
+
+    private static void
+    assertUncookableLocation(String expected, ICookable cookable, String text) {
+        try {
+            cookable.cook("FILENAME", text);
+            Assert.fail();
+        } catch (CompileException ce) {
+            Location loc = ce.getLocation();
+            Assert.assertEquals(expected, String.valueOf(loc));
+        }
+    }
+
+    private static void
+    assertUncookableLocation(String expected, IScriptEvaluator cookable, String... text) {
+        try {
+            if (text.length == 1) {
+                cookable.cook("FILENAME", text[0]);
+            } else {
+                String[] fileNames = new String[text.length];
+                for (int i = 0; i < text.length; i++) fileNames[i] = "FILENAME" + i;
+                cookable.cook(fileNames, text);
+            }
+            Assert.fail();
+        } catch (CompileException ce) {
+            Location loc = ce.getLocation();
+            Assert.assertEquals(expected, String.valueOf(loc));
+        }
+    }
 }
