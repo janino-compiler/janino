@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.io.MultiReader;
+import org.codehaus.commons.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -186,7 +187,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
             r = new MultiReader(new Reader[] {
                 new StringReader(sw1.toString()),
-                r,
+                this.newFileName(optionalFileName, r),
                 new StringReader(sw2.toString()),
             });
         }
@@ -205,6 +206,17 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         } catch (ClassNotFoundException cnfe) {
             throw new IOException(cnfe);
         }
+    }
+
+    /**
+     * Sets the given file name, and the current line number to 1, and the current column number to 1, when the first
+     * {@code char} is read from the <var>reader</var>.
+     */
+    protected Reader
+    newFileName(@Nullable final String optionalFileName, Reader reader) {
+        return Readers.onFirstChar(reader, new Runnable() {
+            @Override public void run() { ClassBodyEvaluator.this.addOffset(optionalFileName); }
+        });
     }
 
     /**

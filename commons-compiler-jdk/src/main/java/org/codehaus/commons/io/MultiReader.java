@@ -78,30 +78,20 @@ class MultiReader extends Reader {
 
     @Override public long
     skip(long n) throws IOException {
-        long skipped = 0L;
         for (;;) {
-            long result = this.currentDelegate.skip(n - skipped);
-            if (result != -1L) {
-                skipped += result;
-                if (skipped == n) return skipped;
-                continue;
-            }
-            if (!this.delegateIterator.hasNext()) return skipped;
+            long result = this.currentDelegate.skip(n);
+            if (result != -1L) return result;
+            if (!this.delegateIterator.hasNext()) return 0;
             this.currentDelegate = this.delegateIterator.next();
         }
     }
 
     @Override public int
     read(@Nullable final char[] cbuf, final int off, final int len) throws IOException {
-        int read = 0;
         for (;;) {
-            long result = this.currentDelegate.read(cbuf, off + read, len - read);
-            if (result != -1L) {
-                read += result;
-                if (read == len) return read;
-                continue;
-            }
-            if (!this.delegateIterator.hasNext()) return read == 0 ? -1 : read;
+            int result = this.currentDelegate.read(cbuf, off, len);
+            if (result != -1L) return result;
+            if (!this.delegateIterator.hasNext()) return -1;
             this.currentDelegate = this.delegateIterator.next();
         }
     }

@@ -44,11 +44,14 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
@@ -71,6 +74,8 @@ import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.Sandbox;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.io.LineAndColumnTracker;
+import org.codehaus.commons.io.Readers;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -80,14 +85,28 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
-    private ClassLoader              parentClassLoader = Thread.currentThread().getContextClassLoader();
-    @Nullable private ClassLoader    result;
-    private boolean                  debugSource;
-    private boolean                  debugLines;
-    private boolean                  debugVars;
-    @Nullable private ErrorHandler   optionalCompileErrorHandler;
-    @Nullable private WarningHandler optionalWarningHandler;
-    @Nullable private Permissions    permissions;
+    private ClassLoader               parentClassLoader = Thread.currentThread().getContextClassLoader();
+    @Nullable private ClassLoader     result;
+    private boolean                   debugSource;
+    private boolean                   debugLines;
+    private boolean                   debugVars;
+    @Nullable private ErrorHandler    optionalCompileErrorHandler;
+    @Nullable private WarningHandler  optionalWarningHandler;
+    @Nullable private Permissions     permissions;
+
+    // See "addOffset(String)".
+    private final LineAndColumnTracker tracker = LineAndColumnTracker.create();
+    private final SortedSet<Location>  offsets = new TreeSet<Location>(new Comparator<Location>() {
+
+        @Override @NotNullByDefault(false) public int
+        compare(Location l1, Location l2) {
+            return (
+                l1.getLineNumber() < l2.getLineNumber() ? -1 :
+                l1.getLineNumber() > l2.getLineNumber() ? 1 :
+                l1.getColumnNumber() - l2.getColumnNumber()
+            );
+        }
+    });
 
     /**
      * @throws IllegalStateException This {@link Cookable} is not yet cooked
@@ -108,7 +127,12 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     setNoPermissions() { this.setPermissions(new Permissions()); }
 
     @Override public void
-    cook(@Nullable String optionalFileName, final Reader r) throws CompileException, IOException {
+    cook(@Nullable final String optionalFileName, Reader r) throws CompileException, IOException {
+
+        // Reset the "offsets" and the line-and-column-tracker; see "addOffset(String)".
+        this.tracker.reset();
+        this.offsets.clear();
+        r = Readers.trackLineAndColumn(r, this.tracker);
 
         // Create one Java source file in memory, which will be compiled later.
         JavaFileObject compilationUnit;
@@ -159,10 +183,26 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 assert diagnostic != null;
 
                 Location loc = new Location(
-                    null,
+                    optionalFileName,
                     (short) diagnostic.getLineNumber(),
                     (short) diagnostic.getColumnNumber()
                 );
+
+                // Manipulate the diagnostic location to accomodate for the "offsets" (see "addOffset(String)"):
+                SortedSet<Location> hs = SimpleCompiler.this.offsets.headSet(loc);
+                if (!hs.isEmpty()) {
+                    Location co = hs.last();
+                    loc = new Location(
+                        co.getFileName(),
+                        loc.getLineNumber() - co.getLineNumber() + 1,
+                        (
+                            loc.getLineNumber() == co.getLineNumber()
+                            ? loc.getColumnNumber() - co.getColumnNumber() + 1
+                            : loc.getColumnNumber()
+                        )
+                    );
+                }
+
                 String message = diagnostic.getMessage(null) + " (" + diagnostic.getCode() + ")";
 
                 try {
@@ -403,5 +443,18 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     @Override public void
     setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
         this.optionalWarningHandler = optionalWarningHandler;
+    }
+
+    /**
+     * Derived classes call this method to "reset" the current line and column number at the currently read input
+     * character, and also changes the "file name" (see {@link #cook(String, Reader)}).
+     */
+    protected void
+    addOffset(@Nullable String optionalFileName) {
+
+        LineAndColumnTracker t = this.tracker;
+        assert t != null;
+
+        this.offsets.add(new Location(optionalFileName, t.getLineNumber(), t.getColumnNumber()));
     }
 }

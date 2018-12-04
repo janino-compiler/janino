@@ -412,7 +412,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 classBody.add(new StringReader(sw.toString()));
             }
 
-            classBody.add(readers[i]);
+            classBody.add(this.newFileName((
+                optionalFileNames != null && optionalFileNames[i] != null ? optionalFileNames[i] :
+                i == 0                                                    ? null                 :
+                "[" + i + "]"
+            ), readers[i]));
 
             {
                 StringWriter sw = new StringWriter();
