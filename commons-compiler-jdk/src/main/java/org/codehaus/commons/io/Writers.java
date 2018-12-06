@@ -75,7 +75,7 @@ class Writers {
     }
 
     /**
-     * @return A {@link FilterWriter} that tracks kline and column numbers while characters are written
+     * @return A {@link FilterWriter} that tracks line and column numbers while characters are written
      */
     public static Writer
     trackLineAndColumn(Writer out, final LineAndColumnTracker tracker) {

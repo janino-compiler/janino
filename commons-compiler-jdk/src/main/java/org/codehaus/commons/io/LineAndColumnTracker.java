@@ -89,7 +89,7 @@ class LineAndColumnTracker {
                     this.column = 1;
                     break;
                 case '\t':
-                    this.column = this.column - (this.column - this.tabWidth) + this.tabWidth;
+                    this.column = this.column - ((this.column - 1) % this.tabWidth) + this.tabWidth;
                     break;
                 default:
                     this.column++;

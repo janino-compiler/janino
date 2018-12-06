@@ -75,7 +75,7 @@ class Readers {
     }
 
     /**
-     * @return {@link FilterReader} that tracks line and column numbers while characters are being read
+     * @return A {@link FilterReader} that tracks line and column numbers while characters are being read
      */
     public static Reader
     trackLineAndColumn(Reader in, final LineAndColumnTracker tracker) {
