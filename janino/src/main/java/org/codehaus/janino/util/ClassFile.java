@@ -77,7 +77,7 @@ class ClassFile implements Annotatable {
     /**
      * Constructs a class with no fields and methods.
      * An application would typically add these through {@link ClassFile#addFieldInfo(short, String, String, Object)}
-     * and {@link ClassFile#addMethodInfo(short, String, String)} before saving it.
+     * and {@link ClassFile#addMethodInfo(short, String, MethodDescriptor)} before saving it.
      *
      * @param accessFlags as defined by {@link org.codehaus.janino.Mod}
      * @param thisClassFd the field descriptor for this class
