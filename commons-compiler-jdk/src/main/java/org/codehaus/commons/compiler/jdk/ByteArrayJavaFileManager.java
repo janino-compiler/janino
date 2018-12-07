@@ -58,7 +58,7 @@ import org.codehaus.commons.nullanalysis.NotNullByDefault;
  * to the {@link StandardJavaFileManager}, which stores them in files).
  *
  * @param <M>
- * @see   #getJavaFileForOutput(Location, String, Kind, FileObject)
+ * @see   #getJavaFileForOutput(javax.tools.JavaFileManager.Location, String, Kind, FileObject)
  */
 @NotNullByDefault(false) public
 class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
