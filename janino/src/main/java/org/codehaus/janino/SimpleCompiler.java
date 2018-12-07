@@ -374,7 +374,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             @Override @Nullable public <R, EX extends Throwable> R
             accept(TypeVisitor<R, EX> visitor) throws EX { return this.getDelegate().accept(visitor); }
 
-            @Override public String toString() { return this.getDelegate().toString(); }
+            @Override public String
+            toString() { return this.getDelegate().toString(); }
 
             private Type
             getDelegate() {
