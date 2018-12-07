@@ -47,11 +47,6 @@ import util.TestUtil;
 @RunWith(Parameterized.class) public
 class JavaSourceClassLoaderTest {
 
-    private static final File[] SOURCE_PATH = {
-        new File("../janino/src/main/java"),
-        new File("../commons-compiler/src/main/java"),
-    };
-
     private final ICompilerFactory compilerFactory;
 
     @Parameters(name = "CompilerFactory={0}") public static Collection<Object[]>
@@ -66,20 +61,23 @@ class JavaSourceClassLoaderTest {
 
     @Test public void
     testJavaSourceClassLoader() throws Exception {
-        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
-        systemClassLoader.loadClass(this.getClass().getName());
 
-        ClassLoader extensionsClassLoader = systemClassLoader.getParent();
-        try {
-            extensionsClassLoader.loadClass(this.getClass().getName());
-            Assert.fail("extensionsClassLoader should be separate from the current classloader");
-        } catch (ClassNotFoundException cnfe) {
-            // as we had intended
-        }
-        extensionsClassLoader.loadClass("java.lang.String");
+        ClassLoader extensionsClassLoader = JavaSourceClassLoaderTest.getExtensionsClassLoader();
+
         AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(extensionsClassLoader);
-        jscl.setSourcePath(JavaSourceClassLoaderTest.SOURCE_PATH);
+        jscl.setSourcePath(new File[] {
+            new File("../janino/src/main/java"),
+            new File("../commons-compiler/src/main/java"),
+        });
+
+        // Load the "Compiler" class.
         jscl.loadClass("org.codehaus.janino.Compiler");
+
+        // Run "ee = new ExpressionEvaluator(); ee.cook("7"); ee.evaluate(null);".
+        Object ee = jscl.loadClass("org.codehaus.janino.ExpressionEvaluator").getConstructor().newInstance();
+        ee.getClass().getMethod("cook", String.class).invoke(ee, "7");
+        Object result = ee.getClass().getMethod("evaluate", Object[].class).invoke(ee, new Object[] { null });
+        Assert.assertEquals(7, result);
     }
 
     @Test public void
@@ -98,5 +96,24 @@ class JavaSourceClassLoaderTest {
         );
         jscl.setSourcePath(new File[] { new File("src/test/resources/testCircularStaticImports/") });
         jscl.loadClass("test.Func1");
+    }
+
+    private static ClassLoader
+    getExtensionsClassLoader() throws ClassNotFoundException {
+
+        ClassLoader result = ClassLoader.getSystemClassLoader().getParent();
+
+        // Verify that a class on the CLASSPATH cannot be loaded through that class loader.
+        try {
+            result.loadClass(JavaSourceClassLoaderTest.class.getName());
+            Assert.fail("extensionsClassLoader should be separate from the current classloader");
+        } catch (ClassNotFoundException cnfe) {
+            // as we had intended
+        }
+
+        // Verify that a class on the BOOTSTRAPCLASSPATH can be loaded through the class loader.
+        result.loadClass("java.lang.String");
+
+        return result;
     }
 }
