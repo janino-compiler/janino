@@ -141,7 +141,7 @@ class Issue32Test extends CommonsCompilerTestSuite {
 
             public void
             run2() throws Exception {
-                for (int i = 0; i < 10 && firstThrowable[0] == null; i++) {
+                for (int i = 0; i < 100 && firstThrowable[0] == null; i++) {
 
                     ISimpleCompiler sc = Issue32Test.this.compilerFactory.newSimpleCompiler();
                     sc.cook(cu);
@@ -154,7 +154,7 @@ class Issue32Test extends CommonsCompilerTestSuite {
             }
         };
 
-        Thread[] threads = new Thread[4];
+        Thread[] threads = new Thread[8];
         for (int i = 0; i < threads.length; i++) {
             (threads[i] = new Thread(r)).start();
         }
