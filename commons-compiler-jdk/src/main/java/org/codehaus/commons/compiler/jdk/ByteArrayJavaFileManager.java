@@ -58,6 +58,7 @@ import org.codehaus.commons.nullanalysis.NotNullByDefault;
  * to the {@link StandardJavaFileManager}, which stores them in files).
  *
  * @param <M>
+ * @see   #getJavaFileForOutput(Location, String, Kind, FileObject)
  */
 @NotNullByDefault(false) public
 class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
@@ -158,6 +159,7 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
         );
 
         kindJavaFiles.put(className, fileObject);
+
         return fileObject;
     }
 
@@ -179,10 +181,12 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
             Map<String, JavaFileObject> kindFiles = locationFiles.get(kind);
             if (kindFiles == null) continue;
             for (Entry<String, JavaFileObject> e : kindFiles.entrySet()) {
-                String className = e.getKey();
+                String         className      = e.getKey();
+                JavaFileObject javaFileObject = e.getValue();
+
                 if (!className.startsWith(prefix)) continue;
                 if (!recurse && className.indexOf('.', pl) != -1) continue;
-                result.add(e.getValue());
+                result.add(javaFileObject);
             }
         }
         return result;
