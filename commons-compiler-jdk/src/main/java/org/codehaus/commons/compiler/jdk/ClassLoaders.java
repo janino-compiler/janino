@@ -95,16 +95,22 @@ class ClassLoaders {
         if (classLoader == null) classLoader = ClassLoader.getSystemClassLoader();
         assert classLoader != null;
 
-        URL r = classLoader.getResource(name);
-        if (r != null) return ClassLoaders.getSubresourcesOf(r, name, includeDirectories, recurse);
-
-        if (!name.startsWith("java/") || !name.endsWith("/")) {
-            return Collections.emptyMap();
+        // See if there is a "directory resource" with the given name. This will work for file-based classpath
+        // entries, and for jar-based classpath entries iff the .jar file has directory entries.
+        for (URL r : Collections.list(classLoader.getResources(name))) {
+            Map<String, URL> result = ClassLoaders.getSubresourcesOf(r, name, includeDirectories, recurse);
+            if (!result.isEmpty()) {
+                return (
+                    name.startsWith("java/") && name.endsWith("/")
+                    ?  Collections.<String, URL>emptyMap()
+                    : result
+                );
+            }
         }
 
         // The "rt.jar" (the basic source of the BOOTCLASS) lacks directory entries; to work around this we
         // have to get a well-known resource. After that, we can list the JAR.
-        r = classLoader.getResource("java/lang/Object.class");
+        URL r = classLoader.getResource("java/lang/Object.class");
         if (r == null) return Collections.emptyMap();
 
         String protocol = r.getProtocol();
