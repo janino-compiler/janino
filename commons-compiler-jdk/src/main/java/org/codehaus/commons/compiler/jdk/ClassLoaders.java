@@ -30,8 +30,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -95,70 +97,122 @@ class ClassLoaders {
         if (classLoader == null) classLoader = ClassLoader.getSystemClassLoader();
         assert classLoader != null;
 
-        // See if there is a "directory resource" with the given name. This will work for file-based classpath
-        // entries, and for jar-based classpath entries iff the .jar file has directory entries.
+        HashMap<String, URL> result = new HashMap<String, URL>();
+
+        // See if there is a "directory resource" with the given name. This will work for
+        //  * file-based classpath entries (e.g. "file:./target/classes/"),
+        //  * jar-based classpath entries (e.g. "jar:./path/to/my.jar"), iff the .jar file has directory entries
         for (URL r : Collections.list(classLoader.getResources(name))) {
-            Map<String, URL> result = ClassLoaders.getSubresourcesOf(r, name, includeDirectories, recurse);
-            if (!result.isEmpty()) {
-                return (
-                    name.startsWith("java/") && name.endsWith("/")
-                    ?  Collections.<String, URL>emptyMap()
-                    : result
-                );
-            }
+            result.putAll(ClassLoaders.getSubresourcesOf(r, name, includeDirectories, recurse));
         }
 
-        // The "rt.jar" (the basic source of the BOOTCLASS) lacks directory entries; to work around this we
-        // have to get a well-known resource. After that, we can list the JAR.
-        URL r = classLoader.getResource("java/lang/Object.class");
-        if (r == null) return Collections.emptyMap();
+        // Optimization: Iff resources were found on the CLASSPATH, then don't check the BOOTCLASSPATH.
+        if (!result.isEmpty()) return result;
+
+        // The .jar files on the BOOTCLASSPATH lack directory entries.
+        result.putAll(ClassLoaders.getBootclasspathSubresourcesOf(name, includeDirectories, recurse));
+
+        return result;
+    }
+
+    /**
+     * Finds subresources on the JVM's <em>bootstrap</em> classpath. This is kind of tricky because the .jar files on
+     * the BOOTCLASSPATH don't contain "directory entries".
+     */
+    private static Map<? extends String, ? extends URL>
+    getBootclasspathSubresourcesOf(final String name, boolean includeDirectories, final boolean recurse)
+    throws IOException {
+        return ClassLoaders.BOOTCLASSPATH_SUBRESOURCES_OF.get(name, includeDirectories, recurse);
+    }
+
+    interface SubresourceGetter {
+
+        Map<? extends String, ? extends URL>
+        get(String name, boolean includeDirectories, boolean recurse) throws IOException;
+    }
+
+    private static final SubresourceGetter BOOTCLASSPATH_SUBRESOURCES_OF;
+    static {
+
+        // To get to the BOOCLASSPATH resources, we have to get a well-known resource. After that, we can scan the
+        // BOOTCLASSPATH.
+        URL r = ClassLoader.getSystemClassLoader().getResource("java/lang/Object.class");
+        assert r != null;
 
         String protocol = r.getProtocol();
         if ("jar".equalsIgnoreCase(protocol)) {
 
             // Pre-Java-9 bootstrap classpath.
-            JarURLConnection juc = (JarURLConnection) r.openConnection();
-            juc.setUseCaches(false);
-
-            return ClassLoaders.getSubresources(
-                juc.getJarFileURL(), // jarFileUrl
-                juc.getJarFile(),    // jarFile
-                name,                // namePrefix
-                includeDirectories,  // includeDirectories
-                recurse              // recurse
-            );
-        }
-
-        if ("jrt".equalsIgnoreCase(protocol)) { // For Java 9+.
-
-            final Map<String, URL> result = new HashMap<String, URL>();
-
-            Set<ModuleReference> ms = ModuleFinder.ofSystem().findAll();
-            for (final ModuleReference m : ms) {
-                m.open().list().forEach(new Consumer<String>() {
-
-                    @Override public void
-                    accept(String resourceName) {
-                        try {
-                            if (
-                                resourceName.startsWith(name)
-                                && (recurse || resourceName.lastIndexOf('/') == name.length() - 1)
-                            ) {
-                                URL classFileUrl = new URL(m.location().get() + "/" + resourceName);
-                                URL prev         = result.put(resourceName, classFileUrl);
-                                assert prev == null;
-                            }
-                        } catch (MalformedURLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+            final URL     jarFileURL;
+            final JarFile jarFile;
+            try {
+                JarURLConnection juc = (JarURLConnection) r.openConnection();
+                juc.setUseCaches(false);
+                jarFileURL = juc.getJarFileURL();
+                jarFile    = juc.getJarFile();
+            } catch (IOException ioe) {
+                throw new AssertionError(ioe);
             }
 
-            return result;
-        }
+            BOOTCLASSPATH_SUBRESOURCES_OF = new SubresourceGetter() {
 
-        return Collections.emptyMap();
+                @Override public Map<? extends String, ? extends URL>
+                get(String name, boolean includeDirectories, boolean recurse) {
+                    return ClassLoaders.getSubresources(jarFileURL, jarFile, name, includeDirectories, recurse);
+                }
+            };
+        } else
+        if ("jrt".equalsIgnoreCase(protocol)) {
+
+            // Java-9+ bootstrap classpath.
+            final Set<ModuleReference> mrs = ModuleFinder.ofSystem().findAll();
+
+            BOOTCLASSPATH_SUBRESOURCES_OF = new SubresourceGetter() {
+
+                @Override public Map<? extends String, ? extends URL>
+                get(final String name, boolean includeDirectories, final boolean recurse) throws IOException {
+
+                    final Map<String, URL> result = new HashMap<String, URL>();
+
+                    for (final ModuleReference mr : mrs) {
+                        final URI moduleContentLocation = mr.location().get();
+                        mr.open().list().forEach(new Consumer<String>() {
+
+                            @Override public void
+                            accept(String resourceName) {
+                                try {
+                                    this.accept2(resourceName);
+                                } catch (MalformedURLException mue) {
+                                    throw new AssertionError(mue);
+                                }
+                            }
+
+                            public void
+                            accept2(String resourceName) throws MalformedURLException {
+
+                                // This ".class" (?) file exists in every module, and we don't want to list it.
+                                if ("module-info.class".equals(resourceName)) return;
+
+                                if (
+                                    resourceName.startsWith(name)
+                                    && (recurse || resourceName.lastIndexOf('/') == name.length() - 1)
+                                ) {
+                                    final URL classFileUrl = new URL(moduleContentLocation + "/" + resourceName);
+
+                                    URL prev = result.put(resourceName, classFileUrl);
+                                    assert prev == null : "prev=" + prev + ", resourceName=" + resourceName + ", classFileUrl=" + classFileUrl;
+                                }
+                            }
+                        });
+                    }
+
+                    return result;
+                }
+            };
+        } else
+        {
+            throw new AssertionError("\"java/lang/Object.class\" is not in a \"jar:\" location nor in a \"jrt:\" location");
+        }
     }
 
     /**
@@ -224,7 +278,10 @@ class ClassLoaders {
     getSubresources(URL jarFileUrl, JarFile jarFile, String namePrefix, boolean includeDirectories, boolean recurse) {
 
         Map<String, URL> result = new HashMap<String, URL>();
-        for (JarEntry je : Collections.list(jarFile.entries())) {
+
+        for (Enumeration<JarEntry> en = jarFile.entries(); en.hasMoreElements();) {
+            JarEntry je = en.nextElement();
+
             if (
                 (!je.isDirectory() || includeDirectories)
                 && je.getName().startsWith(namePrefix)
