@@ -32,6 +32,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.Buffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -245,7 +246,11 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         final CharBuffer cb = CharBuffer.allocate(10000);
         r.mark(cb.limit());
         r.read(cb);
-        cb.rewind();
+
+        // Java 9 added "@Override public final CharBuffer CharBuffer.rewind() { ..." -- leads easily to a
+        //     java.lang.NoSuchMethodError: java.nio.CharBuffer.rewind()Ljava/nio/CharBuffer;
+        // Cast to "Buffer" is the workaround:
+        ((Buffer) cb).rewind();
 
         List<String> imports         = new ArrayList<String>();
         int          afterLastImport = 0;
