@@ -88,7 +88,7 @@ class TokenStreamImpl implements TokenStream {
         return s;
     }
 
-    @Nullable private Token nextToken, nextButOneToken;
+    @Nullable private Token previousToken, nextToken, nextButOneToken;
 
     @Override public Token
     peek() throws CompileException, IOException {
@@ -133,11 +133,12 @@ class TokenStreamImpl implements TokenStream {
     @Override public Token
     read() throws CompileException, IOException {
 
-        if (this.nextToken == null) return this.produceToken();
+        if (this.nextToken == null) return (this.previousToken = this.produceToken());
 
         final Token result = this.nextToken;
         assert result != null;
 
+        this.previousToken   = result;
         this.nextToken       = this.nextButOneToken;
         this.nextButOneToken = null;
         return result;
@@ -222,29 +223,39 @@ class TokenStreamImpl implements TokenStream {
 
         if (this.nextToken != null) {
             if (!this.nextToken.value.equals(suspected)) return false;
+            this.previousToken   = this.nextToken;
             this.nextToken       = this.nextButOneToken;
             this.nextButOneToken = null;
             return true;
         }
 
-        Token t = this.produceToken();
-        if (t.value.equals(suspected)) return true;
-        this.nextToken = t;
+        Token result = this.produceToken();
+        if (result.value.equals(suspected)) {
+            this.previousToken = result;
+            return true;
+        }
+        this.nextToken = result;
         return false;
     }
 
     @Override public int
     peekRead(String... suspected) throws CompileException, IOException {
+
         if (this.nextToken != null) {
             int idx = TokenStreamImpl.indexOf(suspected, this.nextToken.value);
             if (idx == -1) return -1;
+            this.previousToken   = this.nextToken;
             this.nextToken       = this.nextButOneToken;
             this.nextButOneToken = null;
             return idx;
         }
+
         Token t   = this.produceToken();
         int   idx = TokenStreamImpl.indexOf(suspected, t.value);
-        if (idx != -1) return idx;
+        if (idx != -1) {
+            this.previousToken = t;
+            return idx;
+        }
         this.nextToken = t;
         return -1;
     }
@@ -255,13 +266,17 @@ class TokenStreamImpl implements TokenStream {
         Token nt = this.nextToken;
         if (nt != null) {
             if (nt.type != suspected) return null;
+            this.previousToken   = this.nextToken;
             this.nextToken       = this.nextButOneToken;
             this.nextButOneToken = null;
             return nt.value;
         }
 
         nt = this.produceToken();
-        if (nt.type == suspected) return nt.value;
+        if (nt.type == suspected) {
+            this.previousToken = nt;
+            return nt.value;
+        }
 
         return (this.nextToken = nt).value;
     }
@@ -272,6 +287,7 @@ class TokenStreamImpl implements TokenStream {
         if (this.nextToken != null) {
             int idx = TokenStreamImpl.indexOf(suspected, this.nextToken.type);
             if (idx != -1) {
+                this.previousToken   = this.nextToken;
                 this.nextToken       = this.nextButOneToken;
                 this.nextButOneToken = null;
             }
@@ -280,10 +296,18 @@ class TokenStreamImpl implements TokenStream {
 
         Token t   = this.produceToken();
         int   idx = TokenStreamImpl.indexOf(suspected, t.type);
-        if (idx != -1) return idx;
+        if (idx != -1) {
+            this.previousToken = t;
+            return idx;
+        }
 
         this.nextToken = t;
         return -1;
+    }
+
+    @Override public Location
+    location() {
+        return this.previousToken != null ? this.previousToken.getLocation() : this.scanner.location();
     }
 
     private static int

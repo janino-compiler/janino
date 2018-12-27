@@ -29,6 +29,7 @@ package org.codehaus.janino;
 import java.io.IOException;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -178,4 +179,10 @@ interface TokenStream {
      */
     void
     setWarningHandler(@Nullable WarningHandler optionalWarningHandler);
+
+    /**
+     * @return The location of the first character of the previously <em>read</em> (not <em>peek</em>ed!) token
+     */
+    Location
+    location();
 }
