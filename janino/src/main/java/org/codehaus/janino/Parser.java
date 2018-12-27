@@ -3059,16 +3059,15 @@ class Parser {
         }
 
         if (this.peek(TokenType.IDENTIFIER)) {
-            Location location = this.location();
             String[] qi       = this.parseQualifiedIdentifier();
             if (this.peek("(")) {
                 // Name Arguments
                 return new MethodInvocation(
                     this.location(),                           // location
                     qi.length == 1 ? null : new AmbiguousName( // optionalTarget
-                        location,       // location
-                        qi,             // identifiers
-                        qi.length - 1   // n
+                        this.location(), // location
+                        qi,              // identifiers
+                        qi.length - 1    // n
                     ),
                     qi[qi.length - 1],                         // methodName
                     this.parseArguments()                      // arguments
@@ -3078,9 +3077,9 @@ class Parser {
                 // Name '[]' { '[]' }
                 // Name '[]' { '[]' } '.' 'class'
                 Type res = new ReferenceType(
-                    location, // location
-                    qi,       // identifiers
-                    null      // optionalTypeArguments
+                    this.location(), // location
+                    qi,              // identifiers
+                    null             // optionalTypeArguments
                 );
                 int brackets = this.parseBracketsOpt();
                 for (int i = 0; i < brackets; ++i) res = new ArrayType(res);
@@ -3095,8 +3094,8 @@ class Parser {
             }
             // Name
             return new AmbiguousName(
-                location, // location
-                qi        // identifiers
+                this.location(), // location
+                qi               // identifiers
             );
         }
 
@@ -3221,7 +3220,7 @@ class Parser {
             throw this.compileException("\"void\" encountered in wrong context");
         }
 
-        throw this.compileException("Unexpected token \"" + this.peek().value + "\" in primary");
+        throw this.compileException("Unexpected token \"" + this.read().value + "\" in primary");
     }
 
     /**
@@ -3527,10 +3526,10 @@ class Parser {
     }
 
     /**
-     * @return The location of the first character of the previously {@link #peek()}ed or {@link #read()} token
+     * @return The location of the first character of the previously <em>read</em> (not <em>peek</em>ed!) token
      */
     public Location
-    location() { return this.scanner.location(); }
+    location() { return this.tokenStream.location(); }
 
     // Token-level methods.
 
