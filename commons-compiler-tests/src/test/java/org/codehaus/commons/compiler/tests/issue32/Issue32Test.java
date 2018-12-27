@@ -141,7 +141,7 @@ class Issue32Test extends CommonsCompilerTestSuite {
 
             public void
             run2() throws Exception {
-                for (int i = 0; i < 100 && firstThrowable[0] == null; i++) {
+                for (int i = 0; i < 10 && firstThrowable[0] == null; i++) {
 
                     ISimpleCompiler sc = Issue32Test.this.compilerFactory.newSimpleCompiler();
                     sc.cook(cu);

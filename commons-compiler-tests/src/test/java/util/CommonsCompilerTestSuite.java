@@ -39,6 +39,7 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.junit.Assert;
 
@@ -84,6 +85,15 @@ class CommonsCompilerTestSuite {
     protected void
     assertExpressionUncookable(String expression, Pattern messageRegex) throws Exception {
         new ExpressionTest(expression).assertUncookable(messageRegex);
+    }
+
+    /**
+     * Asserts that cooking the given <var>expression</var> issues an error, and the error is located at the given
+     * <var>messageLineNumber</var>.
+     */
+    protected void
+    assertExpressionUncookable(String expression, int messageLineNumber) throws Exception {
+        new ExpressionTest(expression).assertUncookable(messageLineNumber);
     }
 
     /**
@@ -167,6 +177,15 @@ class CommonsCompilerTestSuite {
     protected void
     assertScriptUncookable(String script, Pattern messageRegex) throws Exception {
         new ScriptTest(script).assertUncookable(messageRegex);
+    }
+
+    /**
+     * Asserts that cooking the given <var>script</var> issues an error, and the error is located at the given
+     * <var>messageLineNumber</var>.
+     */
+    protected void
+    assertScriptUncookable(String script, int messageLineNumber) throws Exception {
+        new ScriptTest(script).assertUncookable(messageLineNumber);
     }
 
     /**
@@ -292,6 +311,15 @@ class CommonsCompilerTestSuite {
     }
 
     /**
+     * Asserts that cooking the given <var>classBody</var> issues an error, and the error is located at the given
+     * <var>messageLineNumber</var>.
+     */
+    protected void
+    assertClassBodyUncookable(String classBody, int... messageLineNumber) throws Exception {
+        new ClassBodyTest(classBody).assertUncookable(messageLineNumber);
+    }
+
+    /**
      * Asserts that the given <var>classBody</var> can be cooked without errors and warnings.
      */
     protected void
@@ -370,12 +398,21 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that cooking the given <var>classBody</var> with the {@link ISimpleCompiler} issues an error, and the
-     * error message contains a match for <var>messageRegex</var>.
+     * Asserts that cooking the given <var>compilationUnit</var> with the {@link ISimpleCompiler} issues an error, and
+     * the error message contains a match for <var>messageRegex</var>.
      */
     protected void
     assertCompilationUnitUncookable(String compilationUnit, Pattern messageRegex) throws Exception {
         new SimpleCompilerTest(compilationUnit, "Xxx").assertUncookable(messageRegex);
+    }
+
+    /**
+     * Asserts that cooking the given <var>compilationUnit</var> with the {@link ISimpleCompiler} issues an error, and
+     * the error is located at the given <var>messageLineNumber</var>.
+     */
+    protected void
+    assertCompilationUnitUncookable(String compilationUnit, int messageLineNumber) throws Exception {
+        new SimpleCompilerTest(compilationUnit, "Xxx").assertUncookable(messageLineNumber);
     }
 
     /**
@@ -463,7 +500,7 @@ class CommonsCompilerTestSuite {
      * A test case that calls its abstract methods {@link #cook()}, then {@link #execute()}, and verifies that they
      * throw exceptions or return results as expected.
      */
-    private abstract static
+    private abstract
     class CompileAndExecuteTest {
 
         /**
@@ -479,28 +516,28 @@ class CommonsCompilerTestSuite {
         /**
          * Asserts that cooking issues an error.
          *
-         * @return The compilation error message
+         * @return The thrown {@link CompileException}
          */
-        protected String
+        protected CompileException
         assertUncookable() throws Exception {
 
             try {
                 this.cook();
             } catch (CompileException ce) {
-                return ce.getMessage();
+                return ce;
             }
 
             try {
-                CommonsCompilerTestSuite.fail((
+                CommonsCompilerTestSuite.this.fail((
                     "Should have issued an error, but compiled successfully, and evaluated to \""
                     + this.execute()
                     + "\""
                 ));
+                throw new AssertionError();
             } catch (Exception e) {
-                CommonsCompilerTestSuite.fail("Should have issued an error, but compiled successfully");
+                CommonsCompilerTestSuite.this.fail("Should have issued an error, but compiled successfully");
+                throw new AssertionError();
             }
-
-            return "S.N.O.";
         }
 
         /**
@@ -510,10 +547,10 @@ class CommonsCompilerTestSuite {
         protected void
         assertUncookable(String messageInfix) throws Exception {
 
-            String errorMessage = this.assertUncookable();
+            String errorMessage = this.assertUncookable().getMessage();
 
             if (!errorMessage.contains(messageInfix)) {
-                CommonsCompilerTestSuite.fail((
+                CommonsCompilerTestSuite.this.fail((
                     "Compilation error message \""
                     + errorMessage
                     + "\" does not contain \""
@@ -530,16 +567,40 @@ class CommonsCompilerTestSuite {
         protected void
         assertUncookable(@Nullable Pattern messageRegex) throws Exception {
 
-            String errorMessage = this.assertUncookable();
+            String errorMessage = this.assertUncookable().getMessage();
 
             if (messageRegex != null && !messageRegex.matcher(errorMessage).find()) {
-                CommonsCompilerTestSuite.fail((
+                CommonsCompilerTestSuite.this.fail((
                     "Error message '"
                     + errorMessage
                     + "' does not contain a match of '"
                     + messageRegex
                     + "'"
                 ));
+            }
+        }
+
+        /**
+         * Asserts that cooking issues an error, and that the error is located at the given
+         * <var>expectedLineNumber</var>.
+         */
+        protected void
+        assertUncookable(int... expectedLineNumber) throws Exception {
+
+            CompileException ce = this.assertUncookable();
+
+            Location loc = ce.getLocation();
+            if (loc == null) throw new AssertionError("No location!?");
+
+            if (CommonsCompilerTestSuite.indexOf(expectedLineNumber, loc.getLineNumber()) == -1) {
+                CommonsCompilerTestSuite.this.fail((
+                    "Compilation error (\""
+                    + ce.getMessage()
+                    + "\") expected in line "
+                    + expectedLineNumber
+                    + ", but was in line "
+                    + loc.getLineNumber()
+                ), ce);
             }
         }
 
@@ -596,16 +657,31 @@ class CommonsCompilerTestSuite {
         }
     }
 
-    private static void
-    fail(String message) {
+    private void
+    fail(@Nullable String message) { this.fail(message, null); }
 
-        Assert.fail((
+    private void
+    fail(@Nullable String message, @Nullable Throwable cause) {
+
+        AssertionError ae = new AssertionError((
             message
-            + " (java.version="
+            + " (implementation="
+            + this.compilerFactory.getId()
+            + ", java.version="
             + System.getProperty("java.version")
-            + ", java.specification.version="
-            + System.getProperty("java.specification.version)")
-            + "+ "
+            + ")"
         ));
+
+        if (cause != null) ae.initCause(cause);
+
+        throw ae;
+    }
+
+    private static int
+    indexOf(int[] ia, int subject) {
+        for (int i = 0; i < ia.length; i++) {
+            if (ia[i] == subject) return i;
+        }
+        return -1;
     }
 }

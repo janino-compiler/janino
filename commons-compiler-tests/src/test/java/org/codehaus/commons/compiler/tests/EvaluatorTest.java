@@ -1050,4 +1050,42 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             + "}\n"
         );
     }
+
+    @Test public void
+    testDiagnosticLineNumbers() throws Exception {
+        this.assertClassBodyUncookable((
+            ""
+            + "public static void\n"
+            + "main(String[] args) {\n"
+            + "    System\n"
+            + "\n"
+            + "\n"
+            + "    .\n"
+            + "\n"
+            + "\n"
+            + "          out\n"
+            + "\n"
+            + "\n"
+            + "      .\n"  // Line 12
+            + "\n"
+            + "\n"
+            + "    XXXprintln\n" // Line 15
+            + "\n"
+            + "\n"
+            + "    (\"Hello world\");\n"
+            + "}\n"
+        ), 12, 15);
+        this.assertScriptUncookable((
+            ""
+            + "System.out\n"
+            + ".XXXprintln\n"
+            + "(\"Hello world\");\n"
+        ), 2);
+        this.assertExpressionUncookable((
+            ""
+            + "\"abc\"\n"
+            + "+\n"
+            + "x\n" // <= Line 3, unknown variable
+        ), 3);
+    }
 }

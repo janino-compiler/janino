@@ -64,6 +64,9 @@ import util.TestUtil;
 @RunWith(Parameterized.class) public
 class ReportedBugsTest extends CommonsCompilerTestSuite {
 
+    private static double
+    javaSpecificationVersion = Double.parseDouble(System.getProperty("java.specification.version"));
+
     @Parameters(name = "CompilerFactory={0}") public static Collection<Object[]>
     compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
@@ -982,6 +985,20 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         );
     }
 
+    @Test public void
+    testIssue69_IncompatibleClassChangeError_when_evaluating_against_jdk11() throws Exception {
+
+        if (ReportedBugsTest.javaSpecificationVersion < 1.9) return;
+
+        // openjdk-12:
+        //         invokestatic    java.util.stream.Stream.of(Object[]) => java.util.stream.Stream
+
+        this.assertExpressionEvaluatable("java.util.stream.Stream.of(1, 2, 3)");
+//        ExpressionEvaluator ee = new ExpressionEvaluator();
+//        ee.cook("java.util.stream.Stream.of(1, 2, 3)");
+//        ee.evaluate(new Object[0]);
+    }
+
     /**
      * <a href="https://github.com/janino-compiler/janino/issues/47">Issue #47: UnitCompiler fails with
      * CompileException when parent interface method is overridden in child interface with subtype return type</a>
@@ -1016,7 +1033,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             Assert.fail();
         } catch (CompileException ce) {
             Location loc = ce.getLocation();
-            Assert.assertEquals(expected, String.valueOf(loc));
+            Assert.assertEquals(ce.toString(), expected, String.valueOf(loc));
         }
     }
 
