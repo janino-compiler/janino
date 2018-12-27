@@ -168,8 +168,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @throws ClassNotFoundException
      */
-    @Override protected /*synchronized <- No need to synchronize, because 'loadClass()' is synchronized
-    */ Class<?>
+    @Override protected /*synchronized <- No need to synchronize, because 'loadClass()' is synchronized */ Class<?>
     findClass(@Nullable String name) throws ClassNotFoundException {
         assert name != null;
 
@@ -195,8 +194,12 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             }
         }
 
+        if (Boolean.getBoolean("disasm")) UnitCompiler.disassembleToStdout(bytecode);
+
         return this.defineBytecode(name, bytecode);
     }
+
+    private final Set<UnitCompiler> compiledUnitCompilers = new HashSet<UnitCompiler>();
 
     /**
      * This {@link Map} keeps those classes which were already compiled, but not yet defined i.e. which were not yet
@@ -216,11 +219,10 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
         Map<String /*name*/, byte[] /*bytecode*/> bytecodes             = new HashMap<String, byte[]>();
-        Set<UnitCompiler>                         compiledUnitCompilers = new HashSet<UnitCompiler>();
         COMPILE_UNITS:
         for (;;) {
             for (UnitCompiler uc : this.iClassLoader.getUnitCompilers()) {
-                if (!compiledUnitCompilers.contains(uc)) {
+                if (!this.compiledUnitCompilers.contains(uc)) {
                     ClassFile[] cfs;
                     try {
                         cfs = uc.compileUnit(this.debugSource, this.debugLines, this.debugVars);
@@ -228,7 +230,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
                         throw new ClassNotFoundException(ex.getMessage(), ex);
                     }
                     for (ClassFile cf : cfs) bytecodes.put(cf.getThisClassName(), cf.toByteArray());
-                    compiledUnitCompilers.add(uc);
+                    this.compiledUnitCompilers.add(uc);
                     continue COMPILE_UNITS;
                 }
             }
