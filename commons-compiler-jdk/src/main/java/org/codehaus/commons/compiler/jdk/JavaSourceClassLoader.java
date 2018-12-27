@@ -260,6 +260,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             throw new DiagnosticException(ioe);
         }
 
+        JavaFileManagerClassLoader.disassembleToStdout(ba);
+
         return this.defineClass(className, ba, 0, size, (
             this.optionalProtectionDomainFactory != null
             ? this.optionalProtectionDomainFactory.getProtectionDomain(
