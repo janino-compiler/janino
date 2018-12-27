@@ -407,9 +407,6 @@ class CodeContext {
     }
 
     /**
-     * @param functionName
-     * @param code
-     * @param codeSize
      * @param offset       Where to start the analysis
      * @param stackSize    Stack size on start
      * @param stackSizes   Stack sizes at offsets within <var>code</var>; {@link #UNEXAMINED} value
