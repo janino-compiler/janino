@@ -547,7 +547,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     setReturnTypes(Class<?>[] returnTypes) {
         this.setScriptCount(returnTypes.length);
         for (int i = 0; i < returnTypes.length; i++) {
-            this.getScript(i).returnType = ScriptEvaluator.or(
+            this.getScript(i).returnType = (Class<?>) ScriptEvaluator.or(
                 returnTypes[i],
                 ScriptEvaluator.this.getDefaultReturnType()
             );
@@ -567,10 +567,14 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     setParameters(String[][] parameterNames, Class<?>[][] parameterTypes) {
 
         this.setScriptCount(parameterNames.length);
-        for (int i = 0; i < parameterNames.length; i++) this.getScript(i).parameterNames = parameterNames[i].clone();
+        for (int i = 0; i < parameterNames.length; i++) {
+            this.getScript(i).parameterNames = (String[]) parameterNames[i].clone();
+        }
 
         this.setScriptCount(parameterTypes.length);
-        for (int i = 0; i < parameterTypes.length; i++) this.getScript(i).parameterTypes = parameterTypes[i].clone();
+        for (int i = 0; i < parameterTypes.length; i++) {
+            this.getScript(i).parameterTypes = (Class[]) parameterTypes[i].clone();
+        }
     }
 
     @Override public void
@@ -736,14 +740,14 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         Map<Object /*methodKey*/, Integer /*methodIndex*/> dms = new HashMap<Object, Integer>(2 * count);
         for (int i = 0; i < count; ++i) {
             Script  es   = this.getScript(i);
-            Integer prev = dms.put(ScriptEvaluator.methodKey(es.methodName, es.parameterTypes), i);
+            Integer prev = (Integer) dms.put(ScriptEvaluator.methodKey(es.methodName, es.parameterTypes), i);
             assert prev == null;
         }
 
         // Now invoke "Class.getDeclaredMethods()" and filter "our" methods from the result.
         for (Method m : c.getDeclaredMethods()) {
 
-            Integer idx = dms.get(ScriptEvaluator.methodKey(m.getName(), m.getParameterTypes()));
+            Integer idx = (Integer) dms.get(ScriptEvaluator.methodKey(m.getName(), m.getParameterTypes()));
             if (idx == null) continue;
 
             Script es = this.getScript(idx);
