@@ -3221,7 +3221,7 @@ class UnitCompiler {
 
                 // Static interface methods would require Java 8 class file format, but JANINO is still tied to Java
                 // 7 class file format.
-                if (Mod.isStatic(afs) && !"<clinit>".equals(fd.name) && !"class$".equals(fd.name)) {
+                if (Mod.isStatic(afs) && !"<clinit>".equals(fd.name)) {
                     this.compileError("Static interface methods not implemented", fd.getLocation());
                 }
 
@@ -4530,7 +4530,6 @@ class UnitCompiler {
 
     private IClass
     compileGet2(ClassLiteral cl) throws CompileException {
-        final Location loc = cl.getLocation();
 
         IClass iClass = this.getType(cl.type);
         if (iClass.isPrimitive()) {
@@ -4571,118 +4570,9 @@ class UnitCompiler {
             }
         }
 
-        // Check if synthetic method "static Class class$(String className)" is already declared.
-        if (declaringType.getMethodDeclaration("class$") == null) this.declareClassDollarMethod(cl);
-
-        // Determine the statics of the declaring class (this is where static fields declarations are found).
-        List<? extends BlockStatement> statics;
-        if (declaringType instanceof AbstractClassDeclaration) {
-            statics = ((AbstractClassDeclaration) declaringType).variableDeclaratorsAndInitializers;
-        } else
-        if (declaringType instanceof InterfaceDeclaration) {
-            statics = ((InterfaceDeclaration) declaringType).constantDeclarations;
-        } else {
-            throw new InternalCompilerException(
-                "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
-            );
-        }
-
-        String className = Descriptor.toClassName(iClass.getDescriptor());
-
-        // Compose the "class-dollar" field name. This i done as follows:
-        //   Type         Class-name           Field-name
-        //   String       java.lang.String     class$java$lang$String
-        //   String[]     [Ljava.lang.String;  array$Ljava$lang$String
-        //   String[][]   [[Ljava.lang.String; array$$Ljava$lang$String
-        //   String[][][] [[[java.lang.String; array$$$Ljava$lang$String
-        //   int[]        [I                   array$I
-        //   int[][]      [[I                  array$$I
-        String classDollarFieldName;
-        {
-            if (className.startsWith("[")) {
-                classDollarFieldName = "array" + className.replace('.', '$').replace('[', '$');
-                if (classDollarFieldName.endsWith(";")) {
-                    classDollarFieldName = classDollarFieldName.substring(0, classDollarFieldName.length() - 1);
-                }
-            } else
-            {
-                classDollarFieldName = "class$" + className.replace('.', '$');
-            }
-        }
-
-        // Declare the static "class dollar field" if not already done.
-        ADD_CLASS_DOLLAR_FIELD: {
-            for (BlockStatement bs : statics) {
-                if (!((TypeBodyDeclaration) bs).isStatic()) continue;
-                if (bs instanceof FieldDeclaration) {
-                    for (VariableDeclarator vd : ((FieldDeclaration) bs).variableDeclarators) {
-                        if (vd.name.equals(classDollarFieldName)) {
-                            break ADD_CLASS_DOLLAR_FIELD;
-                        }
-                    }
-                }
-            }
-
-            Type             classType = new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class);
-            FieldDeclaration fd        = new FieldDeclaration(
-                loc,                       // location
-                null,                      // optionalDocComment
-                new Modifiers(Mod.STATIC), // modifiers
-                classType,                 // type
-                new VariableDeclarator[] { // variableDeclarators
-                    new VariableDeclarator(
-                        loc,                  // location
-                        classDollarFieldName, // name
-                        0,                    // brackets
-                        (Rvalue) null         // optionalInitializer
-                    )
-                }
-            );
-            if (declaringType instanceof AbstractClassDeclaration) {
-                ((AbstractClassDeclaration) declaringType).addFieldDeclaration(fd);
-            } else
-            if (declaringType instanceof InterfaceDeclaration) {
-                ((InterfaceDeclaration) declaringType).addConstantDeclaration(fd);
-            } else {
-                throw new InternalCompilerException(
-                    "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
-                );
-            }
-        }
-
-        // return (class$X != null) ? class$X : (class$X = class$("X"));
-        Type   declaringClassOrInterfaceType = new SimpleType(loc, this.resolve(declaringType));
-        Lvalue classDollarFieldAccess        = new FieldAccessExpression(
-            loc,                           // location
-            declaringClassOrInterfaceType, // lhs
-            classDollarFieldName           // fieldName
-        );
-        ConditionalExpression ce = new ConditionalExpression(
-            loc,                          // location
-            new BinaryOperation(          // lhs
-                loc,                    // location
-                classDollarFieldAccess, // lhs
-                "!=",                   // operator
-                new NullLiteral(loc)    // rhs
-            ),
-            classDollarFieldAccess,       // mhs
-            new Assignment(               // rhs
-                loc,                          // location
-                classDollarFieldAccess,       // lhs
-                "=",                          // operator
-                new MethodInvocation(         // rhs
-                    loc,                           // location
-                    declaringClassOrInterfaceType, // optionalTarget
-                    "class$",                      // methodName
-                    new Rvalue[] {                 // arguments
-                        new StringLiteral(loc, '"' + className + '"')
-                    }
-                )
-            )
-        );
-        ce.setEnclosingScope(cl.getEnclosingScope());
-        return this.compileGet(ce);
+        return this.pushConstant(cl, iClass);
     }
+
     private IClass
     compileGet2(Assignment a) throws CompileException {
         if (a.operator == "=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
@@ -10643,122 +10533,10 @@ class UnitCompiler {
      */
     private final Map<String /*simpleTypeName*/, IClass> onDemandImportableTypes = new HashMap<String, IClass>();
 
-    private void
-    declareClassDollarMethod(ClassLiteral cl) {
-
-        // Method "class$" is not yet declared; declare it like
-        //
-        //   static java.lang.Class class$(java.lang.String className) {
-        //       try {
-        //           return java.lang.Class.forName(className);
-        //       } catch (java.lang.ClassNotFoundException e) {
-        //           throw new java.lang.NoClassDefFoundError(e.getMessage());
-        //       }
-        //   }
-        //
-        Location                loc = cl.getLocation();
-        AbstractTypeDeclaration declaringType;
-        for (Scope s = cl.getEnclosingScope();; s = s.getEnclosingScope()) {
-            if (s instanceof AbstractTypeDeclaration) {
-                declaringType = (AbstractTypeDeclaration) s;
-                break;
-            }
-        }
-
-        // try {
-        // return Class.forName(className);
-        final MethodInvocation mi = new MethodInvocation(
-            loc,                                                         // location
-            new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class), // optionalTarget
-            "forName",                                                   // methodName
-            new Rvalue[] {                                               // arguments
-                new AmbiguousName(loc, new String[] { "className" })
-            }
-        );
-
-        IClass classNotFoundExceptionIClass;
-        try {
-            classNotFoundExceptionIClass = this.iClassLoader.loadIClass("Ljava/lang/ClassNotFoundException;");
-        } catch (ClassNotFoundException ex) {
-            throw new InternalCompilerException("Loading class \"ClassNotFoundException\": " + ex.getMessage(), ex);
-        }
-        if (classNotFoundExceptionIClass == null) {
-            throw new InternalCompilerException("SNO: Cannot load \"ClassNotFoundException\"");
-        }
-
-        IClass noClassDefFoundErrorIClass;
-        try {
-            noClassDefFoundErrorIClass = this.iClassLoader.loadIClass("Ljava/lang/NoClassDefFoundError;");
-        } catch (ClassNotFoundException ex) {
-            throw new InternalCompilerException("Loading class \"NoClassDefFoundError\": " + ex.getMessage(), ex);
-        }
-        if (noClassDefFoundErrorIClass == null) {
-            throw new InternalCompilerException("SNO: Cannot load \"NoClassFoundError\"");
-        }
-
-        // catch (ClassNotFoundException e) {
-        Block b = new Block(loc);
-        // throw new NoClassDefFoundError(e.getMessage());
-        b.addStatement(new ThrowStatement(loc, new NewClassInstance(
-            loc,                                             // location
-            (Rvalue) null,                                   // optionalQualification
-            new SimpleType(loc, noClassDefFoundErrorIClass), // type
-            new Rvalue[] {                                   // arguments
-                new MethodInvocation(
-                    loc,                                           // location
-                    new AmbiguousName(loc, new String[] { "ex" }), // optionalTarget
-                    "getMessage",                                  // methodName
-                    new Rvalue[0]                                  // arguments
-                )
-            }
-        )));
-
-        CatchClause cc = new CatchClause(
-            loc,                // location
-            new CatchParameter( // catchParameter
-                loc,                                                              // location
-                true,                                                             // finaL
-                new Type[] { new SimpleType(loc, classNotFoundExceptionIClass) }, // types
-                "ex"                                                              // name
-            ),
-            b                   // body
-        );
-        TryStatement ts = new TryStatement(
-            loc,                          // location
-            new ReturnStatement(loc, mi), // body
-            Collections.singletonList(cc) // catchClauses
-        );
-
-        List<BlockStatement> statements = new ArrayList<BlockStatement>();
-        statements.add(ts);
-
-        // Class class$(String className)
-        FormalParameter parameter = new FormalParameter(
-            loc,                                                          // location
-            false,                                                        // finaL
-            new SimpleType(loc, this.iClassLoader.TYPE_java_lang_String), // type
-            "className"                                                   // name
-        );
-        MethodDeclarator cdmd = new MethodDeclarator(
-            loc,                                                                   // location
-            null,                                                                  // optionalDocComment
-            new Modifiers(Mod.STATIC),                                             // modifiers
-            null,                                                                  // optionalTypeParameters
-            new SimpleType(loc, this.iClassLoader.TYPE_java_lang_Class),           // type
-            "class$",                                                              // name
-            new FormalParameters(loc, new FormalParameter[] { parameter }, false), // parameters
-            new ReferenceType[0],                                                  // thrownExceptions
-            null,                                                                  // defaultValue
-            statements                                                             // optionalStatements
-        );
-
-        declaringType.addDeclaredMethod(cdmd);
-        declaringType.invalidateMethodCaches();
-    }
-
     /**
      * @param value A {@link Character}, {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float},
-     *              {@link Double}, {@link String}, {@link Boolean} or {@code null}
+     *              {@link Double}, {@link String}, {@link Boolean}, {@link IClass} or {@code null}
+     * @return      The type of the value that was pushed, e.g. {@link IClass#INT} for {@link Byte}
      */
     private IClass
     pushConstant(Locatable locatable, @Nullable Object value) throws CompileException {
@@ -10865,6 +10643,12 @@ class UnitCompiler {
         if (Boolean.FALSE.equals(value)) {
             this.writeOpcode(locatable, Opcode.ICONST_0);
             return IClass.BOOLEAN;
+        }
+
+        if (value instanceof IClass) {
+            IClass   iClass  = (IClass) value;
+            this.writeLdc(locatable, this.getCodeContext().getClassFile().addConstantClassInfo(iClass.getDescriptor()));
+            return this.iClassLoader.TYPE_java_lang_Class;
         }
 
         if (value == null) {
@@ -12664,8 +12448,13 @@ class UnitCompiler {
     disassembleToStdout(byte[] contents) {
         try {
             Class<?> disassemblerClass = Class.forName("de.unkrig.jdisasm.Disassembler");
+            Object disassemblerInstance = disassemblerClass.newInstance();
+            disassemblerClass.getMethod("setVerbose", boolean.class).invoke(
+                disassemblerInstance,
+                true
+            );
             disassemblerClass.getMethod("disasm", InputStream.class).invoke(
-                disassemblerClass.newInstance(),
+                disassemblerInstance,
                 new ByteArrayInputStream(contents)
             );
         } catch (Exception e) {
