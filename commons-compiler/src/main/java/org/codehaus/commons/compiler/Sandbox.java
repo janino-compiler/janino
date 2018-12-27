@@ -89,7 +89,7 @@ class Sandbox {
 
                     // Check if an ACC was set for the class loader.
                     AccessControlContext
-                    acc = Sandbox.CONFINED_CLASS_LOADERS.get(clasS.getClassLoader());
+                    acc = (AccessControlContext) Sandbox.CONFINED_CLASS_LOADERS.get(clasS.getClassLoader());
 
                     if (acc != null) acc.checkPermission(perm);
                 }
