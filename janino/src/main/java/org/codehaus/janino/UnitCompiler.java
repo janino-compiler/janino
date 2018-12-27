@@ -855,7 +855,7 @@ class UnitCompiler {
         // For every method look for bridge methods that need to be supplied. This is used to correctly dispatch into
         // covariant return types from existing code.
         for (IMethod base : iClass.getIMethods()) {
-            if (!base.isStatic()) {
+            if (!base.isStatic() && base.getAccess() != Access.PRIVATE) {
                 IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
 
                 // If we overrode the method but with a DIFFERENT return type.
@@ -891,7 +891,7 @@ class UnitCompiler {
     private void
     addClassFile(ClassFile cf) {
 
-        if (UnitCompiler.LOGGER.isLoggable(Level.FINEST)) UnitCompiler.disassembleToStdout(cf.toByteArray());
+        /*if (UnitCompiler.LOGGER.isLoggable(Level.FINEST))*/ UnitCompiler.disassembleToStdout(cf.toByteArray());
 
         assert this.generatedClassFiles != null;
         this.generatedClassFiles.add(cf);
