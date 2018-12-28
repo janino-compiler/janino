@@ -47,6 +47,7 @@ import javax.tools.ToolProvider;
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
+import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -260,7 +261,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             throw new DiagnosticException(ioe);
         }
 
-        JavaFileManagerClassLoader.disassembleToStdout(ba);
+        Disassembler.disassembleToStdout(ba);
 
         return this.defineClass(className, ba, 0, size, (
             this.optionalProtectionDomainFactory != null
