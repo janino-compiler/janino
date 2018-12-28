@@ -38,6 +38,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.resource.DirectoryResourceFinder;
@@ -194,7 +195,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             }
         }
 
-        if (Boolean.getBoolean("disasm")) UnitCompiler.disassembleToStdout(bytecode);
+        if (Boolean.getBoolean("disasm")) Disassembler.disassembleToStdout(bytecode);
 
         return this.defineBytecode(name, bytecode);
     }
