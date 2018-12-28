@@ -1937,6 +1937,9 @@ class ClassFile implements Annotatable {
         if ("SourceFile".equals(attributeName)) {
             result = SourceFileAttribute.loadBody(attributeNameIndex, bdis);
         } else
+        if ("StackMapTable".equals(attributeName)) {
+            result = StackMapTableAttribute.loadBody(attributeNameIndex, bdis);
+        } else
         if ("LineNumberTable".equals(attributeName)) {
             result = LineNumberTableAttribute.loadBody(attributeNameIndex, bdis);
         } else
@@ -2506,6 +2509,418 @@ class ClassFile implements Annotatable {
                 this.handlerPc = handlerPc;
                 this.catchType = catchType;
             }
+        }
+    }
+
+    /**
+     * Representation of an unmodifiable {@code StackMapTable} attribute, as read from a class file.
+     */
+    public static
+    class StackMapTableAttribute extends AttributeInfo {
+
+        private final StackMapFrame[] entries;
+
+        StackMapTableAttribute(short attributeNameIndex, StackMapFrame[] entries) {
+            super(attributeNameIndex);
+            this.entries = entries;
+        }
+
+        public abstract static
+        class StackMapFrame {
+
+            /**
+             * The {@code offset_delta} value that is implicit to all stack map frames; see JVMS8 4.7.4.
+             */
+            final int offsetDelta;
+
+            public StackMapFrame(int offsetDelta) { this.offsetDelta = offsetDelta; }
+
+            /**
+             * Invokes the "right" {@code visit...()} method of the {@link StackMapFrameVisitor}.
+             */
+            public abstract <T> T accept(StackMapFrameVisitor<T> smfv);
+
+            public abstract void store(DataOutputStream dos) throws IOException;
+        }
+
+        /**
+         * @param <T> The return type of {@link StackMapFrame#accept(StackMapFrameVisitor)}
+         * @see       StackMapFrame#accept(StackMapFrameVisitor)
+         */
+        public
+        interface StackMapFrameVisitor<T> {
+            T visitSameFrame(SameFrame sf); // SUPPRESS CHECKSTYLE JavadocMethod:6
+            T visitSameLocals1StackItemFrame(SameLocals1StackItemFrame sl1sif);
+            T visitSameLocals1StackItemFrameExtended(SameLocals1StackItemFrameExtended sl1sife);
+            T visitChopFrame(ChopFrame cf);
+            T visitSameFrameExtended(SameFrameExtended sfe);
+            T visitAppendFrame(AppendFrame af);
+            T visitFullFrame(FullFrame ff);
+        }
+
+        /**
+         * Representation of the {@code same_frame} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class SameFrame extends StackMapFrame {
+            public SameFrame(int offsetDelta) { super(offsetDelta); }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException { dos.writeByte(this.offsetDelta); }
+
+            @Override public <T> T
+            accept(StackMapFrameVisitor<T> smfv) { return smfv.visitSameFrame(this); }
+
+            @Override public String
+            toString() { return "same_frame"; }
+        }
+
+        /**
+         * Representation of the {@code same_locals_1_stack_item_frame} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class SameLocals1StackItemFrame extends StackMapFrame {
+            public final VerificationTypeInfo stack;
+
+            public
+            SameLocals1StackItemFrame(int offsetDelta, VerificationTypeInfo stack) {
+                super(offsetDelta);
+                this.stack = stack;
+            }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeByte(this.offsetDelta + 64);
+                this.stack.store(dos);
+            }
+
+            @Override public <T> T
+            accept(StackMapFrameVisitor<T> smfv) { return smfv.visitSameLocals1StackItemFrame(this); }
+
+            @Override public String
+            toString() {
+                return "same_locals_1_stack_item_frame(stack=" + this.stack + ")";
+            }
+        }
+
+        /**
+         * Representation of the {@code same_locals_1_stack_item_frame_extended} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class SameLocals1StackItemFrameExtended extends StackMapFrame {
+            public final VerificationTypeInfo stack;
+
+            public
+            SameLocals1StackItemFrameExtended(int offsetDelta, VerificationTypeInfo stack) {
+                super(offsetDelta);
+                this.stack = stack;
+            }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeByte(247);
+                dos.writeShort(this.offsetDelta);
+                this.stack.store(dos);
+            }
+
+            @Override public <T> T
+            accept(StackMapFrameVisitor<T> smfv) { return smfv.visitSameLocals1StackItemFrameExtended(this); }
+
+            @Override public String
+            toString() {
+                return (
+                    "same_locals_1_stack_item_frame_extended(offsetDelta="
+                    + this.offsetDelta
+                    + ", stack="
+                    + this.stack
+                    + ")"
+                );
+            }
+        }
+
+        /**
+         * Representation of the {@code chop_frame} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class ChopFrame extends StackMapFrame {
+            public final int k;
+
+            public
+            ChopFrame(int offsetDelta, int k) { super(offsetDelta); this.k = k; }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeByte(251 - this.k);
+                dos.writeShort(this.offsetDelta);
+            }
+
+            @Override public <T> T
+            accept(StackMapFrameVisitor<T> smfv) { return smfv.visitChopFrame(this); }
+
+            @Override public String
+            toString() { return "chop_frame"; }
+        }
+
+        /**
+         * Representation of the {@code same_frame_extended} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class SameFrameExtended extends StackMapFrame {
+
+            public
+            SameFrameExtended(int offsetDelta) { super(offsetDelta); }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeByte(251);
+                dos.writeShort(this.offsetDelta);
+            }
+
+            @Override public <T> T
+            accept(StackMapFrameVisitor<T> smfv) { return smfv.visitSameFrameExtended(this); }
+
+            @Override public String
+            toString() { return "same_frame_extended"; }
+        }
+
+        /**
+         * Representation of the {@code append_frame} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class AppendFrame extends StackMapFrame {
+            public final VerificationTypeInfo[] locals;
+
+            public
+            AppendFrame(int offsetDelta, VerificationTypeInfo[] locals) {
+                super(offsetDelta);
+                this.locals = locals;
+            }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeByte(this.locals.length + 251);
+                dos.writeShort(this.offsetDelta);
+                StackMapTableAttribute.storeVerificationTypeInfos(this.locals, dos);
+            }
+
+            @Override public <T> T
+            accept(StackMapFrameVisitor<T> smfv) { return smfv.visitAppendFrame(this); }
+
+            @Override public String
+            toString() {
+                return "append_frame(locals=" + Arrays.toString(this.locals) + ")";
+            }
+        }
+
+        /**
+         * Representation of the {@code full_frame} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class FullFrame extends StackMapFrame {
+            public final VerificationTypeInfo[] locals;
+            public final VerificationTypeInfo[] stack;
+
+            public
+            FullFrame(int offsetDelta, VerificationTypeInfo[] locals, VerificationTypeInfo[] stack) {
+                super(offsetDelta);
+                this.locals = locals;
+                this.stack  = stack;
+            }
+
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeByte(255);
+                dos.writeShort(this.offsetDelta);
+                dos.writeShort(this.locals.length);
+                StackMapTableAttribute.storeVerificationTypeInfos(this.locals, dos);
+                dos.writeShort(this.stack.length);
+                StackMapTableAttribute.storeVerificationTypeInfos(this.stack, dos);
+            }
+
+            @Override public <T> T
+            accept(StackMapFrameVisitor<T> smfv) { return smfv.visitFullFrame(this); }
+
+            @Override public String
+            toString() {
+                return (
+                    "full_frame(offsetDelta="
+                    + this.offsetDelta
+                    + ", locals="
+                    + Arrays.toString(this.locals)
+                    + ", stack="
+                    + Arrays.toString(this.stack)
+                    + ")"
+                );
+            }
+        }
+
+        /**
+         * Representation of the {@code verification_type_info} union; see JVMS8 4.7.4.
+         */
+        public interface VerificationTypeInfo {
+            void store(DataOutputStream dos) throws IOException;
+        }
+
+        /**
+         * Representation of the {@code top_variable_info} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class TopVariableInfo implements VerificationTypeInfo {
+
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(0); }
+            @Override public String toString()                                     { return "top"; }
+        }
+
+        /**
+         * Representation of the {@code integer_variable_info} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class IntegerVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(1); }
+            @Override public String toString()                                     { return "int"; }
+        }
+
+        /**
+         * Representation of the {@code float_variable_info} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class FloatVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(2); }
+            @Override public String toString()                                     { return "float"; }
+        }
+
+        /**
+         * Representation of the {@code double_variable_info} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class DoubleVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(3); }
+            @Override public String toString()                                     { return "double"; }
+        }
+
+        /**
+         * Representation of the {@code long_variable_info} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class LongVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(4); }
+            @Override public String toString()                                     { return "long"; }
+        }
+
+        /**
+         * Representation of the {@code null_variable_info} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class NullVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(5); }
+            @Override public String toString()                                     { return "null"; }
+        }
+
+        /**
+         * Representation of the {@code uninitialized_this_variable_info} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class UninitializedThisVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(6); }
+            @Override public String toString()                                     { return "uninitializedThis"; }
+        }
+
+        /**
+         * Representation of the {@code object_variable_info} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class ObjectVariableInfo implements VerificationTypeInfo {
+
+            private final ConstantClassInfo constantClassInfo;
+
+            public ObjectVariableInfo(ConstantClassInfo constantClassInfo) { this.constantClassInfo = constantClassInfo; }
+
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(7); dos.writeShort(this.constantClassInfo.nameIndex); }
+            @Override public String toString()                                     { return this.constantClassInfo.toString(); }
+        }
+
+        /**
+         * Representation of the {@code uninitialized_variable_info} structure; see JVMS8 4.7.4.
+         */
+        public static
+        class UninitializedVariableInfo implements VerificationTypeInfo {
+
+            private final short offset;
+
+            public UninitializedVariableInfo(short offset) { this.offset = offset; }
+
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(8); dos.writeShort(this.offset); }
+            @Override public String toString()                                     { return "uninitialized(offset=" + this.offset + ")"; }
+        }
+
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+
+            StackMapFrame[] entries = new StackMapFrame[dis.readUnsignedShort()]; // number_of_entries
+            for (int i = 0; i < entries.length; ++i) {                            // entries
+                int frameType = dis.readUnsignedByte();
+                StackMapFrame e = (
+                    frameType <= 63 ? new SameFrame(frameType) :
+                    frameType <= 127 ? new SameLocals1StackItemFrame(frameType - 64, StackMapTableAttribute.loadVerificationTypeInfo(dis)) :
+                    frameType <= 246 ? null :
+                    frameType == 247 ? new SameLocals1StackItemFrameExtended(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfo(dis)) :
+                    frameType <= 250 ? new ChopFrame(dis.readUnsignedShort(), 251 - frameType) :
+                    frameType == 251 ? new SameFrameExtended(dis.readUnsignedShort()) :
+                    frameType <= 254 ? new AppendFrame(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort())) :
+                    frameType == 255 ? new FullFrame(
+                        dis.readUnsignedShort(),                                 // offsetDelta
+                        StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort()), // locals
+                        StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort())  // stack
+                    ) :
+                    null
+                );
+                if (e == null) throw new ClassFileException("Invalid stack_map_frame frame_type " + frameType);
+
+                entries[i] = e;
+            }
+
+            return new StackMapTableAttribute(
+                attributeNameIndex, // attributeNameIndex
+                entries             // entries
+            );
+        }
+
+        private static void
+        storeVerificationTypeInfos(VerificationTypeInfo[] vtis, DataOutputStream dos) throws IOException {
+            for (VerificationTypeInfo vti : vtis) vti.store(dos);
+        }
+
+        private static VerificationTypeInfo[]
+        loadVerificationTypeInfos(DataInputStream dis, int number) throws IOException {
+            VerificationTypeInfo[] result = new VerificationTypeInfo[number];
+            for (int i = 0; i < number; i++) result[i] = StackMapTableAttribute.loadVerificationTypeInfo(dis);
+            return result;
+        }
+
+        private static VerificationTypeInfo
+        loadVerificationTypeInfo(DataInputStream dis) throws IOException {
+
+            int tag = 0xff & dis.readByte();
+            switch (tag) {
+
+            case 0: return new TopVariableInfo();
+            case 1: return new IntegerVariableInfo();
+            case 2: return new FloatVariableInfo();
+            case 3: return new DoubleVariableInfo();
+            case 4: return new LongVariableInfo();
+            case 5: return new NullVariableInfo();
+            case 6: return new UninitializedThisVariableInfo();
+            case 7: return new ObjectVariableInfo(new ConstantClassInfo(dis.readShort()));
+            case 8: return new UninitializedVariableInfo(dis.readShort());
+
+            default: throw new ClassFileException("Invalid verification_type_info tag " + tag);
+            }
+        }
+
+        @Override protected void
+        storeBody(DataOutputStream dos) throws IOException {
+            dos.writeShort(this.entries.length);                   // number_of_entries
+            for (StackMapFrame smf : this.entries) smf.store(dos); // entries
         }
     }
 
