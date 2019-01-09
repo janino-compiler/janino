@@ -6893,19 +6893,20 @@ class UnitCompiler {
             mhsType = Objects.or(this.isBoxingConvertible(mhsType), mhsType);
             rhsType = Objects.or(this.isBoxingConvertible(rhsType), rhsType);
 
-            // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
-            if (mhsType.isAssignableFrom(rhsType)) {
-                return mhsType;
-            } else
-            if (rhsType.isAssignableFrom(mhsType)) {
-                return rhsType;
-            } else {
-                this.compileError(
-                    "Reference types \"" + mhsType + "\" and \"" + rhsType + "\" don't match",
-                    ce.getLocation()
-                );
-                return this.iClassLoader.TYPE_java_lang_Object;
-            }
+            return this.commonSupertype(mhsType, rhsType);
+//            // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
+//            if (mhsType.isAssignableFrom(rhsType)) {
+//                return mhsType;
+//            } else
+//            if (rhsType.isAssignableFrom(mhsType)) {
+//                return rhsType;
+//            } else {
+//                this.compileError(
+//                    "Reference types \"" + mhsType + "\" and \"" + rhsType + "\" don't match",
+//                    ce.getLocation()
+//                );
+//                return this.iClassLoader.TYPE_java_lang_Object;
+//            }
         } else
         {
             this.compileError(
