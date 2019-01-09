@@ -44,10 +44,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.LocalVariableSlot;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.AttributeInfo;
-import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
 import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
-import org.codehaus.janino.util.ClassFile.StackMapTableAttribute;
-import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo;
 
 /**
  * The context of the compilation of a function (constructor or method). Manages generation of byte code, the exception
@@ -59,10 +56,10 @@ class CodeContext {
 
     private static final Logger LOGGER = Logger.getLogger(CodeContext.class.getName());
 
-    private static final int                    INITIAL_SIZE   = 128;
-    private static final VerificationTypeInfo[] UNEXAMINED     = new VerificationTypeInfo[0];
-    private static final VerificationTypeInfo[] INVALID_OFFSET = new VerificationTypeInfo[0];
-    private static final int                    MAX_STACK_SIZE = 65535;
+    private static final int     INITIAL_SIZE   = 128;
+    private static final byte    UNEXAMINED     = -1;
+    private static final byte    INVALID_OFFSET = -2;
+    private static final int     MAX_STACK_SIZE = 65535;
 
     private final ClassFile classFile;
     private final String    functionName;
@@ -367,34 +364,31 @@ class CodeContext {
     flowAnalysis(String functionName) {
         CodeContext.LOGGER.entering(null, "flowAnalysis", functionName);
 
-        VerificationTypeInfo[][] stackFrames = new VerificationTypeInfo[this.end.offset][];
-        Arrays.fill(stackFrames, CodeContext.UNEXAMINED);
+        int[] stackSizes = new int[this.end.offset];
+        Arrays.fill(stackSizes, CodeContext.UNEXAMINED);
 
         // Analyze flow from offset zero.
         this.flowAnalysis(
             functionName,
-            this.code,                   // code
-            this.end.offset,             // codeSize
-            0,                           // offset
-            new VerificationTypeInfo[0], // stackSize
-            stackFrames                  // stackSizes
+            this.code,       // code
+            this.end.offset, // codeSize
+            0,               // offset
+            0,               // stackSize
+            stackSizes       // stackSizes
         );
 
         // Analyze flow from exception handler entry points.
         int analyzedExceptionHandlers = 0;
         while (analyzedExceptionHandlers != this.exceptionTableEntries.size()) {
             for (ExceptionTableEntry exceptionTableEntry : this.exceptionTableEntries) {
-                if (stackFrames[exceptionTableEntry.startPC.offset] != CodeContext.UNEXAMINED) {
+                if (stackSizes[exceptionTableEntry.startPC.offset] != CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
                         functionName,
                         this.code,                                          // code
                         this.end.offset,                                    // codeSize
                         exceptionTableEntry.handlerPC.offset,               // offset
-                        CodeContext.concat(                                 // stackFrame
-                            stackFrames[exceptionTableEntry.startPC.offset],
-                            CodeContext.toVerificationTypeInfo(this.classFile.getConstantClassInfo(exceptionTableEntry.catchType))
-                        ),
-                        stackFrames                                         // stackFrames
+                        stackSizes[exceptionTableEntry.startPC.offset] + 1, // stackSize
+                        stackSizes                                          // stackSizes
                     );
                     ++analyzedExceptionHandlers;
                 }
@@ -403,8 +397,8 @@ class CodeContext {
 
         // Check results and determine maximum stack size.
         this.maxStack = 0;
-        for (int i = 0; i < stackFrames.length; ++i) {
-            VerificationTypeInfo[] ss = stackFrames[i];
+        for (int i = 0; i < stackSizes.length; ++i) {
+            int ss = stackSizes[i];
 
             if (ss == CodeContext.UNEXAMINED) {
                 String message = functionName + ": Unexamined code at offset " + i;
@@ -417,20 +411,8 @@ class CodeContext {
                 throw new InternalCompilerException(message);
             }
 
-            if (ss.length > this.maxStack) this.maxStack = ss.length; // TODO: Manche haben Länge 2!
+            if (ss > this.maxStack) this.maxStack = ss;
         }
-    }
-
-    public static <T> T[]
-    concat(T[] lhs, T rhs) {
-        T[] tmp = Arrays.copyOf(lhs, lhs.length + 1);
-        tmp[lhs.length] = rhs;
-        return tmp;
-    }
-
-    private static VerificationTypeInfo
-    toVerificationTypeInfo(ConstantClassInfo cci) {
-        return new StackMapTableAttribute.ObjectVariableInfo(cci);
     }
 
     /**
@@ -438,25 +420,25 @@ class CodeContext {
      * @param code
      * @param codeSize
      * @param offset       Where to start the analysis
-     * @param stackFrame    Stack size on start
-     * @param stackFrames  Stack sizes at offsets within <var>code</var>; {@link #UNEXAMINED} value
+     * @param stackSize    Stack size on start
+     * @param stackSizes   Stack sizes at offsets within <var>code</var>; {@link #UNEXAMINED} value
      *                     indicates that the stack size at a given offset has not yet been
      *                     calculated
      */
     private void
     flowAnalysis(
-        String                   functionName,
-        byte[]                   code,
-        int                      codeSize,
-        int                      offset,
-        VerificationTypeInfo[]   stackFrame,
-        VerificationTypeInfo[][] stackFrames
+        String functionName,
+        byte[] code,
+        int    codeSize,
+        int    offset,
+        int    stackSize,
+        int[]  stackSizes
     ) {
         for (;;) {
             CodeContext.LOGGER.entering(
                 null,
                 "flowAnalysis",
-                new Object[] { functionName, code, codeSize, offset, stackFrame, stackFrames }
+                new Object[] { functionName, code, codeSize, offset, stackSize, stackSizes }
             );
 
             // Check current bytecode offset.
@@ -465,8 +447,9 @@ class CodeContext {
             }
 
             // Have we hit an area that has already been analyzed?
-            VerificationTypeInfo[] sf = stackFrames[offset];
-            if (sf == CodeContext.INVALID_OFFSET) {
+            int css = stackSizes[offset];
+            if (css == stackSize) return; // OK.
+            if (css == CodeContext.INVALID_OFFSET) {
                 String message = functionName + ": Invalid offset";
                 if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
                     CodeContext.LOGGER.fine(message);
@@ -476,15 +459,15 @@ class CodeContext {
                 }
                 throw new InternalCompilerException(message);
             }
-            if (sf != CodeContext.UNEXAMINED) {
+            if (css != CodeContext.UNEXAMINED) {
                 String message = (
                     functionName
                     + ": Operand stack inconsistent at offset "
                     + offset
                     + ": Previous size "
-                    + sf
+                    + css
                     + ", now "
-                    + stackFrame
+                    + stackSize
                 );
                 if (CodeContext.LOGGER.isLoggable(Level.FINE)) {
                     CodeContext.LOGGER.fine(message);
@@ -494,10 +477,7 @@ class CodeContext {
                 }
                 throw new InternalCompilerException(message);
             }
-
-            if (Arrays.equals(sf, stackFrame)) return; // OK.
-
-            stackFrames[offset] = stackFrame;
+            stackSizes[offset] = stackSize;
 
             // Analyze current opcode.
             byte  opcode        = code[offset];
@@ -525,48 +505,45 @@ class CodeContext {
             case Opcode.SD_M3:
             case Opcode.SD_M2:
             case Opcode.SD_M1:
-                stackFrame = Arrays.copyOf(stackFrame, stackFrame.length + (props & Opcode.SD_MASK) - Opcode.SD_P0;
-                break;
             case Opcode.SD_P0:
-                break;
             case Opcode.SD_P1:
             case Opcode.SD_P2:
-                stackFrame += (props & Opcode.SD_MASK) - Opcode.SD_P0;
+                stackSize += (props & Opcode.SD_MASK) - Opcode.SD_P0;
                 break;
 
             case Opcode.SD_0:
-                stackFrame = 0;
+                stackSize = 0;
                 break;
 
             case Opcode.SD_GETFIELD:
-                --stackFrame;
+                --stackSize;
             case Opcode.SD_GETSTATIC: // SUPPRESS CHECKSTYLE FallThrough
-                stackFrame += this.determineFieldSize(CodeContext.extract16BitValue(operandOffset, code));
+                stackSize += this.determineFieldSize(CodeContext.extract16BitValue(operandOffset, code));
                 break;
 
             case Opcode.SD_PUTFIELD:
-                --stackFrame;
+                --stackSize;
             case Opcode.SD_PUTSTATIC: // SUPPRESS CHECKSTYLE FallThrough
-                stackFrame -= this.determineFieldSize(CodeContext.extract16BitValue(operandOffset, code));
+                stackSize -= this.determineFieldSize(CodeContext.extract16BitValue(operandOffset, code));
                 break;
 
             case Opcode.SD_INVOKEVIRTUAL:
             case Opcode.SD_INVOKESPECIAL:
             case Opcode.SD_INVOKEINTERFACE:
-                --stackFrame;
+                --stackSize;
             case Opcode.SD_INVOKESTATIC: // SUPPRESS CHECKSTYLE FallThrough
-                stackFrame -= this.determineArgumentsSize(CodeContext.extract16BitValue(operandOffset, code));
+                stackSize -= this.determineArgumentsSize(CodeContext.extract16BitValue(operandOffset, code));
                 break;
 
             case Opcode.SD_MULTIANEWARRAY:
-                stackFrame -= code[operandOffset + 2] - 1;
+                stackSize -= code[operandOffset + 2] - 1;
                 break;
 
             default:
                 throw new InternalCompilerException(functionName + ": Invalid stack delta");
             }
 
-            if (stackFrame < 0) {
+            if (stackSize < 0) {
                 String message = (
                     this.classFile.getThisClassName()
                     + '.'
@@ -583,7 +560,7 @@ class CodeContext {
                 throw new InternalCompilerException(message);
             }
 
-            if (stackFrame > CodeContext.MAX_STACK_SIZE) {
+            if (stackSize > CodeContext.MAX_STACK_SIZE) {
                 String message = (
                     this.classFile.getThisClassName()
                     + '.'
@@ -625,8 +602,8 @@ class CodeContext {
                     code,
                     codeSize,
                     CodeContext.extract16BitValue(offset, operandOffset, code),
-                    stackFrame,
-                    stackFrames
+                    stackSize,
+                    stackSizes
                 );
                 operandOffset += 2;
                 break;
@@ -634,14 +611,14 @@ class CodeContext {
             case Opcode.OP1_JSR:
                 int targetOffset = CodeContext.extract16BitValue(offset, operandOffset, code);
                 operandOffset += 2;
-                if (stackFrames[targetOffset] == CodeContext.UNEXAMINED) {
+                if (stackSizes[targetOffset] == CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
                         functionName,
                         code,
                         codeSize,
                         targetOffset,
-                        stackFrame + 1,
-                        stackFrames
+                        stackSize + 1,
+                        stackSizes
                     );
                 }
                 break;
@@ -652,8 +629,8 @@ class CodeContext {
                     code,
                     codeSize,
                     CodeContext.extract32BitValue(offset, operandOffset, code),
-                    stackFrame,
-                    stackFrames
+                    stackSize,
+                    stackSizes
                 );
                 operandOffset += 4;
                 break;
@@ -665,8 +642,8 @@ class CodeContext {
                     code,
                     codeSize,
                     CodeContext.extract32BitValue(offset, operandOffset, code),
-                    stackFrame,
-                    stackFrames
+                    stackSize,
+                    stackSizes
                 );
                 operandOffset += 4;
 
@@ -680,8 +657,8 @@ class CodeContext {
                         code,
                         codeSize,
                         CodeContext.extract32BitValue(offset, operandOffset, code),
-                        stackFrame,
-                        stackFrames
+                        stackSize,
+                        stackSizes
                     );
                     operandOffset += 4; //advance over offset
                 }
@@ -694,8 +671,8 @@ class CodeContext {
                     code,
                     codeSize,
                     CodeContext.extract32BitValue(offset, operandOffset, code),
-                    stackFrame,
-                    stackFrames
+                    stackSize,
+                    stackSizes
                 );
                 operandOffset += 4;
                 int low = CodeContext.extract32BitValue(offset, operandOffset, code);
@@ -708,8 +685,8 @@ class CodeContext {
                         code,
                         codeSize,
                         CodeContext.extract32BitValue(offset, operandOffset, code),
-                        stackFrame,
-                        stackFrames
+                        stackSize,
+                        stackSizes
                     );
                     operandOffset += 4;
                 }
@@ -751,7 +728,7 @@ class CodeContext {
                 throw new InternalCompilerException(functionName + ": Invalid OP3");
             }
 
-            Arrays.fill(stackFrames, offset + 1, operandOffset, CodeContext.INVALID_OFFSET);
+            Arrays.fill(stackSizes, offset + 1, operandOffset, CodeContext.INVALID_OFFSET);
 
             if ((props & Opcode.NO_FALLTHROUGH) != 0) return;
             offset = operandOffset;
