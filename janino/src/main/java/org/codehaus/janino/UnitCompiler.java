@@ -208,6 +208,7 @@ import org.codehaus.janino.util.Annotatable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.ClassFileException;
 import org.codehaus.janino.util.Numbers;
+import org.codehaus.janino.util.Objects;
 
 /**
  * This class actually implements the Java compiler. It is associated with exactly one compilation unit which it
@@ -4708,7 +4709,7 @@ class UnitCompiler {
                 );
             }
         } else
-        if (!mhsType.isPrimitive() && !rhsType.isPrimitive()) {
+        if (!mhsType.isPrimitive() || !rhsType.isPrimitive()) {
 
             // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
             expressionType = this.commonSupertype(mhsType, rhsType);
@@ -6887,7 +6888,10 @@ class UnitCompiler {
             // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
             return this.binaryNumericPromotionType(ce, this.getUnboxedType(mhsType), this.getUnboxedType(rhsType));
         } else
-        if (!mhsType.isPrimitive() && !rhsType.isPrimitive()) {
+        if (!mhsType.isPrimitive() || !rhsType.isPrimitive()) {
+
+            mhsType = Objects.or(this.isBoxingConvertible(mhsType), mhsType);
+            rhsType = Objects.or(this.isBoxingConvertible(rhsType), rhsType);
 
             // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
             if (mhsType.isAssignableFrom(rhsType)) {

@@ -62,6 +62,7 @@ import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Parser.ClassDeclarationContext;
 import org.codehaus.janino.util.AbstractTraverser;
+import org.codehaus.janino.util.Objects;
 
 /**
  * An implementation of {@link IScriptEvaluator} that utilizes the JANINO Java compiler.
@@ -547,15 +548,12 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     setReturnTypes(Class<?>[] returnTypes) {
         this.setScriptCount(returnTypes.length);
         for (int i = 0; i < returnTypes.length; i++) {
-            this.getScript(i).returnType = (Class<?>) ScriptEvaluator.or(
+            this.getScript(i).returnType = (Class<?>) Objects.or(
                 returnTypes[i],
                 ScriptEvaluator.this.getDefaultReturnType()
             );
         }
     }
-
-    private static <T> T
-    or(@Nullable T lhs, T rhs) { return lhs != null ? lhs : rhs; }
 
     @Override public void
     setMethodNames(String[] methodNames) {
