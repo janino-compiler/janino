@@ -59,7 +59,6 @@ import org.codehaus.janino.Java.CatchParameter;
 import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
-import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.ConditionalExpression;
 import org.codehaus.janino.Java.ConstructorDeclarator;
 import org.codehaus.janino.Java.ConstructorInvocation;
@@ -307,8 +306,8 @@ class Parser {
                 String[] identifiers = (String[]) l.toArray(new String[l.size()]);
                 return (
                     isStatic
-                    ? (ImportDeclaration) new CompilationUnit.SingleStaticImportDeclaration(loc, identifiers)
-                    : (ImportDeclaration) new CompilationUnit.SingleTypeImportDeclaration(loc, identifiers)
+                    ? new CompilationUnit.SingleStaticImportDeclaration(loc, identifiers)
+                    : new CompilationUnit.SingleTypeImportDeclaration(loc, identifiers)
                 );
             }
             this.read(".");
@@ -316,8 +315,8 @@ class Parser {
                 String[] identifiers = (String[]) l.toArray(new String[l.size()]);
                 return (
                     isStatic
-                    ? (ImportDeclaration) new CompilationUnit.StaticImportOnDemandDeclaration(loc, identifiers)
-                    : (ImportDeclaration) new CompilationUnit.TypeImportOnDemandDeclaration(loc, identifiers)
+                    ? new CompilationUnit.StaticImportOnDemandDeclaration(loc, identifiers)
+                    : new CompilationUnit.TypeImportOnDemandDeclaration(loc, identifiers)
                 );
             }
             l.add(this.read(TokenType.IDENTIFIER));
@@ -3507,7 +3506,7 @@ class Parser {
     parseLambdaBody() throws CompileException, IOException {
         return (
             this.peek("{")
-            ? (LambdaBody) new BlockLambdaBody(this.parseBlock())
+            ? new BlockLambdaBody(this.parseBlock())
             : new ExpressionLambdaBody(this.parseExpression().toRvalueOrCompileException())
         );
     }

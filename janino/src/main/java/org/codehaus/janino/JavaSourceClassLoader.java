@@ -88,8 +88,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             parentClassLoader,        // parentClassLoader
             (                         // sourceFinder
                 optionalSourcePath == null
-                ? (ResourceFinder) new DirectoryResourceFinder(new File("."))
-                : (ResourceFinder) new PathResourceFinder(optionalSourcePath)
+                ? new DirectoryResourceFinder(new File("."))
+                : new PathResourceFinder(optionalSourcePath)
             ),
             optionalCharacterEncoding // optionalCharacterEncoding
         );

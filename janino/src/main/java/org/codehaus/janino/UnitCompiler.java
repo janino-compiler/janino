@@ -2879,7 +2879,7 @@ class UnitCompiler {
             // }
             BlockStatement afterClose = (
                 this.iClassLoader.METH_java_lang_Throwable__addSuppressed == null
-                ? (BlockStatement) new EmptyStatement(loc)
+                ? new EmptyStatement(loc)
                 : new ExpressionStatement(
                     new MethodInvocation(
                         loc,                                      // location
