@@ -207,6 +207,7 @@ import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
 import org.codehaus.janino.util.Annotatable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.ClassFileException;
+import org.codehaus.janino.util.Numbers;
 
 /**
  * This class actually implements the Java compiler. It is associated with exactly one compilation unit which it
@@ -5990,7 +5991,7 @@ class UnitCompiler {
     @SuppressWarnings("static-method") private Object
     getConstantValue2(IntegerLiteral il) throws CompileException {
 
-        String v = il.value;
+        String v = il.value.toLowerCase();
 
         // Remove underscores in integer literal (JLS8, section 3.10.1).
         for (;;) {
@@ -5999,48 +6000,44 @@ class UnitCompiler {
             v = v.substring(0, ui) + v.substring(ui + 1);
         }
 
-        // HexIntegerLiteral (JLS8, section 3.10.1)?
-        if (v.startsWith("0x") || v.startsWith("0X")) {
+        int     radix;
+        boolean signed;
 
-            // Cannot use "Integer/Long.valueOf(v, 16)" here because hex literals are UNSIGNED.
-            return (
-                v.endsWith("L") || v.endsWith("l")
-                ? (Object) Long.valueOf(UnitCompiler.hex2UnsignedLong(il, v.substring(2, v.length() - 1)))
-                : Integer.valueOf(UnitCompiler.hex2UnsignedInt(il, v.substring(2)))
-            );
-        }
+        // HexIntegerLiteral (JLS8, section 3.10.1)?
+        if (v.startsWith("0x")) {
+            radix  = 16;
+            signed = false;
+            v      = v.substring(2);
+        } else
 
         // BinaryIntegerLiteral (JLS8, section 3.10.1)?
-        if (v.startsWith("0b") || v.startsWith("0B")) {
-
-            // Cannot use "Integer/Long.valueOf(v, 2)" here because binary literals are UNSIGNED.
-            return (
-                v.endsWith("L") || v.endsWith("l")
-                ? (Object) Long.valueOf(UnitCompiler.bin2UnsignedLong(il, v.substring(2, v.length() - 1)))
-                : Integer.valueOf(UnitCompiler.bin2UnsignedInt(il, v.substring(2)))
-            );
-        }
+        if (v.startsWith("0b")) {
+            radix  = 2;
+            signed = false;
+            v      = v.substring(2);
+        } else
 
         // OctalIntegerLiteral (JLS8, section 3.10.1)?
-        if (v.startsWith("0")) {
+        if (v.startsWith("0") && !v.equals("0") && !v.equals("0l")) {
+            radix  = 8;
+            signed = false;
+            v      = v.substring(1);
+        } else
 
-            // Cannot use "Integer/Long.valueOf(v, 8)" here because octal literals are UNSIGNED.
-            return (
-                v.endsWith("L") || v.endsWith("l")
-                ? (Object) Long.valueOf(UnitCompiler.oct2UnsignedLong(il, v.substring(0, v.length() - 1)))
-                : Integer.valueOf(UnitCompiler.oct2UnsignedInt(il, v))
-            );
+        // Must be a DecimalIntegerLiteral (JLS8, section 3.10.1).
+        {
+            radix  = 10;
+            signed = true;
         }
 
-        // Must be an DecimalIntegerLiteral (JLS8, section 3.10.1).
         try {
 
-            // Decimal literals are SIGNED, so we can safely use "Integer/Long.valueOf(v)".
-            return (
-                v.endsWith("L") || v.endsWith("l")
-                ? (Object) Long.valueOf(v.substring(0, v.length() - 1))
-                : Integer.valueOf(v)
-            );
+            if (v.endsWith("l")) {
+                v = v.substring(0, v.length() - 1);
+                return signed ? Long.parseLong(v, radix)   : Numbers.parseUnsignedLong(v, radix);
+            } else {
+                return signed ? Integer.parseInt(v, radix) : Numbers.parseUnsignedInt(v, radix);
+            }
         } catch (NumberFormatException e) {
             // SUPPRESS CHECKSTYLE AvoidHidingCause
             throw UnitCompiler.compileException(il, "Invalid integer literal \"" + il.value + "\"");
@@ -10657,172 +10654,6 @@ class UnitCompiler {
         }
 
         throw new InternalCompilerException("Unknown literal \"" + value + "\"");
-    }
-
-    /**
-     * @return                  0 through 2<sup>32</sup> - 1
-     * @throws CompileException The <var>value</var> is larger than {@code ffffffff} (2<sup>32</sup> - 1), or, in
-     *                          other words, is longer than eight characters
-     * @throws AssertionError   The <var>value</var> contains characters that are <em>not</em> hexadecimal digits
-     *                          (0-9, A-F, a-f)
-     */
-    private static int
-    hex2UnsignedInt(Locatable locatable, String value) throws CompileException {
-
-        // Cannot use "Integer.parseInt(String, 16)", because that throws a NumberFormatException
-        // if the value is between 2^31 and 2^32-1.
-
-        int result = 0;
-        for (int i = 0; i < value.length(); ++i) {
-            if ((result & 0xf0000000) != 0) {
-                throw UnitCompiler.compileException(
-                    locatable,
-                    "Value of hexadecimal integer literal \"" + value + "\" is out of range"
-                );
-            }
-            int digitValue = Character.digit(value.charAt(i), 16);
-            assert digitValue >= 0;
-            result = (result << 4) + digitValue;
-        }
-        return result;
-    }
-
-    /**
-     * @return                  0 through 2<sup>32</sup> - 1
-     * @throws CompileException The <var>value</var> is larger than {@code 37777777777} (2<sup>32</sup> - 1)
-     * @throws AssertionError   The <var>value</var> contains characters that are <em>not</em> octal digits
-     *                          (0-7)
-     */
-    private static int
-    oct2UnsignedInt(Locatable locatable, String value) throws CompileException {
-
-        // Cannot use "Integer.parseInt(String, 8)", because that throws a NumberFormatException if
-        // the value is between 2^31 and 2^32-1.
-
-        int result = 0;
-        for (int i = 0; i < value.length(); ++i) {
-            if ((result & 0xe0000000) != 0) {
-                throw UnitCompiler.compileException(
-                    locatable,
-                    "Value of octal integer literal \"" + value + "\" is out of range"
-                );
-            }
-            int digitValue = Character.digit(value.charAt(i), 8);
-            assert digitValue >= 0;
-            result = (result << 3) + digitValue;
-        }
-        return result;
-    }
-
-    /**
-     * @return                  0 through 2<sup>32</sup> - 1
-     * @throws CompileException The <var>value</var> is larger than {@code 11111111111111111111111111111111}
-     *                          (2<sup>32</sup> - 1), or, in other words, is longer than 32 characters
-     * @throws AssertionError   The <var>value</var> contains characters other than {@code '0'} and {@code '1'}
-     */
-    private static int
-    bin2UnsignedInt(Locatable locatable, String value) throws CompileException {
-
-        // Cannot use "Integer.parseInt(String, 2)", because that throws a NumberFormatException if
-        // the value is between 2^31 and 2^32-1.
-
-        int result = 0;
-        for (int i = 0; i < value.length(); ++i) {
-            if ((result & 0x80000000) != 0) {
-                throw UnitCompiler.compileException(
-                    locatable,
-                    "Value of binary integer literal \"" + value + "\" is out of range"
-                );
-            }
-            int digitValue = Character.digit(value.charAt(i), 2);
-            assert digitValue >= 0;
-            result = (result << 1) + digitValue;
-        }
-        return result;
-    }
-
-    /**
-     * @return                  0 through 2<sup>64</sup> - 1
-     * @throws CompileException The <var>value</var> is larger than {@code ffffffffffffffff} (2<sup>64</sup> - 1), or,
-     *                          in other words, is longer than sixteen characters
-     * @throws AssertionError   The <var>value</var> contains characters that are <em>not</em> hexadecimal digits
-     *                          (0-9, A-F, a-f)
-     */
-    private static long
-    hex2UnsignedLong(Locatable locatable, String value) throws CompileException {
-
-        // Cannot use "Long.parseLong(String, 16)", because that throws a NumberFormatException
-        // if the value is between 2^63 and 2^64-1.
-
-        long result = 0L;
-        for (int i = 0; i < value.length(); ++i) {
-            if ((result & 0xf000000000000000L) != 0L) {
-                throw UnitCompiler.compileException(
-                    locatable,
-                    "Value of hexadecimal long literal \"" + value + "\" is out of range"
-                );
-            }
-            int digitValue = Character.digit(value.charAt(i), 16);
-            assert digitValue >= 0;
-            result = (result << 4) + digitValue;
-        }
-        return result;
-    }
-
-    /**
-     * @return                  0 through 2<sup>64</sup> - 1
-     * @throws CompileException The <var>value</var> is larger than {@code 1777777777777777777777} (2<sup>64</sup> -
-     *                          1)
-     * @throws AssertionError   The <var>value</var> contains characters that are <em>not</em> octal digits
-     *                          (0-7)
-     */
-    private static long
-    oct2UnsignedLong(Locatable locatable, String value) throws CompileException {
-
-        // Cannot use "Long.parseLong(String, 8)", because that throws a NumberFormatException
-        // if the value is between 2^63 and 2^64-1.
-
-        long result = 0L;
-        for (int i = 0; i < value.length(); ++i) {
-            if ((result & 0xe000000000000000L) != 0) {
-                throw UnitCompiler.compileException(
-                    locatable,
-                    "Value of octal long literal \"" + value + "\" is out of range"
-                );
-            }
-            int digitValue = Character.digit(value.charAt(i), 8);
-            assert digitValue >= 0;
-            result = (result << 3) + digitValue;
-        }
-        return result;
-    }
-
-    /**
-     * @return                  0 through 2<sup>64</sup> - 1
-     * @throws CompileException The <var>value</var> is larger than {@code
-     *                          1111111111111111111111111111111111111111111111111111111111111111} (2<sup>64</sup> -
-     *                          1), or, in other words, is longer than 64 characters
-     * @throws AssertionError   The <var>value</var> contains characters other than {@code '0'} and {@code '1'}
-     */
-    private static long
-    bin2UnsignedLong(Locatable locatable, String value) throws CompileException {
-
-        // Cannot use "Long.parseLong(String, 2)", because that throws a NumberFormatException
-        // if the value is between 2^63 and 2^64-1.
-
-        long result = 0L;
-        for (int i = 0; i < value.length(); ++i) {
-            if ((result & 0x8000000000000000L) != 0) {
-                throw UnitCompiler.compileException(
-                    locatable,
-                    "Value of binary long literal \"" + value + "\" is out of range"
-                );
-            }
-            int digitValue = Character.digit(value.charAt(i), 2);
-            assert digitValue >= 0;
-            result = (result << 1) + digitValue;
-        }
-        return result;
     }
 
     /**
