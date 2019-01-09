@@ -261,7 +261,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             throw new DiagnosticException(ioe);
         }
 
-        Disassembler.disassembleToStdout(ba);
+        if (Boolean.getBoolean("disasm")) Disassembler.disassembleToStdout(ba);
 
         return this.defineClass(className, ba, 0, size, (
             this.optionalProtectionDomainFactory != null
