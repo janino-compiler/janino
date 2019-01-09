@@ -4710,19 +4710,7 @@ class UnitCompiler {
         if (!mhsType.isPrimitive() && !rhsType.isPrimitive()) {
 
             // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
-            if (mhsType.isAssignableFrom(rhsType)) {
-                expressionType = mhsType;
-            } else
-            if (rhsType.isAssignableFrom(mhsType)) {
-                expressionType = rhsType;
-            } else
-            {
-                this.compileError(
-                    "Reference types \"" + mhsType + "\" and \"" + rhsType + "\" don't match",
-                    ce.getLocation()
-                );
-                return this.iClassLoader.TYPE_java_lang_Object;
-            }
+            expressionType = this.commonSupertype(mhsType, rhsType);
         } else
         {
             this.compileError(
@@ -4734,6 +4722,27 @@ class UnitCompiler {
         toEnd.set();
 
         return expressionType;
+    }
+
+    private IClass
+    commonSupertype(IClass t1, IClass t2) throws CompileException {
+
+        if (t1.isAssignableFrom(t2)) return t1;
+
+        {
+            IClass sc = t1.getSuperclass();
+            if (sc != null) {
+                IClass result = this.commonSupertype(sc, t2);
+                if (result != this.iClassLoader.TYPE_java_lang_Object) return result;
+            }
+        }
+
+        for (IClass i : t1.getInterfaces()) {
+            IClass result = this.commonSupertype(i, t2);
+            if (result != this.iClassLoader.TYPE_java_lang_Object) return result;
+        }
+
+        return this.iClassLoader.TYPE_java_lang_Object;
     }
 
     @Nullable private static Byte
