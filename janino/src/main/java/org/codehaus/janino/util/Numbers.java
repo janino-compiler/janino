@@ -33,11 +33,14 @@ class Numbers {
     private Numbers() {}
 
     /**
-     * Counterpart of {@link Integer#parseInt(String, int)} for <em>unsigned</em> integers.
+     * Counterpart of {@link Integer#parseInt(String, int)} for parsing <em>unsigned</em> integers.
+     * <p>
+     *   Redundant with {@code java.lang.Integer.parseUnsignedInt(String, int radix)}, which is available since Java 8.
+     * </p>
      *
      * @return                       0 through 2<sup>32</sup> - 1
      * @throws NumberFormatException <var>s</var> is {@code null} or empty
-     * @throws NumberFormatException <var>radix</var> is out of range (see {@link Character#digit(char, int)}
+     * @throws NumberFormatException <var>radix</var> is out of range (see {@link Character#digit(char, int)})
      * @throws NumberFormatException The value represented by <var>s</var> is larger than 2<sup>32</sup> - 1
      * @throws NumberFormatException <var>s</var> contains characters that are <em>not</em> valid digits
      *                               for the given <var>radix</var> (see {@link Character#digit(char, int)})
@@ -111,11 +114,14 @@ class Numbers {
     };
 
     /**
-     * Counterpart of {@link Long#parseInt(String, int)} for <em>unsigned</em> integers.
+     * Counterpart of {@link Long#parseInt(String, int)} for parsing <em>unsigned</em> integers.
+     * <p>
+     *   Redundant with {@code java.lang.Long.parseUnsignedLong(String, int radix)}, which is available since Java 8.
+     * </p>
      *
      * @return                       0 through 2<sup>64</sup> - 1
      * @throws NumberFormatException <var>s</var> is {@code null} or empty
-     * @throws NumberFormatException <var>radix</var> is out of range (see {@link Character#digit(char, int)}
+     * @throws NumberFormatException <var>radix</var> is out of range (see {@link Character#digit(char, int)})
      * @throws NumberFormatException The value represented by <var>s</var> is larger than 2<sup>64</sup> - 1
      * @throws NumberFormatException <var>s</var> contains characters that are <em>not</em> valid digits
      *                               for the given <var>radix</var> (see {@link Character#digit(char, int)})
