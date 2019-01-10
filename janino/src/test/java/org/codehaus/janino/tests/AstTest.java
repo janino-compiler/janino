@@ -364,7 +364,7 @@ class AstTest {
     testMoveLocalVariablesToFields() throws Exception {
 
         // Parse the input CU.
-        String text = (
+        CompilationUnit cu = new Parser(new Scanner(null, new StringReader(
             ""
             + " class A {"
             + " "
@@ -376,11 +376,7 @@ class AstTest {
             + " "
             + "     int a;"
             + " }"
-        );
-        CompilationUnit cu = new Parser(new Scanner(null, new StringReader(text))).parseCompilationUnit();
-
-        // Extra check: Verify that it unparses to identity.
-        AstTest.assertUnparsesTo(text, cu);
+        ))).parseCompilationUnit();
 
         // Now copy the input CU and modify it on-the-fly.
         cu = new DeepCopier() {
