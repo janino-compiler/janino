@@ -2191,6 +2191,18 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // List 1, bullet 5
         this.assertExpressionEvaluatesTrue("(true ? new Object() : \"\") != null");
+        this.assertExpressionEvaluatesTrue("(true ? new Object() : 7).getClass().getName().equals(\"java.lang.Object\")");
+        this.assertExpressionEvaluatesTrue("(true ? new Object() : Integer.valueOf(7)).getClass().getName().equals(\"java.lang.Object\")");
+        this.assertExpressionEvaluatesTrue("(true ? Integer.valueOf(9) : Integer.valueOf(7)).getClass().getName().equals(\"java.lang.Integer\")");
+        this.assertExpressionEvaluatesTrue("(true ? Integer.valueOf(9) : Long.valueOf(7)) == 9L");
+        this.assertScriptCookable("import org.codehaus.commons.compiler.tests.JlsTest; (true ? new JlsTest.D1() : new JlsTest.D2()).c1();");
+        this.assertScriptCookable("import org.codehaus.commons.compiler.tests.JlsTest; (true ? new JlsTest.D3() : new JlsTest.D4()).c1();");
+        // Why, for god's sake, can JAVAC compile these assignments?? Some kind of type inference must happen here...
+        if (!this.isJanino()) {
+            this.assertScriptCookable("import org.codehaus.commons.compiler.tests.JlsTest; JlsTest.I1 i1 = (\"\".equals(\"\") ? new JlsTest.D3() : new JlsTest.D4());");
+            this.assertScriptCookable("import org.codehaus.commons.compiler.tests.JlsTest; JlsTest.I2 i2 = (true ? new JlsTest.D3() : new JlsTest.D4());");
+        }
+        this.assertScriptUncookable("import org.codehaus.commons.compiler.tests.JlsTest; JlsTest.I3 i3 = (true ? new JlsTest.D3() : new JlsTest.D4());");
 
         // List 2, bullet 1
         this.assertScriptReturnsTrue("int a = 3; return (a == 0 ? ++a : a + a) == 6;");
@@ -2198,6 +2210,14 @@ class JlsTest extends CommonsCompilerTestSuite {
         // List 2, bullet 2
         this.assertScriptReturnsTrue("int a = 3; return (a != 0 ? ++a : a + a) == 4;");
     }
+    public static class C1                              { public void c1() {} }
+    public static class D1 extends C1                   {}
+    public static class D2 extends C1                   {}
+    public        interface I1                          { void i1(); }
+    public        interface I2                          { void i2(); }
+    public        interface I3                          { void i3(); }
+    public static class D3 extends C1 implements I1, I2 { @Override public void i1() {} @Override public void i2() {} }
+    public static class D4 extends C1 implements I1, I2 { @Override public void i1() {} @Override public void i2() {} }
 
     /**
      * 15.26 Assignment Operators
