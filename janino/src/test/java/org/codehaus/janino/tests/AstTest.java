@@ -40,12 +40,17 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java;
+import org.codehaus.janino.Java.AbstractClassDeclaration;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayType;
+import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.CompilationUnit;
+import org.codehaus.janino.Java.EmptyStatement;
 import org.codehaus.janino.Java.ExpressionStatement;
+import org.codehaus.janino.Java.FieldAccessExpression;
+import org.codehaus.janino.Java.FieldDeclaration;
 import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Java.IntegerLiteral;
@@ -58,7 +63,10 @@ import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.Statement;
+import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.Type;
+import org.codehaus.janino.Java.TypeDeclaration;
+import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
@@ -348,6 +356,128 @@ class AstTest {
         Assert.assertEquals("x = 1 * ((( 2 + 3 )));", sw.toString());
     }
 
+    /**
+     * See <a href="https://github.com/janino-compiler/janino/issues/71">issue #71</a>: How can I move all local
+     * variable declarations to field declarations using janino?
+     */
+    @Test public void
+    testMoveLocalVariablesToFields() throws Exception {
+
+        // Parse the input CU.
+        String text = (
+            ""
+            + " class A {"
+            + " "
+            + "     void test() {"
+            + "         int b = 0;"
+            + "         int c = 1;"
+            + "         b += c;"
+            + "     }"
+            + " "
+            + "     int a;"
+            + " }"
+        );
+        CompilationUnit cu = new Parser(new Scanner(null, new StringReader(text))).parseCompilationUnit();
+
+        // Extra check: Verify that it unparses to identity.
+        AstTest.assertUnparsesTo(text, cu);
+
+        // Now copy the input CU and modify it on-the-fly.
+        cu = new DeepCopier() {
+
+            private final List<FieldDeclaration> moreFieldDeclarations = new ArrayList<FieldDeclaration>();
+
+            @Override public BlockStatement
+            copyLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) throws CompileException {
+
+                /**
+                 * Generate synthetic fields for each local variable.
+                 */
+                List<VariableDeclarator> fieldVariableDeclarators = new ArrayList<VariableDeclarator>();
+                for (VariableDeclarator vd : lvds.variableDeclarators) {
+                    fieldVariableDeclarators.add(new VariableDeclarator(
+                        vd.getLocation(),
+                        vd.name,
+                        vd.brackets,
+                        null // optionalInitializer <= Do NOT copy the initializer!
+                    ));
+                }
+                this.moreFieldDeclarations.add(new FieldDeclaration(
+                    Location.NOWHERE,                 // location
+                    null,                             // optionalDocComment
+                    lvds.modifiers,                   // modifiers
+                    this.copyType(lvds.type),         // type
+                    fieldVariableDeclarators.toArray( // variableDeclarators
+                        new VariableDeclarator[fieldVariableDeclarators.size()]
+                    )
+                ));
+
+                /**
+                 * Replace each local variable declaration with an assignment expression statement.
+                 */
+                List<BlockStatement> assignments = new ArrayList<BlockStatement>();
+                for (VariableDeclarator vd : lvds.variableDeclarators) {
+
+                    Rvalue initializer = (Rvalue) vd.optionalInitializer;
+                    if (initializer == null) continue;
+
+                    assignments.add(new ExpressionStatement(new Assignment(
+                        Location.NOWHERE,            // location
+                        new FieldAccessExpression(   // lhs
+                            Location.NOWHERE,                    // location
+                            new ThisReference(Location.NOWHERE), // lhs
+                            vd.name                              // field
+                        ),
+                        "=",                         // operator
+                        this.copyRvalue(initializer) // rhs
+                    )));
+                }
+
+                if (assignments.isEmpty()) return new EmptyStatement(Location.NOWHERE);
+
+                if (assignments.size() == 1) return assignments.get(0);
+
+                Block result = new Block(Location.NOWHERE);
+                result.addStatements(assignments);
+                return result;
+            }
+
+            /**
+             * Add the synthetic field declarations to the class.
+             */
+            @Override public TypeDeclaration
+            copyPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd) throws CompileException {
+
+                assert this.moreFieldDeclarations.isEmpty();
+                try {
+                    AbstractClassDeclaration result = (AbstractClassDeclaration) super.copyPackageMemberClassDeclaration(pmcd);
+                    for (FieldDeclaration fd : this.moreFieldDeclarations) {
+                        result.addFieldDeclaration(fd); // TODO: Check for name clashes
+                    }
+                    return result;
+                } finally {
+                    this.moreFieldDeclarations.clear();
+                }
+            }
+
+        }.copyCompilationUnit(cu);
+
+        // Verify the transformation result.
+        AstTest.assertUnparsesTo((
+            ""
+            + " class A {"
+            + "     void test() {"
+            + "         this.b = 0;" // <= Local variable initialize replaced with field assignment
+            + "         this.c = 1;" // <=
+            + "         b += c;"
+            + "     }"
+            + "     int a;"
+            + "     int b;" // <= Synthetic field that replaces the original local variable
+            + "     int c;" // <=
+            + " }"
+        ), cu);
+    }
+
     @Test public void
     testFullyQualifiedFieldRef() throws Exception {
         CompilationUnit cu = new CompilationUnit("AstTests.java");
@@ -519,5 +649,9 @@ class AstTest {
         StringWriter sw = new StringWriter();
         Unparser.unparse(cu, sw);
         return sw.toString();
+    }
+
+    public static void assertUnparsesTo(String expected, CompilationUnit cu) {
+        Assert.assertEquals(UnparserTest.normalizeWhitespace(expected), UnparserTest.normalizeWhitespace(AstTest.unparse(cu)));
     }
 }
