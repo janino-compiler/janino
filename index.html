@@ -53,7 +53,12 @@
 
         <p>JANINO is integrated with Apache Commons JCI ("Java Compiler Interface") and JBoss Rules / Drools.</p>
 
-        <p>JANINO can also be used for static code analysis or code manipulation.</p>
+        <p>
+          JANINO can also be used for
+          <a href="#janino-as-a-code-analyser">static code analysis</a>
+          or
+          <a href="#janino-as-a-code-manipulator">code manipulation</a>.
+        </p>
 
         <h2>Table of Contents</h2>
         <ul>
@@ -65,38 +70,58 @@
           <li>
             <a href="#download">Download</a>
             <ul>
-              <li><a href="#packages">Packages</a></li>
+              <li><a href="#packages"    >Packages</a></li>
               <li><a href="#installation">Installation</a></li>
-              <li><a href="#examples">Examples</a></li>
+              <li><a href="#examples"    >Examples</a></li>
             </ul>
           </li>
           <li>
             <a href="#documentation">Documentation</a>
             <ul>
               <li><a href="#change_log">Change Log</a></li>
-              <li><a href="#javadoc">JAVADOC</a></li>
-              <li><a href="#books">Books</a></li>
-              <li><a href="#links">Links</a></li>
-              <li><a href="#basic-examples">Basic Examples</a></li>
-              <li><a href="#advanced-examples">Advanced Examples</a></li>
-              <li><a href="#security">Security</a></li>
+              <li><a href="#javadoc"   >JAVADOC</a></li>
+              <li><a href="#books"     >Books</a></li>
+              <li><a href="#links"     >Links</a></li>
+              <li>
+                <a href="#basic-examples">Basic Examples</a>
+                <ul>
+                  <li><a href="#janino-as-an-expression-evaluator">Janino as an Expression Evaluator</a></li>
+                  <li><a href="#janino-as-a-script-evaluator"     >Janino as a Script Evaluator</a></li>
+                  <li><a href="#janino-as-a-class-body-evaluator" >Janino as a Class Body Evaluator</a></li>
+                  <li><a href="#janino-as-a-simple-compiler"      >Janino as a Simple Compiler</a></li>
+                </ul>
+              </li>
+              <li>
+                <a href="#advanced-examples">Advanced Examples</a>
+                <ul>
+                  <li><a href="#janino-as-a-source-code-classloader"   >Janino as a Source Code Class Loader</a></li>
+                  <li><a href="#jsh"                                   >jsh - the Java shell</a></li>
+                  <li><a href="#janino-as-a-command-line-java-compiler">Janino as a Command-Line Java Compiler</a></li>
+                  <li><a href="#janino-as-an-ant-compiler"             >Janino as an ANT Compiler</a></li>
+                  <li><a href="#janino-as-a-tomcat-compiler"           >Janino as a TOMCAT Compiler</a></li>
+                  <li><a href="#janino-as-a-code-analyser"             >Janino as a Code Analyser</a></li>
+                  <li><a href="#janino-as-a-code-manipulator"          >Janino as a Code Manipulator</a></li>
+                  <li><a href="#alternative-compiler-implementations"  >Alternative Compiler Implementations</a></li>
+                </ul>
+              </li>
+              <li><a href="#security" >Security</a></li>
               <li><a href="#debugging">Debugging</a></li>
             </ul>
           </li>
           <li>
             <a href="#contact">Contact</a>
             <ul>
-              <li><a href="#reporting-bugs">Reporting bugs</a></li>
-              <li><a href="#requesting-support">Requesting support</a></li>
+              <li><a href="#reporting-bugs"         >Reporting bugs</a></li>
+              <li><a href="#requesting-support"     >Requesting support</a></li>
               <li><a href="#requesting-new-features">Requesting new features</a></li>
-              <li><a href="#feedback">Feedback</a></li>
+              <li><a href="#feedback"               >Feedback</a></li>
             </ul>
           </li>
           <li>
             <a href="#developers">Developers</a>
             <ul>
               <li><a href="#source-code-repository">Source Code Repository</a></li>
-              <li><a href="#contributing">Contributing</a></li>
+              <li><a href="#contributing"          >Contributing</a></li>
             </ul>
           </li>
         </ul>
@@ -1036,7 +1061,7 @@ Object o = cl.loadClass("pkg1.A").newInstance();
 
         <h4>
           <a id="jsh" class="anchor" href="#jsh" aria-hidden="true"><span aria-hidden="true" class="octicon
-          octicon-link"></span></a>jsh
+          octicon-link"></span></a>jsh - the Java shell
         </h4>
 
         <p>
@@ -1159,8 +1184,8 @@ $</pre></div>
         </h4>
 
         <p>
-          If, e.g., you want to read a Java compilation unit into memory, manipulate it, and then write it back to a
-          file for compilation, then all you have to do is:
+          If you want to read a Java compilation unit into memory, manipulate it, and then write it back to a file for
+          compilation, then all you have to do is:
         </p>
 
         <div class="highlight highlight-text-xml"><pre class="brush: java">
@@ -1173,7 +1198,11 @@ Java.CompilationUnit cu = new Parser(new Scanner(fileName, r)).parseCompilationU
 // Convert the AST back into text.
 UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
 
-        <p>The UnparseVisitor class demostrates how to do this.</p>
+        <p>
+          The <a
+          href="https://github.com/janino-compiler/janino/blob/master/janino/src/test/java/org/codehaus/janino/tests/AstTest.java#LC359"><code>AstTest.testMoveLocalVariablesToFields()</code></a>
+          test case demostrates how to manipulate an AST.
+        </p>
 
         <h4>
           <a id="alternative-compiler-implementations" class="anchor" href="#alternative-compiler-implementations"
@@ -1183,8 +1212,9 @@ UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
 
         <p>
           JANINO can be configured to use not its own Java compiler, but an alternative implementation. Alternative
-          implementations must basically implement the interface ICompilerFactory. One such alternative implementation
-          is based on the javax.tools API, and is shipped as part of the JANINO distribution: commons-compiler-jdk.jar.
+          implementations must basically implement the interface <code>ICompilerFactory</code>.
+          One such alternative implementation is based on the <code>javax.tools</code>code> API, and is shipped as part
+          of the JANINO distribution: commons-compiler-jdk.jar.
           That implementation was (successfully) tested with all JDKs from version 1.6 to 12.
         </p>
 
