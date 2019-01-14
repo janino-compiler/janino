@@ -7595,7 +7595,7 @@ class UnitCompiler {
                 CodeContext.Inserter convertLhsInserter = this.getCodeContext().newInserter();
                 IClass               rhsType            = this.compileGetValue(operand);
 
-                if (type.isPrimitiveNumeric() && rhsType.isPrimitiveNumeric()) {
+                if (this.isConvertibleToPrimitiveNumeric(type) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
                     IClass promotedType = this.binaryNumericPromotion(locatable, type, convertLhsInserter, rhsType);
                     if (promotedType == IClass.INT) {
                         this.writeOpcode(locatable, iopcode);

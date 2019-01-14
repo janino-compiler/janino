@@ -2111,6 +2111,15 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     test_15_22__BitwiseAndLogicalOperators() throws Exception {
+
+        // 15.22.1 Integer Bitwise Operators &, ^, and |
+        this.assertExpressionEvaluatesTrue("(7 & 12) == 4");
+        this.assertExpressionEvaluatesTrue("(7L & 12) == 4");
+        this.assertExpressionUncookable("(7.0 & 12) == 4");
+        this.assertExpressionEvaluatesTrue("(new Long(7L) & 12) == 4");
+        this.assertExpressionEvaluatesTrue("(Long.valueOf(7) & Byte.valueOf((byte) 12)) == Short.valueOf((short) 4)");
+        this.assertExpressionUncookable("(7 & Boolean.TRUE) == 4");
+
         // 15.22.2 Boolean Logical Operators &, ^, and |
         this.assertExpressionEvaluatesTrue("new Boolean(true) & new Boolean(true)");
         this.assertExpressionEvaluatesTrue("new Boolean(true) ^ false");
