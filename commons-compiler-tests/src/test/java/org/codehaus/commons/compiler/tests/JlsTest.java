@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2001-2019 Arno Unkrig. All rights reserved.
  * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -73,9 +73,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         // Optionally print class file disassemblies to the console.
         if (Boolean.getBoolean("disasm")) {
             Logger scl = Logger.getLogger("org.codehaus.janino.UnitCompiler");
-            for (Handler h : scl.getHandlers()) {
-                h.setLevel(Level.FINEST);
-            }
+            for (Handler h : scl.getHandlers()) h.setLevel(Level.FINEST);
             scl.setLevel(Level.FINEST);
         }
     }
