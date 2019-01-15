@@ -6890,8 +6890,8 @@ class UnitCompiler {
         } else
         if (!mhsType.isPrimitive() || !rhsType.isPrimitive()) {
 
-            mhsType = Objects.or(this.isBoxingConvertible(mhsType), mhsType);
-            rhsType = Objects.or(this.isBoxingConvertible(rhsType), rhsType);
+            mhsType = (IClass) Objects.or(this.isBoxingConvertible(mhsType), mhsType);
+            rhsType = (IClass) Objects.or(this.isBoxingConvertible(rhsType), rhsType);
 
             return this.commonSupertype(mhsType, rhsType);
 //            // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
