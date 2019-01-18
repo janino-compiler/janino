@@ -114,7 +114,7 @@ class Numbers {
     };
 
     /**
-     * Counterpart of {@link Long#parseInt(String, int)} for parsing <em>unsigned</em> integers.
+     * Counterpart of {@link Long#parseLong(String, int)} for parsing <em>unsigned</em> integers.
      * <p>
      *   Redundant with {@code java.lang.Long.parseUnsignedLong(String, int radix)}, which is available since Java 8.
      * </p>
