@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -163,95 +163,103 @@ implements <a href="../../../org/codehaus/janino/TokenStream.html" title="interf
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code><a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#location--">location</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Token.html" title="class in org.codehaus.janino">Token</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peek--">peek</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peek-java.lang.String...-">peek</a></span>(java.lang.String...&nbsp;suspected)</code>
 <div class="block">Checks whether the value of the next token equals any of the <var>suspected</var>; does not consume the next
  token.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peek-java.lang.String-">peek</a></span>(java.lang.String&nbsp;suspected)</code>&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peek-org.codehaus.janino.TokenType...-">peek</a></span>(<a href="../../../org/codehaus/janino/TokenType.html" title="enum in org.codehaus.janino">TokenType</a>...&nbsp;suspected)</code>
 <div class="block">Checks whether the type of the next token is any of the <var>suspected</var>; does not consume the next token.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peek-org.codehaus.janino.TokenType-">peek</a></span>(<a href="../../../org/codehaus/janino/TokenType.html" title="enum in org.codehaus.janino">TokenType</a>&nbsp;suspected)</code>&nbsp;</td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Token.html" title="class in org.codehaus.janino">Token</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peekNextButOne--">peekNextButOne</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peekNextButOne-java.lang.String-">peekNextButOne</a></span>(java.lang.String&nbsp;suspected)</code>&nbsp;</td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peekRead-java.lang.String...-">peekRead</a></span>(java.lang.String...&nbsp;suspected)</code>
 <div class="block">Checks whether the value of the next token is one of the <var>suspected</var>; if so, consumes the token.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peekRead-java.lang.String-">peekRead</a></span>(java.lang.String&nbsp;suspected)</code>
 <div class="block">Checks whether the value of the next token equals the <var>suspected</var>; if so, consumes the token.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peekRead-org.codehaus.janino.TokenType...-">peekRead</a></span>(<a href="../../../org/codehaus/janino/TokenType.html" title="enum in org.codehaus.janino">TokenType</a>...&nbsp;suspected)</code>
 <div class="block">Checks whether the type of the next token is one of the <var>suspected</var>; if so, consumes the token.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
+<tr id="i13" class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#peekRead-org.codehaus.janino.TokenType-">peekRead</a></span>(<a href="../../../org/codehaus/janino/TokenType.html" title="enum in org.codehaus.janino">TokenType</a>&nbsp;suspected)</code>
 <div class="block">Checks whether the type of the next token is the <var>suspected</var>; if so, consumes the token.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Token.html" title="class in org.codehaus.janino">Token</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#read--">read</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#read-java.lang.String...-">read</a></span>(java.lang.String...&nbsp;expected)</code>
 <div class="block">Verifies that the value of the next token equals one of the <var>expected</var>, and consumes the token.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#read-java.lang.String-">read</a></span>(java.lang.String&nbsp;expected)</code>
 <div class="block">Verifies that the value of the next token equals <var>expected</var>, and consumes the token.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#read-org.codehaus.janino.TokenType...-">read</a></span>(<a href="../../../org/codehaus/janino/TokenType.html" title="enum in org.codehaus.janino">TokenType</a>...&nbsp;expected)</code>
 <div class="block">Verifies that the type of the next token is one of the <var>expected</var>, and consumes the token.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#read-org.codehaus.janino.TokenType-">read</a></span>(<a href="../../../org/codehaus/janino/TokenType.html" title="enum in org.codehaus.janino">TokenType</a>&nbsp;expected)</code>
 <div class="block">Verifies that the type of the next token is the <var>expected</var>, and consumes the token.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#setWarningHandler-org.codehaus.commons.compiler.WarningHandler-">setWarningHandler</a></span>(<a href="../../../org/codehaus/commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;optionalWarningHandler)</code>
 <div class="block">By default, warnings are discarded, but an application my install a <a href="../../../org/codehaus/commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler"><code>WarningHandler</code></a>.</div>
 </td>
+</tr>
+<tr id="i20" class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/TokenStreamImpl.html#toString--">toString</a></span>()</code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -259,7 +267,7 @@ implements <a href="../../../org/codehaus/janino/TokenStream.html" title="interf
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;java.lang.Object</h3>
-<code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</code></li>
+<code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, wait, wait, wait</code></li>
 </ul>
 </li>
 </ul>
@@ -614,16 +622,18 @@ public&nbsp;java.lang.String&nbsp;doc()</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>peekRead</h4>
-<pre>public&nbsp;boolean&nbsp;peekRead(<a href="../../../org/codehaus/janino/TokenType.html" title="enum in org.codehaus.janino">TokenType</a>&nbsp;suspected)
-                 throws <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a>,
-                        java.io.IOException</pre>
+<pre><a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+public&nbsp;java.lang.String&nbsp;peekRead(<a href="../../../org/codehaus/janino/TokenType.html" title="enum in org.codehaus.janino">TokenType</a>&nbsp;suspected)
+                                     throws <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a>,
+                                            java.io.IOException</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../org/codehaus/janino/TokenStream.html#peekRead-org.codehaus.janino.TokenType-">TokenStream</a></code></span></div>
 <div class="block">Checks whether the type of the next token is the <var>suspected</var>; if so, consumes the token.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../../../org/codehaus/janino/TokenStream.html#peekRead-org.codehaus.janino.TokenType-">peekRead</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/TokenStream.html" title="interface in org.codehaus.janino">TokenStream</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>Whether the type of the next token is the <var>suspected</var></dd>
+<dd>The value of the next token; an <code>interned</code> String iff the token represents an
+         identifier, <code>true</code>, <code>false</code>, <code>null</code>, or an operator</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 <dd><code>java.io.IOException</code></dd>
@@ -653,6 +663,21 @@ public&nbsp;java.lang.String&nbsp;doc()</pre>
 </dl>
 </li>
 </ul>
+<a name="location--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>location</h4>
+<pre>public&nbsp;<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/janino/TokenStream.html#location--">location</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/TokenStream.html" title="interface in org.codehaus.janino">TokenStream</a></code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The location of the first character of the previously <em>read</em> (not <em>peek</em>ed!) token</dd>
+</dl>
+</li>
+</ul>
 <a name="setWarningHandler-org.codehaus.commons.compiler.WarningHandler-">
 <!--   -->
 </a>
@@ -672,6 +697,19 @@ public&nbsp;java.lang.String&nbsp;doc()</pre>
 <dd><code><a href="../../../org/codehaus/janino/TokenStream.html#setWarningHandler-org.codehaus.commons.compiler.WarningHandler-">setWarningHandler</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/TokenStream.html" title="interface in org.codehaus.janino">TokenStream</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>optionalWarningHandler</code> - <code>null</code> to indicate that no warnings be issued</dd>
+</dl>
+</li>
+</ul>
+<a name="toString--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>toString</h4>
+<pre>public&nbsp;java.lang.String&nbsp;toString()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code>toString</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
 </dl>
 </li>
 </ul>

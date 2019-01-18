@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":9,"i2":9,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10};
+var methods = {"i0":10,"i1":9,"i2":9,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -191,21 +191,33 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseBlockStatement-org.codehaus.janino.Java.BlockStatement-">unparseBlockStatement</a></span>(<a href="../../../org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&nbsp;bs)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseBlock-org.codehaus.janino.Java.Block-">unparseBlock</a></span>(<a href="../../../org/codehaus/janino/Java.Block.html" title="class in org.codehaus.janino">Java.Block</a>&nbsp;b)</code>&nbsp;</td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseCompilationUnit-org.codehaus.janino.Java.CompilationUnit-">unparseCompilationUnit</a></span>(<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;cu)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseBlockStatement-org.codehaus.janino.Java.BlockStatement-">unparseBlockStatement</a></span>(<a href="../../../org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&nbsp;bs)</code>&nbsp;</td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseImportDeclaration-org.codehaus.janino.Java.CompilationUnit.ImportDeclaration-">unparseImportDeclaration</a></span>(<a href="../../../org/codehaus/janino/Java.CompilationUnit.ImportDeclaration.html" title="class in org.codehaus.janino">Java.CompilationUnit.ImportDeclaration</a>&nbsp;id)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseCompilationUnit-org.codehaus.janino.Java.CompilationUnit-">unparseCompilationUnit</a></span>(<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;cu)</code>&nbsp;</td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseType-org.codehaus.janino.Java.Type-">unparseType</a></span>(<a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;t)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseImportDeclaration-org.codehaus.janino.Java.CompilationUnit.ImportDeclaration-">unparseImportDeclaration</a></span>(<a href="../../../org/codehaus/janino/Java.CompilationUnit.ImportDeclaration.html" title="class in org.codehaus.janino">Java.CompilationUnit.ImportDeclaration</a>&nbsp;id)</code>&nbsp;</td>
 </tr>
 <tr id="i8" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseLambdaBody-org.codehaus.janino.Java.LambdaBody-">unparseLambdaBody</a></span>(<a href="../../../org/codehaus/janino/Java.LambdaBody.html" title="interface in org.codehaus.janino">Java.LambdaBody</a>&nbsp;body)</code>&nbsp;</td>
+</tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseLambdaParameters-org.codehaus.janino.Java.LambdaParameters-">unparseLambdaParameters</a></span>(<a href="../../../org/codehaus/janino/Java.LambdaParameters.html" title="interface in org.codehaus.janino">Java.LambdaParameters</a>&nbsp;lp)</code>&nbsp;</td>
+</tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseType-org.codehaus.janino.Java.Type-">unparseType</a></span>(<a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;t)</code>&nbsp;</td>
+</tr>
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Unparser.html#unparseTypeDeclaration-org.codehaus.janino.Java.TypeDeclaration-">unparseTypeDeclaration</a></span>(<a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino">Java.TypeDeclaration</a>&nbsp;td)</code>&nbsp;</td>
 </tr>
@@ -326,6 +338,33 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>unparseImportDeclaration</h4>
 <pre>public&nbsp;void&nbsp;unparseImportDeclaration(<a href="../../../org/codehaus/janino/Java.CompilationUnit.ImportDeclaration.html" title="class in org.codehaus.janino">Java.CompilationUnit.ImportDeclaration</a>&nbsp;id)</pre>
+</li>
+</ul>
+<a name="unparseLambdaParameters-org.codehaus.janino.Java.LambdaParameters-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>unparseLambdaParameters</h4>
+<pre>public&nbsp;void&nbsp;unparseLambdaParameters(<a href="../../../org/codehaus/janino/Java.LambdaParameters.html" title="interface in org.codehaus.janino">Java.LambdaParameters</a>&nbsp;lp)</pre>
+</li>
+</ul>
+<a name="unparseLambdaBody-org.codehaus.janino.Java.LambdaBody-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>unparseLambdaBody</h4>
+<pre>public&nbsp;void&nbsp;unparseLambdaBody(<a href="../../../org/codehaus/janino/Java.LambdaBody.html" title="interface in org.codehaus.janino">Java.LambdaBody</a>&nbsp;body)</pre>
+</li>
+</ul>
+<a name="unparseBlock-org.codehaus.janino.Java.Block-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>unparseBlock</h4>
+<pre>public&nbsp;void&nbsp;unparseBlock(<a href="../../../org/codehaus/janino/Java.Block.html" title="class in org.codehaus.janino">Java.Block</a>&nbsp;b)</pre>
 </li>
 </ul>
 <a name="unparseBlockStatement-org.codehaus.janino.Java.BlockStatement-">

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":9,"i5":10,"i6":10,"i7":10,"i8":42,"i9":10,"i10":42};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":9,"i6":10,"i7":10,"i8":10,"i9":42,"i10":10,"i11":42};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -226,31 +226,39 @@ implements <a href="../../../../../org/codehaus/commons/compiler/IClassBodyEvalu
 </td>
 </tr>
 <tr id="i4" class="altColor">
+<td class="colFirst"><code>protected java.io.Reader</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#newFileName-java.lang.String-java.io.Reader-">newFileName</a></span>(java.lang.String&nbsp;optionalFileName,
+           java.io.Reader&nbsp;reader)</code>
+<div class="block">Sets the given file name, and the current line number to 1, and the current column number to 1, when the first
+ <code>char</code> is read from the <var>reader</var>.</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>protected static java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#parseImportDeclarations-java.io.Reader-">parseImportDeclarations</a></span>(java.io.Reader&nbsp;r)</code>
 <div class="block">Heuristically parses IMPORT declarations at the beginning of the character stream produced by the given <code>Reader</code>.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setClassName-java.lang.String-">setClassName</a></span>(java.lang.String&nbsp;className)</code>
 <div class="block">Sets the name of the generated class.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setDefaultImports-java.lang.String:A-">setDefaultImports</a></span>(java.lang.String[]&nbsp;optionalDefaultImports)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setDefaultImports-java.lang.String...-">setDefaultImports</a></span>(java.lang.String...&nbsp;optionalDefaultImports)</code>
 <div class="block">"Default imports" add to the system import "java.lang", i.e. the evaluator may refer to classes imported by
  default imports without having to explicitly declare IMPORT statements.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setExtendedClass-java.lang.Class-">setExtendedClass</a></span>(java.lang.Class&lt;?&gt;&nbsp;optionalExtendedType)</code>
 <div class="block">Sets a particular superclass that the generated class will extend.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setExtendedType-java.lang.Class-">setExtendedType</a></span>(java.lang.Class&lt;?&gt;&nbsp;optionalExtendedClass)</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
@@ -258,13 +266,13 @@ implements <a href="../../../../../org/codehaus/commons/compiler/IClassBodyEvalu
 </div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setImplementedInterfaces-java.lang.Class:A-">setImplementedInterfaces</a></span>(java.lang.Class&lt;?&gt;[]&nbsp;implementedTypes)</code>
 <div class="block">Sets a particular set of interfaces that the generated class will implement.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setImplementedTypes-java.lang.Class:A-">setImplementedTypes</a></span>(java.lang.Class&lt;?&gt;[]&nbsp;implementedInterfaces)</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
@@ -278,7 +286,7 @@ implements <a href="../../../../../org/codehaus/commons/compiler/IClassBodyEvalu
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.commons.compiler.jdk.<a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html" title="class in org.codehaus.commons.compiler.jdk">SimpleCompiler</a></h3>
-<code><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#getClassLoader--">getClassLoader</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setCompileErrorHandler-org.codehaus.commons.compiler.ErrorHandler-">setCompileErrorHandler</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setDebuggingInformation-boolean-boolean-boolean-">setDebuggingInformation</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setNoPermissions--">setNoPermissions</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setParentClassLoader-java.lang.ClassLoader-">setParentClassLoader</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setParentClassLoader-java.lang.ClassLoader-java.lang.Class:A-">setParentClassLoader</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setPermissions-java.security.Permissions-">setPermissions</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setWarningHandler-org.codehaus.commons.compiler.WarningHandler-">setWarningHandler</a></code></li>
+<code><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#addOffset-java.lang.String-">addOffset</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#getClassLoader--">getClassLoader</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setCompileErrorHandler-org.codehaus.commons.compiler.ErrorHandler-">setCompileErrorHandler</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setDebuggingInformation-boolean-boolean-boolean-">setDebuggingInformation</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setNoPermissions--">setNoPermissions</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setParentClassLoader-java.lang.ClassLoader-">setParentClassLoader</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setParentClassLoader-java.lang.ClassLoader-java.lang.Class:A-">setParentClassLoader</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setPermissions-java.security.Permissions-">setPermissions</a>, <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setWarningHandler-org.codehaus.commons.compiler.WarningHandler-">setWarningHandler</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.codehaus.commons.compiler.Cookable">
@@ -360,14 +368,14 @@ implements <a href="../../../../../org/codehaus/commons/compiler/IClassBodyEvalu
 </dl>
 </li>
 </ul>
-<a name="setDefaultImports-java.lang.String:A-">
+<a name="setDefaultImports-java.lang.String...-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>setDefaultImports</h4>
 <pre>public&nbsp;void&nbsp;setDefaultImports(<a href="../../../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                              java.lang.String[]&nbsp;optionalDefaultImports)</pre>
+                              java.lang.String...&nbsp;optionalDefaultImports)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../../../org/codehaus/commons/compiler/IClassBodyEvaluator.html#setDefaultImports-java.lang.String...-">IClassBodyEvaluator</a></code></span></div>
 <div class="block">"Default imports" add to the system import "java.lang", i.e. the evaluator may refer to classes imported by
  default imports without having to explicitly declare IMPORT statements.
@@ -375,13 +383,16 @@ implements <a href="../../../../../org/codehaus/commons/compiler/IClassBodyEvalu
    Notice that JDK 5 "static imports" are also supported, as shown here:
  </p>
  <pre>
-     sc.setDefaultImports(new String[] {
+     sc.setDefaultImports(
          "java.util.Map",                          // Single type import
          "java.io.*",                              // Type-import-on-demand
          "static java.util.Collections.EMPTY_MAP", // Single static import
          "static java.util.Collections.*",         // Static-import-on-demand
-     });
- </pre></div>
+     );</pre>
+ <p>
+   Passing <code>null</code> as the argument is equivalent with <code>new String[0]</code>, i.e. <em>no</em> default
+   imports.
+ </p></div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../../../../../org/codehaus/commons/compiler/IClassBodyEvaluator.html#setDefaultImports-java.lang.String...-">setDefaultImports</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../../org/codehaus/commons/compiler/IClassBodyEvaluator.html" title="interface in org.codehaus.commons.compiler">IClassBodyEvaluator</a></code></dd>
@@ -500,6 +511,19 @@ public&nbsp;void&nbsp;setImplementedTypes(java.lang.Class&lt;?&gt;[]&nbsp;implem
 <dd><code><a href="../../../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 <dd><code>java.io.IOException</code></dd>
 </dl>
+</li>
+</ul>
+<a name="newFileName-java.lang.String-java.io.Reader-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>newFileName</h4>
+<pre>protected&nbsp;java.io.Reader&nbsp;newFileName(<a href="../../../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                                     java.lang.String&nbsp;optionalFileName,
+                                     java.io.Reader&nbsp;reader)</pre>
+<div class="block">Sets the given file name, and the current line number to 1, and the current column number to 1, when the first
+ <code>char</code> is read from the <var>reader</var>.</div>
 </li>
 </ul>
 <a name="getClazz--">

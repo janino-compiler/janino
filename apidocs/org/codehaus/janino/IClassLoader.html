@@ -347,7 +347,7 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/IClassLoader.html#IClassLoader-org.codehaus.janino.IClassLoader-">IClassLoader</a></span>(<a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;optionalParentIClassLoader)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/IClassLoader.html#IClassLoader-org.codehaus.janino.IClassLoader-">IClassLoader</a></span>(<a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;parentIClassLoader)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -885,7 +885,11 @@ public&nbsp;<a href="../../../org/codehaus/janino/IClass.IMethod.html" title="cl
 <li class="blockList">
 <h4>IClassLoader</h4>
 <pre>public&nbsp;IClassLoader(<a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                    <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;optionalParentIClassLoader)</pre>
+                    <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;parentIClassLoader)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>parentIClassLoader</code> - <code>null</code> iff this <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino"><code>IClassLoader</code></a> has no parent</dd>
+</dl>
 </li>
 </ul>
 </li>

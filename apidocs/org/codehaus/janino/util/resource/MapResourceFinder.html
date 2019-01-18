@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -149,6 +149,9 @@ extends <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/janino/util/resource/MapResourceFinder.html#MapResourceFinder--">MapResourceFinder</a></span>()</code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/janino/util/resource/MapResourceFinder.html#MapResourceFinder-java.util.Map-">MapResourceFinder</a></span>(java.util.Map&lt;java.lang.String,byte[]&gt;&nbsp;map)</code>&nbsp;</td>
 </tr>
 </table>
@@ -167,12 +170,30 @@ extends <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/janino/util/resource/MapResourceFinder.html#addResource-org.codehaus.janino.util.resource.Resource-">addResource</a></span>(<a href="../../../../../org/codehaus/janino/util/resource/Resource.html" title="interface in org.codehaus.janino.util.resource">Resource</a>&nbsp;resource)</code>&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/janino/util/resource/MapResourceFinder.html#addResource-java.lang.String-byte:A-">addResource</a></span>(java.lang.String&nbsp;fileName,
+           byte[]&nbsp;data)</code>&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/janino/util/resource/MapResourceFinder.html#addResource-java.lang.String-java.lang.String-">addResource</a></span>(java.lang.String&nbsp;fileName,
+           java.lang.String&nbsp;data)</code>&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="../../../../../org/codehaus/janino/util/resource/Resource.html" title="interface in org.codehaus.janino.util.resource">Resource</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/janino/util/resource/MapResourceFinder.html#findResource-java.lang.String-">findResource</a></span>(java.lang.String&nbsp;resourceName)</code>
 <div class="block">Finds a resource by name and return it as a <a href="../../../../../org/codehaus/janino/util/resource/Resource.html" title="interface in org.codehaus.janino.util.resource"><code>Resource</code></a> object.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../../../org/codehaus/janino/util/resource/Resource.html" title="interface in org.codehaus.janino.util.resource">Resource</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/janino/util/resource/MapResourceFinder.html#resources--">resources</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/janino/util/resource/MapResourceFinder.html#setLastModified-long-">setLastModified</a></span>(long&nbsp;lastModified)</code>&nbsp;</td>
 </tr>
@@ -205,6 +226,15 @@ extends <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
+<a name="MapResourceFinder--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>MapResourceFinder</h4>
+<pre>public&nbsp;MapResourceFinder()</pre>
+</li>
+</ul>
 <a name="MapResourceFinder-java.util.Map-">
 <!--   -->
 </a>
@@ -222,6 +252,44 @@ extends <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="addResource-java.lang.String-byte:A-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>addResource</h4>
+<pre>public&nbsp;void&nbsp;addResource(java.lang.String&nbsp;fileName,
+                        byte[]&nbsp;data)</pre>
+</li>
+</ul>
+<a name="addResource-java.lang.String-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>addResource</h4>
+<pre>public&nbsp;void&nbsp;addResource(java.lang.String&nbsp;fileName,
+                        java.lang.String&nbsp;data)</pre>
+</li>
+</ul>
+<a name="addResource-org.codehaus.janino.util.resource.Resource-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>addResource</h4>
+<pre>public&nbsp;void&nbsp;addResource(<a href="../../../../../org/codehaus/janino/util/resource/Resource.html" title="interface in org.codehaus.janino.util.resource">Resource</a>&nbsp;resource)</pre>
+</li>
+</ul>
+<a name="resources--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>resources</h4>
+<pre>public&nbsp;java.util.Collection&lt;<a href="../../../../../org/codehaus/janino/util/resource/Resource.html" title="interface in org.codehaus.janino.util.resource">Resource</a>&gt;&nbsp;resources()</pre>
+</li>
+</ul>
 <a name="setLastModified-long-">
 <!--   -->
 </a>
@@ -231,7 +299,7 @@ extends <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder
 <pre>public final&nbsp;void&nbsp;setLastModified(long&nbsp;lastModified)</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lastModified</code> - The return value of <a href="../../../../../org/codehaus/janino/util/resource/Resource.html#lastModified--"><code>Resource.lastModified()</code></a> for the next resources found</dd>
+<dd><code>lastModified</code> - The return value of <a href="../../../../../org/codehaus/janino/util/resource/Resource.html#lastModified--"><code>Resource.lastModified()</code></a> for the next resources added</dd>
 </dl>
 </li>
 </ul>

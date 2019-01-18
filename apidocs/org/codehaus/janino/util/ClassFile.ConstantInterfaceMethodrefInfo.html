@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -160,18 +160,22 @@ extends <a href="../../../../org/codehaus/janino/util/ClassFile.ConstantPoolInfo
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantInterfaceMethodrefInfo.html#equals-java.lang.Object-">equals</a></span>(java.lang.Object&nbsp;o)</code>&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantClassInfo.html" title="class in org.codehaus.janino.util">ClassFile.ConstantClassInfo</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantInterfaceMethodrefInfo.html#getClassInfo-org.codehaus.janino.util.ClassFile-">getClassInfo</a></span>(<a href="../../../../org/codehaus/janino/util/ClassFile.html" title="class in org.codehaus.janino.util">ClassFile</a>&nbsp;classFile)</code>&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantNameAndTypeInfo.html" title="class in org.codehaus.janino.util">ClassFile.ConstantNameAndTypeInfo</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantInterfaceMethodrefInfo.html#getNameAndType-org.codehaus.janino.util.ClassFile-">getNameAndType</a></span>(<a href="../../../../org/codehaus/janino/util/ClassFile.html" title="class in org.codehaus.janino.util">ClassFile</a>&nbsp;classFile)</code>&nbsp;</td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantInterfaceMethodrefInfo.html#hashCode--">hashCode</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantInterfaceMethodrefInfo.html#isWide--">isWide</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantInterfaceMethodrefInfo.html#store-java.io.DataOutputStream-">store</a></span>(java.io.DataOutputStream&nbsp;dos)</code>
 <div class="block">Stores this CP entry into a <code>DataOutputStream</code>.</div>
@@ -217,6 +221,19 @@ extends <a href="../../../../org/codehaus/janino/util/ClassFile.ConstantPoolInfo
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getClassInfo-org.codehaus.janino.util.ClassFile-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getClassInfo</h4>
+<pre>public&nbsp;<a href="../../../../org/codehaus/janino/util/ClassFile.ConstantClassInfo.html" title="class in org.codehaus.janino.util">ClassFile.ConstantClassInfo</a>&nbsp;getClassInfo(<a href="../../../../org/codehaus/janino/util/ClassFile.html" title="class in org.codehaus.janino.util">ClassFile</a>&nbsp;classFile)</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The <a href="../../../../org/codehaus/janino/util/ClassFile.ConstantClassInfo.html" title="class in org.codehaus.janino.util"><code>ClassFile.ConstantClassInfo</code></a> of this <a href="../../../../org/codehaus/janino/util/ClassFile.ConstantInterfaceMethodrefInfo.html" title="class in org.codehaus.janino.util"><code>ClassFile.ConstantInterfaceMethodrefInfo</code></a></dd>
+</dl>
+</li>
+</ul>
 <a name="getNameAndType-org.codehaus.janino.util.ClassFile-">
 <!--   -->
 </a>

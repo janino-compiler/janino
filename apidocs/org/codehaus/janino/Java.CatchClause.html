@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../org/codehaus/janino/Java.Cast.html" title="class in org.codehaus.janino"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../org/codehaus/janino/Java.CharacterLiteral.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../org/codehaus/janino/Java.CatchParameter.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?org/codehaus/janino/Java.CatchClause.html" target="_top">Frames</a></li>
@@ -149,9 +149,9 @@ implements <a href="../../../org/codehaus/janino/Java.Scope.html" title="interfa
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameter</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.CatchClause.html#caughtException">caughtException</a></span></code>
-<div class="block">Container for the type and the name of the caught exception.</div>
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.CatchParameter.html" title="class in org.codehaus.janino">Java.CatchParameter</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.CatchClause.html#catchParameter">catchParameter</a></span></code>
+<div class="block">Container for the types and the name of the caught exception.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -182,8 +182,8 @@ implements <a href="../../../org/codehaus/janino/Java.Scope.html" title="interfa
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.CatchClause.html#CatchClause-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.FunctionDeclarator.FormalParameter-org.codehaus.janino.Java.BlockStatement-">CatchClause</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-           <a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameter</a>&nbsp;caughtException,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.CatchClause.html#CatchClause-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.CatchParameter-org.codehaus.janino.Java.BlockStatement-">CatchClause</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+           <a href="../../../org/codehaus/janino/Java.CatchParameter.html" title="class in org.codehaus.janino">Java.CatchParameter</a>&nbsp;catchParameter,
            <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&nbsp;body)</code>&nbsp;</td>
 </tr>
 </table>
@@ -244,14 +244,14 @@ implements <a href="../../../org/codehaus/janino/Java.Scope.html" title="interfa
 <!--   -->
 </a>
 <h3>Field Detail</h3>
-<a name="caughtException">
+<a name="catchParameter">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>caughtException</h4>
-<pre>public final&nbsp;<a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameter</a> caughtException</pre>
-<div class="block">Container for the type and the name of the caught exception.</div>
+<h4>catchParameter</h4>
+<pre>public final&nbsp;<a href="../../../org/codehaus/janino/Java.CatchParameter.html" title="class in org.codehaus.janino">Java.CatchParameter</a> catchParameter</pre>
+<div class="block">Container for the types and the name of the caught exception.</div>
 </li>
 </ul>
 <a name="body">
@@ -282,14 +282,14 @@ implements <a href="../../../org/codehaus/janino/Java.Scope.html" title="interfa
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="CatchClause-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.FunctionDeclarator.FormalParameter-org.codehaus.janino.Java.BlockStatement-">
+<a name="CatchClause-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.CatchParameter-org.codehaus.janino.Java.BlockStatement-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>CatchClause</h4>
 <pre>public&nbsp;CatchClause(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-                   <a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameter</a>&nbsp;caughtException,
+                   <a href="../../../org/codehaus/janino/Java.CatchParameter.html" title="class in org.codehaus.janino">Java.CatchParameter</a>&nbsp;catchParameter,
                    <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&nbsp;body)</pre>
 </li>
 </ul>
@@ -367,7 +367,7 @@ implements <a href="../../../org/codehaus/janino/Java.Scope.html" title="interfa
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../org/codehaus/janino/Java.Cast.html" title="class in org.codehaus.janino"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../org/codehaus/janino/Java.CharacterLiteral.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../org/codehaus/janino/Java.CatchParameter.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?org/codehaus/janino/Java.CatchClause.html" target="_top">Frames</a></li>

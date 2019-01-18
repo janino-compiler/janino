@@ -629,13 +629,16 @@ implements <a href="../../../org/codehaus/commons/compiler/IClassBodyEvaluator.h
    Notice that JDK 5 "static imports" are also supported, as shown here:
  </p>
  <pre>
-     sc.setDefaultImports(new String[] {
+     sc.setDefaultImports(
          "java.util.Map",                          // Single type import
          "java.io.*",                              // Type-import-on-demand
          "static java.util.Collections.EMPTY_MAP", // Single static import
          "static java.util.Collections.*",         // Static-import-on-demand
-     });
- </pre></div>
+     );</pre>
+ <p>
+   Passing <code>null</code> as the argument is equivalent with <code>new String[0]</code>, i.e. <em>no</em> default
+   imports.
+ </p></div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../../../org/codehaus/commons/compiler/IClassBodyEvaluator.html#setDefaultImports-java.lang.String...-">setDefaultImports</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/commons/compiler/IClassBodyEvaluator.html" title="interface in org.codehaus.commons.compiler">IClassBodyEvaluator</a></code></dd>

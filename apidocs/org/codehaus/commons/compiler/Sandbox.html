@@ -113,9 +113,8 @@ extends java.lang.Object</pre>
  loaded through specific class loaders.
  <p>
    "To execute through a class" means that the execution stack includes the class. E.g., if a method of class <code>A</code> invokes a method of class <code>B</code>, which then invokes a method of class <code>C</code>, and any of the three
-   classes were loaded by a previously <a href="../../../../org/codehaus/commons/compiler/Sandbox.html#confine-java.lang.ClassLoader-java.security.Permissions-"><code>confined</code></a> class loader, then for
-   all actions that are executed by class <code>C</code> the <i>intersection</i> of the three <code>Permissions</code>
-   applies.
+   classes were loaded by a previously <a href="../../../../org/codehaus/commons/compiler/Sandbox.html#confine-java.lang.ClassLoader-java.security.PermissionCollection-"><code>confined</code></a> class loader,
+   then for all actions that are executed by class <code>C</code> the <i>intersection</i> of the three <code>PermissionCollection</code>s applies.
  </p>
  <p>
    Once the permissions for a class loader are confined, they cannot be changed; this prevents any attempts (e.g.
@@ -152,8 +151,8 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/commons/compiler/Sandbox.html#confine-java.lang.ClassLoader-java.security.Permissions-">confine</a></span>(java.lang.ClassLoader&nbsp;classLoader,
-       java.security.Permissions&nbsp;permissions)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/commons/compiler/Sandbox.html#confine-java.lang.ClassLoader-java.security.PermissionCollection-">confine</a></span>(java.lang.ClassLoader&nbsp;classLoader,
+       java.security.PermissionCollection&nbsp;permissions)</code>
 <div class="block">All future actions that are executed through classes that were loaded through the given <var>classLoader</var>
  will be checked against the given <var>permissions</var>.</div>
 </td>
@@ -216,14 +215,14 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="confine-java.lang.ClassLoader-java.security.Permissions-">
+<a name="confine-java.lang.ClassLoader-java.security.PermissionCollection-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>confine</h4>
 <pre>public static&nbsp;void&nbsp;confine(java.lang.ClassLoader&nbsp;classLoader,
-                           java.security.Permissions&nbsp;permissions)</pre>
+                           java.security.PermissionCollection&nbsp;permissions)</pre>
 <div class="block">All future actions that are executed through classes that were loaded through the given <var>classLoader</var>
  will be checked against the given <var>permissions</var>.</div>
 <dl>

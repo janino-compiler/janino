@@ -292,9 +292,10 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i16" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/CodeContext.html#storeCodeAttributeBody-java.io.DataOutputStream-short-short-">storeCodeAttributeBody</a></span>(java.io.DataOutputStream&nbsp;dos,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/CodeContext.html#storeCodeAttributeBody-java.io.DataOutputStream-short-short-short-">storeCodeAttributeBody</a></span>(java.io.DataOutputStream&nbsp;dos,
                       short&nbsp;lineNumberTableAttributeNameIndex,
-                      short&nbsp;localVariableTableAttributeNameIndex)</code>&nbsp;</td>
+                      short&nbsp;localVariableTableAttributeNameIndex,
+                      short&nbsp;stackMapTableAttributeNameIndex)</code>&nbsp;</td>
 </tr>
 <tr id="i17" class="rowColor">
 <td class="colFirst"><code>protected <a href="../../../org/codehaus/janino/util/ClassFile.AttributeInfo.html" title="class in org.codehaus.janino.util">ClassFile.AttributeInfo</a></code></td>
@@ -346,7 +347,9 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/CodeContext.html#writeBranch-int-int-org.codehaus.janino.CodeContext.Offset-">writeBranch</a></span>(int&nbsp;lineNumber,
            int&nbsp;opcode,
-           <a href="../../../org/codehaus/janino/CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;dst)</code>&nbsp;</td>
+           <a href="../../../org/codehaus/janino/CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;dst)</code>
+<div class="block">Generates a "branch" instruction.</div>
+</td>
 </tr>
 <tr id="i24" class="altColor">
 <td class="colFirst"><code>void</code></td>
@@ -358,8 +361,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i25" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/CodeContext.html#writeShort-int-int-">writeShort</a></span>(int&nbsp;lineNumber,
-          int&nbsp;v)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/CodeContext.html#writeShort-int-">writeShort</a></span>(int&nbsp;v)</code>&nbsp;</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -480,7 +482,7 @@ extends java.lang.Object</pre>
  saveLocalVariables as it closes the variable extent for all the active local variables in the current block.</div>
 </li>
 </ul>
-<a name="storeCodeAttributeBody-java.io.DataOutputStream-short-short-">
+<a name="storeCodeAttributeBody-java.io.DataOutputStream-short-short-short-">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -488,7 +490,8 @@ extends java.lang.Object</pre>
 <h4>storeCodeAttributeBody</h4>
 <pre>protected&nbsp;void&nbsp;storeCodeAttributeBody(java.io.DataOutputStream&nbsp;dos,
                                       short&nbsp;lineNumberTableAttributeNameIndex,
-                                      short&nbsp;localVariableTableAttributeNameIndex)
+                                      short&nbsp;localVariableTableAttributeNameIndex,
+                                      short&nbsp;stackMapTableAttributeNameIndex)
                                throws java.io.IOException</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -655,18 +658,13 @@ protected&nbsp;<a href="../../../org/codehaus/janino/util/ClassFile.AttributeInf
 </dl>
 </li>
 </ul>
-<a name="writeShort-int-int-">
+<a name="writeShort-int-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>writeShort</h4>
-<pre>public&nbsp;void&nbsp;writeShort(int&nbsp;lineNumber,
-                       int&nbsp;v)</pre>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lineNumber</code> - The line number that corresponds to the byte code, or -1</dd>
-</dl>
+<pre>public&nbsp;void&nbsp;writeShort(int&nbsp;v)</pre>
 </li>
 </ul>
 <a name="writeBranch-int-int-org.codehaus.janino.CodeContext.Offset-">
@@ -678,9 +676,12 @@ protected&nbsp;<a href="../../../org/codehaus/janino/util/ClassFile.AttributeInf
 <pre>public&nbsp;void&nbsp;writeBranch(int&nbsp;lineNumber,
                         int&nbsp;opcode,
                         <a href="../../../org/codehaus/janino/CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;dst)</pre>
+<div class="block">Generates a "branch" instruction.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>lineNumber</code> - The line number that corresponds to the byte code, or -1</dd>
+<dd><code>opcode</code> - One of <code>Opcode.GOTO</code>, <code>Opcode.JSR</code> and <code>Opcode.IF*</code></dd>
+<dd><code>dst</code> - Where to branch</dd>
 </dl>
 </li>
 </ul>

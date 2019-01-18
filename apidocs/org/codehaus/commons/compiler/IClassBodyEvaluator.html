@@ -331,20 +331,24 @@ extends <a href="../../../../org/codehaus/commons/compiler/ISimpleCompiler.html"
 <ul class="blockList">
 <li class="blockList">
 <h4>setDefaultImports</h4>
-<pre>void&nbsp;setDefaultImports(java.lang.String...&nbsp;optionalDefaultImports)</pre>
+<pre>void&nbsp;setDefaultImports(<a href="../../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                       java.lang.String...&nbsp;optionalDefaultImports)</pre>
 <div class="block">"Default imports" add to the system import "java.lang", i.e. the evaluator may refer to classes imported by
  default imports without having to explicitly declare IMPORT statements.
  <p>
    Notice that JDK 5 "static imports" are also supported, as shown here:
  </p>
  <pre>
-     sc.setDefaultImports(new String[] {
+     sc.setDefaultImports(
          "java.util.Map",                          // Single type import
          "java.io.*",                              // Type-import-on-demand
          "static java.util.Collections.EMPTY_MAP", // Single static import
          "static java.util.Collections.*",         // Static-import-on-demand
-     });
- </pre></div>
+     );</pre>
+ <p>
+   Passing <code>null</code> as the argument is equivalent with <code>new String[0]</code>, i.e. <em>no</em> default
+   imports.
+ </p></div>
 </li>
 </ul>
 <a name="setClassName-java.lang.String-">

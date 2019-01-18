@@ -144,6 +144,12 @@ extends java.lang.Object</pre>
 <div class="block">The annotations.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Modifiers.html#isDefault">isDefault</a></span></code>
+<div class="block">The <code>default</code> modifier first appeared in JLS8 9.4.</div>
+</td>
+</tr>
 </table>
 </li>
 </ul>
@@ -164,13 +170,14 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Modifiers.html#Modifiers-short-">Modifiers</a></span>(short&nbsp;modifiers)</code>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Modifiers.html#Modifiers-short-">Modifiers</a></span>(short&nbsp;accessFlags)</code>
 <div class="block">A "simple" <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino"><code>Java.Modifiers</code></a> object: Flags, but no annotations.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Modifiers.html#Modifiers-short-org.codehaus.janino.Java.Annotation:A-">Modifiers</a></span>(short&nbsp;modifiers,
-         <a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]&nbsp;annotations)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Modifiers.html#Modifiers-short-org.codehaus.janino.Java.Annotation:A-boolean-">Modifiers</a></span>(short&nbsp;accessFlags,
+         <a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]&nbsp;annotations,
+         boolean&nbsp;isDefault)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -244,11 +251,21 @@ extends java.lang.Object</pre>
 <a name="annotations">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>annotations</h4>
 <pre>public final&nbsp;<a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[] annotations</pre>
 <div class="block">The annotations.</div>
+</li>
+</ul>
+<a name="isDefault">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isDefault</h4>
+<pre>public final&nbsp;boolean isDefault</pre>
+<div class="block">The <code>default</code> modifier first appeared in JLS8 9.4.</div>
 </li>
 </ul>
 </li>
@@ -275,18 +292,19 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Modifiers</h4>
-<pre>public&nbsp;Modifiers(short&nbsp;modifiers)</pre>
+<pre>public&nbsp;Modifiers(short&nbsp;accessFlags)</pre>
 <div class="block">A "simple" <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino"><code>Java.Modifiers</code></a> object: Flags, but no annotations.</div>
 </li>
 </ul>
-<a name="Modifiers-short-org.codehaus.janino.Java.Annotation:A-">
+<a name="Modifiers-short-org.codehaus.janino.Java.Annotation:A-boolean-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>Modifiers</h4>
-<pre>public&nbsp;Modifiers(short&nbsp;modifiers,
-                 <a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]&nbsp;annotations)</pre>
+<pre>public&nbsp;Modifiers(short&nbsp;accessFlags,
+                 <a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]&nbsp;annotations,
+                 boolean&nbsp;isDefault)</pre>
 </li>
 </ul>
 </li>

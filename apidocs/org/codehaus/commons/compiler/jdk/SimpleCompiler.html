@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":42,"i7":10,"i8":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":42,"i8":10,"i9":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -175,26 +175,33 @@ implements <a href="../../../../../org/codehaus/commons/compiler/ISimpleCompiler
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#addOffset-java.lang.String-">addOffset</a></span>(java.lang.String&nbsp;optionalFileName)</code>
+<div class="block">Derived classes call this method to "reset" the current line and column number at the currently read input
+ character, and also changes the "file name" (see <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#cook-java.lang.String-java.io.Reader-"><code>cook(String, Reader)</code></a>).</div>
+</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#cook-java.lang.String-java.io.Reader-">cook</a></span>(java.lang.String&nbsp;optionalFileName,
     java.io.Reader&nbsp;r)</code>
 <div class="block">Reads, scans, parses and compiles Java tokens from the given <code>Reader</code>.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.ClassLoader</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#getClassLoader--">getClassLoader</a></span>()</code>
 <div class="block">Returns a <code>ClassLoader</code> object through which the previously compiled classes can be accessed.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setCompileErrorHandler-org.codehaus.commons.compiler.ErrorHandler-">setCompileErrorHandler</a></span>(<a href="../../../../../org/codehaus/commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;optionalCompileErrorHandler)</code>
 <div class="block">By default, <a href="../../../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s are thrown on compile errors, but an application my install its own
  <a href="../../../../../org/codehaus/commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a>.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setDebuggingInformation-boolean-boolean-boolean-">setDebuggingInformation</a></span>(boolean&nbsp;debugSource,
                        boolean&nbsp;debugLines,
@@ -202,20 +209,20 @@ implements <a href="../../../../../org/codehaus/commons/compiler/ISimpleCompiler
 <div class="block">Determines what kind of debugging information is included in the generates classes.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setNoPermissions--">setNoPermissions</a></span>()</code>
 <div class="block">Installs a security manager in the running JVM such that all generated code, when executed, is not allowed to
  execute any checked operations.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setParentClassLoader-java.lang.ClassLoader-">setParentClassLoader</a></span>(java.lang.ClassLoader&nbsp;optionalParentClassLoader)</code>
 <div class="block">The "parent class loader" is used to load referenced classes.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setParentClassLoader-java.lang.ClassLoader-java.lang.Class:A-">setParentClassLoader</a></span>(java.lang.ClassLoader&nbsp;optionalParentClassLoader,
                     java.lang.Class&lt;?&gt;[]&nbsp;auxiliaryClasses)</code>
@@ -224,14 +231,14 @@ implements <a href="../../../../../org/codehaus/commons/compiler/ISimpleCompiler
 </div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setPermissions-java.security.Permissions-">setPermissions</a></span>(java.security.Permissions&nbsp;permissions)</code>
 <div class="block">Installs a security manager in the running JVM such that all generated code, when executed, will be checked
  against the given <var>permissions</var>.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setWarningHandler-org.codehaus.commons.compiler.WarningHandler-">setWarningHandler</a></span>(<a href="../../../../../org/codehaus/commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;optionalWarningHandler)</code>
 <div class="block">By default, warnings are discarded, but an application my install a custom <a href="../../../../../org/codehaus/commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler"><code>WarningHandler</code></a>.</div>
@@ -481,7 +488,7 @@ public&nbsp;void&nbsp;setParentClassLoader(<a href="../../../../../org/codehaus/
 <a name="setWarningHandler-org.codehaus.commons.compiler.WarningHandler-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>setWarningHandler</h4>
 <pre>public&nbsp;void&nbsp;setWarningHandler(<a href="../../../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
@@ -494,6 +501,18 @@ public&nbsp;void&nbsp;setParentClassLoader(<a href="../../../../../org/codehaus/
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>optionalWarningHandler</code> - <code>null</code> to indicate that no warnings be issued</dd>
 </dl>
+</li>
+</ul>
+<a name="addOffset-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>addOffset</h4>
+<pre>protected&nbsp;void&nbsp;addOffset(<a href="../../../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                         java.lang.String&nbsp;optionalFileName)</pre>
+<div class="block">Derived classes call this method to "reset" the current line and column number at the currently read input
+ character, and also changes the "file name" (see <a href="../../../../../org/codehaus/commons/compiler/jdk/SimpleCompiler.html#cook-java.lang.String-java.io.Reader-"><code>cook(String, Reader)</code></a>).</div>
 </li>
 </ul>
 </li>
