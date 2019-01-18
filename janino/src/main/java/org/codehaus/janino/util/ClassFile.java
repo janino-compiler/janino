@@ -2544,8 +2544,9 @@ class ClassFile implements Annotatable {
         }
 
         /**
-         * @param <T> The return type of {@link StackMapFrame#accept(StackMapFrameVisitor)}
-         * @see       StackMapFrame#accept(StackMapFrameVisitor)
+         * @param <T> The return type of {@link
+         *            StackMapFrame#accept(ClassFile.StackMapTableAttribute.StackMapFrameVisitor)}
+         * @see       StackMapFrame#accept(ClassFile.StackMapTableAttribute.StackMapFrameVisitor)
          */
         public
         interface StackMapFrameVisitor<T> {

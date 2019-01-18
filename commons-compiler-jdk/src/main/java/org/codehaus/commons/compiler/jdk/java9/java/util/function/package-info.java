@@ -25,7 +25,7 @@
  */
 
 /**
- * @see org.codehaus.commons.compiler.jdk.java9
+ * A set of (rudimentary) proxies for Java-9+ classes that also compile for Java 6-8.
  */
 @NotNullByDefault
 package org.codehaus.commons.compiler.jdk.java9.java.util.function;
