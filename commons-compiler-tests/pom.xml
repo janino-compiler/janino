@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.codehaus.janino</groupId>
     <artifactId>janino-parent</artifactId>
-    <version>3.0.12-SNAPSHOT</version>
+    <version>3.0.12</version>
     <relativePath>../janino-parent</relativePath>
   </parent>
 
@@ -27,6 +27,18 @@
       <version>${project.parent.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>commons-compiler-jdk</artifactId>
+      <version>${project.parent.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -35,9 +47,18 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+<!-- 
+          <additionalClasspathElements>
+            <additionalClasspathDependency>org.codehaus.janino:janino</additionalClasspathDependency>
+            <additionalClasspathElement>path/to/additional/resources</additionalClasspathElement>
+            <additionalClasspathElement>path/to/additional/jar</additionalClasspathElement>
+            <additionalClasspathElement>path/to/csv/jar1, path/to/csv/jar2</additionalClasspathElement>
+          </additionalClasspathElements>
+ -->
 
           <!-- Some tests fail for the JDK implementation, so... -->
-          <testFailureIgnore>true</testFailureIgnore>          
+          <testFailureIgnore>true</testFailureIgnore>
+          
         </configuration>
       </plugin>
     </plugins>
