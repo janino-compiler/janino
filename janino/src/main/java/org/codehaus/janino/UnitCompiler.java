@@ -1731,7 +1731,7 @@ class UnitCompiler {
                 if (!bodyCcn && fes.whereToContinue == null) {
                     this.warning("FUUR", "For update is unreachable", fes.getLocation());
                 } else {
-                    this.crement(fes, indexLv, "++");
+                    this.compileLocalIntVariableCrement(fes, indexLv, "++");
                 }
                 fes.whereToContinue = null;
 
@@ -3853,11 +3853,13 @@ class UnitCompiler {
     private void
     compile2(Crement c) throws CompileException {
 
-        // Optimized crement of integer local variable.
-        LocalVariable lv = this.isIntLv(c);
-        if (lv != null) {
-            this.compileLocalVariableCrement(c, lv);
-            return;
+        // Optimized crement of "int" local variable.
+        {
+            LocalVariable lv = this.isIntLv(c);
+            if (lv != null) {
+                this.compileLocalIntVariableCrement(c, lv, c.operator);
+                return;
+            }
         }
 
         int cs = this.compileContext(c.operand);
@@ -4759,11 +4761,11 @@ class UnitCompiler {
     private IClass
     compileGet2(Crement c) throws CompileException {
 
-        // Optimized crement of integer local variable.
+        // Optimized crement of "int" local variable.
         LocalVariable lv = this.isIntLv(c);
         if (lv != null) {
             if (!c.pre) this.load(c, lv);
-            this.compileLocalVariableCrement(c, lv);
+            this.compileLocalIntVariableCrement(c, lv, c.operator);
             if (c.pre) this.load(c, lv);
             return lv.type;
         }
@@ -4803,16 +4805,11 @@ class UnitCompiler {
         return type;
     }
 
-    private void
-    compileLocalVariableCrement(Crement c, LocalVariable lv) {
-        this.crement(c, lv, c.operator);
-    }
-
     /**
      * @param operator Must be either "++" or "--", as an @link {@link String#intern() interned} string
      */
     private void
-    crement(Locatable locatable, LocalVariable lv, String operator) {
+    compileLocalIntVariableCrement(Locatable locatable, LocalVariable lv, String operator) {
         if (lv.getSlotIndex() > 255) {
             this.writeOpcode(locatable, Opcode.WIDE);
             this.writeOpcode(locatable, Opcode.IINC);
@@ -9680,9 +9677,9 @@ class UnitCompiler {
     }
 
     /**
-     * Checks whether the operand is an integer-like local variable.
+     * Checks whether the operand is an {@code int} local variable.
      *
-     * @return {@code null} iff <var>c</var> is <em>not</em> an integer-like local variable
+     * @return {@code null} iff <var>c</var> is <em>not</em> an {@code int} local variable
      */
     @Nullable LocalVariable
     isIntLv(Crement c) throws CompileException {
@@ -9695,13 +9692,8 @@ class UnitCompiler {
 
         LocalVariable lv = lva.localVariable;
         if (lv.finaL) this.compileError("Must not increment or decrement \"final\" local variable", lva.getLocation());
-        if (
-            lv.type == IClass.BYTE
-            || lv.type == IClass.SHORT
-            || lv.type == IClass.INT
-            || lv.type == IClass.CHAR
-        ) return lv;
-        return null;
+
+        return lv.type == IClass.INT ? lv : null;
     }
 
     private IClass
@@ -11235,42 +11227,45 @@ class UnitCompiler {
     PRIMITIVE_NARROWING_CONVERSIONS = new HashMap<String, byte[]>();
 
     static { UnitCompiler.fillConversionMap(new Object[] {
+
         new byte[0],
-        Descriptor.BYTE + Descriptor.CHAR,
-        Descriptor.SHORT + Descriptor.CHAR,
-        Descriptor.CHAR + Descriptor.SHORT,
+        Descriptor.BYTE   + Descriptor.CHAR,
+        Descriptor.SHORT  + Descriptor.CHAR,
+        Descriptor.CHAR   + Descriptor.SHORT,
 
         new byte[] { Opcode.I2B },
-        Descriptor.SHORT + Descriptor.BYTE,
-        Descriptor.CHAR + Descriptor.BYTE,
-        Descriptor.INT + Descriptor.BYTE,
+        Descriptor.SHORT  + Descriptor.BYTE,
+        Descriptor.CHAR   + Descriptor.BYTE,
+        Descriptor.INT    + Descriptor.BYTE,
 
         new byte[] { Opcode.I2S },
-        Descriptor.INT + Descriptor.SHORT,
-        Descriptor.INT + Descriptor.CHAR,
+        Descriptor.INT    + Descriptor.SHORT,
+
+        new byte[] { Opcode.I2C },
+        Descriptor.INT    + Descriptor.CHAR,
 
         new byte[] { Opcode.L2I, Opcode.I2B },
-        Descriptor.LONG + Descriptor.BYTE,
+        Descriptor.LONG   + Descriptor.BYTE,
 
         new byte[] { Opcode.L2I, Opcode.I2S },
-        Descriptor.LONG + Descriptor.SHORT,
-        Descriptor.LONG + Descriptor.CHAR,
+        Descriptor.LONG   + Descriptor.SHORT,
+        Descriptor.LONG   + Descriptor.CHAR,
 
         new byte[] { Opcode.L2I },
-        Descriptor.LONG + Descriptor.INT,
+        Descriptor.LONG   + Descriptor.INT,
 
         new byte[] { Opcode.F2I, Opcode.I2B },
-        Descriptor.FLOAT + Descriptor.BYTE,
+        Descriptor.FLOAT  + Descriptor.BYTE,
 
         new byte[] { Opcode.F2I, Opcode.I2S },
-        Descriptor.FLOAT + Descriptor.SHORT,
-        Descriptor.FLOAT + Descriptor.CHAR,
+        Descriptor.FLOAT  + Descriptor.SHORT,
+        Descriptor.FLOAT  + Descriptor.CHAR,
 
         new byte[] { Opcode.F2I },
-        Descriptor.FLOAT + Descriptor.INT,
+        Descriptor.FLOAT  + Descriptor.INT,
 
         new byte[] { Opcode.F2L },
-        Descriptor.FLOAT + Descriptor.LONG,
+        Descriptor.FLOAT  + Descriptor.LONG,
 
         new byte[] { Opcode.D2I, Opcode.I2B },
         Descriptor.DOUBLE + Descriptor.BYTE,

@@ -1740,6 +1740,24 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_15_2_2_5__ChoosingTheMostSpecificVarargMethod_1() throws Exception {
+        this.assertClassBodyMainReturnsTrue(
+            ""
+            + "public static boolean main() {\n"
+            + "    return meth(new int[][] { { 3 } }) == 1;\n"
+            + "}\n"
+            + "\n"
+            + "static int meth(int[][]...a) {\n"
+            + "    return 0;\n"
+            + "}\n"
+            + "\n"
+            + "static int meth(int[]... b) {\n"
+            + "    return 1;\n"
+            + "}\n"
+        );
+    }
+
+    @Test public void
     test_15_9__ClassInstanceCreationExpressions() throws Exception {
         // 15.9.1 Determining the class being Instantiated
         this.assertExpressionEvaluatesTrue("new Object() instanceof Object");
@@ -1985,26 +2003,8 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_2_2_5_ChoosingTheMostSpecificVarargMethod_1() throws Exception {
-        this.assertClassBodyMainReturnsTrue(
-            ""
-            + "public static boolean main() {\n"
-            + "    return meth(new int[][] { { 3 } }) == 1;\n"
-            + "}\n"
-            + "\n"
-            + "static int meth(int[][]...a) {\n"
-            + "    return 0;\n"
-            + "}\n"
-            + "\n"
-            + "static int meth(int[]... b) {\n"
-            + "    return 1;\n"
-            + "}\n"
-        );
-    }
+    test_15_14_2__Postfix_Increment_Operator() throws Exception {
 
-    @Test public void
-    test_15_14__PostfixExpressions() throws Exception {
-        // "15.14.2 Postfix Increment Operator ++
         this.assertScriptReturnsTrue("int i = 7; i++; return i == 8;");
         this.assertScriptReturnsTrue("Integer i = new Integer(7); i++; return i.intValue() == 8;");
         this.assertScriptReturnsTrue("int i = 7; return i == 7 && i++ == 7 && i == 8;");
@@ -2013,7 +2013,89 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "return i.intValue() == 7 && (i++).intValue() == 7 && i.intValue() == 8;"
         );
 
-        // 15.14.3 Postfix Decrement Operator --
+        // byte
+
+        this.assertScriptReturnsTrue("byte b = -1;  b++; return b == 0;");
+        this.assertScriptReturnsTrue("byte b = 0;   b++; return b == 1;");
+        this.assertScriptReturnsTrue("byte b = 127; b++; return b == -128;");
+
+        this.assertScriptReturnsTrue("byte b = 0;    return b++ == 0;");
+        this.assertScriptReturnsTrue("byte b = 127;  return b++ == 127;");
+        this.assertScriptReturnsTrue("byte b = -128; return b++ == -128;");
+
+        // short
+
+        this.assertScriptReturnsTrue("short s = -1;    s++; return s == 0;");
+        this.assertScriptReturnsTrue("short s = 0;     s++; return s == 1;");
+        this.assertScriptReturnsTrue("short s = 127;   s++; return s == 128;");
+        this.assertScriptReturnsTrue("short s = 32767; s++; return s == -32768;");
+
+        this.assertScriptReturnsTrue("short s = 0;      return s++ == 0;");
+        this.assertScriptReturnsTrue("short s = 32767;  return s++ == 32767;");
+        this.assertScriptReturnsTrue("short s = -32768; return s++ == -32768;");
+
+        // int
+
+        this.assertScriptReturnsTrue("int i = -1;                i++; return i == 0;");
+        this.assertScriptReturnsTrue("int i = 0;                 i++; return i == 1;");
+        this.assertScriptReturnsTrue("int i = 127;               i++; return i == 128;");
+        this.assertScriptReturnsTrue("int i = 32767;             i++; return i == 32768;");
+        this.assertScriptReturnsTrue("int i = Integer.MAX_VALUE; i++; return i == Integer.MIN_VALUE;");
+
+        this.assertScriptReturnsTrue("int i = 0;                 return i++ == 0;");
+        this.assertScriptReturnsTrue("int i = 32767;             return i++ == 32767;");
+        this.assertScriptReturnsTrue("int i = -32768;            return i++ == -32768;");
+        this.assertScriptReturnsTrue("int i = Integer.MIN_VALUE; return i++ == Integer.MIN_VALUE;");
+        this.assertScriptReturnsTrue("int i = Integer.MAX_VALUE; return i++ == Integer.MAX_VALUE;");
+
+        // long
+
+        this.assertScriptReturnsTrue("long i = -1;                i++; return i == 0;");
+        this.assertScriptReturnsTrue("long i = 0;                 i++; return i == 1;");
+        this.assertScriptReturnsTrue("long i = 127;               i++; return i == 128;");
+        this.assertScriptReturnsTrue("long i = 32767;             i++; return i == 32768;");
+        this.assertScriptReturnsTrue("long i = Integer.MAX_VALUE; i++; return i == Integer.MAX_VALUE + 1L;");
+        this.assertScriptReturnsTrue("long i = Long.MAX_VALUE;    i++; return i == Long.MIN_VALUE;");
+
+        this.assertScriptReturnsTrue("long i = 0;                 return i++ == 0;");
+        this.assertScriptReturnsTrue("long i = 32767;             return i++ == 32767;");
+        this.assertScriptReturnsTrue("long i = -32768;            return i++ == -32768;");
+        this.assertScriptReturnsTrue("long i = Integer.MIN_VALUE; return i++ == Integer.MIN_VALUE;");
+        this.assertScriptReturnsTrue("long i = Long.MIN_VALUE;    return i++ == Long.MIN_VALUE;");
+        this.assertScriptReturnsTrue("long i = Long.MAX_VALUE;    return i++ == Long.MAX_VALUE;");
+
+        // char
+
+        this.assertScriptReturnsTrue("char c = 0;     c++; return c == 1;");
+        this.assertScriptReturnsTrue("char c = 127;   c++; return c == 128;");
+        this.assertScriptReturnsTrue("char c = 255;   c++; return c == 256;");
+        this.assertScriptReturnsTrue("char c = 32767; c++; return c == 32768;");
+        this.assertScriptReturnsTrue("char c = 65535; c++; return c == 0;");
+
+        this.assertScriptReturnsTrue("char c = 0;     return c++ == 0;");
+        this.assertScriptReturnsTrue("char c = 127;   return c++ == 127;");
+        this.assertScriptReturnsTrue("char c = 128;   return c++ == 128;");
+        this.assertScriptReturnsTrue("char c = 255;   return c++ == 255;");
+        this.assertScriptReturnsTrue("char c = 256;   return c++ == 256;");
+        this.assertScriptReturnsTrue("char c = 32767; return c++ == 32767;");
+        this.assertScriptReturnsTrue("char c = 32768; return c++ == 32768;");
+        this.assertScriptReturnsTrue("char c = 65535; return c++ == 65535;");
+
+        // float
+
+        this.assertScriptReturnsTrue("float f = 3.0F; f++; return f == 4.0F;");
+
+        // double
+
+        this.assertScriptReturnsTrue("double d = 17.9; d++; return d == 18.9;");
+
+        // boolean
+
+        this.assertScriptUncookable("boolean b = true; b++;");
+    }
+
+    @Test public void
+    test_15_14_3__Postfix_Decrement_Operator() throws Exception {
         this.assertScriptReturnsTrue("int i = 7; i--; return i == 6;");
         this.assertScriptReturnsTrue("Integer i = new Integer(7); i--; return i.intValue() == 6;");
         this.assertScriptReturnsTrue("int i = 7; return i == 7 && i-- == 7 && i == 6;");
@@ -2021,11 +2103,91 @@ class JlsTest extends CommonsCompilerTestSuite {
             "Integer i = new Integer(7);"
             + "return i.intValue() == 7 && (i--).intValue() == 7 && i.intValue() == 6;"
         );
+
+        // byte
+
+        this.assertScriptReturnsTrue("byte b = 0;    b--; return b == -1;");
+        this.assertScriptReturnsTrue("byte b = 1;    b--; return b == 0;");
+        this.assertScriptReturnsTrue("byte b = -128; b--; return b == 127;");
+
+        this.assertScriptReturnsTrue("byte b = 0;    return b-- == 0;");
+        this.assertScriptReturnsTrue("byte b = 127;  return b-- == 127;");
+        this.assertScriptReturnsTrue("byte b = -128; return b-- == -128;");
+
+        // short
+
+        this.assertScriptReturnsTrue("short s = 0;      s--; return s == -1;");
+        this.assertScriptReturnsTrue("short s = 1;      s--; return s == 0;");
+        this.assertScriptReturnsTrue("short s = 128;    s--; return s == 127;");
+        this.assertScriptReturnsTrue("short s = -32768; s--; return s == 32767;");
+
+        this.assertScriptReturnsTrue("short s = 0;      return s-- == 0;");
+        this.assertScriptReturnsTrue("short s = 32767;  return s-- == 32767;");
+        this.assertScriptReturnsTrue("short s = -32768; return s-- == -32768;");
+
+        // int
+
+        this.assertScriptReturnsTrue("int i = 0;                 i--; return i == -1;");
+        this.assertScriptReturnsTrue("int i = 1;                 i--; return i == 0;");
+        this.assertScriptReturnsTrue("int i = 128;               i--; return i == 127;");
+        this.assertScriptReturnsTrue("int i = 32768;             i--; return i == 32767;");
+        this.assertScriptReturnsTrue("int i = Integer.MIN_VALUE; i--; return i == Integer.MAX_VALUE;");
+
+        this.assertScriptReturnsTrue("int i = 0;                 return i-- == 0;");
+        this.assertScriptReturnsTrue("int i = 32767;             return i-- == 32767;");
+        this.assertScriptReturnsTrue("int i = -32768;            return i-- == -32768;");
+        this.assertScriptReturnsTrue("int i = Integer.MIN_VALUE; return i-- == Integer.MIN_VALUE;");
+        this.assertScriptReturnsTrue("int i = Integer.MAX_VALUE; return i-- == Integer.MAX_VALUE;");
+
+        // long
+
+        this.assertScriptReturnsTrue("long i = 0;                      i--; return i == -1;");
+        this.assertScriptReturnsTrue("long i = 1;                      i--; return i == 0;");
+        this.assertScriptReturnsTrue("long i = 128;                    i--; return i == 127;");
+        this.assertScriptReturnsTrue("long i = 32768;                  i--; return i == 32767;");
+        this.assertScriptReturnsTrue("long i = Integer.MAX_VALUE + 1L; i--; return i == Integer.MAX_VALUE;");
+        this.assertScriptReturnsTrue("long i = Long.MIN_VALUE     ;    i--; return i == Long.MAX_VALUE;");
+
+        this.assertScriptReturnsTrue("long i = 0;                 return i-- == 0;");
+        this.assertScriptReturnsTrue("long i = 32767;             return i-- == 32767;");
+        this.assertScriptReturnsTrue("long i = -32768;            return i-- == -32768;");
+        this.assertScriptReturnsTrue("long i = Integer.MIN_VALUE; return i-- == Integer.MIN_VALUE;");
+        this.assertScriptReturnsTrue("long i = Long.MIN_VALUE;    return i-- == Long.MIN_VALUE;");
+        this.assertScriptReturnsTrue("long i = Long.MAX_VALUE;    return i-- == Long.MAX_VALUE;");
+
+        // char
+
+        this.assertScriptReturnsTrue("char c = 1;     c--; return c == 0;");
+        this.assertScriptReturnsTrue("char c = 128;   c--; return c == 127;");
+        this.assertScriptReturnsTrue("char c = 256;   c--; return c == 255;");
+        this.assertScriptReturnsTrue("char c = 32768; c--; return c == 32767;");
+        this.assertScriptReturnsTrue("char c = 0;     c--; return c == 65535;");
+
+        this.assertScriptReturnsTrue("char c = 0;     return c-- == 0;");
+        this.assertScriptReturnsTrue("char c = 127;   return c-- == 127;");
+        this.assertScriptReturnsTrue("char c = 128;   return c-- == 128;");
+        this.assertScriptReturnsTrue("char c = 255;   return c-- == 255;");
+        this.assertScriptReturnsTrue("char c = 256;   return c-- == 256;");
+        this.assertScriptReturnsTrue("char c = 32767; return c-- == 32767;");
+        this.assertScriptReturnsTrue("char c = 32768; return c-- == 32768;");
+        this.assertScriptReturnsTrue("char c = 65535; return c-- == 65535;");
+
+        // float
+
+        this.assertScriptReturnsTrue("float f = 4.0F; f--; return f == 3.0F;");
+
+        // double
+
+        this.assertScriptReturnsTrue("double d = 18.9; d--; return d == 17.9;");
+
+        // boolean
+
+        this.assertScriptUncookable("boolean b = true; b--;");
     }
 
     @Test public void
-    test_15_15__UnaryOperators() throws Exception {
-        // 15.15.1 Prefix Increment Operator ++
+    test_15_15_1_Prefix_Increment_Operator() throws Exception {
+
         this.assertScriptReturnsTrue("int i = 7; ++i; return i == 8;");
         this.assertScriptReturnsTrue("Integer i = new Integer(7); ++i; return i.intValue() == 8;");
         this.assertScriptReturnsTrue("int i = 7; return i == 7 && ++i == 8 && i == 8;");
@@ -2034,8 +2196,91 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "return i.intValue() == 7 && (++i).intValue() == 8 && i.intValue() == 8;"
         );
 
-        // 15.15.2 Prefix Decrement Operator --
-        this.assertScriptReturnsTrue("int i = 7; --i; return i == 6;");
+        // byte
+
+        this.assertScriptReturnsTrue("byte b = -1;  ++b; return b == 0;");
+        this.assertScriptReturnsTrue("byte b = 0;   ++b; return b == 1;");
+        this.assertScriptReturnsTrue("byte b = 127; ++b; return b == -128;");
+
+        this.assertScriptReturnsTrue("byte b = 0;    return ++b == 1;");
+        this.assertScriptReturnsTrue("byte b = 127;  return ++b == -128;");
+        this.assertScriptReturnsTrue("byte b = -128; return ++b == -127;");
+
+        // short
+
+        this.assertScriptReturnsTrue("short s = -1;    ++s; return s == 0;");
+        this.assertScriptReturnsTrue("short s = 0;     ++s; return s == 1;");
+        this.assertScriptReturnsTrue("short s = 127;   ++s; return s == 128;");
+        this.assertScriptReturnsTrue("short s = 32767; ++s; return s == -32768;");
+
+        this.assertScriptReturnsTrue("short s = 0;      return ++s == 1;");
+        this.assertScriptReturnsTrue("short s = 32767;  return ++s == -32768;");
+        this.assertScriptReturnsTrue("short s = -32768; return ++s == -32767;");
+
+        // int
+
+        this.assertScriptReturnsTrue("int i = -1;                ++i; return i == 0;");
+        this.assertScriptReturnsTrue("int i = 0;                 ++i; return i == 1;");
+        this.assertScriptReturnsTrue("int i = 127;               ++i; return i == 128;");
+        this.assertScriptReturnsTrue("int i = 32767;             ++i; return i == 32768;");
+        this.assertScriptReturnsTrue("int i = Integer.MAX_VALUE; ++i; return i == Integer.MIN_VALUE;");
+
+        this.assertScriptReturnsTrue("int i = 0;                 return ++i == 1;");
+        this.assertScriptReturnsTrue("int i = 32767;             return ++i == 32768;");
+        this.assertScriptReturnsTrue("int i = -32769;            return ++i == -32768;");
+        this.assertScriptReturnsTrue("int i = Integer.MIN_VALUE; return ++i == Integer.MIN_VALUE + 1;");
+        this.assertScriptReturnsTrue("int i = Integer.MAX_VALUE; return ++i == Integer.MIN_VALUE;");
+
+        // long
+
+        this.assertScriptReturnsTrue("long i = -1;                ++i; return i == 0;");
+        this.assertScriptReturnsTrue("long i = 0;                 ++i; return i == 1;");
+        this.assertScriptReturnsTrue("long i = 127;               ++i; return i == 128;");
+        this.assertScriptReturnsTrue("long i = 32767;             ++i; return i == 32768;");
+        this.assertScriptReturnsTrue("long i = Integer.MAX_VALUE; ++i; return i == Integer.MAX_VALUE + 1L;");
+        this.assertScriptReturnsTrue("long i = Long.MAX_VALUE;    ++i; return i == Long.MIN_VALUE;");
+
+        this.assertScriptReturnsTrue("long i = 0;                      return ++i == 1;");
+        this.assertScriptReturnsTrue("long i = 32767;                  return ++i == 32768;");
+        this.assertScriptReturnsTrue("long i = -32769;                 return ++i == -32768;");
+        this.assertScriptReturnsTrue("long i = Integer.MIN_VALUE - 1L; return ++i == Integer.MIN_VALUE;");
+        this.assertScriptReturnsTrue("long i = Long.MIN_VALUE;         return ++i == Long.MIN_VALUE + 1;");
+        this.assertScriptReturnsTrue("long i = Long.MAX_VALUE;         return ++i == Long.MIN_VALUE;");
+
+        // char
+
+        this.assertScriptReturnsTrue("char c = 0;     ++c; return c == 1;");
+        this.assertScriptReturnsTrue("char c = 127;   ++c; return c == 128;");
+        this.assertScriptReturnsTrue("char c = 255;   ++c; return c == 256;");
+        this.assertScriptReturnsTrue("char c = 32767; ++c; return c == 32768;");
+        this.assertScriptReturnsTrue("char c = 65535; ++c; return c == 0;");
+
+        this.assertScriptReturnsTrue("char c = 0;     return ++c == 1;");
+        this.assertScriptReturnsTrue("char c = 127;   return ++c == 128;");
+        this.assertScriptReturnsTrue("char c = 128;   return ++c == 129;");
+        this.assertScriptReturnsTrue("char c = 255;   return ++c == 256;");
+        this.assertScriptReturnsTrue("char c = 256;   return ++c == 257;");
+        this.assertScriptReturnsTrue("char c = 32767; return ++c == 32768;");
+        this.assertScriptReturnsTrue("char c = 32768; return ++c == 32769;");
+        this.assertScriptReturnsTrue("char c = 65535; return ++c == 0;");
+
+        // float
+
+        this.assertScriptReturnsTrue("float f = 3.0F; ++f; return f == 4.0F;");
+
+        // double
+
+        this.assertScriptReturnsTrue("double d = 17.9; ++d; return d == 18.9;");
+
+        // boolean
+
+        this.assertScriptUncookable("boolean b = true; ++b;");
+    }
+
+    @Test public void
+    test_15_15_2_Prefix_Decrement_Operator() throws Exception {
+
+        this.assertScriptReturnsTrue("int i = 7;                  --i; return i == 6;");
         this.assertScriptReturnsTrue("Integer i = new Integer(7); --i; return i.intValue() == 6;");
         this.assertScriptReturnsTrue("int i = 7; return i == 7 && --i == 6 && i == 6;");
         this.assertScriptReturnsTrue(
@@ -2043,10 +2288,94 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "return i.intValue() == 7 && (--i).intValue() == 6 && i.intValue() == 6;"
         );
 
-        // 15.15.3 Unary Plus Operator +
-        this.assertExpressionEvaluatesTrue("new Integer(+new Integer(7)).intValue() == 7");
+        // byte
 
-        // 15.15.4 Unary Minus Operator -
+        this.assertScriptReturnsTrue("byte b = 0;    --b; return b == -1;");
+        this.assertScriptReturnsTrue("byte b = 1;    --b; return b == 0;");
+        this.assertScriptReturnsTrue("byte b = -128; --b; return b == 127;");
+
+        this.assertScriptReturnsTrue("byte b = 0;    return --b == -1;");
+        this.assertScriptReturnsTrue("byte b = 127;  return --b == 126;");
+        this.assertScriptReturnsTrue("byte b = -128; return --b == 127;");
+
+        // short
+
+        this.assertScriptReturnsTrue("short s = 0;      --s; return s == -1;");
+        this.assertScriptReturnsTrue("short s = 1;      --s; return s == 0;");
+        this.assertScriptReturnsTrue("short s = 128;    --s; return s == 127;");
+        this.assertScriptReturnsTrue("short s = -32768; --s; return s == 32767;");
+
+        this.assertScriptReturnsTrue("short s = 0;      return --s == -1;");
+        this.assertScriptReturnsTrue("short s = 32767;  return --s == 32766;");
+        this.assertScriptReturnsTrue("short s = -32768; return --s == 32767;");
+
+        // int
+
+        this.assertScriptReturnsTrue("int i = 0;                 --i; return i == -1;");
+        this.assertScriptReturnsTrue("int i = 1;                 --i; return i == 0;");
+        this.assertScriptReturnsTrue("int i = 128;               --i; return i == 127;");
+        this.assertScriptReturnsTrue("int i = 32768;             --i; return i == 32767;");
+        this.assertScriptReturnsTrue("int i = Integer.MIN_VALUE; --i; return i == Integer.MAX_VALUE;");
+
+        this.assertScriptReturnsTrue("int i = 0;                 return --i == -1;");
+        this.assertScriptReturnsTrue("int i = 32767;             return --i == 32766;");
+        this.assertScriptReturnsTrue("int i = -32768;            return --i == 32767;");
+        this.assertScriptReturnsTrue("int i = Integer.MIN_VALUE; return --i == Integer.MAX_VALUE;");
+        this.assertScriptReturnsTrue("int i = Integer.MAX_VALUE; return --i == Integer.MAX_VALUE - 1;");
+
+        // long
+
+        this.assertScriptReturnsTrue("long i = 0;                      --i; return i == -1;");
+        this.assertScriptReturnsTrue("long i = 1;                      --i; return i == 0;");
+        this.assertScriptReturnsTrue("long i = 128;                    --i; return i == 127;");
+        this.assertScriptReturnsTrue("long i = 32768;                  --i; return i == 32767;");
+        this.assertScriptReturnsTrue("long i = Integer.MAX_VALUE + 1L; --i; return i == Integer.MAX_VALUE;");
+        this.assertScriptReturnsTrue("long i = Long.MIN_VALUE     ;    --i; return i == Long.MAX_VALUE;");
+
+        this.assertScriptReturnsTrue("long i = 0;                 return --i == -1;");
+        this.assertScriptReturnsTrue("long i = 32767;             return --i == 32766;");
+        this.assertScriptReturnsTrue("long i = -32768;            return --i == -32769;");
+        this.assertScriptReturnsTrue("long i = Integer.MIN_VALUE; return --i == Integer.MIN_VALUE - 1L;");
+        this.assertScriptReturnsTrue("long i = Long.MIN_VALUE;    return --i == Long.MAX_VALUE;");
+        this.assertScriptReturnsTrue("long i = Long.MAX_VALUE;    return --i == Long.MAX_VALUE - 1;");
+
+        // char
+
+        this.assertScriptReturnsTrue("char c = 1;     --c; return c == 0;");
+        this.assertScriptReturnsTrue("char c = 128;   --c; return c == 127;");
+        this.assertScriptReturnsTrue("char c = 256;   --c; return c == 255;");
+        this.assertScriptReturnsTrue("char c = 32768; --c; return c == 32767;");
+        this.assertScriptReturnsTrue("char c = 0;     --c; return c == 65535;");
+
+        this.assertScriptReturnsTrue("char c = 0;     return --c == 65535;");
+        this.assertScriptReturnsTrue("char c = 127;   return --c == 126;");
+        this.assertScriptReturnsTrue("char c = 128;   return --c == 127;");
+        this.assertScriptReturnsTrue("char c = 255;   return --c == 254;");
+        this.assertScriptReturnsTrue("char c = 256;   return --c == 255;");
+        this.assertScriptReturnsTrue("char c = 32767; return --c == 32766;");
+        this.assertScriptReturnsTrue("char c = 32768; return --c == 32767;");
+        this.assertScriptReturnsTrue("char c = 65535; return --c == 65534;");
+
+        // float
+
+        this.assertScriptReturnsTrue("float f = 4.0F; --f; return f == 3.0F;");
+
+        // double
+
+        this.assertScriptReturnsTrue("double d = 18.9; --d; return d == 17.9;");
+
+        // boolean
+
+        this.assertScriptUncookable("boolean b = true; --b;");
+    }
+
+    @Test public void
+    test_15_15_3_Unary_Plus_Operator() throws Exception {
+        this.assertExpressionEvaluatesTrue("new Integer(+new Integer(7)).intValue() == 7");
+    }
+
+    @Test public void
+    test_15_15_4_Unary_Minus_Operator() throws Exception {
         this.assertExpressionEvaluatesTrue("new Integer(-new Integer(7)).intValue() == -7");
     }
 
