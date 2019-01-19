@@ -12271,3 +12271,4 @@ class UnitCompiler {
 
     private final Collection<IClass> staticImportsOnDemand = new ArrayList<IClass>();
 }
+

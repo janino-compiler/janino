@@ -2621,3 +2621,4 @@ class JlsTest extends CommonsCompilerTestSuite {
     private boolean
     isJanino() { return "org.codehaus.janino".equals(this.compilerFactory.getId()); }
 }
+
