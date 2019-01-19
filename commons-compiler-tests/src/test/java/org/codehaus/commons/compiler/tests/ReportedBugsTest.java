@@ -986,6 +986,11 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    testIssue73_Operator_AMP_not_defined_on_types_java_lang_Integer_int() throws Exception {
+        this.assertExpressionCookable("new Integer(1)&2");
+    }
+
+    @Test public void
     testIssue69_IncompatibleClassChangeError_when_evaluating_against_jdk11() throws Exception {
 
         if (ReportedBugsTest.javaSpecificationVersion < 1.9) return;
