@@ -249,13 +249,13 @@ class Scanner {
     public Token
     produce() throws CompileException, IOException {
 
-        if (this.peek() == -1) return this.token(TokenType.END_OF_INPUT, "");
+        if (this.peek() == -1) return this.token(TokenType.END_OF_INPUT, "end-of-input");
 
         // Funny... the JLS calls it "white space", and the JRE calls it "whitespace"!?
         if (this.ignoreWhiteSpace && Character.isWhitespace(this.peek())) {
             do {
                 this.read();
-                if (this.peek() == -1) return this.token(TokenType.END_OF_INPUT, "");
+                if (this.peek() == -1) return this.token(TokenType.END_OF_INPUT, "end-of-input");
             } while (Character.isWhitespace(this.peek()));
         }
 
@@ -818,6 +818,7 @@ class Scanner {
 
         // Separators:
         "(", ")", "{", "}", "[", "]", ";", ",", ".", "@",
+        "::", // <= Since Java 9
 
         // Operators:
         "=",  ">",  "<",  "!",  "~",  "?",  ":",  "->",
