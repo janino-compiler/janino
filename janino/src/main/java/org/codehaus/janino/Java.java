@@ -5562,7 +5562,7 @@ class Java {
     public
     interface LambdaBody {
 
-        @Nullable public <R, EX extends Throwable> R
+        @Nullable <R, EX extends Throwable> R
         accept(LambdaBodyVisitor<R, EX> lbv) throws EX;
     }
 

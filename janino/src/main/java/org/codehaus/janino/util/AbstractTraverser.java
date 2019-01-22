@@ -248,7 +248,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
             return null;
         }
 
-        // SUPPRESS CHECKSTYLE LineLength:25
+        // SUPPRESS CHECKSTYLE LineLength:29
         @Override @Nullable public Void visitArrayLength(ArrayLength al)                                    throws EX { AbstractTraverser.this.delegate.traverseArrayLength(al);                      return null; }
         @Override @Nullable public Void visitAssignment(Assignment a)                                       throws EX { AbstractTraverser.this.delegate.traverseAssignment(a);                        return null; }
         @Override @Nullable public Void visitUnaryOperation(UnaryOperation uo)                              throws EX { AbstractTraverser.this.delegate.traverseUnaryOperation(uo);                   return null; }

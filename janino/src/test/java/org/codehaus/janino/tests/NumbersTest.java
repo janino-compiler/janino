@@ -153,7 +153,7 @@ class NumbersTest {
     assertCompletesNormally(@Nullable String message, Runnable runnable) {
         try {
             runnable.run();
-        } catch (Throwable t) {
+        } catch (Throwable t) { // SUPPRESS CHECKSTYLE IllegalCatch
             Assert.fail((message == null ? "" : message + ": ") + "Throws \"" + t + "\"");
         }
     }
@@ -166,7 +166,7 @@ class NumbersTest {
     assertThrows(@Nullable String message, Class<? extends Throwable> expected, Runnable runnable) {
         try {
             runnable.run();
-        } catch (Throwable t) {
+        } catch (Throwable t) { // SUPPRESS CHECKSTYLE IllegalCatch
             if (t.getClass() != expected) {
                 Assert.fail((
                     (message == null ? "" : message + ": ")

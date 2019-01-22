@@ -2758,7 +2758,8 @@ class ClassFile implements Annotatable {
         /**
          * Representation of the {@code verification_type_info} union; see JVMS8 4.7.4.
          */
-        public interface VerificationTypeInfo {
+        public
+        interface VerificationTypeInfo {
             void store(DataOutputStream dos) throws IOException;
         }
 
@@ -2834,10 +2835,17 @@ class ClassFile implements Annotatable {
 
             private final ConstantClassInfo constantClassInfo;
 
-            public ObjectVariableInfo(ConstantClassInfo constantClassInfo) { this.constantClassInfo = constantClassInfo; }
+            public
+            ObjectVariableInfo(ConstantClassInfo constantClassInfo) { this.constantClassInfo = constantClassInfo; }
 
-            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(7); dos.writeShort(this.constantClassInfo.nameIndex); }
-            @Override public String toString()                                     { return this.constantClassInfo.toString(); }
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeByte(7);
+                dos.writeShort(this.constantClassInfo.nameIndex);
+            }
+
+            @Override public String
+            toString() { return this.constantClassInfo.toString(); }
         }
 
         /**
@@ -2850,8 +2858,14 @@ class ClassFile implements Annotatable {
 
             public UninitializedVariableInfo(short offset) { this.offset = offset; }
 
-            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(8); dos.writeShort(this.offset); }
-            @Override public String toString()                                     { return "uninitialized(offset=" + this.offset + ")"; }
+            @Override public void
+            store(DataOutputStream dos) throws IOException {
+                dos.writeByte(8);
+                dos.writeShort(this.offset);
+            }
+
+            @Override public String
+            toString() { return "uninitialized(offset=" + this.offset + ")"; }
         }
 
         private static AttributeInfo
@@ -2860,16 +2874,17 @@ class ClassFile implements Annotatable {
             StackMapFrame[] entries = new StackMapFrame[dis.readUnsignedShort()]; // number_of_entries
             for (int i = 0; i < entries.length; ++i) {                            // entries
                 int frameType = dis.readUnsignedByte();
+
                 StackMapFrame e = (
                     frameType <= 63 ? new SameFrame(frameType) :
-                    frameType <= 127 ? new SameLocals1StackItemFrame(frameType - 64, StackMapTableAttribute.loadVerificationTypeInfo(dis)) :
+                    frameType <= 127 ? new SameLocals1StackItemFrame(frameType - 64, StackMapTableAttribute.loadVerificationTypeInfo(dis)) : // SUPPRESS CHECKSTYLE LineLength:5
                     frameType <= 246 ? null :
                     frameType == 247 ? new SameLocals1StackItemFrameExtended(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfo(dis)) :
                     frameType <= 250 ? new ChopFrame(dis.readUnsignedShort(), 251 - frameType) :
                     frameType == 251 ? new SameFrameExtended(dis.readUnsignedShort()) :
                     frameType <= 254 ? new AppendFrame(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort())) :
                     frameType == 255 ? new FullFrame(
-                        dis.readUnsignedShort(),                                 // offsetDelta
+                        dis.readUnsignedShort(),                                                        // offsetDelta
                         StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort()), // locals
                         StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort())  // stack
                     ) :

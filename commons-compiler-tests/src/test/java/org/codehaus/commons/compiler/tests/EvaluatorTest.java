@@ -1066,7 +1066,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             + "          out\n"
             + "\n"
             + "\n"
-            + "      .\n"  // Line 12
+            + "      .\n"        // Line 12
             + "\n"
             + "\n"
             + "    XXXprintln\n" // Line 15

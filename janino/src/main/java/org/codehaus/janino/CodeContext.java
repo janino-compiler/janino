@@ -83,7 +83,9 @@ class CodeContext {
      */
     @Nullable private LocalScope currentLocalScope;
 
-    static class LocalScope {
+    static
+    class LocalScope {
+
         @Nullable final LocalScope         parent;
         final short                        startingLocalVariableSlot;
         final List<Java.LocalVariableSlot> localVars = new ArrayList<Java.LocalVariableSlot>();

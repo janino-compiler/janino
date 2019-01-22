@@ -106,7 +106,7 @@ class LineAndColumnTracker {
 
             @Override public void
             reset() {
-                this.line = this.column = 1;
+                this.line      = (this.column = 1);
                 this.crPending = false;
             }
         };

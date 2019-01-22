@@ -181,8 +181,8 @@ class ByteArrayJavaFileManager<M extends JavaFileManager> extends ForwardingJava
             Map<String, JavaFileObject> kindFiles = locationFiles.get(kind);
             if (kindFiles == null) continue;
             for (Entry<String, JavaFileObject> e : kindFiles.entrySet()) {
-                String         className      = e.getKey();
-                JavaFileObject javaFileObject = e.getValue();
+                final String         className      = e.getKey();
+                final JavaFileObject javaFileObject = e.getValue();
 
                 if (!className.startsWith(prefix)) continue;
                 if (!recurse && className.indexOf('.', pl) != -1) continue;

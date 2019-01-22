@@ -983,7 +983,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    testIssue73_Operator_AMP_not_defined_on_types_java_lang_Integer_int() throws Exception {
+    testIssue73_Operator_Ampersand_not_defined_on_types_java_lang_Integer_int() throws Exception {
         this.assertExpressionCookable("new Integer(1)&2");
     }
 

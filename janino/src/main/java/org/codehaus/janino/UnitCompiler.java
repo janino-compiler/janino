@@ -3778,7 +3778,7 @@ class UnitCompiler {
                 return null;
             }
 
-            // SUPPRESS CHECKSTYLE LineLength:25
+            // SUPPRESS CHECKSTYLE LineLength:29
             @Override @Nullable public Void visitArrayLength(ArrayLength al)                                    throws CompileException { UnitCompiler.this.compile2(al);    return null; }
             @Override @Nullable public Void visitAssignment(Assignment a)                                       throws CompileException { UnitCompiler.this.compile2(a);     return null; }
             @Override @Nullable public Void visitUnaryOperation(UnaryOperation uo)                              throws CompileException { UnitCompiler.this.compile2(uo);    return null; }
@@ -3985,7 +3985,7 @@ class UnitCompiler {
                 return null;
             }
 
-            // SUPPRESS CHECKSTYLE LineLength:25
+            // SUPPRESS CHECKSTYLE LineLength:29
             @Override @Nullable public Void visitArrayLength(ArrayLength al)                                    throws CompileException { UnitCompiler.this.compileBoolean2(al,   dst, orientation); return null; }
             @Override @Nullable public Void visitAssignment(Assignment a)                                       throws CompileException { UnitCompiler.this.compileBoolean2(a,    dst, orientation); return null; }
             @Override @Nullable public Void visitUnaryOperation(UnaryOperation uo)                              throws CompileException { UnitCompiler.this.compileBoolean2(uo,   dst, orientation); return null; }
@@ -4317,7 +4317,7 @@ class UnitCompiler {
                 });
             }
 
-            // SUPPRESS CHECKSTYLE LineLength:25
+            // SUPPRESS CHECKSTYLE LineLength:29
             @Override public Integer visitArrayLength(ArrayLength al)            throws CompileException { return UnitCompiler.this.compileContext2(al);   }
             @Override public Integer visitAssignment(Assignment a)                                       { return UnitCompiler.this.compileContext2(a);    }
             @Override public Integer visitUnaryOperation(UnaryOperation uo)                              { return UnitCompiler.this.compileContext2(uo);   }
@@ -4453,7 +4453,7 @@ class UnitCompiler {
                 });
             }
 
-            // SUPPRESS CHECKSTYLE LineLength:25
+            // SUPPRESS CHECKSTYLE LineLength:29
             @Override public IClass visitArrayLength(ArrayLength al)                                                            { return UnitCompiler.this.compileGet2(al);   }
             @Override public IClass visitAssignment(Assignment a)                                       throws CompileException { return UnitCompiler.this.compileGet2(a);    }
             @Override public IClass visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return UnitCompiler.this.compileGet2(uo);   }
@@ -5196,7 +5196,7 @@ class UnitCompiler {
             @Override @Nullable public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    { return UnitCompiler.mayHaveSideEffects(pe.value); }
         };
 
-        // SUPPRESS CHECKSTYLE LineLengthCheck:26
+        // SUPPRESS CHECKSTYLE LineLengthCheck:30
         @Override @Nullable public Boolean visitLvalue(Lvalue lv)                                              { return (Boolean) lv.accept(this.lvalueVisitor);                 }
         @Override @Nullable public Boolean visitArrayLength(ArrayLength al)                                    { return UnitCompiler.mayHaveSideEffects(al.lhs);                 }
         @Override @Nullable public Boolean visitAssignment(Assignment a)                                       { return true;                                                    }
@@ -5665,7 +5665,7 @@ class UnitCompiler {
                 });
             }
 
-            // SUPPRESS CHECKSTYLE LineLengthCheck:25
+            // SUPPRESS CHECKSTYLE LineLengthCheck:29
             @Override @Nullable public Object visitArrayLength(ArrayLength al)                                             { return UnitCompiler.this.getConstantValue2(al);   }
             @Override @Nullable public Object visitAssignment(Assignment a)                                                { return UnitCompiler.this.getConstantValue2(a);    }
             @Override @Nullable public Object visitUnaryOperation(UnaryOperation uo)               throws CompileException { return UnitCompiler.this.getConstantValue2(uo);   }
@@ -6057,7 +6057,7 @@ class UnitCompiler {
         } else
 
         // OctalIntegerLiteral (JLS8, section 3.10.1)?
-        if (v.startsWith("0") && !v.equals("0") && !v.equals("0l")) {
+        if (v.startsWith("0") && !"0".equals(v) && !"0l".equals(v)) {
             radix  = 8;
             signed = false;
             v      = v.substring(1);
@@ -6466,7 +6466,7 @@ class UnitCompiler {
                         });
                     }
 
-                    // SUPPRESS CHECKSTYLE LineLengthCheck:25
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:29
                     @Override public IClass visitArrayLength(ArrayLength al)                                                            { return UnitCompiler.this.getType2(al);   }
                     @Override public IClass visitAssignment(Assignment a)                                       throws CompileException { return UnitCompiler.this.getType2(a);    }
                     @Override public IClass visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return UnitCompiler.this.getType2(uo);   }
@@ -7235,7 +7235,7 @@ class UnitCompiler {
                         });
                     }
 
-                    // SUPPRESS CHECKSTYLE LineLengthCheck:25
+                    // SUPPRESS CHECKSTYLE LineLengthCheck:29
                     @Override public Boolean visitArrayLength(ArrayLength al)                                    { return UnitCompiler.this.isType2(al);   }
                     @Override public Boolean visitAssignment(Assignment a)                                       { return UnitCompiler.this.isType2(a);    }
                     @Override public Boolean visitUnaryOperation(UnaryOperation uo)                              { return UnitCompiler.this.isType2(uo);   }

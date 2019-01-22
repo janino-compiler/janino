@@ -760,7 +760,7 @@ class Scanner {
         } else
         if (result == '\t') {
             this.nextCharColumnNumber = this.nextCharColumnNumber - this.nextCharColumnNumber % 8 + 8;
-            this.crLfPending = false;
+            this.crLfPending          = false;
         } else
         {
             ++this.nextCharColumnNumber;
@@ -818,12 +818,12 @@ class Scanner {
 
         // Separators:
         "(", ")", "{", "}", "[", "]", ";", ",", ".", "@",
-        "::", // <= Since Java 9
+        "::",                                                                // <= Since Java 9
 
         // Operators:
         "=",  ">",  "<",  "!",  "~",  "?",  ":",  "->",
         "==", "<=", ">=", "!=", "&&", "||", "++", "--",
         "+",  "-",  "*",  "/",  "&",  "|",  "^",  "%",  "<<",  ">>",  ">>>",
-        "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>="
+        "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" // SUPPRESS CHECKSTYLE Wrap
     ));
 }

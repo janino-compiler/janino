@@ -201,7 +201,7 @@ class DeepCopier {
     private final Visitor.RvalueVisitor<Rvalue, CompileException>
     rvalueCopier = new Visitor.RvalueVisitor<Rvalue, CompileException>() {
 
-        // SUPPRESS CHECKSTYLE LineLength:26
+        // SUPPRESS CHECKSTYLE LineLength:30
         @Override public Rvalue visitLvalue(Lvalue lv)                                              throws CompileException { return DeepCopier.this.copyLvalue(lv);                              }
         @Override public Rvalue visitArrayLength(ArrayLength al)                                    throws CompileException { return DeepCopier.this.copyArrayLength(al);                         }
         @Override public Rvalue visitAssignment(Assignment a)                                       throws CompileException { return DeepCopier.this.copyAssignment(a);                           }

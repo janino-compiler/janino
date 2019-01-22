@@ -446,7 +446,9 @@ class AstTest {
 
                 assert this.moreFieldDeclarations.isEmpty();
                 try {
-                    AbstractClassDeclaration result = (AbstractClassDeclaration) super.copyPackageMemberClassDeclaration(pmcd);
+                    AbstractClassDeclaration
+                    result = (AbstractClassDeclaration) super.copyPackageMemberClassDeclaration(pmcd);
+
                     for (FieldDeclaration fd : this.moreFieldDeclarations) {
                         result.addFieldDeclaration(fd); // TODO: Check for name clashes
                     }
@@ -468,8 +470,8 @@ class AstTest {
             + "         b += c;"
             + "     }"
             + "     int a;"
-            + "     int b;" // <= Synthetic field that replaces the original local variable
-            + "     int c;" // <=
+            + "     int b;"          // <= Synthetic field that replaces the original local variable
+            + "     int c;"          // <=
             + " }"
         ), cu);
     }
@@ -647,7 +649,11 @@ class AstTest {
         return sw.toString();
     }
 
-    public static void assertUnparsesTo(String expected, CompilationUnit cu) {
-        Assert.assertEquals(UnparserTest.normalizeWhitespace(expected), UnparserTest.normalizeWhitespace(AstTest.unparse(cu)));
+    public static void
+    assertUnparsesTo(String expected, CompilationUnit cu) {
+        Assert.assertEquals(
+            UnparserTest.normalizeWhitespace(expected),
+            UnparserTest.normalizeWhitespace(AstTest.unparse(cu))
+        );
     }
 }

@@ -57,8 +57,8 @@ class CommonsCompilerTestSuite {
     public static final int JVM_VERSION;
 
     static {
-        String jv = System.getProperty("java.specification.version");
-        Matcher m = Pattern.compile("(?:1\\.)?(\\d+)").matcher(jv);
+        String  jv = System.getProperty("java.specification.version");
+        Matcher m  = Pattern.compile("(?:1\\.)?(\\d+)").matcher(jv);
         Assert.assertTrue(m.matches());
         JVM_VERSION = Integer.parseInt(m.group(1));
     }
@@ -77,7 +77,7 @@ class CommonsCompilerTestSuite {
         this.compilerFactory = compilerFactory;
 
         String compilerFactoryId = compilerFactory.getId();
-        this.isJdk    = compilerFactoryId.equals("org.codehaus.commons.compiler.jdk");
+        this.isJdk    = compilerFactoryId.equals("org.codehaus.commons.compiler.jdk"); // SUPPRESS CHECKSTYLE EqualsAvoidNull|LineLength
         this.isJanino = compilerFactoryId.equals("org.codehaus.janino");
     }
 

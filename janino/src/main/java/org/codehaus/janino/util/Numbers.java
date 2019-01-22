@@ -54,7 +54,7 @@ class Numbers {
             throw new NumberFormatException("Invalid radix " + radix);
         }
 
-        int limit = Numbers.INT_LIMITS[radix];
+        int limit  = Numbers.INT_LIMITS[radix];
         int result = 0;
         for (int i = 0; i < s.length(); ++i) {
 
@@ -135,7 +135,7 @@ class Numbers {
             throw new NumberFormatException("Invalid radix " + radix);
         }
 
-        long limit = Numbers.LONG_LIMITS[radix];
+        long limit  = Numbers.LONG_LIMITS[radix];
         long result = 0L;
         for (int i = 0; i < s.length(); ++i) {
 

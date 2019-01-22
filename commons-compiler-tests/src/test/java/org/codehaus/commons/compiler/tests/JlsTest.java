@@ -2008,13 +2008,21 @@ class JlsTest extends CommonsCompilerTestSuite {
         if (this.isJanino)                                          return;
 
         // ExpressionName '::' [ TypeArguments ] Identifier  (ExpressionName = a{.b})
-        this.assertScriptExecutable("Runnable r = new Runnable() { @Override public void run() { } }; Runnable s = r::run;");
+        this.assertScriptExecutable(
+            "Runnable r = new Runnable() { @Override public void run() { } }; Runnable s = r::run;"
+        );
 
         // Primary '::' [ TypeArguments ] Identifier
-        this.assertScriptExecutable("Runnable r = new Runnable() { @Override public void run() { } }; Runnable s = (r)::run;");
+        this.assertScriptExecutable(
+            "Runnable r = new Runnable() { @Override public void run() { } }; Runnable s = (r)::run;"
+        );
 
         // ReferenceType '::' [ TypeArguments ] Identifier
-        this.assertScriptExecutable("Runnable r = new Runnable() { @Override public void run() { } }; Runnable t = java.util.Collections::emptySet;");
+        this.assertScriptExecutable(
+            ""
+            + "Runnable r = new Runnable() { @Override public void run() { } };\n"
+            + "Runnable t = java.util.Collections::emptySet;\n"
+        );
 
         // 'super' '::' [ TypeArguments ] Identifier
         // TODO
@@ -2557,7 +2565,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // List 1, bullet 5
         this.assertExpressionEvaluatesTrue("(true ? new Object() : \"\") != null");
-        this.assertExpressionEvaluatesTrue("(true ? new Object() : 7).getClass().getName().equals(\"java.lang.Object\")");
+        this.assertExpressionEvaluatesTrue("(true ? new Object() : 7).getClass().getName().equals(\"java.lang.Object\")"); // SUPPRESS CHECKSTYLE LineLength:11
         this.assertExpressionEvaluatesTrue("(true ? new Object() : Integer.valueOf(7)).getClass().getName().equals(\"java.lang.Object\")");
         this.assertExpressionEvaluatesTrue("(true ? Integer.valueOf(9) : Integer.valueOf(7)).getClass().getName().equals(\"java.lang.Integer\")");
         this.assertExpressionEvaluatesTrue("(true ? Integer.valueOf(9) : Long.valueOf(7)) == 9L");
@@ -2576,14 +2584,14 @@ class JlsTest extends CommonsCompilerTestSuite {
         // List 2, bullet 2
         this.assertScriptReturnsTrue("int a = 3; return (a != 0 ? ++a : a + a) == 4;");
     }
-    public static class C1                              { public void c1() {} }
+    public static class C1                              { public void c1() {} } // SUPPRESS CHECKSTYLE Javadoc|Align:7
     public static class D1 extends C1                   {}
     public static class D2 extends C1                   {}
-    public        interface I1                          { void i1(); }
-    public        interface I2                          { void i2(); }
-    public        interface I3                          { void i3(); }
+    public        interface I1                          { void                  i1(); }
+    public        interface I2                          { void                  i2(); }
+    public        interface I3                          { void                  i3(); }
     public static class D3 extends C1 implements I1, I2 { @Override public void i1() {} @Override public void i2() {} }
-    public static class D4 extends C1 implements I1, I2 { @Override public void i1() {} @Override public void i2() {} }
+    public static class D4 extends C1 implements I1, I2 { @Override public void i1() {} @Override public void i2() {} } // SUPPRESS CHECKSTYLE Align|LineLength
 
     /**
      * 15.26 Assignment Operators

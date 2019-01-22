@@ -3025,7 +3025,7 @@ class Parser {
             // '(' ')'
             if (this.peekRead(")")) {
                 LambdaParameters parameters = new FormalLambdaParameters(new FormalParameters(this.location()));
-                Location loc = this.location();
+                Location         loc        = this.location();
                 this.read("->");
                 return new LambdaExpression(loc, parameters, this.parseLambdaBody());
             }
@@ -3064,7 +3064,7 @@ class Parser {
                 FormalParameters fpl = this.parseFormalParameterListRest(a.toTypeOrCompileException());
                 this.read(")");
                 LambdaParameters parameters = new FormalLambdaParameters(fpl);
-                Location loc = this.location();
+                Location         loc        = this.location();
                 this.read("->");
                 return new LambdaExpression(loc, parameters, this.parseLambdaBody());
             }
@@ -3494,7 +3494,7 @@ class Parser {
     parseLambdaExpression() throws CompileException, IOException {
 
         LambdaParameters parameters = this.parseLambdaParameters();
-        Location loc = this.location();
+        Location         loc        = this.location();
         this.read("->");
         LambdaBody body = this.parseLambdaBody();
 

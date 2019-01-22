@@ -623,7 +623,7 @@ class UnparserTest {
     testParseUnparseJava9() throws Exception {
 
         // Method references.
-        UnparserTest.helpTestScript("Runnable r = new Runnable() { @Override public void run() {} }; Runnable s = r::run;");
+        UnparserTest.helpTestScript("Runnable r = new Runnable() { @Override public void run() {} }; Runnable s = r::run;"); // SUPPRESS CHECKSTYLE LineLength:2
         UnparserTest.helpTestScript("Runnable r = new Runnable() { @Override public void run() {} }; Runnable s = (r)::run;");
         UnparserTest.helpTestScript("Runnable r = new Runnable() { @Override public void run() {} }; Runnable t = java.util.Collections::emptySet;");
         // TODO: 'super' '::' [ TypeArguments ] Identifier

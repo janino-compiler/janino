@@ -200,7 +200,14 @@ class ClassLoaders {
                                     final URL classFileUrl = new URL(moduleContentLocation + "/" + resourceName);
 
                                     URL prev = result.put(resourceName, classFileUrl);
-                                    assert prev == null : "prev=" + prev + ", resourceName=" + resourceName + ", classFileUrl=" + classFileUrl;
+                                    assert prev == null : (
+                                        "prev="
+                                        + prev
+                                        + ", resourceName="
+                                        + resourceName
+                                        + ", classFileUrl="
+                                        + classFileUrl
+                                    );
                                 }
                             }
                         });
@@ -211,7 +218,9 @@ class ClassLoaders {
             };
         } else
         {
-            throw new AssertionError("\"java/lang/Object.class\" is not in a \"jar:\" location nor in a \"jrt:\" location");
+            throw new AssertionError(
+                "\"java/lang/Object.class\" is not in a \"jar:\" location nor in a \"jrt:\" location"
+            );
         }
     }
 
