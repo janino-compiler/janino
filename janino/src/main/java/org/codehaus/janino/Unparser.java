@@ -43,11 +43,13 @@ import java.util.Set;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.Annotation;
+import org.codehaus.janino.Java.ArrayCreationReference;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BlockLambdaBody;
 import org.codehaus.janino.Java.BlockStatement;
+import org.codehaus.janino.Java.ClassInstanceCreationReference;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.ConstructorDeclarator;
 import org.codehaus.janino.Java.ConstructorInvocation;
@@ -67,6 +69,7 @@ import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.MemberEnumDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
+import org.codehaus.janino.Java.MethodReference;
 import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
@@ -784,6 +787,24 @@ class Unparser {
                     Unparser.this.pw.print(AutoIndentWriter.UNINDENT + "}");
                     return null;
                 }
+
+                @Override @Nullable public Void
+                visitMethodReference(MethodReference mr) {
+                    Unparser.this.pw.print(mr.toString());
+                    return null;
+                }
+
+                @Override @Nullable public Void
+                visitInstanceCreationReference(ClassInstanceCreationReference cicr) {
+                    Unparser.this.pw.print(cicr.toString());
+                    return null;
+                }
+
+                @Override @Nullable public Void
+                visitArrayCreationReference(ArrayCreationReference acr) {
+                    Unparser.this.pw.print(acr.toString());
+                    return null;
+                }
             });
             return null;
         }
@@ -1082,7 +1103,7 @@ class Unparser {
         }
     }
 
-    private void
+    public void
     unparseStatements(List<? extends Java.BlockStatement> statements) {
 
         int state = -1;

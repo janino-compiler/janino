@@ -43,6 +43,7 @@ import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayAccessExpression;
+import org.codehaus.janino.Java.ArrayCreationReference;
 import org.codehaus.janino.Java.ArrayLength;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Atom;
@@ -51,6 +52,7 @@ import org.codehaus.janino.Java.Block;
 import org.codehaus.janino.Java.BooleanLiteral;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CharacterLiteral;
+import org.codehaus.janino.Java.ClassInstanceCreationReference;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ConditionalExpression;
@@ -66,6 +68,7 @@ import org.codehaus.janino.Java.Locatable;
 import org.codehaus.janino.Java.Located;
 import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MethodInvocation;
+import org.codehaus.janino.Java.MethodReference;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
 import org.codehaus.janino.Java.NewClassInstance;
@@ -124,14 +127,21 @@ class UnparserTest {
 
     private static void
     helpTestScript(String expected, String input) throws Exception {
-        Parser p    = new Parser(new Scanner(null, new StringReader(input)));
-        Block  block = p.parseMethodBody();
 
-        StringWriter sw = new StringWriter();
-        Unparser     u  = new Unparser(sw);
-        u.unparseBlock(block);
-        u.close();
-        String s = sw.toString();
+        Parser p = new Parser(new Scanner(null, new StringReader(input)));
+
+        Block block = new Block(Location.NOWHERE);
+        block.addStatements(p.parseBlockStatements());
+
+        String s;
+        {
+            StringWriter sw = new StringWriter();
+            Unparser     u  = new Unparser(sw);
+            u.unparseStatements(block.statements);
+            u.close();
+            s = sw.toString();
+        }
+
         Assert.assertEquals(input, UnparserTest.normalizeWhitespace(expected), UnparserTest.normalizeWhitespace(s));
     }
 
@@ -395,7 +405,16 @@ class UnparserTest {
             visitThisReference(ThisReference tr) { return tr; }
 
             @Override @Nullable public Rvalue
-            visitLambdaExpression(LambdaExpression lambdaExpression) { return lambdaExpression; }
+            visitLambdaExpression(LambdaExpression lr) { return lr; }
+
+            @Override @Nullable public Rvalue
+            visitMethodReference(MethodReference mr) { return mr; }
+
+            @Override @Nullable public Rvalue
+            visitInstanceCreationReference(ClassInstanceCreationReference cicr) { return cicr; }
+
+            @Override @Nullable public Rvalue
+            visitArrayCreationReference(ArrayCreationReference acr) { return acr; }
 
             @Override public Rvalue
             visitUnaryOperation(UnaryOperation uo) {
@@ -598,6 +617,19 @@ class UnparserTest {
         UnparserTest.helpTestScript("{ return a              -> {};    }");
         UnparserTest.helpTestScript("{ return (int a, int b) -> {};    }");
         UnparserTest.helpTestScript("{ return ()             -> 3 + 7; }");
+    }
+
+    @Test public void
+    testParseUnparseJava9() throws Exception {
+
+        // Method references.
+        UnparserTest.helpTestScript("Runnable r = new Runnable() { @Override public void run() {} }; Runnable s = r::run;");
+        UnparserTest.helpTestScript("Runnable r = new Runnable() { @Override public void run() {} }; Runnable s = (r)::run;");
+        UnparserTest.helpTestScript("Runnable r = new Runnable() { @Override public void run() {} }; Runnable t = java.util.Collections::emptySet;");
+        // TODO: 'super' '::' [ TypeArguments ] Identifier
+        // TODO: TypeName '.' 'super' '::' [ TypeArguments ] Identifier
+        UnparserTest.helpTestScript("Runnable r4 = java.util.HashMap::new;");
+        UnparserTest.helpTestScript("java.util.function.Consumer<Integer> c1 = int[]::new;");
     }
 
     @Test public void

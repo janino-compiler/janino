@@ -4627,7 +4627,7 @@ class Java {
     }
 
     /**
-     * Representation of a JLS7 15.13 "array access expression".
+     * Representation of a JLS7 15.13 (JLS8: 15.10.3) "array access expression".
      */
     public static final
     class ArrayAccessExpression extends Lvalue {
@@ -5748,6 +5748,64 @@ class Java {
 
         @Override public String
         toString() { return "[" + this.value + ']'; }
+    }
+
+    public static final
+    class MethodReference extends Rvalue {
+
+        public final Atom   lhs;
+        public final String methodName;
+
+        public
+        MethodReference(Location location, Atom lhs, String methodName) {
+            super(location);
+            this.lhs        = lhs;
+            this.methodName = methodName;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(RvalueVisitor<R, EX> rvv) throws EX { return rvv.visitMethodReference(this); }
+
+        @Override public String
+        toString() { return this.lhs + "::" + this.methodName; }
+    }
+
+    public static final
+    class ClassInstanceCreationReference extends Rvalue {
+
+        public final Type                     type;
+        @Nullable public final TypeArgument[] typeArguments;
+
+        public
+        ClassInstanceCreationReference(Location location, Type type, @Nullable TypeArgument[] typeArguments) {
+            super(location);
+            this.type          = type;
+            this.typeArguments = typeArguments;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(RvalueVisitor<R, EX> rvv) throws EX { return rvv.visitInstanceCreationReference(this); }
+
+        @Override public String
+        toString() { return this.type + "::" + (this.typeArguments != null ? this.typeArguments : "") + "new"; }
+    }
+
+    public static final
+    class ArrayCreationReference extends Rvalue {
+
+        public final ArrayType type;
+
+        public
+        ArrayCreationReference(Location location, ArrayType type) {
+            super(location);
+            this.type = type;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(RvalueVisitor<R, EX> rvv) throws EX { return rvv.visitArrayCreationReference(this); }
+
+        @Override public String
+        toString() { return this.type + "::new"; }
     }
 
     /**

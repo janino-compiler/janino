@@ -39,6 +39,7 @@ import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.AnonymousClassDeclaration;
 import org.codehaus.janino.Java.ArrayAccessExpression;
+import org.codehaus.janino.Java.ArrayCreationReference;
 import org.codehaus.janino.Java.ArrayInitializer;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayLength;
@@ -55,6 +56,7 @@ import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CatchClause;
 import org.codehaus.janino.Java.CatchParameter;
 import org.codehaus.janino.Java.CharacterLiteral;
+import org.codehaus.janino.Java.ClassInstanceCreationReference;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
@@ -98,6 +100,7 @@ import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.MemberTypeDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
+import org.codehaus.janino.Java.MethodReference;
 import org.codehaus.janino.Java.Modifiers;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
@@ -157,7 +160,7 @@ import org.codehaus.janino.Visitor.TypeArgumentVisitor;
  * Creates deep copies of AST elements.
  * <p>
  *   The main purpose of this class is to <em>extend</em> it, and <em>modify</em> the AST while it is being copied.
- *   For an example, see {@link org.codehaus.janino.tests.AstTest#testMethodToLabeledStatement()}.
+ *   For an example, see {@code org.codehaus.janino.tests.AstTest.testMethodToLabeledStatement()}.
  * </p>
  */
 @SuppressWarnings("unused") public
@@ -199,33 +202,36 @@ class DeepCopier {
     rvalueCopier = new Visitor.RvalueVisitor<Rvalue, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:26
-        @Override public Rvalue visitLvalue(Lvalue lv)                                          throws CompileException { return DeepCopier.this.copyLvalue(lv);                              }
-        @Override public Rvalue visitArrayLength(ArrayLength al)                                throws CompileException { return DeepCopier.this.copyArrayLength(al);                         }
-        @Override public Rvalue visitAssignment(Assignment a)                                   throws CompileException { return DeepCopier.this.copyAssignment(a);                           }
-        @Override public Rvalue visitUnaryOperation(UnaryOperation uo)                          throws CompileException { return DeepCopier.this.copyUnaryOperation(uo);                      }
-        @Override public Rvalue visitBinaryOperation(BinaryOperation bo)                        throws CompileException { return DeepCopier.this.copyBinaryOperation(bo);                     }
-        @Override public Rvalue visitCast(Cast c)                                               throws CompileException { return DeepCopier.this.copyCast(c);                                 }
-        @Override public Rvalue visitClassLiteral(ClassLiteral cl)                              throws CompileException { return DeepCopier.this.copyClassLiteral(cl);                        }
-        @Override public Rvalue visitConditionalExpression(ConditionalExpression ce)            throws CompileException { return DeepCopier.this.copyConditionalExpression(ce);               }
-        @Override public Rvalue visitCrement(Crement c)                                         throws CompileException { return DeepCopier.this.copyCrement(c);                              }
-        @Override public Rvalue visitInstanceof(Instanceof io)                                  throws CompileException { return DeepCopier.this.copyInstanceof(io);                          }
-        @Override public Rvalue visitMethodInvocation(MethodInvocation mi)                      throws CompileException { return DeepCopier.this.copyMethodInvocation(mi);                    }
-        @Override public Rvalue visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) throws CompileException { return DeepCopier.this.copySuperclassMethodInvocation(smi);         }
-        @Override public Rvalue visitIntegerLiteral(IntegerLiteral il)                          throws CompileException { return DeepCopier.this.copyIntegerLiteral(il);                      }
-        @Override public Rvalue visitFloatingPointLiteral(FloatingPointLiteral fpl)             throws CompileException { return DeepCopier.this.copyFloatingPointLiteral(fpl);               }
-        @Override public Rvalue visitBooleanLiteral(BooleanLiteral bl)                          throws CompileException { return DeepCopier.this.copyBooleanLiteral(bl);                      }
-        @Override public Rvalue visitCharacterLiteral(CharacterLiteral cl)                      throws CompileException { return DeepCopier.this.copyCharacterLiteral(cl);                    }
-        @Override public Rvalue visitStringLiteral(StringLiteral sl)                            throws CompileException { return DeepCopier.this.copyStringLiteral(sl);                       }
-        @Override public Rvalue visitNullLiteral(NullLiteral nl)                                throws CompileException { return DeepCopier.this.copyNullLiteral(nl);                         }
-        @Override public Rvalue visitSimpleConstant(SimpleConstant sl)                          throws CompileException { return DeepCopier.this.copySimpleLiteral(sl);                       }
-        @Override public Rvalue visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  throws CompileException { return DeepCopier.this.copyNewAnonymousClassInstance(naci);         }
-        @Override public Rvalue visitNewArray(NewArray na)                                      throws CompileException { return DeepCopier.this.copyNewArray(na);                            }
-        @Override public Rvalue visitNewInitializedArray(NewInitializedArray nia)               throws CompileException { return DeepCopier.this.copyNewInitializedArray(nia);                }
-        @Override public Rvalue visitNewClassInstance(NewClassInstance nci)                     throws CompileException { return DeepCopier.this.copyNewClassInstance(nci);                   }
-        @Override public Rvalue visitParameterAccess(ParameterAccess pa)                        throws CompileException { return DeepCopier.this.copyParameterAccess(pa);                     }
-        @Override public Rvalue visitQualifiedThisReference(QualifiedThisReference qtr)         throws CompileException { return DeepCopier.this.copyQualifiedThisReference(qtr);             }
-        @Override public Rvalue visitThisReference(ThisReference tr)                            throws CompileException { return DeepCopier.this.copyThisReference(tr);                       }
-        @Override public Rvalue visitLambdaExpression(LambdaExpression le)                      throws CompileException { return DeepCopier.this.copyLambdaExpression(le);                    }
+        @Override public Rvalue visitLvalue(Lvalue lv)                                              throws CompileException { return DeepCopier.this.copyLvalue(lv);                              }
+        @Override public Rvalue visitArrayLength(ArrayLength al)                                    throws CompileException { return DeepCopier.this.copyArrayLength(al);                         }
+        @Override public Rvalue visitAssignment(Assignment a)                                       throws CompileException { return DeepCopier.this.copyAssignment(a);                           }
+        @Override public Rvalue visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return DeepCopier.this.copyUnaryOperation(uo);                      }
+        @Override public Rvalue visitBinaryOperation(BinaryOperation bo)                            throws CompileException { return DeepCopier.this.copyBinaryOperation(bo);                     }
+        @Override public Rvalue visitCast(Cast c)                                                   throws CompileException { return DeepCopier.this.copyCast(c);                                 }
+        @Override public Rvalue visitClassLiteral(ClassLiteral cl)                                  throws CompileException { return DeepCopier.this.copyClassLiteral(cl);                        }
+        @Override public Rvalue visitConditionalExpression(ConditionalExpression ce)                throws CompileException { return DeepCopier.this.copyConditionalExpression(ce);               }
+        @Override public Rvalue visitCrement(Crement c)                                             throws CompileException { return DeepCopier.this.copyCrement(c);                              }
+        @Override public Rvalue visitInstanceof(Instanceof io)                                      throws CompileException { return DeepCopier.this.copyInstanceof(io);                          }
+        @Override public Rvalue visitMethodInvocation(MethodInvocation mi)                          throws CompileException { return DeepCopier.this.copyMethodInvocation(mi);                    }
+        @Override public Rvalue visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)     throws CompileException { return DeepCopier.this.copySuperclassMethodInvocation(smi);         }
+        @Override public Rvalue visitIntegerLiteral(IntegerLiteral il)                              throws CompileException { return DeepCopier.this.copyIntegerLiteral(il);                      }
+        @Override public Rvalue visitFloatingPointLiteral(FloatingPointLiteral fpl)                 throws CompileException { return DeepCopier.this.copyFloatingPointLiteral(fpl);               }
+        @Override public Rvalue visitBooleanLiteral(BooleanLiteral bl)                              throws CompileException { return DeepCopier.this.copyBooleanLiteral(bl);                      }
+        @Override public Rvalue visitCharacterLiteral(CharacterLiteral cl)                          throws CompileException { return DeepCopier.this.copyCharacterLiteral(cl);                    }
+        @Override public Rvalue visitStringLiteral(StringLiteral sl)                                throws CompileException { return DeepCopier.this.copyStringLiteral(sl);                       }
+        @Override public Rvalue visitNullLiteral(NullLiteral nl)                                    throws CompileException { return DeepCopier.this.copyNullLiteral(nl);                         }
+        @Override public Rvalue visitSimpleConstant(SimpleConstant sl)                              throws CompileException { return DeepCopier.this.copySimpleLiteral(sl);                       }
+        @Override public Rvalue visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      throws CompileException { return DeepCopier.this.copyNewAnonymousClassInstance(naci);         }
+        @Override public Rvalue visitNewArray(NewArray na)                                          throws CompileException { return DeepCopier.this.copyNewArray(na);                            }
+        @Override public Rvalue visitNewInitializedArray(NewInitializedArray nia)                   throws CompileException { return DeepCopier.this.copyNewInitializedArray(nia);                }
+        @Override public Rvalue visitNewClassInstance(NewClassInstance nci)                         throws CompileException { return DeepCopier.this.copyNewClassInstance(nci);                   }
+        @Override public Rvalue visitParameterAccess(ParameterAccess pa)                            throws CompileException { return DeepCopier.this.copyParameterAccess(pa);                     }
+        @Override public Rvalue visitQualifiedThisReference(QualifiedThisReference qtr)             throws CompileException { return DeepCopier.this.copyQualifiedThisReference(qtr);             }
+        @Override public Rvalue visitThisReference(ThisReference tr)                                throws CompileException { return DeepCopier.this.copyThisReference(tr);                       }
+        @Override public Rvalue visitLambdaExpression(LambdaExpression le)                          throws CompileException { return DeepCopier.this.copyLambdaExpression(le);                    }
+        @Override public Rvalue visitMethodReference(MethodReference mr)                            throws CompileException { return DeepCopier.this.copyMethodReference(mr);                     }
+        @Override public Rvalue visitInstanceCreationReference(ClassInstanceCreationReference cicr) throws CompileException { return DeepCopier.this.copyClassInstanceCreationReference(cicr);    }
+        @Override public Rvalue visitArrayCreationReference(ArrayCreationReference acr)             throws CompileException { return DeepCopier.this.copyArrayCreationReference(acr);             }
     };
 
     private final Visitor.LvalueVisitor<Lvalue, CompileException>
@@ -1062,6 +1068,25 @@ class DeepCopier {
     public Rvalue
     copyLambdaExpression(LambdaExpression subject) {
         return new LambdaExpression(subject.getLocation(), subject.parameters, subject.body);
+    }
+
+    public Rvalue
+    copyArrayCreationReference(ArrayCreationReference subject) throws CompileException {
+        return new ArrayCreationReference(subject.getLocation(), this.copyArrayType(subject.type));
+    }
+
+    public Rvalue
+    copyClassInstanceCreationReference(ClassInstanceCreationReference subject) throws CompileException {
+        return new ClassInstanceCreationReference(
+            subject.getLocation(),
+            this.copyType(subject.type),
+            this.copyOptionalTypeArguments(subject.typeArguments)
+        );
+    }
+
+    public Rvalue
+    copyMethodReference(MethodReference subject) throws CompileException {
+        return new MethodReference(subject.getLocation(), this.copyAtom(subject.lhs), subject.methodName);
     }
 
     public ArrayType

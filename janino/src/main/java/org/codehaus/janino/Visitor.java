@@ -32,7 +32,6 @@ import org.codehaus.janino.Java.ExpressionLambdaBody;
 import org.codehaus.janino.Java.FormalLambdaParameters;
 import org.codehaus.janino.Java.IdentifierLambdaParameters;
 import org.codehaus.janino.Java.InferredLambdaParameters;
-import org.codehaus.janino.Java.LambdaExpression;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 
 /**
@@ -540,7 +539,22 @@ class Visitor {
         /**
          * Invoked by {@link Java.LambdaExpression#accept(Visitor.RvalueVisitor)}
          */
-        @Nullable R visitLambdaExpression(LambdaExpression le) throws EX;
+        @Nullable R visitLambdaExpression(Java.LambdaExpression le) throws EX;
+
+        /**
+         * Invoked by {@link Java.MethodReference#accept(Visitor.RvalueVisitor)}
+         */
+        @Nullable R visitMethodReference(Java.MethodReference mr) throws EX;
+
+        /**
+         * Invoked by {@link Java.ClassInstanceCreationReference#accept(Visitor.RvalueVisitor)}
+         */
+        @Nullable R visitInstanceCreationReference(Java.ClassInstanceCreationReference cicr) throws EX;
+
+        /**
+         * Invoked by {@link Java.ArrayCreationReference#accept(Visitor.RvalueVisitor)}
+         */
+        @Nullable R visitArrayCreationReference(Java.ArrayCreationReference acr) throws EX;
     }
 
     /**

@@ -37,6 +37,7 @@ import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.AnonymousClassDeclaration;
 import org.codehaus.janino.Java.ArrayAccessExpression;
+import org.codehaus.janino.Java.ArrayCreationReference;
 import org.codehaus.janino.Java.ArrayInitializer;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayLength;
@@ -54,6 +55,7 @@ import org.codehaus.janino.Java.BreakableStatement;
 import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CatchClause;
 import org.codehaus.janino.Java.CharacterLiteral;
+import org.codehaus.janino.Java.ClassInstanceCreationReference;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
@@ -99,6 +101,7 @@ import org.codehaus.janino.Java.MemberEnumDeclaration;
 import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
+import org.codehaus.janino.Java.MethodReference;
 import org.codehaus.janino.Java.NamedClassDeclaration;
 import org.codehaus.janino.Java.NamedTypeDeclaration;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
@@ -246,32 +249,35 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         }
 
         // SUPPRESS CHECKSTYLE LineLength:25
-        @Override @Nullable public Void visitArrayLength(ArrayLength al)                                throws EX { AbstractTraverser.this.delegate.traverseArrayLength(al);                        return null; }
-        @Override @Nullable public Void visitAssignment(Assignment a)                                   throws EX { AbstractTraverser.this.delegate.traverseAssignment(a);                          return null; }
-        @Override @Nullable public Void visitUnaryOperation(UnaryOperation uo)                          throws EX { AbstractTraverser.this.delegate.traverseUnaryOperation(uo);                     return null; }
-        @Override @Nullable public Void visitBinaryOperation(BinaryOperation bo)                        throws EX { AbstractTraverser.this.delegate.traverseBinaryOperation(bo);                    return null; }
-        @Override @Nullable public Void visitCast(Cast c)                                               throws EX { AbstractTraverser.this.delegate.traverseCast(c);                                return null; }
-        @Override @Nullable public Void visitClassLiteral(ClassLiteral cl)                              throws EX { AbstractTraverser.this.delegate.traverseClassLiteral(cl);                       return null; }
-        @Override @Nullable public Void visitConditionalExpression(ConditionalExpression ce)            throws EX { AbstractTraverser.this.delegate.traverseConditionalExpression(ce);              return null; }
-        @Override @Nullable public Void visitCrement(Crement c)                                         throws EX { AbstractTraverser.this.delegate.traverseCrement(c);                             return null; }
-        @Override @Nullable public Void visitInstanceof(Instanceof io)                                  throws EX { AbstractTraverser.this.delegate.traverseInstanceof(io);                         return null; }
-        @Override @Nullable public Void visitMethodInvocation(MethodInvocation mi)                      throws EX { AbstractTraverser.this.delegate.traverseMethodInvocation(mi);                   return null; }
-        @Override @Nullable public Void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi) throws EX { AbstractTraverser.this.delegate.traverseSuperclassMethodInvocation(smi);        return null; }
-        @Override @Nullable public Void visitIntegerLiteral(IntegerLiteral il)                          throws EX { AbstractTraverser.this.delegate.traverseIntegerLiteral(il);                     return null; }
-        @Override @Nullable public Void visitFloatingPointLiteral(FloatingPointLiteral fpl)             throws EX { AbstractTraverser.this.delegate.traverseFloatingPointLiteral(fpl);              return null; }
-        @Override @Nullable public Void visitBooleanLiteral(BooleanLiteral bl)                          throws EX { AbstractTraverser.this.delegate.traverseBooleanLiteral(bl);                     return null; }
-        @Override @Nullable public Void visitCharacterLiteral(CharacterLiteral cl)                      throws EX { AbstractTraverser.this.delegate.traverseCharacterLiteral(cl);                   return null; }
-        @Override @Nullable public Void visitStringLiteral(StringLiteral sl)                            throws EX { AbstractTraverser.this.delegate.traverseStringLiteral(sl);                      return null; }
-        @Override @Nullable public Void visitNullLiteral(NullLiteral nl)                                throws EX { AbstractTraverser.this.delegate.traverseNullLiteral(nl);                        return null; }
-        @Override @Nullable public Void visitSimpleConstant(SimpleConstant sl)                          throws EX { AbstractTraverser.this.delegate.traverseSimpleLiteral(sl);                      return null; }
-        @Override @Nullable public Void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)  throws EX { AbstractTraverser.this.delegate.traverseNewAnonymousClassInstance(naci);        return null; }
-        @Override @Nullable public Void visitNewArray(NewArray na)                                      throws EX { AbstractTraverser.this.delegate.traverseNewArray(na);                           return null; }
-        @Override @Nullable public Void visitNewInitializedArray(NewInitializedArray nia)               throws EX { AbstractTraverser.this.delegate.traverseNewInitializedArray(nia);               return null; }
-        @Override @Nullable public Void visitNewClassInstance(NewClassInstance nci)                     throws EX { AbstractTraverser.this.delegate.traverseNewClassInstance(nci);                  return null; }
-        @Override @Nullable public Void visitParameterAccess(ParameterAccess pa)                        throws EX { AbstractTraverser.this.delegate.traverseParameterAccess(pa);                    return null; }
-        @Override @Nullable public Void visitQualifiedThisReference(QualifiedThisReference qtr)         throws EX { AbstractTraverser.this.delegate.traverseQualifiedThisReference(qtr);            return null; }
-        @Override @Nullable public Void visitThisReference(ThisReference tr)                            throws EX { AbstractTraverser.this.delegate.traverseThisReference(tr);                      return null; }
-        @Override @Nullable public Void visitLambdaExpression(LambdaExpression le)                      throws EX { AbstractTraverser.this.delegate.traverseLambdaExpression(le);                   return null;  }
+        @Override @Nullable public Void visitArrayLength(ArrayLength al)                                    throws EX { AbstractTraverser.this.delegate.traverseArrayLength(al);                      return null; }
+        @Override @Nullable public Void visitAssignment(Assignment a)                                       throws EX { AbstractTraverser.this.delegate.traverseAssignment(a);                        return null; }
+        @Override @Nullable public Void visitUnaryOperation(UnaryOperation uo)                              throws EX { AbstractTraverser.this.delegate.traverseUnaryOperation(uo);                   return null; }
+        @Override @Nullable public Void visitBinaryOperation(BinaryOperation bo)                            throws EX { AbstractTraverser.this.delegate.traverseBinaryOperation(bo);                  return null; }
+        @Override @Nullable public Void visitCast(Cast c)                                                   throws EX { AbstractTraverser.this.delegate.traverseCast(c);                              return null; }
+        @Override @Nullable public Void visitClassLiteral(ClassLiteral cl)                                  throws EX { AbstractTraverser.this.delegate.traverseClassLiteral(cl);                     return null; }
+        @Override @Nullable public Void visitConditionalExpression(ConditionalExpression ce)                throws EX { AbstractTraverser.this.delegate.traverseConditionalExpression(ce);            return null; }
+        @Override @Nullable public Void visitCrement(Crement c)                                             throws EX { AbstractTraverser.this.delegate.traverseCrement(c);                           return null; }
+        @Override @Nullable public Void visitInstanceof(Instanceof io)                                      throws EX { AbstractTraverser.this.delegate.traverseInstanceof(io);                       return null; }
+        @Override @Nullable public Void visitMethodInvocation(MethodInvocation mi)                          throws EX { AbstractTraverser.this.delegate.traverseMethodInvocation(mi);                 return null; }
+        @Override @Nullable public Void visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)     throws EX { AbstractTraverser.this.delegate.traverseSuperclassMethodInvocation(smi);      return null; }
+        @Override @Nullable public Void visitIntegerLiteral(IntegerLiteral il)                              throws EX { AbstractTraverser.this.delegate.traverseIntegerLiteral(il);                   return null; }
+        @Override @Nullable public Void visitFloatingPointLiteral(FloatingPointLiteral fpl)                 throws EX { AbstractTraverser.this.delegate.traverseFloatingPointLiteral(fpl);            return null; }
+        @Override @Nullable public Void visitBooleanLiteral(BooleanLiteral bl)                              throws EX { AbstractTraverser.this.delegate.traverseBooleanLiteral(bl);                   return null; }
+        @Override @Nullable public Void visitCharacterLiteral(CharacterLiteral cl)                          throws EX { AbstractTraverser.this.delegate.traverseCharacterLiteral(cl);                 return null; }
+        @Override @Nullable public Void visitStringLiteral(StringLiteral sl)                                throws EX { AbstractTraverser.this.delegate.traverseStringLiteral(sl);                    return null; }
+        @Override @Nullable public Void visitNullLiteral(NullLiteral nl)                                    throws EX { AbstractTraverser.this.delegate.traverseNullLiteral(nl);                      return null; }
+        @Override @Nullable public Void visitSimpleConstant(SimpleConstant sl)                              throws EX { AbstractTraverser.this.delegate.traverseSimpleLiteral(sl);                    return null; }
+        @Override @Nullable public Void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      throws EX { AbstractTraverser.this.delegate.traverseNewAnonymousClassInstance(naci);      return null; }
+        @Override @Nullable public Void visitNewArray(NewArray na)                                          throws EX { AbstractTraverser.this.delegate.traverseNewArray(na);                         return null; }
+        @Override @Nullable public Void visitNewInitializedArray(NewInitializedArray nia)                   throws EX { AbstractTraverser.this.delegate.traverseNewInitializedArray(nia);             return null; }
+        @Override @Nullable public Void visitNewClassInstance(NewClassInstance nci)                         throws EX { AbstractTraverser.this.delegate.traverseNewClassInstance(nci);                return null; }
+        @Override @Nullable public Void visitParameterAccess(ParameterAccess pa)                            throws EX { AbstractTraverser.this.delegate.traverseParameterAccess(pa);                  return null; }
+        @Override @Nullable public Void visitQualifiedThisReference(QualifiedThisReference qtr)             throws EX { AbstractTraverser.this.delegate.traverseQualifiedThisReference(qtr);          return null; }
+        @Override @Nullable public Void visitThisReference(ThisReference tr)                                throws EX { AbstractTraverser.this.delegate.traverseThisReference(tr);                    return null; }
+        @Override @Nullable public Void visitLambdaExpression(LambdaExpression le)                          throws EX { AbstractTraverser.this.delegate.traverseLambdaExpression(le);                 return null; }
+        @Override @Nullable public Void visitMethodReference(MethodReference mr)                            throws EX { AbstractTraverser.this.delegate.traverseMethodReference(mr);                  return null; }
+        @Override @Nullable public Void visitInstanceCreationReference(ClassInstanceCreationReference cicr) throws EX { AbstractTraverser.this.delegate.traverseClassInstanceCreationReference(cicr); return null; }
+        @Override @Nullable public Void visitArrayCreationReference(ArrayCreationReference acr)             throws EX { AbstractTraverser.this.delegate.traverseArrayCreationReference(acr);          return null; }
     };
 
     /**
@@ -835,6 +841,17 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
     @Override public void
     traverseLambdaExpression(LambdaExpression le) throws EX { this.traverseRvalue(le); }
+
+    @Override public void
+    traverseMethodReference(MethodReference mr) throws EX { this.traverseRvalue(mr); }
+
+    @Override public void
+    traverseClassInstanceCreationReference(ClassInstanceCreationReference cicr) throws EX {
+        this.traverseRvalue(cicr);
+    }
+
+    @Override public void
+    traverseArrayCreationReference(ArrayCreationReference acr) throws EX { this.traverseRvalue(acr); }
 
     @Override public void
     traverseArrayType(ArrayType at) throws EX {

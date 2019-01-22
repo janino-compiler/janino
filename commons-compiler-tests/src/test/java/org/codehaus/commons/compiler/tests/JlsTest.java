@@ -2003,6 +2003,33 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_15_13__MethodReferenceExpressions() throws Exception {
+
+        if (this.isJdk678() || this.isJanino()) return;
+
+        // ExpressionName '::' [ TypeArguments ] Identifier  (ExpressionName = a{.b})
+        this.assertScriptExecutable("Runnable r = new Runnable() { @Override public void run() { } }; Runnable s = r::run;");
+
+        // Primary '::' [ TypeArguments ] Identifier
+        this.assertScriptExecutable("Runnable r = new Runnable() { @Override public void run() { } }; Runnable s = (r)::run;");
+
+        // ReferenceType '::' [ TypeArguments ] Identifier
+        this.assertScriptExecutable("Runnable r = new Runnable() { @Override public void run() { } }; Runnable t = java.util.Collections::emptySet;");
+
+        // 'super' '::' [ TypeArguments ] Identifier
+        // TODO
+
+        // TypeName '.' 'super' '::' [ TypeArguments ] Identifier
+        // TODO
+
+        // ClassType '::' [ TypeArguments ] 'new'
+        this.assertScriptExecutable("Runnable r4 = java.util.HashMap::new;");
+
+        // ArrayType '::' 'new'
+        this.assertScriptExecutable("java.util.function.Consumer<Integer> c1 = int[]::new;");
+    }
+
+    @Test public void
     test_15_14_2__Postfix_Increment_Operator() throws Exception {
 
         this.assertScriptReturnsTrue("int i = 7; i++; return i == 8;");
@@ -2280,7 +2307,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_15_15_2_Prefix_Decrement_Operator() throws Exception {
 
-        this.assertScriptReturnsTrue("int i = 7;                  --i; return i == 6;");
+        this.assertScriptReturnsTrue("int i = 7; --i; return i == 6;");
         this.assertScriptReturnsTrue("Integer i = new Integer(7); --i; return i.intValue() == 6;");
         this.assertScriptReturnsTrue("int i = 7; return i == 7 && --i == 6 && i == 6;");
         this.assertScriptReturnsTrue(
@@ -2621,4 +2648,3 @@ class JlsTest extends CommonsCompilerTestSuite {
     private boolean
     isJanino() { return "org.codehaus.janino".equals(this.compilerFactory.getId()); }
 }
-

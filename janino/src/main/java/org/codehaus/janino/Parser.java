@@ -1687,8 +1687,15 @@ class Parser {
      */
     public List<BlockStatement>
     parseBlockStatements() throws CompileException, IOException {
+
         List<BlockStatement> l = new ArrayList<BlockStatement>();
-        while (!this.peek("}") && !this.peek("case") && !this.peek("default")) l.add(this.parseBlockStatement());
+        while (
+            !this.peek("}")
+            && !this.peek("case")
+            && !this.peek("default")
+            && !this.peek(TokenType.END_OF_INPUT)
+        ) l.add(this.parseBlockStatement());
+
         return l;
     }
 
@@ -2910,6 +2917,37 @@ class Parser {
 
         Atom a = this.parsePrimary();
 
+        if (this.peekRead("::")) {
+
+            if (a instanceof ArrayType) {
+                this.read("new");
+
+                // ArrayType '::' 'new'
+                return new Java.ArrayCreationReference(this.location(), (ArrayType) a);
+            }
+
+            TypeArgument[] typeArguments = this.parseTypeArgumentsOpt();
+
+            switch (this.peek(TokenType.KEYWORD /* 'new' */, TokenType.IDENTIFIER)) {
+
+            case 0: // keyword
+                // ClassType '::' [ TypeArguments ] 'new'
+                this.read("new");
+                return new Java.ClassInstanceCreationReference(
+                    this.location(),
+                    a.toTypeOrCompileException(),
+                    typeArguments
+                );
+
+            case 1: // identifier
+                // ( Rvalue | ReferenceType ) '::' [ TypeArguments ] identifier
+                return new Java.MethodReference(this.location(), a, this.read(TokenType.IDENTIFIER));
+
+            default:
+                throw new AssertionError(this.peek());
+            }
+        }
+
         while (this.peek(".", "[") != -1) {
             a = this.parseSelector(a);
         }
@@ -2946,7 +2984,8 @@ class Parser {
      *     NewInitializedArray |                   // ArrayInitializer 10.6
      *     PrimitiveType { '[]' } |                // Type
      *     PrimitiveType { '[]' } '.' 'class' |    // ClassLiteral 15.8.2
-     *     'void' '.' 'class'                      // ClassLiteral 15.8.2
+     *     'void' '.' 'class' |                    // ClassLiteral 15.8.2
+     *     MethodReference                         // MethodReference JLS9 15.13
      *
      *   CastExpression :=
      *     '(' PrimitiveType { '[]' } ')' UnaryExpression |
