@@ -53,9 +53,6 @@ import util.TestUtil;
 @RunWith(Parameterized.class) public
 class JlsTest extends CommonsCompilerTestSuite {
 
-    private static double
-    javaSpecificationVersion = Double.parseDouble(System.getProperty("java.specification.version"));
-
     @Parameters(name = "CompilerFactory={0}") public static List<Object[]>
     compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
@@ -79,7 +76,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3__LexicalStructure() throws Exception {
+    test_3__Lexical_Structure() throws Exception {
         // 3.1. Lexical Structure -- Unicode
         this.assertExpressionEvaluatesTrue("'\\u00e4' == '\u00e4'");
 
@@ -123,17 +120,17 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3_10_1__IntegerLiterals_decimal() throws Exception {
+    test_3_10_1__Integer_Literals_decimal() throws Exception {
         this.assertExpressionEvaluatesTrue("17 == 17L");
     }
 
     @Test public void
-    test_3_10_1__IntegerLiterals_hex() throws Exception {
+    test_3_10_1__Integer_Literals_hex() throws Exception {
         this.assertExpressionEvaluatesTrue("255 == 0xFFl");
     }
 
     @Test public void
-    test_3_10_1__IntegerLiterals_octal() throws Exception {
+    test_3_10_1__Integer_Literals_octal() throws Exception {
         this.assertExpressionEvaluatesTrue("17 == 021L");
         this.assertExpressionUncookable("17 == 029", Pattern.compile(
             ""
@@ -144,7 +141,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3_10_1__IntegerLiterals_int_range() throws Exception {
+    test_3_10_1__Integer_Literals_int_range() throws Exception {
         this.assertExpressionEvaluatesTrue("2 * 2147483647 == -2");
         this.assertExpressionEvaluatesTrue("2 * -2147483648 == 0");
         this.assertExpressionUncookable("2147483648");
@@ -157,13 +154,13 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertExpressionEvaluatesTrue("-(-2147483648) == -2147483648");
         this.assertExpressionEvaluatesTrue("- -2147483648  == -2147483648");
 
-        if (!this.isJdk6()) {
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 7) {
             this.assertExpressionEvaluatesTrue("- -2147_483648  == -2147483648");
         }
     }
 
     @Test public void
-    test_3_10_1__IntegerLiterals_long_range() throws Exception {
+    test_3_10_1__Integer_Literals_long_range() throws Exception {
         this.assertExpressionEvaluatable("9223372036854775807L");
         this.assertExpressionUncookable("9223372036854775808L");
         this.assertExpressionUncookable("9223372036854775809L");
@@ -174,17 +171,16 @@ class JlsTest extends CommonsCompilerTestSuite {
         // https://github.com/janino-compiler/janino/issues/41 :
         this.assertExpressionEvaluatesTrue("-(-9223372036854775808L) == -9223372036854775808L");
         this.assertExpressionEvaluatesTrue("- -9223372036854775808L  == -9223372036854775808L");
-        if (!this.isJdk6()) {
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 7) {
             this.assertExpressionEvaluatesTrue("- -922337_2036854775808L == -9223372036854775808L");
             this.assertExpressionUncookable("- -9223372036854775808_L == -9223372036854775808L");
         }
     }
 
     @Test public void
-    test_3_10_1__IntegerLiterals_binary() throws Exception {
+    test_3_10_1__Integer_Literals_binary() throws Exception {
 
-        // "Binary numeric literals" is a Java 7 feature, so JDKs before 1.7 don't support it.
-        Assume.assumeFalse(this.isJdk6());
+        Assume.assumeFalse(this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7);
 
         this.assertExpressionEvaluatable("0b111");
         this.assertExpressionEvaluatesTrue("0b111 == 7");
@@ -205,11 +201,9 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3_10_1__IntegerLiterals_underscores() throws Exception {
+    test_3_10_1__Integer_Literals_underscores() throws Exception {
 
-        // "Underscores in numeric literals" is a Java 7 feature, so JDKs before 1.7 don't support
-        // it.
-        Assume.assumeFalse(this.isJdk6());
+        Assume.assumeFalse(this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7);
 
         this.assertExpressionEvaluatesTrue("1_23 == 12_3");
         this.assertExpressionEvaluatesTrue("1__3 == 13");
@@ -222,7 +216,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3_10_2__FloatingPointLiterals_float() throws Exception {
+    test_3_10_2__Floating_Point_Literals_float() throws Exception {
         this.assertExpressionEvaluatesTrue("1e1f == 10f");
         this.assertExpressionEvaluatesTrue("1E1F == 10f");
         this.assertExpressionEvaluatesTrue(".3f == 0.3f");
@@ -235,7 +229,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3_10_2__FloatingPointLiterals_double() throws Exception {
+    test_3_10_2__Floating_Point_Literals_double() throws Exception {
         this.assertExpressionEvaluatable("1.79769313486231570e+308D");
         this.assertExpressionUncookable("1.79769313486231581e+308d");
         this.assertExpressionEvaluatable("4.94065645841246544e-324D");
@@ -246,36 +240,34 @@ class JlsTest extends CommonsCompilerTestSuite {
      * Hex float literals, JLS8 3.10.2
      */
     @Test public void
-    test_3_10_2__FloatingPointLiterals_hexadecimal() throws Exception {
-        this.assertExpressionEvaluatesTrue("0x1D == 29"); // "D" is NOT a float type suffix, but a hex digit!
-        this.assertExpressionEvaluatesTrue("0x1p0D == 1");
-        this.assertExpressionEvaluatesTrue("0x.8p0 == 0.5");
-        this.assertExpressionEvaluatesTrue("0x1p0 == 1");
-        this.assertExpressionEvaluatesTrue("0xfp1 == 30");
-        this.assertExpressionEvaluatesTrue("0xfp+1 == 30");
-        this.assertExpressionEvaluatesTrue("0xfp-1 == 7.5");
+    test_3_10_2__Floating_Point_Literals_hexadecimal() throws Exception {
+        this.assertExpressionEvaluatesTrue("0x1D           == 29"); // "D" is NOT a float type suffix, but a hex digit!
+        this.assertExpressionEvaluatesTrue("0x1p0D         == 1");
+        this.assertExpressionEvaluatesTrue("0x.8p0         == 0.5");
+        this.assertExpressionEvaluatesTrue("0x1p0          == 1");
+        this.assertExpressionEvaluatesTrue("0xfp1          == 30");
+        this.assertExpressionEvaluatesTrue("0xfp+1         == 30");
+        this.assertExpressionEvaluatesTrue("0xfp-1         == 7.5");
         this.assertExpressionEvaluatesTrue("0x1.0004p0F    == 0x1.0004p0");
         this.assertExpressionEvaluatesTrue("0x1.0000004p0F != 0x1.0000004p0");
     }
 
     @Test public void
-    test_3_10_2__FloatingPointLiterals_underscores() throws Exception {
+    test_3_10_2__Floating_Point_Literals_underscores() throws Exception {
 
-        // "Underscores in numeric literals" is a Java 7 feature, so JDKs before 1.7 don't support
-        // it.
-        Assume.assumeFalse(this.isJdk6());
+        Assume.assumeFalse(this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7);
 
         this.assertExpressionEvaluatesTrue("1___0.1___0 == 10.1");
     }
 
     @Test public void
-    test_3_10_3__BooleanLiterals() throws Exception {
+    test_3_10_3__Boolean_Literals() throws Exception {
         this.assertExpressionEvaluatesTrue("true");
         this.assertExpressionEvaluatesTrue("! false");
     }
 
     @Test public void
-    test_3_10_4__CharacterLiterals() throws Exception {
+    test_3_10_4__Character_Literals() throws Exception {
         this.assertExpressionEvaluatesTrue("'a' == 97");
         this.assertExpressionUncookable("'''");
         this.assertExpressionUncookable("'\\'");
@@ -286,7 +278,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3_10_5__StringLiterals() throws Exception {
+    test_3_10_5__String_Literals() throws Exception {
         this.assertExpressionEvaluatesTrue("\"'\".charAt(0) == 39"); // Unescaped single quote is allowed!
         // Escape sequences already tested above for character literals.
         this.assertExpressionEvaluatesTrue("\"\\b\".charAt(0) == 8");
@@ -297,7 +289,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3_10_6__EscapeSequencesForCharacterAndStringLiterals() throws Exception {
+    test_3_10_6__Escape_sequences_for_character_and_string_literals() throws Exception {
         this.assertExpressionUncookable("'\\u000a'"); // 0x000a is LF
         this.assertExpressionEvaluatesTrue("'\\b' == 8");
         this.assertExpressionEvaluatesTrue("'\\t' == 9");
@@ -315,7 +307,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3_10_7__TheNullLiteral() throws Exception {
+    test_3_10_7__The_null_literal() throws Exception {
         this.assertExpressionEvaluatable("null");
     }
 
@@ -330,7 +322,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_4_5_1__TypeArgumentsAndWildcards() throws Exception {
+    test_4_5_1__Type_arguments_and_wildcards() throws Exception {
         this.assertScriptReturnsTrue(
             ""
             + "import java.util.*;\n"
@@ -342,7 +334,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_5_1_7__BoxingConversion() throws Exception {
+    test_5_1_7__Boxing_conversion() throws Exception {
         this.assertScriptReturnsTrue("Boolean   b = true;        return b.booleanValue();");
         this.assertScriptReturnsTrue("Boolean   b = false;       return !b.booleanValue();");
         this.assertScriptReturnsTrue("Byte      b = (byte) 7;    return b.equals(new Byte((byte) 7));");
@@ -355,7 +347,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_5_1_8__UnboxingConversion() throws Exception {
+    test_5_1_8__Unboxing_conversion() throws Exception {
         this.assertExpressionEvaluatesTrue("Boolean.TRUE");
         this.assertExpressionEvaluatesTrue("!Boolean.FALSE");
         this.assertExpressionEvaluatesTrue("new Byte((byte) 9) == (byte) 9");
@@ -368,7 +360,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_5_2__AssignmentConversion() throws Exception {
+    test_5_2__Assignment_conversion() throws Exception {
         this.assertScriptReturnsTrue("int i = 7; return i == 7;");
         this.assertScriptReturnsTrue("String s = \"S\"; return s.equals(\"S\");");
         this.assertScriptReturnsTrue("long l = 7; return l == 7L;");
@@ -396,7 +388,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_5_5__CastingConversion() throws Exception {
+    test_5_5__Casting_conversion() throws Exception {
         this.assertExpressionEvaluatesTrue("7 == (int) 7");
         this.assertExpressionEvaluatesTrue("(int) 'a' == 97");
         this.assertExpressionEvaluatesTrue("(int) 10000000000L == 1410065408");
@@ -415,7 +407,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_5_6__NumberPromotions() throws Exception {
+    test_5_6__Number_promotions() throws Exception {
         // 5.6.1 Unary Numeric Promotion
         this.assertExpressionEvaluatesTrue("-new Byte((byte) 7) == -7");
         this.assertExpressionEvaluatesTrue("-new Double(10.0D) == -10.0D");
@@ -429,7 +421,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_6_6_1_Determining_Accessibility_member_access() throws Exception {
+    test_6_6_1__Determining_Accessibility_member_access() throws Exception {
 
         // SUPPRESS CHECKSTYLE Whitespace|LineLength:4
         this.assertExpressionEvaluatesTrue("for_sandbox_tests.ClassWithFields.publicField        == 1");
@@ -439,7 +431,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_7_5__ImportDeclarations() throws Exception {
+    test_7_5__Import_declarations() throws Exception {
         // Default imports
         this.assertExpressionEvaluatesTrue(
             "import java.util.*; new ArrayList().getClass().getName().equals(\"java.util.ArrayList\")"
@@ -745,11 +737,10 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "}\n"
         );
 
-        if (this.isJanino()) {
+        if (this.isJanino) {
             this.assertCompilationUnitUncookable(cu, "Static interface methods not implemented");
         } else {
-            if (JlsTest.javaSpecificationVersion <= 6.0) return;
-            this.assertCompilationUnitMainReturnsTrue(cu, "Main");
+            if (CommonsCompilerTestSuite.JVM_VERSION >= 8) this.assertCompilationUnitMainReturnsTrue(cu, "Main");
         }
     }
 
@@ -763,16 +754,15 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "}\n"
         );
 
-        if (this.isJanino()) {
+        if (this.isJanino) {
             this.assertCompilationUnitUncookable(cu, "Default interface methods not implemented");
         } else {
-            if (JlsTest.javaSpecificationVersion <= 6.0) return;
-            this.assertCompilationUnitCookable(cu);
+            if (CommonsCompilerTestSuite.JVM_VERSION >= 8) this.assertCompilationUnitCookable(cu);
         }
     }
 
     @Test public void
-    test_9_6_Annotation_Types() throws Exception {
+    test_9_6__Annotation_Types() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -794,7 +784,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_6_2__DefaultsForAnnotationTypeElements() throws Exception {
+    test_9_6_2__Defaults_for_annotation_type_elements() throws Exception {
         this.assertCompilationUnitMainReturnsTrue((
             ""
             + "import java.lang.annotation.Retention;\n"
@@ -821,7 +811,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_7_2_Marker_Annotations() throws Exception {
+    test_9_7_2__Marker_Annotations() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -843,7 +833,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_7_3_Single_Element_Annotations() throws Exception {
+    test_9_7_3__Single_Element_Annotations() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -867,7 +857,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_7_1_Normal_Annotations1() throws Exception {
+    test_9_7_1__Normal_Annotations1() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -891,7 +881,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_7_1_Normal_Annotations2() throws Exception {
+    test_9_7_1__Normal_Annotations2() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -944,7 +934,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_7_4_Where_Annotations_May_Appear_field() throws Exception {
+    test_9_7_4__Where_Annotations_May_Appear_field() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -969,7 +959,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_7_4_Where_Annotations_May_Appear_method() throws Exception {
+    test_9_7_4__Where_Annotations_May_Appear_method() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -994,14 +984,25 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_3__LocalClassDeclarations() throws Exception {
+    test_14_3__Local_class_declarations() throws Exception {
         this.assertScriptReturnsTrue(
             "class S2 extends SC { public int foo() { return 37; } }; return new S2().foo() == 37;"
         );
     }
 
     @Test public void
-    test_14_8__ExpressionStatements() throws Exception {
+    test_14_4__Local_Variable_Declaration_Statements() throws Exception {
+        this.assertScriptReturnsTrue(
+            "class S2 extends SC { public int foo() { return 37; } }; return new S2().foo() == 37;"
+        );
+
+        String script = "var f = java.util.function.Function.<String>identity();\n";
+        if (this.isJanino)                                            this.assertScriptUncookable(script, "NYI");
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 10) this.assertScriptExecutable(script);
+    }
+
+    @Test public void
+    test_14_8__Expression_statements() throws Exception {
         this.assertScriptReturnsTrue("int a; a = 8; ++a; a++; if (a != 10) return false; --a; a--; return a == 8;");
         this.assertScriptExecutable("System.currentTimeMillis();");
         this.assertScriptExecutable("new Object();");
@@ -1010,18 +1011,18 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_10__TheAssertStatement() throws Exception {
+    test_14_10__The_assert_statement() throws Exception {
 
         // SUPPRESS CHECKSTYLE LineLength:5
         this.assertScriptExecutable("assert true;");
-        Assert.assertNull(this.assertScriptExecutable("try { assert false;                  } catch (AssertionError ae) { return ae.getMessage();       } return \"nope\";", String.class));
+        Assert.assertNull(this.assertScriptExecutable("try { assert false; } catch (AssertionError ae) { return ae.getMessage();       } return \"nope\";", String.class));
         this.assertScriptReturnsTrue("try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
         this.assertScriptReturnsTrue("try { assert false : 3;              } catch (AssertionError ae) { return \"3\".equals(ae.getMessage()); } return false;");
         this.assertScriptReturnsTrue("try { assert false : new Integer(8); } catch (AssertionError ae) { return \"8\".equals(ae.getMessage()); } return false;");
     }
 
     @Test public void
-    test_14_11__TheSwitchStatement() throws Exception {
+    test_14_11__The_switch_statement() throws Exception {
         this.assertScriptReturnsTrue("int x = 37; switch (x) {} return x == 37;");
         this.assertScriptReturnsTrue("int x = 37; switch (x) { default: ++x; break; } return x == 38;");
         this.assertScriptReturnsTrue(
@@ -1039,7 +1040,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_11__TheSwitchStatement_enum() throws Exception {
+    test_14_11__The_switch_statement_enum() throws Exception {
         this.assertScriptReturnsTrue(
             ""
             + "import java.lang.annotation.ElementType;\n"
@@ -1058,13 +1059,9 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_11__TheSwitchStatement_String1() throws Exception {
+    test_14_11__The_switch_statement_String1() throws Exception {
 
-        // JDK 6 does not support string SWITCH.
-        if (
-            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && JlsTest.javaSpecificationVersion == 1.6
-        ) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
         this.assertScriptReturnsTrue(
             ""
@@ -1082,13 +1079,9 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_11__TheSwitchStatement_String2() throws Exception {
+    test_14_11__The_switch_statement_String2() throws Exception {
 
-        // JDK 6 does not support string SWITCH.
-        if (
-            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && JlsTest.javaSpecificationVersion == 1.6
-        ) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
         this.assertScriptReturnsTrue(
             ""
@@ -1106,13 +1099,9 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_11__TheSwitchStatement_String3() throws Exception {
+    test_14_11__The_switch_statement_String3() throws Exception {
 
-        // JDK 6 does not support string SWITCH.
-        if (
-            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && JlsTest.javaSpecificationVersion == 1.6
-        ) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
         this.assertScriptReturnsTrue(
             ""
@@ -1130,13 +1119,9 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_11__TheSwitchStatement_String4() throws Exception {
+    test_14_11__The_switch_statement_String4() throws Exception {
 
-        // JDK 6 does not support string SWITCH.
-        if (
-            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && JlsTest.javaSpecificationVersion == 1.6
-        ) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
         this.assertScriptReturnsTrue(
             ""
@@ -1153,13 +1138,9 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_11__TheSwitchStatement_String5() throws Exception {
+    test_14_11__The_switch_statement_String5() throws Exception {
 
-        // JDK 6 does not support string SWITCH.
-        if (
-            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && JlsTest.javaSpecificationVersion == 1.6
-        ) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
         String s1 = "AaAaAa", s2 = "AaAaBB";
         Assert.assertEquals(s1.hashCode(), s2.hashCode());
@@ -1205,13 +1186,9 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_11__TheSwitchStatement_String_DuplicateCaseValue() throws Exception {
+    test_14_11__The_switch_statement_String_DuplicateCaseValue() throws Exception {
 
-        // JDK 6 does not support string SWITCH.
-        if (
-            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && JlsTest.javaSpecificationVersion == 1.6
-        ) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
         this.assertScriptUncookable(
             ""
@@ -1229,7 +1206,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_14_2_1__TheEnhancedForStatement_Iterable() throws Exception {
+    test_14_14_2_1__The_enhanced_for_statement_Iterable() throws Exception {
         this.assertScriptReturnsTrue(
             "String x = \"A\";\n"
             + "for (Object y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y;\n"
@@ -1240,10 +1217,19 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "for (String y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y.length();\n"
             + "return x.equals(\"A11\");"
         );
+
+        String script = (
+            ""
+            + "String x = \"A\";\n"
+            + "for (var y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y.length();\n"
+            + "return x.equals(\"A11\");"
+        );
+        if (this.isJanino)                   this.assertScriptUncookable(script, "NYI");
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 10) this.assertScriptReturnsTrue(script);
     }
 
     @Test public void
-    test_14_14_2_2__TheEnhancedForStatement_Array() throws Exception {
+    test_14_14_2_2__The_enhanced_for_statement_Array() throws Exception {
 
         // Primitive array.
         this.assertScriptReturnsTrue(
@@ -1294,7 +1280,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_20_1__ExecutionOfTryCatch__1() throws Exception {
+    test_14_20_1__Execution_of_try_catch__1() throws Exception {
         this.assertClassBodyMainReturnsTrue(
             ""
             + "static void meth() throws Throwable {\n"
@@ -1318,7 +1304,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_20_1__ExecutionOfTryCatch__2() throws Exception {
+    test_14_20_1__Execution_of_try_catch__2() throws Exception {
         this.assertClassBodyUncookable(
             ""
             + "static void meth() throws Throwable {\n"
@@ -1342,7 +1328,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_20_1__ExecutionOfTryCatch__3() throws Exception {
+    test_14_20_1__Execution_of_try_catch__3() throws Exception {
         this.assertClassBodyMainReturnsTrue(
             ""
             + "static void meth() throws java.io.IOException {\n"
@@ -1366,11 +1352,11 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_20_1__ExecutionOfTryCatch__4() throws Exception {
+    test_14_20_1__Execution_of_try_catch__4() throws Exception {
 
         // JAVAC does not detect this condition although, I believe, it should, according to the
         // JLS.
-        Assume.assumeFalse(this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk"));
+        Assume.assumeFalse(this.isJdk);
 
         this.assertClassBodyUncookable(
             ""
@@ -1395,7 +1381,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_20_1__ExecutionOfTryCatch__5() throws Exception {
+    test_14_20_1__Execution_of_try_catch__5() throws Exception {
         this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean main() { \n"
@@ -1416,7 +1402,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_20_1__ExecutionOfTryCatch__6() throws Exception {
+    test_14_20_1__Execution_of_try_catch__6() throws Exception {
         this.assertCompilationUnitCookable(
             ""
             + "public class TestIt {\n"
@@ -1485,7 +1471,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_20_3__try_with_resources__1() throws Exception {
 
-        if (this.isJdk6()) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
         this.assertScriptReturnsNull(
             ""
@@ -1506,7 +1492,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_20_3__try_with_resources__2() throws Exception {
 
-        if (this.isJdk6()) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
         this.assertScriptReturnsTrue(
             ""
@@ -1531,7 +1517,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_20_3__try_with_resources__2a() throws Exception {
 
-        if (this.isJdk6()) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
         this.assertScriptExecutable(
             ""
@@ -1551,7 +1537,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_20_3__try_with_resources__3() throws Exception {
 
-        if (this.isJdk6()) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
         this.assertScriptReturnsTrue(
             ""
@@ -1580,7 +1566,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_20_3__try_with_resources__10a() throws Exception {
 
-        if (this.isJdk678()) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 9) return;
 
         this.assertScriptExecutable(
             ""
@@ -1610,7 +1596,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_20_3__try_with_resources__10b() throws Exception {
 
-        if (this.isJdk678()) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 9) return;
 
         this.assertClassBodyExecutable(
             ""
@@ -1644,7 +1630,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_20_3__try_with_resources__10c() throws Exception {
 
-        if (this.isJdk678()) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 9) return;
 
         this.assertClassBodyExecutable(
             ""
@@ -1678,7 +1664,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_20_3__try_with_resources__10d() throws Exception {
 
-        if (this.isJdk678()) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 9) return;
 
         this.assertScriptUncookable(
             (
@@ -1702,7 +1688,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_21__UnreachableStatements() throws Exception {
+    test_14_21__Unreachable_statements() throws Exception {
         this.assertClassBodyUncookable(
             ""
             + "public void test() throws Exception {}\n"
@@ -1740,7 +1726,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_2_2_5__ChoosingTheMostSpecificVarargMethod_1() throws Exception {
+    test_15_2_2_5__Choosing_the_most_specific_vararg_method_1() throws Exception {
         this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean main() {\n"
@@ -1758,8 +1744,8 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_9__ClassInstanceCreationExpressions() throws Exception {
-        // 15.9.1 Determining the class being Instantiated
+    test_15_9_1__Determining_the_class_being_Instantiated() throws Exception {
+
         this.assertExpressionEvaluatesTrue("new Object() instanceof Object");
         this.assertExpressionUncookable("new java.util.List()");
         this.assertExpressionUncookable("new other_package.PackageClass()");
@@ -1790,13 +1776,26 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "}"
         ), "Main");
 
-        // 15.9.3 Choosing the Constructor and its Arguments
+        // "Type interference for generic instance creation" (a.k.a. the "diamond operator"); a Java 7 feature.
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 7) {
+            this.assertScriptReturnsTrue(
+                "java.util.Map<String, Integer> map = new java.util.HashMap<>(); return !map.containsKey(\"\");"
+            );
+        }
+    }
+
+    @Test public void
+    test_15_9_3__Choosing_the_Constructor_and_its_Arguments() throws Exception {
+
         this.assertExpressionEvaluatable("new Integer(3)");
         this.assertExpressionEvaluatable("new Integer(new Integer(3))");
         this.assertExpressionEvaluatable("new Integer(new Byte((byte) 3))");
         this.assertExpressionUncookable("new Integer(new Object())");
+    }
 
-        // 15.9.5 Anonymous Class Declarations
+    @Test public void
+    test_15_9_5__Anonymous_Class_Declarations() throws Exception {
+
         this.assertCompilationUnitMainExecutable((
             ""
             + "public class Foo {\n"
@@ -1845,12 +1844,12 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__1() throws Exception {
+    test_15_12_2_4__Phase3Identify_applicable_variable_arity_methods__1() throws Exception {
         this.assertExpressionEvaluatesTrue("\"two one\".equals(String.format(\"%2$s %1$s\", \"one\", \"two\"))");
     }
 
     @Test public void
-    test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__2() throws Exception {
+    test_15_12_2_4__Phase3Identify_applicable_variable_arity_methods__2() throws Exception {
         this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean\n"
@@ -1873,7 +1872,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__3() throws Exception {
+    test_15_12_2_4__Phase3Identify_applicable_variable_arity_methods__3() throws Exception {
         this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean main() {\n"
@@ -1894,7 +1893,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_12_2_4__Phase3IdentifyApplicableVariableArityMethods__4() throws Exception {
+    test_15_12_2_4__Phase3Identify_applicable_variable_arity_methods__4() throws Exception {
         this.assertScriptReturnsTrue(
             ""
             + "class LocalClass {\n"
@@ -1938,7 +1937,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_12_2_6__IdentifyApplicableVariableArityMethods__4() throws Exception {
+    test_15_12_2_6__Identify_applicable_variable_arity_methods__4() throws Exception {
         this.assertClassBodyMainReturnsTrue(
             ""
             + "public static boolean main() {\n"
@@ -1960,7 +1959,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_12_2_7__IdentifyApplicableVariableArityMethods__4() throws Exception {
+    test_15_12_2_7__Identify_applicable_variable_arity_methods__4() throws Exception {
 
         // The resolution phases should go like this:
         //  - all three methods are *applicable*, but fixed-arity ones have higher priority
@@ -1975,7 +1974,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         // there is no ambiguity. I have not been able to find any piece of documentation about this in the docs.)
 
         // JDK 1.7.0_17 and _21 do _not_ issue an error, although they should!?
-        Assume.assumeFalse(this.isJdk7());
+        Assume.assumeFalse(this.isJdk && CommonsCompilerTestSuite.JVM_VERSION == 7);
 
         this.assertClassBodyUncookable((
             ""
@@ -1992,7 +1991,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "}\n"
             + "\n"
             + "static int meth(byte a, double b){\n"
-            + "     return 2;\n"
+            + "    return 2;\n"
             + "}\n"
         ), Pattern.compile((
             ""
@@ -2003,9 +2002,10 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_13__MethodReferenceExpressions() throws Exception {
+    test_15_13__Method_reference_expressions() throws Exception {
 
-        if (this.isJdk678() || this.isJanino()) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 9) return;
+        if (this.isJanino)                                          return;
 
         // ExpressionName '::' [ TypeArguments ] Identifier  (ExpressionName = a{.b})
         this.assertScriptExecutable("Runnable r = new Runnable() { @Override public void run() { } }; Runnable s = r::run;");
@@ -2213,7 +2213,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_15_1_Prefix_Increment_Operator() throws Exception {
+    test_15_15_1__Prefix_Increment_Operator() throws Exception {
 
         this.assertScriptReturnsTrue("int i = 7; ++i; return i == 8;");
         this.assertScriptReturnsTrue("Integer i = new Integer(7); ++i; return i.intValue() == 8;");
@@ -2305,7 +2305,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_15_2_Prefix_Decrement_Operator() throws Exception {
+    test_15_15_2__Prefix_Decrement_Operator() throws Exception {
 
         this.assertScriptReturnsTrue("int i = 7; --i; return i == 6;");
         this.assertScriptReturnsTrue("Integer i = new Integer(7); --i; return i.intValue() == 6;");
@@ -2345,8 +2345,11 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertScriptReturnsTrue("int i = Integer.MIN_VALUE; --i; return i == Integer.MAX_VALUE;");
 
         this.assertScriptReturnsTrue("int i = 0;                 return --i == -1;");
+        this.assertScriptReturnsTrue("int i = 127;               return --i == 126;");
+        this.assertScriptReturnsTrue("int i = 128;               return --i == 127;");
+        this.assertScriptReturnsTrue("int i = -128;              return --i == -129;");
         this.assertScriptReturnsTrue("int i = 32767;             return --i == 32766;");
-        this.assertScriptReturnsTrue("int i = -32768;            return --i == 32767;");
+        this.assertScriptReturnsTrue("int i = -32768;            return --i == -32769;");
         this.assertScriptReturnsTrue("int i = Integer.MIN_VALUE; return --i == Integer.MAX_VALUE;");
         this.assertScriptReturnsTrue("int i = Integer.MAX_VALUE; return --i == Integer.MAX_VALUE - 1;");
 
@@ -2357,7 +2360,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertScriptReturnsTrue("long i = 128;                    --i; return i == 127;");
         this.assertScriptReturnsTrue("long i = 32768;                  --i; return i == 32767;");
         this.assertScriptReturnsTrue("long i = Integer.MAX_VALUE + 1L; --i; return i == Integer.MAX_VALUE;");
-        this.assertScriptReturnsTrue("long i = Long.MIN_VALUE     ;    --i; return i == Long.MAX_VALUE;");
+        this.assertScriptReturnsTrue("long i = Long.MIN_VALUE;         --i; return i == Long.MAX_VALUE;");
 
         this.assertScriptReturnsTrue("long i = 0;                 return --i == -1;");
         this.assertScriptReturnsTrue("long i = 32767;             return --i == 32766;");
@@ -2397,22 +2400,22 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_15_3_Unary_Plus_Operator() throws Exception {
+    test_15_15_3__Unary_Plus_Operator() throws Exception {
         this.assertExpressionEvaluatesTrue("new Integer(+new Integer(7)).intValue() == 7");
     }
 
     @Test public void
-    test_15_15_4_Unary_Minus_Operator() throws Exception {
+    test_15_15_4__Unary_Minus_Operator() throws Exception {
         this.assertExpressionEvaluatesTrue("new Integer(-new Integer(7)).intValue() == -7");
     }
 
     @Test public void
-    test_15_17__MultiplicativeOperators() throws Exception {
+    test_15_17__Multiplicative_operators() throws Exception {
         this.assertExpressionEvaluatesTrue("new Integer(new Byte((byte) 2) * new Short((short) 3)).intValue() == 6");
     }
 
     @Test public void
-    test_15_18__AdditiveOperators() throws Exception {
+    test_15_18__Additive_operators() throws Exception {
         // 15.18 Additive Operators -- Numeric
         this.assertExpressionEvaluatesTrue("(new Byte((byte) 7) - new Double(1.5D) + \"x\").equals(\"5.5x\")");
 
@@ -2424,7 +2427,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertExpressionEvaluatesTrue("\"fiddlers \" + 1 + 2 == \"fiddlers 12\"");
 
         // JAVAC does not supports "super-long string literals".
-        Assume.assumeFalse(this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk"));
+        Assume.assumeFalse(this.isJdk);
 
         for (int i = 65530; i <= 65537; ++i) {
             char[] ca = new char[i];
@@ -2436,13 +2439,13 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_20__RelationOperators() throws Exception {
+    test_15_20__Relation_operators() throws Exception {
         // 15.20.1 Numerical Comparison Operators <, <=, > and >=
         this.assertExpressionEvaluatesTrue("new Integer(7) > new Byte((byte) 5)");
     }
 
     @Test public void
-    test_15_21__EqualityOperators() throws Exception {
+    test_15_21__Equality_operators() throws Exception {
 
         // 15.21.1 Numerical Equality Operators == and !=
         this.assertExpressionUncookable("new Integer(7) != new Byte((byte) 5)");
@@ -2464,7 +2467,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_22__BitwiseAndLogicalOperators() throws Exception {
+    test_15_22__Bitwise_and_logical_operators() throws Exception {
 
         // 15.22.1 Integer Bitwise Operators &, ^, and |
         this.assertExpressionEvaluatesTrue("(7 & 12) == 4");
@@ -2481,7 +2484,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_23__ConditionalAndOperator() throws Exception {
+    test_15_23__Conditional_and_operator() throws Exception {
         // 15.23 Conditional-And Operator &&
         this.assertExpressionEvaluatesTrue("new Boolean(true) && new Boolean(true)");
         this.assertExpressionEvaluatesTrue("new Boolean(true) && true");
@@ -2489,7 +2492,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_24__ConditionalOrOperator() throws Exception {
+    test_15_24__Conditional_or_operator() throws Exception {
         // 15.24 Conditional-Or Operator ||
         this.assertExpressionEvaluatesTrue("new Boolean(true) || new Boolean(false)");
         this.assertExpressionEvaluatesTrue("new Boolean(false) || true");
@@ -2500,7 +2503,7 @@ class JlsTest extends CommonsCompilerTestSuite {
      * 15.25 Conditional Operator ? :
      */
     @Test public void
-    test_15_25__ConditionalOperator() throws Exception {
+    test_15_25__Conditional_operator() throws Exception {
 
         this.assertExpressionEvaluatesTrue("7 == (true ? 7 : 9)");
         this.assertExpressionEvaluatesTrue("9 == (Boolean.FALSE ? 7 : 9)");
@@ -2561,7 +2564,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertScriptCookable("import org.codehaus.commons.compiler.tests.JlsTest; (true ? new JlsTest.D1() : new JlsTest.D2()).c1();");
         this.assertScriptCookable("import org.codehaus.commons.compiler.tests.JlsTest; (true ? new JlsTest.D3() : new JlsTest.D4()).c1();");
         // Why, for god's sake, can JAVAC compile these assignments?? Some kind of type inference must happen here...
-        if (!this.isJanino()) {
+        if (this.isJdk) {
             this.assertScriptCookable("import org.codehaus.commons.compiler.tests.JlsTest; JlsTest.I1 i1 = (\"\".equals(\"\") ? new JlsTest.D3() : new JlsTest.D4());");
             this.assertScriptCookable("import org.codehaus.commons.compiler.tests.JlsTest; JlsTest.I2 i2 = (true ? new JlsTest.D3() : new JlsTest.D4());");
         }
@@ -2586,7 +2589,7 @@ class JlsTest extends CommonsCompilerTestSuite {
      * 15.26 Assignment Operators
      */
     @Test public void
-    test_15_26__AssignmentOperators() throws Exception {
+    test_15_26__Assignment_operators() throws Exception {
 
         // 15.26.2 Compound Assignment Operators
         this.assertScriptReturnsTrue("int a = 7; a += 3; return a == 10;");
@@ -2603,48 +2606,18 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertScriptReturnsTrue("Double[] a = { 1.0, 2.0 }; a[0] += 1.0; return a[0] == 2.0;");
     }
 
-    /**
-     * @return Whether we're running the JDK 6 (or earlier) compiler factory
-     */
-    private boolean
-    isJdk6() {
-        return (
-            this.compilerFactory.getId().equals("org.codehaus.commons.compiler.jdk")
-            && System.getProperty("java.version").matches("1\\.[1-6].*")
-        );
+    @Test public void
+    test_15_27_1__Lambda_parameters() throws Exception {
+
+        // "java.util.Function" only since Java 8
+        try {
+            ClassLoader.getSystemClassLoader().loadClass("java.util.function.Function");
+        } catch (ClassNotFoundException cnfe) {
+            return;
+        }
+
+        String script = "java.util.function.Function<String, Integer> f = (var s) -> s.length();\n";
+        if (this.isJanino)                                            this.assertScriptUncookable(script, "NYI");
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 11) this.assertScriptExecutable(script);
     }
-
-    /**
-     * @return Whether we're running the JDK 7 compiler factory
-     */
-    private boolean
-    isJdk7() {
-        return (
-            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && System.getProperty("java.version").startsWith("1.7.0")
-        );
-    }
-
-    /**
-     * @return Whether we're running the JDK 8 compiler factory
-     */
-    private boolean
-    isJdk8() {
-        return (
-            "org.codehaus.commons.compiler.jdk".equals(this.compilerFactory.getId())
-            && System.getProperty("java.version").startsWith("1.8.0")
-        );
-    }
-
-    /**
-     * @return Whether we're running the JDK 6, 7 or 8 compiler factory
-     */
-    private boolean
-    isJdk678() { return this.isJdk6() || this.isJdk7() || this.isJdk8(); }
-
-    /**
-     * @return Whether we're using the JANINO compiler factory
-     */
-    private boolean
-    isJanino() { return "org.codehaus.janino".equals(this.compilerFactory.getId()); }
 }

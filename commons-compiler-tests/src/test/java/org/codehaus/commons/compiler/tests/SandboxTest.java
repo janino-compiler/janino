@@ -55,9 +55,6 @@ import util.TestUtil;
 @RunWith(Parameterized.class) public
 class SandboxTest extends CommonsCompilerTestSuite {
 
-    private static double
-    javaSpecificationVersion = Double.parseDouble(System.getProperty("java.specification.version"));
-
     private static final Permissions NO_PERMISSIONS = new Permissions();
     static {
 
@@ -160,7 +157,7 @@ class SandboxTest extends CommonsCompilerTestSuite {
         //   Unable to make field private final byte[] java.lang.String.value accessible:
         //   module java.base does not "opens java.lang" to unnamed module @291ae
         // JREs 10, 11, 12, however, are not affected!?
-        if (SandboxTest.javaSpecificationVersion == 9.0) return;
+        if (CommonsCompilerTestSuite.JVM_VERSION == 9) return;
 
         String script = "String.class.getDeclaredField(\"value\").setAccessible(true); return true;";
         this.confinedScriptTest(script, SandboxTest.ALL_PERMISSIONS).assertResultTrue();

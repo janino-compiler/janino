@@ -6596,6 +6596,12 @@ class UnitCompiler {
      */
     private IClass
     getReferenceType(Location location, String simpleTypeName, Scope scope) throws CompileException {
+
+        if ("var".equals(simpleTypeName)) {
+            this.compileError("Local variable type inference NYI", location);
+            return this.iClassLoader.TYPE_java_lang_Object;
+        }
+
         BlockStatement   scopeBlockStatement   = null;
         TypeDeclaration  scopeTypeDeclaration  = null;
         MethodDeclarator scopeMethodDeclarator = null;

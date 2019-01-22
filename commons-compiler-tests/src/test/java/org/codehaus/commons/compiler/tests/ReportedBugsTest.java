@@ -64,9 +64,6 @@ import util.TestUtil;
 @RunWith(Parameterized.class) public
 class ReportedBugsTest extends CommonsCompilerTestSuite {
 
-    private static double
-    javaSpecificationVersion = Double.parseDouble(System.getProperty("java.specification.version"));
-
     @Parameters(name = "CompilerFactory={0}") public static Collection<Object[]>
     compilerFactories() throws Exception {
         return TestUtil.getCompilerFactoriesForParameters();
@@ -991,9 +988,13 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    testIssue69_IncompatibleClassChangeError_when_evaluating_against_jdk11() throws Exception {
+    testIssue69_IncompatibleClassChangeError_when_evaluating_against_janino9plus() throws Exception {
 
-        if (ReportedBugsTest.javaSpecificationVersion < 1.9) return;
+        try {
+            ClassLoader.getSystemClassLoader().loadClass("java.util.stream.Stream");
+        } catch (ClassNotFoundException cnfe) {
+            return;
+        }
 
         // openjdk-12:
         //         invokestatic    java.util.stream.Stream.of(Object[]) => java.util.stream.Stream

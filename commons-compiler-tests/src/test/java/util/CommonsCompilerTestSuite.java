@@ -30,6 +30,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
@@ -50,13 +51,34 @@ public
 class CommonsCompilerTestSuite {
 
     /**
+     * The version of the running JVM (6, 7, 8, ...). The version of the JRE on the bootstrap classpath may be
+     * different from (i.e. smaller than) the JVM version!
+     */
+    public static final int JVM_VERSION;
+
+    static {
+        String jv = System.getProperty("java.specification.version");
+        Matcher m = Pattern.compile("(?:1\\.)?(\\d+)").matcher(jv);
+        Assert.assertTrue(m.matches());
+        JVM_VERSION = Integer.parseInt(m.group(1));
+    }
+
+
+    public final boolean isJdk, isJanino;
+
+    /**
      * The {@link ICompilerFactory} in effect for this test execution.
      */
     protected final ICompilerFactory compilerFactory;
 
     public
     CommonsCompilerTestSuite(ICompilerFactory compilerFactory) {
+
         this.compilerFactory = compilerFactory;
+
+        String compilerFactoryId = compilerFactory.getId();
+        this.isJdk    = compilerFactoryId.equals("org.codehaus.commons.compiler.jdk");
+        this.isJanino = compilerFactoryId.equals("org.codehaus.janino");
     }
 
     // ----------------------------------------------------------------------------------------------------------------
