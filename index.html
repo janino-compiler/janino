@@ -1243,9 +1243,15 @@ UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
         <p>
           JANINO can be configured to use not its own Java compiler, but an alternative implementation. Alternative
           implementations must basically implement the interface <code>ICompilerFactory</code>.
-          One such alternative implementation is based on the <code>javax.tools</code>code> API, and is shipped as part
+          One such alternative implementation is based on the <code>javax.tools</code> API, and is shipped as part
           of the JANINO distribution: commons-compiler-jdk.jar.
           That implementation was (successfully) tested with all JDKs from version 1.6 to 12.
+        </p>
+        <p>
+          The performance of the generated code is the same as with the JANINO implementation; the <em>compilation</em>,
+          however, is slower by a factor of 12 (measured with the <code>JlsTest</code> unit test case). The suspected
+          reason is that the <code>javax.tools</code> compiler loads the required JRE classes through the classpath,
+          when JANINO uses classes that are already loaded into the running JVM.
         </p>
 
         <p>Basically there are two ways to switch implementations:</p>
