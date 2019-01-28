@@ -30,7 +30,6 @@ import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -40,13 +39,13 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class TeeReader extends FilterReader {
     private final Writer  out;
-    private final boolean closeWriterOnEOF;
+    private final boolean closeWriterOnEof;
 
     public
     TeeReader(Reader in, Writer out, boolean closeWriterOnEof) {
         super(in);
         this.out              = out;
-        this.closeWriterOnEOF = closeWriterOnEof;
+        this.closeWriterOnEof = closeWriterOnEof;
     }
 
     @Override public void
@@ -59,7 +58,7 @@ class TeeReader extends FilterReader {
     read() throws IOException {
         int c = this.in.read();
         if (c == -1) {
-            if (this.closeWriterOnEOF) {
+            if (this.closeWriterOnEof) {
                 this.out.close();
             } else {
                 this.out.flush();
@@ -74,7 +73,7 @@ class TeeReader extends FilterReader {
     read(@Nullable char[] cbuf, int off, int len) throws IOException {
         int bytesRead = this.in.read(cbuf, off, len);
         if (bytesRead == -1) {
-            if (this.closeWriterOnEOF) {
+            if (this.closeWriterOnEof) {
                 this.out.close();
             } else {
                 this.out.flush();
