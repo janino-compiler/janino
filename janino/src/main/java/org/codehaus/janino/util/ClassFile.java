@@ -40,7 +40,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.MethodDescriptor;
@@ -485,7 +484,7 @@ class ClassFile implements Annotatable {
      * Convenience method that adds a String, Integer, Float, Long or Double ConstantInfo.
      */
     private short
-    addConstantSIFLDInfo(Object cv) { // SUPPRESS CHECKSTYLE AbbreviationAsWord
+    addConstantSifldInfo(Object cv) {
         if (cv instanceof String) {
             return this.addConstantStringInfo((String) cv);
         } else
@@ -560,7 +559,7 @@ class ClassFile implements Annotatable {
         if (optionalConstantValue != null) {
             attributes.add(new ConstantValueAttribute(
                 this.addConstantUtf8Info("ConstantValue"),
-                this.addConstantSIFLDInfo(optionalConstantValue)
+                this.addConstantSifldInfo(optionalConstantValue)
             ));
         }
         FieldInfo fi = new FieldInfo(
