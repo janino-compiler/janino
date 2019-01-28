@@ -229,9 +229,9 @@ class CodeContext {
         dos.write(this.code, 0, this.end.offset);                                    // code
         dos.writeShort(this.exceptionTableEntries.size());                           // exception_table_length
         for (ExceptionTableEntry exceptionTableEntry : this.exceptionTableEntries) { // exception_table
-            dos.writeShort(exceptionTableEntry.startPC.offset);
-            dos.writeShort(exceptionTableEntry.endPC.offset);
-            dos.writeShort(exceptionTableEntry.handlerPC.offset);
+            dos.writeShort(exceptionTableEntry.startPc.offset);
+            dos.writeShort(exceptionTableEntry.endPc.offset);
+            dos.writeShort(exceptionTableEntry.handlerPc.offset);
             dos.writeShort(exceptionTableEntry.catchType);
         }
 
@@ -383,13 +383,13 @@ class CodeContext {
         int analyzedExceptionHandlers = 0;
         while (analyzedExceptionHandlers != this.exceptionTableEntries.size()) {
             for (ExceptionTableEntry exceptionTableEntry : this.exceptionTableEntries) {
-                if (stackSizes[exceptionTableEntry.startPC.offset] != CodeContext.UNEXAMINED) {
+                if (stackSizes[exceptionTableEntry.startPc.offset] != CodeContext.UNEXAMINED) {
                     this.flowAnalysis(
                         functionName,
                         this.code,                                          // code
                         this.end.offset,                                    // codeSize
-                        exceptionTableEntry.handlerPC.offset,               // offset
-                        stackSizes[exceptionTableEntry.startPC.offset] + 1, // stackSize
+                        exceptionTableEntry.handlerPc.offset,               // offset
+                        stackSizes[exceptionTableEntry.startPc.offset] + 1, // stackSize
                         stackSizes                                          // stackSizes
                     );
                     ++analyzedExceptionHandlers;
@@ -1374,12 +1374,12 @@ class CodeContext {
     private static
     class ExceptionTableEntry {
         ExceptionTableEntry(Offset startPc, Offset endPc, Offset handlerPc, short  catchType) {
-            this.startPC   = startPc;
-            this.endPC     = endPc;
-            this.handlerPC = handlerPc;
+            this.startPc   = startPc;
+            this.endPc     = endPc;
+            this.handlerPc = handlerPc;
             this.catchType = catchType;
         }
-        final Offset startPC, endPC, handlerPC;
+        final Offset startPc, endPc, handlerPc;
         final short  catchType; // 0 == "finally" clause
     }
 
@@ -1520,13 +1520,13 @@ class CodeContext {
 
             // Start, end and handler must either ALL lie IN the range to remove or ALL lie outside.
 
-            if (invalidOffsets.contains(ete.startPC)) {
-                assert invalidOffsets.contains(ete.endPC);
-                assert invalidOffsets.contains(ete.handlerPC);
+            if (invalidOffsets.contains(ete.startPc)) {
+                assert invalidOffsets.contains(ete.endPc);
+                assert invalidOffsets.contains(ete.handlerPc);
                 it.remove();
             } else {
-                assert !invalidOffsets.contains(ete.endPC);
-                assert !invalidOffsets.contains(ete.handlerPC);
+                assert !invalidOffsets.contains(ete.endPc);
+                assert !invalidOffsets.contains(ete.handlerPc);
             }
         }
 
