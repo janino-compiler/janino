@@ -2274,7 +2274,7 @@ class ClassFile implements Annotatable {
         storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.entries.length);            // line_number_table_length
             for (Entry entry : this.entries) {
-                dos.writeShort(entry.startPC);
+                dos.writeShort(entry.startPc);
                 dos.writeShort(entry.lineNumber);
             }
         }
@@ -2288,14 +2288,14 @@ class ClassFile implements Annotatable {
             /**
              * The fields of the entries in the {@code line_number_table}, as described in JVMS7 4.7.12.
              */
-            public final short startPC, lineNumber;
+            public final short startPc, lineNumber;
 
             /**
              * @param lineNumber 1...65535
              */
             public
             Entry(short startPc, short lineNumber) {
-                this.startPC    = startPc;
+                this.startPc    = startPc;
                 this.lineNumber = lineNumber;
             }
         }
@@ -2336,7 +2336,7 @@ class ClassFile implements Annotatable {
         storeBody(DataOutputStream dos) throws IOException {
             dos.writeShort(this.entries.length); // local_variable_table_length
             for (Entry lnte : this.entries) {    // local_variable_table
-                dos.writeShort(lnte.startPC);         // start_pc;
+                dos.writeShort(lnte.startPc);         // start_pc;
                 dos.writeShort(lnte.length);          // length
                 dos.writeShort(lnte.nameIndex);       // name_index
                 dos.writeShort(lnte.descriptorIndex); // descriptor_index
@@ -2353,11 +2353,11 @@ class ClassFile implements Annotatable {
             /**
              * The fields of the entries in the {@code local_variable_table}, as described in JVMS7 4.7.13.
              */
-            public final short startPC, length, nameIndex, descriptorIndex, index;
+            public final short startPc, length, nameIndex, descriptorIndex, index;
 
             public
             Entry(short startPc, short length, short nameIndex, short descriptorIndex, short index) {
-                this.startPC         = startPc;
+                this.startPc         = startPc;
                 this.length          = length;
                 this.nameIndex       = nameIndex;
                 this.descriptorIndex = descriptorIndex;
