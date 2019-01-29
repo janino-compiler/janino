@@ -163,7 +163,7 @@ class CodeContext {
         LocalScope currentScope = this.currentLocalScope;
         assert currentScope != null : "saveLocalVariables must be called first";
 
-        List<Java.LocalVariableSlot> currentVars = currentScope.localVars;
+        final List<Java.LocalVariableSlot> currentVars = currentScope.localVars;
 
         Java.LocalVariableSlot slot = new Java.LocalVariableSlot(name, this.nextLocalVariableSlot, type);
 
