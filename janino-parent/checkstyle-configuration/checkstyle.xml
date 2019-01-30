@@ -77,6 +77,9 @@
       <property name="format" value="^[A-Z][A-Z0-9]*$"/>
     </module>
     <module name="ConstantName"/>
+    <module name="InterfaceTypeParameterName">
+      <property name="format" value="^[A-Z][A-Z0-9]*$"/>
+    </module>
     <module name="LocalFinalVariableName"/>
     <module name="LocalVariableName"/>
     <module name="MemberName"/>
@@ -90,6 +93,22 @@
     <module name="ParameterName"/>
     <module name="StaticVariableName"/>
     <module name="TypeName"/>
+    <module name="de.unkrig.cscontrib.checks.NameSpelling">
+      <metadata name="net.sf.eclipsecs.core.comment" value="Annotation, Enum"/>
+      <property name="elements" value="annotation,enum"/>
+      <property name="requiredModifiers" value="protected,private"/>
+      <property name="format" value="^[A-Z][A-Za-z0-9]*$"/>
+    </module>
+    <module name="de.unkrig.cscontrib.checks.NameSpelling">
+      <metadata name="net.sf.eclipsecs.core.comment" value="Annotation field"/>
+      <property name="elements" value="annotation_field"/>
+      <property name="format" value="^[a-z][A-Za-z0-9]*$"/>
+    </module>
+    <module name="de.unkrig.cscontrib.checks.NameSpelling">
+      <metadata name="net.sf.eclipsecs.core.comment" value="Enum constant"/>
+      <property name="elements" value="enum_constant"/>
+      <property name="format" value="^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$"/>
+    </module>
     <module name="OverridableMethodInConstructor">
       <property name="severity" value="ignore"/>
       <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
@@ -124,22 +143,6 @@
     <module name="MutableException"/>
     <module name="ArrayTypeStyle"/>
     <module name="UpperEll"/>
-    <module name="de.unkrig.cscontrib.checks.NameSpelling">
-      <metadata name="net.sf.eclipsecs.core.comment" value="Annotation, Enum"/>
-      <property name="elements" value="annotation,enum"/>
-      <property name="requiredModifiers" value="protected,private"/>
-      <property name="format" value="^[A-Z][A-Za-z0-9]*$"/>
-    </module>
-    <module name="de.unkrig.cscontrib.checks.NameSpelling">
-      <metadata name="net.sf.eclipsecs.core.comment" value="Annotation field"/>
-      <property name="elements" value="annotation_field"/>
-      <property name="format" value="^[a-z][A-Za-z0-9]*$"/>
-    </module>
-    <module name="de.unkrig.cscontrib.checks.NameSpelling">
-      <metadata name="net.sf.eclipsecs.core.comment" value="Enum constant"/>
-      <property name="elements" value="enum_constant"/>
-      <property name="format" value="^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$"/>
-    </module>
     <module name="de.unkrig.cscontrib.checks.Whitespace">
       <property name="noWhitespaceBefore" value="class__class_literal,colon__case,colon__default,colon__labeled_stat,comma,dot__import,dot__package_decl,dot__qualified_type,dot__selector,ellipsis,l_angle__meth_invocation_type_args,l_angle__type_args,l_angle__type_params,l_brack__array_decl,l_brack__index,l_paren__anno,l_paren__anno_elem_decl,l_paren__meth_invocation,l_paren__params,name__anno,post_decr,post_incr,r_angle__meth_decl_type_params,r_angle__meth_invocation_type_args,r_angle__type_args,r_angle__type_params,r_brack__array_decl,r_brack__index,r_curly__empty_anno_array_init,r_curly__empty_anon_class,r_curly__empty_array_init,r_curly__empty_catch,r_curly__empty_lambda,r_curly__empty_meth_decl,r_curly__empty_type_decl,r_paren__anno,r_paren__anno_elem_decl,r_paren__cast,r_paren__catch,r_paren__do_while,r_paren__for,r_paren__for_no_update,r_paren__if,r_paren__meth_invocation,r_paren__params,r_paren__parenthesized,r_paren__resources,semi__abstract_meth_decl,semi__anno_elem_decl,semi__enum_decl,semi__field_decl,semi__for_condition_no_update,semi__for_condition_update,semi__for_init_condition,semi__for_init_no_condition,semi__for_no_condition_no_update,semi__for_no_condition_update,semi__for_no_init_condition,semi__for_no_init_no_condition,semi__import,semi__package_decl,semi__resources,semi__statement,semi__static_import,star__type_import_on_demand"/>
       <property name="whitespaceAfter" value="abstract,and__expr,and__type_bound,and_assign,assert,assign__assignment,assign__var_decl,case,catch,class__class_decl,colon__case,colon__default,colon__enhanced_for,colon__labeled_stat,colon__ternary,comma,conditional_and,conditional_or,default__anno_elem,default__mod,divide,divide_assign,do,ellipsis,else,enum,equal,extends__type,extends__type_bound,final,finally,for,greater,greater_equal,if,implements,import,import__static_import,instanceof,interface,l_curly__anno_array_init,l_curly__anon_class,l_curly__array_init,l_curly__block,l_curly__catch,l_curly__do,l_curly__enum_const,l_curly__finally,l_curly__for,l_curly__if,l_curly__instance_init,l_curly__labeled_stat,l_curly__meth_decl,l_curly__static_init,l_curly__switch,l_curly__synchronized,l_curly__try,l_curly__type_decl,l_curly__while,left_shift,left_shift_assign,less,less_equal,minus__additive,minus_assign,modulo,modulo_assign,multiply,multiply_assign,name__anno_member,native,new,not_equal,or,or_assign,package,plus__additive,plus_assign,private,protected,public,question__ternary,r_angle__meth_decl_type_params,r_curly__block,r_curly__catch,r_curly__do,r_curly__else,r_curly__empty_catch,r_curly__empty_meth_decl,r_curly__empty_type_decl,r_curly__finally,r_curly__for,r_curly__if,r_curly__instance_init,r_curly__labeled_stat,r_curly__meth_decl,r_curly__static_init,r_curly__switch,r_curly__synchronized,r_curly__try,r_curly__type_decl,r_curly__while,r_paren__cast,r_paren__catch,r_paren__if,r_paren__resources,return__expr,right_shift,right_shift_assign,semi__abstract_meth_decl,semi__anno_elem_decl,semi__empty_stat,semi__enum_decl,semi__field_decl,semi__for_condition_update,semi__for_init_condition,semi__for_no_condition_update,semi__for_no_init_condition,semi__import,semi__package_decl,semi__resources,semi__statement,semi__static_import,semi__type_decl,static__static_import,static__mod,static__static_init,super__type_bound,switch,synchronized__mod,synchronized__synchronized,throw,throws,transient,try,unsigned_right_shift,unsigned_right_shift_assign,volatile,while__do,while__while,xor,xor_assign"/>
@@ -169,9 +172,6 @@
     <module name="de.unkrig.cscontrib.checks.WrapPackageCheck"/>
     <module name="de.unkrig.cscontrib.checks.WrapSwitchBlockStmtGroupCheck"/>
     <module name="de.unkrig.cscontrib.checks.WrapTryCheck"/>
-    <module name="InterfaceTypeParameterName">
-      <property name="format" value="^[A-Z][A-Z0-9]*$"/>
-    </module>
     <module name="SuppressWithNearbyCommentFilter">
       <metadata name="net.sf.eclipsecs.core.comment" value="SUPPRESS CHECKSTYLE (check)"/>
       <property name="commentFormat" value="SUPPRESS CHECKSTYLE ([\w.: |]++)(?!:)"/>
