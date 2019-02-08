@@ -168,7 +168,9 @@
     <module name="de.unkrig.cscontrib.checks.WrapFieldCheck"/>
     <module name="de.unkrig.cscontrib.checks.WrapInterfaceCheck"/>
     <module name="de.unkrig.cscontrib.checks.WrapLocalVariableCheck"/>
-    <module name="de.unkrig.cscontrib.checks.WrapMethodCheck"/>
+    <module name="de.unkrig.cscontrib.checks.WrapMethodCheck">
+      <property name="allowMultipleArgsPerLine" value="true"/>
+    </module>
     <module name="de.unkrig.cscontrib.checks.WrapPackageCheck"/>
     <module name="de.unkrig.cscontrib.checks.WrapSwitchBlockStmtGroupCheck"/>
     <module name="de.unkrig.cscontrib.checks.WrapTryCheck"/>
