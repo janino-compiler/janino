@@ -41,7 +41,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.Java.LocalVariableSlot;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.AttributeInfo;
 import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
@@ -1531,8 +1530,8 @@ class CodeContext {
         }
 
         // Remove local variables in dead-code block.
-        for (Iterator<LocalVariableSlot> it = this.allLocalVars.iterator(); it.hasNext();) {
-            final LocalVariableSlot var = (LocalVariableSlot) it.next();
+        for (Iterator<Java.LocalVariableSlot> it = this.allLocalVars.iterator(); it.hasNext();) {
+            final Java.LocalVariableSlot var = (Java.LocalVariableSlot) it.next();
             if (invalidOffsets.contains(var.getStart())) {
                 assert invalidOffsets.contains(var.getEnd());
                 it.remove();

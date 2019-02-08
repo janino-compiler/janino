@@ -67,7 +67,6 @@ import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeDeclaration;
 import org.codehaus.janino.Java.VariableDeclarator;
-import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
@@ -109,7 +108,7 @@ class AstTest {
         PackageMemberClassDeclaration clazz = new PackageMemberClassDeclaration(
             AstTest.getLocation(),
             null,
-            new Java.Modifiers(Mod.PUBLIC),
+            new Java.Modifier[] { new Java.AccessModifier("public", AstTest.getLocation()) },
             "HandMade",
             null,         // optionalTypeParameters
             null,         // optionalExtendedType
@@ -132,18 +131,19 @@ class AstTest {
     createFloatingPointLiteral(String value) { return new FloatingPointLiteral(AstTest.getLocation(), value); }
 
     private static void
-    createMethod(PackageMemberClassDeclaration clazz, List<? extends Java.BlockStatement> statements, Type returnType) {
+    createMethod(PackageMemberClassDeclaration clazz, List<? extends Java.BlockStatement> statements, Type returnType)
+    throws CompileException {
         MethodDeclarator method = new MethodDeclarator(
-            AstTest.getLocation(),                       // location
-            null,                                        // optionalDocComment
-            new Java.Modifiers(Mod.PUBLIC),              // modifiers
-            null,                                        // optionalTypeParameters
-            returnType,                                  // type
-            "calculate",                                 // name
-            new FormalParameters(AstTest.getLocation()), // parameters
-            new Type[0],                                 // thrownExceptions
-            null,                                        // defaultValue
-            statements                                   // optionalStatements
+            AstTest.getLocation(),                                                            // location
+            null,                                                                             // optionalDocComment
+            new Java.Modifier[] { new Java.AccessModifier("public", AstTest.getLocation()) }, // modifiers
+            null,                                                                             // optionalTypeParameters
+            returnType,                                                                       // type
+            "calculate",                                                                      // name
+            new FormalParameters(AstTest.getLocation()),                                      // parameters
+            new Type[0],                                                                      // thrownExceptions
+            null,                                                                             // defaultValue
+            statements                                                                        // optionalStatements
         );
         clazz.addDeclaredMethod(method);
     }
@@ -153,7 +153,7 @@ class AstTest {
     createVarDecl(String name, String fPValue) throws CompileException {
         return new Java.LocalVariableDeclarationStatement(
             AstTest.getLocation(),
-            new Java.Modifiers(Mod.NONE),
+            new Java.Modifier[0],
             AstTest.createDoubleType(),
             new Java.VariableDeclarator[] {
                 new Java.VariableDeclarator(

@@ -40,10 +40,6 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.Java.AmbiguousName;
-import org.codehaus.janino.Java.BlockStatement;
-import org.codehaus.janino.Java.MethodDeclarator;
-import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.util.AbstractTraverser;
 
 /**
@@ -275,14 +271,14 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
 
     @Override protected void
     makeStatements(
-        int                    idx,
-        Parser                 parser,
-        List<BlockStatement>   resultStatements,
-        List<MethodDeclarator> resultMethods
+        int                         idx,
+        Parser                      parser,
+        List<Java.BlockStatement>   resultStatements,
+        List<Java.MethodDeclarator> resultMethods
     ) throws CompileException, IOException {
 
         // Parse the expression.
-        Rvalue value = parser.parseExpression().toRvalueOrCompileException();
+        Java.Rvalue value = parser.parseExpression().toRvalueOrCompileException();
 
         Class<?> et = this.getReturnType(idx);
         if (et == void.class) {
@@ -370,7 +366,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         while (parser.peek("import")) parser.parseImportDeclaration();
 
         // Parse the expression.
-        Rvalue rvalue = parser.parseExpression().toRvalueOrCompileException();
+        Java.Rvalue rvalue = parser.parseExpression().toRvalueOrCompileException();
         if (!parser.peek(TokenType.END_OF_INPUT)) {
             throw new CompileException("Unexpected token \"" + parser.peek() + "\"", scanner.location());
         }
@@ -380,7 +376,7 @@ class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluato
         new AbstractTraverser<RuntimeException>() {
 
             @Override public void
-            traverseAmbiguousName(AmbiguousName an) {
+            traverseAmbiguousName(Java.AmbiguousName an) {
 
                 // If any of the components starts with an upper-case letter, then the ambiguous
                 // name is most probably a type name, e.g. "System.out" or "java.lang.System.out".

@@ -271,49 +271,5 @@ class Mod {
      * @return Whether the given modifier includes {@link #ENUM}
      */
     public static boolean isEnum(short sh) { return (sh & Mod.ENUM) != 0; }
-
-    /**
-     * Composes and returns a string that maps the given modifier as follows:
-     * <ul>
-     *   <li>Value zero is mapped to "".</li>
-     *   <li>Non-zero values are mapped to a sequence of words, separated with blanks.</li>
-     *   <li>{@link #VARARGS} is mapped to {@code "transient"}, because the two flags have the same value</li>
-     *   <li>{@link #SUPER} is mapped to {@code "synchronized"}, because the two flags have the same value</li>
-     *   <li>{@link #BRIDGE} is mapped to {@code "volatile"}, because the two flags have the same value</li>
-     * </ul>
-     */
-    public static String
-    shortToString(short sh) {
-        if (sh == 0) return "";
-        StringBuilder res = new StringBuilder();
-        for (int i = 0; i < Mod.MAPPINGS.length; i += 2) {
-            if ((sh & ((Short) Mod.MAPPINGS[i + 1]).shortValue()) == 0) continue;
-            if (res.length() > 0) res.append(' ');
-            res.append((String) Mod.MAPPINGS[i]);
-        }
-        return res.toString();
-    }
-
-    private static final Object[] MAPPINGS = {
-        "public",       new Short(Mod.PUBLIC),
-        "private",      new Short(Mod.PRIVATE),
-        "protected",    new Short(Mod.PROTECTED),
-//      "???",          new Short(Mod.PACKAGE),
-        "static",       new Short(Mod.STATIC),
-        "final",        new Short(Mod.FINAL),
-        "synchronized", new Short(Mod.SYNCHRONIZED), // Has the same value as SUPER
-//      "super",        new Short(Mod.SUPER),        // Has the same value as SYNCHRONIZED
-        "volatile",     new Short(Mod.VOLATILE),     // Has the same value as BRIDGE
-//      "bridge",       new Short(Mod.BRIDGE),       // Has the same value as VOLATILE
-        "transient",    new Short(Mod.TRANSIENT),    // Has the same value as VARARGS
-//      "varargs",      new Short(Mod.VARARGS),      // Has the same value as TRANSIENT
-        "native",       new Short(Mod.NATIVE),
-//      "interface",    new Short(Mod.INTERFACE),    // Not a "real" modifier
-        "abstract",     new Short(Mod.ABSTRACT),
-        "strictfp",     new Short(Mod.STRICTFP),
-//      "enum",         new Short(Mod.ENUM),         // Not a "real" modifier
-        "synthetic",    new Short(Mod.SYNTHETIC),
-//      "@",            new Short(Mod.ANNOTATION),   // Not a "real" modifier
-    };
 }
 

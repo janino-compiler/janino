@@ -35,12 +35,14 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
+import org.codehaus.janino.Java.AccessModifier;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.AnnotationTypeDeclaration;
 import org.codehaus.janino.Java.AnonymousClassDeclaration;
 import org.codehaus.janino.Java.ArrayAccessExpression;
+import org.codehaus.janino.Java.ArrayCreationReference;
 import org.codehaus.janino.Java.ArrayInitializer;
 import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayType;
@@ -57,6 +59,7 @@ import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CatchClause;
 import org.codehaus.janino.Java.CatchParameter;
 import org.codehaus.janino.Java.CharacterLiteral;
+import org.codehaus.janino.Java.ClassInstanceCreationReference;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ConditionalExpression;
@@ -66,8 +69,11 @@ import org.codehaus.janino.Java.ContinueStatement;
 import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.DoStatement;
 import org.codehaus.janino.Java.ElementValue;
+import org.codehaus.janino.Java.ElementValueArrayInitializer;
 import org.codehaus.janino.Java.ElementValuePair;
 import org.codehaus.janino.Java.EmptyStatement;
+import org.codehaus.janino.Java.EnumConstant;
+import org.codehaus.janino.Java.EnumDeclaration;
 import org.codehaus.janino.Java.ExpressionLambdaBody;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccess;
@@ -94,18 +100,22 @@ import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Java.Lvalue;
+import org.codehaus.janino.Java.MarkerAnnotation;
 import org.codehaus.janino.Java.MemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.MemberClassDeclaration;
+import org.codehaus.janino.Java.MemberEnumDeclaration;
 import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.MemberTypeDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
-import org.codehaus.janino.Java.Modifiers;
+import org.codehaus.janino.Java.MethodReference;
+import org.codehaus.janino.Java.Modifier;
 import org.codehaus.janino.Java.NamedClassDeclaration;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
 import org.codehaus.janino.Java.NewClassInstance;
 import org.codehaus.janino.Java.NewInitializedArray;
+import org.codehaus.janino.Java.NormalAnnotation;
 import org.codehaus.janino.Java.NullLiteral;
 import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
@@ -121,6 +131,7 @@ import org.codehaus.janino.Java.ReferenceType;
 import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.RvalueMemberType;
+import org.codehaus.janino.Java.SingleElementAnnotation;
 import org.codehaus.janino.Java.Statement;
 import org.codehaus.janino.Java.StringLiteral;
 import org.codehaus.janino.Java.SuperConstructorInvocation;
@@ -196,19 +207,16 @@ class Parser {
 
         CompilationUnit compilationUnit = new CompilationUnit(this.location().getFileName());
 
-        String    docComment = this.doc();
-        Modifiers modifiers  = this.parseModifiers();
+        String     docComment = this.doc();
+        Modifier[] modifiers  = this.parseModifiers();
 
         if (this.peek("package")) {
-            if (modifiers.isDefault) {
+            if (Parser.hasAccessModifiers(modifiers)) {
                 this.warning(
-                    "package.defaultModifier",
-                    "No \"default\" modifier allowed on package declaration",
+                    "package.accessModifiers",
+                    "No access modifiers allowed on package declaration",
                     this.location()
                 );
-            }
-            if (modifiers.accessFlags != 0) {
-                this.warning("package.accessFlags", "No access flags allowed on package declaration", this.location());
             }
 
             // Ignore doc comment and annotations.
@@ -220,18 +228,8 @@ class Parser {
         }
 
         while (this.peek("import")) {
-            if (modifiers.isDefault) {
-                this.warning(
-                    "import.defaultModifier",
-                    "No \"default\" modifier allowed on import declaration",
-                    this.location()
-                );
-            }
-            if (modifiers.accessFlags != 0) {
-                this.warning("import.accessFlags", "No access flags allowed on import declarations", this.location());
-            }
-            if (modifiers.annotations.length > 0) {
-                this.warning("import.annotations", "No annotations allowed on import declarations", this.location());
+            if (modifiers.length > 0) {
+                this.warning("import.modifiers", "No modifiers allowed on import declarations", this.location());
             }
             if (docComment != null) {
                 this.warning("import.doc_comment", "Doc comment on import declaration", this.location());
@@ -360,10 +358,10 @@ class Parser {
      * </pre>
      */
     private PackageMemberTypeDeclaration
-    parsePackageMemberTypeDeclarationRest(@Nullable String optionalDocComment, Modifiers modifiers)
+    parsePackageMemberTypeDeclarationRest(@Nullable String optionalDocComment, Modifier[] modifiers)
     throws CompileException, IOException {
 
-        if (modifiers.isDefault) {
+        if (Parser.hasAccessModifier(modifiers, "default")) {
             this.warning(
                 "classOrInterfaceDeclaration.defaultModifier",
                 "No \"default\" modifier allowed for class or interface declaration",
@@ -415,73 +413,55 @@ class Parser {
 
     /**
      * <pre>
-     *   Modifiers := {
-     *       'public' | 'protected' | 'private' | 'static' | 'abstract' | 'final' | 'native'
-     *       | 'synchronized' | 'transient' | 'volatile' | 'strictfp'
-     *       | Annotation
-     *       | 'default'
-     *   }
+     *   Modifiers := { Modifier }
      * </pre>
      * <p>
      *   Includes the case "no modifiers".
      * </p>
      */
-    public Java.Modifiers
-    parseModifiers() throws CompileException, IOException {
-
-        short                 afs       = 0;
-        List<Java.Annotation> as        = new ArrayList<Java.Annotation>();
-        boolean               isDefault = false;
-
+    public Modifier[]
+    parseModifiers(String... allowedKeywords) throws CompileException, IOException {
+        List<Modifier> result = new ArrayList<Modifier>();
         for (;;) {
+            Modifier m = this.parseOptionalModifier(allowedKeywords);
+            if (m == null) break;
+            result.add(m);
+        }
+        return (Modifier[]) result.toArray(new Modifier[result.size()]);
+    }
 
-            if (this.peek("@")) {
+    /**
+     * <pre>
+     *   Modifier :=
+     *       Annotation
+     *       | 'public' | 'protected' | 'private'
+     *       | 'static' | 'abstract' | 'final' | 'native' | 'synchronized' | 'transient' | 'volatile' | 'strictfp'
+     *       | 'default'
+     * </pre>
+     */
+    @Nullable public Modifier
+    parseOptionalModifier(String... allowedKeywords) throws CompileException, IOException {
 
-                // Annotation type declaration ahead?
-                if (this.peekNextButOne().value.equals("interface")) break;
+        if (allowedKeywords.length > 0 && this.peek(allowedKeywords) == -1) return null;
 
-                as.add(this.parseAnnotation());
-                continue;
-            }
+        if (this.peek("@")) {
 
-            if (this.peekRead("default")) {
-                if (isDefault) throw this.compileException("At most one \"default\" modifier allowed\"");
-                isDefault = true;
-                continue;
-            }
+            // Annotation type declaration ahead?
+            if (this.peekNextButOne().value.equals("interface")) return null;
 
-            int idx = this.peekRead(Parser.ACCESS_FLAG_NAMES);
-            if (idx == -1) break;
-            String afn = Parser.ACCESS_FLAG_NAMES[idx];
-            short  af  = Parser.ACCESS_FLAG_CODES[idx];
-
-            if ((afs & af) != 0) throw this.compileException("Duplicate access flag \"" + afn + "\"");
-
-            for (short meafs : Parser.MUTUALLY_EXCLUSIVE_ACCESS_FLAGS) {
-                if ((af & meafs) != 0 && (afs & meafs) != 0) {
-                    throw this.compileException("Only one of \"" + Mod.shortToString(meafs) + "\" allowed");
-                }
-            }
-            afs |= af;
+            return this.parseAnnotation();
         }
 
-        if (as.isEmpty() && afs == 0 && !isDefault) return Parser.NO_MODIFIERS;
+        int idx = this.peekRead(Parser.ACCESS_MODIFIER_KEYWORDS);
+        if (idx == -1) return null;
 
-        return new Modifiers(afs, (Annotation[]) as.toArray(new Java.Annotation[as.size()]), isDefault);
+        return new AccessModifier(Parser.ACCESS_MODIFIER_KEYWORDS[idx], this.location());
     }
-    private static final String[] ACCESS_FLAG_NAMES = {
-        "public", "protected", "private", "static", "abstract", "final", "native", "synchronized",
-        "transient", "volatile", "strictfp"
+    private static final String[] ACCESS_MODIFIER_KEYWORDS = {
+        "public", "protected", "private",
+        "static", "abstract", "final", "native", "synchronized", "transient", "volatile", "strictfp",
+        "default",
     };
-    private static final short[] ACCESS_FLAG_CODES = {
-        Mod.PUBLIC, Mod.PROTECTED, Mod.PRIVATE, Mod.STATIC, Mod.ABSTRACT, Mod.FINAL, Mod.NATIVE, Mod.SYNCHRONIZED,
-        Mod.TRANSIENT, Mod.VOLATILE, Mod.STRICTFP
-    };
-    private static final short[] MUTUALLY_EXCLUSIVE_ACCESS_FLAGS = {
-        Mod.PUBLIC | Mod.PROTECTED | Mod.PRIVATE,
-        Mod.ABSTRACT | Mod.FINAL,
-    };
-    private static final Modifiers NO_MODIFIERS = new Modifiers();
 
     /**
      * <pre>
@@ -499,19 +479,19 @@ class Parser {
      *   ElementValuePairsOpt    := [ ElementValuePair { ',' ElementValuePair } ]
      * </pre>
      */
-    private Java.Annotation
+    private Annotation
     parseAnnotation() throws CompileException, IOException {
         this.read("@");
         ReferenceType type = new ReferenceType(this.location(), this.parseQualifiedIdentifier(), null);
 
         // Marker annotation?
-        if (!this.peekRead("(")) return new Java.MarkerAnnotation(type);
+        if (!this.peekRead("(")) return new MarkerAnnotation(type);
 
         // Single-element annotation?
         if (!this.peek(TokenType.IDENTIFIER) || !this.peekNextButOne("=")) {
-            Java.ElementValue elementValue = this.parseElementValue();
+            ElementValue elementValue = this.parseElementValue();
             this.read(")");
-            return new Java.SingleElementAnnotation(type, elementValue);
+            return new SingleElementAnnotation(type, elementValue);
         }
 
         // Normal annotation.
@@ -519,17 +499,14 @@ class Parser {
         if (this.peekRead(")")) {
             elementValuePairs = new ElementValuePair[0];
         } else {
-            List<Java.ElementValuePair> evps = new ArrayList<Java.ElementValuePair>();
+            List<ElementValuePair> evps = new ArrayList<ElementValuePair>();
             do {
                 evps.add(this.parseElementValuePair());
             } while (this.read(",", ")") == 0);
-            elementValuePairs = (ElementValuePair[]) evps.toArray(new Java.ElementValuePair[evps.size()]);
+            elementValuePairs = (ElementValuePair[]) evps.toArray(new ElementValuePair[evps.size()]);
         }
 
-        return new Java.NormalAnnotation(
-            type,
-            elementValuePairs
-        );
+        return new NormalAnnotation(type, elementValuePairs);
     }
 
     /**
@@ -537,11 +514,11 @@ class Parser {
      *   ElementValuePair := Identifier '=' ElementValue
      * </pre>
      */
-    private Java.ElementValuePair
+    private ElementValuePair
     parseElementValuePair() throws CompileException, IOException {
         String identifier = this.read(TokenType.IDENTIFIER);
         this.read("=");
-        return new Java.ElementValuePair(identifier, this.parseElementValue());
+        return new ElementValuePair(identifier, this.parseElementValue());
     }
 
     /**
@@ -552,7 +529,7 @@ class Parser {
      *           | ElementValueArrayInitializer
      * </pre>
      */
-    private Java.ElementValue
+    private ElementValue
     parseElementValue() throws CompileException, IOException {
         if (this.peek("@")) return this.parseAnnotation();
         if (this.peek("{")) return this.parseElementValueArrayInitializer();
@@ -567,16 +544,13 @@ class Parser {
     private ElementValue
     parseElementValueArrayInitializer() throws CompileException, IOException {
         this.read("{");
-        Location                loc = this.location();
-        List<Java.ElementValue> evs = new ArrayList<Java.ElementValue>();
+        Location           loc = this.location();
+        List<ElementValue> evs = new ArrayList<ElementValue>();
         while (!this.peekRead("}")) {
             if (this.peekRead(",")) continue;
             evs.add(this.parseElementValue());
         }
-        return new Java.ElementValueArrayInitializer(
-            (ElementValue[]) evs.toArray(new Java.ElementValue[evs.size()]),
-            loc
-        );
+        return new ElementValueArrayInitializer((ElementValue[]) evs.toArray(new ElementValue[evs.size()]), loc);
     }
 
     /**
@@ -591,7 +565,7 @@ class Parser {
     public NamedClassDeclaration
     parseClassDeclarationRest(
         @Nullable String        optionalDocComment,
-        Modifiers               modifiers,
+        Modifier[]              modifiers,
         ClassDeclarationContext context
     ) throws CompileException, IOException {
         Location location  = this.location();
@@ -657,10 +631,10 @@ class Parser {
      *   EnumDeclarationRest := Identifier [ 'implements' ReferenceTypeList ] EnumBody
      * </pre>
      */
-    public Java.EnumDeclaration
+    public EnumDeclaration
     parseEnumDeclarationRest(
         @Nullable String        optionalDocComment,
-        Modifiers               modifiers,
+        Modifier[]              modifiers,
         ClassDeclarationContext context
     ) throws CompileException, IOException {
         Location location = this.location();
@@ -680,9 +654,9 @@ class Parser {
             implementedTypes = this.parseReferenceTypeList();
         }
 
-        Java.EnumDeclaration enumDeclaration;
+        EnumDeclaration enumDeclaration;
         if (context == ClassDeclarationContext.COMPILATION_UNIT) {
-            enumDeclaration = new Java.PackageMemberEnumDeclaration(
+            enumDeclaration = new PackageMemberEnumDeclaration(
                 location,           // location
                 optionalDocComment, // optionalDocComment
                 modifiers,          // modifiers
@@ -691,7 +665,7 @@ class Parser {
             );
         } else
         if (context == ClassDeclarationContext.TYPE_DECLARATION) {
-            enumDeclaration = new Java.MemberEnumDeclaration(
+            enumDeclaration = new MemberEnumDeclaration(
                 location,           // location
                 optionalDocComment, // optionalDocComment
                 modifiers,          // modifiers
@@ -752,7 +726,7 @@ class Parser {
      * </pre>
      */
     public void
-    parseEnumBody(Java.EnumDeclaration enumDeclaration) throws CompileException, IOException {
+    parseEnumBody(EnumDeclaration enumDeclaration) throws CompileException, IOException {
         this.read("{");
 
         while (this.peek(";", "}") == -1) {
@@ -770,10 +744,10 @@ class Parser {
      *   EnumConstant := [ Annotations ] Identifier [ Arguments ] [ ClassBody ]
      * </pre>
      */
-    public Java.EnumConstant
+    public EnumConstant
     parseEnumConstant() throws CompileException, IOException {
 
-        List<Java.Annotation> annotations = new ArrayList<Java.Annotation>();
+        List<Annotation> annotations = new ArrayList<Annotation>();
         while (this.peek("@")) {
             annotations.add(this.parseAnnotation());
         }
@@ -782,7 +756,7 @@ class Parser {
 
         Rvalue[] arguments = this.peek("(") ? this.parseArguments() : null;
 
-        Java.EnumConstant result = new Java.EnumConstant(
+        EnumConstant result = new EnumConstant(
             this.location(), // location
             this.doc(),      // optionalDocComment
             annotations,     // annotations
@@ -818,21 +792,21 @@ class Parser {
 
         final String optionalDocComment = this.doc();
 
-        Modifiers modifiers = this.parseModifiers();
-        if (modifiers.isDefault) {
+        Modifier[] modifiers = this.parseModifiers();
+        if (Parser.hasAccessModifier(modifiers, "default")) {
             throw this.compileException("Modifier \"default\" not allowed on class member");
         }
 
         // Initializer?
         if (this.peek("{")) {
-            if ((modifiers.accessFlags & ~Mod.STATIC) != 0) {
+            if (Parser.hasAccessModifierOtherThan(modifiers, "static")) {
                 throw this.compileException("Only access flag \"static\" allowed on initializer");
             }
 
             Initializer initializer = new Initializer(
-                this.location(),                     // location
-                Mod.isStatic(modifiers.accessFlags), // statiC
-                this.parseBlock()                    // block
+                this.location(),                               // location
+                Parser.hasAccessModifier(modifiers, "static"), // statiC
+                this.parseBlock()                              // block
             );
 
             classDeclaration.addInitializer(initializer);
@@ -871,7 +845,7 @@ class Parser {
             if (optionalDocComment == null) this.warning("MEDCM", "Member enum doc comment missing", this.location());
             classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseEnumDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
-                modifiers.add(Mod.ENUM),                 // modifiers
+                modifiers,                               // modifiers
                 ClassDeclarationContext.TYPE_DECLARATION // context
             ));
             return;
@@ -884,7 +858,7 @@ class Parser {
             }
             classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                                // optionalDocComment
-                modifiers.add(Mod.STATIC),                         // modifiers
+                modifiers,                                         // modifiers
                 InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
             ));
             return;
@@ -899,7 +873,7 @@ class Parser {
             }
             classDeclaration.addMemberTypeDeclaration((MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                                // optionalDocComment
-                modifiers.add(Mod.STATIC | Mod.ANNOTATION),        // modifiers
+                modifiers,                                         // modifiers
                 InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
             ));
             return;
@@ -982,7 +956,7 @@ class Parser {
     public InterfaceDeclaration
     parseInterfaceDeclarationRest(
         @Nullable String            optionalDocComment,
-        Modifiers                   modifiers,
+        Modifier[]                  modifiers,
         InterfaceDeclarationContext context
     ) throws CompileException, IOException {
         Location location      = this.location();
@@ -1033,7 +1007,7 @@ class Parser {
     public AnnotationTypeDeclaration
     parseAnnotationTypeDeclarationRest(
         @Nullable String            optionalDocComment,
-        Modifiers                   modifiers,
+        Modifier[]                  modifiers,
         InterfaceDeclarationContext context
     ) throws CompileException, IOException {
         Location location           = this.location();
@@ -1107,16 +1081,18 @@ class Parser {
 
             if (this.peekRead(";")) continue;
 
-            String    optionalDocComment = this.doc();
-            Modifiers modifiers          = this.parseModifiers();
+            String     optionalDocComment = this.doc();
+            Modifier[] modifiers          = this.parseModifiers();
 
             // "void" method declaration (without type parameters).
             if (this.peekRead("void")) {
                 if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
-                if (modifiers.isDefault) throw this.compileException("Default interface methods not implemented");
+                if (Parser.hasAccessModifier(modifiers, "default")) {
+                    throw this.compileException("Default interface methods not implemented");
+                }
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                     optionalDocComment,                                 // optionalDocComment
-                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC),           // modifiers
+                    modifiers,                                          // modifiers
                     null,                                               // optionalTypeParameters
                     new PrimitiveType(this.location(), Primitive.VOID), // type
                     this.read(TokenType.IDENTIFIER),                    // name
@@ -1130,13 +1106,13 @@ class Parser {
                 if (optionalDocComment == null) {
                     this.warning("MCDCM", "Member class doc comment missing", this.location());
                 }
-                if (modifiers.isDefault) {
+                if (Parser.hasAccessModifier(modifiers, "default")) {
                     throw this.compileException("Modifier \"default\" not allowed on member class declaration");
                 }
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseClassDeclarationRest(
                         optionalDocComment,                      // optionalDocComment
-                        modifiers.add(Mod.STATIC | Mod.PUBLIC),  // modifiers
+                        modifiers,                               // modifiers
                         ClassDeclarationContext.TYPE_DECLARATION // context
                     )
                 );
@@ -1148,14 +1124,14 @@ class Parser {
                 if (optionalDocComment == null) {
                     this.warning("MEDCM", "Member enum doc comment missing", this.location());
                 }
-                if (modifiers.isDefault) {
+                if (Parser.hasAccessModifier(modifiers, "default")) {
                     throw this.compileException("Modifier \"default\" not allowed on member enum declaration");
                 }
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseClassDeclarationRest(
-                        optionalDocComment,                                // optionalDocComment
-                        modifiers.add(Mod.STATIC | Mod.PUBLIC | Mod.ENUM), // modifiers
-                        ClassDeclarationContext.TYPE_DECLARATION           // context
+                        optionalDocComment,                      // optionalDocComment
+                        modifiers,                               // modifiers
+                        ClassDeclarationContext.TYPE_DECLARATION // context
                     )
                 );
                 continue;
@@ -1166,13 +1142,13 @@ class Parser {
                 if (optionalDocComment == null) {
                     this.warning("MIDCM", "Member interface doc comment missing", this.location());
                 }
-                if (modifiers.isDefault) {
+                if (Parser.hasAccessModifier(modifiers, "default")) {
                     throw this.compileException("Modifier \"default\" not allowed on member interface declaration");
                 }
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
                         optionalDocComment,                                // optionalDocComment
-                        modifiers.add(Mod.STATIC | Mod.PUBLIC),            // modifiers
+                        modifiers,                                         // modifiers
                         InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
                     )
                 );
@@ -1186,16 +1162,16 @@ class Parser {
                 if (optionalDocComment == null) {
                     this.warning("MATDCM", "Member annotation type doc comment missing", this.location());
                 }
-                if (modifiers.isDefault) {
+                if (Parser.hasAccessModifier(modifiers, "default")) {
                     throw this.compileException(
                         "Modifier \"default\" not allowed on member annotation type declaration"
                     );
                 }
                 interfaceDeclaration.addMemberTypeDeclaration(
                     (MemberTypeDeclaration) this.parseInterfaceDeclarationRest(
-                        optionalDocComment,                                      // optionalDocComment
-                        modifiers.add(Mod.STATIC | Mod.PUBLIC | Mod.ANNOTATION), // modifiers
-                        InterfaceDeclarationContext.NAMED_TYPE_DECLARATION       // context
+                        optionalDocComment,                                // optionalDocComment
+                        modifiers,                                         // modifiers
+                        InterfaceDeclarationContext.NAMED_TYPE_DECLARATION // context
                     )
                 );
                 continue;
@@ -1208,12 +1184,14 @@ class Parser {
             // "void" method declaration?
             if (this.peekRead("void")) {
                 if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
-                if (modifiers.isDefault) throw this.compileException("Default interface methods not implemented");
+                if (Parser.hasAccessModifier(modifiers, "default")) {
+                    throw this.compileException("Default interface methods not implemented");
+                }
                 Location location = this.location();
                 String   name     = this.read(TokenType.IDENTIFIER);
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                     optionalDocComment,                          // optionalDocComment
-                    modifiers.add(Mod.ABSTRACT | Mod.PUBLIC),    // modifiers
+                    modifiers,                                   // modifiers
                     optionalTypeParameters,                      // optionalTypeParameters
                     new PrimitiveType(location, Primitive.VOID), // type
                     name,                                        // name
@@ -1229,14 +1207,16 @@ class Parser {
             // Method declarator?
             if (this.peek("(")) {
                 if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
-                if (modifiers.isDefault) throw this.compileException("Default interface methods not implemented");
+                if (Parser.hasAccessModifier(modifiers, "default")) {
+                    throw this.compileException("Default interface methods not implemented");
+                }
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
-                    optionalDocComment,        // optionalDocComment
-                    modifiers.add(Mod.PUBLIC), // modifiers
-                    optionalTypeParameters,    // optionalTypeParameters
-                    memberType,                // type
-                    memberName,                // name
-                    true                       // allowDefaultClause
+                    optionalDocComment,     // optionalDocComment
+                    modifiers,              // modifiers
+                    optionalTypeParameters, // optionalTypeParameters
+                    memberType,             // type
+                    memberName,             // name
+                    true                    // allowDefaultClause
                 ));
                 continue;
             }
@@ -1246,13 +1226,15 @@ class Parser {
                 throw new CompileException("Type parameters not allowed with field declaration", this.location());
             }
             if (optionalDocComment == null) this.warning("FDCM", "Field doc comment missing", this.location());
-            if (modifiers.isDefault) throw this.compileException("Modifier \"default\" not allowed for fields");
+            if (Parser.hasAccessModifier(modifiers, "default")) {
+                throw this.compileException("Modifier \"default\" not allowed for fields");
+            }
             FieldDeclaration fd = new FieldDeclaration(
-                location,                                           // location
-                optionalDocComment,                                 // optionalDocComment
-                modifiers.add(Mod.PUBLIC | Mod.STATIC | Mod.FINAL), // modifiers
-                memberType,                                         // type
-                this.parseFieldDeclarationRest(memberName)          // variableDeclarators
+                location,                                  // location
+                optionalDocComment,                        // optionalDocComment
+                modifiers,                                 // modifiers
+                memberType,                                // type
+                this.parseFieldDeclarationRest(memberName) // variableDeclarators
             );
             interfaceDeclaration.addConstantDeclaration(fd);
         }
@@ -1271,7 +1253,7 @@ class Parser {
      * </pre>
      */
     public ConstructorDeclarator
-    parseConstructorDeclarator(@Nullable String optionalDocComment, Modifiers modifiers)
+    parseConstructorDeclarator(@Nullable String optionalDocComment, Modifier[] modifiers)
     throws CompileException, IOException {
         this.read(TokenType.IDENTIFIER);  // Class name
 
@@ -1313,7 +1295,7 @@ class Parser {
                     Type variableType = a.toTypeOrCompileException();
                     s = new LocalVariableDeclarationStatement(
                         a.getLocation(),                // location
-                        new Java.Modifiers(Mod.NONE),   // modifiers
+                        new Modifier[0],                // modifiers
                         variableType,                   // type
                         this.parseVariableDeclarators() // variableDeclarators
                     );
@@ -1388,7 +1370,7 @@ class Parser {
     public MethodDeclarator
     parseMethodDeclarationRest(
         @Nullable String          optionalDocComment,
-        Modifiers                 modifiers,
+        Modifier[]                modifiers,
         @Nullable TypeParameter[] optionalTypeParameters,
         Type                      type,
         String                    name,
@@ -1419,7 +1401,7 @@ class Parser {
         if (this.peekRead(";")) {
             optionalStatements = null;
         } else {
-            if (Mod.isAbstract(modifiers.accessFlags) || Mod.isNative(modifiers.accessFlags)) {
+            if (Parser.hasAccessModifier(modifiers, "abstract", "native")) {
                 throw this.compileException("Abstract or native method must not have a body");
             }
             this.read("{");
@@ -1553,23 +1535,18 @@ class Parser {
     public FormalParameter
     parseFormalParameter(boolean[] hasEllipsis) throws CompileException, IOException {
 
-        Modifiers modifiers = this.parseModifiers();
-        if (modifiers.isDefault) throw this.compileException("Modifier \"default\" not allowed on formal parameters");
-        if ((modifiers.accessFlags & ~Mod.FINAL) != 0) {
-            this.warning(
-                "OFAAAOPD",
-                "Only \"final\" and annotations allowed on parameter declaration",
-                this.location()
-            );
+        Modifier[] modifiers = this.parseModifiers();
+        if (Parser.hasAccessModifier(modifiers, "default")) {
+            throw this.compileException("Modifier \"default\" not allowed on formal parameters");
         }
-
-        final boolean finaL = (modifiers.accessFlags & Mod.FINAL) != 0;
 
         // Ignore annotations.
 
-        Type type = this.parseType(); // SUPPRESS CHECKSTYLE UsageDistance
-
-        return this.parseFormalParameterRest(finaL, type, hasEllipsis);
+        return this.parseFormalParameterRest(
+            Parser.hasAccessModifier(modifiers, "final"),
+            this.parseType(),
+            hasEllipsis
+        );
     }
 
     /**
@@ -1614,16 +1591,9 @@ class Parser {
     public CatchParameter
     parseCatchParameter() throws CompileException, IOException {
 
-        final boolean finaL;
-        {
-            Modifiers modifiers = this.parseModifiers();
-            if (modifiers.isDefault) {
-                throw this.compileException("Modifier \"default\" not allowed on catch parameters");
-            }
-            if ((modifiers.accessFlags & ~Mod.FINAL) != 0) {
-                throw this.compileException("Only \"final\" and annotations allowed on catch parameter declaration");
-            }
-            finaL = (modifiers.accessFlags & Mod.FINAL) != 0;
+        Modifier[] modifiers = this.parseModifiers();
+        if (Parser.hasAccessModifier(modifiers, "default")) {
+            throw this.compileException("Modifier \"default\" not allowed on catch parameters");
         }
 
         List<ReferenceType> catchTypes = new ArrayList<ReferenceType>();
@@ -1636,7 +1606,7 @@ class Parser {
 
         return new CatchParameter(
             location,
-            finaL,
+            Parser.hasAccessModifier(modifiers, "final"),
             (ReferenceType[]) catchTypes.toArray(new ReferenceType[catchTypes.size()]),
             name
         );
@@ -1741,7 +1711,7 @@ class Parser {
 
             final LocalClassDeclaration lcd = (LocalClassDeclaration) this.parseClassDeclarationRest(
                 optionalDocComment,           // optionalDocComment
-                new Modifiers(),              // modifiers
+                new Modifier[0],              // modifiers
                 ClassDeclarationContext.BLOCK // context
             );
             return new LocalClassDeclarationStatement(lcd);
@@ -1774,7 +1744,7 @@ class Parser {
         for (int i = this.parseBracketsOpt(); i > 0; --i) variableType = new ArrayType(variableType);
         LocalVariableDeclarationStatement lvds = new LocalVariableDeclarationStatement(
             a.getLocation(),                // location
-            new Java.Modifiers(Mod.NONE),   // modifiers
+            new Modifier[0],                // modifiers
             variableType,                   // type
             this.parseVariableDeclarators() // variableDeclarators
         );
@@ -1971,8 +1941,8 @@ class Parser {
             if (this.peek(
                 "final", "@", "byte", "short", "char", "int", "long", "float", "double", "boolean" // SUPPRESS CHECKSTYLE LineLength|Wrap
             ) != -1) {
-                Modifiers modifiers = this.parseModifiers();
-                Type      type      = this.parseType();
+                Modifier[] modifiers = this.parseModifiers();
+                Type       type      = this.parseType();
                 if (this.peek(TokenType.IDENTIFIER) && this.peekNextButOne(":")) {
 
                     // 'for' '(' [ Modifiers ] Type identifier ':' Expression ')' Statement
@@ -1985,7 +1955,7 @@ class Parser {
                         forLocation,          // location
                         new FormalParameter(  // currentElement
                             nameLocation,
-                            Mod.isFinal(modifiers.accessFlags),
+                            Parser.hasAccessModifier(modifiers, "final"),
                             type,
                             name
                         ),
@@ -2031,7 +2001,7 @@ class Parser {
                 // 'for' '(' Expression VariableDeclarators
                 optionalInit = new LocalVariableDeclarationStatement(
                     this.location(),                // location
-                    new Java.Modifiers(Mod.NONE),   // modifiers
+                    new Modifier[0],                // modifiers
                     a.toTypeOrCompileException(),   // type
                     this.parseVariableDeclarators() // variableDeclarators
                 );
@@ -2207,16 +2177,14 @@ class Parser {
     private TryStatement.Resource
     parseResource() throws CompileException, IOException {
 
-        Location  loc       = this.location();
-        Modifiers modifiers = this.parseModifiers();
-        Atom      a         = this.parseExpression();
+        Location   loc       = this.location();
+        Modifier[] modifiers = this.parseModifiers();
+        Atom       a         = this.parseExpression();
 
-        if (modifiers != Parser.NO_MODIFIERS || this.peek(TokenType.IDENTIFIER)) {
+        if (modifiers.length > 0 || this.peek(TokenType.IDENTIFIER)) {
 
-            if (modifiers.isDefault) throw this.compileException("Modifier \"default\" not allowed on resource");
-
-            if ((modifiers.accessFlags & ~Mod.FINAL) != 0) {
-                throw this.compileException("Only access flag FINAL allowed in this place");
+            if (Parser.hasAccessModifier(modifiers, "default")) {
+                throw this.compileException("Modifier \"default\" not allowed on resource");
             }
 
             // Modifiers Type VariableDeclarator
@@ -2770,10 +2738,10 @@ class Parser {
             if (this.peek("<", ">", "<=", ">=") != -1) {
 
                 // ambiguous-name '<' '?' ...
-                if (a instanceof Java.AmbiguousName && this.peek("<") && this.peekNextButOne("?")) {
+                if (a instanceof AmbiguousName && this.peek("<") && this.peekNextButOne("?")) {
                     return new ReferenceType(
                         this.location(),
-                        ((Java.AmbiguousName) a).identifiers,
+                        ((AmbiguousName) a).identifiers,
                         this.parseTypeArgumentsOpt()
                     );
                 }
@@ -2782,10 +2750,10 @@ class Parser {
 
                 Atom rhs = this.parseShiftExpression();
 
-                if ("<".equals(operator) && a instanceof Java.AmbiguousName) {
+                if ("<".equals(operator) && a instanceof AmbiguousName) {
 
                     if (this.peek("<", ">", ",") != -1) {
-                        final String[] identifiers = ((Java.AmbiguousName) a).identifiers;
+                        final String[] identifiers = ((AmbiguousName) a).identifiers;
 
                         // '<' ShiftExpression [ TypeArguments ] ( '<' | '>' | ',' )
                         this.parseTypeArgumentsOpt();
@@ -2923,7 +2891,7 @@ class Parser {
                 this.read("new");
 
                 // ArrayType '::' 'new'
-                return new Java.ArrayCreationReference(this.location(), (ArrayType) a);
+                return new ArrayCreationReference(this.location(), (ArrayType) a);
             }
 
             TypeArgument[] typeArguments = this.parseTypeArgumentsOpt();
@@ -2933,7 +2901,7 @@ class Parser {
             case 0: // keyword
                 // ClassType '::' [ TypeArguments ] 'new'
                 this.read("new");
-                return new Java.ClassInstanceCreationReference(
+                return new ClassInstanceCreationReference(
                     this.location(),
                     a.toTypeOrCompileException(),
                     typeArguments
@@ -2941,7 +2909,7 @@ class Parser {
 
             case 1: // identifier
                 // ( Rvalue | ReferenceType ) '::' [ TypeArguments ] identifier
-                return new Java.MethodReference(this.location(), a, this.read(TokenType.IDENTIFIER));
+                return new MethodReference(this.location(), a, this.read(TokenType.IDENTIFIER));
 
             default:
                 throw new AssertionError(this.peek());
@@ -3803,5 +3771,38 @@ class Parser {
             sb.append(separator).append(sa[i]);
         }
         return sb.toString();
+    }
+
+    private static boolean
+    hasAccessModifier(Modifier[] modifiers, String... keywords) {
+        for (String kw : keywords) {
+            for (Modifier m : modifiers) {
+                if (m instanceof AccessModifier && kw.equals(((AccessModifier) m).keyword)) return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean
+    hasAccessModifierOtherThan(Modifier[] modifiers, String... keywords) {
+
+        MODIFIER:
+        for (Modifier m : modifiers) {
+            if (m instanceof AccessModifier) {
+                for (String kw : keywords) {
+                    if (kw.equals(((AccessModifier) m).keyword)) continue MODIFIER;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean
+    hasAccessModifiers(Modifier[] modifiers) {
+        for (Modifier m : modifiers) {
+            if (m instanceof AccessModifier) return true;
+        }
+        return false;
     }
 }

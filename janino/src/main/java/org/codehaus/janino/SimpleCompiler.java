@@ -48,7 +48,6 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.Sandbox;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.TypeVisitor;
 import org.codehaus.janino.util.ClassFile;
@@ -377,7 +376,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             @Override public String
             toString() { return this.getDelegate().toString(); }
 
-            private Type
+            private Java.Type
             getDelegate() {
 
                 if (this.delegate != null) return this.delegate;

@@ -85,7 +85,6 @@ import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.UnaryOperation;
-import org.codehaus.janino.Mod;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.Unparser;
@@ -438,12 +437,10 @@ class UnparserTest {
 
     private static void
     testInterfaceHelper(boolean interfaceMod) throws CompileException {
-        Java.Modifiers maas = new Java.Modifiers(Mod.PUBLIC);
-        if (interfaceMod) maas = maas.add(Mod.INTERFACE);
         Java.PackageMemberInterfaceDeclaration decl = new Java.PackageMemberInterfaceDeclaration(
             Location.NOWHERE,
             "foo",
-            maas,
+            new Java.Modifier[] { new Java.AccessModifier("public", Location.NOWHERE) },
             "Foo",
             null,       // optionalTypeParameters
             new Type[0] // extendedTypes

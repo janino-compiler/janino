@@ -288,13 +288,13 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
             cn = cn.substring(idx + 1);
         }
         Java.PackageMemberClassDeclaration tlcd = new Java.PackageMemberClassDeclaration(
-            location,                                                      // location
-            null,                                                          // optionalDocComment
-            new Java.Modifiers(Mod.PUBLIC),                                // modifiers
-            cn,                                                            // name
-            null,                                                          // optionalTypeParameters
-            this.optionalClassToType(location, this.optionalExtendedType), // optionalExtendedType
-            this.classesToTypes(location, this.implementedTypes)           // implementedTypes
+            location,                                                            // location
+            null,                                                                // optionalDocComment
+            new Java.Modifier[] { new Java.AccessModifier("public", location) }, // modifiers
+            cn,                                                                  // name
+            null,                                                                // optionalTypeParameters
+            this.optionalClassToType(location, this.optionalExtendedType),       // optionalExtendedType
+            this.classesToTypes(location, this.implementedTypes)                 // implementedTypes
         );
         compilationUnit.addPackageMemberTypeDeclaration(tlcd);
         return tlcd;

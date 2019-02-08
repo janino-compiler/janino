@@ -43,7 +43,6 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.StringPattern;
@@ -516,7 +515,7 @@ class Compiler {
 
                 File sourceFile;
                 {
-                    CompilationUnit compilationUnit = unitCompiler.getCompilationUnit();
+                    Java.CompilationUnit compilationUnit = unitCompiler.getCompilationUnit();
                     if (compilationUnit.optionalFileName == null) throw new InternalCompilerException();
                     sourceFile = new File(compilationUnit.optionalFileName);
                 }

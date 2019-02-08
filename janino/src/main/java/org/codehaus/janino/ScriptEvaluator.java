@@ -47,6 +47,7 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.Java.AbstractClassDeclaration;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.CompilationUnit;
@@ -55,7 +56,7 @@ import org.codehaus.janino.Java.LocalClassDeclaration;
 import org.codehaus.janino.Java.LocalClassDeclarationStatement;
 import org.codehaus.janino.Java.LocalVariableDeclarationStatement;
 import org.codehaus.janino.Java.MethodDeclarator;
-import org.codehaus.janino.Java.Modifiers;
+import org.codehaus.janino.Java.Modifier;
 import org.codehaus.janino.Java.Primitive;
 import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.Type;
@@ -670,10 +671,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.setScriptCount(parsers.length);
 
         // Create compilation unit.
-        Java.CompilationUnit compilationUnit = this.makeCompilationUnit(parsers.length == 1 ? parsers[0] : null);
+        CompilationUnit compilationUnit = this.makeCompilationUnit(parsers.length == 1 ? parsers[0] : null);
 
         // Create class declaration.
-        final Java.AbstractClassDeclaration
+        final AbstractClassDeclaration
         cd = this.addPackageMemberClassDeclaration(parsers[0].location(), compilationUnit);
 
         // Create methods with one block each.
@@ -683,8 +684,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             Parser parser = parsers[i];
 
             // Create the statements of the method.
-            List<Java.BlockStatement>   statements   = new ArrayList<Java.BlockStatement>();
-            List<Java.MethodDeclarator> localMethods = new ArrayList<Java.MethodDeclarator>();
+            List<BlockStatement>   statements   = new ArrayList<BlockStatement>();
+            List<MethodDeclarator> localMethods = new ArrayList<MethodDeclarator>();
             this.makeStatements(i, parser, statements, localMethods);
 
             // Create the method that holds the statements.
@@ -886,14 +887,14 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
             final LocalClassDeclaration lcd = (LocalClassDeclaration) parser.parseClassDeclarationRest(
                 null,                         // optionalDocComment
-                new Modifiers(),              // modifiers
+                new Modifier[0],              // modifiers
                 ClassDeclarationContext.BLOCK // context
             );
             mainStatements.add(new LocalClassDeclarationStatement(lcd));
             return;
         }
 
-        Modifiers modifiers = parser.parseModifiers();
+        Modifier[] modifiers = parser.parseModifiers();
 
         // "void" method declaration (without type parameters).
         if (parser.peekRead("void")) {
@@ -909,7 +910,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             return;
         }
 
-        if (!modifiers.isBlank()) {
+        if (modifiers.length > 0) {
 
             Type methodOrVariableType = parser.parseType();
 
@@ -984,7 +985,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         String[]                  parameterNames,
         Class<?>[]                thrownExceptions,
         List<Java.BlockStatement> statements
-    ) {
+    ) throws CompileException {
         if (parameterNames.length != parameterTypes.length) {
             throw new InternalCompilerException(
                 "Lengths of \"parameterNames\" ("
@@ -1010,14 +1011,20 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             );
         }
 
+        Modifier[] modifiers;
+        {
+            List<Java.Modifier> l = new ArrayList<Java.Modifier>();
+            l.addAll(Arrays.asList(annotations));
+            l.add(new Java.AccessModifier("public", location));
+            if (staticMethod) l.add(new Java.AccessModifier("static", location));
+
+            modifiers = (Java.Modifier[]) l.toArray(new Java.Modifier[l.size()]);
+        }
+
         return new Java.MethodDeclarator(
             location,                                        // location
             null,                                            // optionalDocComment
-            new Java.Modifiers(                              // modifiers
-                staticMethod ? (short) (Mod.PUBLIC | Mod.STATIC) : Mod.PUBLIC,
-                annotations,
-                false // isDefault
-            ),
+            modifiers,                                       // modifiers
             null,                                            // optionalTypeParameters
             this.classToType(location, returnType),          // type
             methodName,                                      // name

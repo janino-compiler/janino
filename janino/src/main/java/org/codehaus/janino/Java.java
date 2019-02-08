@@ -27,12 +27,15 @@
 package org.codehaus.janino;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -43,9 +46,11 @@ import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
+import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
 import org.codehaus.janino.Visitor.LambdaBodyVisitor;
 import org.codehaus.janino.Visitor.LambdaParametersVisitor;
+import org.codehaus.janino.Visitor.ModifierVisitor;
 import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
@@ -338,7 +343,7 @@ class Java {
      * Representation of a Java  annotation.
      */
     public
-    interface Annotation extends Locatable, ElementValue {
+    interface Annotation extends Locatable, ElementValue, Modifier {
 
         /**
          * Invokes the "{@code visit...()}" method of {@link Visitor.AnnotationVisitor} for the concrete {@link
@@ -382,6 +387,9 @@ class Java {
 
         @Override @Nullable public final <R, EX extends Throwable> R
         accept(ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitAnnotation(this); }
+
+        @Override @Nullable public final <R, EX extends Throwable> R
+        accept(ModifierVisitor<R, EX> visitor) throws EX { return this.accept((AnnotationVisitor<R, EX>) visitor); }
 
         @Override public void
         throwCompileException(String message) throws CompileException {
@@ -481,89 +489,35 @@ class Java {
         accept(Visitor.AnnotationVisitor<R, EX> visitor) throws EX { return visitor.visitNormalAnnotation(this); }
     }
 
+    public
+    interface Modifier extends Locatable {
+
+        @Nullable <R, EX extends Throwable> R
+        accept(ModifierVisitor<R, EX> modifierVisitor) throws EX;
+    }
+
     /**
      * Representation of the modifier flags and annotations that are associated with a declaration.
      */
     public static
-    class Modifiers {
+    class AccessModifier extends Located implements Modifier {
 
         /**
-         * The or'ed constants declared in {@link Mod}.
+         * {@code "public"}, {@code default}, etc.
          */
-        public final short accessFlags;
-
-        /**
-         * The annotations.
-         */
-        public final Annotation[] annotations;
-
-        /**
-         * The {@code default} modifier first appeared in JLS8 9.4.
-         */
-        public final boolean isDefault;
-
-        /**
-         * A "blank" {@link Modifiers} object: No flags, no annotations.
-         */
-        public
-        Modifiers() {
-            this.accessFlags = Mod.NONE;
-            this.annotations = new Annotation[0];
-            this.isDefault   = false;
-        }
-
-        /**
-         * A "simple" {@link Modifiers} object: Flags, but no annotations.
-         */
-        public
-        Modifiers(short accessFlags) {
-            this.accessFlags = accessFlags;
-            this.annotations = new Annotation[0];
-            this.isDefault   = false;
-        }
+        public final String keyword;
 
         public
-        Modifiers(short accessFlags, Annotation[] annotations, boolean isDefault) {
-            this.accessFlags = accessFlags;
-            this.annotations = annotations;
-            this.isDefault   = isDefault;
+        AccessModifier(String keyword, Location location) {
+            super(location);
+            this.keyword = keyword;
         }
 
-        /**
-         * Sets the enclosing scope of the annotations.
-         */
-        public void
-        setEnclosingScope(Scope enclosingScope) {
-            for (Annotation a : this.annotations) a.setEnclosingScope(enclosingScope);
-        }
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ModifierVisitor<R, EX> visitor) throws EX { return visitor.visitAccessModifier(this); }
 
-        /**
-         * @return This object, with the given <var>modifiersToAdd</var> added.
-         */
-        public Modifiers
-        add(int modifiersToAdd) {
-            return new Modifiers((short) (this.accessFlags | modifiersToAdd), this.annotations, this.isDefault);
-        }
-
-        /**
-         * @return This object, with the given <var>modifiersToRemove</var> removed.
-         */
-        public Modifiers
-        remove(int modifiersToRemove) {
-            return new Modifiers((short) (this.accessFlags & ~modifiersToRemove), this.annotations, this.isDefault);
-        }
-
-        /**
-         * @param newAccess One of {@link Mod#PUBLIC}, {@link Mod#PRIVATE}, {@link Mod#PROTECTED}, {@link Mod#PACKAGE}
-         * @return          This object, with the access changed to <var>newAccess</var>
-         */
-        public Modifiers
-        changeAccess(int newAccess) {
-            return new Modifiers((short) (this.accessFlags & ~Mod.PPP | newAccess), this.annotations, this.isDefault);
-        }
-
-        public boolean
-        isBlank() { return this.accessFlags == 0 && this.annotations.length == 0; }
+        @Override public String
+        toString() { return this.keyword; }
     }
 
     /**
@@ -694,11 +648,6 @@ class Java {
      */
     public
     interface TypeDeclaration extends Annotatable, Locatable, Scope {
-
-        /**
-         * @return The or'ed modifier flags of the type, as defined in {@link Mod}
-         */
-        short getModifierFlags();
 
         /**
          * Returns the member type with the given name.
@@ -853,7 +802,7 @@ class Java {
     public abstract static
     class AbstractTypeDeclaration implements TypeDeclaration {
         private final Location                    location;
-        private final Modifiers                   modifiers;
+        private final Modifier[]                  modifiers;
         @Nullable private final TypeParameter[]   optionalTypeParameters;
         private final List<MethodDeclarator>      declaredMethods              = new ArrayList<MethodDeclarator>();
         private final List<MemberTypeDeclaration> declaredClassesAndInterfaces = new ArrayList<MemberTypeDeclaration>();
@@ -867,19 +816,13 @@ class Java {
         public
         AbstractTypeDeclaration(
             Location                  location,
-            Modifiers                 modifiers,
+            Modifier[]                modifiers,
             @Nullable TypeParameter[] optionalTypeParameters
         ) {
             this.location               = location;
             this.modifiers              = modifiers;
             this.optionalTypeParameters = optionalTypeParameters;
         }
-
-        @Override public short
-        getModifierFlags() { return this.modifiers.accessFlags; }
-
-        @Override public Annotation[]
-        getAnnotations() { return this.modifiers.annotations; }
 
         /**
          * Sets the enclosing scope of this {@link TypeDeclaration}.
@@ -895,7 +838,9 @@ class Java {
                 );
             }
             this.enclosingScope = enclosingScope;
-            this.modifiers.setEnclosingScope(enclosingScope);
+            for (Modifier m : this.modifiers) {
+              if (m instanceof Annotation) ((Annotation) m).setEnclosingScope(enclosingScope);
+            }
             if (this.optionalTypeParameters != null) {
                 for (TypeParameter tp : this.optionalTypeParameters) {
                     if (tp.optionalBound != null) {
@@ -906,6 +851,12 @@ class Java {
                 }
             }
         }
+
+        public Modifier[]
+        getModifiers() { return this.modifiers; }
+
+        @Override public Annotation[]
+        getAnnotations() { return Java.getAnnotations(this.modifiers); }
 
         @Nullable public TypeParameter[]
         getOptionalTypeParameters() { return this.optionalTypeParameters; }
@@ -1030,11 +981,9 @@ class Java {
         public
         AbstractClassDeclaration(
             Location                  location,
-            Modifiers                 modifiers,
+            Modifier[]                modifiers,
             @Nullable TypeParameter[] optionalTypeParameters
-        ) {
-            super(location, modifiers, optionalTypeParameters);
-        }
+        ) { super(location, modifiers, optionalTypeParameters); }
 
         /**
          * Adds one {@link ConstructorDeclarator} to this class.
@@ -1097,16 +1046,16 @@ class Java {
          * @return The declared constructors, or the default constructor
          */
         ConstructorDeclarator[]
-        getConstructors() {
+        getConstructors() throws CompileException {
             if (this.constructors.isEmpty()) {
                 ConstructorDeclarator defaultConstructor = new ConstructorDeclarator(
-                    this.getLocation(),                       // location
-                    null,                                     // optionalDocComment
-                    new Java.Modifiers(Mod.PUBLIC),           // modifiers
-                    new FormalParameters(this.getLocation()), // formalParameters
-                    new Type[0],                              // thrownExceptions
-                    null,                                     // optionalExplicitConstructorInvocation
-                    Collections.<BlockStatement>emptyList()   // optionalStatements
+                    this.getLocation(),                                 // location
+                    null,                                               // optionalDocComment
+                    Java.accessModifiers(this.getLocation(), "public"), // modifiers
+                    new FormalParameters(this.getLocation()),           // formalParameters
+                    new Type[0],                                        // thrownExceptions
+                    null,                                               // optionalExplicitConstructorInvocation
+                    Collections.<BlockStatement>emptyList()             // optionalStatements
                 );
                 defaultConstructor.setDeclaringType(this);
                 return new ConstructorDeclarator[] { defaultConstructor };
@@ -1140,9 +1089,9 @@ class Java {
         public
         AnonymousClassDeclaration(Location location, Type baseType) {
             super(
-                location,                                         // location
-                new Modifiers((short) (Mod.PRIVATE | Mod.FINAL)), // modifiers
-                null                                              // optionalTypeParameters
+                location,                                           // location
+                Java.accessModifiers(location, "private", "final"), // modifiers
+                null                                                // optionalTypeParameters
             );
             (this.baseType = baseType).setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
         }
@@ -1195,7 +1144,7 @@ class Java {
         NamedClassDeclaration(
             Location                  location,
             @Nullable String          optionalDocComment,
-            Modifiers                 modifiers,
+            Modifier[]                modifiers,
             String                    name,
             @Nullable TypeParameter[] optionalTypeParameters,
             @Nullable Type            optionalExtendedType,
@@ -1257,20 +1206,25 @@ class Java {
      */
     public static
     class MemberClassDeclaration extends NamedClassDeclaration implements MemberTypeDeclaration, InnerClassDeclaration {
+
         public
         MemberClassDeclaration(
             Location                  location,
             @Nullable String          optionalDocComment,
-            Modifiers                 modifiers,
+            Modifier[]                modifiers,
             String                    name,
             @Nullable TypeParameter[] optionalTypeParameters,
             @Nullable Type            optionalExtendedType,
             Type[]                    implementedTypes
-        ) {
+        ) throws CompileException {
             super(
                 location,               // location
                 optionalDocComment,     // optionalDocComment
-                modifiers,              // modifiers
+                Java.checkModifiers(    // modifiers
+                    modifiers,
+                    "public", "protected", "private",
+                    "static", "abstract", "final"
+                ),
                 name,                   // name
                 optionalTypeParameters, // optionalTypeParameters
                 optionalExtendedType,   // optionalExtendedType
@@ -1285,9 +1239,6 @@ class Java {
 
         @Override public TypeDeclaration
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
-
-        @Override public boolean
-        isStatic() { return Mod.isStatic(this.getModifierFlags()); }
 
         // Implement TypeDeclaration.
 
@@ -1312,18 +1263,18 @@ class Java {
         MemberEnumDeclaration(
             Location         location,
             @Nullable String optionalDocComment,
-            Modifiers        modifiers,
+            Modifier[]       modifiers,
             String           name,
             Type[]           implementedTypes
-        ) {
+        ) throws CompileException {
             super(
-                location,
-                optionalDocComment,
-                modifiers.add(Mod.ENUM),
-                name,
-                null, // optionalTypeParameters
-                null, // optionalExtendedType
-                implementedTypes
+                location,           // location
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                name,               // name
+                null,               // optionalTypeParameters
+                null,               // optionalExtendedType
+                implementedTypes    // implementedTypes
             );
         }
 
@@ -1351,16 +1302,19 @@ class Java {
         LocalClassDeclaration(
             Location                  location,
             @Nullable String          optionalDocComment,
-            Modifiers                 modifiers,
+            Modifier[]                modifiers,
             String                    name,
             @Nullable TypeParameter[] optionalTypeParameters,
             @Nullable Type            optionalExtendedType,
             Type[]                    implementedTypes
-        ) {
+        ) throws CompileException {
             super(
                 location,               // location
                 optionalDocComment,     // optionalDocComment
-                modifiers,              // modifiers
+                Java.checkModifiers(    // modifiers
+                    modifiers,
+                    "xxx" // No access modifiers allowed
+                ),
                 name,                   // name
                 optionalTypeParameters, // optionalTypeParameters
                 optionalExtendedType,   // optionalExtendedType
@@ -1395,7 +1349,7 @@ class Java {
         PackageMemberClassDeclaration(
             Location                  location,
             @Nullable String          optionalDocComment,
-            Modifiers                 modifiers,
+            Modifier[]                modifiers,
             String                    name,
             @Nullable TypeParameter[] optionalTypeParameters,
             @Nullable Type            optionalExtendedType,
@@ -1404,7 +1358,7 @@ class Java {
             super(
                 location,
                 optionalDocComment,
-                modifiers,
+                Java.checkModifiers(modifiers, "public", "protected", "private", "final", "abstract"),
                 name,
                 optionalTypeParameters,
                 optionalExtendedType,
@@ -1428,7 +1382,7 @@ class Java {
         AbstractPackageMemberClassDeclaration(
             Location                  location,
             @Nullable String          optionalDocComment,
-            Modifiers                 modifiers,
+            Modifier[]                modifiers,
             String                    name,
             @Nullable TypeParameter[] optionalTypeParameters,
             @Nullable Type            optionalExtendedType,
@@ -1445,7 +1399,7 @@ class Java {
             );
 
             // Check for forbidden modifiers (JLS7 7.6).
-            if ((modifiers.accessFlags & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
+            if (Java.hasAccessModifier(modifiers, "protected", "private", "static")) {
                 this.throwCompileException(
                     "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class "
                     + "declaration"
@@ -1483,6 +1437,8 @@ class Java {
      */
     public
     interface EnumDeclaration extends ClassDeclaration, NamedTypeDeclaration, DocCommentable {
+
+        Modifier[] getModifiers();
 
         @Override String getName();
 
@@ -1540,7 +1496,7 @@ class Java {
         ) {
             super(
                 location,
-                new Modifiers(), // modifiers
+                new Modifier[0], // modifiers
                 null             // optionalTypeParameters
             );
             this.optionalDocComment = optionalDocComment;
@@ -1586,14 +1542,14 @@ class Java {
         PackageMemberEnumDeclaration(
             Location         location,
             @Nullable String optionalDocComment,
-            Modifiers        modifiers,
+            Modifier[]       modifiers,
             String           name,
             Type[]           implementedTypes
         ) throws CompileException {
             super(
                 location,
                 optionalDocComment,
-                modifiers.add(Mod.ENUM),
+                modifiers,
                 name,
                 null, // optionalTypeParameters
                 null, // optionalExtendedType
@@ -1633,7 +1589,7 @@ class Java {
         InterfaceDeclaration(
             Location                  location,
             @Nullable String          optionalDocComment,
-            Modifiers                 modifiers,
+            Modifier[]                modifiers,
             String                    name,
             @Nullable TypeParameter[] optionalTypeParameters,
             Type[]                    extendedTypes
@@ -1700,21 +1656,24 @@ class Java {
     public static
     class MemberInterfaceDeclaration
     extends InterfaceDeclaration
-    implements MemberTypeDeclaration, AnnotationTypeDeclaration {
+    implements MemberTypeDeclaration {
 
         public
         MemberInterfaceDeclaration(
             Location                  location,
             @Nullable String          optionalDocComment,
-            Modifiers                 modifiers,
+            Modifier[]                modifiers,
             String                    name,
             @Nullable TypeParameter[] optionalTypeParameters,
             Type[]                    extendedTypes
-        ) {
+        ) throws CompileException {
             super(
                 location,               // location
                 optionalDocComment,     // optionalDocComment
-                modifiers,              // modifiers
+                Java.checkModifiers(    // modifiers
+                    modifiers,
+                    "public", "protected", "private"
+                ),
                 name,                   // name
                 optionalTypeParameters, // optionalTypeParameters
                 extendedTypes           // extendedTypes
@@ -1741,9 +1700,6 @@ class Java {
         @Override public TypeDeclaration
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
 
-        @Override public boolean
-        isStatic() { return Mod.isStatic(this.getModifierFlags()); }
-
         // SUPPRESS CHECKSTYLE LineLength:2
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX> visitor)     throws EX { return visitor.visitMemberInterfaceDeclaration(this); }
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberInterfaceDeclaration(this); }
@@ -1753,20 +1709,23 @@ class Java {
      * Representation of a member annotation type declaration, a.k.a. "nested annotation type declaration".
      */
     public static final
-    class MemberAnnotationTypeDeclaration extends MemberInterfaceDeclaration {
+    class MemberAnnotationTypeDeclaration extends MemberInterfaceDeclaration implements AnnotationTypeDeclaration {
 
         public
         MemberAnnotationTypeDeclaration(
             Location         location,
             @Nullable String optionalDocComment,
-            Modifiers        modifiers,
+            Modifier[]       modifiers,
             String           name
-        ) {
+        ) throws CompileException {
             super(
-                location,
-                optionalDocComment,
-                modifiers.add(Mod.ANNOTATION),
-                name,
+                location,                       // location
+                optionalDocComment,             // optionalDocComment
+                Java.checkModifiers(            // modifiers
+                    modifiers,
+                    "public", "protected", "private"
+                ),
+                name,                           // name
                 null,                           // optionalTypeParameters
                 new Type[] { new ReferenceType( // extendedTypes
                     location,
@@ -1790,33 +1749,25 @@ class Java {
     public static
     class PackageMemberInterfaceDeclaration
     extends InterfaceDeclaration
-    implements PackageMemberTypeDeclaration, AnnotationTypeDeclaration {
+    implements PackageMemberTypeDeclaration {
 
         public
         PackageMemberInterfaceDeclaration(
             Location                  location,
             @Nullable String          optionalDocComment,
-            Modifiers                 modifiers,
+            Modifier[]                modifiers,
             String                    name,
             @Nullable TypeParameter[] optionalTypeParameters,
             Type[]                    extendedTypes
         ) throws CompileException {
             super(
-                location,               // location
-                optionalDocComment,     // optionalDocComment
-                modifiers,              // modifiers
-                name,                   // name
-                optionalTypeParameters, // optionalTypeParameters
-                extendedTypes           // extendedTypes
+                location,                                 // location
+                optionalDocComment,                       // optionalDocComment
+                Java.checkModifiers(modifiers, "public"), // modifiers
+                name,                                     // name
+                optionalTypeParameters,                   // optionalTypeParameters
+                extendedTypes                             // extendedTypes
             );
-
-            // Check for forbidden modifiers (JLS7 7.6).
-            if ((modifiers.accessFlags & (Mod.PROTECTED | Mod.PRIVATE | Mod.STATIC)) != 0) {
-                this.throwCompileException(
-                    "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member interface "
-                    + "declaration"
-                );
-            }
         }
 
         // Implement PackageMemberTypeDeclaration.
@@ -1861,19 +1812,19 @@ class Java {
         PackageMemberAnnotationTypeDeclaration(
             Location         location,
             @Nullable String optionalDocComment,
-            Modifiers        modifiers,
+            Modifier[]       modifiers,
             String           name
         ) throws CompileException {
             super(
                 location,
                 optionalDocComment,
-                modifiers.add(Mod.ANNOTATION),
-                name,
-                null,                           // optionalTypeParameters
-                new Type[] { new ReferenceType( // extendedTypes
-                    location,
-                    new String[] { "java", "lang", "annotation", "Annotation" },
-                    null // optionalTypeArguments
+                Java.checkModifiers(modifiers, "public"), // modifiers
+                name,                                     // name
+                null,                                     // optionalTypeParameters
+                new Type[] { new ReferenceType(           // extendedTypes
+                    location,                                                    // location
+                    new String[] { "java", "lang", "annotation", "Annotation" }, // identifiers
+                    null                                                         // optionalTypeArguments
                 )}
             );
         }
@@ -1889,6 +1840,8 @@ class Java {
      */
     public
     interface AnnotationTypeDeclaration extends NamedTypeDeclaration, DocCommentable {
+
+        Modifier[] getModifiers();
     }
 
     /**
@@ -1946,10 +1899,7 @@ class Java {
          */
         TypeDeclaration getDeclaringType();
 
-        /**
-         * @return Whether this declaration has the STATIC modifier
-         */
-        boolean isStatic();
+        Modifier[] getModifiers();
 
         /**
          * Invokes the "{@code visit...()}" method of {@link Visitor.TypeBodyDeclarationVisitor} for the concrete
@@ -1967,15 +1917,12 @@ class Java {
 
         @Nullable private TypeDeclaration declaringType;
 
-        /**
-         * Whether this declaration has the STATIC modifier
-         */
-        public final boolean statiC;
+        private final Modifier[] modifiers;
 
         protected
-        AbstractTypeBodyDeclaration(Location location, boolean statiC) {
+        AbstractTypeBodyDeclaration(Location location, Modifier[] modifiers) {
             super(location);
-            this.statiC = statiC;
+            this.modifiers = modifiers;
         }
 
         // Implement TypeBodyDeclaration.
@@ -1997,10 +1944,16 @@ class Java {
         @Override public TypeDeclaration
         getDeclaringType() { assert this.declaringType != null; return this.declaringType; }
 
-        @Override public boolean
-        isStatic() { return this.statiC; }
+        @Override public Modifier[]
+        getModifiers() { return this.modifiers; }
 
         /**
+         * @return The annotations of this function
+         */
+        public Annotation[]
+        getAnnotations() { return Java.getAnnotations(this.modifiers); }
+
+       /**
          * Forward-implements {@link BlockStatement#setEnclosingScope(Java.Scope)}.
          */
         public void
@@ -2037,14 +1990,17 @@ class Java {
 
         public
         Initializer(Location location, boolean statiC, Block block) {
-            super(location, statiC);
+            super(location, statiC ? Java.accessModifiers(location, "static") : new AccessModifier[0]);
             (this.block = block).setEnclosingScope(this);
         }
 
-        @Override public String
-        toString() { return this.statiC ? "static " + this.block : this.block.toString(); }
+        public boolean
+        isStatic() { return Java.hasAccessModifier(this.getModifiers(), "static"); }
 
-        // Implement BlockStatement.
+        @Override public String
+        toString() { return Java.toString(this.getModifiers()) + this.block; }
+
+       // Implement BlockStatement.
 
         // SUPPRESS CHECKSTYLE LineLength:2
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitInitializer(this); }
@@ -2061,11 +2017,6 @@ class Java {
     class FunctionDeclarator extends AbstractTypeBodyDeclaration implements Annotatable, DocCommentable {
 
         @Nullable private final String optionalDocComment;
-
-        /**
-         * The {@link Modifiers} of this declarator.
-         */
-        public final Modifiers modifiers;
 
         /**
          * The return type of the function (VOID for constructors).
@@ -2096,16 +2047,15 @@ class Java {
         FunctionDeclarator(
             Location                                 location,
             @Nullable String                         optionalDocComment,
-            Modifiers                                modifiers,
+            Modifier[]                               modifiers,
             Type                                     type,
             String                                   name,
             FormalParameters                         formalParameters,
             Type[]                                   thrownExceptions,
             @Nullable List<? extends BlockStatement> optionalStatements
         ) {
-            super(location, Mod.isStatic(modifiers.accessFlags));
+            super(location, modifiers);
             this.optionalDocComment = optionalDocComment;
-            this.modifiers          = formalParameters.variableArity ? modifiers.add(Mod.VARARGS) : modifiers;
             this.type               = type;
             this.name               = name;
             this.formalParameters   = formalParameters;
@@ -2118,17 +2068,12 @@ class Java {
             if (optionalStatements != null) {
                 for (Java.BlockStatement bs : optionalStatements) {
 
-                    bs.setEnclosingScope(this);
+                    // Field declaration initializers are also BlockStatements - their enclosing scope is already
+                    // set (the enclosing type declaration), and must not be re-set here.
+                    if (!(bs instanceof FieldDeclaration)) bs.setEnclosingScope(this);
                 }
             }
         }
-
-        /**
-         * @return The annotations of this function
-         */
-        @Override
-        public Annotation[]
-        getAnnotations() { return this.modifiers.annotations; }
 
         @Override @Nullable public final <R, EX extends Throwable> R
         accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX {
@@ -2147,13 +2092,13 @@ class Java {
         @Override public void
         setDeclaringType(TypeDeclaration declaringType) {
             super.setDeclaringType(declaringType);
-            for (Annotation a : this.modifiers.annotations) a.setEnclosingScope(declaringType);
+            for (Annotation a : this.getAnnotations()) a.setEnclosingScope(declaringType);
         }
 
         @Override public void
         setEnclosingScope(Scope enclosingScope) {
             super.setEnclosingScope(enclosingScope);
-            this.modifiers.setEnclosingScope(enclosingScope);
+            for (Annotation a : this.getAnnotations()) a.setEnclosingScope(enclosingScope);
         }
 
         // Implement "Scope".
@@ -2342,16 +2287,19 @@ class Java {
         ConstructorDeclarator(
             Location                        location,
             @Nullable String                optionalDocComment,
-            Modifiers                       modifiers,
+            Modifier[]                      modifiers,
             FormalParameters                formalParameters,
             Type[]                          thrownExceptions,
             @Nullable ConstructorInvocation optionalConstructorInvocation,
             List<? extends BlockStatement>  statements
-        ) {
+        ) throws CompileException {
             super(
                 location,                                    // location
                 optionalDocComment,                          // optionalDocComment
-                modifiers,                                   // modifiers
+                Java.checkModifiers(                         // modifiers
+                    modifiers,
+                    "public", "protected", "private"
+                ),
                 new PrimitiveType(location, Primitive.VOID), // type
                 "<init>",                                    // name
                 formalParameters,                            // formalParameters
@@ -2422,7 +2370,7 @@ class Java {
         MethodDeclarator(
             Location                                 location,
             @Nullable String                         optionalDocComment,
-            Java.Modifiers                           modifiers,
+            Java.Modifier[]                          modifiers,
             @Nullable TypeParameter[]                optionalTypeParameters,
             Type                                     type,
             String                                   name,
@@ -2430,16 +2378,20 @@ class Java {
             Type[]                                   thrownExceptions,
             @Nullable ElementValue                   defaultValue,
             @Nullable List<? extends BlockStatement> optionalStatements
-        ) {
+        ) throws CompileException {
             super(
-                location,           // location
-                optionalDocComment, // optionalDocComment
-                modifiers,          // modifiers
-                type,               // type
-                name,               // name
-                formalParameters,   // formalParameters
-                thrownExceptions,   // thrownExceptions
-                optionalStatements  // optionalStatements
+                location,            // location
+                optionalDocComment,  // optionalDocComment
+                Java.checkModifiers( // modifiers
+                    modifiers,
+                    "public", "protected", "private",
+                    "static", "final", "abstract", "synchronized"
+                ),
+                type,                // type
+                name,                // name
+                formalParameters,    // formalParameters
+                thrownExceptions,    // thrownExceptions
+                optionalStatements   // optionalStatements
             );
             this.optionalTypeParameters = optionalTypeParameters;
             this.defaultValue           = defaultValue;
@@ -2525,7 +2477,7 @@ class Java {
         /**
          * The modifiers of this field declaration.
          */
-        public final Modifiers modifiers;
+        public final Modifier[] modifiers;
 
         /**
          * The type of this field.
@@ -2541,7 +2493,7 @@ class Java {
         FieldDeclaration(
             Location             location,
             @Nullable String     optionalDocComment,
-            Modifiers            modifiers,
+            Modifier[]           modifiers,
             Type                 type,
             VariableDeclarator[] variableDeclarators
         ) {
@@ -2566,20 +2518,27 @@ class Java {
         @Override public void
         setEnclosingScope(Scope enclosingScope) {
             super.setEnclosingScope(enclosingScope);
-            this.modifiers.setEnclosingScope(enclosingScope);
+            for (Annotation a : this.getAnnotations()) a.setEnclosingScope(enclosingScope);
         }
 
-        @Override public Annotation[]
-        getAnnotations() { return this.modifiers.annotations; }
+        @Override public Modifier[]
+        getModifiers() { return this.modifiers; }
 
-        @Override public boolean
-        isStatic() { return Mod.isStatic(this.modifiers.accessFlags); }
+        /**
+         * @return The annotations of this field declaration
+         */
+        @Override public Annotation[]
+        getAnnotations() { return Java.getAnnotations(this.modifiers); }
 
         @Override public String
         toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append(Mod.shortToString(this.modifiers.accessFlags)).append(' ').append(this.type);
-            sb.append(' ').append(this.variableDeclarators[0]);
+            StringBuilder sb = (
+                new StringBuilder()
+                .append(Java.toString(this.getModifiers()))
+                .append(this.type)
+                .append(' ')
+                .append(this.variableDeclarators[0])
+            );
             for (int i = 1; i < this.variableDeclarators.length; ++i) {
                 sb.append(", ").append(this.variableDeclarators[i]);
             }
@@ -3145,7 +3104,7 @@ class Java {
             /**
              * The resource variable modifiers (annotations and/or flags like FINAL).
              */
-            public final Modifiers modifiers;
+            public final Modifier[] modifiers;
 
             /**
              * The declared type of the resource variable.
@@ -3163,7 +3122,7 @@ class Java {
             public
             LocalVariableDeclaratorResource(
                 Location           location,
-                Modifiers          modifiers,
+                Modifier[]         modifiers,
                 Type               type,
                 VariableDeclarator variableDeclarator
             ) {
@@ -3186,12 +3145,14 @@ class Java {
 
             @Override public String
             toString() {
-                StringBuilder sb = new StringBuilder();
-                for (Annotation a : this.modifiers.annotations) sb.append(a.toString());
-                if (this.modifiers.accessFlags != Mod.NONE) {
-                    sb.append(Mod.shortToString(this.modifiers.accessFlags)).append(' ');
-                }
-                return sb.append(this.type).append(' ').append(this.variableDeclarator).toString();
+                return (
+                    new StringBuilder()
+                    .append(Java.toString(this.modifiers))
+                    .append(this.type)
+                    .append(' ')
+                    .append(this.variableDeclarator)
+                    .toString()
+                );
             }
         }
 
@@ -3536,7 +3497,7 @@ class Java {
         /**
          * The local variable modifiers (annotations and/or flags like FINAL).
          */
-        public final Modifiers modifiers;
+        public final Modifier[] modifiers;
 
         /**
          * The declared type of the local variable.
@@ -3554,13 +3515,15 @@ class Java {
         public
         LocalVariableDeclarationStatement(
             Location             location,
-            Modifiers            modifiers,
+            Modifier[]           modifiers,
             Type                 type,
             VariableDeclarator[] variableDeclarators
         ) throws CompileException {
             super(location);
 
-            if (modifiers.isDefault) this.throwCompileException("Modifier \"default\" not allowed for local variable");
+            if (Java.hasAccessModifier(modifiers, "default")) {
+                this.throwCompileException("Modifier \"default\" not allowed for local variable");
+            }
 
             this.modifiers           = modifiers;
             this.type                = type;
@@ -3579,11 +3542,13 @@ class Java {
 
         @Override public String
         toString() {
-            StringBuilder sb = new StringBuilder();
-            if (this.modifiers.accessFlags != Mod.NONE) {
-                sb.append(Mod.shortToString(this.modifiers.accessFlags)).append(' ');
-            }
-            sb.append(this.type).append(' ').append(this.variableDeclarators[0].toString());
+            StringBuilder sb = (
+                new StringBuilder()
+                .append(Java.toString(this.modifiers))
+                .append(this.type)
+                .append(' ')
+                .append(this.variableDeclarators[0])
+            );
             for (int i = 1; i < this.variableDeclarators.length; ++i) {
                 sb.append(", ").append(this.variableDeclarators[i].toString());
             }
@@ -6038,4 +6003,115 @@ class Java {
         }
         return sb.toString();
     }
+
+    private static Modifier[]
+    accessModifiers(Location location, String... keywords) {
+        Modifier[] result = new Modifier[keywords.length];
+        for (int i = 0; i < keywords.length; i++) {
+            result[i] = new AccessModifier(keywords[i], location);
+        }
+        return result;
+    }
+
+    /**
+     * @return Whether the <var>modifiers</var> contain <em>any</em> of the access modifier <var>keywords</var>
+     */
+    private static boolean
+    hasAccessModifier(Modifier[] modifiers, String... keywords) {
+        for (String kw : keywords) {
+            for (Modifier m : modifiers) {
+                if (m instanceof AccessModifier && kw.equals(((AccessModifier) m).keyword)) return true;
+            }
+        }
+        return false;
+    }
+
+    private static Annotation[]
+    getAnnotations(Modifier[] modifiers) {
+
+        int n = 0;
+        for (Modifier m : modifiers) {
+            if (m instanceof Annotation) n++;
+        }
+        Annotation[] result = new Annotation[n];
+        n = 0;
+        for (Modifier m : modifiers) {
+            if (m instanceof Annotation) result[n++] = (Annotation) m;
+        }
+        return result;
+    }
+
+    private static String
+    toString(Modifier[] modifiers) {
+        StringBuilder sb = new StringBuilder();
+        for (Modifier m : modifiers) sb.append(m).append(' ');
+        return sb.toString();
+    }
+
+    /**
+     * Verifies that the <var>modifiers</var> are consistent.
+     * <ul>
+     *   <li>No two annotations must have the same type.</li>
+     *   <li>No access modifier must appear more than once</li>
+     *   <li>Certain modifier combinations must not occur (e.g. {@code abstract final}).
+     * </ul>
+     *
+     * @return <var>modifiers</var>
+     */
+    private static Java.Modifier[]
+    checkModifiers(Java.Modifier[] modifiers, String... allowedKeywords) throws CompileException {
+
+        // Duplicate annotations?
+        {
+            Set<Type> types = new HashSet<Java.Type>();
+            for (Modifier m : modifiers) {
+                if (!(m instanceof Annotation)) continue;
+                Annotation a = (Annotation) m;
+
+                if (!types.add(a.getType())) {
+                    throw new CompileException("Duplication annotation \"" + a.getType() + "\"", a.getLocation());
+                }
+            }
+        }
+
+        {
+            Set<String> keywords = new HashSet<String>();
+            for (Modifier m : modifiers) {
+                if (!(m instanceof Java.AccessModifier)) continue;
+                AccessModifier am = (Java.AccessModifier) m;
+
+                // Duplicate access modifier?
+                if (!keywords.add(am.keyword)) {
+                    throw new CompileException("Duplication access modifier \"" + am.keyword + "\"", am.getLocation());
+                }
+
+                // Mutually exclusive access modifier keywords?
+                for (Set<String> meams : Java.MUTUALLY_EXCLUSIVE_ACCESS_MODIFIERS) {
+                    Set<String> tmp = new HashSet<String>(keywords);
+                    tmp.retainAll(meams);
+                    if (tmp.size() > 1) {
+                        throw new CompileException("Only one of " + tmp + " is allowed", am.getLocation());
+                    }
+                }
+            }
+
+            // Disallowed access modifiers?
+            for (String kw : allowedKeywords) keywords.remove(kw);
+            if (!keywords.isEmpty()) {
+                throw new CompileException(
+                    "Access modifier(s) " + keywords + " are not allowed in this context",
+                    modifiers[0].getLocation()
+                );
+            }
+        }
+
+
+        return modifiers;
+    }
+
+    @SuppressWarnings("unchecked") private static final List<Set<String>>
+    MUTUALLY_EXCLUSIVE_ACCESS_MODIFIERS = Arrays.<Set<String>>asList(
+        new HashSet<String>(Arrays.asList("public", "protected", "private")),
+        new HashSet<String>(Arrays.asList("abstract", "final"))
+    );
 }

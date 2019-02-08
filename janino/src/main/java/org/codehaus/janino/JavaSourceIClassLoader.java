@@ -39,7 +39,6 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.resource.Resource;
 import org.codehaus.janino.util.resource.ResourceFinder;
@@ -209,7 +208,7 @@ class JavaSourceIClassLoader extends IClassLoader {
      *
      * @return {@code null} iff the source file could not be found
      */
-    @Nullable protected CompilationUnit
+    @Nullable protected Java.CompilationUnit
     findCompilationUnit(String className) throws IOException, CompileException {
 
         // Find source file.

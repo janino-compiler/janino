@@ -33,7 +33,7 @@ import java.util.List;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.InternalCompilerException;
-import org.codehaus.janino.Java;
+import org.codehaus.janino.Java.AccessModifier;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.Annotation;
@@ -101,7 +101,7 @@ import org.codehaus.janino.Java.MemberTypeDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.MethodReference;
-import org.codehaus.janino.Java.Modifiers;
+import org.codehaus.janino.Java.Modifier;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
 import org.codehaus.janino.Java.NewClassInstance;
@@ -153,6 +153,7 @@ import org.codehaus.janino.Visitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
+import org.codehaus.janino.Visitor.ModifierVisitor;
 import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
 
@@ -344,6 +345,15 @@ class DeepCopier {
         @Override public Annotation visitSingleElementAnnotation(SingleElementAnnotation sea) throws CompileException { return DeepCopier.this.copySingleElementAnnotation(sea); }
     };
 
+    private final ModifierVisitor<Modifier, CompileException>
+    modifierCopier = new ModifierVisitor<Modifier, CompileException>() {
+
+        @Override @Nullable public Modifier visitMarkerAnnotation(MarkerAnnotation ma)                throws CompileException { return DeepCopier.this.copyMarkerAnnotation(ma);         } // SUPPRESS CHECKSTYLE LineLength:3
+        @Override @Nullable public Modifier visitNormalAnnotation(NormalAnnotation na)                throws CompileException { return DeepCopier.this.copyNormalAnnotation(na);         }
+        @Override @Nullable public Modifier visitSingleElementAnnotation(SingleElementAnnotation sea) throws CompileException { return DeepCopier.this.copySingleElementAnnotation(sea); }
+        @Override @Nullable public Modifier visitAccessModifier(AccessModifier am)                    throws CompileException { return DeepCopier.this.copyAccessModifier(am);           }
+    };
+
     private final TryStatementResourceVisitor<TryStatement.Resource, CompileException>
     resourceCopier = new TryStatementResourceVisitor<TryStatement.Resource, CompileException>() {
 
@@ -353,7 +363,7 @@ class DeepCopier {
     };
 
     private final TypeArgumentVisitor<TypeArgument, CompileException>
-    typeArgumentCopier = new TypeArgumentVisitor<Java.TypeArgument, CompileException>() {
+    typeArgumentCopier = new TypeArgumentVisitor<TypeArgument, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLengthCheck:3
         @Override @Nullable public TypeArgument visitWildcard(Wildcard w)            throws CompileException { return DeepCopier.this.copyWildcard(w);       }
@@ -518,7 +528,7 @@ class DeepCopier {
         LocalClassDeclaration result = new LocalClassDeclaration(
             subject.getLocation(),
             subject.getDocComment(),
-            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            this.copyModifiers(subject.getModifiers()),
             subject.name,
             subject.getOptionalTypeParameters(),
             subject.optionalExtendedType,
@@ -546,7 +556,7 @@ class DeepCopier {
         PackageMemberClassDeclaration result = new PackageMemberClassDeclaration(
             subject.getLocation(),
             subject.getDocComment(),
-            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            this.copyModifiers(subject.getModifiers()),
             subject.name,
             this.copyOptionalTypeParameters(subject.getOptionalTypeParameters()),
             this.copyOptionalType(subject.optionalExtendedType),
@@ -573,7 +583,7 @@ class DeepCopier {
         MemberInterfaceDeclaration result = new MemberInterfaceDeclaration(
             subject.getLocation(),
             subject.getDocComment(),
-            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            this.copyModifiers(subject.getModifiers()),
             subject.name,
             this.copyOptionalTypeParameters(subject.getOptionalTypeParameters()),
             this.copyTypes(subject.extendedTypes)
@@ -595,7 +605,7 @@ class DeepCopier {
         PackageMemberInterfaceDeclaration result = new PackageMemberInterfaceDeclaration(
             subject.getLocation(),
             subject.getDocComment(),
-            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            this.copyModifiers(subject.getModifiers()),
             subject.name,
             this.copyOptionalTypeParameters(subject.getOptionalTypeParameters()),
             this.copyTypes(subject.extendedTypes)
@@ -604,7 +614,7 @@ class DeepCopier {
         for (MethodDeclarator md : subject.getMethodDeclarations()) {
             result.addDeclaredMethod(this.copyMethodDeclarator(md));
         }
-        for (Java.MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+        for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
             result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
         }
         for (FieldDeclaration cd : subject.constantDeclarations) {
@@ -620,7 +630,7 @@ class DeepCopier {
         MemberClassDeclaration result = new MemberClassDeclaration(
             subject.getLocation(),
             subject.getDocComment(),
-            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            this.copyModifiers(subject.getModifiers()),
             subject.name,
             this.copyOptionalTypeParameters(subject.getOptionalTypeParameters()),
             this.copyOptionalType(subject.optionalExtendedType),
@@ -648,7 +658,7 @@ class DeepCopier {
         return new ConstructorDeclarator(
             subject.getLocation(),
             subject.getDocComment(),
-            this.copyModifiers(subject.modifiers),
+            this.copyModifiers(subject.getModifiers()),
             this.copyFormalParameters(subject.formalParameters),
             this.copyTypes(subject.thrownExceptions),
             this.copyOptionalConstructorInvocation(subject.optionalConstructorInvocation),
@@ -666,7 +676,7 @@ class DeepCopier {
         return new MethodDeclarator(
             subject.getLocation(),
             subject.getDocComment(),
-            this.copyModifiers(subject.modifiers),
+            this.copyModifiers(subject.getModifiers()),
             this.copyOptionalTypeParameters(subject.optionalTypeParameters),
             this.copyType(subject.type),
             subject.name,
@@ -1238,7 +1248,7 @@ class DeepCopier {
         PackageMemberEnumDeclaration result = new PackageMemberEnumDeclaration(
             subject.getLocation(),
             subject.getDocComment(),
-            new Modifiers(subject.getModifierFlags(), subject.getAnnotations(), false),
+            this.copyModifiers(subject.getModifiers()),
             subject.name,
             this.copyTypes(subject.implementedTypes)
         );
@@ -1252,7 +1262,7 @@ class DeepCopier {
         for (MethodDeclarator md : subject.getMethodDeclarations()) {
             result.addDeclaredMethod(this.copyMethodDeclarator(md));
         }
-        for (Java.MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+        for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
             result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
         }
         for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
@@ -1268,7 +1278,7 @@ class DeepCopier {
         MemberEnumDeclaration result = new MemberEnumDeclaration(
             subject.getLocation(),
             subject.getDocComment(),
-            new Modifiers(subject.getModifierFlags(), subject.getAnnotations(), false),
+            this.copyModifiers(subject.getModifiers()),
             subject.name,
             this.copyTypes(subject.implementedTypes)
         );
@@ -1282,7 +1292,7 @@ class DeepCopier {
         for (MethodDeclarator md : subject.getMethodDeclarations()) {
             result.addDeclaredMethod(this.copyMethodDeclarator(md));
         }
-        for (Java.MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
+        for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
             result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
         }
         for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
@@ -1298,7 +1308,7 @@ class DeepCopier {
         PackageMemberAnnotationTypeDeclaration result = new PackageMemberAnnotationTypeDeclaration(
             subject.getLocation(),
             subject.getDocComment(),
-            new Modifiers(subject.getModifierFlags(), subject.getAnnotations(), false),
+            this.copyModifiers(subject.getModifiers()),
             subject.name
         );
 
@@ -1315,7 +1325,7 @@ class DeepCopier {
         MemberAnnotationTypeDeclaration result = new MemberAnnotationTypeDeclaration(
             subject.getLocation(),
             subject.getDocComment(),
-            new Modifiers(subject.getModifierFlags(), this.copyAnnotations(subject.getAnnotations()), false),
+            this.copyModifiers(subject.getModifiers()),
             subject.name
         );
 
@@ -1347,10 +1357,20 @@ class DeepCopier {
         return new VariableAccessResource(subject.getLocation(), this.copyRvalue(subject.variableAccess));
     }
 
-    public Modifiers
-    copyModifiers(Modifiers subject) throws CompileException {
-        return new Modifiers(subject.accessFlags, this.copyAnnotations(subject.annotations), subject.isDefault);
+    public Modifier[]
+    copyModifiers(Modifier[] subject) throws CompileException {
+        Modifier[] result = new Modifier[subject.length];
+        for (int i = 0; i < subject.length; i++) result[i] = this.copyModifier(subject[i]);
+        return result;
     }
+
+    public Modifier
+    copyModifier(Modifier modifier) throws CompileException {
+        return DeepCopier.assertNotNull(modifier.accept(this.modifierCopier));
+    }
+
+    public AccessModifier
+    copyAccessModifier(AccessModifier am) { return new AccessModifier(am.keyword, am.getLocation()); }
 
     public TypeParameter
     copyTypeParameter(TypeParameter subject) throws CompileException {
