@@ -1672,7 +1672,8 @@ class Java {
                 optionalDocComment,     // optionalDocComment
                 Java.checkModifiers(    // modifiers
                     modifiers,
-                    "public", "protected", "private"
+                    "public", "protected", "private",
+                    "static"
                 ),
                 name,                   // name
                 optionalTypeParameters, // optionalTypeParameters
