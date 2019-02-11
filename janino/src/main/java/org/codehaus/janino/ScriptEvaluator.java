@@ -62,6 +62,7 @@ import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Parser.ClassDeclarationContext;
+import org.codehaus.janino.Parser.MethodDeclarationContext;
 import org.codehaus.janino.util.AbstractTraverser;
 import org.codehaus.janino.util.Objects;
 
@@ -905,7 +906,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 null,                                                 // optionalTypeParameters
                 new PrimitiveType(parser.location(), Primitive.VOID), // type
                 name,                                                 // name
-                false                                                 // allowDefaultClause
+                false,                                                // allowDefaultClause
+                MethodDeclarationContext.CLASS_DECLARATION            // context
             ));
             return;
         }
@@ -917,12 +919,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             // Modifiers Type Identifier MethodDeclarationRest ';'
             if (parser.peek(TokenType.IDENTIFIER) && parser.peekNextButOne("(")) {
                 localMethods.add(parser.parseMethodDeclarationRest(
-                    null,                              // optionalDocComment
-                    modifiers,                         // modifiers
-                    null,                              // optionalTypeParameters
-                    methodOrVariableType,              // type
-                    parser.read(TokenType.IDENTIFIER), // name
-                    false                              // allowDefaultClause
+                    null,                                      // optionalDocComment
+                    modifiers,                                 // modifiers
+                    null,                                      // optionalTypeParameters
+                    methodOrVariableType,                      // type
+                    parser.read(TokenType.IDENTIFIER),         // name
+                    false,                                     // allowDefaultClause
+                    MethodDeclarationContext.CLASS_DECLARATION // context
                 ));
                 return;
             }
@@ -954,12 +957,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         // [ Modifiers ] Expression identifier MethodDeclarationRest
         if (parser.peek(TokenType.IDENTIFIER) && parser.peekNextButOne("(")) {
             localMethods.add(parser.parseMethodDeclarationRest(
-                null,                              // optionalDocComment
-                modifiers,                         // modifiers
-                null,                              // optionalTypeParameters
-                methodOrVariableType,              // type
-                parser.read(TokenType.IDENTIFIER), // name
-                false                              // allowDefaultClause
+                null,                                      // optionalDocComment
+                modifiers,                                 // modifiers
+                null,                                      // optionalTypeParameters
+                methodOrVariableType,                      // type
+                parser.read(TokenType.IDENTIFIER),         // name
+                false,                                     // allowDefaultClause
+                MethodDeclarationContext.CLASS_DECLARATION // context
             ));
             return;
         }
@@ -985,7 +989,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         String[]                  parameterNames,
         Class<?>[]                thrownExceptions,
         List<Java.BlockStatement> statements
-    ) throws CompileException {
+    ) {
         if (parameterNames.length != parameterTypes.length) {
             throw new InternalCompilerException(
                 "Lengths of \"parameterNames\" ("

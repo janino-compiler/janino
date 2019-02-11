@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java;
@@ -436,14 +435,14 @@ class UnparserTest {
     }
 
     private static void
-    testInterfaceHelper(boolean interfaceMod) throws CompileException {
+    testInterfaceHelper(boolean interfaceMod) {
         Java.PackageMemberInterfaceDeclaration decl = new Java.PackageMemberInterfaceDeclaration(
-            Location.NOWHERE,
-            "foo",
-            new Java.Modifier[] { new Java.AccessModifier("public", Location.NOWHERE) },
-            "Foo",
-            null,       // optionalTypeParameters
-            new Type[0] // extendedTypes
+            Location.NOWHERE,                                                            // location
+            "foo",                                                                       // optionalDocComment
+            new Java.Modifier[] { new Java.AccessModifier("public", Location.NOWHERE) }, // modifiers
+            "Foo",                                                                       // name
+            null,                                                                        // optionalTypeParameters
+            new Type[0]                                                                  // extendedTypes
         );
         StringWriter sw = new StringWriter();
         Unparser     u  = new Unparser(sw);

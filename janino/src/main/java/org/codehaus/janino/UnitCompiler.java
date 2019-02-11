@@ -61,7 +61,6 @@ import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
-import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AccessModifier;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
@@ -434,10 +433,10 @@ class UnitCompiler {
      * Compiles a top-level class or enum declaration.
      */
     private void
-    compile2(PackageMemberClassDeclaration apmcd) throws CompileException {
-        this.checkForConflictWithSingleTypeImport(apmcd.getName(), apmcd.getLocation());
-        this.checkForNameConflictWithAnotherPackageMemberTypeDeclaration(apmcd);
-        this.compile2((NamedClassDeclaration) apmcd);
+    compile2(PackageMemberClassDeclaration pmcd) throws CompileException {
+        this.checkForConflictWithSingleTypeImport(pmcd.getName(), pmcd.getLocation());
+        this.checkForNameConflictWithAnotherPackageMemberTypeDeclaration(pmcd);
+        this.compile2((NamedClassDeclaration) pmcd);
     }
 
     /**
@@ -9901,16 +9900,10 @@ class UnitCompiler {
                 if (atd instanceof AbstractClassDeclaration) {
                     AbstractClassDeclaration acd = (AbstractClassDeclaration) atd;
 
-                    ConstructorDeclarator[] cs;
-                    try {
-                        cs = acd.getConstructors();
-                    } catch (CompileException e) {
-                        throw new InternalCompilerException(null, e);
-                    }
-
-                    IClass.IConstructor[] res = new IClass.IConstructor[cs.length];
-                    for (int i = 0; i < cs.length; ++i) res[i] = UnitCompiler.this.toIConstructor(cs[i]);
-                    return res;
+                    ConstructorDeclarator[] cs     = acd.getConstructors();
+                    IClass.IConstructor[]   result = new IClass.IConstructor[cs.length];
+                    for (int i = 0; i < cs.length; ++i) result[i] = UnitCompiler.this.toIConstructor(cs[i]);
+                    return result;
                 }
                 return new IClass.IConstructor[0];
             }

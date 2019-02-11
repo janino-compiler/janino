@@ -27,15 +27,12 @@
 package org.codehaus.janino;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -1047,7 +1044,7 @@ class Java {
          * @return The declared constructors, or the default constructor
          */
         ConstructorDeclarator[]
-        getConstructors() throws CompileException {
+        getConstructors() {
             if (this.constructors.isEmpty()) {
                 ConstructorDeclarator defaultConstructor = new ConstructorDeclarator(
                     this.getLocation(),                                 // location
@@ -1217,15 +1214,11 @@ class Java {
             @Nullable TypeParameter[] optionalTypeParameters,
             @Nullable Type            optionalExtendedType,
             Type[]                    implementedTypes
-        ) throws CompileException {
+        ) {
             super(
                 location,               // location
                 optionalDocComment,     // optionalDocComment
-                Java.checkModifiers(    // modifiers
-                    modifiers,
-                    "public", "protected", "private",
-                    "static", "abstract", "final"
-                ),
+                modifiers,              // modifiers
                 name,                   // name
                 optionalTypeParameters, // optionalTypeParameters
                 optionalExtendedType,   // optionalExtendedType
@@ -1267,7 +1260,7 @@ class Java {
             Modifier[]       modifiers,
             String           name,
             Type[]           implementedTypes
-        ) throws CompileException {
+        ) {
             super(
                 location,           // location
                 optionalDocComment, // optionalDocComment
@@ -1308,14 +1301,11 @@ class Java {
             @Nullable TypeParameter[] optionalTypeParameters,
             @Nullable Type            optionalExtendedType,
             Type[]                    implementedTypes
-        ) throws CompileException {
+        ) {
             super(
                 location,               // location
                 optionalDocComment,     // optionalDocComment
-                Java.checkModifiers(    // modifiers
-                    modifiers,
-                    "xxx" // No access modifiers allowed
-                ),
+                modifiers,              // modifiers
                 name,                   // name
                 optionalTypeParameters, // optionalTypeParameters
                 optionalExtendedType,   // optionalExtendedType
@@ -1444,11 +1434,6 @@ class Java {
         @Nullable public final String optionalDocComment;
 
         /**
-         * The (often empty) list of annotations on this enum constant declaration.
-         */
-        public final List<Annotation> annotations;
-
-        /**
          * The name of the declared enum constant.
          */
         public final String name;
@@ -1463,28 +1448,18 @@ class Java {
         EnumConstant(
             Location           location,
             @Nullable String   optionalDocComment,
-            List<Annotation>   annotations,
+            Modifier[]         modifiers,
             String             name,
             @Nullable Rvalue[] optionalArguments
         ) {
-            super(
-                location,
-                new Modifier[0], // modifiers
-                null             // optionalTypeParameters
-            );
+            super(location, modifiers, null);
             this.optionalDocComment = optionalDocComment;
-            this.annotations        = annotations;
             this.name               = name;
             this.optionalArguments  = optionalArguments;
         }
 
         @Override public String
         getClassName() { return this.name; }
-
-        @Override public Annotation[]
-        getAnnotations() {
-            return (Annotation[]) this.annotations.toArray(new Java.Annotation[this.annotations.size()]);
-        }
 
         @Override @Nullable public String
         getDocComment() { return this.optionalDocComment; }
@@ -1639,15 +1614,11 @@ class Java {
             String                    name,
             @Nullable TypeParameter[] optionalTypeParameters,
             Type[]                    extendedTypes
-        ) throws CompileException {
+        ) {
             super(
                 location,               // location
                 optionalDocComment,     // optionalDocComment
-                Java.checkModifiers(    // modifiers
-                    modifiers,
-                    "public", "protected", "private",
-                    "static"
-                ),
+                modifiers,              // modifiers
                 name,                   // name
                 optionalTypeParameters, // optionalTypeParameters
                 extendedTypes           // extendedTypes
@@ -1691,14 +1662,11 @@ class Java {
             @Nullable String optionalDocComment,
             Modifier[]       modifiers,
             String           name
-        ) throws CompileException {
+        ) {
             super(
                 location,                       // location
                 optionalDocComment,             // optionalDocComment
-                Java.checkModifiers(            // modifiers
-                    modifiers,
-                    "public", "protected", "private"
-                ),
+                modifiers,                      // modifiers
                 name,                           // name
                 null,                           // optionalTypeParameters
                 new Type[] { new ReferenceType( // extendedTypes
@@ -1733,14 +1701,14 @@ class Java {
             String                    name,
             @Nullable TypeParameter[] optionalTypeParameters,
             Type[]                    extendedTypes
-        ) throws CompileException {
+        ) {
             super(
-                location,                                 // location
-                optionalDocComment,                       // optionalDocComment
-                Java.checkModifiers(modifiers, "public"), // modifiers
-                name,                                     // name
-                optionalTypeParameters,                   // optionalTypeParameters
-                extendedTypes                             // extendedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                extendedTypes           // extendedTypes
             );
         }
 
@@ -1788,14 +1756,14 @@ class Java {
             @Nullable String optionalDocComment,
             Modifier[]       modifiers,
             String           name
-        ) throws CompileException {
+        ) {
             super(
                 location,
                 optionalDocComment,
-                Java.checkModifiers(modifiers, "public"), // modifiers
-                name,                                     // name
-                null,                                     // optionalTypeParameters
-                new Type[] { new ReferenceType(           // extendedTypes
+                modifiers,                      // modifiers
+                name,                           // name
+                null,                           // optionalTypeParameters
+                new Type[] { new ReferenceType( // extendedTypes
                     location,                                                    // location
                     new String[] { "java", "lang", "annotation", "Annotation" }, // identifiers
                     null                                                         // optionalTypeArguments
@@ -2266,14 +2234,11 @@ class Java {
             Type[]                          thrownExceptions,
             @Nullable ConstructorInvocation optionalConstructorInvocation,
             List<? extends BlockStatement>  statements
-        ) throws CompileException {
+        ) {
             super(
                 location,                                    // location
                 optionalDocComment,                          // optionalDocComment
-                Java.checkModifiers(                         // modifiers
-                    modifiers,
-                    "public", "protected", "private"
-                ),
+                modifiers,                                   // modifiers
                 new PrimitiveType(location, Primitive.VOID), // type
                 "<init>",                                    // name
                 formalParameters,                            // formalParameters
@@ -2352,15 +2317,11 @@ class Java {
             Type[]                                   thrownExceptions,
             @Nullable ElementValue                   defaultValue,
             @Nullable List<? extends BlockStatement> optionalStatements
-        ) throws CompileException {
+        ) {
             super(
                 location,            // location
                 optionalDocComment,  // optionalDocComment
-                Java.checkModifiers( // modifiers
-                    modifiers,
-                    "public", "protected", "private",
-                    "static", "final", "abstract", "synchronized"
-                ),
+                modifiers,           // modifiers
                 type,                // type
                 name,                // name
                 formalParameters,    // formalParameters
@@ -3494,10 +3455,6 @@ class Java {
             VariableDeclarator[] variableDeclarators
         ) throws CompileException {
             super(location);
-
-            if (Java.hasAccessModifier(modifiers, "default")) {
-                this.throwCompileException("Modifier \"default\" not allowed for local variable");
-            }
 
             this.modifiers           = modifiers;
             this.type                = type;
@@ -6021,71 +5978,4 @@ class Java {
         for (Modifier m : modifiers) sb.append(m).append(' ');
         return sb.toString();
     }
-
-    /**
-     * Verifies that the <var>modifiers</var> are consistent.
-     * <ul>
-     *   <li>No two annotations must have the same type.</li>
-     *   <li>No access modifier must appear more than once</li>
-     *   <li>Certain modifier combinations must not occur (e.g. {@code abstract final}).
-     * </ul>
-     *
-     * @return <var>modifiers</var>
-     */
-    private static Java.Modifier[]
-    checkModifiers(Java.Modifier[] modifiers, String... allowedKeywords) throws CompileException {
-
-        // Duplicate annotations?
-        {
-            Set<Type> types = new HashSet<Java.Type>();
-            for (Modifier m : modifiers) {
-                if (!(m instanceof Annotation)) continue;
-                Annotation a = (Annotation) m;
-
-                if (!types.add(a.getType())) {
-                    throw new CompileException("Duplication annotation \"" + a.getType() + "\"", a.getLocation());
-                }
-            }
-        }
-
-        {
-            Set<String> keywords = new HashSet<String>();
-            for (Modifier m : modifiers) {
-                if (!(m instanceof Java.AccessModifier)) continue;
-                AccessModifier am = (Java.AccessModifier) m;
-
-                // Duplicate access modifier?
-                if (!keywords.add(am.keyword)) {
-                    throw new CompileException("Duplication access modifier \"" + am.keyword + "\"", am.getLocation());
-                }
-
-                // Mutually exclusive access modifier keywords?
-                for (Set<String> meams : Java.MUTUALLY_EXCLUSIVE_ACCESS_MODIFIERS) {
-                    Set<String> tmp = new HashSet<String>(keywords);
-                    tmp.retainAll(meams);
-                    if (tmp.size() > 1) {
-                        throw new CompileException("Only one of " + tmp + " is allowed", am.getLocation());
-                    }
-                }
-            }
-
-            // Disallowed access modifiers?
-            for (String kw : allowedKeywords) keywords.remove(kw);
-            if (!keywords.isEmpty()) {
-                throw new CompileException(
-                    "Access modifier(s) " + keywords + " are not allowed in this context",
-                    modifiers[0].getLocation()
-                );
-            }
-        }
-
-
-        return modifiers;
-    }
-
-    @SuppressWarnings("unchecked") private static final List<Set<String>>
-    MUTUALLY_EXCLUSIVE_ACCESS_MODIFIERS = Arrays.<Set<String>>asList(
-        new HashSet<String>(Arrays.asList("public", "protected", "private")),
-        new HashSet<String>(Arrays.asList("abstract", "final"))
-    );
 }

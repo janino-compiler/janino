@@ -1230,7 +1230,7 @@ class DeepCopier {
         EnumConstant result = new EnumConstant(
             subject.getLocation(),
             subject.optionalDocComment,
-            this.copyAnnotations(subject.annotations),
+            this.copyModifiers(subject.getModifiers()),
             subject.name,
             this.copyOptionalRvalues(subject.optionalArguments)
         );

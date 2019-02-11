@@ -1171,9 +1171,6 @@ class Unparser {
     private void
     unparseMethodDeclarator(MethodDeclarator md) {
 
-        // For methods declared as members of an *interface*, the default access flags are "public abstract".
-        boolean declaringTypeIsInterface = md.getDeclaringType() instanceof InterfaceDeclaration;
-
         final List<? extends BlockStatement> oss = md.optionalStatements;
 
         this.unparseDocComment(md);
