@@ -29,7 +29,7 @@ package org.codehaus.janino.util;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.InternalCompilerException;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
-import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
+import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.AbstractTypeBodyDeclaration;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
@@ -502,7 +502,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     traverseLocalClassDeclaration(LocalClassDeclaration lcd) throws EX { this.traverseNamedClassDeclaration(lcd); }
 
     @Override public void
-    traversePackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration pmcd) throws EX {
+    traversePackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd) throws EX {
         this.traverseNamedClassDeclaration(pmcd);
     }
 

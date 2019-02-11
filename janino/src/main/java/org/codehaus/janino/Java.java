@@ -54,6 +54,7 @@ import org.codehaus.janino.Visitor.ModifierVisitor;
 import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
+import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
 import org.codehaus.janino.util.AbstractTraverser;
 import org.codehaus.janino.util.iterator.ReverseListIterator;
 
@@ -1342,44 +1343,11 @@ class Java {
     /**
      * Implementation of a "package member class declaration", a.k.a. "top-level class declaration".
      */
-    public static final
-    class PackageMemberClassDeclaration extends AbstractPackageMemberClassDeclaration {
+    public static
+    class PackageMemberClassDeclaration extends NamedClassDeclaration implements PackageMemberTypeDeclaration {
 
         public
         PackageMemberClassDeclaration(
-            Location                  location,
-            @Nullable String          optionalDocComment,
-            Modifier[]                modifiers,
-            String                    name,
-            @Nullable TypeParameter[] optionalTypeParameters,
-            @Nullable Type            optionalExtendedType,
-            Type[]                    implementedTypes
-        ) throws CompileException {
-            super(
-                location,
-                optionalDocComment,
-                Java.checkModifiers(modifiers, "public", "protected", "private", "final", "abstract"),
-                name,
-                optionalTypeParameters,
-                optionalExtendedType,
-                implementedTypes
-            );
-        }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitPackageMemberClassDeclaration(this);
-        }
-    }
-
-    /**
-     * Base for the various package member (a.k.a. "top-level") class declarations (top-level class, top-level enum).
-     */
-    public abstract static
-    class AbstractPackageMemberClassDeclaration extends NamedClassDeclaration implements PackageMemberTypeDeclaration {
-
-        public
-        AbstractPackageMemberClassDeclaration(
             Location                  location,
             @Nullable String          optionalDocComment,
             Modifier[]                modifiers,
@@ -1429,6 +1397,11 @@ class Java {
             if (opd != null) className = opd.packageName + '.' + className;
 
             return className;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(TypeDeclarationVisitor<R, EX> visitor) throws EX {
+            return visitor.visitPackageMemberClassDeclaration(this);
         }
     }
 
@@ -1534,7 +1507,7 @@ class Java {
      * Implementation of a "package member enum declaration", a.k.a. "top-level enum declaration".
      */
     public static final
-    class PackageMemberEnumDeclaration extends AbstractPackageMemberClassDeclaration implements EnumDeclaration {
+    class PackageMemberEnumDeclaration extends PackageMemberClassDeclaration implements EnumDeclaration {
 
         private final List<EnumConstant> constants = new ArrayList<EnumConstant>();
 

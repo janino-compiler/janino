@@ -61,7 +61,7 @@ import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
-import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
+import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AccessModifier;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
@@ -434,7 +434,7 @@ class UnitCompiler {
      * Compiles a top-level class or enum declaration.
      */
     private void
-    compile2(AbstractPackageMemberClassDeclaration apmcd) throws CompileException {
+    compile2(PackageMemberClassDeclaration apmcd) throws CompileException {
         this.checkForConflictWithSingleTypeImport(apmcd.getName(), apmcd.getLocation());
         this.checkForNameConflictWithAnotherPackageMemberTypeDeclaration(apmcd);
         this.compile2((NamedClassDeclaration) apmcd);

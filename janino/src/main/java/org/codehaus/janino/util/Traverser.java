@@ -29,7 +29,7 @@
 package org.codehaus.janino.util;
 
 import org.codehaus.janino.Java.AbstractClassDeclaration;
-import org.codehaus.janino.Java.AbstractPackageMemberClassDeclaration;
+import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.AbstractTypeBodyDeclaration;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
@@ -169,7 +169,7 @@ interface Traverser<EX extends Throwable> {
     void traverseImportDeclaration(CompilationUnit.ImportDeclaration id)                                throws EX;
     void traverseAnonymousClassDeclaration(AnonymousClassDeclaration acd)                               throws EX;
     void traverseLocalClassDeclaration(LocalClassDeclaration lcd)                                       throws EX;
-    void traversePackageMemberClassDeclaration(AbstractPackageMemberClassDeclaration pmcd)              throws EX;
+    void traversePackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)              throws EX;
     void traverseMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)                             throws EX;
     void traversePackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid)              throws EX;
     void traverseMemberClassDeclaration(MemberClassDeclaration mcd)                                     throws EX;
