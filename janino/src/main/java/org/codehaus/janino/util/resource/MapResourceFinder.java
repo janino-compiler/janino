@@ -49,25 +49,31 @@ class MapResourceFinder extends ResourceFinder {
     MapResourceFinder() {}
 
     public
-    MapResourceFinder(Map<String, byte[]> map) {
+    MapResourceFinder(Map<String /*fileName*/, byte[] /*data*/> map) {
         for (Entry<String, byte[]> me : map.entrySet()) {
-            this.addResource(me.getKey(), me.getValue());
+            Resource prev = this.addResource(me.getKey(), me.getValue());
+            assert prev == null;
         }
     }
 
-    public void
+    /**
+     * @return The resource that was previously associated with the <var>fileName</var>, or {@code null}
+     */
+    @Nullable public Resource
     addResource(final String fileName, final byte[] data) {
-        this.map.put(fileName, new Resource() {
+        return this.map.put(fileName, new Resource() {
             @Override public InputStream open()         { return new ByteArrayInputStream(data);      }
             @Override public String      getFileName()  { return fileName;                            }
             @Override public long        lastModified() { return MapResourceFinder.this.lastModified; }
         });
     }
 
-    public void
-    addResource(String fileName, String data) {
-        this.addResource(fileName, data.getBytes());
-    }
+    /**
+     * @param data The text to store (in platform default encoding)
+     * @return The resource that was previously associated with the <var>fileName</var>, or {@code null}
+     */
+    @Nullable public Resource
+    addResource(String fileName, String data) { return this.addResource(fileName, data.getBytes()); }
 
     public void
     addResource(final Resource resource) {

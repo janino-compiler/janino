@@ -88,11 +88,11 @@ class JavaSourceIClassLoader extends IClassLoader {
     getUnitCompilers() { return this.unitCompilers; }
 
     /**
-     * @param pathResourceFinder The source path
+     * @param sourceFinder The source path
      */
     public void
-    setSourceFinder(ResourceFinder pathResourceFinder) {
-        this.sourceFinder = pathResourceFinder;
+    setSourceFinder(ResourceFinder sourceFinder) {
+        this.sourceFinder = sourceFinder;
     }
 
     /**
