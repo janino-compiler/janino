@@ -29,7 +29,6 @@ package org.codehaus.janino.util;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.InternalCompilerException;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
-import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.AbstractTypeBodyDeclaration;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
