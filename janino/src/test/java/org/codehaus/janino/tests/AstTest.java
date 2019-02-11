@@ -104,7 +104,7 @@ class AstTest {
     }
 
     private static PackageMemberClassDeclaration
-    createClass(CompilationUnit cu) throws CompileException {
+    createClass(CompilationUnit cu) {
         PackageMemberClassDeclaration clazz = new PackageMemberClassDeclaration(
             AstTest.getLocation(),
             null,
@@ -149,7 +149,7 @@ class AstTest {
 
 
     private static LocalVariableDeclarationStatement
-    createVarDecl(String name, String fPValue) throws CompileException {
+    createVarDecl(String name, String fPValue) {
         return new Java.LocalVariableDeclarationStatement(
             AstTest.getLocation(),
             new Java.Modifier[0],

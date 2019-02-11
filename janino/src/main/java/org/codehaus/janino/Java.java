@@ -1345,7 +1345,7 @@ class Java {
             @Nullable TypeParameter[] optionalTypeParameters,
             @Nullable Type            optionalExtendedType,
             Type[]                    implementedTypes
-        ) throws CompileException {
+        ) {
             super(
                 location,               // location
                 optionalDocComment,     // optionalDocComment
@@ -1355,14 +1355,6 @@ class Java {
                 optionalExtendedType,   // optionalExtendedType
                 implementedTypes        // implementedTypes
             );
-
-            // Check for forbidden modifiers (JLS7 7.6).
-            if (Java.hasAccessModifier(modifiers, "protected", "private", "static")) {
-                this.throwCompileException(
-                    "Modifiers \"protected\", \"private\" and \"static\" not allowed in package member class "
-                    + "declaration"
-                );
-            }
         }
 
         // Implement PackageMemberTypeDeclaration.
@@ -1493,7 +1485,7 @@ class Java {
             Modifier[]       modifiers,
             String           name,
             Type[]           implementedTypes
-        ) throws CompileException {
+        ) {
             super(
                 location,
                 optionalDocComment,
@@ -3453,7 +3445,7 @@ class Java {
             Modifier[]           modifiers,
             Type                 type,
             VariableDeclarator[] variableDeclarators
-        ) throws CompileException {
+        ) {
             super(location);
 
             this.modifiers           = modifiers;

@@ -365,7 +365,7 @@ class Parser {
             if (optionalDocComment == null) this.warning("CDCM", "Class doc comment missing", this.location());
             return (PackageMemberClassDeclaration) this.parseClassDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
-                Parser.classModifiers(modifiers),        // modifiers
+                modifiers,                               // modifiers
                 ClassDeclarationContext.COMPILATION_UNIT // context
             );
 
@@ -373,7 +373,7 @@ class Parser {
             if (optionalDocComment == null) this.warning("EDCM", "Enum doc comment missing", this.location());
             return (PackageMemberEnumDeclaration) this.parseEnumDeclarationRest(
                 optionalDocComment,                      // optionalDocComment
-                Parser.classModifiers(modifiers),        // modifiers
+                modifiers,                               // modifiers
                 ClassDeclarationContext.COMPILATION_UNIT // context
             );
 
@@ -381,7 +381,7 @@ class Parser {
             if (optionalDocComment == null) this.warning("IDCM", "Interface doc comment missing", this.location());
             return (PackageMemberInterfaceDeclaration) this.parseInterfaceDeclarationRest(
                 optionalDocComment,                          // optionalDocComment
-                Parser.interfaceModifiers(modifiers),        // modifiers
+                modifiers,                                   // modifiers
                 InterfaceDeclarationContext.COMPILATION_UNIT // context
             );
 
@@ -392,7 +392,7 @@ class Parser {
             }
             return (PackageMemberAnnotationTypeDeclaration) this.parseAnnotationTypeDeclarationRest(
                 optionalDocComment,                          // optionalDocComment
-                Parser.interfaceModifiers(modifiers),        // modifiers
+                modifiers,                                   // modifiers
                 InterfaceDeclarationContext.COMPILATION_UNIT // context
             );
 
@@ -574,14 +574,15 @@ class Parser {
 
         NamedClassDeclaration namedClassDeclaration;
         if (context == ClassDeclarationContext.COMPILATION_UNIT) {
+
             namedClassDeclaration = new PackageMemberClassDeclaration(
-                location,                         // location
-                optionalDocComment,               // optionalDocComment
-                Parser.classModifiers(modifiers), // modifiers
-                className,                        // name
-                optionalTypeParameters,           // optionalTypeParameters
-                optionalExtendedType,             // optinalExtendedType
-                implementedTypes                  // implementedTypes
+                location,                                      // location
+                optionalDocComment,                            // optionalDocComment
+                Parser.packageMemberClassModifiers(modifiers), // modifiers
+                className,                                     // name
+                optionalTypeParameters,                        // optionalTypeParameters
+                optionalExtendedType,                          // optinalExtendedType
+                implementedTypes                               // implementedTypes
             );
         } else
         if (context == ClassDeclarationContext.TYPE_DECLARATION) {
@@ -962,12 +963,12 @@ class Parser {
         InterfaceDeclaration id;
         if (context == InterfaceDeclarationContext.COMPILATION_UNIT) {
             id = new PackageMemberInterfaceDeclaration(
-                location,                             // location
-                optionalDocComment,                   // optionalDocComment
-                Parser.interfaceModifiers(modifiers), // modifiers
-                interfaceName,                        // name
-                optionalTypeParameters,               // optionalTypeParameters
-                extendedTypes                         // extendedTypes
+                location,                                          // location
+                optionalDocComment,                                // optionalDocComment
+                Parser.packageMemberInterfaceModifiers(modifiers), // modifiers
+                interfaceName,                                     // name
+                optionalTypeParameters,                            // optionalTypeParameters
+                extendedTypes                                      // extendedTypes
             );
         } else
         if (context == InterfaceDeclarationContext.NAMED_TYPE_DECLARATION) {
@@ -1008,10 +1009,10 @@ class Parser {
         AnnotationTypeDeclaration atd;
         if (context == InterfaceDeclarationContext.COMPILATION_UNIT) {
             atd = new PackageMemberAnnotationTypeDeclaration(
-                location,                             // location
-                optionalDocComment,                   // optionalDocComment
-                Parser.interfaceModifiers(modifiers), // modifiers
-                annotationTypeName                    // name
+                location,                                          // location
+                optionalDocComment,                                // optionalDocComment
+                Parser.packageMemberInterfaceModifiers(modifiers), // modifiers
+                annotationTypeName                                 // name
             );
         } else
         if (context == InterfaceDeclarationContext.NAMED_TYPE_DECLARATION) {
@@ -1330,7 +1331,7 @@ class Parser {
 
     /**
      * Equivalent with {@code parseMethodDeclaration(false, MethodDeclarationContext.CLASS_DECLARATION)}.
-     * 
+     *
      * @see #parseMethodDeclaration(boolean, MethodDeclarationContext)
      */
     public MethodDeclarator
@@ -1348,7 +1349,8 @@ class Parser {
      *                           parsed
      */
     public MethodDeclarator
-    parseMethodDeclaration(boolean allowDefaultClause, MethodDeclarationContext context) throws CompileException, IOException {
+    parseMethodDeclaration(boolean allowDefaultClause, MethodDeclarationContext context)
+    throws CompileException, IOException {
 
         return this.parseMethodDeclarationRest(
             this.doc(),                      // optionalDocComment
@@ -3822,58 +3824,81 @@ class Parser {
         return false;
     }
 
-    private static Java.Modifier[]
-    packageModifiers(Java.Modifier[] modifiers) throws CompileException {
+    private static Modifier[]
+    packageModifiers(Modifier[] modifiers) throws CompileException {
         return Parser.checkModifiers(modifiers, "xxx");
     }
 
-    private static Java.Modifier[]
-    classModifiers(Java.Modifier[] modifiers) throws CompileException {
-        return Parser.checkModifiers(modifiers, "public", "protected", "private", "abstract", "static", "final", "strictfp");
+    private static Modifier[]
+    classModifiers(Modifier[] modifiers) throws CompileException {
+        return Parser.checkModifiers(
+            modifiers,
+            "public", "protected", "private", "abstract", "static", "final", "strictfp"
+        );
     }
 
-    private static Java.Modifier[]
-    fieldModifiers(Java.Modifier[] modifiers) throws CompileException {
-        return Parser.checkModifiers(modifiers, "public", "protected", "private", "static", "final", "transient", "volatile");
+    private static Modifier[]
+    packageMemberClassModifiers(Modifier[] modifiers) throws CompileException {
+
+        // JLS 8 8.1.1 Class Modifiers
+        return Parser.checkModifiers(modifiers, "public", "abstract", "final", "strictfp");
     }
 
-    private static Java.Modifier[]
-    methodModifiers(Java.Modifier[] modifiers) throws CompileException {
-        return Parser.checkModifiers(modifiers, "public", "protected", "private", "abstract", "static", "final", "synchronized", "native", "strictfp");
+    private static Modifier[]
+    fieldModifiers(Modifier[] modifiers) throws CompileException {
+        return Parser.checkModifiers(
+            modifiers,
+            "public", "protected", "private", "static", "final", "transient", "volatile"
+        );
     }
 
-    private static Java.Modifier[]
-    variableModifiers(Java.Modifier[] modifiers) throws CompileException {
+    private static Modifier[]
+    methodModifiers(Modifier[] modifiers) throws CompileException {
+        return Parser.checkModifiers(
+            modifiers,
+            "public", "protected", "private", "abstract", "static", "final", "synchronized", "native", "strictfp"
+        );
+    }
+
+    private static Modifier[]
+    variableModifiers(Modifier[] modifiers) throws CompileException {
         return Parser.checkModifiers(modifiers, "final");
     }
 
-    private static Java.Modifier[]
-    constructorModifiers(Java.Modifier[] modifiers) throws CompileException {
+    private static Modifier[]
+    constructorModifiers(Modifier[] modifiers) throws CompileException {
         return Parser.checkModifiers(modifiers, "public", "protected", "private");
     }
 
-    private static Java.Modifier[]
-    enumConstantModifiers(Java.Modifier[] modifiers) throws CompileException {
+    private static Modifier[]
+    enumConstantModifiers(Modifier[] modifiers) throws CompileException {
         return Parser.checkModifiers(modifiers, "xxx");
     }
 
-    private static Java.Modifier[]
-    interfaceModifiers(Java.Modifier[] modifiers) throws CompileException {
+    private static Modifier[]
+    interfaceModifiers(Modifier[] modifiers) throws CompileException {
         return Parser.checkModifiers(modifiers, "public", "protected", "private", "abstract", "static", "strictfp");
     }
 
-    private static Java.Modifier[]
-    constantModifiers(Java.Modifier[] modifiers) throws CompileException {
+    private static Modifier[]
+    packageMemberInterfaceModifiers(Modifier[] modifiers) throws CompileException {
+
+        // JLS8 9.1.1 Interface Modifiers
+        return Parser.checkModifiers(modifiers, "public", "abstract", "strictfp");
+    }
+
+    private static Modifier[]
+    constantModifiers(Modifier[] modifiers) throws CompileException {
         return Parser.checkModifiers(modifiers, "public", "static", "final");
     }
 
-    private static Java.Modifier[]
-    interfaceMethodModifiers(Java.Modifier[] modifiers) throws CompileException {
+    private static Modifier[]
+    interfaceMethodModifiers(Modifier[] modifiers) throws CompileException {
         return Parser.checkModifiers(modifiers, "public", "abstract", "default", "static", "strictfp");
     }
 
-    private static Java.Modifier[]
-    annotationTypeElementModifiers(Java.Modifier[] modifiers) throws CompileException {
+    private static Modifier[]
+    annotationTypeElementModifiers(Modifier[] modifiers) throws CompileException {
         return Parser.checkModifiers(modifiers, "public", "abstract");
     }
 
@@ -3888,8 +3913,8 @@ class Parser {
      *
      * @return <var>modifiers</var>
      */
-    private static Java.Modifier[]
-    checkModifiers(Java.Modifier[] modifiers, String... allowedKeywords) throws CompileException {
+    private static Modifier[]
+    checkModifiers(Modifier[] modifiers, String... allowedKeywords) throws CompileException {
 
         // Duplicate annotations?
         {

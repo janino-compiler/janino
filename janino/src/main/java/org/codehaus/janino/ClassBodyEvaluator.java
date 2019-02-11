@@ -280,7 +280,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * @return The created {@link Java.AbstractClassDeclaration} object
      */
     protected Java.PackageMemberClassDeclaration
-    addPackageMemberClassDeclaration(Location location, Java.CompilationUnit compilationUnit) throws CompileException {
+    addPackageMemberClassDeclaration(Location location, Java.CompilationUnit compilationUnit) {
         String cn  = this.className;
         int    idx = cn.lastIndexOf('.');
         if (idx != -1) {
