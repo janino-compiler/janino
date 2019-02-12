@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.Assert;
@@ -132,12 +131,10 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_3_10_1__Integer_Literals_octal() throws Exception {
         this.assertExpressionEvaluatesTrue("17 == 021L");
-        this.assertExpressionUncookable("17 == 029", Pattern.compile(
-            ""
-            + "Digit '9' not allowed in octal literal"
-            + "|"
-            + "compiler.err.int.number.too.large"
-        ));
+        this.assertExpressionUncookable(
+            "17 == 029",
+            "Digit '9' not allowed in octal literal|compiler.err.int.number.too.large"
+        );
     }
 
     @Test public void
@@ -425,9 +422,9 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // SUPPRESS CHECKSTYLE Whitespace|LineLength:4
         this.assertExpressionEvaluatesTrue("for_sandbox_tests.ClassWithFields.publicField        == 1");
-        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.protectedField     == 2", Pattern.compile("Protected member cannot be accessed|compiler.err.report.access"));
-        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.packageAccessField == 3", Pattern.compile("Member with \"package\" access cannot be accessed|compiler.err.not.def.public.cant.access"));
-        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.privateField       == 4", Pattern.compile("Private member cannot be accessed|compiler.err.report.access"));
+        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.protectedField     == 2", "Protected member cannot be accessed|compiler.err.report.access");
+        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.packageAccessField == 3", "Member with \"package\" access cannot be accessed|compiler.err.not.def.public.cant.access");
+        this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.privateField       == 4", "Private member cannot be accessed|compiler.err.report.access");
     }
 
     @Test public void
@@ -498,6 +495,30 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_8_1_1__Class_Modifiers() throws Exception {
+
+        // Modifiers for package member class: SUPPRESS CHECKSTYLE LineLength:18
+        this.assertCompilationUnitCookable("@SuppressWarnings(\"foo\") class Foo {}");
+        this.assertCompilationUnitCookable("abstract                   class Foo {}");
+        this.assertCompilationUnitCookable("final                      class Foo {}");
+        this.assertCompilationUnitCookable("public                     class Foo {}");
+        this.assertCompilationUnitCookable("strictfp                   class Foo {}");
+        this.assertCompilationUnitUncookable("default                    class Foo {}", "default not allowed|expected");
+        this.assertCompilationUnitUncookable("native                     class Foo {}", "native not allowed");
+        this.assertCompilationUnitUncookable("private                    class Foo {}", "private not allowed");
+        this.assertCompilationUnitUncookable("protected                  class Foo {}", "protected not allowed");
+        this.assertCompilationUnitUncookable("static                     class Foo {}", "static not allowed");
+        this.assertCompilationUnitUncookable("synchronized               class Foo {}", "synchronized not allowed");
+        this.assertCompilationUnitUncookable("transient                  class Foo {}", "transient not allowed");
+        this.assertCompilationUnitUncookable("volatile                   class Foo {}", "volatile not allowed");
+        this.assertCompilationUnitUncookable("@SuppressWarnings(\"foo\") @SuppressWarnings(\"bar\")  class Foo {}", "(?i)duplicate annotation|is not .* repeatable");
+        this.assertCompilationUnitUncookable("public protected           class Foo {}", "allowed");
+        this.assertCompilationUnitUncookable("protected private          class Foo {}", "allowed");
+        this.assertCompilationUnitUncookable("private public             class Foo {}", "allowed");
+        this.assertCompilationUnitUncookable("abstract final             class Foo {}", "Only one of abstract final is allowed|illegal combination");
+    }
+
+    @Test public void
     test_8_1_2__Generic_Classes_and_Type_Parameters() throws Exception {
         this.assertCompilationUnitMainReturnsTrue((
             ""
@@ -545,17 +566,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "}\n"
         );
 
-        this.assertExpressionUncookable(
-            "new Object() { public void toString() {}}.toString()",
-            Pattern.compile(
-                ""
-                + "The return type of.*is incompatible with"
-                + "|"
-                + "compiler.err.override.incompatible.ret"
-                + "|"
-                + "attempting to use incompatible return type"
-            )
-        );
+        this.assertExpressionUncookable("new Object() { public void toString() {}}.toString()", "incompatible");
     }
 
     @Test public void
@@ -759,6 +770,30 @@ class JlsTest extends CommonsCompilerTestSuite {
         } else {
             if (CommonsCompilerTestSuite.JVM_VERSION >= 8) this.assertCompilationUnitCookable(cu);
         }
+    }
+
+    @Test public void
+    test_9_4__Method_Declarations__5() throws Exception {
+
+        // Modifiers for interface method: SUPPRESS CHECKSTYLE LineLength:18
+        this.assertCompilationUnitCookable("interface Foo { @SuppressWarnings(\"foo\") void meth();   }");
+        this.assertCompilationUnitCookable("interface Foo { abstract                   void meth();   }");
+        this.assertCompilationUnitCookable("interface Foo { default                    void meth() {} }", "not implemented|illegal start of type");
+        this.assertCompilationUnitCookable("interface Foo { private                    void meth() {} }", "not implemented|modifier private not allowed");
+        this.assertCompilationUnitCookable("interface Foo { public                     void meth();   }");
+        this.assertCompilationUnitCookable("interface Foo { static                     void meth() {} }", "not implemented|modifier static not allowed");
+        this.assertCompilationUnitUncookable("interface Foo { final                      void meth();   }", "final not allowed|illegal combination");
+        this.assertCompilationUnitUncookable("interface Foo { native                     void meth();   }", "native not allowed");
+        this.assertCompilationUnitUncookable("interface Foo { protected                  void meth();   }", "protected not allowed");
+        this.assertCompilationUnitUncookable("interface Foo { strictfp                   void meth();   }", "strictfp (not|only) allowed");
+        this.assertCompilationUnitUncookable("interface Foo { synchronized               void meth();   }", "synchronized not allowed");
+        this.assertCompilationUnitUncookable("interface Foo { transient                  void meth();   }", "transient not allowed");
+        this.assertCompilationUnitUncookable("interface Foo { volatile                   void meth();   }", "volatile not allowed");
+        this.assertCompilationUnitUncookable("interface Foo { @SuppressWarnings(\"foo\") @SuppressWarnings(\"bar\") void meth(); }", "(?i)duplicate.*annotation");
+        this.assertCompilationUnitUncookable("interface Foo { public protected           void meth();   }", "allowed");
+        this.assertCompilationUnitUncookable("interface Foo { protected private          void meth();   }", "allowed");
+        this.assertCompilationUnitUncookable("interface Foo { private public             void meth();   }", "allowed|(?i)illegal\\.combination");
+        this.assertCompilationUnitUncookable("interface Foo { abstract final             void meth();   }", "Only one of abstract final is allowed|illegal combination|not allowed");
     }
 
     @Test public void
@@ -1240,13 +1275,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         );
         this.assertScriptUncookable(
             "int x = 1; for (short y : new int[] { 1, 2, 3 }) x += x * y;",
-            Pattern.compile(
-                "Assignment conversion not possible from type \"int\" to type \"short\""
-                + "|"
-                + "possible loss of precision"
-                + "|"
-                + "possible lossy conversion from int to short"
-            )
+            "conversion not possible|possible loss of precision|possible lossy conversion"
         );
 
         // Object array.
@@ -1258,11 +1287,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         );
         this.assertScriptUncookable(
             "String x = \"A\"; for (Number y : new String[] { \"B\", \"C\" }) x += y; return x.equals(\"ABC\");",
-            Pattern.compile(
-                "Assignment conversion not possible from type \"java.lang.String\" to type \"java.lang.Number\""
-                + "|"
-                + "incompatible types"
-            )
+            "conversion not possible|incompatible types"
         );
         this.assertScriptReturnsTrue(
             "String x = \"A\"; String[] sa = { \"B\",\"C\" }; for (String y : sa) x += y; return x.equals(\"ABC\");"
@@ -1679,11 +1704,11 @@ class JlsTest extends CommonsCompilerTestSuite {
                 + "    Assert.fail(ioe.toString());\n"
                 + "}\n"
             ),
-            Pattern.compile((
+            (
                 "compiler.err.try.with.resources.expr.needs.var"
                 + "|"
                 + "NewAnonymousClassInstance rvalue not allowed as a resource"
-            ))
+            )
         );
     }
 
@@ -1993,12 +2018,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "static int meth(byte a, double b){\n"
             + "    return 2;\n"
             + "}\n"
-        ), Pattern.compile((
-            ""
-            + "Invocation of constructor/method with argument type\\(s\\) \"byte, byte\" is ambiguous"
-            + "|"
-            + "compiler\\.err\\.ref\\.ambiguous"
-        )));
+        ), "Invocation of.*method.*is ambiguous|compiler\\.err\\.ref\\.ambiguous");
     }
 
     @Test public void
