@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.tools.Diagnostic;
@@ -48,6 +49,7 @@ import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
 import org.codehaus.commons.compiler.util.Disassembler;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -64,7 +66,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private boolean            debuggingInfoSource;
     private Collection<String> compilerOptions = new ArrayList<String>();
 
-    @Nullable private JavaCompiler    compiler;
+    private static final JavaCompiler compiler = JavaSourceClassLoader.getSystemJavaCompiler();
     @Nullable private JavaFileManager fileManager;
 
     /**
@@ -72,6 +74,17 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      */
     public
     JavaSourceClassLoader() { this.init(); }
+
+    private static JavaCompiler
+    getSystemJavaCompiler() {
+        JavaCompiler c = ToolProvider.getSystemJavaCompiler();
+        if (c == null) {
+            throw new UnsupportedOperationException(
+                "JDK Java compiler not available - probably you're running a JRE, not a JDK"
+            );
+        }
+        return c;
+    }
 
     /**
      * @see ICompilerFactory#newJavaSourceClassLoader(ClassLoader)
@@ -84,29 +97,20 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     private void
     init() {
-        JavaCompiler c = ToolProvider.getSystemJavaCompiler();
-        if (c == null) {
-            throw new UnsupportedOperationException(
-                "JDK Java compiler not available - probably you're running a JRE, not a JDK"
-            );
-        }
-
-        this.compiler = c;
     }
 
     /**
      * Creates the underlying {@link JavaFileManager} lazily, because {@link #setSourcePath(File[])} and consorts are
      * called <em>after</em> initialization.
      */
-    JavaFileManager
+    private JavaFileManager
     getJavaFileManager() {
+
         if (this.fileManager != null) return this.fileManager;
 
         // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
         // CLASSPATH.
-        JavaCompiler c = this.compiler;
-        if (c == null) throw new IllegalStateException("System Java compiler not available");
-        JavaFileManager jfm = c.getStandardFileManager(null, null, null);
+        JavaFileManager jfm = JavaSourceClassLoader.compiler.getStandardFileManager(null, null, null);
 
         // Wrap it so that the output files (in our case class files) are stored in memory rather
         // than in files.
@@ -153,116 +157,54 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @throws ClassNotFoundException
      */
-    @Override protected Class<?>
-    findClass(@Nullable String className) throws ClassNotFoundException {
-        assert className != null;
+    @NotNullByDefault(false) @Override protected Class<?>
+    findClass(String className) throws ClassNotFoundException {
 
-        JavaCompiler c = this.compiler;
-        if (c == null) throw new IllegalStateException("System Java compiler not available");
-
-        byte[] ba;
-        int    size;
         try {
-
-            // Maybe the bytecode is already there, because the class was compiled as a side effect of a preceding
-            // compilation.
-            JavaFileObject classFileObject = this.getJavaFileManager().getJavaFileForInput(
-                StandardLocation.CLASS_OUTPUT,
-                className,
-                Kind.CLASS
-            );
-
-            if (classFileObject == null) {
-
-                // Get the sourceFile.
-                JavaFileObject sourceFileObject = this.getJavaFileManager().getJavaFileForInput(
-                    StandardLocation.SOURCE_PATH,
-                    className,
-                    Kind.SOURCE
-                );
-                if (sourceFileObject == null) {
-                    throw new DiagnosticException("Source for '" + className + "' not found");
-                }
-
-                // Compose the effective compiler options.
-                List<String> options = new ArrayList<String>(this.compilerOptions);
-                options.add(this.debuggingInfoLines ? (
-                    this.debuggingInfoSource ? (
-                        this.debuggingInfoVars
-                        ? "-g"
-                        : "-g:lines,source"
-                    ) : this.debuggingInfoVars ? "-g:lines,vars" : "-g:lines"
-                ) : this.debuggingInfoSource ? (
-                    this.debuggingInfoVars
-                    ? "-g:source,vars"
-                    : "-g:source"
-                ) : this.debuggingInfoVars ? "-g:vars" : "-g:none");
-
-                // Run the compiler.
-                if (!c.getTask(
-                    null,                                      // out
-                    this.getJavaFileManager(),                 // fileManager
-                    new DiagnosticListener<JavaFileObject>() { // diagnosticListener
-
-                        @Override public void
-                        report(@Nullable final Diagnostic<? extends JavaFileObject> diagnostic) {
-                            assert diagnostic != null;
-
-                            if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
-                                throw new DiagnosticException(diagnostic);
-                            }
-                        }
-                    },
-                    options,                                   // options
-                    null,                                      // classes
-                    Collections.singleton(sourceFileObject)    // compilationUnits
-                ).call()) {
-                    throw new ClassNotFoundException(className + ": Compilation failed");
-                }
-
-                classFileObject = this.getJavaFileManager().getJavaFileForInput(
-                    StandardLocation.CLASS_OUTPUT,
-                    className,
-                    Kind.CLASS
-                );
-
-                if (classFileObject == null) {
-                    throw new ClassNotFoundException(
-                        className + ": Class file \"" + className + "\" not created by compilation"
-                    );
-                }
-            }
-
-            if (classFileObject instanceof ByteArrayJavaFileObject) {
-                ByteArrayJavaFileObject bajfo = (ByteArrayJavaFileObject) classFileObject;
-                ba   = bajfo.toByteArray();
-                size = ba.length;
-            } else
-            {
-                ba   = new byte[4096];
-                size = 0;
-                InputStream is = classFileObject.openInputStream();
-                try {
-                    for (;;) {
-                        int res = is.read(ba, size, ba.length - size);
-                        if (res == -1) break;
-                        size += res;
-                        if (size == ba.length) {
-                            byte[] tmp = new byte[2 * size];
-                            System.arraycopy(ba, 0, tmp, 0, size);
-                            ba = tmp;
-                        }
-                    }
-                } finally {
-                    is.close();
-                }
-            }
+            return this.findClass2(className);
         } catch (IOException ioe) {
             throw new DiagnosticException(ioe);
         }
 
+    }
+
+    private Class<?>
+    findClass2(String className) throws IOException {
+
+        JavaFileObject classFileObject = this.findClassFile(className);
+
+        // Load the .class file into memory.
+        byte[] ba;
+        int    size;
+        if (classFileObject instanceof ByteArrayJavaFileObject) {
+            ByteArrayJavaFileObject bajfo = (ByteArrayJavaFileObject) classFileObject;
+            ba   = bajfo.toByteArray();
+            size = ba.length;
+        } else
+        {
+            ba   = new byte[4096];
+            size = 0;
+            InputStream is = classFileObject.openInputStream();
+            try {
+                for (;;) {
+                    int res = is.read(ba, size, ba.length - size);
+                    if (res == -1) break;
+                    size += res;
+                    if (size == ba.length) {
+                        byte[] tmp = new byte[2 * size];
+                        System.arraycopy(ba, 0, tmp, 0, size);
+                        ba = tmp;
+                    }
+                }
+                is.close();
+            } finally {
+                is.close();
+            }
+        }
+
         if (Boolean.getBoolean("disasm")) Disassembler.disassembleToStdout(ba);
 
+        // Invoke "ClassLoader.defineClass()", as the ClassLoader API requires.
         return this.defineClass(className, ba, 0, size, (
             this.optionalProtectionDomainFactory != null
             ? this.optionalProtectionDomainFactory.getProtectionDomain(
@@ -270,6 +212,82 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
             )
             : null
         ));
+    }
+
+    private JavaFileObject
+    findClassFile(String className) throws IOException {
+
+        // Maybe the .class file is already there as a side effect of a previous compilation.
+        JavaFileObject classFileObject = this.getJavaFileManager().getJavaFileForInput(
+            StandardLocation.CLASS_OUTPUT,
+            className,
+            Kind.CLASS
+        );
+        if (classFileObject != null) return classFileObject;
+
+        // .class file does not yet exist - get the .java file.
+        JavaFileObject sourceFileObject;
+        {
+            String topLevelClassName;
+            {
+                int idx = className.indexOf('$');
+                topLevelClassName = idx == -1 ? className : className.substring(0, idx);
+            }
+            sourceFileObject = this.getJavaFileManager().getJavaFileForInput(
+                StandardLocation.SOURCE_PATH,
+                topLevelClassName,
+                Kind.SOURCE
+            );
+            if (sourceFileObject == null) throw new DiagnosticException("Source for '" + className + "' not found");
+        }
+
+        // Compose the effective compiler options.
+        List<String> options = new ArrayList<String>(this.compilerOptions);
+        {
+            List<String> l = new ArrayList<String>();
+            if (this.debuggingInfoLines)  l.add("lines");
+            if (this.debuggingInfoSource) l.add("source");
+            if (this.debuggingInfoVars)   l.add("vars");
+            if (l.isEmpty()) l.add("none");
+
+            Iterator<String> it = l.iterator();
+            String           o  = "-g:" + it.next();
+            while (it.hasNext()) o += "," + it.next();
+
+            options.add(o);
+        }
+
+        // Run the compiler.
+        if (!JavaSourceClassLoader.compiler.getTask(
+            null,                                      // out
+            this.getJavaFileManager(),                 // fileManager
+            new DiagnosticListener<JavaFileObject>() { // diagnosticListener
+
+                @Override public void
+                report(@Nullable final Diagnostic<? extends JavaFileObject> diagnostic) {
+                    assert diagnostic != null;
+
+                    if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
+                        throw new DiagnosticException(diagnostic);
+                    }
+                }
+            },
+            options,                                   // options
+            null,                                      // classes
+            Collections.singleton(sourceFileObject)    // compilationUnits
+        ).call()) throw new DiagnosticException(className + ": Compilation failed");
+
+        // That should have created the .class file.
+        classFileObject = this.getJavaFileManager().getJavaFileForInput(
+            StandardLocation.CLASS_OUTPUT,
+            className,
+            Kind.CLASS
+        );
+        if (classFileObject == null) {
+            throw new DiagnosticException(className + ": Class file not created by compilation");
+        }
+
+        return classFileObject;
     }
 
     /**
