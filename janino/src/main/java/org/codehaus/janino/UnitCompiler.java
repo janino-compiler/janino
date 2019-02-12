@@ -1085,10 +1085,16 @@ class UnitCompiler {
     private void
     compileAnnotations(Annotation[] annotations, Annotatable target, final ClassFile cf) throws CompileException {
 
+        final Set<IClass> seenAnnotations = new HashSet<IClass>();
         ANNOTATIONS: for (final Annotation a : annotations) {
             Type          annotationType        = a.getType();
             IClass        annotationIClass      = this.getType(annotationType);
             IAnnotation[] annotationAnnotations = annotationIClass.getIAnnotations();
+
+            // Check for duplicate annotations.
+            if (!seenAnnotations.add(annotationIClass)) {
+                this.compileError("Duplicate annotation \"" + annotationIClass + "\"", annotationType.getLocation());
+            }
 
             // Determine the attribute name.
             boolean runtimeVisible = false;
@@ -3289,6 +3295,24 @@ class UnitCompiler {
                         UnitCompiler.this.compileElementValue(defaultValue, classFile)
                     )
                 );
+            }
+        }
+
+        if (fd.getDeclaringType() instanceof InterfaceDeclaration) {
+            if (UnitCompiler.hasAccessModifier(fd.getModifiers(), "private")) {
+                this.compileError("Private interface methods not implemented", fd.getLocation());
+                return;
+            }
+            if (
+                UnitCompiler.hasAccessModifier(fd.getModifiers(), "strictfp")
+                && !UnitCompiler.hasAccessModifier(fd.getModifiers(), "default")
+                && !UnitCompiler.hasAccessModifier(fd.getModifiers(), "static")
+            ) {
+                this.compileError(
+                    "Modifier strictfp only allowed for interface default methods and static interface methods",
+                    fd.getLocation()
+                );
+                return;
             }
         }
 
