@@ -93,19 +93,10 @@ class CommonsCompilerTestSuite {
 
     /**
      * Asserts that cooking the given <var>expression</var>, when cooked, issues an error, and the error message
-     * contains the <var>messageInfix</var>.
+     * contains a match of the <var>messageRegex</var>.
      */
     protected void
-    assertExpressionUncookable(String expression, String messageInfix) throws Exception {
-        new ExpressionTest(expression).assertUncookable(messageInfix);
-    }
-
-    /**
-     * Asserts that cooking the given <var>expression</var>, when cooked, issues an error, and the error message
-     * contains a match for <var>messageRegex</var>.
-     */
-    protected void
-    assertExpressionUncookable(String expression, Pattern messageRegex) throws Exception {
+    assertExpressionUncookable(String expression, String messageRegex) throws Exception {
         new ExpressionTest(expression).assertUncookable(messageRegex);
     }
 
@@ -184,20 +175,11 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that cooking the given <var>script</var> issues an error, and the error message contains the
-     * <var>messageInfix</var>.
-     */
-    protected void
-    assertScriptUncookable(String script, String messageInfix) throws Exception {
-        new ScriptTest(script).assertUncookable(messageInfix);
-    }
-
-    /**
      * Asserts that cooking the given <var>script</var> issues an error, and the error message contains a match for
      * <var>messageRegex</var>.
      */
     protected void
-    assertScriptUncookable(String script, Pattern messageRegex) throws Exception {
+    assertScriptUncookable(String script, String messageRegex) throws Exception {
         new ScriptTest(script).assertUncookable(messageRegex);
     }
 
@@ -315,20 +297,11 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that cooking the given <var>classBody</var> issues an error, and the error message contains the
-     * <var>messageInfix</var>.
-     */
-    protected void
-    assertClassBodyUncookable(String classBody, String messageInfix) throws Exception {
-        new ClassBodyTest(classBody).assertUncookable(messageInfix);
-    }
-
-    /**
      * Asserts that cooking the given <var>classBody</var> issues an error, and the error message contains a match for
      * <var>messageRegex</var>.
      */
     protected void
-    assertClassBodyUncookable(String classBody, Pattern messageRegex) throws Exception {
+    assertClassBodyUncookable(String classBody, String messageRegex) throws Exception {
         new ClassBodyTest(classBody).assertUncookable(messageRegex);
     }
 
@@ -412,19 +385,10 @@ class CommonsCompilerTestSuite {
 
     /**
      * Asserts that cooking the given <var>compilationUnit</var> with the {@link ISimpleCompiler} issues an error, and
-     * the error message contains the <var>messageInfix</var>.
-     */
-    protected void
-    assertCompilationUnitUncookable(String compilationUnit, String messageInfix) throws Exception {
-        new SimpleCompilerTest(compilationUnit, "Xxx").assertUncookable(messageInfix);
-    }
-
-    /**
-     * Asserts that cooking the given <var>compilationUnit</var> with the {@link ISimpleCompiler} issues an error, and
      * the error message contains a match for <var>messageRegex</var>.
      */
     protected void
-    assertCompilationUnitUncookable(String compilationUnit, Pattern messageRegex) throws Exception {
+    assertCompilationUnitUncookable(String compilationUnit, String messageRegex) throws Exception {
         new SimpleCompilerTest(compilationUnit, "Xxx").assertUncookable(messageRegex);
     }
 
@@ -444,6 +408,15 @@ class CommonsCompilerTestSuite {
     protected void
     assertCompilationUnitCookable(String compilationUnit) throws Exception {
         new SimpleCompilerTest(compilationUnit, "Xxx").assertCookable();
+    }
+
+    /**
+     * Asserts that the given <var>compilationUnit</var> can be cooked by the {@link ISimpleCompiler} without errors
+     * and warnings, <em>or</em> issues an error that matches the <var>messageRegex</var>.
+     */
+    protected void
+    assertCompilationUnitCookable(String compilationUnit, String messageRegex) throws Exception {
+        new SimpleCompilerTest(compilationUnit, "Xxx").assertCookable(messageRegex);
     }
 
     /**
@@ -567,38 +540,19 @@ class CommonsCompilerTestSuite {
          * <var>messageInfix</var>.
          */
         protected void
-        assertUncookable(String messageInfix) throws Exception {
+        assertUncookable(@Nullable String messageRegex) throws Exception {
 
-            String errorMessage = this.assertUncookable().getMessage();
+            CompileException ce           = this.assertUncookable();
+            String           errorMessage = ce.getMessage();
 
-            if (!errorMessage.contains(messageInfix)) {
-                CommonsCompilerTestSuite.this.fail((
-                    "Compilation error message \""
-                    + errorMessage
-                    + "\" does not contain \""
-                    + messageInfix
-                    + "\""
-                ));
-            }
-        }
-
-        /**
-         * Asserts that cooking issues an error, and that the error message contains a match of
-         * <var>messageRegex</var>.
-         */
-        protected void
-        assertUncookable(@Nullable Pattern messageRegex) throws Exception {
-
-            String errorMessage = this.assertUncookable().getMessage();
-
-            if (messageRegex != null && !messageRegex.matcher(errorMessage).find()) {
+            if (messageRegex != null && !Pattern.compile(messageRegex).matcher(errorMessage).find()) {
                 CommonsCompilerTestSuite.this.fail((
                     "Error message '"
                     + errorMessage
                     + "' does not contain a match of '"
                     + messageRegex
                     + "'"
-                ));
+                ), ce);
             }
         }
 
@@ -631,7 +585,34 @@ class CommonsCompilerTestSuite {
          */
         protected void
         assertCookable() throws Exception {
-            this.cook();
+            try {
+                this.cook();
+            } catch (CompileException ce) {
+                throw new AssertionError(ce);
+            }
+        }
+
+        /**
+         * Asserts that cooking completes without errors, <em>or</em> issues an error that matches the
+         * <var>messageRegex</var>.
+         */
+        protected void
+        assertCookable(@Nullable String messageRegex) throws Exception {
+            try {
+                this.cook();
+            } catch (CompileException ce) {
+                String errorMessage = ce.getMessage();
+
+                if (messageRegex != null && !Pattern.compile(messageRegex).matcher(errorMessage).find()) {
+                    CommonsCompilerTestSuite.this.fail((
+                        "Compilation error message \""
+                        + errorMessage
+                        + "\" does not contain a match of \""
+                        + messageRegex
+                        + "\""
+                    ));
+                }
+            }
         }
 
         /**
