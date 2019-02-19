@@ -42,10 +42,11 @@ class ByteArrayClassLoader extends ClassLoader {
      * @param classes String className =&gt; byte[] data, or String classFileName =&gt; byte[] data
      */
     public
-    ByteArrayClassLoader(Map<String, byte[]> classes) { this.classes = classes; }
+    ByteArrayClassLoader(Map<String /*className*/, byte[] /*data*/> classes) { this.classes = classes; }
 
     /**
-     * @see #ByteArrayClassLoader(Map)
+     * @param classes {@code String className} =&gt; {@code byte[] data}, or {@code String classFileName} =&gt; {@code
+     *                byte[] data}
      */
     public
     ByteArrayClassLoader(Map<String /*className*/, byte[] /*data*/> classes, ClassLoader parent) {
