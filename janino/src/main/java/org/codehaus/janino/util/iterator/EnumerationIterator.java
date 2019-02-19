@@ -42,7 +42,7 @@ class EnumerationIterator<T> implements Iterator<T> {
     public EnumerationIterator(Enumeration<? extends T> e) { this.e = e; }
 
     @Override public boolean hasNext() { return this.e.hasMoreElements(); }
-    @Override public T       next()    { return this.e.nextElement(); }
+    @Override public T       next()    { return this.e.nextElement();     }
 
     /**
      * Since {@link Enumeration}s don't support element removal, this method always throws an {@link

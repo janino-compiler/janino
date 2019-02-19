@@ -33,7 +33,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  */
 @SuppressWarnings("deprecation") public
 class InternalCompilerException extends JaninoRuntimeException {
-    public InternalCompilerException()                                      {}
-    public InternalCompilerException(@Nullable String message)              { super(message); }
+    public InternalCompilerException()                                      {                    }
+    public InternalCompilerException(@Nullable String message)              { super(message);    }
     public InternalCompilerException(@Nullable String message, Throwable t) { super(message, t); }
 }

@@ -510,39 +510,21 @@ class ClassFileIClass extends IClass {
                 }
 
                 @Override public IClass[]      getThrownExceptions2() { return thrownExceptions; }
-                @Override public Access        getAccess()            { return access; }
-                @Override public IAnnotation[] getAnnotations()       { return iAnnotations; }
+                @Override public Access        getAccess()            { return access;           }
+                @Override public IAnnotation[] getAnnotations()       { return iAnnotations;     }
             };
         } else {
 
             result = new IClass.IMethod() {
-
-                @Override public String
-                getName() { return name; }
-
-                @Override public IClass
-                getReturnType() { return returnType; }
-
-                @Override public boolean
-                isStatic() { return Mod.isStatic(methodInfo.getAccessFlags()); }
-
-                @Override public boolean
-                isAbstract() { return Mod.isAbstract(methodInfo.getAccessFlags()); }
-
-                @Override public boolean
-                isVarargs() { return Mod.isVarargs(methodInfo.getAccessFlags()); }
-
-                @Override public IClass[]
-                getParameterTypes2() { return parameterTypes; }
-
-                @Override public IClass[]
-                getThrownExceptions2() { return thrownExceptions; }
-
-                @Override public Access
-                getAccess() { return access; }
-
-                @Override public IAnnotation[]
-                getAnnotations() { return iAnnotations; }
+                @Override public IAnnotation[] getAnnotations()       { return iAnnotations;                                } // SUPPRESS CHECKSTYLE LineLength:9
+                @Override public Access        getAccess()            { return access;                                      }
+                @Override public boolean       isStatic()             { return Mod.isStatic(methodInfo.getAccessFlags());   }
+                @Override public boolean       isAbstract()           { return Mod.isAbstract(methodInfo.getAccessFlags()); }
+                @Override public IClass        getReturnType()        { return returnType;                                  }
+                @Override public String        getName()              { return name;                                        }
+                @Override public IClass[]      getParameterTypes2()   { return parameterTypes;                              }
+                @Override public boolean       isVarargs()            { return Mod.isVarargs(methodInfo.getAccessFlags());  }
+                @Override public IClass[]      getThrownExceptions2() { return thrownExceptions;                            }
             };
         }
         this.resolvedMethods.put(methodInfo, result);
@@ -592,12 +574,12 @@ class ClassFileIClass extends IClass {
         }
 
         result = new IField() {
-            @Override public Object        getConstantValue() { return optionalConstantValue; }
-            @Override public String        getName()          { return name; }
-            @Override public IClass        getType()          { return type; }
+            @Override public Object        getConstantValue() { return optionalConstantValue;                    }
+            @Override public String        getName()          { return name;                                     }
+            @Override public IClass        getType()          { return type;                                     }
             @Override public boolean       isStatic()         { return Mod.isStatic(fieldInfo.getAccessFlags()); }
-            @Override public Access        getAccess()        { return access; }
-            @Override public IAnnotation[] getAnnotations()   { return iAnnotations; }
+            @Override public Access        getAccess()        { return access;                                   }
+            @Override public IAnnotation[] getAnnotations()   { return iAnnotations;                             }
         };
         this.resolvedFields.put(fieldInfo, result);
         return result;

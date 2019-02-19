@@ -39,9 +39,9 @@ class FileResource implements Resource {
     public FileResource(File file) { this.file = file; }
 
     // Implement "Resource".
-    @Override public final String      getFileName()             { return this.file.toString(); }
+    @Override public final String      getFileName()             { return this.file.toString();           }
     @Override public final InputStream open() throws IOException { return new FileInputStream(this.file); }
-    @Override public final long        lastModified()            { return this.file.lastModified(); }
+    @Override public final long        lastModified()            { return this.file.lastModified();       }
 
     /**
      * @return The file containing the contents of this resource

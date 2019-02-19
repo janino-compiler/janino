@@ -188,7 +188,7 @@ class DeepCopier {
         // SUPPRESS CHECKSTYLE LineLength:11
         @Override @Nullable public TypeDeclaration visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                             throws CompileException { return DeepCopier.this.copyAnonymousClassDeclaration(acd);                 }
         @Override @Nullable public TypeDeclaration visitLocalClassDeclaration(LocalClassDeclaration lcd)                                     throws CompileException { return DeepCopier.this.copyLocalClassDeclaration(lcd);                     }
-        @Override @Nullable public TypeDeclaration visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)                    throws CompileException { return DeepCopier.this.copyPackageMemberClassDeclaration(pmcd);           }
+        @Override @Nullable public TypeDeclaration visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)                    throws CompileException { return DeepCopier.this.copyPackageMemberClassDeclaration(pmcd);            }
         @Override @Nullable public TypeDeclaration visitPackageMemberInterfaceDeclaration(PackageMemberInterfaceDeclaration pmid)            throws CompileException { return DeepCopier.this.copyPackageMemberInterfaceDeclaration(pmid);        }
         @Override @Nullable public TypeDeclaration visitEnumConstant(EnumConstant ec)                                                        throws CompileException { return DeepCopier.this.copyEnumConstant(ec);                               }
         @Override @Nullable public TypeDeclaration visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed)                      throws CompileException { return DeepCopier.this.copyPackageMemberEnumDeclaration(pmed);             }

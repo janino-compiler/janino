@@ -33,7 +33,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  */
 @Deprecated public
 class JaninoRuntimeException extends RuntimeException {
-    public JaninoRuntimeException()                                      {}
-    public JaninoRuntimeException(@Nullable String message)              { super(message); }
+    public JaninoRuntimeException()                                      {                    }
+    public JaninoRuntimeException(@Nullable String message)              { super(message);    }
     public JaninoRuntimeException(@Nullable String message, Throwable t) { super(message, t); }
 }

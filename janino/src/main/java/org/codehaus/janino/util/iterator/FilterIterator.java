@@ -45,6 +45,6 @@ class FilterIterator<T> implements Iterator<T> {
     public FilterIterator(Iterator<T> delegate) { this.delegate = delegate; }
 
     @Override public boolean hasNext() { return this.delegate.hasNext(); }
-    @Override public T       next()    { return this.delegate.next(); }
-    @Override public void    remove()  { this.delegate.remove(); }
+    @Override public T       next()    { return this.delegate.next();    }
+    @Override public void    remove()  { this.delegate.remove();         }
 }

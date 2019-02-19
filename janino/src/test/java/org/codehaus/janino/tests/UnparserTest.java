@@ -333,12 +333,12 @@ class UnparserTest {
                 );
             }
 
-            @Override public Rvalue visitIntegerLiteral(IntegerLiteral il)              { return il; }
+            @Override public Rvalue visitIntegerLiteral(IntegerLiteral il)              { return il;  }
             @Override public Rvalue visitFloatingPointLiteral(FloatingPointLiteral fpl) { return fpl; }
-            @Override public Rvalue visitBooleanLiteral(BooleanLiteral bl)              { return bl; }
-            @Override public Rvalue visitCharacterLiteral(CharacterLiteral cl)          { return cl; }
-            @Override public Rvalue visitStringLiteral(StringLiteral sl)                { return sl; }
-            @Override public Rvalue visitNullLiteral(NullLiteral nl)                    { return nl; }
+            @Override public Rvalue visitBooleanLiteral(BooleanLiteral bl)              { return bl;  }
+            @Override public Rvalue visitCharacterLiteral(CharacterLiteral cl)          { return cl;  }
+            @Override public Rvalue visitStringLiteral(StringLiteral sl)                { return sl;  }
+            @Override public Rvalue visitNullLiteral(NullLiteral nl)                    { return nl;  }
 
             @Override public Rvalue visitSimpleConstant(SimpleConstant sl) { return sl; }
 

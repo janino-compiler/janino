@@ -48,8 +48,8 @@ public
 class MultiDimensionalIterator<T> implements Iterator<T> {
     private final Iterator<?>[]           nest;
     private static final Iterator<Object> EMPTY_ITERATOR = new Iterator<Object>() {
-        @Override public boolean hasNext() { return false; }
-        @Override public Object  next()    { throw new NoSuchElementException(); }
+        @Override public boolean hasNext() { return false;                                      }
+        @Override public Object  next()    { throw new NoSuchElementException();                }
         @Override public void    remove()  { throw new UnsupportedOperationException("remove"); }
     };
 

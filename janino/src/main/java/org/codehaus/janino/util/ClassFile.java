@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.MethodDescriptor;
@@ -1553,7 +1554,7 @@ class ClassFile implements Annotatable {
             this.referenceIndex = referenceIndex;
         }
 
-        public byte  getReferenceKind()  { return this.referenceKind; }
+        public byte  getReferenceKind()  { return this.referenceKind;  }
         public short getReferenceIndex() { return this.referenceIndex; }
 
         // Implement ConstantPoolInfo.
@@ -1635,7 +1636,7 @@ class ClassFile implements Annotatable {
         }
 
         public short getBootstrapMethodAttrIndex() { return this.bootstrapMethodAttrIndex; }
-        public short getNameAndTypeIndex()         { return this.nameAndTypeIndex; }
+        public short getNameAndTypeIndex()         { return this.nameAndTypeIndex;         }
 
         // Implement ConstantPoolInfo.
 
@@ -2769,7 +2770,7 @@ class ClassFile implements Annotatable {
         class TopVariableInfo implements VerificationTypeInfo {
 
             @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(0); }
-            @Override public String toString()                                     { return "top"; }
+            @Override public String toString()                                     { return "top";     }
         }
 
         /**
@@ -2778,7 +2779,7 @@ class ClassFile implements Annotatable {
         public static
         class IntegerVariableInfo implements VerificationTypeInfo {
             @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(1); }
-            @Override public String toString()                                     { return "int"; }
+            @Override public String toString()                                     { return "int";     }
         }
 
         /**
@@ -2787,7 +2788,7 @@ class ClassFile implements Annotatable {
         public static
         class FloatVariableInfo implements VerificationTypeInfo {
             @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(2); }
-            @Override public String toString()                                     { return "float"; }
+            @Override public String toString()                                     { return "float";   }
         }
 
         /**
@@ -2796,7 +2797,7 @@ class ClassFile implements Annotatable {
         public static
         class DoubleVariableInfo implements VerificationTypeInfo {
             @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(3); }
-            @Override public String toString()                                     { return "double"; }
+            @Override public String toString()                                     { return "double";  }
         }
 
         /**
@@ -2805,7 +2806,7 @@ class ClassFile implements Annotatable {
         public static
         class LongVariableInfo implements VerificationTypeInfo {
             @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(4); }
-            @Override public String toString()                                     { return "long"; }
+            @Override public String toString()                                     { return "long";    }
         }
 
         /**
@@ -2814,7 +2815,7 @@ class ClassFile implements Annotatable {
         public static
         class NullVariableInfo implements VerificationTypeInfo {
             @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(5); }
-            @Override public String toString()                                     { return "null"; }
+            @Override public String toString()                                     { return "null";    }
         }
 
         /**
@@ -2822,7 +2823,7 @@ class ClassFile implements Annotatable {
          */
         public static
         class UninitializedThisVariableInfo implements VerificationTypeInfo {
-            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(6); }
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(6);           }
             @Override public String toString()                                     { return "uninitializedThis"; }
         }
 
@@ -3043,47 +3044,47 @@ class ClassFile implements Annotatable {
     // SUPPRESS CHECKSTYLE LineLength|JavadocType:50
     public static final
     class ByteElementValue extends ConstantElementValue {
-        public                                          ByteElementValue(short constantValueIndex) { super((byte) 'B', constantValueIndex); }
+        public                                          ByteElementValue(short constantValueIndex) { super((byte) 'B', constantValueIndex);      }
         @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitByteElementValue(this); }
     }
     public static final
     class CharElementValue extends ConstantElementValue {
-        public                                          CharElementValue(short constantValueIndex) { super((byte) 'C', constantValueIndex); }
+        public                                          CharElementValue(short constantValueIndex) { super((byte) 'C', constantValueIndex);      }
         @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitCharElementValue(this); }
     }
     public static final
     class DoubleElementValue extends ConstantElementValue {
-        public                                          DoubleElementValue(short constantValueIndex) { super((byte) 'D', constantValueIndex); }
+        public                                          DoubleElementValue(short constantValueIndex) { super((byte) 'D', constantValueIndex);        }
         @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX     { return visitor.visitDoubleElementValue(this); }
     }
     public static final
     class FloatElementValue extends ConstantElementValue {
-        public                                          FloatElementValue(short constantValueIndex) { super((byte) 'F', constantValueIndex); }
+        public                                          FloatElementValue(short constantValueIndex) { super((byte) 'F', constantValueIndex);       }
         @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX    { return visitor.visitFloatElementValue(this); }
     }
     public static final
     class IntElementValue extends ConstantElementValue {
-        public                                          IntElementValue(short constantValueIndex) { super((byte) 'I', constantValueIndex); }
+        public                                          IntElementValue(short constantValueIndex) { super((byte) 'I', constantValueIndex);     }
         @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX  { return visitor.visitIntElementValue(this); }
     }
     public static final
     class LongElementValue extends ConstantElementValue {
-        public                                          LongElementValue(short constantValueIndex) { super((byte) 'J', constantValueIndex); }
+        public                                          LongElementValue(short constantValueIndex) { super((byte) 'J', constantValueIndex);      }
         @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX   { return visitor.visitLongElementValue(this); }
     }
     public static final
     class ShortElementValue extends ConstantElementValue {
-        public                                          ShortElementValue(short constantValueIndex) { super((byte) 'S', constantValueIndex); }
+        public                                          ShortElementValue(short constantValueIndex) { super((byte) 'S', constantValueIndex);       }
         @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX    { return visitor.visitShortElementValue(this); }
     }
     public static final
     class BooleanElementValue extends ConstantElementValue {
-        public                                          BooleanElementValue(short constantValueIndex) { super((byte) 'Z', constantValueIndex); }
+        public                                          BooleanElementValue(short constantValueIndex) { super((byte) 'Z', constantValueIndex);         }
         @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX      { return visitor.visitBooleanElementValue(this); }
     }
     public static final
     class StringElementValue extends ConstantElementValue {
-        public                                          StringElementValue(short constantValueIndex) { super((byte) 's', constantValueIndex); }
+        public                                          StringElementValue(short constantValueIndex) { super((byte) 's', constantValueIndex);        }
         @Override protected <R, EX extends Throwable> R accept(Visitor<R, EX> visitor) throws EX     { return visitor.visitStringElementValue(this); }
     }
     public static final

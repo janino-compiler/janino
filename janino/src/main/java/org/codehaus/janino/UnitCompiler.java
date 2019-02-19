@@ -5234,13 +5234,13 @@ class UnitCompiler {
         lvalueVisitor = new Visitor.LvalueVisitor<Boolean, RuntimeException>() {
 
             // SUPPRESS CHECKSTYLE LineLengthCheck:7
-            @Override @Nullable public Boolean visitAmbiguousName(AmbiguousName an)                                        { return false; }
+            @Override @Nullable public Boolean visitAmbiguousName(AmbiguousName an)                                        { return false;                                               }
             @Override @Nullable public Boolean visitArrayAccessExpression(ArrayAccessExpression aae)                       { return UnitCompiler.mayHaveSideEffects(aae.lhs, aae.index); }
-            @Override @Nullable public Boolean visitFieldAccess(FieldAccess fa)                                            { return false; }
-            @Override @Nullable public Boolean visitFieldAccessExpression(FieldAccessExpression fae)                       { return false; }
-            @Override @Nullable public Boolean visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return false; }
-            @Override @Nullable public Boolean visitLocalVariableAccess(LocalVariableAccess lva)                           { return false; }
-            @Override @Nullable public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    { return UnitCompiler.mayHaveSideEffects(pe.value); }
+            @Override @Nullable public Boolean visitFieldAccess(FieldAccess fa)                                            { return false;                                               }
+            @Override @Nullable public Boolean visitFieldAccessExpression(FieldAccessExpression fae)                       { return false;                                               }
+            @Override @Nullable public Boolean visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) { return false;                                               }
+            @Override @Nullable public Boolean visitLocalVariableAccess(LocalVariableAccess lva)                           { return false;                                               }
+            @Override @Nullable public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    { return UnitCompiler.mayHaveSideEffects(pe.value);           }
         };
 
         // SUPPRESS CHECKSTYLE LineLengthCheck:30
@@ -9175,15 +9175,15 @@ class UnitCompiler {
         final IClass[] pts = new IClass[arguments.length];
         for (int i = 0; i < arguments.length; ++i) pts[i] = this.getType(arguments[i]);
         return targetType.new IMethod() {
-            @Override public String        getName()              { return name; }
-            @Override public IClass        getReturnType()        { return IClass.INT; }
-            @Override public boolean       isStatic()             { return false; }
-            @Override public boolean       isAbstract()           { return false; }
-            @Override public boolean       isVarargs()            { return false; }
-            @Override public IClass[]      getParameterTypes2()   { return pts; }
-            @Override public IClass[]      getThrownExceptions2() { return new IClass[0]; }
-            @Override public Access        getAccess()            { return Access.PUBLIC; }
             @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
+            @Override public Access        getAccess()            { return Access.PUBLIC;      }
+            @Override public boolean       isStatic()             { return false;              }
+            @Override public boolean       isAbstract()           { return false;              }
+            @Override public IClass        getReturnType()        { return IClass.INT;         }
+            @Override public String        getName()              { return name;               }
+            @Override public IClass[]      getParameterTypes2()   { return pts;                }
+            @Override public boolean       isVarargs()            { return false;              }
+            @Override public IClass[]      getThrownExceptions2() { return new IClass[0];      }
         };
     }
 
@@ -9307,25 +9307,26 @@ class UnitCompiler {
         // Well, returning a "fake" IInvocable is a bit tricky, because the iInvocables can be of different types.
         if (iInvocables[0] instanceof IClass.IConstructor) {
             return iInvocables[0].getDeclaringIClass().new IConstructor() {
-                @Override public boolean       isVarargs()            { return false; }
-                @Override public IClass[]      getParameterTypes2()   { return argumentTypes; }
-                @Override public Access        getAccess()            { return Access.PUBLIC; }
-                @Override public IClass[]      getThrownExceptions2() { return new IClass[0]; }
+                @Override public boolean       isVarargs()            { return false;              }
+                @Override public IClass[]      getParameterTypes2()   { return argumentTypes;      }
+                @Override public Access        getAccess()            { return Access.PUBLIC;      }
+                @Override public IClass[]      getThrownExceptions2() { return new IClass[0];      }
                 @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
             };
         } else
         if (iInvocables[0] instanceof IClass.IMethod) {
             final String methodName = ((IClass.IMethod) iInvocables[0]).getName();
             return iInvocables[0].getDeclaringIClass().new IMethod() {
-                @Override public boolean       isStatic()             { return true; }
-                @Override public boolean       isAbstract()           { return false; }
-                @Override public IClass        getReturnType()        { return IClass.INT; }
-                @Override public String        getName()              { return methodName; }
-                @Override public Access        getAccess()            { return Access.PUBLIC; }
-                @Override public boolean       isVarargs()            { return false; }
-                @Override public IClass[]      getParameterTypes2()   { return argumentTypes; }
-                @Override public IClass[]      getThrownExceptions2() { return new IClass[0]; }
+
                 @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
+                @Override public Access        getAccess()            { return Access.PUBLIC;      }
+                @Override public boolean       isStatic()             { return true;               }
+                @Override public boolean       isAbstract()           { return false;              }
+                @Override public IClass        getReturnType()        { return IClass.INT;         }
+                @Override public String        getName()              { return methodName;         }
+                @Override public IClass[]      getParameterTypes2()   { return argumentTypes;      }
+                @Override public boolean       isVarargs()            { return false;              }
+                @Override public IClass[]      getThrownExceptions2() { return new IClass[0];      }
             };
         } else
         {
@@ -9595,17 +9596,16 @@ class UnitCompiler {
             final IClass[]       tes = (IClass[]) s.toArray(new IClass[s.size()]);
             return im.getDeclaringIClass().new IMethod() {
 
-                // SUPPRESS CHECKSTYLE LineLength:10
-                @Override public String        getName()                                    { return im.getName();           }
-                @Override public IClass        getReturnType()      throws CompileException { return im.getReturnType();     }
+                @Override public IAnnotation[] getAnnotations()                             { return im.getAnnotations();    } // SUPPRESS CHECKSTYLE LineLength:9
+                @Override public Access        getAccess()                                  { return im.getAccess();         }
                 // JLS8 15.12.2.5.B8.B2: "In this case, the most specific method is considered to be abstract"
                 @Override public boolean       isAbstract()                                 { return true;                   }
                 @Override public boolean       isStatic()                                   { return im.isStatic();          }
-                @Override public Access        getAccess()                                  { return im.getAccess();         }
-                @Override public boolean       isVarargs()                                  { return im.isVarargs();         }
+                @Override public IClass        getReturnType()      throws CompileException { return im.getReturnType();     }
+                @Override public String        getName()                                    { return im.getName();           }
                 @Override public IClass[]      getParameterTypes2() throws CompileException { return im.getParameterTypes(); }
+                @Override public boolean       isVarargs()                                  { return im.isVarargs();         }
                 @Override public IClass[]      getThrownExceptions2()                       { return tes;                    }
-                @Override public IAnnotation[] getAnnotations()                             { return im.getAnnotations();    }
             };
         }
 
@@ -9833,13 +9833,13 @@ class UnitCompiler {
                     res.add(new IMethod() {
 
                         @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
-                        @Override public boolean       isStatic()             { return true; }
-                        @Override public boolean       isAbstract()           { return false; }
-                        @Override public String        getName()              { return "values"; }
-                        @Override public boolean       isVarargs()            { return false; }
-                        @Override public Access        getAccess()            { return Access.PUBLIC; }
-                        @Override public IClass[]      getParameterTypes2()   { return new IClass[0]; }
-                        @Override public IClass[]      getThrownExceptions2() { return new IClass[0]; }
+                        @Override public Access        getAccess()            { return Access.PUBLIC;      }
+                        @Override public boolean       isStatic()             { return true;               }
+                        @Override public boolean       isAbstract()           { return false;              }
+                        @Override public String        getName()              { return "values";           }
+                        @Override public IClass[]      getParameterTypes2()   { return new IClass[0];      }
+                        @Override public boolean       isVarargs()            { return false;              }
+                        @Override public IClass[]      getThrownExceptions2() { return new IClass[0];      }
 
                         @Override public IClass
                         getReturnType() {
@@ -9851,14 +9851,14 @@ class UnitCompiler {
 
                     res.add(new IMethod() {
 
-                        @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
-                        @Override public boolean       isStatic()             { return true; }
-                        @Override public boolean       isAbstract()           { return false; }
-                        @Override public String        getName()              { return "valueOf"; }
-                        @Override public boolean       isVarargs()            { return false; }
-                        @Override public Access        getAccess()            { return Access.PUBLIC; }
-                        @Override public IClass[]      getParameterTypes2()   { return new IClass[] { UnitCompiler.this.iClassLoader.TYPE_java_lang_String }; } // SUPPRESS CHECKSTYLE LineLength
-                        @Override public IClass[]      getThrownExceptions2() { return new IClass[0]; }
+                        @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0];                                                    } // SUPPRESS CHECKSTYLE LineLength:7
+                        @Override public Access        getAccess()            { return Access.PUBLIC;                                                         }
+                        @Override public boolean       isStatic()             { return true;                                                                  }
+                        @Override public boolean       isAbstract()           { return false;                                                                 }
+                        @Override public String        getName()              { return "valueOf";                                                             }
+                        @Override public IClass[]      getParameterTypes2()   { return new IClass[] { UnitCompiler.this.iClassLoader.TYPE_java_lang_String }; }
+                        @Override public boolean       isVarargs()            { return false;                                                                 }
+                        @Override public IClass[]      getThrownExceptions2() { return new IClass[0];                                                         }
 
                         @Override public IClass
                         getReturnType() {
@@ -10516,11 +10516,10 @@ class UnitCompiler {
             for (ImportDeclaration id : this.compilationUnit.importDeclarations) {
                 id.accept(new ImportVisitor<Void, RuntimeException>() {
 
-                    // SUPPRESS CHECKSTYLE LineLength:4
-                    @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { stids.add(stid); return null; }
-                    @Override @Nullable public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     { return null; }
-                    @Override @Nullable public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { return null; }
-                    @Override @Nullable public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { return null; }
+                    @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { stids.add(stid); return null; } // SUPPRESS CHECKSTYLE LineLength:3
+                    @Override @Nullable public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     { return null;                  }
+                    @Override @Nullable public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { return null;                  }
+                    @Override @Nullable public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { return null;                  }
                 });
             }
 
@@ -10585,11 +10584,10 @@ class UnitCompiler {
                 final Collection<String[]> finalTiods = tiods;
                 id.accept(new ImportVisitor<Void, RuntimeException>() {
 
-                    // SUPPRESS CHECKSTYLE LineLength:4
-                    @Override @Nullable public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     { finalTiods.add(tiodd.identifiers); return null; }
-                    @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { return null; }
-                    @Override @Nullable public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { return null; }
-                    @Override @Nullable public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { return null; }
+                    @Override @Nullable public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     { finalTiods.add(tiodd.identifiers); return null; } // SUPPRESS CHECKSTYLE LineLength:3
+                    @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { return null;                                    }
+                    @Override @Nullable public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { return null;                                    }
+                    @Override @Nullable public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { return null;                                    }
                 });
             }
 
@@ -12232,12 +12230,13 @@ class UnitCompiler {
             this.name = name;
             this.type = type;
         }
+
         @Override public Object        getConstantValue() { return UnitCompiler.NOT_CONSTANT; }
-        @Override public String        getName()          { return this.name; }
-        @Override public IClass        getType()          { return this.type; }
-        @Override public boolean       isStatic()         { return false; }
-        @Override public Access        getAccess()        { return Access.DEFAULT; }
-        @Override public IAnnotation[] getAnnotations()   { return new IAnnotation[0]; }
+        @Override public String        getName()          { return this.name;                 }
+        @Override public IClass        getType()          { return this.type;                 }
+        @Override public boolean       isStatic()         { return false;                     }
+        @Override public Access        getAccess()        { return Access.DEFAULT;            }
+        @Override public IAnnotation[] getAnnotations()   { return new IAnnotation[0];        }
     }
 
     private static Access

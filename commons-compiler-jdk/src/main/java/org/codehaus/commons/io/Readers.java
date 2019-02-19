@@ -106,7 +106,7 @@ class Readers {
                 return 1;
             }
 
-            @Override public boolean markSupported()                             { return false; }
+            @Override public boolean markSupported()                             { return false;            }
             @Override public void    mark(int readAheadLimit) throws IOException { throw new IOException(); }
             @Override public void    reset() throws IOException                  { throw new IOException(); }
         };
