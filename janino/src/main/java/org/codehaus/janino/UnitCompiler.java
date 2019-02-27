@@ -220,7 +220,30 @@ import org.codehaus.janino.util.Objects;
  */
 public
 class UnitCompiler {
+
     private static final Logger LOGGER = Logger.getLogger(UnitCompiler.class.getName());
+
+    // Some debug flags; controlled by system properties.
+    private static final boolean keepClassFilesWithFlowAnalysisErrors = UnitCompiler.debugFlag("keepClassFilesWithFlowAnalysisErrors"); // SUPPRESS CHECKSTYLE LineLength|ConstantName:1
+    private static final boolean disassembleClassFilesToStdout        = UnitCompiler.debugFlag("disassembleClassFilesToStdout");
+
+    private static boolean
+    debugFlag(String name) {
+        return UnitCompiler.debugFlagForClass(UnitCompiler.class, name);
+    }
+
+    private static boolean
+    debugFlagForClass(Class<UnitCompiler> clasS, String name) {
+        return (
+            UnitCompiler.debugFlag(clasS.getSimpleName(), name)
+            || UnitCompiler.debugFlag(clasS.getName(), name)
+        );
+    }
+
+    private static boolean
+    debugFlag(String qualifier, String name) {
+        return Boolean.getBoolean(qualifier + "." + name) || Boolean.getBoolean(qualifier + ".*");
+    }
 
     /**
      * This constant determines the number of operands up to which the
@@ -902,7 +925,7 @@ class UnitCompiler {
     private void
     addClassFile(ClassFile cf) {
 
-        if (Boolean.getBoolean("disasm")) Disassembler.disassembleToStdout(cf.toByteArray());
+        if (UnitCompiler.disassembleClassFilesToStdout) Disassembler.disassembleToStdout(cf.toByteArray());
 
         assert this.generatedClassFiles != null;
         this.generatedClassFiles.add(cf);
@@ -3463,19 +3486,16 @@ class UnitCompiler {
         codeContext.fixUpAndRelocate();
 
         // Do flow analysis.
-        if (UnitCompiler.LOGGER.isLoggable(Level.FINE)) {
-            try {
-                codeContext.flowAnalysis(fd.toString());
-            } catch (RuntimeException re) {
-                UnitCompiler.LOGGER.log(Level.FINE, "*** FLOW ANALYSIS", re);
+        try {
+            codeContext.flowAnalysis(fd.toString());
+        } catch (RuntimeException re) {
+            UnitCompiler.LOGGER.log(Level.FINE, "*** FLOW ANALYSIS", re);
+
+            if (UnitCompiler.keepClassFilesWithFlowAnalysisErrors) {
 
                 // Continue, so that the .class file is generated and can be examined.
                 ;
-            }
-        } else {
-            try {
-                codeContext.flowAnalysis(fd.toString());
-            } catch (RuntimeException re) {
+            } else {
                 throw new InternalCompilerException("Compiling \"" + fd + "\"; " + re.getMessage(), re);
             }
         }
