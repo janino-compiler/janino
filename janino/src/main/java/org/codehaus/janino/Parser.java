@@ -38,6 +38,8 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
+import org.codehaus.janino.Java.AbstractCompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.AccessModifier;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
@@ -77,6 +79,7 @@ import org.codehaus.janino.Java.ElementValuePair;
 import org.codehaus.janino.Java.EmptyStatement;
 import org.codehaus.janino.Java.EnumConstant;
 import org.codehaus.janino.Java.EnumDeclaration;
+import org.codehaus.janino.Java.ExportsModuleDirective;
 import org.codehaus.janino.Java.ExpressionLambdaBody;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccess;
@@ -113,6 +116,9 @@ import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.MethodReference;
 import org.codehaus.janino.Java.Modifier;
+import org.codehaus.janino.Java.ModularCompilationUnit;
+import org.codehaus.janino.Java.ModuleDeclaration;
+import org.codehaus.janino.Java.ModuleDirective;
 import org.codehaus.janino.Java.NamedClassDeclaration;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
@@ -120,6 +126,7 @@ import org.codehaus.janino.Java.NewClassInstance;
 import org.codehaus.janino.Java.NewInitializedArray;
 import org.codehaus.janino.Java.NormalAnnotation;
 import org.codehaus.janino.Java.NullLiteral;
+import org.codehaus.janino.Java.OpensModuleDirective;
 import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
@@ -129,8 +136,10 @@ import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
 import org.codehaus.janino.Java.ParenthesizedExpression;
 import org.codehaus.janino.Java.Primitive;
 import org.codehaus.janino.Java.PrimitiveType;
+import org.codehaus.janino.Java.ProvidesModuleDirective;
 import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.ReferenceType;
+import org.codehaus.janino.Java.RequiresModuleDirective;
 import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.RvalueMemberType;
@@ -149,6 +158,7 @@ import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeArgument;
 import org.codehaus.janino.Java.TypeParameter;
 import org.codehaus.janino.Java.UnaryOperation;
+import org.codehaus.janino.Java.UsesModuleDirective;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Java.Wildcard;
@@ -205,34 +215,51 @@ class Parser {
      *                      { TypeDeclaration }
      * </pre>
      */
-    public CompilationUnit
-    parseCompilationUnit() throws CompileException, IOException {
+    public AbstractCompilationUnit
+    parseAbstractCompilationUnit() throws CompileException, IOException {
 
-        CompilationUnit compilationUnit = new CompilationUnit(this.location().getFileName());
 
         String     docComment = this.doc();
         Modifier[] modifiers  = this.parseModifiers();
 
+        PackageDeclaration optionalPackageDeclaration = null;
         if (this.peek("package")) {
 
-            compilationUnit.setPackageDeclaration(this.parsePackageDeclarationRest(docComment, modifiers));
+            optionalPackageDeclaration = this.parsePackageDeclarationRest(docComment, modifiers);
 
             docComment = this.doc();
             modifiers  = this.parseModifiers();
         }
 
-        while (this.peek("import")) {
-            if (modifiers.length > 0) {
-                this.warning("import.modifiers", "No modifiers allowed on import declarations");
-            }
-            if (docComment != null) {
-                this.warning("import.doc_comment", "Doc comment on import declaration");
-            }
-            compilationUnit.addImportDeclaration(this.parseImportDeclaration());
+        ImportDeclaration[] importDeclarations;
+        {
+            List<ImportDeclaration> l = new ArrayList<ImportDeclaration>();
+            while (this.peek("import")) {
+                if (modifiers.length > 0) {
+                    this.warning("import.modifiers", "No modifiers allowed on import declarations");
+                }
+                if (docComment != null) {
+                    this.warning("import.doc_comment", "Doc comment on import declaration");
+                }
+                l.add(this.parseImportDeclaration());
 
-            docComment = this.doc();
-            modifiers  = this.parseModifiers();
+                docComment = this.doc();
+                modifiers  = this.parseModifiers();
+            }
+            importDeclarations = (ImportDeclaration[]) l.toArray(new ImportDeclaration[l.size()]);
         }
+
+        if (this.peek("open", "module") != -1) {
+            return new ModularCompilationUnit(
+                this.location().getFileName(),
+                importDeclarations,
+                this.parseModuleDeclarationRest(modifiers)
+            );
+        }
+
+        CompilationUnit compilationUnit = new CompilationUnit(this.location().getFileName(), importDeclarations);
+
+        compilationUnit.setPackageDeclaration(optionalPackageDeclaration);
 
         if (this.peek(TokenType.END_OF_INPUT)) return compilationUnit;
 
@@ -250,6 +277,91 @@ class Parser {
         }
 
         return compilationUnit;
+    }
+
+    public ModuleDeclaration
+    parseModuleDeclarationRest(Modifier[] modifiers) throws CompileException, IOException {
+
+        final boolean isOpen = this.peekRead("open");
+
+        this.read("module");
+
+        final String[] moduleName = this.parseQualifiedIdentifier();
+
+        this.read("(");
+
+        List<ModuleDirective> moduleDirectives = new ArrayList<ModuleDirective>();
+        while (!this.peekRead(")")) {
+            ModuleDirective md;
+            switch (this.read("requires", "exports", "opens", "uses", "provides")) {
+            case 0: // requires
+                md = new RequiresModuleDirective(
+                    this.location(),
+                    this.parseModifiers(),
+                    this.parseQualifiedIdentifier()
+                );
+                break;
+            case 1: // exports
+                {
+                    String[] packageName = this.parseQualifiedIdentifier();
+
+                    String[][] toModuleNames;
+                    if (this.peekRead("to")) {
+                        List<String[]> l = new ArrayList<String[]>();
+                        l.add(this.parseQualifiedIdentifier());
+                        while (this.peekRead(",")) l.add(this.parseQualifiedIdentifier());
+                        toModuleNames = (String[][]) l.toArray(new String[l.size()][]);
+                    } else {
+                        toModuleNames = new String[0][];
+                    }
+                    md = new ExportsModuleDirective(this.location(), packageName, toModuleNames);
+                }
+                break;
+            case 2: // opens
+                {
+                    String[] packageName = this.parseQualifiedIdentifier();
+
+                    String[][] toModuleNames;
+                    if (this.peekRead("to")) {
+                        List<String[]> l = new ArrayList<String[]>();
+                        l.add(this.parseQualifiedIdentifier());
+                        while (this.peekRead(",")) l.add(this.parseQualifiedIdentifier());
+                        toModuleNames = (String[][]) l.toArray(new String[l.size()][]);
+                    } else {
+                        toModuleNames = new String[0][];
+                    }
+                    md = new OpensModuleDirective(this.location(), packageName, toModuleNames);
+                }
+                break;
+            case 3: // uses
+                md = new UsesModuleDirective(this.location(), this.parseQualifiedIdentifier());
+                break;
+            case 4: // provides
+                final String[] typeName = this.parseQualifiedIdentifier();
+                this.read("with");
+                List<String[]> withTypeNames = new ArrayList<String[]>();
+                withTypeNames.add(this.parseQualifiedIdentifier());
+                while (this.peekRead(",")) withTypeNames.add(this.parseQualifiedIdentifier());
+                md = new ProvidesModuleDirective(
+                    this.location(),
+                    typeName,
+                    (String[][]) withTypeNames.toArray(new String[withTypeNames.size()][])
+                );
+                break;
+            default:
+                throw new AssertionError();
+            }
+            this.read(";");
+            moduleDirectives.add(md);
+        }
+
+        return new ModuleDeclaration(
+            this.location(),
+            modifiers,
+            isOpen,
+            moduleName,
+            (ModuleDirective[]) moduleDirectives.toArray(new ModuleDirective[moduleDirectives.size()])
+        );
     }
 
     /**
@@ -276,10 +388,10 @@ class Parser {
      *   ImportDeclaration := 'import' ImportDeclarationBody ';'
      * </pre>
      */
-    public CompilationUnit.ImportDeclaration
+    public AbstractCompilationUnit.ImportDeclaration
     parseImportDeclaration() throws CompileException, IOException {
         this.read("import");
-        CompilationUnit.ImportDeclaration importDeclaration = this.parseImportDeclarationBody();
+        AbstractCompilationUnit.ImportDeclaration importDeclaration = this.parseImportDeclarationBody();
         this.read(";");
         return importDeclaration;
     }
@@ -289,7 +401,7 @@ class Parser {
      *   ImportDeclarationBody := [ 'static' ] Identifier { '.' Identifier } [ '.' '*' ]
      * </pre>
      */
-    public CompilationUnit.ImportDeclaration
+    public AbstractCompilationUnit.ImportDeclaration
     parseImportDeclarationBody() throws CompileException, IOException {
         final Location loc = this.location();
 
@@ -302,8 +414,8 @@ class Parser {
                 String[] identifiers = (String[]) l.toArray(new String[l.size()]);
                 return (
                     isStatic
-                    ? new CompilationUnit.SingleStaticImportDeclaration(loc, identifiers)
-                    : new CompilationUnit.SingleTypeImportDeclaration(loc, identifiers)
+                    ? new AbstractCompilationUnit.SingleStaticImportDeclaration(loc, identifiers)
+                    : new AbstractCompilationUnit.SingleTypeImportDeclaration(loc, identifiers)
                 );
             }
             this.read(".");
@@ -311,8 +423,8 @@ class Parser {
                 String[] identifiers = (String[]) l.toArray(new String[l.size()]);
                 return (
                     isStatic
-                    ? new CompilationUnit.StaticImportOnDemandDeclaration(loc, identifiers)
-                    : new CompilationUnit.TypeImportOnDemandDeclaration(loc, identifiers)
+                    ? new AbstractCompilationUnit.StaticImportOnDemandDeclaration(loc, identifiers)
+                    : new AbstractCompilationUnit.TypeImportOnDemandDeclaration(loc, identifiers)
                 );
             }
             l.add(this.read(TokenType.IDENTIFIER));
@@ -449,6 +561,7 @@ class Parser {
         "public", "protected", "private",
         "static", "abstract", "final", "native", "synchronized", "transient", "volatile", "strictfp",
         "default",
+        "transitive",
     };
 
     /**

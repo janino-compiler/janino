@@ -41,6 +41,7 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Assignment;
@@ -84,9 +85,9 @@ public
 class AstTest {
 
     private static Object
-    compileAndEval(CompilationUnit cu) throws Exception {
+    compileAndEval(AbstractCompilationUnit acu) throws Exception {
         SimpleCompiler compiler = new SimpleCompiler();
-        compiler.cook(cu);
+        compiler.cook(acu);
 
         ClassLoader loader = compiler.getClassLoader();
 
@@ -363,7 +364,7 @@ class AstTest {
     testMoveLocalVariablesToFields() throws Exception {
 
         // Parse the input CU.
-        CompilationUnit cu = new Parser(new Scanner(null, new StringReader(
+        AbstractCompilationUnit cu = new Parser(new Scanner(null, new StringReader(
             ""
             + " class A {"
             + " "
@@ -375,7 +376,7 @@ class AstTest {
             + " "
             + "     int a;"
             + " }"
-        ))).parseCompilationUnit();
+        ))).parseAbstractCompilationUnit();
 
         // Now copy the input CU and modify it on-the-fly.
         cu = new DeepCopier() {
@@ -457,7 +458,7 @@ class AstTest {
                 }
             }
 
-        }.copyCompilationUnit(cu);
+        }.copyAbstractCompilationUnit(cu);
 
         // Verify the transformation result.
         AstTest.assertUnparsesTo((
@@ -506,30 +507,30 @@ class AstTest {
         for (File f : UnparserTest.findJaninoJavaFiles()) {
 
             // Parse the compilation unit.
-            CompilationUnit cu1 = AstTest.parseCompilationUnit(f);
+            AbstractCompilationUnit acu1 = AstTest.parseAbstractCompilationUnit(f);
 
             // Use the "DeepCopier" to copy it.
-            CompilationUnit cu2 = new DeepCopier().copyCompilationUnit(cu1);
+            AbstractCompilationUnit acu2 = new DeepCopier().copyAbstractCompilationUnit(acu1);
 
             // Assert that the copy is identical with the original.
-            Assert.assertEquals(f.getPath(), AstTest.unparse(cu1), AstTest.unparse(cu2));
+            Assert.assertEquals(f.getPath(), AstTest.unparse(acu1), AstTest.unparse(acu2));
         }
     }
 
-    private static CompilationUnit
-    parseCompilationUnit(File f) throws CompileException, IOException {
+    private static AbstractCompilationUnit
+    parseAbstractCompilationUnit(File f) throws CompileException, IOException {
 
         Reader r = new FileReader(f);
         try {
-            return AstTest.parseCompilationUnit(f.getPath(), r);
+            return AstTest.parseAbstractCompilationUnit(f.getPath(), r);
         } finally {
             try { r.close(); } catch (Exception e) {}
         }
     }
 
-    private static CompilationUnit
-    parseCompilationUnit(@Nullable String optionalFileName, Reader in) throws CompileException, IOException {
-        return new Parser(new Scanner(optionalFileName, in)).parseCompilationUnit();
+    private static AbstractCompilationUnit
+    parseAbstractCompilationUnit(@Nullable String optionalFileName, Reader in) throws CompileException, IOException {
+        return new Parser(new Scanner(optionalFileName, in)).parseAbstractCompilationUnit();
     }
 
     /**
@@ -642,17 +643,17 @@ class AstTest {
     }
 
     public static String
-    unparse(CompilationUnit cu) {
+    unparse(AbstractCompilationUnit acu) {
         StringWriter sw = new StringWriter();
-        Unparser.unparse(cu, sw);
+        Unparser.unparse(acu, sw);
         return sw.toString();
     }
 
     public static void
-    assertUnparsesTo(String expected, CompilationUnit cu) {
+    assertUnparsesTo(String expected, AbstractCompilationUnit acu) {
         Assert.assertEquals(
             UnparserTest.normalizeWhitespace(expected),
-            UnparserTest.normalizeWhitespace(AstTest.unparse(cu))
+            UnparserTest.normalizeWhitespace(AstTest.unparse(acu))
         );
     }
 }

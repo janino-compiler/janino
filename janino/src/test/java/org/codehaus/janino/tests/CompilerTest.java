@@ -52,7 +52,7 @@ import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.Compiler;
 import org.codehaus.janino.IClassLoader;
 import org.codehaus.janino.Java;
-import org.codehaus.janino.Java.CompilationUnit;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
@@ -449,18 +449,18 @@ class CompilerTest {
     ) throws Exception {
 
         // Parse each compilation unit.
-        final List<Java.CompilationUnit> cus = new LinkedList<CompilationUnit>();
-        final IClassLoader               cl  = new ClassLoaderIClassLoader(CompilerTest.class.getClassLoader());
-        List<ClassFile>                  cfs = new LinkedList<ClassFile>();
+        final List<AbstractCompilationUnit> acus = new LinkedList<AbstractCompilationUnit>();
+        final IClassLoader                  cl   = new ClassLoaderIClassLoader(CompilerTest.class.getClassLoader());
+        List<ClassFile>                     cfs  = new LinkedList<ClassFile>();
         for (String fileName : fileNames) {
 
             FileReader r = new FileReader(fileName);
             try {
-                Java.CompilationUnit cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();
-                cus.add(cu);
+                Java.AbstractCompilationUnit acu = new Parser(new Scanner(fileName, r)).parseAbstractCompilationUnit();
+                acus.add(acu);
 
                 // Compile them.
-                ClassFile[] compiled = new UnitCompiler(cu, cl).compileUnit(debugSource, debugLines, debugVars);
+                ClassFile[] compiled = new UnitCompiler(acu, cl).compileUnit(debugSource, debugLines, debugVars);
                 for (ClassFile cf : compiled) {
                     cfs.add(cf);
                 }

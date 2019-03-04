@@ -61,6 +61,12 @@ import org.codehaus.janino.IClass.IField;
 import org.codehaus.janino.IClass.IInvocable;
 import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
+import org.codehaus.janino.Java.AbstractCompilationUnit.ImportDeclaration;
+import org.codehaus.janino.Java.AbstractCompilationUnit.SingleStaticImportDeclaration;
+import org.codehaus.janino.Java.AbstractCompilationUnit.SingleTypeImportDeclaration;
+import org.codehaus.janino.Java.AbstractCompilationUnit.StaticImportOnDemandDeclaration;
+import org.codehaus.janino.Java.AbstractCompilationUnit.TypeImportOnDemandDeclaration;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AccessModifier;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
@@ -91,11 +97,6 @@ import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassInstanceCreationReference;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
-import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.SingleStaticImportDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.SingleTypeImportDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.StaticImportOnDemandDeclaration;
-import org.codehaus.janino.Java.CompilationUnit.TypeImportOnDemandDeclaration;
 import org.codehaus.janino.Java.ConditionalExpression;
 import org.codehaus.janino.Java.ConstructorDeclarator;
 import org.codehaus.janino.Java.ConstructorInvocation;
@@ -150,6 +151,7 @@ import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.MethodReference;
 import org.codehaus.janino.Java.Modifier;
+import org.codehaus.janino.Java.ModularCompilationUnit;
 import org.codehaus.janino.Java.NamedClassDeclaration;
 import org.codehaus.janino.Java.NamedTypeDeclaration;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
@@ -200,6 +202,7 @@ import org.codehaus.janino.Java.TypeParameter;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
+import org.codehaus.janino.Visitor.AbstractCompilationUnitVisitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
@@ -220,7 +223,6 @@ import org.codehaus.janino.util.Objects;
  */
 public
 class UnitCompiler {
-
     private static final Logger LOGGER = Logger.getLogger(UnitCompiler.class.getName());
 
     // Some debug flags; controlled by system properties.
@@ -283,9 +285,9 @@ class UnitCompiler {
     private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
     public
-    UnitCompiler(CompilationUnit compilationUnit, IClassLoader iClassLoader) {
-        this.compilationUnit = compilationUnit;
-        this.iClassLoader    = iClassLoader;
+    UnitCompiler(AbstractCompilationUnit abstractCompilationUnit, IClassLoader iClassLoader) {
+        this.abstractCompilationUnit = abstractCompilationUnit;
+        this.iClassLoader            = iClassLoader;
     }
 
     /**
@@ -305,10 +307,10 @@ class UnitCompiler {
     }
 
     /**
-     * @return The {@link CompilationUnit} that this {@link UnitCompiler} compiles
+     * @return The {@link AbstractCompilationUnit} that this {@link UnitCompiler} compiles
      */
-    public CompilationUnit
-    getCompilationUnit() { return this.compilationUnit; }
+    public AbstractCompilationUnit
+    getAbstractCompilationUnit() { return this.abstractCompilationUnit; }
 
     private void
     import2(SingleStaticImportDeclaration ssid) throws CompileException {
@@ -379,14 +381,48 @@ class UnitCompiler {
      */
     public ClassFile[]
     compileUnit(boolean debugSource, boolean debugLines, boolean debugVars) throws CompileException {
+
         this.debugSource = debugSource;
         this.debugLines  = debugLines;
         this.debugVars   = debugVars;
 
+        if (this.generatedClassFiles != null) {
+            throw new IllegalStateException("\"UnitCompiler.compileUnit()\" is not reentrant");
+        }
+        final List<ClassFile> gcfs = (this.generatedClassFiles = new ArrayList<ClassFile>());
+        try {
+
+            this.abstractCompilationUnit.accept(new AbstractCompilationUnitVisitor<Void, CompileException>() {
+
+                // SUPPRESS CHECKSTYLE LineLength:2
+                @Override @Nullable public Void visitCompilationUnit(CompilationUnit cu)                throws CompileException { UnitCompiler.this.compile2(cu);  return null; }
+                @Override @Nullable public Void visitModularCompilationUnit(ModularCompilationUnit mcu) throws CompileException { UnitCompiler.this.compile2(mcu); return null; }
+            });
+
+            if (this.compileErrorCount > 0) {
+                throw new CompileException((
+                    this.compileErrorCount
+                    + " error(s) while compiling unit \""
+                    + this.abstractCompilationUnit.optionalFileName
+                    + "\""
+                ), null);
+            }
+            return (ClassFile[]) gcfs.toArray(new ClassFile[gcfs.size()]);
+        } finally {
+            this.generatedClassFiles = null;
+        }
+    }
+
+    /**
+     * Compiles an (ordinary, not modular) compilation unit
+     */
+    private void
+    compile2(CompilationUnit cu) throws CompileException {
+
         // Compile static import declarations.
         // Notice: The single-type and on-demand imports are needed BEFORE the unit is compiled, thus they are
         // processed in 'getSingleTypeImport()' and 'importOnDemand()'.
-        for (ImportDeclaration id : this.compilationUnit.importDeclarations) {
+        for (ImportDeclaration id : cu.importDeclarations) {
             id.accept(new ImportVisitor<Void, CompileException>() {
                 // SUPPRESS CHECKSTYLE LineLengthCheck:4
                 @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)                                  {                                   return null; }
@@ -396,36 +432,20 @@ class UnitCompiler {
             });
         }
 
-        if (this.generatedClassFiles != null) {
-            throw new IllegalStateException("\"UnitCompiler.compileUnit()\" is not reentrant");
-        }
-
-        final List<ClassFile> gcfs = (this.generatedClassFiles = new ArrayList<ClassFile>());
-        try {
-
-            for (PackageMemberTypeDeclaration pmtd : this.compilationUnit.packageMemberTypeDeclarations) {
-                try {
-                    this.compile(pmtd);
-                } catch (ClassFileException cfe) {
-                    throw new CompileException(cfe.getMessage(), pmtd.getLocation(), cfe);
-                } catch (RuntimeException re) {
-                    throw new InternalCompilerException("Compiling \"" + pmtd + "\": " + re.getMessage(), re);
-                }
+        for (PackageMemberTypeDeclaration pmtd : cu.packageMemberTypeDeclarations) {
+            try {
+                this.compile(pmtd);
+            } catch (ClassFileException cfe) {
+                throw new CompileException(cfe.getMessage(), pmtd.getLocation(), cfe);
+            } catch (RuntimeException re) {
+                throw new InternalCompilerException("Compiling \"" + pmtd + "\": " + re.getMessage(), re);
             }
-
-            if (this.compileErrorCount > 0) {
-                throw new CompileException((
-                    this.compileErrorCount
-                    + " error(s) while compiling unit \""
-                    + this.compilationUnit.optionalFileName
-                    + "\""
-                ), null);
-            }
-
-            return (ClassFile[]) gcfs.toArray(new ClassFile[gcfs.size()]);
-        } finally {
-            this.generatedClassFiles = null;
         }
+    }
+
+    private void
+    compile2(ModularCompilationUnit mcu) throws CompileException {
+        this.compileError("Compilation of modular compilation unit not implemented");
     }
 
     // ------------ TypeDeclaration.compile() -------------
@@ -584,7 +604,6 @@ class UnitCompiler {
                 this.resolve(((TypeDeclaration) cd.getEnclosingScope())).getDescriptor()
             );
             short innerNameIndex = cf.addConstantUtf8Info(((MemberTypeDeclaration) cd).getName());
-            assert cd.getAnnotations().length == 0 : "NYI";
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex,  // innerClassInfoIndex
                 outerClassInfoIndex,  // outerClassInfoIndex
@@ -1365,7 +1384,6 @@ class UnitCompiler {
             short innerClassInfoIndex = cf.addConstantClassInfo(this.resolve(mtd).getDescriptor());
             short outerClassInfoIndex = cf.addConstantClassInfo(this.resolve(decl).getDescriptor());
             short innerNameIndex      = cf.addConstantUtf8Info(mtd.getName());
-            assert mtd.getAnnotations().length == 0;
             cf.addInnerClassesAttributeEntry(new ClassFile.InnerClassesAttribute.Entry(
                 innerClassInfoIndex,                 // innerClassInfoIndex
                 outerClassInfoIndex,                 // outerClassInfoIndex
@@ -3486,16 +3504,16 @@ class UnitCompiler {
         codeContext.fixUpAndRelocate();
 
         // Do flow analysis.
-        try {
-            codeContext.flowAnalysis(fd.toString());
-        } catch (RuntimeException re) {
-            UnitCompiler.LOGGER.log(Level.FINE, "*** FLOW ANALYSIS", re);
+            try {
+                codeContext.flowAnalysis(fd.toString());
+            } catch (RuntimeException re) {
+                UnitCompiler.LOGGER.log(Level.FINE, "*** FLOW ANALYSIS", re);
 
             if (UnitCompiler.keepClassFilesWithFlowAnalysisErrors) {
 
                 // Continue, so that the .class file is generated and can be examined.
                 ;
-            } else {
+        } else {
                 throw new InternalCompilerException("Compiling \"" + fd + "\"; " + re.getMessage(), re);
             }
         }
@@ -10533,7 +10551,7 @@ class UnitCompiler {
 
             // Collect all single type import declarations.
             final List<SingleTypeImportDeclaration> stids = new ArrayList<SingleTypeImportDeclaration>();
-            for (ImportDeclaration id : this.compilationUnit.importDeclarations) {
+            for (ImportDeclaration id : this.abstractCompilationUnit.importDeclarations) {
                 id.accept(new ImportVisitor<Void, RuntimeException>() {
 
                     @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { stids.add(stid); return null; } // SUPPRESS CHECKSTYLE LineLength:3
@@ -10600,7 +10618,7 @@ class UnitCompiler {
         if (tiods == null) {
             tiods = new ArrayList<String[]>();
             tiods.add(new String[] { "java", "lang" });
-            for (ImportDeclaration id : this.compilationUnit.importDeclarations) {
+            for (ImportDeclaration id : this.abstractCompilationUnit.importDeclarations) {
                 final Collection<String[]> finalTiods = tiods;
                 id.accept(new ImportVisitor<Void, RuntimeException>() {
 
@@ -11947,8 +11965,12 @@ class UnitCompiler {
     @Nullable public IClass
     findClass(String className) {
 
+        AbstractCompilationUnit acu = this.abstractCompilationUnit;
+        if (!(acu instanceof CompilationUnit)) return null;
+        CompilationUnit cu = (CompilationUnit) acu;
+
         // Examine package name.
-        PackageDeclaration opd = this.compilationUnit.optionalPackageDeclaration;
+        PackageDeclaration opd = cu.optionalPackageDeclaration;
         if (opd != null) {
             String packageName = opd.packageName;
             if (!className.startsWith(packageName + '.')) return null;
@@ -11956,7 +11978,7 @@ class UnitCompiler {
         }
 
         StringTokenizer st = new StringTokenizer(className, "$");
-        TypeDeclaration td = this.compilationUnit.getPackageMemberTypeDeclaration(st.nextToken());
+        TypeDeclaration td = cu.getPackageMemberTypeDeclaration(st.nextToken());
         if (td == null) return null;
         while (st.hasMoreTokens()) {
             td = td.getMemberTypeDeclaration(st.nextToken());
@@ -12457,7 +12479,7 @@ class UnitCompiler {
     // Used for elaborate warning handling.
     @Nullable private WarningHandler optionalWarningHandler;
 
-    private final CompilationUnit compilationUnit;
+    private final AbstractCompilationUnit abstractCompilationUnit;
 
     private final IClassLoader iClassLoader;
 

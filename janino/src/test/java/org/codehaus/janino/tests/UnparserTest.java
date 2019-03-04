@@ -39,6 +39,7 @@ import java.util.List;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AmbiguousName;
 import org.codehaus.janino.Java.ArrayAccessExpression;
@@ -53,7 +54,6 @@ import org.codehaus.janino.Java.Cast;
 import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassInstanceCreationReference;
 import org.codehaus.janino.Java.ClassLiteral;
-import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.ConditionalExpression;
 import org.codehaus.janino.Java.Crement;
 import org.codehaus.janino.Java.FieldAccess;
@@ -144,14 +144,17 @@ class UnparserTest {
     }
 
     private static void
+    helpTestCu(String cu) throws Exception { UnparserTest.helpTestCu(cu, cu); }
+
+    private static void
     helpTestCu(String input, String expected) throws Exception {
 
-        Parser          p  = new Parser(new Scanner(null, new StringReader(input)));
-        CompilationUnit cu = p.parseCompilationUnit();
+        Parser                  p   = new Parser(new Scanner(null, new StringReader(input)));
+        AbstractCompilationUnit acu = p.parseAbstractCompilationUnit();
 
         StringWriter sw = new StringWriter();
         Unparser     u  = new Unparser(sw);
-        u.unparseCompilationUnit(cu);
+        u.unparseAbstractCompilationUnit(acu);
         u.close();
 
         String actual = UnparserTest.normalizeWhitespace(sw.toString());
@@ -626,6 +629,15 @@ class UnparserTest {
         // TODO: TypeName '.' 'super' '::' [ TypeArguments ] Identifier
         UnparserTest.helpTestScript("Runnable r4 = java.util.HashMap::new;");
         UnparserTest.helpTestScript("java.util.function.Consumer<Integer> c1 = int[]::new;");
+
+        // Modular compilation unit.
+        UnparserTest.helpTestCu("import java.io.*; @Deprecated open module a.b.c()");
+        UnparserTest.helpTestCu("module a(requires transitive static a.b;)");
+        UnparserTest.helpTestCu("module a( requires a; requires b; )");
+        UnparserTest.helpTestCu("module a(exports a.b to c.d, e.f;)");
+        UnparserTest.helpTestCu("module a(opens a.b to c.d, e.f;)");
+        UnparserTest.helpTestCu("module a(uses java.lang.String;)");
+        UnparserTest.helpTestCu("module a(provides java.lang.String with a.b, c.d;)");
     }
 
     @Test public void
@@ -636,10 +648,10 @@ class UnparserTest {
             try {
 
                 // Parse the source file once.
-                CompilationUnit cu1;
+                AbstractCompilationUnit acu1;
                 {
                     InputStream is = new FileInputStream(f);
-                    cu1 = new Parser(new Scanner(f.toString(), is)).parseCompilationUnit();
+                    acu1 = new Parser(new Scanner(f.toString(), is)).parseAbstractCompilationUnit();
                     is.close();
                 }
 
@@ -647,18 +659,18 @@ class UnparserTest {
                 String text;
                 {
                     StringWriter sw = new StringWriter();
-                    Unparser.unparse(cu1, sw);
+                    Unparser.unparse(acu1, sw);
                     text = sw.toString();
                 }
 
                 // Then parse again.
-                CompilationUnit cu2  = new Parser(
+                AbstractCompilationUnit acu2  = new Parser(
                     new Scanner(f.toString(), new StringReader(text))
-                ).parseCompilationUnit();
+                ).parseAbstractCompilationUnit();
 
                 // Compare the two ASTs.
-                Java.Locatable[] elements1 = UnparserTest.listSyntaxElements(cu1);
-                Java.Locatable[] elements2 = UnparserTest.listSyntaxElements(cu2);
+                Java.Locatable[] elements1 = UnparserTest.listSyntaxElements(acu1);
+                Java.Locatable[] elements2 = UnparserTest.listSyntaxElements(acu2);
                 for (int i = 0;; ++i) {
                     if (i == elements1.length) {
                         if (i == elements2.length) break;
@@ -714,10 +726,10 @@ class UnparserTest {
     }
 
     /**
-     * Traverses the given {@link CompilationUnit} and collect a list of all its syntactical elements.
+     * Traverses the given {@link AbstractCompilationUnit} and collect a list of all its syntactical elements.
      */
     private static Locatable[]
-    listSyntaxElements(CompilationUnit cu) {
+    listSyntaxElements(AbstractCompilationUnit cu) {
 
         final List<Locatable> locatables = new ArrayList<Locatable>();
         new AbstractTraverser<RuntimeException>() {
@@ -734,7 +746,7 @@ class UnparserTest {
                 locatables.add(atd);
                 super.traverseAbstractTypeDeclaration(atd);
             }
-        }.traverseCompilationUnit(cu);
+        }.visitAbstractCompilationUnit(cu);
 
         return locatables.toArray(new Java.Locatable[locatables.size()]);
     }

@@ -212,16 +212,16 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      */
     public void
     cook(Scanner scanner) throws CompileException, IOException {
-        this.compileToClassLoader(new Parser(scanner).parseCompilationUnit());
+        this.compileToClassLoader(new Parser(scanner).parseAbstractCompilationUnit());
     }
 
     /**
      * Cooks this compilation unit directly and invokes {@link #cook(ClassFile[])}.
      */
     public void
-    cook(Java.CompilationUnit compilationUnit) throws CompileException {
+    cook(Java.AbstractCompilationUnit abstractCompilationUnit) throws CompileException {
 
-        SimpleCompiler.LOGGER.entering(null, "cook", compilationUnit);
+        SimpleCompiler.LOGGER.entering(null, "cook", abstractCompilationUnit);
 
         ClassFile[] classFiles;
 
@@ -229,7 +229,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         try {
 
             // Compile compilation unit to class files.
-            UnitCompiler unitCompiler = new UnitCompiler(compilationUnit, icl).options(this.options);
+            UnitCompiler unitCompiler = new UnitCompiler(abstractCompilationUnit, icl).options(this.options);
             unitCompiler.setCompileErrorHandler(this.optionalCompileErrorHandler);
             unitCompiler.setWarningHandler(this.optionalWarningHandler);
 
@@ -455,14 +455,14 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     /**
      * Compiles the given compilation unit. (A "compilation unit" is typically the contents of a Java source file.)
      *
-     * @param compilationUnit   The parsed compilation unit
-     * @return                  The {@link ClassLoader} into which the compiled classes were defined
+     * @param abstractCompilationUnit The parsed compilation unit
+     * @return                        The {@link ClassLoader} into which the compiled classes were defined
      * @throws CompileException
      */
     protected final ClassLoader
-    compileToClassLoader(Java.CompilationUnit compilationUnit) throws CompileException {
+    compileToClassLoader(Java.AbstractCompilationUnit abstractCompilationUnit) throws CompileException {
         assert this.classLoaderIClassLoader == null;
-        this.cook(compilationUnit);
+        this.cook(abstractCompilationUnit);
         return this.assertCooked();
     }
 

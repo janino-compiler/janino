@@ -48,16 +48,16 @@ class DeclarationCounter extends AbstractTraverser<RuntimeException> {
         for (String fileName : args) {
 
             // Parse each compilation unit.
-            FileReader           r = new FileReader(fileName);
-            Java.CompilationUnit cu;
+            FileReader                   r = new FileReader(fileName);
+            Java.AbstractCompilationUnit acu;
             try {
-                cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();
+                acu = new Parser(new Scanner(fileName, r)).parseAbstractCompilationUnit();
             } finally {
                 r.close();
             }
 
             // Traverse it and count declarations.
-            dc.traverseCompilationUnit(cu);
+            dc.visitAbstractCompilationUnit(acu);
         }
 
         System.out.println("Class declarations:     " + dc.classDeclarationCount);

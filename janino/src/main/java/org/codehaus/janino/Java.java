@@ -43,11 +43,13 @@ import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IMethod;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
+import org.codehaus.janino.Visitor.AbstractCompilationUnitVisitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
 import org.codehaus.janino.Visitor.LambdaBodyVisitor;
 import org.codehaus.janino.Visitor.LambdaParametersVisitor;
 import org.codehaus.janino.Visitor.ModifierVisitor;
+import org.codehaus.janino.Visitor.ModuleDirectiveVisitor;
 import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
@@ -129,10 +131,10 @@ class Java {
     }
 
     /**
-     * Holds the result of {@link Parser#parseCompilationUnit}.
+     * Holds the result of {@link Parser#parseAbstractCompilationUnit()}.
      */
-    public static final
-    class CompilationUnit implements Scope {
+    public abstract static
+    class AbstractCompilationUnit implements Scope {
 
         /**
          * A string that explains the "file" (or similar resource) where this compilation unit was loaded from.
@@ -140,23 +142,15 @@ class Java {
         @Nullable public final String optionalFileName;
 
         /**
-         * The package declaration at the very top of this compilation unit (if any).
-         */
-        @Nullable public PackageDeclaration optionalPackageDeclaration;
-
-        /**
          * The IMPORT declarations in this compilation unit.
          */
-        public final List<ImportDeclaration> importDeclarations = new ArrayList<ImportDeclaration>();
-
-        /**
-         * The top-level declarations in this compilation unit.
-         */
-        public final List<PackageMemberTypeDeclaration>
-        packageMemberTypeDeclarations = new ArrayList<PackageMemberTypeDeclaration>();
+        public final ImportDeclaration[] importDeclarations;
 
         public
-        CompilationUnit(@Nullable String optionalFileName) { this.optionalFileName = optionalFileName; }
+        AbstractCompilationUnit(@Nullable String optionalFileName, ImportDeclaration[] importDeclarations) {
+            this.optionalFileName   = optionalFileName;
+            this.importDeclarations = importDeclarations;
+        }
 
         // Implement "Scope".
 
@@ -164,55 +158,11 @@ class Java {
         getEnclosingScope() { throw new InternalCompilerException("A compilation unit has no enclosing scope"); }
 
         /**
-         * Sets the package declaration of this compilation unit.
+         * Invokes the "{@code visit...()}" method of {@link Visitor.AbstractCompilationUnitVisitor} for the concrete
+         * {@link AbstractCompilationUnit} type.
          */
-        public void
-        setPackageDeclaration(@Nullable PackageDeclaration packageDeclaration) {
-            this.optionalPackageDeclaration = packageDeclaration;
-        }
-
-        /**
-         * Adds one IMPORT declaration to this compilation unit.
-         */
-        public void
-        addImportDeclaration(CompilationUnit.ImportDeclaration id) {
-
-            // Conflicting imports are checked in UnitCompiler, not here.
-            this.importDeclarations.add(id);
-        }
-
-        /**
-         * Adds one top-level type declaration to this compilation unit.
-         */
-        public void
-        addPackageMemberTypeDeclaration(PackageMemberTypeDeclaration pmtd) {
-            this.packageMemberTypeDeclarations.add(pmtd);
-            pmtd.setDeclaringCompilationUnit(this);
-        }
-
-        /**
-         * Gets all classes and interfaces declared in this compilation unit.
-         */
-        public PackageMemberTypeDeclaration[]
-        getPackageMemberTypeDeclarations() {
-            return (PackageMemberTypeDeclaration[]) this.packageMemberTypeDeclarations.toArray(
-                new PackageMemberTypeDeclaration[this.packageMemberTypeDeclarations.size()]
-            );
-        }
-
-        /**
-         * Returns the package member class or interface declared with the given name.
-         *
-         * @param name Declared (i.e. not the fully qualified) name
-         * @return     {@code null} if a package member type with that name is not declared in this compilation unit
-         */
-        @Nullable public PackageMemberTypeDeclaration
-        getPackageMemberTypeDeclaration(String name) {
-            for (PackageMemberTypeDeclaration pmtd : this.packageMemberTypeDeclarations) {
-                if (pmtd.getName().equals(name)) return pmtd;
-            }
-            return null;
-        }
+        @Nullable public abstract <R, EX extends Throwable> R
+        accept(AbstractCompilationUnitVisitor<R, EX> visitor) throws EX;
 
         /**
          * Represents a "single-type import declaration" like "{@code import java.util.Map;}".
@@ -335,6 +285,215 @@ class Java {
             @Nullable public abstract <R, EX extends Throwable> R
             accept(Visitor.ImportVisitor<R, EX> visitor) throws EX;
         }
+    }
+
+    public static final
+    class CompilationUnit extends AbstractCompilationUnit {
+
+        /**
+         * The package declaration at the very top of this compilation unit (if any).
+         */
+        @Nullable public PackageDeclaration optionalPackageDeclaration;
+
+        /**
+         * The top-level declarations in this compilation unit.
+         */
+        public final List<PackageMemberTypeDeclaration>
+        packageMemberTypeDeclarations = new ArrayList<PackageMemberTypeDeclaration>();
+
+        public
+        CompilationUnit(@Nullable String optionalFileName) {
+            this(optionalFileName, new ImportDeclaration[0]);
+        }
+
+        public
+        CompilationUnit(@Nullable String optionalFileName, ImportDeclaration[] importDeclarations) {
+            super(optionalFileName, importDeclarations);
+        }
+
+        /**
+         * Sets the package declaration of this compilation unit.
+         */
+        public void
+        setPackageDeclaration(@Nullable PackageDeclaration packageDeclaration) {
+            this.optionalPackageDeclaration = packageDeclaration;
+        }
+
+        /**
+         * Adds one top-level type declaration to this compilation unit.
+         */
+        public void
+        addPackageMemberTypeDeclaration(PackageMemberTypeDeclaration pmtd) {
+            this.packageMemberTypeDeclarations.add(pmtd);
+            pmtd.setDeclaringCompilationUnit(this);
+        }
+
+        /**
+         * Gets all classes and interfaces declared in this compilation unit.
+         */
+        public PackageMemberTypeDeclaration[]
+        getPackageMemberTypeDeclarations() {
+            return (PackageMemberTypeDeclaration[]) this.packageMemberTypeDeclarations.toArray(
+                new PackageMemberTypeDeclaration[this.packageMemberTypeDeclarations.size()]
+            );
+        }
+
+        /**
+         * Returns the package member class or interface declared with the given name.
+         *
+         * @param name Declared (i.e. not the fully qualified) name
+         * @return     {@code null} if a package member type with that name is not declared in this compilation unit
+         */
+        @Nullable public PackageMemberTypeDeclaration
+        getPackageMemberTypeDeclaration(String name) {
+            for (PackageMemberTypeDeclaration pmtd : this.packageMemberTypeDeclarations) {
+                if (pmtd.getName().equals(name)) return pmtd;
+            }
+            return null;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(AbstractCompilationUnitVisitor<R, EX> visitor) throws EX {
+            return visitor.visitCompilationUnit(this);
+        }
+    }
+
+    /**
+     * Represents a {@code ModularCompilationUnit} as specified in JLS11 7.3.
+     */
+    public static final
+    class ModularCompilationUnit extends AbstractCompilationUnit {
+
+        public final ModuleDeclaration moduleDeclaration;
+
+        public
+        ModularCompilationUnit(
+            @Nullable String    optionalFileName,
+            ImportDeclaration[] importDeclarations,
+            ModuleDeclaration   moduleDeclaration
+        ) {
+            super(optionalFileName, importDeclarations);
+            this.moduleDeclaration  = moduleDeclaration;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(AbstractCompilationUnitVisitor<R, EX> visitor) throws EX {
+            return visitor.visitModularCompilationUnit(this);
+        }
+    }
+
+    public static final
+    class ModuleDeclaration extends Located {
+
+        public final Modifier[]        modifiers;
+        public final boolean           isOpen;
+        public final String[]          moduleName;
+        public final ModuleDirective[] moduleDirectives;
+
+        public
+        ModuleDeclaration(
+            Location          location,
+            Modifier[]        modifiers,
+            boolean           isOpen,
+            String[]          moduleName,
+            ModuleDirective[] moduleDirectives
+        ) {
+            super(location);
+            this.modifiers        = modifiers;
+            this.isOpen           = isOpen;
+            this.moduleName       = moduleName;
+            this.moduleDirectives = moduleDirectives;
+        }
+    }
+
+    public
+    interface ModuleDirective {
+
+        @Nullable <R, EX extends Throwable> R
+        accept(Visitor.ModuleDirectiveVisitor<R, EX> visitor) throws EX;
+    }
+
+    public static final
+    class RequiresModuleDirective extends Located implements ModuleDirective {
+
+        public final Modifier[] requiresModifiers;
+        public final String[]   moduleName;
+
+        protected
+        RequiresModuleDirective(Location location, Modifier[] requiresModifiers, String[] moduleName) {
+            super(location);
+            this.requiresModifiers = requiresModifiers;
+            this.moduleName        = moduleName;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitRequiresModuleDirective(this); }
+    }
+
+    public static final
+    class ExportsModuleDirective extends Located implements ModuleDirective {
+
+        public final String[]   packageName;
+        public final String[][] toModuleNames;
+
+        protected
+        ExportsModuleDirective(Location location, String[] packageName, String[][] toModuleNames) {
+            super(location);
+            this.packageName   = packageName;
+            this.toModuleNames = toModuleNames;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitExportsModuleDirective(this); }
+    }
+
+    public static final
+    class OpensModuleDirective extends Located implements ModuleDirective {
+
+        public final String[]   packageName;
+        public final String[][] toModuleNames;
+
+        protected
+        OpensModuleDirective(Location location, String[] packageName, String[][] toModuleNames) {
+            super(location);
+            this.packageName   = packageName;
+            this.toModuleNames = toModuleNames;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitOpensModuleDirective(this); }
+    }
+
+    public static final
+    class UsesModuleDirective extends Located implements ModuleDirective {
+
+        public final String[] typeName;
+
+        protected
+        UsesModuleDirective(Location location, String[] typeName) {
+            super(location);
+            this.typeName = typeName;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitUsesModuleDirective(this); }
+    }
+
+    public static final
+    class ProvidesModuleDirective extends Located implements ModuleDirective {
+
+        public final String[]   typeName;
+        public final String[][] withTypeNames;
+
+        protected
+        ProvidesModuleDirective(Location location, String[] typeName, String[][] withTypeNames) {
+            super(location);
+            this.typeName      = typeName;
+            this.withTypeNames = withTypeNames;
+        }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitProvidesModuleDirective(this); }
     }
 
     /**
@@ -721,12 +880,12 @@ class Java {
     interface PackageMemberTypeDeclaration extends NamedTypeDeclaration {
 
         /**
-         * Sets the {@link CompilationUnit} in which this top-level type is declared.
+         * Sets the {@link AbstractCompilationUnit} in which this top-level type is declared.
          */
         void setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
 
         /**
-         * @return The {@link CompilationUnit} in which this top-level type is declared.
+         * @return The {@link AbstractCompilationUnit} in which this top-level type is declared.
          */
         CompilationUnit getDeclaringCompilationUnit();
     }
@@ -5908,6 +6067,17 @@ class Java {
     public static String
     join(Object[] a, String separator) {
         return Java.join(a, separator, 0, a.length);
+    }
+
+    /**
+     * @return {@code null} iff {@code aa == null}, or "" iff {@code aa.length == 0}, or the elements of {@code aa},
+     *         converted to strings concatenated and separated with the <var>outerSeparator</var>
+     */
+    public static String
+    join(Object[][] aa, String innerSeparator, String outerSeparator) {
+        String[] tmp = new String[aa.length];
+        for (int i = 0; i < aa.length; i++) tmp[i] = Java.join(aa[i], innerSeparator);
+        return Java.join(tmp, outerSeparator);
     }
 
     /**

@@ -497,7 +497,7 @@ class Compiler {
                 Compiler.LOGGER.log(Level.FINE, "Compiling \"{0}\"", sourceResource);
 
                 UnitCompiler uc = new UnitCompiler(
-                    this.parseCompilationUnit(
+                    this.parseAbstractCompilationUnit(
                         sourceResource.getFileName(),                   // fileName
                         new BufferedInputStream(sourceResource.open()), // inputStream
                         this.characterEncoding                          // characterEncoding
@@ -515,9 +515,9 @@ class Compiler {
 
                 File sourceFile;
                 {
-                    Java.CompilationUnit compilationUnit = unitCompiler.getCompilationUnit();
-                    if (compilationUnit.optionalFileName == null) throw new InternalCompilerException();
-                    sourceFile = new File(compilationUnit.optionalFileName);
+                    Java.AbstractCompilationUnit acu = unitCompiler.getAbstractCompilationUnit();
+                    if (acu.optionalFileName == null) throw new InternalCompilerException();
+                    sourceFile = new File(acu.optionalFileName);
                 }
 
                 unitCompiler.setCompileErrorHandler(this.compileErrorHandler);
@@ -561,8 +561,8 @@ class Compiler {
      *
      * @return the parsed compilation unit
      */
-    private Java.CompilationUnit
-    parseCompilationUnit(
+    private Java.AbstractCompilationUnit
+    parseAbstractCompilationUnit(
         String           fileName,
         InputStream      inputStream,
         @Nullable String characterEncoding
@@ -576,7 +576,7 @@ class Compiler {
 
             this.benchmark.beginReporting("Parsing \"" + fileName + "\"");
             try {
-                return parser.parseCompilationUnit();
+                return parser.parseAbstractCompilationUnit();
             } finally {
                 this.benchmark.endReporting();
             }
@@ -809,12 +809,12 @@ class Compiler {
             // Parse the source file.
             UnitCompiler uc;
             try {
-                Java.CompilationUnit cu = Compiler.this.parseCompilationUnit(
+                Java.AbstractCompilationUnit acu = Compiler.this.parseAbstractCompilationUnit(
                     sourceResource.getFileName(),                   // fileName
                     new BufferedInputStream(sourceResource.open()), // inputStream
                     Compiler.this.characterEncoding
                 );
-                uc = new UnitCompiler(cu, Compiler.this.iClassLoader).options(Compiler.this.options);
+                uc = new UnitCompiler(acu, Compiler.this.iClassLoader).options(Compiler.this.options);
             } catch (IOException ex) {
                 throw new ClassNotFoundException("Parsing compilation unit \"" + sourceResource + "\"", ex);
             } catch (CompileException ex) {

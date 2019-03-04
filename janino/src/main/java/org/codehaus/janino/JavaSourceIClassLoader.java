@@ -173,10 +173,10 @@ class JavaSourceIClassLoader extends IClassLoader {
         }
 
         try {
-            Java.CompilationUnit cu = this.findCompilationUnit(className);
-            if (cu == null) return null;
+            Java.AbstractCompilationUnit acu = this.findCompilationUnit(className);
+            if (acu == null) return null;
 
-            UnitCompiler uc = new UnitCompiler(cu, this).options(this.options);
+            UnitCompiler uc = new UnitCompiler(acu, this).options(this.options);
             uc.setCompileErrorHandler(this.optionalCompileErrorHandler);
             uc.setWarningHandler(this.optionalWarningHandler);
 
@@ -208,7 +208,7 @@ class JavaSourceIClassLoader extends IClassLoader {
      *
      * @return {@code null} iff the source file could not be found
      */
-    @Nullable protected Java.CompilationUnit
+    @Nullable protected Java.AbstractCompilationUnit
     findCompilationUnit(String className) throws IOException, CompileException {
 
         // Find source file.
@@ -229,7 +229,7 @@ class JavaSourceIClassLoader extends IClassLoader {
             Parser parser = new Parser(scanner);
             parser.setWarningHandler(this.optionalWarningHandler);
 
-            return parser.parseCompilationUnit();
+            return parser.parseAbstractCompilationUnit();
         } finally {
             try { inputStream.close(); } catch (IOException ex) {}
         }

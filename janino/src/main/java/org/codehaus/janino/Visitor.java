@@ -27,6 +27,7 @@
 package org.codehaus.janino;
 
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Java.AccessModifier;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
@@ -57,6 +58,7 @@ import org.codehaus.janino.Java.DoStatement;
 import org.codehaus.janino.Java.ElementValueArrayInitializer;
 import org.codehaus.janino.Java.EmptyStatement;
 import org.codehaus.janino.Java.EnumConstant;
+import org.codehaus.janino.Java.ExportsModuleDirective;
 import org.codehaus.janino.Java.ExpressionLambdaBody;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccess;
@@ -88,12 +90,14 @@ import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.MethodReference;
+import org.codehaus.janino.Java.ModularCompilationUnit;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
 import org.codehaus.janino.Java.NewClassInstance;
 import org.codehaus.janino.Java.NewInitializedArray;
 import org.codehaus.janino.Java.NormalAnnotation;
 import org.codehaus.janino.Java.NullLiteral;
+import org.codehaus.janino.Java.OpensModuleDirective;
 import org.codehaus.janino.Java.Package;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
 import org.codehaus.janino.Java.PackageMemberClassDeclaration;
@@ -102,8 +106,10 @@ import org.codehaus.janino.Java.PackageMemberInterfaceDeclaration;
 import org.codehaus.janino.Java.ParameterAccess;
 import org.codehaus.janino.Java.ParenthesizedExpression;
 import org.codehaus.janino.Java.PrimitiveType;
+import org.codehaus.janino.Java.ProvidesModuleDirective;
 import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.ReferenceType;
+import org.codehaus.janino.Java.RequiresModuleDirective;
 import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.RvalueMemberType;
@@ -121,6 +127,7 @@ import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.UnaryOperation;
+import org.codehaus.janino.Java.UsesModuleDirective;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Java.Wildcard;
 
@@ -133,7 +140,38 @@ class Visitor {
     private Visitor() {}
 
     /**
-     * The visitor for all kinds of {@link Java.CompilationUnit.ImportDeclaration}s.
+     * The visitor for the different kinds of {@link Java.AbstractCompilationUnit}s.
+     *
+     * @param <R>  The type of the object returned by the {@code visit*()} methods
+     * @param <EX> The exception that the {@code visit*()} methods may throw
+     */
+    public
+    interface AbstractCompilationUnitVisitor<R, EX extends Throwable> {
+
+        /**
+         * Invoked by {@link Java.CompilationUnit#accept(Visitor.CompilationUnitVisitor)}
+         */
+        @Nullable R
+        visitCompilationUnit(CompilationUnit cu) throws EX;
+
+        /**
+         * Invoked by {@link Java.ModularCompilationUnit#accept(Visitor.CompilationUnitVisitor)}
+         */
+        @Nullable R
+        visitModularCompilationUnit(ModularCompilationUnit mcu) throws EX;
+    }
+
+    public
+    interface ModuleDirectiveVisitor<R, EX extends Throwable> {
+        @Nullable R visitRequiresModuleDirective(RequiresModuleDirective rmd) throws EX;
+        @Nullable R visitExportsModuleDirective(ExportsModuleDirective emd)   throws EX;
+        @Nullable R visitOpensModuleDirective(OpensModuleDirective omd)       throws EX;
+        @Nullable R visitUsesModuleDirective(UsesModuleDirective umd)         throws EX;
+        @Nullable R visitProvidesModuleDirective(ProvidesModuleDirective pmd) throws EX;
+    }
+
+    /**
+     * The visitor for all kinds of {@link Java.AbstractCompilationUnit.ImportDeclaration}s.
      *
      * @param <R>  The type of the object returned by the {@code visit*()} methods
      * @param <EX> The exception that the {@code visit*()} methods may throw
@@ -142,28 +180,28 @@ class Visitor {
     interface ImportVisitor<R, EX extends Throwable> {
 
         /**
-         * Invoked by {@link Java.CompilationUnit.SingleTypeImportDeclaration#accept(Visitor.ImportVisitor)}
+         * Invoked by {@link Java.AbstractCompilationUnit.SingleTypeImportDeclaration#accept(Visitor.ImportVisitor)}
          */
         @Nullable R
-        visitSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid) throws EX;
+        visitSingleTypeImportDeclaration(AbstractCompilationUnit.SingleTypeImportDeclaration stid) throws EX;
 
         /**
-         * Invoked by {@link Java.CompilationUnit.TypeImportOnDemandDeclaration#accept(Visitor.ImportVisitor)}
+         * Invoked by {@link Java.AbstractCompilationUnit.TypeImportOnDemandDeclaration#accept(Visitor.ImportVisitor)}
          */
         @Nullable R
-        visitTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd) throws EX;
+        visitTypeImportOnDemandDeclaration(AbstractCompilationUnit.TypeImportOnDemandDeclaration tiodd) throws EX;
 
         /**
-         * Invoked by {@link Java.CompilationUnit.SingleStaticImportDeclaration#accept(Visitor.ImportVisitor)}
+         * Invoked by {@link Java.AbstractCompilationUnit.SingleStaticImportDeclaration#accept(Visitor.ImportVisitor)}
          */
         @Nullable R
-        visitSingleStaticImportDeclaration(CompilationUnit.SingleStaticImportDeclaration ssid) throws EX;
+        visitSingleStaticImportDeclaration(AbstractCompilationUnit.SingleStaticImportDeclaration ssid) throws EX;
 
         /**
-         * Invoked by {@link Java.CompilationUnit.StaticImportOnDemandDeclaration#accept(Visitor.ImportVisitor)}
+         * Invoked by {@link Java.AbstractCompilationUnit.StaticImportOnDemandDeclaration#accept(Visitor.ImportVisitor)}
          */
         @Nullable R
-        visitStaticImportOnDemandDeclaration(CompilationUnit.StaticImportOnDemandDeclaration siodd) throws EX;
+        visitStaticImportOnDemandDeclaration(AbstractCompilationUnit.StaticImportOnDemandDeclaration siodd) throws EX;
     }
 
     /**

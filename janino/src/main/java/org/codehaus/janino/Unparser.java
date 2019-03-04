@@ -41,8 +41,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Resource;
+
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
+import org.codehaus.janino.Java.AbstractCompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.AccessModifier;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
 import org.codehaus.janino.Java.AmbiguousName;
@@ -71,7 +75,6 @@ import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassInstanceCreationReference;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
-import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.ConditionalExpression;
 import org.codehaus.janino.Java.ConstructorDeclarator;
 import org.codehaus.janino.Java.ConstructorInvocation;
@@ -84,6 +87,7 @@ import org.codehaus.janino.Java.ElementValuePair;
 import org.codehaus.janino.Java.EmptyStatement;
 import org.codehaus.janino.Java.EnumConstant;
 import org.codehaus.janino.Java.EnumDeclaration;
+import org.codehaus.janino.Java.ExportsModuleDirective;
 import org.codehaus.janino.Java.ExpressionLambdaBody;
 import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccess;
@@ -121,6 +125,9 @@ import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.MethodReference;
 import org.codehaus.janino.Java.Modifier;
+import org.codehaus.janino.Java.ModularCompilationUnit;
+import org.codehaus.janino.Java.ModuleDeclaration;
+import org.codehaus.janino.Java.ModuleDirective;
 import org.codehaus.janino.Java.NamedClassDeclaration;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
@@ -128,6 +135,7 @@ import org.codehaus.janino.Java.NewClassInstance;
 import org.codehaus.janino.Java.NewInitializedArray;
 import org.codehaus.janino.Java.NormalAnnotation;
 import org.codehaus.janino.Java.NullLiteral;
+import org.codehaus.janino.Java.OpensModuleDirective;
 import org.codehaus.janino.Java.Package;
 import org.codehaus.janino.Java.PackageDeclaration;
 import org.codehaus.janino.Java.PackageMemberAnnotationTypeDeclaration;
@@ -138,8 +146,10 @@ import org.codehaus.janino.Java.PackageMemberTypeDeclaration;
 import org.codehaus.janino.Java.ParameterAccess;
 import org.codehaus.janino.Java.ParenthesizedExpression;
 import org.codehaus.janino.Java.PrimitiveType;
+import org.codehaus.janino.Java.ProvidesModuleDirective;
 import org.codehaus.janino.Java.QualifiedThisReference;
 import org.codehaus.janino.Java.ReferenceType;
+import org.codehaus.janino.Java.RequiresModuleDirective;
 import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Java.RvalueMemberType;
@@ -161,6 +171,7 @@ import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeBodyDeclaration;
 import org.codehaus.janino.Java.TypeDeclaration;
 import org.codehaus.janino.Java.UnaryOperation;
+import org.codehaus.janino.Java.UsesModuleDirective;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
@@ -175,29 +186,145 @@ import org.codehaus.janino.util.AutoIndentWriter;
 public
 class Unparser {
 
+    private final Visitor.AbstractCompilationUnitVisitor<Void, RuntimeException>
+    compilationUnitUnparser = new Visitor.AbstractCompilationUnitVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitCompilationUnit(CompilationUnit cu) {
+
+            PackageDeclaration opd = cu.optionalPackageDeclaration;
+            if (opd != null) {
+                Unparser.this.pw.println();
+                Unparser.this.pw.println("package " + opd.packageName + ';');
+            }
+
+            if (cu.importDeclarations.length > 0) {
+                Unparser.this.pw.println();
+                for (AbstractCompilationUnit.ImportDeclaration id : cu.importDeclarations) {
+                    id.accept(Unparser.this.importUnparser);
+                }
+            }
+
+            for (PackageMemberTypeDeclaration pmtd : cu.packageMemberTypeDeclarations) {
+                Unparser.this.pw.println();
+                Unparser.this.unparseTypeDeclaration(pmtd);
+                Unparser.this.pw.println();
+            }
+
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitModularCompilationUnit(ModularCompilationUnit mcu) {
+
+            if (mcu.importDeclarations.length > 0) {
+                Unparser.this.pw.println();
+                for (AbstractCompilationUnit.ImportDeclaration id : mcu.importDeclarations) {
+                    id.accept(Unparser.this.importUnparser);
+                }
+            }
+
+            ModuleDeclaration md = mcu.moduleDeclaration;
+            Unparser.this.unparseModifiers(md.modifiers);
+            Unparser.this.pw.print(md.isOpen ? "open module " : "module ");
+            Unparser.this.pw.print(Java.join(md.moduleName, "."));
+            Unparser.this.pw.print("(");
+            switch (md.moduleDirectives.length) {
+            case 0:
+                ;
+                break;
+            case 1:
+                md.moduleDirectives[0].accept(Unparser.this.moduleDirectiveUnparser);
+                break;
+            default:
+                Unparser.this.pw.println();
+                Unparser.this.pw.print(AutoIndentWriter.INDENT);
+                for (ModuleDirective mdir : md.moduleDirectives) {
+                    mdir.accept(Unparser.this.moduleDirectiveUnparser);
+                    Unparser.this.pw.println();
+                }
+                Unparser.this.pw.print(AutoIndentWriter.UNINDENT);
+            }
+            Unparser.this.pw.print(")");
+
+            return null;
+        }
+    };
+
+    private final Visitor.ModuleDirectiveVisitor<Void, RuntimeException>
+    moduleDirectiveUnparser = new Visitor.ModuleDirectiveVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitRequiresModuleDirective(RequiresModuleDirective rmd) {
+            Unparser.this.pw.print("requires ");
+            Unparser.this.unparseModifiers(rmd.requiresModifiers);
+            Unparser.this.pw.print(Java.join(rmd.moduleName, ".") + ';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitExportsModuleDirective(ExportsModuleDirective emd) {
+            Unparser.this.pw.print("exports " + Java.join(emd.packageName, "."));
+            if (emd.toModuleNames.length > 0) {
+                Unparser.this.pw.print(" to " + Java.join(emd.toModuleNames, ".", ", "));
+            }
+            Unparser.this.pw.print(";");
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitOpensModuleDirective(OpensModuleDirective omd) {
+            Unparser.this.pw.print("opens " + Java.join(omd.packageName, "."));
+            if (omd.toModuleNames.length > 0) {
+                Unparser.this.pw.print(" to " + Java.join(omd.toModuleNames, ".", ", "));
+            }
+            Unparser.this.pw.print(";");
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitUsesModuleDirective(UsesModuleDirective umd) {
+            Unparser.this.pw.print("uses " + Java.join(umd.typeName, ".") + ';');
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitProvidesModuleDirective(ProvidesModuleDirective pmd) {
+            Unparser.this.pw.print((
+                "provides "
+                + Java.join(pmd.typeName, ".")
+                + " with "
+                + Java.join(pmd.withTypeNames, ".", ", ")
+                + ";"
+            ));
+            return null;
+        }
+
+    };
+
     private final Visitor.ImportVisitor<Void, RuntimeException>
     importUnparser = new Visitor.ImportVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
-        visitSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid) {
+        visitSingleTypeImportDeclaration(AbstractCompilationUnit.SingleTypeImportDeclaration stid) {
             Unparser.this.pw.println("import " + Java.join(stid.identifiers, ".") + ';');
             return null;
         }
 
         @Override @Nullable public Void
-        visitTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd) {
+        visitTypeImportOnDemandDeclaration(AbstractCompilationUnit.TypeImportOnDemandDeclaration tiodd) {
             Unparser.this.pw.println("import " + Java.join(tiodd.identifiers, ".") + ".*;");
             return null;
         }
 
         @Override @Nullable public Void
-        visitSingleStaticImportDeclaration(CompilationUnit.SingleStaticImportDeclaration ssid) {
+        visitSingleStaticImportDeclaration(AbstractCompilationUnit.SingleStaticImportDeclaration ssid) {
             Unparser.this.pw.println("import static " + Java.join(ssid.identifiers, ".") + ';');
             return null;
         }
 
         @Override @Nullable public Void
-        visitStaticImportOnDemandDeclaration(CompilationUnit.StaticImportOnDemandDeclaration siodd) {
+        visitStaticImportOnDemandDeclaration(AbstractCompilationUnit.StaticImportOnDemandDeclaration siodd) {
             Unparser.this.pw.println("import static " + Java.join(siodd.identifiers, ".") + ".*;");
             return null;
         }
@@ -449,11 +576,7 @@ class Unparser {
             Unparser.this.unparseType(lvds.type);
             Unparser.this.pw.print(' ');
             Unparser.this.pw.print(AutoIndentWriter.TABULATOR);
-            Unparser.this.unparseVariableDeclarator(lvds.variableDeclarators[0]);
-            for (int i = 1; i < lvds.variableDeclarators.length; ++i) {
-                Unparser.this.pw.print(", ");
-                Unparser.this.unparseVariableDeclarator(lvds.variableDeclarators[i]);
-            }
+            Unparser.this.unparseVariableDeclarators(lvds.variableDeclarators);
             Unparser.this.pw.print(';');
             return null;
         }
@@ -521,11 +644,9 @@ class Unparser {
             Unparser.this.pw.print("try ");
             if (!ts.resources.isEmpty()) {
                 Unparser.this.pw.print("(");
-                Unparser.this.unparseResource(ts.resources.get(0));
-                for (int i = 1; i < ts.resources.size(); i++) {
-                    Unparser.this.pw.print("; ");
-                    Unparser.this.unparseResource(ts.resources.get(0));
-                }
+                Unparser.this.unparseResources(
+                    (TryStatement.Resource[]) ts.resources.toArray(new Resource[ts.resources.size()])
+                );
                 Unparser.this.pw.print(") ");
             }
             Unparser.this.unparseBlockStatement(ts.body);
@@ -1000,7 +1121,7 @@ class Unparser {
         @Override @Nullable public Void
         visitInferredLambdaParameters(InferredLambdaParameters ilp) {
             Unparser.this.pw.print(ilp.names[0]);
-            for (int i = 1; i < ilp.names.length; i++) Unparser.this.pw.print(ilp.names[i]);
+            for (int i = 1; i < ilp.names.length; i++) Unparser.this.pw.print(", " + ilp.names[i]);
             return null;
         }
     };
@@ -1040,6 +1161,14 @@ class Unparser {
         Unparser.this.pw.print(';');
     }
 
+    private void
+    unparseResources(TryStatement.Resource[] resources) {
+        for (int i = 0; i < resources.length; i++) {
+            if (i > 0) Unparser.this.pw.print("; ");
+            Unparser.this.unparseResource(resources[i]);
+        }
+    }
+
     /**
      * Where the {@code visit...()} methods print their text. Notice that this {@link PrintWriter} does not print to
      * the output directly, but through an {@link AutoIndentWriter}.
@@ -1059,27 +1188,27 @@ class Unparser {
         for (String fileName : args) {
 
             // Parse each compilation unit.
-            FileReader      r = new FileReader(fileName);
-            CompilationUnit cu;
+            FileReader              r = new FileReader(fileName);
+            AbstractCompilationUnit acu;
             try {
-                cu = new Parser(new Scanner(fileName, r)).parseCompilationUnit();
+                acu = new Parser(new Scanner(fileName, r)).parseAbstractCompilationUnit();
             } finally {
                 r.close();
             }
 
             // Unparse each compilation unit.
-            Unparser.unparse(cu, w);
+            Unparser.unparse(acu, w);
         }
         w.flush();
     }
 
     /**
-     * Unparses the given {@link Java.CompilationUnit} to the given {@link Writer}.
+     * Unparses the given {@link Java.AbstractCompilationUnit} to the given {@link Writer}.
      */
     public static void
-    unparse(CompilationUnit cu, Writer w) {
+    unparse(AbstractCompilationUnit acu, Writer w) {
         Unparser uv = new Unparser(w);
-        uv.unparseCompilationUnit(cu);
+        uv.unparseAbstractCompilationUnit(acu);
         uv.close();
     }
 
@@ -1098,26 +1227,8 @@ class Unparser {
      * @param cu The compilation unit to unparse
      */
     public void
-    unparseCompilationUnit(CompilationUnit cu) {
-
-        PackageDeclaration opd = cu.optionalPackageDeclaration;
-        if (opd != null) {
-            this.pw.println();
-            this.pw.println("package " + opd.packageName + ';');
-        }
-
-        if (!cu.importDeclarations.isEmpty()) {
-            this.pw.println();
-            for (CompilationUnit.ImportDeclaration id : cu.importDeclarations) {
-                id.accept(this.importUnparser);
-            }
-        }
-
-        for (PackageMemberTypeDeclaration pmtd : cu.packageMemberTypeDeclarations) {
-            this.pw.println();
-            this.unparseTypeDeclaration(pmtd);
-            this.pw.println();
-        }
+    unparseAbstractCompilationUnit(AbstractCompilationUnit cu) {
+        cu.accept(this.compilationUnitUnparser);
     }
 
     public void
@@ -1696,5 +1807,14 @@ class Unparser {
                 return null;
             }
         });
+    }
+
+    private void
+    unparseVariableDeclarators(VariableDeclarator[] variableDeclarators) {
+        Unparser.this.unparseVariableDeclarator(variableDeclarators[0]);
+        for (int i = 1; i < variableDeclarators.length; ++i) {
+            Unparser.this.pw.print(", ");
+            Unparser.this.unparseVariableDeclarator(variableDeclarators[i]);
+        }
     }
 }

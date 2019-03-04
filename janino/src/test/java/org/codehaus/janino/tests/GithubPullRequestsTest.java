@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.IClassLoader;
-import org.codehaus.janino.Java.CompilationUnit;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.UnitCompiler;
@@ -86,10 +86,12 @@ class GithubPullRequestsTest {
             + "}\n"
         );
 
-        CompilationUnit cu         = new Parser(new Scanner(null, new StringReader(cut))).parseCompilationUnit();
-        IClassLoader    icl        = new ClassLoaderIClassLoader(this.getClass().getClassLoader());
-        UnitCompiler    uc         = new UnitCompiler(cu, icl);
-        ClassFile[]     classFiles = uc.compileUnit(
+        AbstractCompilationUnit
+        acu = new Parser(new Scanner(null, new StringReader(cut))).parseAbstractCompilationUnit();
+
+        IClassLoader            icl        = new ClassLoaderIClassLoader(this.getClass().getClassLoader());
+        UnitCompiler            uc         = new UnitCompiler(acu, icl);
+        ClassFile[]             classFiles = uc.compileUnit(
             false, // debugSource
             false, // debugLines
             false  // debugVars

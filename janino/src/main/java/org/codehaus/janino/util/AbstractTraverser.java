@@ -29,6 +29,8 @@ package org.codehaus.janino.util;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.InternalCompilerException;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
+import org.codehaus.janino.Java.AbstractCompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.AbstractTypeBodyDeclaration;
 import org.codehaus.janino.Java.AbstractTypeDeclaration;
 import org.codehaus.janino.Java.AlternateConstructorInvocation;
@@ -57,7 +59,6 @@ import org.codehaus.janino.Java.CharacterLiteral;
 import org.codehaus.janino.Java.ClassInstanceCreationReference;
 import org.codehaus.janino.Java.ClassLiteral;
 import org.codehaus.janino.Java.CompilationUnit;
-import org.codehaus.janino.Java.CompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.ConditionalExpression;
 import org.codehaus.janino.Java.ConstructorDeclarator;
 import org.codehaus.janino.Java.ConstructorInvocation;
@@ -101,6 +102,7 @@ import org.codehaus.janino.Java.MemberInterfaceDeclaration;
 import org.codehaus.janino.Java.MethodDeclarator;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.MethodReference;
+import org.codehaus.janino.Java.ModularCompilationUnit;
 import org.codehaus.janino.Java.NamedClassDeclaration;
 import org.codehaus.janino.Java.NamedTypeDeclaration;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
@@ -172,14 +174,14 @@ import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
  * </pre>
  *
  * @param <EX> The exception that the "{@code traverse*()}" and "{@code visit*()}" methods may throw
- * @see #visitAnnotation(Java.Annotation)
- * @see #visitAtom(Java.Atom)
- * @see #visitBlockStatement(Java.BlockStatement)
- * @see #visitElementValue(Java.ElementValue)
- * @see #visitImportDeclaration(Java.CompilationUnit.ImportDeclaration)
- * @see #visitTypeBodyDeclaration(Java.TypeBodyDeclaration)
- * @see #visitTypeDeclaration(Java.TypeDeclaration)
- * @see #traverseCompilationUnit(Java.CompilationUnit)
+ * @see #visitAnnotation(Annotation)
+ * @see #visitAtom(Atom)
+ * @see #visitBlockStatement(BlockStatement)
+ * @see #visitElementValue(ElementValue)
+ * @see #visitImportDeclaration(ImportDeclaration)
+ * @see #visitTypeBodyDeclaration(TypeBodyDeclaration)
+ * @see #visitTypeDeclaration(TypeDeclaration)
+ * @see #visitAbstractCompilationUnit(AbstractCompilationUnit)
  */
 public
 class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
@@ -193,16 +195,35 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     AbstractTraverser(Traverser<EX> delegate) { this.delegate = delegate; }
 
     /**
+     * Invokes the "{@code traverse*()}" method for the concrete {@link AbstractCompilationUnit}.
+     */
+    private final Visitor.AbstractCompilationUnitVisitor<Void, EX>
+    abstractCompilationUnitTraverser = new Visitor.AbstractCompilationUnitVisitor<Void, EX>() {
+
+        @Override @Nullable public Void
+        visitCompilationUnit(CompilationUnit cu) throws EX {
+            AbstractTraverser.this.delegate.traverseCompilationUnit(cu);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitModularCompilationUnit(ModularCompilationUnit mcu) throws EX {
+            AbstractTraverser.this.delegate.traverseModularCompilationUnit(mcu);
+            return null;
+        }
+    };
+
+    /**
      * Invokes the "{@code traverse*()}" method for the concrete {@link ImportDeclaration}.
      */
     private final Visitor.ImportVisitor<Void, EX>
     importTraverser = new Visitor.ImportVisitor<Void, EX>() {
 
         // SUPPRESS CHECKSTYLE LineLength:4
-        @Override @Nullable public Void visitSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid)          throws EX { AbstractTraverser.this.delegate.traverseSingleTypeImportDeclaration(stid);      return null; }
-        @Override @Nullable public Void visitTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd)     throws EX { AbstractTraverser.this.delegate.traverseTypeImportOnDemandDeclaration(tiodd);   return null; }
-        @Override @Nullable public Void visitSingleStaticImportDeclaration(CompilationUnit.SingleStaticImportDeclaration ssid)      throws EX { AbstractTraverser.this.delegate.traverseSingleStaticImportDeclaration(ssid);    return null; }
-        @Override @Nullable public Void visitStaticImportOnDemandDeclaration(CompilationUnit.StaticImportOnDemandDeclaration siodd) throws EX { AbstractTraverser.this.delegate.traverseStaticImportOnDemandDeclaration(siodd); return null; }
+        @Override @Nullable public Void visitSingleTypeImportDeclaration(AbstractCompilationUnit.SingleTypeImportDeclaration stid)          throws EX { AbstractTraverser.this.delegate.traverseSingleTypeImportDeclaration(stid);      return null; }
+        @Override @Nullable public Void visitTypeImportOnDemandDeclaration(AbstractCompilationUnit.TypeImportOnDemandDeclaration tiodd)     throws EX { AbstractTraverser.this.delegate.traverseTypeImportOnDemandDeclaration(tiodd);   return null; }
+        @Override @Nullable public Void visitSingleStaticImportDeclaration(AbstractCompilationUnit.SingleStaticImportDeclaration ssid)      throws EX { AbstractTraverser.this.delegate.traverseSingleStaticImportDeclaration(ssid);    return null; }
+        @Override @Nullable public Void visitStaticImportOnDemandDeclaration(AbstractCompilationUnit.StaticImportOnDemandDeclaration siodd) throws EX { AbstractTraverser.this.delegate.traverseStaticImportOnDemandDeclaration(siodd); return null; }
     };
 
     /**
@@ -421,7 +442,12 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     };
 
     @Override public void
-    visitImportDeclaration(CompilationUnit.ImportDeclaration id) throws EX {
+    visitAbstractCompilationUnit(AbstractCompilationUnit acu) throws EX {
+        acu.accept(this.abstractCompilationUnitTraverser);
+    }
+
+    @Override public void
+    visitImportDeclaration(AbstractCompilationUnit.ImportDeclaration id) throws EX {
         id.accept(this.importTraverser);
     }
 
@@ -453,15 +479,14 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
     // These may be overridden by derived classes.
 
+    @SuppressWarnings("unused") @Override public void
+    traverseAbstractCompilationUnit(AbstractCompilationUnit acu) throws EX {
+    }
+
     @Override public void
     traverseCompilationUnit(CompilationUnit cu) throws EX {
 
-        // The optionalPackageDeclaration is considered an integral part of
-        // the compilation unit and is thus not traversed.
-
-        for (CompilationUnit.ImportDeclaration id : cu.importDeclarations) {
-            id.accept(this.importTraverser);
-        }
+        for (AbstractCompilationUnit.ImportDeclaration id : cu.importDeclarations) id.accept(this.importTraverser);
 
         for (PackageMemberTypeDeclaration pmtd : cu.packageMemberTypeDeclarations) {
             pmtd.accept(this.typeDeclarationTraverser);
@@ -469,27 +494,32 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     }
 
     @Override public void
-    traverseSingleTypeImportDeclaration(CompilationUnit.SingleTypeImportDeclaration stid) throws EX {
+    traverseModularCompilationUnit(ModularCompilationUnit mcu) throws EX {
+        for (AbstractCompilationUnit.ImportDeclaration id : mcu.importDeclarations) id.accept(this.importTraverser);
+    }
+
+    @Override public void
+    traverseSingleTypeImportDeclaration(AbstractCompilationUnit.SingleTypeImportDeclaration stid) throws EX {
         this.traverseImportDeclaration(stid);
     }
 
     @Override public void
-    traverseTypeImportOnDemandDeclaration(CompilationUnit.TypeImportOnDemandDeclaration tiodd) throws EX {
+    traverseTypeImportOnDemandDeclaration(AbstractCompilationUnit.TypeImportOnDemandDeclaration tiodd) throws EX {
         this.traverseImportDeclaration(tiodd);
     }
 
     @Override public void
-    traverseSingleStaticImportDeclaration(CompilationUnit.SingleStaticImportDeclaration stid) throws EX {
+    traverseSingleStaticImportDeclaration(AbstractCompilationUnit.SingleStaticImportDeclaration stid) throws EX {
         this.traverseImportDeclaration(stid);
     }
 
     @Override public void
-    traverseStaticImportOnDemandDeclaration(CompilationUnit.StaticImportOnDemandDeclaration siodd) throws EX {
+    traverseStaticImportOnDemandDeclaration(AbstractCompilationUnit.StaticImportOnDemandDeclaration siodd) throws EX {
         this.traverseImportDeclaration(siodd);
     }
 
     @Override public void
-    traverseImportDeclaration(CompilationUnit.ImportDeclaration id) throws EX { this.traverseLocated(id); }
+    traverseImportDeclaration(AbstractCompilationUnit.ImportDeclaration id) throws EX { this.traverseLocated(id); }
 
     @Override public void
     traverseAnonymousClassDeclaration(AnonymousClassDeclaration acd) throws EX {
