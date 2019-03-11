@@ -892,7 +892,10 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     traversePrimitiveType(PrimitiveType bt) throws EX { this.traverseType(bt); }
 
     @Override public void
-    traverseReferenceType(ReferenceType rt) throws EX { this.traverseType(rt); }
+    traverseReferenceType(ReferenceType rt) throws EX {
+        for (Annotation a : rt.annotations) this.visitAnnotation(a);
+        this.traverseType(rt);
+    }
 
     @Override public void
     traverseRvalueMemberType(RvalueMemberType rmt) throws EX {

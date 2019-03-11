@@ -436,7 +436,7 @@ class DeepCopier {
 
     // ------------------------------ "copy*s()" methods for arrays
 
-    // SUPPRESS CHECKSTYLE LineLengthCheck:10
+    // SUPPRESS CHECKSTYLE LineLengthCheck:11
     public ImportDeclaration[]        copyImportDeclarations(ImportDeclaration[] subject)               throws CompileException { ImportDeclaration[]        result = new ImportDeclaration[subject.length];          for (int i = 0; i < subject.length; i++) result[i] = this.copyImportDeclaration(subject[i]);                return result; }
     public TypeArgument[]             copyTypeArguments(TypeArgument[] subject)                         throws CompileException { TypeArgument[]             result = new TypeArgument[subject.length];               for (int i = 0; i < subject.length; i++) result[i] = this.copyTypeArgument(subject[i]);                     return result; }
     public VariableDeclarator[]       copyVariableDeclarators(VariableDeclarator[] subject)             throws CompileException { VariableDeclarator[]       result = new VariableDeclarator[subject.length];         for (int i = 0; i < subject.length; i++) result[i] = this.copyVariableDeclarator(subject[i]);               return result; }
@@ -447,6 +447,7 @@ class DeepCopier {
     public Type[]                     copyTypes(Type[] subject)                                         throws CompileException { Type[]                     result = new Type[subject.length];                       for (int i = 0; i < subject.length; i++) result[i] = this.copyType(subject[i]);                             return result; }
     public TypeParameter[]            copyTypeParameters(TypeParameter[] subject)                       throws CompileException { TypeParameter[]            result = new TypeParameter[subject.length];              for (int i = 0; i < subject.length; i++) result[i] = this.copyTypeParameter(subject[i]);                    return result; }
     public FormalParameter[]          copyFormalParameters(FormalParameter[] subject)                   throws CompileException { FormalParameter[]          result = new FormalParameter[subject.length];            for (int i = 0; i < result.length; i++) result[i] = this.copyFormalParameter(subject[i]);                   return result; }
+    public Annotation[]               copyAnnotations(Annotation[] subject)                             throws CompileException { Annotation[]               result = new Annotation[subject.length];                 for (int i = 0; i < result.length; i++) result[i] = this.copyAnnotation(subject[i]);                        return result; }
 
     // SUPPRESS CHECKSTYLE LineLengthCheck:2
     public Rvalue[]                   copyRvalues(Rvalue[] subject)                                     throws CompileException { return this.copyRvalues(Arrays.asList(subject)).toArray(new Rvalue[0]); }
@@ -552,7 +553,7 @@ class DeepCopier {
             subject.name,
             subject.getOptionalTypeParameters(),
             subject.optionalExtendedType,
-            subject.implementedTypes
+            this.copyTypes(subject.implementedTypes)
         );
 
         for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
@@ -1133,6 +1134,7 @@ class DeepCopier {
     copyReferenceType(ReferenceType subject) throws CompileException {
         return new ReferenceType(
             subject.getLocation(),
+            this.copyAnnotations(subject.annotations),
             subject.identifiers,
             this.copyOptionalTypeArguments(subject.optionalTypeArguments)
         );

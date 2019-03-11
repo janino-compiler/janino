@@ -68,11 +68,13 @@ import org.codehaus.janino.Java.Located;
 import org.codehaus.janino.Java.Lvalue;
 import org.codehaus.janino.Java.MethodInvocation;
 import org.codehaus.janino.Java.MethodReference;
+import org.codehaus.janino.Java.Modifier;
 import org.codehaus.janino.Java.NewAnonymousClassInstance;
 import org.codehaus.janino.Java.NewArray;
 import org.codehaus.janino.Java.NewClassInstance;
 import org.codehaus.janino.Java.NewInitializedArray;
 import org.codehaus.janino.Java.NullLiteral;
+import org.codehaus.janino.Java.PackageMemberClassDeclaration;
 import org.codehaus.janino.Java.ParameterAccess;
 import org.codehaus.janino.Java.ParenthesizedExpression;
 import org.codehaus.janino.Java.QualifiedThisReference;
@@ -86,6 +88,7 @@ import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
+import org.codehaus.janino.TokenType;
 import org.codehaus.janino.Unparser;
 import org.codehaus.janino.Visitor;
 import org.codehaus.janino.util.AbstractTraverser;
@@ -136,6 +139,39 @@ class UnparserTest {
             StringWriter sw = new StringWriter();
             Unparser     u  = new Unparser(sw);
             u.unparseStatements(block.statements);
+            u.close();
+            s = sw.toString();
+        }
+
+        Assert.assertEquals(input, UnparserTest.normalizeWhitespace(expected), UnparserTest.normalizeWhitespace(s));
+    }
+
+    private static void
+    helpTestClassBody(String input) throws Exception {
+        UnparserTest.helpTestClassBody(input, input);
+    }
+
+    private static void
+    helpTestClassBody(String expected, String input) throws Exception {
+
+        Parser p = new Parser(new Scanner(null, new StringReader(input)));
+
+        PackageMemberClassDeclaration pmcd = new PackageMemberClassDeclaration(
+            Location.NOWHERE,
+            null,             // optionalDocComment
+            new Modifier[0],  // modifiers
+            "SC",             // name
+            null,             // optionalTypeParameters
+            null,             // optionalExtendedType
+            new Type[0]       // implementedTypes
+        );
+        while (!p.peek(TokenType.END_OF_INPUT)) p.parseClassBodyDeclaration(pmcd);
+
+        String s;
+        {
+            StringWriter sw = new StringWriter();
+            Unparser     u  = new Unparser(sw);
+            u.unparseClassDeclarationBody(pmcd);
             u.close();
             s = sw.toString();
         }
@@ -625,6 +661,7 @@ class UnparserTest {
         UnparserTest.helpTestScript("Runnable r = new Runnable() { @Override public void run() {} }; Runnable s = r::run;"); // SUPPRESS CHECKSTYLE LineLength:2
         UnparserTest.helpTestScript("Runnable r = new Runnable() { @Override public void run() {} }; Runnable s = (r)::run;");
         UnparserTest.helpTestScript("Runnable r = new Runnable() { @Override public void run() {} }; Runnable t = java.util.Collections::emptySet;");
+        UnparserTest.helpTestScript("x.map(this.productConverter::convert);");
         // TODO: 'super' '::' [ TypeArguments ] Identifier
         // TODO: TypeName '.' 'super' '::' [ TypeArguments ] Identifier
         UnparserTest.helpTestScript("Runnable r4 = java.util.HashMap::new;");
@@ -638,6 +675,22 @@ class UnparserTest {
         UnparserTest.helpTestCu("module a(opens a.b to c.d, e.f;)");
         UnparserTest.helpTestCu("module a(uses java.lang.String;)");
         UnparserTest.helpTestCu("module a(provides java.lang.String with a.b, c.d;)");
+
+        // Default methods.
+        UnparserTest.helpTestCu(
+            ""
+            + "interface Foo {"
+            +    " default <T> T convertJsonToObject(String jsonFile, Class<T> classType) throws ServiceException {} "
+            + "}"
+        );
+
+        // Type annotations.
+        UnparserTest.helpTestClassBody(
+            ""
+            + "private Map<@notblank String, @notblank String> extensions;\n"
+            + "private List<@NotNull AssetRelationship>        sources = new ArrayList<>();\n"
+        );
+        UnparserTest.helpTestScript("@Foo int a;");
     }
 
     @Test public void

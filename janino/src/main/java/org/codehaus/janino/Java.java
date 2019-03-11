@@ -1822,6 +1822,7 @@ class Java {
                 null,                           // optionalTypeParameters
                 new Type[] { new ReferenceType( // extendedTypes
                     location,
+                    new Annotation[0],
                     new String[] { "java", "lang", "annotation", "Annotation" },
                     null // optionalTypeArguments
                 )}
@@ -1916,6 +1917,7 @@ class Java {
                 null,                           // optionalTypeParameters
                 new Type[] { new ReferenceType( // extendedTypes
                     location,                                                    // location
+                    new Annotation[0],                                           // annotations
                     new String[] { "java", "lang", "annotation", "Annotation" }, // identifiers
                     null                                                         // optionalTypeArguments
                 )}
@@ -4000,6 +4002,8 @@ class Java {
     public static final
     class ReferenceType extends Type implements TypeArgument {
 
+        public final Annotation[] annotations;
+
         /**
          * The list of (dot-separated) identifiers that pose the reference type, e.g. "java", "util", "Map".
          */
@@ -4011,8 +4015,15 @@ class Java {
         @Nullable public final TypeArgument[] optionalTypeArguments;
 
         public
-        ReferenceType(Location location, String[] identifiers, @Nullable TypeArgument[] optionalTypeArguments) {
+        ReferenceType(
+            Location                 location,
+            Annotation[]             annotations,
+            String[]                 identifiers,
+            @Nullable TypeArgument[] optionalTypeArguments
+        ) {
             super(location);
+            assert annotations != null;
+            this.annotations = annotations;
             assert identifiers != null;
             this.identifiers           = identifiers;
             this.optionalTypeArguments = optionalTypeArguments;
@@ -4020,7 +4031,9 @@ class Java {
 
         @Override public String
         toString() {
-            String s = Java.join(this.identifiers, ".");
+            String s = Java.join(this.annotations, " ");
+            if (this.annotations.length >= 1) s += ' ';
+            s += Java.join(this.identifiers, ".");
             if (this.optionalTypeArguments != null) s += '<' + Java.join(this.optionalTypeArguments, ", ") + ">";
             return s;
         }
@@ -4292,7 +4305,7 @@ class Java {
             String[] is = new String[this.n];
             System.arraycopy(this.identifiers, 0, is, 0, this.n);
 
-            Type result = new ReferenceType(this.getLocation(), is, null);
+            Type result = new ReferenceType(this.getLocation(), new Annotation[0], is, null);
 
             Scope es = this.getEnclosingScopeOrNull();
             if (es != null) result.setEnclosingScope(es);

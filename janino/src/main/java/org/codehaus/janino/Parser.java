@@ -583,7 +583,12 @@ class Parser {
     private Annotation
     parseAnnotation() throws CompileException, IOException {
         this.read("@");
-        ReferenceType type = new ReferenceType(this.location(), this.parseQualifiedIdentifier(), null);
+        ReferenceType type = new ReferenceType(
+            this.location(),
+            new Annotation[0],
+            this.parseQualifiedIdentifier(),
+            null                             // optionalTypeArguments
+        );
 
         // Marker annotation?
         if (!this.peekRead("(")) return new MarkerAnnotation(type);
@@ -1322,9 +1327,6 @@ class Parser {
             // Method declarator?
             if (this.peek("(")) {
                 if (optionalDocComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
-                if (Parser.hasAccessModifier(modifiers, "default")) {
-                    throw this.compileException("Default interface methods not implemented");
-                }
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                     optionalDocComment,                            // optionalDocComment
                     modifiers,                                     // modifiers
@@ -2557,12 +2559,21 @@ class Parser {
 
     /**
      * <pre>
-     *   ReferenceType := QualifiedIdentifier [ TypeArguments ]
+     *   ReferenceType := { Annotation } QualifiedIdentifier [ TypeArguments ]
      * </pre>
      */
     public ReferenceType
     parseReferenceType() throws CompileException, IOException {
-        return new ReferenceType(this.location(), this.parseQualifiedIdentifier(), this.parseTypeArgumentsOpt());
+
+        List<Annotation> annotations = new ArrayList<Annotation>();
+        while (this.peek("@")) annotations.add(this.parseAnnotation());
+
+        return new ReferenceType(
+            this.location(),
+            (Annotation[]) annotations.toArray(new Annotation[annotations.size()]),
+            this.parseQualifiedIdentifier(),
+            this.parseTypeArgumentsOpt()
+        );
     }
 
     /**
@@ -2880,6 +2891,7 @@ class Parser {
                 if (a instanceof AmbiguousName && this.peek("<") && this.peekNextButOne("?")) {
                     return new ReferenceType(
                         this.location(),
+                        new Annotation[0],
                         ((AmbiguousName) a).identifiers,
                         this.parseTypeArgumentsOpt()
                     );
@@ -2913,6 +2925,7 @@ class Parser {
 
                         return new ReferenceType(
                             this.location(),
+                            new Annotation[0],
                             identifiers,
                             (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
                         );
@@ -3024,6 +3037,10 @@ class Parser {
 
         Atom a = this.parsePrimary();
 
+        while (this.peek(".", "[") != -1) {
+            a = this.parseSelector(a);
+        }
+
         if (this.peekRead("::")) {
 
             if (a instanceof ArrayType) {
@@ -3053,10 +3070,6 @@ class Parser {
             default:
                 throw new AssertionError(this.peek());
             }
-        }
-
-        while (this.peek(".", "[") != -1) {
-            a = this.parseSelector(a);
         }
 
         while (this.peek("++", "--") != -1) {
@@ -3222,9 +3235,10 @@ class Parser {
                 // Name '[]' { '[]' }
                 // Name '[]' { '[]' } '.' 'class'
                 Type res = new ReferenceType(
-                    this.location(), // location
-                    qi,              // identifiers
-                    null             // optionalTypeArguments
+                    this.location(),   // location
+                    new Annotation[0], // annotations
+                    qi,                // identifiers
+                    null               // optionalTypeArguments
                 );
                 int brackets = this.parseBracketsOpt();
                 for (int i = 0; i < brackets; ++i) res = new ArrayType(res);

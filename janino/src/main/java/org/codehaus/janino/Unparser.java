@@ -170,6 +170,7 @@ import org.codehaus.janino.Java.TryStatement.VariableAccessResource;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeBodyDeclaration;
 import org.codehaus.janino.Java.TypeDeclaration;
+import org.codehaus.janino.Java.TypeParameter;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.UsesModuleDirective;
 import org.codehaus.janino.Java.VariableDeclarator;
@@ -716,6 +717,7 @@ class Unparser {
 
                 @Override @Nullable public Void
                 visitReferenceType(ReferenceType rt) {
+                    Unparser.this.unparseAnnotations(rt.annotations);
                     Unparser.this.pw.print(rt.toString());
                     return null;
                 }
@@ -1286,6 +1288,7 @@ class Unparser {
 
         this.unparseDocComment(md);
         this.unparseModifiers(md.getModifiers());
+        this.unparseTypeParameters(md.getOptionalTypeParameters());
         this.unparseType(md.type);
         this.pw.print(' ' + md.name);
         this.unparseFunctionDeclaratorRest(md);
@@ -1595,7 +1598,7 @@ class Unparser {
     }
 
     // Multi-line!
-    private void
+    public void
     unparseClassDeclarationBody(AbstractClassDeclaration cd) {
         for (ConstructorDeclarator ctord : cd.constructors) {
             this.pw.println();
@@ -1714,6 +1717,32 @@ class Unparser {
     private void
     unparseModifiers(Modifier[] modifiers) {
         for (Modifier m : modifiers) m.accept(this.modifierUnparser);
+    }
+
+    private void
+    unparseTypeParameters(@Nullable TypeParameter[] typeParameters) {
+        if (typeParameters == null) return;
+        this.pw.print('<');
+        for (int i = 0; i < typeParameters.length; ++i) {
+            if (i > 0) this.pw.print(", ");
+            this.unparseTypeParameter(typeParameters[i]);
+        }
+        this.pw.print("> ");
+    }
+
+    private void
+    unparseTypeParameter(TypeParameter typeParameter) {
+
+        this.pw.print(typeParameter.name);
+
+        ReferenceType[] bounds = typeParameter.optionalBound;
+        if (bounds != null) {
+            this.pw.print(" extends ");
+            for (int i = 0; i < bounds.length; i++) {
+                if (i > 0) this.pw.print(", ");
+                this.unparseType(bounds[i]);
+            }
+        }
     }
 
     private void

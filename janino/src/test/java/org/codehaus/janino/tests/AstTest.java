@@ -43,6 +43,7 @@ import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Java.AmbiguousName;
+import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.Assignment;
 import org.codehaus.janino.Java.Block;
@@ -309,6 +310,7 @@ class AstTest {
                     AstTest.getLocation(),
                     new Java.ReferenceType(
                         AstTest.getLocation(),       // location
+                        new Annotation[0],           // annotations
                         new String[] { "HandMade" }, // identifiers
                         null                         // optionalTypeArguments
                     )
@@ -318,6 +320,7 @@ class AstTest {
 
         AstTest.createMethod(clazz, body, new Java.ReferenceType(
             AstTest.getLocation(),                    // location
+            new Annotation[0],                        // annotations,
             new String[] { "java", "lang", "Class" }, // identifiers
             null                                      // optionalTypeArguments
         ));
