@@ -908,11 +908,7 @@ class Parser {
                 throw this.compileException("Only access flag \"static\" allowed on initializer");
             }
 
-            Initializer initializer = new Initializer(
-                this.location(),                               // location
-                Parser.hasAccessModifier(modifiers, "static"), // statiC
-                this.parseBlock()                              // block
-            );
+            Initializer initializer = new Initializer(this.location(), modifiers, this.parseBlock());
 
             classDeclaration.addInitializer(initializer);
             return;
@@ -1656,7 +1652,7 @@ class Parser {
         List<FormalParameter> l           = new ArrayList<FormalParameter>();
         final boolean[]       hasEllipsis = new boolean[1];
 
-        l.add(this.parseFormalParameterRest(false, firstParameterType, hasEllipsis));
+        l.add(this.parseFormalParameterRest(new Modifier[0], firstParameterType, hasEllipsis));
 
         while (this.peekRead(",")) {
             if (hasEllipsis[0]) throw this.compileException("Only the last parameter may have an ellipsis");
@@ -1685,20 +1681,23 @@ class Parser {
 
         // Ignore annotations.
 
-        return this.parseFormalParameterRest(
-            Parser.hasAccessModifier(modifiers, "final"),
-            this.parseType(),
-            hasEllipsis
-        );
+        return this.parseFormalParameterRest(modifiers, this.parseType(), hasEllipsis);
     }
 
     /**
      * <pre>
      *   FormalParameterRest := [ '.' '.' '.' ] Identifier BracketsOpt
      * </pre>
+     *
+     * @param hasEllipsis After return, the zeroth element indicates whether the formal parameter was declared with an
+     *        ellipsis
      */
     public FormalParameter
-    parseFormalParameterRest(boolean finaL, Type type, boolean[] hasEllipsis) throws CompileException, IOException {
+    parseFormalParameterRest(
+        Modifier[] modifiers,
+        Type       type,
+        boolean[]  hasEllipsis
+    ) throws CompileException, IOException {
 
         if (this.peekRead(".")) {
             this.read(".");
@@ -1711,7 +1710,7 @@ class Parser {
         this.verifyIdentifierIsConventionalLocalVariableOrParameterName(name, location);
 
         for (int i = this.parseBracketsOpt(); i > 0; --i) type = new ArrayType(type);
-        return new FormalParameter(location, finaL, type, name);
+        return new FormalParameter(location, modifiers, type, name);
     }
 
     /**
@@ -2093,15 +2092,10 @@ class Parser {
                     Rvalue expression = this.parseExpression().toRvalueOrCompileException();
                     this.read(")");
                     return new ForEachStatement(
-                        forLocation,          // location
-                        new FormalParameter(  // currentElement
-                            nameLocation,
-                            Parser.hasAccessModifier(modifiers, "final"),
-                            type,
-                            name
-                        ),
-                        expression,           // expression
-                        this.parseStatement() // body
+                        forLocation,                                              // location
+                        new FormalParameter(nameLocation, modifiers, type, name), // currentElement
+                        expression,                                               // expression
+                        this.parseStatement()                                     // body
                     );
                 }
 
@@ -2130,7 +2124,7 @@ class Parser {
                         forLocation,          // location
                         new FormalParameter(  // currentElement
                             nameLocation,
-                            false,
+                            new Modifier[0],
                             a.toTypeOrCompileException(),
                             name
                         ),

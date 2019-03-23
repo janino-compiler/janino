@@ -689,7 +689,12 @@ class DeepCopier {
 
     public Initializer
     copyInitializer(Initializer subject) throws CompileException {
-        return new Initializer(subject.getLocation(), subject.isStatic(), this.copyBlock(subject.block));
+
+        return new Initializer(
+            subject.getLocation(),
+            this.copyModifiers(subject.modifiers),
+            this.copyBlock(subject.block)
+        );
     }
 
     public MethodDeclarator
@@ -1247,7 +1252,13 @@ class DeepCopier {
 
     public FunctionDeclarator.FormalParameter
     copyFormalParameter(FunctionDeclarator.FormalParameter subject) throws CompileException {
-        return new FormalParameter(subject.getLocation(), subject.finaL, this.copyType(subject.type), subject.name);
+
+        return new FormalParameter(
+            subject.getLocation(),
+            this.copyModifiers(subject.modifiers),
+            this.copyType(subject.type),
+            subject.name
+        );
     }
 
     public CatchParameter

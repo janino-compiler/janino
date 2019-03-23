@@ -1341,7 +1341,7 @@ class Unparser {
 
     private void
     unparseFormalParameter(FunctionDeclarator.FormalParameter fp, boolean hasEllipsis) {
-        if (fp.finaL) this.pw.print("final ");
+        this.unparseModifiers(fp.modifiers);
         this.unparseType(fp.type);
         if (hasEllipsis) this.pw.write("...");
         this.pw.print(" " + AutoIndentWriter.TABULATOR + fp.name);

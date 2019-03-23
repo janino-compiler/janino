@@ -882,19 +882,29 @@ class Java {
         /**
          * Sets the {@link AbstractCompilationUnit} in which this top-level type is declared.
          */
-        void setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
+        void
+        setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
 
         /**
          * @return The {@link AbstractCompilationUnit} in which this top-level type is declared.
          */
-        CompilationUnit getDeclaringCompilationUnit();
+        CompilationUnit
+        getDeclaringCompilationUnit();
+
+        Access
+        getAccess();
     }
 
     /**
      * Represents a class or interface declaration where the immediately enclosing scope is another class or interface
      * declaration.
      */
-    public interface MemberTypeDeclaration extends NamedTypeDeclaration, TypeBodyDeclaration {}
+    public
+    interface MemberTypeDeclaration extends NamedTypeDeclaration, TypeBodyDeclaration {
+
+        Access
+        getAccess();
+    }
 
     /**
      * Represents the declaration of a class or an interface that has a name. (All type declarations are named, except
@@ -1337,6 +1347,15 @@ class Java {
         hasDeprecatedDocTag() {
             return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
+
+        public boolean
+        isAbstract() { return Java.hasAccessModifier(this.getModifiers(), "abstract"); }
+
+        public boolean
+        isFinal() { return Java.hasAccessModifier(this.getModifiers(), "final"); }
+
+        public boolean
+        isStrictfp() { return Java.hasAccessModifier(this.getModifiers(), "strictfp"); }
     }
 
     /**
@@ -1385,6 +1404,9 @@ class Java {
             );
         }
 
+        @Override public Access
+        getAccess() { return Java.modifiers2Access(this.getModifiers()); }
+
         // Implement TypeBodyDeclaration.
 
         @Override public void
@@ -1401,6 +1423,9 @@ class Java {
         // SUPPRESS CHECKSTYLE LineLength:2
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX     { return visitor.visitMemberClassDeclaration(this); }
         @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberClassDeclaration(this); }
+
+        public boolean
+        isStatic() { return Java.hasAccessModifier(this.getModifiers(), "static"); }
     }
 
     /**
@@ -1526,6 +1551,9 @@ class Java {
         @Override public CompilationUnit
         getDeclaringCompilationUnit() { return (CompilationUnit) this.getEnclosingScope(); }
 
+        @Override public Access
+        getAccess() { return Java.modifiers2Access(this.getModifiers()); }
+
         // Implement TypeDeclaration.
 
         @Override public String
@@ -1544,6 +1572,9 @@ class Java {
         accept(TypeDeclarationVisitor<R, EX> visitor) throws EX {
             return visitor.visitPackageMemberClassDeclaration(this);
         }
+
+        public boolean
+        isStatic() { return Java.hasAccessModifier(this.getModifiers(), "static"); }
     }
 
     /**
@@ -1776,6 +1807,11 @@ class Java {
             );
         }
 
+        // Implement MemberTypeDeclaration.
+
+        @Override public Access
+        getAccess() { return Java.modifiers2Access(this.getModifiers()); }
+
         // Implement TypeDeclaration.
 
         @Override public String
@@ -1841,9 +1877,7 @@ class Java {
      * </p>
      */
     public static
-    class PackageMemberInterfaceDeclaration
-    extends InterfaceDeclaration
-    implements PackageMemberTypeDeclaration {
+    class PackageMemberInterfaceDeclaration extends InterfaceDeclaration implements PackageMemberTypeDeclaration {
 
         public
         PackageMemberInterfaceDeclaration(
@@ -1873,6 +1907,16 @@ class Java {
 
         @Override public CompilationUnit
         getDeclaringCompilationUnit() { return (CompilationUnit) this.getEnclosingScope(); }
+
+        @Override public Access
+        getAccess() { return Java.modifiers2Access(this.getModifiers()); }
+
+        @Override public Annotation[]
+        getAnnotations() { return Java.getAnnotations(this.getModifiers()); }
+
+        public boolean isAbstract() { return Java.hasAccessModifier(this.getModifiers(), "abstract"); }
+        public boolean isStatic()   { return Java.hasAccessModifier(this.getModifiers(), "static");   }
+        public boolean isStrictfp() { return Java.hasAccessModifier(this.getModifiers(), "strictfp"); }
 
         // Implement TypeDeclaration.
 
@@ -2012,7 +2056,7 @@ class Java {
 
         @Nullable private TypeDeclaration declaringType;
 
-        private final Modifier[] modifiers;
+        public final Modifier[] modifiers;
 
         protected
         AbstractTypeBodyDeclaration(Location location, Modifier[] modifiers) {
@@ -2084,8 +2128,8 @@ class Java {
         public final Block block;
 
         public
-        Initializer(Location location, boolean statiC, Block block) {
-            super(location, statiC ? Java.accessModifiers(location, "static") : new AccessModifier[0]);
+        Initializer(Location location, Modifier[] modifiers, Block block) {
+            super(location, modifiers);
             (this.block = block).setEnclosingScope(this);
         }
 
@@ -2169,6 +2213,12 @@ class Java {
                 }
             }
         }
+
+        public Access
+        getAccess() { return Java.modifiers2Access(this.getModifiers()); }
+
+        @Override public Annotation[]
+        getAnnotations() { return Java.getAnnotations(this.getModifiers()); }
 
         @Override @Nullable public final <R, EX extends Throwable> R
         accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX {
@@ -2261,10 +2311,7 @@ class Java {
         public static final
         class FormalParameter extends Located {
 
-            /**
-             * Whether the parameter is declared FINAL.
-             */
-            public final boolean finaL;
+            public final Modifier[] modifiers;
 
             /**
              * The type of the parameter.
@@ -2277,12 +2324,15 @@ class Java {
             public final String name;
 
             public
-            FormalParameter(Location location, boolean finaL, Type type, String name) {
+            FormalParameter(Location location, Modifier[] modifiers, Type type, String name) {
                 super(location);
-                this.finaL = finaL;
-                this.type  = type;
-                this.name  = name;
+                this.modifiers = modifiers;
+                this.type      = type;
+                this.name      = name;
             }
+
+            public boolean
+            isFinal() { return Java.hasAccessModifier(this.modifiers, "final"); }
 
             /**
              * @param hasEllipsis Whether this is the last function parameter and has an ellipsis ("...") after the
@@ -2308,6 +2358,9 @@ class Java {
          * Mapping of variable names to {@link LocalVariable}s.
          */
         @Nullable public Map<String, Java.LocalVariable> localVariables;
+
+        public boolean
+        isStrictfp() { return Java.hasAccessModifier(this.getModifiers(), "strictfp"); }
     }
 
     /**
@@ -2551,6 +2604,13 @@ class Java {
          * The resolved {@link IMethod}.
          */
         @Nullable IClass.IMethod iMethod;
+
+        public boolean isStatic()       { return Java.hasAccessModifier(this.getModifiers(), "static");       }
+        public boolean isDefault()      { return Java.hasAccessModifier(this.getModifiers(), "default");      }
+        public boolean isAbstract()     { return Java.hasAccessModifier(this.getModifiers(), "abstract");     }
+        public boolean isNative()       { return Java.hasAccessModifier(this.getModifiers(), "native");       }
+        public boolean isFinal()        { return Java.hasAccessModifier(this.getModifiers(), "final");        }
+        public boolean isSynchronized() { return Java.hasAccessModifier(this.getModifiers(), "synchronized"); }
     }
 
     /**
@@ -2612,12 +2672,6 @@ class Java {
         @Override public Modifier[]
         getModifiers() { return this.modifiers; }
 
-        /**
-         * @return The annotations of this field declaration
-         */
-        @Override public Annotation[]
-        getAnnotations() { return Java.getAnnotations(this.modifiers); }
-
         @Override public String
         toString() {
             StringBuilder sb = (
@@ -2646,6 +2700,19 @@ class Java {
         hasDeprecatedDocTag() {
             return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
+
+        public Access
+        getAccess() { return Java.modifiers2Access(this.modifiers); }
+
+        @Override
+        public Annotation[]
+        getAnnotations() { return Java.getAnnotations(this.modifiers); }
+
+        public boolean isFinal()     { return Java.hasAccessModifier(this.modifiers, "final");     }
+        public boolean isPrivate()   { return Java.hasAccessModifier(this.modifiers, "private");   }
+        public boolean isStatic()    { return Java.hasAccessModifier(this.modifiers, "static");    }
+        public boolean isTransient() { return Java.hasAccessModifier(this.modifiers, "transient"); }
+        public boolean isVolatile()  { return Java.hasAccessModifier(this.modifiers, "volatile");  }
     }
 
     /**
@@ -3638,6 +3705,9 @@ class Java {
             }
             return sb.append(';').toString();
         }
+
+        public boolean
+        isFinal() { return Java.hasAccessModifier(this.modifiers, "final"); }
     }
 
     /**
@@ -6110,7 +6180,7 @@ class Java {
         return sb.toString();
     }
 
-    private static Modifier[]
+    public static Modifier[]
     accessModifiers(Location location, String... keywords) {
         Modifier[] result = new Modifier[keywords.length];
         for (int i = 0; i < keywords.length; i++) {
@@ -6145,6 +6215,14 @@ class Java {
             if (m instanceof Annotation) result[n++] = (Annotation) m;
         }
         return result;
+    }
+
+    private static Access
+    modifiers2Access(Modifier[] modifiers) {
+        if (Java.hasAccessModifier(modifiers, "private"))   return Access.PRIVATE;
+        if (Java.hasAccessModifier(modifiers, "protected")) return Access.PROTECTED;
+        if (Java.hasAccessModifier(modifiers, "public"))    return Access.PUBLIC;
+        return Access.DEFAULT;
     }
 
     private static String
