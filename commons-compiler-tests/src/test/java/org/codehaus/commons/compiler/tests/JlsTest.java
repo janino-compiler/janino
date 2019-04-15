@@ -2533,6 +2533,13 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_15_25__Conditional_operator() throws Exception {
 
+        // Related to "#85 Ternary expression resolves to strange supertype":
+        this.assertScriptCookable(
+            ""
+            + "import java.util.*;\n"
+            + "List list = true ? new ArrayList() : Arrays.asList(new String [] {});"
+        );
+
         this.assertExpressionEvaluatesTrue("7 == (true ? 7 : 9)");
         this.assertExpressionEvaluatesTrue("9 == (Boolean.FALSE ? 7 : 9)");
         this.assertExpressionUncookable("1 ? 2 : 3)");
