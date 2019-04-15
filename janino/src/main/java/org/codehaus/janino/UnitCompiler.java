@@ -4848,18 +4848,26 @@ class UnitCompiler {
     private IClass
     commonSupertype(IClass t1, IClass t2) throws CompileException {
 
+        if (t2.isAssignableFrom(t1)) return t2;
+
+        return this.commonSupertype2(t1, t2);
+    }
+
+    private IClass
+    commonSupertype2(IClass t1, IClass t2) throws CompileException {
+
         if (t1.isAssignableFrom(t2)) return t1;
 
         {
             IClass sc = t1.getSuperclass();
             if (sc != null) {
-                IClass result = this.commonSupertype(sc, t2);
+                IClass result = this.commonSupertype2(sc, t2);
                 if (result != this.iClassLoader.TYPE_java_lang_Object) return result;
             }
         }
 
         for (IClass i : t1.getInterfaces()) {
-            IClass result = this.commonSupertype(i, t2);
+            IClass result = this.commonSupertype2(i, t2);
             if (result != this.iClassLoader.TYPE_java_lang_Object) return result;
         }
 
@@ -7063,19 +7071,6 @@ class UnitCompiler {
             rhsType = (IClass) Objects.or(this.isBoxingConvertible(rhsType), rhsType);
 
             return this.commonSupertype(mhsType, rhsType);
-//            // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
-//            if (mhsType.isAssignableFrom(rhsType)) {
-//                return mhsType;
-//            } else
-//            if (rhsType.isAssignableFrom(mhsType)) {
-//                return rhsType;
-//            } else {
-//                this.compileError(
-//                    "Reference types \"" + mhsType + "\" and \"" + rhsType + "\" don't match",
-//                    ce.getLocation()
-//                );
-//                return this.iClassLoader.TYPE_java_lang_Object;
-//            }
         } else
         {
             this.compileError(
