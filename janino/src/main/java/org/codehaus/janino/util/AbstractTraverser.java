@@ -174,14 +174,14 @@ import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
  * </pre>
  *
  * @param <EX> The exception that the "{@code traverse*()}" and "{@code visit*()}" methods may throw
- * @see #visitAnnotation(Annotation)
- * @see #visitAtom(Atom)
- * @see #visitBlockStatement(BlockStatement)
- * @see #visitElementValue(ElementValue)
- * @see #visitImportDeclaration(ImportDeclaration)
- * @see #visitTypeBodyDeclaration(TypeBodyDeclaration)
- * @see #visitTypeDeclaration(TypeDeclaration)
- * @see #visitAbstractCompilationUnit(AbstractCompilationUnit)
+ * @see #visitAnnotation(Java.Annotation)
+ * @see #visitAtom(Java.Atom)
+ * @see #visitBlockStatement(Java.BlockStatement)
+ * @see #visitElementValue(Java.ElementValue)
+ * @see #visitImportDeclaration(Java.AbstractCompilationUnit.ImportDeclaration)
+ * @see #visitTypeBodyDeclaration(Java.TypeBodyDeclaration)
+ * @see #visitTypeDeclaration(Java.TypeDeclaration)
+ * @see #visitAbstractCompilationUnit(Java.AbstractCompilationUnit)
  */
 public
 class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {

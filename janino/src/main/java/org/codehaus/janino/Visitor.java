@@ -149,13 +149,13 @@ class Visitor {
     interface AbstractCompilationUnitVisitor<R, EX extends Throwable> {
 
         /**
-         * Invoked by {@link Java.CompilationUnit#accept(Visitor.CompilationUnitVisitor)}
+         * Invoked by {@link Java.CompilationUnit#accept(Visitor.AbstractCompilationUnitVisitor)}
          */
         @Nullable R
         visitCompilationUnit(CompilationUnit cu) throws EX;
 
         /**
-         * Invoked by {@link Java.ModularCompilationUnit#accept(Visitor.CompilationUnitVisitor)}
+         * Invoked by {@link Java.ModularCompilationUnit#accept(Visitor.AbstractCompilationUnitVisitor)}
          */
         @Nullable R
         visitModularCompilationUnit(ModularCompilationUnit mcu) throws EX;
