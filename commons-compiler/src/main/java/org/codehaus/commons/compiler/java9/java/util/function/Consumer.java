@@ -2,8 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2013 Arno Unkrig. All rights reserved.
- * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
+ * Copyright (c) 2018 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,11 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package org.codehaus.commons.compiler.java9.java.util.function;
+
 /**
- * A set of (rudimentary) proxies for Java-9+ classes that also compile for Java 6-8.
+ * Pre-Java-9-compatible facade for Java 9's {@code java.util.function.Consumer} interface.
  */
-@NotNullByDefault
-package org.codehaus.commons.compiler.jdk.java9.java.util.function;
-
-import org.codehaus.commons.nullanalysis.NotNullByDefault;
-
+public
+interface Consumer<T> {
+    void accept(T t);
+}

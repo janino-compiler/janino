@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.jdk.java9.java.lang.module;
+package org.codehaus.commons.compiler.java9.java.lang.module;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -32,7 +32,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.codehaus.commons.compiler.jdk.java9.java.util.Optional;
+import org.codehaus.commons.compiler.java9.java.util.Optional;
 
 /**
  * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleFinder} class.

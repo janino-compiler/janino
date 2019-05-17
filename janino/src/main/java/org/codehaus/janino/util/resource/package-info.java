@@ -25,8 +25,8 @@
  */
 
 /**
- * Classes related to loading "resources" ({@link org.codehaus.janino.util.resource.ResourceFinder}) and creating
- * resources ({@link org.codehaus.janino.util.resource.ResourceCreator}).
+ * Classes related to loading "resources" ({@link org.codehaus.commons.compiler.util.resource.ResourceFinder}) and
+ * creating resources ({@link org.codehaus.commons.compiler.util.resource.ResourceCreator}).
  */
 @NotNullByDefault
 package org.codehaus.janino.util.resource;

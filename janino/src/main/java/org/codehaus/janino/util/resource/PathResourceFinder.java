@@ -33,15 +33,17 @@ import java.util.Iterator;
 import java.util.zip.ZipFile;
 
 import org.codehaus.commons.compiler.util.StringUtil;
+import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.janino.util.iterator.TransformingIterator;
 
 
 /**
- * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds its resources along a "path" consisting of JAR
- * file names, ZIP file names, and directory names.
+ * A {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that finds its resources along a "path"
+ * consisting of JAR file names, ZIP file names, and directory names.
  *
  * @see org.codehaus.janino.util.resource.ZipFileResourceFinder
- * @see org.codehaus.janino.util.resource.DirectoryResourceFinder
+ * @see org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder
  */
 public
 class PathResourceFinder extends LazyMultiResourceFinder {

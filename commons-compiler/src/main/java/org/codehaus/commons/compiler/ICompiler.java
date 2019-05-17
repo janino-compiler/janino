@@ -29,82 +29,139 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import org.codehaus.commons.compiler.util.resource.DirectoryResourceCreator;
+import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
+import org.codehaus.commons.compiler.util.resource.FileResource;
+import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceCreator;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * A simplified substitute for the <tt>javac</tt> tool.
  */
-public
-interface ICompiler {
+public abstract
+class ICompiler {
 
     /**
      * Special value for {@link #setDestinationDirectory(File)}'s parameter: Indicates that .class files are to be
      * created in the directory of the .java file from which they are generated.
      */
-    @Nullable File NO_DESTINATION_DIRECTORY = null;
+    @Nullable public static final File NO_DESTINATION_DIRECTORY = null;
+
+    /**
+     * Special value for {@link #setClassFileFinder(ResourceFinder)}.
+     *
+     * @see #setClassFileFinder(ResourceFinder)
+     */
+    @Nullable
+    public static final ResourceFinder FIND_NEXT_TO_SOURCE_FILE = null;
+
+    /**
+     * Special value for {@link #setClassFileCreator(ResourceCreator)}: Indicates that .class resources are to be
+     * created in the directory of the .java resource from which they are generated.
+     */
+    @Nullable
+    public static final ResourceCreator CREATE_NEXT_TO_SOURCE_FILE = null;
+
+    @Nullable
+    private File    destinationDirectory;
+    private boolean rebuild;
 
     /**
      * Equivalent of -encoding.
      */
-    void setEncoding(@Nullable Charset encoding);
+    public abstract void
+    setEncoding(@Nullable Charset encoding);
 
     /**
      * Equivalent of {@code -g:lines}.
      */
-    void setDebugLines(boolean value);
+    public abstract void
+    setDebugLines(boolean value);
 
     /**
      * Equivalent of {@code -g:vars}.
      */
-    void setDebugVars(boolean value);
+    public abstract void
+    setDebugVars(boolean value);
 
     /**
      * Equivalent of {@code -g:source}.
      */
-    void setDebugSource(boolean value);
+    public abstract void
+    setDebugSource(boolean value);
 
     /**
      * Equivalent of {@code --source-path}.
      */
-    void setSourcePath(File[] directoriesAndArchives);
+    public abstract void
+    setSourcePath(File[] directoriesAndArchives);
 
     /**
      * Equivalent of <a href="https://docs.oracle.com/en/java/javase/11/tools/javac.html#
      *GUID-AEEC9F07-CB49-4E96-8BC7-BCC2C7F725C9__GUID-38BC1737-2F22-4288-8DC9-933C37D471AB">
      *{@code --boot-class-path}</a>.
      */
-    void setBootClassPath(File[] directoriesAndArchives);
+    public abstract void
+    setBootClassPath(File[] directoriesAndArchives);
 
     /**
      * Equivalent of {@code -extdirs}.
      */
-    void setExtensionDirectories(File[] directories);
+    public abstract void
+    setExtensionDirectories(File[] directories);
 
     /**
      * Equivalent of <a href="https://docs.oracle.com/en/java/javase/11/tools/javac.html#
      *GUID-AEEC9F07-CB49-4E96-8BC7-BCC2C7F725C9__GUID-45DC2932-19BD-435B-B14C-A230D0A4EC87">
      *--class-path</a>.
      */
-    void setClassPath(File[] directoriesAndArchives);
+    public abstract void
+    setClassPath(File[] directoriesAndArchives);
 
     /**
      * Equivalent of <a href="https://docs.oracle.com/en/java/javase/11/tools/javac.html#
      *GUID-AEEC9F07-CB49-4E96-8BC7-BCC2C7F725C9__GUID-45DC2932-19BD-435B-B14C-A230D0A4EC87">
      *-d</a>.
      *
+     * @param destinationDirectory    {@link #NO_DESTINATION_DIRECTORY} means "create .class resources in the
+     *                                directory of the .java resource from which they are generated"
      * @see #NO_DESTINATION_DIRECTORY
      */
-    void setDestinationDirectory(@Nullable File destinationDirectory);
+    public final void
+    setDestinationDirectory(@Nullable File destinationDirectory) {
+        this.destinationDirectory = destinationDirectory;
+        this.updateDestinationDirectory();
+    }
 
     /**
      * Equivalent of {@code -verbose}.
      */
-    void setVerbose(boolean verbose);
+    public abstract void
+    setVerbose(boolean verbose);
 
     /**
      * Equivalent of {@code -rebuild}.
      */
-    void setRebuild(boolean value);
+    public final void
+    setRebuild(boolean value) {
+        this.rebuild = value;
+        this.updateDestinationDirectory();
+    }
+
+    /**
+     * Finds more .java resources that need to be compiled, i.e. implements the "source path".
+     * @param sourceFinder
+     */
+    public abstract void
+    setSourceFinder(ResourceFinder sourceFinder);
+
+    /**
+     * @param classFileCreator Sess {@link #CREATE_NEXT_TO_SOURCE_FILE}
+     */
+    public abstract void
+    setClassFileCreator(@Nullable ResourceCreator classFileCreator);
 
     /**
      * Reads a set of Java compilation units (a.k.a. "source files") from the file system, compiles them into a set of
@@ -137,5 +194,60 @@ interface ICompiler {
      *                          compile error handler
      * @throws IOException      Occurred when reading from the <var>sourceFiles</var>
      */
-    boolean compile(File[] sourceFiles) throws CompileException, IOException;
+    public final boolean
+    compile(File[] sourceFiles) throws CompileException, IOException {
+
+        Resource[] sourceFileResources = new Resource[sourceFiles.length];
+        for (int i = 0; i < sourceFiles.length; ++i) sourceFileResources[i] = new FileResource(sourceFiles[i]);
+        this.compile(sourceFileResources);
+
+        return true;
+    }
+
+    /**
+     * This {@link ResourceFinder} is used to check whether a .class resource already exists and is younger than the
+     * .java resource from which it was generated.
+     * <p>
+     *   If it is impossible to check whether an already-compiled class file exists, or if you want to enforce
+     *   recompilation, pass {@link ResourceFinder#EMPTY_RESOURCE_FINDER} as the <var>classFileFinder</var>.
+     * </p>
+     *
+     * @param resourceFinder          Special value {@link #FIND_NEXT_TO_SOURCE_FILE} means ".class file is next to
+     *                                its source file, <em>not</em> in the destination directory"
+     * @see #FIND_NEXT_TO_SOURCE_FILE
+     */
+    public abstract void
+    setClassFileFinder(@Nullable ResourceFinder resourceFinder);
+
+    public void
+    setCharacterEncoding(@Nullable String characterEncoding) {
+        this.setEncoding(characterEncoding == null ? null : Charset.forName(characterEncoding));
+    }
+
+    /**
+     * See {@link #compile(File[])}.
+     *
+     * @param sourceResources Contain the compilation units to compile
+     */
+    public abstract void
+    compile(Resource[] sourceResources) throws CompileException, IOException;
+
+    @SuppressWarnings("null") private void
+    updateDestinationDirectory() {
+
+        File dd = this.destinationDirectory;
+
+        this.setClassFileCreator(
+            dd == ICompiler.NO_DESTINATION_DIRECTORY
+            ? ICompiler.CREATE_NEXT_TO_SOURCE_FILE
+            : new DirectoryResourceCreator(dd)
+        );
+        this.setClassFileFinder(
+            this.rebuild
+            ? ResourceFinder.EMPTY_RESOURCE_FINDER
+            : dd == ICompiler.NO_DESTINATION_DIRECTORY
+            ? ICompiler.FIND_NEXT_TO_SOURCE_FILE
+            : new DirectoryResourceFinder(dd)
+        );
+    }
 }

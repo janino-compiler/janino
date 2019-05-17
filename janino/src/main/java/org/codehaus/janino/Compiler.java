@@ -45,16 +45,16 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
+import org.codehaus.commons.compiler.util.resource.FileResource;
+import org.codehaus.commons.compiler.util.resource.FileResourceCreator;
+import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceCreator;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.StringPattern;
-import org.codehaus.janino.util.resource.DirectoryResourceFinder;
-import org.codehaus.janino.util.resource.FileResource;
-import org.codehaus.janino.util.resource.FileResourceCreator;
-import org.codehaus.janino.util.resource.Resource;
-import org.codehaus.janino.util.resource.ResourceCreator;
-import org.codehaus.janino.util.resource.ResourceFinder;
 
 /**
  * JANINO implementation of {@link ICompiler}.
@@ -65,9 +65,9 @@ class Compiler extends AbstractCompiler {
     private static final Logger LOGGER = Logger.getLogger(Compiler.class.getName());
 
     private ResourceFinder            sourceFinder     = ResourceFinder.EMPTY_RESOURCE_FINDER;
-    @Nullable private ResourceFinder  classFileFinder  = AbstractCompiler.FIND_NEXT_TO_SOURCE_FILE;
+    @Nullable private ResourceFinder  classFileFinder  = ICompiler.FIND_NEXT_TO_SOURCE_FILE;
     private IClassLoader              iClassLoader     = new ClassLoaderIClassLoader();
-    @Nullable private ResourceCreator classFileCreator = AbstractCompiler.CREATE_NEXT_TO_SOURCE_FILE;
+    @Nullable private ResourceCreator classFileCreator = ICompiler.CREATE_NEXT_TO_SOURCE_FILE;
     @Nullable private Charset         encoding;
     private Benchmark                 benchmark = new Benchmark(false);
     private boolean                   debugSource;
@@ -124,7 +124,7 @@ class Compiler extends AbstractCompiler {
             rebuild
             ? ResourceFinder.EMPTY_RESOURCE_FINDER
             : destinationDirectory == null // Compiler.NO_DESTINATION_DIRECTORY
-            ? AbstractCompiler.FIND_NEXT_TO_SOURCE_FILE
+            ? ICompiler.FIND_NEXT_TO_SOURCE_FILE
             : new DirectoryResourceFinder(destinationDirectory)
         );
         this.setVerbose(verbose);
@@ -230,11 +230,6 @@ class Compiler extends AbstractCompiler {
         return this;
     }
 
-    /**
-     * See {@link #compile(File[])}.
-     *
-     * @param sourceResources Contain the compilation units to compile
-     */
     @Override public void
     compile(Resource[] sourceResources) throws CompileException, IOException {
 
@@ -383,7 +378,7 @@ class Compiler extends AbstractCompiler {
 
         // Determine where to create the class file.
         ResourceCreator rc;
-        if (this.classFileCreator != AbstractCompiler.CREATE_NEXT_TO_SOURCE_FILE) {
+        if (this.classFileCreator != ICompiler.CREATE_NEXT_TO_SOURCE_FILE) {
             rc = this.classFileCreator;
             assert rc != null;
         } else {
@@ -539,7 +534,7 @@ class Compiler extends AbstractCompiler {
             ResourceFinder cff = this.classFileFinder;
 
             Resource classFileResource;
-            if (cff != AbstractCompiler.FIND_NEXT_TO_SOURCE_FILE) {
+            if (cff != ICompiler.FIND_NEXT_TO_SOURCE_FILE) {
                 assert cff != null;
                 classFileResource = cff.findResource(
                     ClassFile.getClassFileResourceName(className)

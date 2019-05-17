@@ -24,41 +24,55 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.resource;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link Resource} is "something" that is typically found by a {@link
- * org.codehaus.janino.util.resource.ResourceFinder}, can be {@link #open()}ed for reading, and optionally has a {@link
- * #lastModified()} property.
+ * Finds a resource by name.
  * <p>
- *   There also exists a {@link org.codehaus.janino.util.resource.ResourceCreator} concept which opens a resource for
- *   writing, but that happens directly and not through an intermediate {@link Resource} object.
+ *   Notice that there is a symmetrical concept {@link org.codehaus.commons.compiler.util.resource.ResourceCreator}
+ *   that creates resources for writing.
  * </p>
  *
- * @see org.codehaus.janino.util.resource.ResourceFinder
- * @see org.codehaus.janino.util.resource.ResourceCreator
+ * @see org.codehaus.commons.compiler.util.resource.ResourceCreator
  */
-public
-interface Resource {
+public abstract
+class ResourceFinder {
 
     /**
-     * Opens the resource. The caller is responsible for closing the {@link java.io.InputStream}.
+     * Finds a resource by name and open it for reading.
+     *
+     * @param resourceName Designates the resource; typically structured by slashes ("/") like
+     *                     "{@code com/foo/pkg/Bar.class}"
+     * @return             {@code null} if the resource could not be found
+     * @throws IOException The resource was found, but there are problems opening it
      */
-    InputStream open() throws IOException;
+    @Nullable public final InputStream
+    findResourceAsStream(String resourceName) throws IOException {
+        Resource resource = this.findResource(resourceName);
+        if (resource == null) return null;
+        return resource.open();
+    }
 
     /**
-     * Returns a decorative "file name" that can be used for reporting errors and the like. It does not necessarily map
-     * to a file in the local file system!
+     * Finds a resource by name and return it as a {@link Resource} object.
+     *
+     * @param resourceName Designates the resource; typically structured by slashes ("/") like
+     *                     "{@code com/foo/pkg/Bar.class}"
+     * @return             {@code null} if the resource could not be found
      */
-    String getFileName();
+    @Nullable public abstract Resource
+    findResource(String resourceName);
 
     /**
-     * Returns the time of the last modification, in milliseconds since 1970, or {@code 0L} if the time of the last
-     * modification cannot be determined.
+     * This one's useful when a resource finder is required, but cannot be created for some reason.
      */
-    long lastModified();
+    public static final ResourceFinder EMPTY_RESOURCE_FINDER = new ResourceFinder() {
+        @Override @Nullable public Resource findResource(String resourceName) { return null;            }
+        @Override public String             toString()                        { return "invalid entry"; }
+    };
 }

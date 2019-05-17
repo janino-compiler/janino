@@ -24,25 +24,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.resource;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
- * Creates a resource in a given directory:
- * <pre>
- *     <em>destinationDirectory</em>/<em>resourceName</em>
- * </pre>
+ * Stores a stream of bytes in a named resource.
  */
-public
-class DirectoryResourceCreator extends FileResourceCreator {
-    private final File destinationDirectory;
+public abstract
+class FileResourceCreator implements ResourceCreator {
 
-    public
-    DirectoryResourceCreator(File destinationDirectory) { this.destinationDirectory = destinationDirectory; }
+    @Override public final OutputStream
+    createResource(String resourceName) throws IOException {
+        File file = this.getFile(resourceName);
 
-    @Override protected final File
-    getFile(String resourceName) {
-        return new File(this.destinationDirectory, resourceName.replace('/', File.separatorChar));
+        // Create directory for class file if it does not exist.
+        File dir = file.getParentFile();
+        if (dir != null && !dir.isDirectory()) {
+            if (!dir.mkdirs()) throw new IOException("Cannot create directory for class file \"" + file + "\"");
+        }
+
+        // Create the file.
+        return new FileOutputStream(file);
     }
+
+    @Override public final boolean
+    deleteResource(String resourceName) { return this.getFile(resourceName).delete(); }
+
+    /**
+     * @return The file into which the contents is written
+     */
+    protected abstract File getFile(String resourceName);
 }

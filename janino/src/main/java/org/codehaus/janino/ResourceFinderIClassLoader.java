@@ -29,15 +29,16 @@ package org.codehaus.janino;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.resource.Resource;
-import org.codehaus.janino.util.resource.ResourceFinder;
 
 
 /**
  * This {@link org.codehaus.janino.IClassLoader} loads IClasses through a a {@link
- * org.codehaus.janino.util.resource.ResourceFinder} that designates {@link org.codehaus.janino.util.ClassFile}s.
+ * org.codehaus.commons.compiler.util.resource.ResourceFinder} that designates {@link
+ * org.codehaus.janino.util.ClassFile}s.
  */
 public
 class ResourceFinderIClassLoader extends IClassLoader {

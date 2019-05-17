@@ -2,7 +2,8 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2018 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -23,18 +24,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.jdk.java9.java.lang.module;
+package org.codehaus.commons.compiler.util.resource;
 
-import java.io.IOException;
-import java.net.URI;
+import java.io.File;
 
-import org.codehaus.commons.compiler.jdk.java9.java.util.Optional;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleReference} interface.
+ * This class specializes the {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} for finding resources
+ * in {@link java.io.File}s.
+ * <p>
+ *   It finds {@link FileResource}s instead of simple {@link Resource}s.
+ * </p>
  */
-public
-interface ModuleReference {
-    Optional<URI> location();
-    ModuleReader  open() throws IOException;
+public abstract
+class FileResourceFinder extends ResourceFinder {
+
+    @Override @Nullable public final Resource
+    findResource(String resourceName) {
+        File file = this.findResourceAsFile(resourceName);
+        if (file == null) return null;
+        return new FileResource(file);
+    }
+
+    /**
+     * Converts a given resource resource name into a {@link File}.
+     */
+    @Nullable protected abstract File
+    findResourceAsFile(String resourceName);
 }

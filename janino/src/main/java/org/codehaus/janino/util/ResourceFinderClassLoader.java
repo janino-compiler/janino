@@ -30,14 +30,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.InternalCompilerException;
-import org.codehaus.janino.util.resource.Resource;
-import org.codehaus.janino.util.resource.ResourceFinder;
 
 
 /**
- * A {@link ClassLoader} that uses a {@link org.codehaus.janino.util.resource.ResourceFinder} to find ".class" files.
+ * A {@link ClassLoader} that uses a {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} to find
+ * ".class" files.
  */
 public
 class ResourceFinderClassLoader extends ClassLoader {

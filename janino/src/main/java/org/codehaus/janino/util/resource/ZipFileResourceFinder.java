@@ -31,10 +31,12 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link org.codehaus.janino.util.resource.ResourceFinder} that finds resources in a ZIP file.
+ * A {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that finds resources in a ZIP file.
  */
 public
 class ZipFileResourceFinder extends ResourceFinder {

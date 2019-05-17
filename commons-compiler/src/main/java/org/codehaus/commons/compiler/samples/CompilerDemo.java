@@ -32,7 +32,7 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.util.StringUtil;
 
-public
+public final
 class CompilerDemo {
 
     private

@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.resource;
 
 import java.io.File;
 import java.util.Arrays;

@@ -40,9 +40,9 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.codehaus.commons.compiler.jdk.java9.java.lang.module.ModuleFinder;
-import org.codehaus.commons.compiler.jdk.java9.java.lang.module.ModuleReference;
-import org.codehaus.commons.compiler.jdk.java9.java.util.function.Consumer;
+import org.codehaus.commons.compiler.java9.java.lang.module.ModuleFinder;
+import org.codehaus.commons.compiler.java9.java.lang.module.ModuleReference;
+import org.codehaus.commons.compiler.java9.java.util.function.Consumer;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**

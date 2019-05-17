@@ -29,6 +29,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
 public final
 class StringUtil {
 
@@ -64,4 +66,10 @@ class StringUtil {
         }
         return (File[]) l.toArray(new File[l.size()]);
     }
+
+    /**
+     * Same as {@link #parsePath(String)}, but returns {@code null} iff <em>s</em> {@code == null}.
+     */
+    @Nullable public static File[]
+    parseOptionalPath(@Nullable String s) { return s == null ? null : StringUtil.parsePath(s); }
 }

@@ -59,6 +59,8 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
+    private static final JavaCompiler SYSTEM_JAVA_COMPILER = JavaSourceClassLoader.getSystemJavaCompiler();
+
     private File[]             sourcePath = { new File(".") };
     @Nullable private String   optionalCharacterEncoding;
     private boolean            debuggingInfoLines;
@@ -66,7 +68,6 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private boolean            debuggingInfoSource;
     private Collection<String> compilerOptions = new ArrayList<String>();
 
-    private static final JavaCompiler compiler = JavaSourceClassLoader.getSystemJavaCompiler();
     @Nullable private JavaFileManager fileManager;
 
     /**
@@ -110,7 +111,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
         // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
         // CLASSPATH.
-        JavaFileManager jfm = JavaSourceClassLoader.compiler.getStandardFileManager(null, null, null);
+        JavaFileManager jfm = JavaSourceClassLoader.SYSTEM_JAVA_COMPILER.getStandardFileManager(null, null, null);
 
         // Wrap it so that the output files (in our case class files) are stored in memory rather
         // than in files.
@@ -258,7 +259,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         }
 
         // Run the compiler.
-        if (!JavaSourceClassLoader.compiler.getTask(
+        if (!JavaSourceClassLoader.SYSTEM_JAVA_COMPILER.getTask(
             null,                                      // out
             this.getJavaFileManager(),                 // fileManager
             new DiagnosticListener<JavaFileObject>() { // diagnosticListener

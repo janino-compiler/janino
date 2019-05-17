@@ -23,12 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.jdk.java9.java.util.function;
+package org.codehaus.commons.compiler.java9.java.lang.module;
+
+import java.io.IOException;
+import java.net.URI;
+
+import org.codehaus.commons.compiler.java9.java.util.Optional;
 
 /**
- * Pre-Java-9-compatible facade for Java 9's {@code java.util.function.Consumer} interface.
+ * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleReference} interface.
  */
 public
-interface Consumer<T> {
-    void accept(T t);
+interface ModuleReference {
+    Optional<URI> location();
+    ModuleReader  open() throws IOException;
 }

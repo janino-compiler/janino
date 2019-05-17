@@ -34,22 +34,23 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.commons.compiler.util.resource.DirectoryResourceCreator;
+import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
+import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceCreator;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.resource.DirectoryResourceCreator;
-import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
-import org.codehaus.janino.util.resource.Resource;
-import org.codehaus.janino.util.resource.ResourceCreator;
-import org.codehaus.janino.util.resource.ResourceFinder;
 
 /**
  * A {@link org.codehaus.janino.JavaSourceClassLoader} that uses a resource storage provided by the application to
  * cache compiled classes and thus saving unnecessary recompilations.
  * <p>
  *   The application provides access to the resource storage through a pair of a {@link
- *   org.codehaus.janino.util.resource.ResourceFinder} and a {@link org.codehaus.janino.util.resource.ResourceCreator}
- *   (see {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)}.
+ *   org.codehaus.commons.compiler.util.resource.ResourceFinder} and a {@link
+ *   org.codehaus.commons.compiler.util.resource.ResourceCreator} (see {@link
+ *   #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)}.
  * </p>
  * <p>
  *   See {@link org.codehaus.janino.JavaSourceClassLoader#main(String[])} for an example how to use this class.
@@ -100,8 +101,8 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * classFileCacheResourceCreator} only after the {@link OutputStream} is closed.
      * <p>
      *   In order to make the caching scheme work, both the <var>classFileCacheResourceFinder</var> and the {@code
-     *   sourceFinder} must support the {@link org.codehaus.janino.util.resource.Resource#lastModified()} method, so
-     *   that the modification time of the source and the class files can be compared.
+     *   sourceFinder} must support the {@link org.codehaus.commons.compiler.util.resource.Resource#lastModified()}
+     *   method, so that the modification time of the source and the class files can be compared.
      * </p>
      *
      * @param parentClassLoader             Attempt to load classes through this one before looking for source files

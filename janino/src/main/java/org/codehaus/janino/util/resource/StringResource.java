@@ -29,6 +29,8 @@ package org.codehaus.janino.util.resource;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import org.codehaus.commons.compiler.util.resource.Resource;
+
 /**
  * A resource who's content is a {@link String}.
  */

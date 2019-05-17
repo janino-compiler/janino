@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2013 Arno Unkrig. All rights reserved.
  * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,27 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
-
-import java.util.Iterator;
-
-import org.codehaus.commons.compiler.util.resource.ResourceFinder;
-import org.codehaus.janino.util.iterator.IteratorCollection;
-
 /**
- * A {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that examines a set of {@link
- * org.codehaus.commons.compiler.util.resource.ResourceFinder}s lazily as it searches for resources.
- *
- * @see IteratorCollection
+ * A set of (rudimentary) proxies for Java-9+ classes that also compile for Java 6-8.
  */
-public
-class LazyMultiResourceFinder extends MultiResourceFinder {
+@NotNullByDefault
+package org.codehaus.commons.compiler.java9.java.lang.module;
 
-    /**
-     * @param resourceFinders delegate {@link ResourceFinder}s
-     */
-    public
-    LazyMultiResourceFinder(Iterator<ResourceFinder> resourceFinders) {
-        super(new IteratorCollection<ResourceFinder>(resourceFinders));
-    }
-}
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
+

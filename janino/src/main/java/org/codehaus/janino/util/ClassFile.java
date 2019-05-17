@@ -66,12 +66,8 @@ class ClassFile implements Annotatable {
      */
     public static
     class ClassFileException extends RuntimeException {
-
-        public
-        ClassFileException(String message) { super(message); }
-
-        public
-        ClassFileException(String message, Throwable cause) { super(message, cause); }
+        public ClassFileException(String message)                  { super(message);        }
+        public ClassFileException(String message, Throwable cause) { super(message, cause); }
     }
 
     /**
@@ -1498,7 +1494,7 @@ class ClassFile implements Annotatable {
      * See JVMS7 4.4.7.
      */
     public static
-    class ConstantUtf8Info extends ConstantPoolInfo {
+    class ConstantUtf8Info extends ConstantValuePoolInfo {
 
         private final String s;
 
@@ -1507,6 +1503,10 @@ class ClassFile implements Annotatable {
             assert s != null;
             this.s = s;
         }
+
+        // Implement ConstantValuePoolInfo.
+
+        @Override public Object getValue(ClassFile classFile) { return this.s; }
 
         /**
          * @return The string contained in this {@link ConstantUtf8Info}
@@ -2882,7 +2882,7 @@ class ClassFile implements Annotatable {
                     frameType == 247 ? new SameLocals1StackItemFrameExtended(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfo(dis)) :
                     frameType <= 250 ? new ChopFrame(dis.readUnsignedShort(), 251 - frameType) :
                     frameType == 251 ? new SameFrameExtended(dis.readUnsignedShort()) :
-                    frameType <= 254 ? new AppendFrame(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort())) :
+                    frameType <= 254 ? new AppendFrame(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfos(dis, frameType - 251)) :
                     frameType == 255 ? new FullFrame(
                         dis.readUnsignedShort(),                                                        // offsetDelta
                         StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort()), // locals

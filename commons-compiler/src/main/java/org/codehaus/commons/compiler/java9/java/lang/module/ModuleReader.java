@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.jdk.java9.java.lang.module;
+package org.codehaus.commons.compiler.java9.java.lang.module;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.codehaus.commons.compiler.jdk.java9.java.util.Stream;
+import org.codehaus.commons.compiler.java9.java.util.Stream;
 
 /**
  * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleReader} class.

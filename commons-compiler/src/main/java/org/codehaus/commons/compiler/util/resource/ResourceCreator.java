@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.resource;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -32,11 +32,11 @@ import java.io.OutputStream;
 /**
  * Opens a resource, characterized by a name, for writing.
  * <p>
- *   There also exists a concept {@link org.codehaus.janino.util.resource.ResourceFinder} that finds {@link
- *   org.codehaus.janino.util.resource.Resource}s for reading.
+ *   There also exists a concept {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that finds {@link
+ *   org.codehaus.commons.compiler.util.resource.janino.util.resource.Resource}s for reading.
  * </p>
  *
- * @see org.codehaus.janino.util.resource.ResourceFinder
+ * @see org.codehaus.commons.compiler.util.resource.ResourceFinder
  */
 public
 interface ResourceCreator {

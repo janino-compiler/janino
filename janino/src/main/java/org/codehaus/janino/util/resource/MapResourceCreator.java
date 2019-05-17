@@ -32,6 +32,8 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.commons.compiler.util.resource.ResourceCreator;
+
 /**
  * Creates resources as byte arrays in a delegate {@link java.util.Map}.
  */

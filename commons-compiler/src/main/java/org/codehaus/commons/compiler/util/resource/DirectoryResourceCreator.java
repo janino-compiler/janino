@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2013 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
  * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,11 +24,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package org.codehaus.commons.compiler.util.resource;
+
+import java.io.File;
+
 /**
- * A set of (rudimentary) proxies for Java-9+ classes that also compile for Java 6-8.
+ * Creates a resource in a given directory:
+ * <pre>
+ *     <em>destinationDirectory</em>/<em>resourceName</em>
+ * </pre>
  */
-@NotNullByDefault
-package org.codehaus.commons.compiler.jdk.java9.java.lang.module;
+public
+class DirectoryResourceCreator extends FileResourceCreator {
+    private final File destinationDirectory;
 
-import org.codehaus.commons.nullanalysis.NotNullByDefault;
+    public
+    DirectoryResourceCreator(File destinationDirectory) { this.destinationDirectory = destinationDirectory; }
 
+    @Override protected final File
+    getFile(String resourceName) {
+        return new File(this.destinationDirectory, resourceName.replace('/', File.separatorChar));
+    }
+}

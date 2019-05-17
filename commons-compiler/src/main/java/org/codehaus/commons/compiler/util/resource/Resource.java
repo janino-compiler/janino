@@ -24,38 +24,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.resource;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
+
 
 /**
- * Stores a stream of bytes in a named resource.
+ * A {@link Resource} is "something" that is typically found by a {@link
+ * org.codehaus.commons.compiler.util.resource.ResourceFinder}, can be {@link #open()}ed for reading, and optionally
+ * has a {@link #lastModified()} property.
+ * <p>
+ *   There also exists a {@link org.codehaus.commons.compiler.util.resource.ResourceCreator} concept which opens a
+ *   resource for writing, but that happens directly and not through an intermediate {@link Resource} object.
+ * </p>
+ *
+ * @see org.codehaus.commons.compiler.util.resource.ResourceFinder
+ * @see org.codehaus.commons.compiler.util.resource.ResourceCreator
  */
-public abstract
-class FileResourceCreator implements ResourceCreator {
-
-    @Override public final OutputStream
-    createResource(String resourceName) throws IOException {
-        File file = this.getFile(resourceName);
-
-        // Create directory for class file if it does not exist.
-        File dir = file.getParentFile();
-        if (dir != null && !dir.isDirectory()) {
-            if (!dir.mkdirs()) throw new IOException("Cannot create directory for class file \"" + file + "\"");
-        }
-
-        // Create the file.
-        return new FileOutputStream(file);
-    }
-
-    @Override public final boolean
-    deleteResource(String resourceName) { return this.getFile(resourceName).delete(); }
+public
+interface Resource {
 
     /**
-     * @return The file into which the contents is written
+     * Opens the resource. The caller is responsible for closing the {@link java.io.InputStream}.
      */
-    protected abstract File getFile(String resourceName);
+    InputStream open() throws IOException;
+
+    /**
+     * Returns a decorative "file name" that can be used for reporting errors and the like. It does not necessarily map
+     * to a file in the local file system!
+     */
+    String getFileName();
+
+    /**
+     * Returns the time of the last modification, in milliseconds since 1970, or {@code 0L} if the time of the last
+     * modification cannot be determined.
+     */
+    long lastModified();
 }

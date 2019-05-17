@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.zip.ZipFile;
 
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.iterator.MultiDimensionalIterator;
 import org.codehaus.janino.util.iterator.TransformingIterator;

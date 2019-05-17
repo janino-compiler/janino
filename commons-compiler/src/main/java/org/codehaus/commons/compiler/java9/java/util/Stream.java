@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.jdk.java9.java.util;
+package org.codehaus.commons.compiler.java9.java.util;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import org.codehaus.commons.compiler.jdk.java9.java.util.function.Consumer;
+import org.codehaus.commons.compiler.java9.java.util.function.Consumer;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
 /**

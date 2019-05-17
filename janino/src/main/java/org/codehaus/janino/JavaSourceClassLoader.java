@@ -39,11 +39,11 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.util.Disassembler;
+import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.resource.DirectoryResourceFinder;
 import org.codehaus.janino.util.resource.PathResourceFinder;
-import org.codehaus.janino.util.resource.ResourceFinder;
 
 /**
  * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s, does not load byte code, but reads Java source code

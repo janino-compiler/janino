@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2013 Arno Unkrig. All rights reserved.
  * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,31 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 /**
- * Representation of a resource that is a {@link java.io.File}.
+ * A set of (rudimentary) proxies for Java-9+ classes that also compile for Java 6-8.
  */
-public
-class FileResource implements Resource {
-    public FileResource(File file) { this.file = file; }
+@NotNullByDefault
+package org.codehaus.commons.compiler.java9.java.util;
 
-    // Implement "Resource".
-    @Override public final String      getFileName()             { return this.file.toString();           }
-    @Override public final InputStream open() throws IOException { return new FileInputStream(this.file); }
-    @Override public final long        lastModified()            { return this.file.lastModified();       }
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
-    /**
-     * @return The file containing the contents of this resource
-     */
-    public final File getFile() { return this.file; }
-
-    @Override public final String toString() { return this.getFileName(); }
-
-    private final File file;
-}

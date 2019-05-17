@@ -38,10 +38,10 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.resource.Resource;
-import org.codehaus.janino.util.resource.ResourceFinder;
 
 
 /**
