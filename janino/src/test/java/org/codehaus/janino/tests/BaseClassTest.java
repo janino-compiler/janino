@@ -28,6 +28,8 @@ package org.codehaus.janino.tests;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.junit.Test;
 
+import junit.framework.Assert;
+
 public
 class BaseClassTest {
 
@@ -52,6 +54,6 @@ class BaseClassTest {
 
         Object result = ee.getMethod().invoke(instance);
 
-        System.out.println("result=" + result);
+        Assert.assertEquals(15, result);
     }
 }
