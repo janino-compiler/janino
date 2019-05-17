@@ -28,10 +28,12 @@ package org.codehaus.janino;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import org.apache.tools.ant.taskdefs.compilers.DefaultCompilerAdapter;
 import org.apache.tools.ant.types.Path;
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -81,10 +83,10 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
         File[] sourceFiles = this.compileList;
 
         // Determine output directory.
-        File destinationDirectory = this.destDir == null ? Compiler.NO_DESTINATION_DIRECTORY : this.destDir;
+        File destinationDirectory = this.destDir;
 
         // Determine the source path.
-        @Nullable File[] optionalSourcePath = AntCompilerAdapter.pathToFiles(
+        File[] sourcePath = AntCompilerAdapter.pathToFiles(
             this.compileSourcepath != null
             ? this.compileSourcepath
             : this.src
@@ -100,7 +102,7 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
         @Nullable File[] optionalBootClassPath = AntCompilerAdapter.pathToFiles(this.bootclasspath);
 
         // Determine the encoding.
-        @Nullable String optionalCharacterEncoding = this.encoding;
+        @Nullable Charset encoding2 = Charset.forName(this.encoding);
 
         // Whether to use verbose output.
         boolean verbose = this.verbose;
@@ -118,31 +120,27 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
                 debugLines  = true;
                 debugVars   = false;
             } else {
-                debugSource = false;
-                debugLines  = false;
-                debugVars   = false;
-                if (debugLevel.indexOf("source") != -1) debugSource = true;
-                if (debugLevel.indexOf("lines") != -1)  debugLines = true;
-                if (debugLevel.indexOf("vars") != -1)   debugVars = true;
+                debugSource = debugLevel.contains("source");
+                debugLines  = debugLevel.contains("lines");
+                debugVars   = debugLevel.contains("vars");
             }
         }
 
         // Compile all source files.
         try {
-            new Compiler(
-                optionalSourcePath,
-                classPath,
-                optionalExtDirs,
-                optionalBootClassPath,
-                destinationDirectory,
-                optionalCharacterEncoding,
-                verbose,
-                debugSource,
-                debugLines,
-                debugVars,
-                Compiler.DEFAULT_WARNING_HANDLE_PATTERNS,
-                false                        // rebuild
-            ).compile(sourceFiles);
+            ICompiler compiler = new Compiler();
+            compiler.setSourcePath(sourcePath);
+            compiler.setClassPath(classPath);
+            compiler.setExtensionDirectories(optionalExtDirs);
+            compiler.setBootClassPath(optionalBootClassPath);
+            compiler.setDestinationDirectory(destinationDirectory);
+            compiler.setEncoding(encoding2);
+            compiler.setVerbose(verbose);
+            compiler.setDebugSource(debugSource);
+            compiler.setDebugLines(debugLines);
+            compiler.setDebugVars(debugVars);
+
+            compiler.compile(sourceFiles);
         } catch (CompileException e) {
             System.out.println(e.getMessage());
             return false;
@@ -158,9 +156,9 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
      *
      * @return The converted path, or {@code null} if {@code path} is {@code null}
      */
-    @Nullable private static File[]
+    private static File[]
     pathToFiles(@Nullable Path path) {
-        if (path == null) return null;
+        if (path == null) return new File[0];
 
         String[] fileNames = path.list();
         File[]   files     = new File[fileNames.length];

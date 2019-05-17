@@ -542,6 +542,7 @@ class UnitCompiler {
             IMethod[] ms = iClass.getIMethods();
             for (IMethod base : ms) {
                 if (base.isAbstract()) {
+                    if ("<clinit>".equals(base.getName())) continue;
                     IMethod override = iClass.findIMethod(base.getName(), base.getParameterTypes());
                     if (
                         override == null           // It wasn't overridden
@@ -5514,7 +5515,8 @@ class UnitCompiler {
             acd                      // contextScope
         );
 
-        Location loc = naci.getLocation();
+        Location loc                   = naci.getLocation();
+        Rvalue   optionalQualification = naci.optionalQualification;
 
 
         // Determine the formal parameters of the anonymous constructor.
@@ -5524,11 +5526,11 @@ class UnitCompiler {
             List<FormalParameter> l = new ArrayList<FormalParameter>();
 
             // Pass the enclosing instance of the base class as parameter #1.
-            if (naci.optionalQualification != null) l.add(new FormalParameter(
-                loc,                                                           // location
-                UnitCompiler.accessModifiers(loc, "final"),                    // modifiers
-                new SimpleType(loc, this.getType(naci.optionalQualification)), // type
-                "this$base"                                                    // name
+            if (optionalQualification != null) l.add(new FormalParameter(
+                loc,                                                      // location
+                UnitCompiler.accessModifiers(loc, "final"),               // modifiers
+                new SimpleType(loc, this.getType(optionalQualification)), // type
+                "this$base"                                               // name
             ));
             for (int i = 0; i < scpts.length; ++i) l.add(new FormalParameter(
                 loc,                                        // location
@@ -5554,7 +5556,7 @@ class UnitCompiler {
         // The anonymous constructor merely invokes the constructor of its superclass.
         int    j = 0;
         Rvalue optionalQualificationAccess;
-        if (naci.optionalQualification == null) {
+        if (optionalQualification == null) {
             optionalQualificationAccess = null;
         } else
         {
@@ -5592,11 +5594,11 @@ class UnitCompiler {
             // Invoke the anonymous constructor.
             this.writeOpcode(naci, Opcode.DUP);
             Rvalue[] arguments2;
-            if (naci.optionalQualification == null) {
+            if (optionalQualification == null) {
                 arguments2 = naci.arguments;
             } else {
                 arguments2    = new Rvalue[naci.arguments.length + 1];
-                arguments2[0] = naci.optionalQualification;
+                arguments2[0] = optionalQualification;
                 System.arraycopy(naci.arguments, 0, arguments2, 1, naci.arguments.length);
             }
 

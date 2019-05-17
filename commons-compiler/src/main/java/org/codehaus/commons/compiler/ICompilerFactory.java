@@ -83,6 +83,12 @@ interface ICompilerFactory {
     ISimpleCompiler newSimpleCompiler();
 
     /**
+     * @throws UnsupportedOperationException The underlying implementation does not implement an {@link ICompiler}
+     * @see ISimpleCompiler
+     */
+    ICompiler newCompiler();
+
+    /**
      * @throws UnsupportedOperationException The underlying implementation does not implement an {@link
      *                                       AbstractJavaSourceClassLoader}
      * @see AbstractJavaSourceClassLoader

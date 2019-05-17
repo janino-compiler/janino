@@ -28,12 +28,11 @@ package org.codehaus.janino.util.resource;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.zip.ZipFile;
 
+import org.codehaus.commons.compiler.util.StringUtil;
 import org.codehaus.janino.util.iterator.TransformingIterator;
 
 
@@ -65,7 +64,7 @@ class PathResourceFinder extends LazyMultiResourceFinder {
      * @param path A java-like path, i.e. a "path separator"-separated list of entries
      */
     public
-    PathResourceFinder(String path) { this(PathResourceFinder.parsePath(path)); }
+    PathResourceFinder(String path) { this(StringUtil.parsePath(path)); }
 
     private static Iterator<ResourceFinder>
     createIterator(final Iterator<File> entries) {
@@ -75,38 +74,6 @@ class PathResourceFinder extends LazyMultiResourceFinder {
             @Override protected ResourceFinder
             transform(Object o) { return PathResourceFinder.createResourceFinder((File) o); }
         };
-    }
-
-    /**
-     * Breaks a given string up by the system-dependent path-separator character (on UNIX systems,
-     * this character is ':'; on Microsoft Windows systems it is ';'). Empty components are
-     * ignored.
-     * <p>
-     *   UNIX Examples:
-     * </p>
-     * <dl style="border: 1px solid; padding: 6px">
-     *   <dt>A:B:C          <dd>A, B, C
-     *   <dt>::B:           <dd>B
-     *   <dt>:A             <dd>A
-     *   <dt>(Empty string) <dd>(Zero components)
-     * </dl>
-     *
-     * @see File#pathSeparatorChar
-     */
-    public static File[]
-    parsePath(String s) {
-        int        from = 0;
-        List<File> l    = new ArrayList<File>();
-        for (;;) {
-            int to = s.indexOf(File.pathSeparatorChar, from);
-            if (to == -1) {
-                if (from != s.length()) l.add(new File(s.substring(from)));
-                break;
-            }
-            if (to != from) l.add(new File(s.substring(from, to)));
-            from = to + 1;
-        }
-        return (File[]) l.toArray(new File[l.size()]);
     }
 
     /**

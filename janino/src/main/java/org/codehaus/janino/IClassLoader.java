@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.util.StringUtil;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IMethod;
@@ -118,6 +119,9 @@ class IClassLoader {
     IClassLoader(@Nullable IClassLoader parentIClassLoader) {
         this.parentIClassLoader = parentIClassLoader;
     }
+
+    public IClassLoader
+    getParentIClassLoader() { return this.parentIClassLoader; }
 
     /**
      * This method must be called by the constructor of the <em>derived</em> class. (The reason being is that this
@@ -273,7 +277,8 @@ class IClassLoader {
         }
 
         // Ask parent IClassLoader first.
-        if (this.parentIClassLoader != null) {
+        @SuppressWarnings("null") boolean hasParentIClassLoader = this.parentIClassLoader != null;
+        if (hasParentIClassLoader) {
             IClass res = this.parentIClassLoader.loadIClass(fieldDescriptor);
             if (res != null) return res;
         }
@@ -415,12 +420,12 @@ class IClassLoader {
     ) {
         ResourceFinder bootClassPathResourceFinder = new PathResourceFinder(
             optionalBootClassPath == null
-            ? PathResourceFinder.parsePath(System.getProperty("sun.boot.class.path"))
+            ? StringUtil.parsePath(System.getProperty("sun.boot.class.path"))
             : optionalBootClassPath
         );
         ResourceFinder extensionDirectoriesResourceFinder = new JarDirectoriesResourceFinder(
             optionalExtDirs == null
-            ? PathResourceFinder.parsePath(System.getProperty("java.ext.dirs"))
+            ? StringUtil.parsePath(System.getProperty("java.ext.dirs"))
             : optionalExtDirs
         );
         final ResourceFinder classPathResourceFinder = new PathResourceFinder(classPath);
@@ -446,7 +451,7 @@ class IClassLoader {
         return icl;
     }
 
-    @Nullable private final IClassLoader             parentIClassLoader;
+    private final IClassLoader                       parentIClassLoader;
     private final Map<String /*descriptor*/, IClass> loadedIClasses     = new HashMap<String, IClass>();
     private final Set<String /*descriptor*/>         unloadableIClasses = new HashSet<String>();
 }

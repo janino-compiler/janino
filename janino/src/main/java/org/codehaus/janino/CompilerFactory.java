@@ -32,6 +32,7 @@ import java.security.PrivilegedAction;
 import org.codehaus.commons.compiler.AbstractCompilerFactory;
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
@@ -63,6 +64,9 @@ class CompilerFactory extends AbstractCompilerFactory {
 
     @Override public ISimpleCompiler
     newSimpleCompiler() { return new SimpleCompiler(); }
+
+    @Override public ICompiler
+    newCompiler() { return new Compiler(); }
 
     @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader() {
