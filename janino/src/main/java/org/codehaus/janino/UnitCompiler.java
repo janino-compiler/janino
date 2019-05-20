@@ -4772,13 +4772,27 @@ class UnitCompiler {
         } else
         if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
 
-            // JLS7 15.25, list 1, bullet 3: "b ? null : ReferenceType => ReferenceType"
+            // JLS7 15.25, list 1, bullet 3: "b ? null : String => String"
             expressionType = rhsType;
+        } else
+        if (this.getConstantValue(ce.mhs) == null && this.isBoxingConvertible(rhsType) != null) {
+
+            // Undocumented JAVAC feature: "b ? null : 7 => Integer"
+            expressionType = this.isBoxingConvertible(rhsType);
+            assert expressionType != null;
+            this.boxingConversion(ce.rhs, rhsType, expressionType);
         } else
         if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
 
-            // JLS7 15.25, list 1, bullet 3: "b ? ReferenceType : null => ReferenceType"
+            // JLS7 15.25, list 1, bullet 3: "b ? String : null => String"
             expressionType = mhsType;
+        } else
+        if (this.isBoxingConvertible(mhsType) != null && this.getConstantValue(ce.rhs) == null) {
+
+            // Undocumented JAVAC feature: "b ? 7 : null => Integer"
+            expressionType = this.isBoxingConvertible(mhsType);
+            assert expressionType != null;
+            this.boxingConversion(ce.mhs, mhsType, expressionType, mhsConvertInserter);
         } else
         if (ce.mhs.constantValue == null && rhsType.isPrimitive()) {
             expressionType = this.isBoxingConvertible(rhsType);
@@ -6718,30 +6732,12 @@ class UnitCompiler {
             return this.iClassLoader.TYPE_java_lang_Object;
         }
 
-        BlockStatement   scopeBlockStatement   = null;
-        TypeDeclaration  scopeTypeDeclaration  = null;
-        MethodDeclarator scopeMethodDeclarator = null;
-        CompilationUnit  scopeCompilationUnit;
-        for (Scope s = scope;; s = s.getEnclosingScope()) {
-            if (s instanceof BlockStatement && scopeBlockStatement == null) {
-                scopeBlockStatement = (BlockStatement) s;
-            }
-            if (s instanceof TypeDeclaration && scopeTypeDeclaration == null) {
-                scopeTypeDeclaration = (TypeDeclaration) s;
-            }
-            if (s instanceof MethodDeclarator && scopeMethodDeclarator == null) {
-                scopeMethodDeclarator = (MethodDeclarator) s;
-            }
-            if (s instanceof CompilationUnit) {
-                scopeCompilationUnit = (CompilationUnit) s;
-                break;
-            }
-        }
-
         // Method declaration type parameter?
-        if (scopeMethodDeclarator != null) {
-            TypeParameter[]
-            optionalTypeParameters = scopeMethodDeclarator.getOptionalTypeParameters();
+        for (Scope s = scope; !(s instanceof CompilationUnit); s = s.getEnclosingScope()) {
+            if (!(s instanceof MethodDeclarator)) continue;
+            MethodDeclarator md = (MethodDeclarator) s;
+
+            TypeParameter[] optionalTypeParameters = md.getOptionalTypeParameters();
             if (optionalTypeParameters != null) {
                 for (TypeParameter tp : optionalTypeParameters) {
                     if (tp.name.equals(simpleTypeName)) {
@@ -6766,9 +6762,11 @@ class UnitCompiler {
         }
 
         // Type declaration type parameter?
-        if (scopeTypeDeclaration instanceof NamedTypeDeclaration) {
-            TypeParameter[]
-            optionalTypeParameters = ((NamedTypeDeclaration) scopeTypeDeclaration).getOptionalTypeParameters();
+        for (Scope s = scope; !(s instanceof CompilationUnit); s = s.getEnclosingScope()) {
+            if (!(s instanceof NamedTypeDeclaration)) continue;
+            NamedTypeDeclaration ntd = (NamedTypeDeclaration) s;
+
+            TypeParameter[] optionalTypeParameters = ntd.getOptionalTypeParameters();
             if (optionalTypeParameters != null) {
                 for (TypeParameter tp : optionalTypeParameters) {
                     if (tp.name.equals(simpleTypeName)) {
@@ -6798,20 +6796,18 @@ class UnitCompiler {
         }
 
         // 6.5.5.1.2 Member type.
-        if (scopeTypeDeclaration != null) { // If enclosed by another type declaration...
-            for (
-                Scope s = scopeTypeDeclaration;
-                !(s instanceof CompilationUnit);
-                s = s.getEnclosingScope()
-            ) {
-                if (s instanceof TypeDeclaration) {
-                    IClass mt = this.findMemberType(
-                        this.resolve((AbstractTypeDeclaration) s),
-                        simpleTypeName,
-                        location
-                    );
-                    if (mt != null) return mt;
-                }
+        for (
+            Scope s = scope;
+            !(s instanceof CompilationUnit);
+            s = s.getEnclosingScope()
+        ) {
+            if (s instanceof TypeDeclaration) {
+                IClass mt = this.findMemberType(
+                    this.resolve((AbstractTypeDeclaration) s),
+                    simpleTypeName,
+                    location
+                );
+                if (mt != null) return mt;
             }
         }
 
@@ -6820,6 +6816,14 @@ class UnitCompiler {
             IClass importedClass = this.importSingleType(simpleTypeName, location);
             if (importedClass != null) return importedClass;
         }
+
+      CompilationUnit  scopeCompilationUnit;
+      for (Scope s = scope;; s = s.getEnclosingScope()) {
+          if (s instanceof CompilationUnit) {
+              scopeCompilationUnit = (CompilationUnit) s;
+              break;
+          }
+      }
 
         // 6.5.5.1.4b Type declared in same compilation unit.
         {
@@ -6902,8 +6906,15 @@ class UnitCompiler {
         }
 
         // Type argument of the enclosing anonymous class declaration?
-        if (scopeTypeDeclaration instanceof AnonymousClassDeclaration) {
-            Type bt = ((AnonymousClassDeclaration) scopeTypeDeclaration).baseType;
+        for (
+            Scope s = scope;
+            !(s instanceof CompilationUnit);
+            s = s.getEnclosingScope()
+        ) {
+            if (!(s instanceof AnonymousClassDeclaration)) continue;
+            AnonymousClassDeclaration acd = (AnonymousClassDeclaration) s;
+
+            Type bt = acd.baseType;
             if (bt instanceof ReferenceType) {
                 TypeArgument[] otas = ((ReferenceType) bt).optionalTypeArguments;
                 if (otas != null) {
@@ -7028,15 +7039,17 @@ class UnitCompiler {
             // JLS7 15.25, list 1, bullet 2: "b ? int : Integer => int"
             return mhsType;
         } else
-        if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
+        if (this.getConstantValue(ce.mhs) == null) {
 
             // JLS7 15.25, list 1, bullet 3: "b ? null : ReferenceType => ReferenceType"
-            return rhsType;
+            // JAVAC also converts "b ? null : int" to "Integer".
+            return (IClass) Objects.or(this.isBoxingConvertible(rhsType), rhsType);
         } else
-        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
+        if (this.getConstantValue(ce.rhs) == null) {
 
             // JLS7 15.25, list 1, bullet 3: "b ? ReferenceType : null => ReferenceType"
-            return mhsType;
+            // JAVAC also converts "b ? int : null" to "Integer".
+            return (IClass) Objects.or(this.isBoxingConvertible(mhsType), mhsType);
         } else
         if (this.isConvertibleToPrimitiveNumeric(mhsType) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
 
@@ -11593,6 +11606,21 @@ class UnitCompiler {
             return true;
         }
         return false;
+    }
+
+    private void
+    boxingConversion(Locatable locatable, IClass sourceType, IClass targetType, @Nullable Inserter optionalInserter)
+    throws CompileException {
+        if (optionalInserter == null) {
+            this.boxingConversion(locatable, sourceType, targetType);
+        } else {
+            this.getCodeContext().pushInserter(optionalInserter);
+            try {
+                this.boxingConversion(locatable, sourceType, targetType);
+            } finally {
+                this.getCodeContext().popInserter();
+            }
+        }
     }
 
     /**

@@ -1028,6 +1028,16 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         s.getClassLoader().loadClass("pkg.D");
     }
 
+    /**
+     * <a href="https://github.com/janino-compiler/janino/issues/90">Issue #90: "Incompatible expression types" or
+     * verification errors when using ternary expressions with null in one branch</a>
+     */
+    @Test public void
+    testIssue90() throws Exception {
+        this.assertExpressionEvaluatesTrue("1 == (false ? null : 1)");
+        this.assertScriptExecutable("boolean cond = true; Integer result = cond ? null : 1;");
+    }
+
     // SUPPRESS CHECKSTYLE Javadoc:2
     public interface A           { A           theFirstMethod();                           }
     public interface B extends A { @Override B theFirstMethod(); Object theSecondMethod(); }
