@@ -241,6 +241,9 @@ class Java {
             accept(Visitor.ImportVisitor<R, EX> visitor) throws EX {
                 return visitor.visitSingleStaticImportDeclaration(this);
             }
+
+            @Override public String
+            toString() { return "import static " + Java.join(this.identifiers, ".") + ";"; }
         }
 
         /**
@@ -267,6 +270,9 @@ class Java {
             accept(Visitor.ImportVisitor<R, EX> visitor) throws EX {
                 return visitor.visitStaticImportOnDemandDeclaration(this);
             }
+
+            @Override public String
+            toString() { return "import static " + Java.join(this.identifiers, ".") + ".*;"; }
         }
 
         /**
