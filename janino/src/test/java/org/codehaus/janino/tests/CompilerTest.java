@@ -138,10 +138,10 @@ class CompilerTest {
 
         ClassLoader bootstrapClassLoader = ICookable.BOOT_CLASS_LOADER;
         File[]      sourceFiles          = {
-            new File(CompilerTest.JANINO_SRC + "/org/codehaus/janino/Compiler.java"),
+            new File(CompilerTest.JANINO_SRC           + "/org/codehaus/janino/Compiler.java"),
             new File(CompilerTest.COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),
-            new File(CompilerTest.JANINO_SRC + "/org/codehaus/janino/ClassLoaderIClassLoader.java"),
-            new File(CompilerTest.JANINO_SRC + "/org/codehaus/janino/util/resource/MapResourceCreator.java"),
+            new File(CompilerTest.JANINO_SRC           + "/org/codehaus/janino/ClassLoaderIClassLoader.java"),
+            new File(CompilerTest.JANINO_SRC           + "/org/codehaus/janino/util/resource/MapResourceCreator.java"),
         };
         ResourceFinder sourceFinder = new MultiResourceFinder(Arrays.asList(new ResourceFinder[] {
             new DirectoryResourceFinder(new File(CompilerTest.JANINO_SRC)),
@@ -296,6 +296,46 @@ class CompilerTest {
         for (Map.Entry<String, byte[]> me : classFileMap1.entrySet()) {
             Assert.assertTrue(Arrays.equals(me.getValue(), classFileMap3.get(me.getKey())));
         }
+    }
+
+    @Test public void
+    testTypeBug() throws Exception {
+
+        ClassLoader bootstrapClassLoader = ICookable.BOOT_CLASS_LOADER;
+        File[]      sourceFiles          = {
+            new File(CompilerTest.COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/java9/java/util/Stream.java"),
+//            new File(CompilerTest.JANINO_SRC           + "/org/codehaus/janino/Compiler.java"),
+//            new File(CompilerTest.COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),
+//            new File(CompilerTest.JANINO_SRC           + "/org/codehaus/janino/ClassLoaderIClassLoader.java"),
+//            new File(CompilerTest.JANINO_SRC           + "/org/codehaus/janino/util/resource/MapResourceCreator.java"),
+        };
+        ResourceFinder sourceFinder = new MultiResourceFinder(Arrays.asList(new ResourceFinder[] {
+            new DirectoryResourceFinder(new File(CompilerTest.JANINO_SRC)),
+            new DirectoryResourceFinder(new File(CompilerTest.COMMONS_COMPILER_SRC)),
+        }));
+
+        // --------------------
+
+        Benchmark b = new Benchmark(true);
+        b.beginReporting("Compile Janino from scratch");
+        MapResourceCreator classFileResources1 = new MapResourceCreator();
+        {
+            Compiler c = new Compiler();
+            c.setSourceFinder(sourceFinder);
+            c.setIClassLoader(new ClassLoaderIClassLoader(bootstrapClassLoader));
+            c.setClassFileCreator(classFileResources1);
+            c.setCompileErrorHandler(new ErrorHandler() {
+
+                @Override public void
+                handleError(String message, @Nullable Location optionalLocation) throws CompileException {
+                    throw new CompileException(message, optionalLocation);
+                }
+            });
+            c.compile(sourceFiles);
+        }
+        Map<String, byte[]> classFileMap1 = classFileResources1.getMap();
+        b.endReporting("Generated " + classFileMap1.size() + " class files.");
+        CompilerTest.assertMoreThan("Number of generated classes", 200, classFileResources1.getMap().size());
     }
 
     @Test public void
