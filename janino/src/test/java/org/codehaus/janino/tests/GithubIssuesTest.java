@@ -29,6 +29,7 @@ package org.codehaus.janino.tests;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -39,9 +40,13 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.ClassBodyEvaluator;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.Java.CompilationUnit;
+import org.codehaus.janino.Java.IntegerLiteral;
+import org.codehaus.janino.Java.Rvalue;
+import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
 import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.util.DeepCopier;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -181,6 +186,81 @@ class GithubIssuesTest {
             } catch (IllegalStateException ise) {
                 ;
             }
+        }
+    }
+
+    @Test public void
+    testIssue91() throws Exception {
+
+        // Parse the framework code.
+        CompilationUnit cu = (CompilationUnit) new Parser(new Scanner(
+            "user expression", // This will appear in stack traces as "file name".
+            new StringReader(
+                ""
+                + "package com.acme.framework;\n"
+                + "\n"
+                + "public\n"
+                + "class Framework {\n"
+                + "\n"
+                + "    public static void\n"
+                + "    frameworkMethod() {\n"
+                + "        System.out.println(\"frameworkMethod()\");\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void\n"
+                + "    userMethod() {\n"
+                + "        System.out.println(77);\n" // <= "77" will be replaced with the user expression!
+                + "    }\n"
+                + "}\n"
+            )
+        )).parseAbstractCompilationUnit();
+
+        // Parse the "user expression".
+        final Rvalue userExpression = (
+            new Parser(new Scanner(
+                null,
+                new StringReader( // Line numbers will appear in stack traces.
+                    ""
+                    + "\n"
+                    + "\n"
+                    + "java.nio.charset.Charset.forName(\"kkk\")\n" // <= Causes an UnsupportedCharsetException
+                )
+            ))
+            .parseExpression()
+            .toRvalueOrCompileException()
+        );
+
+        // Merge the framework code with the user expression.
+        cu = new DeepCopier() {
+
+            @Override public Rvalue
+            copyIntegerLiteral(IntegerLiteral subject) throws CompileException {
+                if ("77".equals(subject.value)) return userExpression;
+                return super.copyIntegerLiteral(subject);
+            }
+        }.copyCompilationUnit(cu);
+
+        // Compile the code into a ClassLoader.
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.setDebuggingInformation(true, true, true);
+        sc.cook(cu);
+        ClassLoader cl = sc.getClassLoader();
+
+        // Find the generated class by name.
+        Class<?> c = cl.loadClass("com.acme.framework.Framework");
+
+        // Invoke the class's methods.
+        c.getMethod("frameworkMethod").invoke(null);
+        try {
+            c.getMethod("userMethod").invoke(null);
+            Assert.fail("InvocationTargetException expected");
+        } catch (InvocationTargetException ite) {
+            Throwable te = ite.getTargetException();
+            Assert.assertEquals(UnsupportedCharsetException.class, te.getClass());
+            StackTraceElement top = te.getStackTrace()[1];
+            Assert.assertEquals("userMethod", top.getMethodName());
+            Assert.assertEquals("user expression", top.getFileName());
+            Assert.assertEquals(3, top.getLineNumber());
         }
     }
 }
