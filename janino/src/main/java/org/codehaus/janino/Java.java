@@ -249,7 +249,7 @@ class Java {
         /**
          * Represents a static-import-on-demand declaration like
          * <pre>
-         *     import java.util.Collections.*;
+         *     import static java.util.Collections.*;
          * </pre>
          */
         public static
@@ -4459,7 +4459,15 @@ class Java {
         // Compile time members.
 
         @Override public String
-        toString() { return this.localVariable.toString(); }
+        toString() {
+            return (
+                this.localVariable.slot != null ? (
+                    this.localVariable.slot.name != null
+                    ? this.localVariable.slot.name
+                    : "unnamed_lv"
+                ) : "???"
+            );
+        }
 
         @Override @Nullable public <R, EX extends Throwable> R
         accept(Visitor.LvalueVisitor<R, EX> visitor) throws EX { return visitor.visitLocalVariableAccess(this); }
@@ -5969,15 +5977,14 @@ class Java {
         toString() {
             StringBuilder buf = new StringBuilder();
 
-            buf.append("local var(").append(this.name);
-            buf.append(", ").append(this.slotIndex);
+            buf.append("local var(").append(this.name).append(", slot# ").append(this.slotIndex);
             if (this.type != null) buf.append(", ").append(this.type);
 
             Offset s = this.start;
-            if (s != null) buf.append(", ").append(s.offset);
+            if (s != null) buf.append(", start offset ").append(s.offset);
 
             Offset e = this.end;
-            if (e != null) buf.append(", ").append(e.offset);
+            if (e != null) buf.append(", end offset ").append(e.offset);
 
             buf.append(")");
 
@@ -6064,7 +6071,12 @@ class Java {
             StringBuilder sb = new StringBuilder();
 
             if (this.finaL) sb.append("final ");
-            sb.append(this.type).append(" ");
+
+            if (this.slot != null) {
+                sb.append(this.slot);
+            } else {
+                sb.append(this.type);
+            }
 
             return sb.toString();
         }
