@@ -26,9 +26,8 @@
 package org.codehaus.janino.tests;
 
 import org.codehaus.janino.ExpressionEvaluator;
+import org.junit.Assert;
 import org.junit.Test;
-
-import junit.framework.Assert;
 
 public
 class BaseClassTest {
