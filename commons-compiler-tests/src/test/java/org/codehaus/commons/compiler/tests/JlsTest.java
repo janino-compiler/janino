@@ -429,6 +429,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     test_7_5__Import_declarations() throws Exception {
+
         // Default imports
         this.assertExpressionEvaluatesTrue(
             "import java.util.*; new ArrayList().getClass().getName().equals(\"java.util.ArrayList\")"
@@ -2532,6 +2533,14 @@ class JlsTest extends CommonsCompilerTestSuite {
      */
     @Test public void
     test_15_25__Conditional_operator() throws Exception {
+
+        this.assertExpressionEvaluatesTrue("99 == (true ? 99 : -1)");
+        this.assertExpressionEvaluatesTrue("-1 == (false ? 99 : -1)");
+
+        this.assertExpressionEvaluatesTrue("99   == (true  ? 99   : null)");
+        this.assertExpressionEvaluatesTrue("null == (false ? 99   : null)");
+        this.assertExpressionEvaluatesTrue("null == (true  ? null : 99)");
+        this.assertExpressionEvaluatesTrue("99   == (false ? null : 99)");
 
         // Related to "#85 Ternary expression resolves to strange supertype":
         this.assertScriptCookable(
