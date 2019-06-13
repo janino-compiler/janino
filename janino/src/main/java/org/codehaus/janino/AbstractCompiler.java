@@ -131,7 +131,7 @@ class AbstractCompiler extends ICompiler {
 
                             for (final ModuleReference mr : mrs) {
                                 final URI           moduleContentLocation = (URI) mr.location().get();
-                                final URL           classFileUrl          = new URL(moduleContentLocation + "/" + resourceName);
+                                final URL           classFileUrl          = new URL(moduleContentLocation + "/" + resourceName); // SUPPRESS CHECKSTYLE LineLength
                                 final URLConnection uc                    = classFileUrl.openConnection();
                                 try {
                                     uc.connect();
@@ -145,6 +145,7 @@ class AbstractCompiler extends ICompiler {
                                                 throw new IOException(moduleContentLocation + ", " + resourceName, ioe);
                                             }
                                         }
+
                                         @Override public String getFileName()  { return resourceName;         }
                                         @Override public long   lastModified() { return uc.getLastModified(); }
                                     };
