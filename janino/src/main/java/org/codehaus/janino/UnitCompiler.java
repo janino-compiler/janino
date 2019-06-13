@@ -312,68 +312,6 @@ class UnitCompiler {
     public AbstractCompilationUnit
     getAbstractCompilationUnit() { return this.abstractCompilationUnit; }
 
-    private void
-    import2(SingleStaticImportDeclaration ssid) throws CompileException {
-        String name = UnitCompiler.last(ssid.identifiers);
-
-        List<Object/*IField+IMethod+IClass*/>
-        importedObjects = (List<Object>) this.singleStaticImports.get(name);
-        if (importedObjects == null) {
-            importedObjects = new ArrayList<Object>();
-            this.singleStaticImports.put(name, importedObjects);
-        }
-
-        // Type?
-        {
-            IClass iClass = this.findTypeByFullyQualifiedName(ssid.getLocation(), ssid.identifiers);
-            if (iClass != null) {
-                importedObjects.add(iClass);
-                return;
-            }
-        }
-
-        String[] typeName = UnitCompiler.allButLast(ssid.identifiers);
-        IClass   iClass   = this.findTypeByFullyQualifiedName(ssid.getLocation(), typeName);
-        if (iClass == null) {
-            this.compileError("Could not load \"" + Java.join(typeName, ".") + "\"", ssid.getLocation());
-            return;
-        }
-
-        // Static field?
-        IField iField = iClass.getDeclaredIField(name);
-        if (iField != null) {
-            if (!iField.isStatic()) {
-                this.compileError(
-                    "Field \"" + name + "\" of \"" + Java.join(typeName, ".") + "\" must be static",
-                    ssid.getLocation()
-                );
-            }
-            importedObjects.add(iField);
-            return;
-        }
-
-        // Static method?
-        IMethod[] ms = iClass.getDeclaredIMethods(name);
-        if (ms.length > 0) {
-            importedObjects.addAll(Arrays.asList(ms));
-            return;
-        }
-
-        // Give up.
-        this.compileError(
-            "\"" + Java.join(typeName, ".") + "\" has no static member \"" + name + "\"",
-            ssid.getLocation()
-        );
-    }
-    private void
-    import2(StaticImportOnDemandDeclaration siodd) throws CompileException {
-        IClass iClass = this.findTypeByFullyQualifiedName(siodd.getLocation(), siodd.identifiers);
-        if (iClass == null) {
-            this.compileError("Could not load \"" + Java.join(siodd.identifiers, ".") + "\"", siodd.getLocation());
-            return;
-        }
-        this.staticImportsOnDemand.add(iClass);
-    }
 
     /**
      * Generates an array of {@link ClassFile} objects which represent the classes and interfaces declared in the
@@ -419,26 +357,16 @@ class UnitCompiler {
     private void
     compile2(CompilationUnit cu) throws CompileException {
 
-        // Compile static import declarations.
-        // Notice: The single-type and on-demand imports are needed BEFORE the unit is compiled, thus they are
-        // processed in 'getSingleTypeImport()' and 'importOnDemand()'.
-        for (ImportDeclaration id : cu.importDeclarations) {
-            id.accept(new ImportVisitor<Void, CompileException>() {
-                // SUPPRESS CHECKSTYLE LineLengthCheck:4
-                @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)                                  {                                   return null; }
-                @Override @Nullable public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)                             {                                   return null; }
-                @Override @Nullable public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      throws CompileException { UnitCompiler.this.import2(ssid);  return null; }
-                @Override @Nullable public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) throws CompileException { UnitCompiler.this.import2(siodd); return null; }
-            });
-        }
-
         for (PackageMemberTypeDeclaration pmtd : cu.packageMemberTypeDeclarations) {
             try {
                 this.compile(pmtd);
             } catch (ClassFileException cfe) {
                 throw new CompileException(cfe.getMessage(), pmtd.getLocation(), cfe);
             } catch (RuntimeException re) {
-                throw new InternalCompilerException("Compiling \"" + pmtd + "\": " + re.getMessage(), re);
+                throw new InternalCompilerException(
+                    "Compiling \"" + pmtd + "\" in \"" + cu.optionalFileName + "\": " + re.getMessage(),
+                    re
+                );
             }
         }
     }
@@ -4731,6 +4659,8 @@ class UnitCompiler {
         {
             Object cv = this.getConstantValue(ce.lhs);
             if (cv instanceof Boolean) {
+
+                // LHS is a constant expression.
                 if (((Boolean) cv).booleanValue()) {
                     mhsType            = this.compileGetValue(ce.mhs);
                     mhsConvertInserter = this.getCodeContext().newInserter();
@@ -4740,7 +4670,7 @@ class UnitCompiler {
                     mhsType            = this.getType(ce.mhs);
                     mhsConvertInserter = null;
                     rhsType            = this.compileGetValue(ce.rhs);
-                    rhsConvertInserter = this.getCodeContext().currentInserter();
+                    rhsConvertInserter = null;
                 }
             } else {
                 CodeContext.Offset toRhs = this.getCodeContext().new Offset();
@@ -6817,13 +6747,13 @@ class UnitCompiler {
             if (importedClass != null) return importedClass;
         }
 
-      CompilationUnit  scopeCompilationUnit;
-      for (Scope s = scope;; s = s.getEnclosingScope()) {
-          if (s instanceof CompilationUnit) {
-              scopeCompilationUnit = (CompilationUnit) s;
-              break;
-          }
-      }
+        CompilationUnit  scopeCompilationUnit;
+        for (Scope s = scope;; s = s.getEnclosingScope()) {
+            if (s instanceof CompilationUnit) {
+                scopeCompilationUnit = (CompilationUnit) s;
+                break;
+            }
+        }
 
         // 6.5.5.1.4b Type declared in same compilation unit.
         {
@@ -6849,54 +6779,42 @@ class UnitCompiler {
             if (importedClass != null) return importedClass;
         }
 
-        // JLS7 6.5.2.BL1.B2: Type imported through single static import.
+        // JLS7 6.5.2.BL1.B2: Type imported through single import.
         {
-            List<Object/*IField+IMethod+IClass*/> l = (List<Object>) this.singleStaticImports.get(simpleTypeName);
-            if (l != null) {
-                IClass importedMemberType = null;
-                for (Iterator<Object/*IField+IMethod+IClass*/> it = l.iterator(); it.hasNext();) {
-                    Object o = it.next();
-                    if (o instanceof IClass) {
-                        IClass mt = (IClass) o;
-                        if (!this.isAccessible(mt, scope)) continue;
-                        if (importedMemberType != null && importedMemberType != mt) {
-                            this.compileError(
-                                "Ambiguous static imports: \""
-                                + importedMemberType.toString()
-                                + "\" vs. \""
-                                + mt.toString()
-                                + "\""
-                            );
-                        }
-                        importedMemberType = mt;
-                    }
+            IClass importedIClass = this.importSingleType(simpleTypeName, location);
+            if (importedIClass != null) {
+                if (!this.isAccessible(importedIClass, scope)) {
+                    this.compileError("Member type \"" + simpleTypeName + "\" is not accessible", location);
                 }
-                if (importedMemberType != null) return importedMemberType;
+                return importedIClass;
             }
         }
 
-        // JLS7 6.5.2.BL1.B2: Type imported through static-import-on-demand.
+        // JLS7 6.5.2.BL1.B2: Member type imported through single static import.
         {
             IClass importedMemberType = null;
-            for (IClass ic : this.staticImportsOnDemand) {
-                IClass[] memberTypes = ic.getDeclaredIClasses();
-                for (IClass mt : memberTypes) {
-                    if (!this.isAccessible(mt, scope)) continue;
-                    if (mt.getDescriptor().endsWith('$' + simpleTypeName + ';')) {
-                        if (importedMemberType != null) {
-                            this.compileError(
-                                "Ambiguous static imports: \""
-                                + importedMemberType.toString()
-                                + "\" vs. \""
-                                + mt.toString()
-                                + "\""
-                            );
-                        }
-                        importedMemberType = mt;
-                    }
+            for (Object o : this.importSingleStatic(simpleTypeName)) {
+
+                if (!(o instanceof IClass)) continue;
+                IClass mt = (IClass) o;
+
+                if (importedMemberType != null && mt != importedMemberType) {
+                    this.compileError(
+                        "Ambiguous static member type import: \""
+                        + importedMemberType.toString()
+                        + "\" vs. \""
+                        + mt
+                        + "\""
+                    );
                 }
+                importedMemberType = mt;
             }
             if (importedMemberType != null) return importedMemberType;
+        }
+
+        // JLS7 6.5.2.BL1.B2: Member type imported through static-import-on-demand.
+        for (Object o : this.importStaticOnDemand(simpleTypeName)) {
+            if (o instanceof IClass) return (IClass) o;
         }
 
         // Unnamed package member type.
@@ -6929,9 +6847,31 @@ class UnitCompiler {
                 }
             }
         }
+
         // 6.5.5.1.8 Give up.
         this.compileError("Cannot determine simple type name \"" + simpleTypeName + "\"", location);
         return this.iClassLoader.TYPE_java_lang_Object;
+    }
+
+    private List<Object>
+    importStaticOnDemand(String name) throws CompileException {
+
+        List<Object> result = new ArrayList<Object>();
+        for (ImportDeclaration id : this.abstractCompilationUnit.importDeclarations) {
+
+            if (!(id instanceof StaticImportOnDemandDeclaration)) continue;
+            StaticImportOnDemandDeclaration siodd = (StaticImportOnDemandDeclaration) id;
+
+            IClass iClass = this.findTypeByFullyQualifiedName(siodd.getLocation(), siodd.identifiers);
+            if (iClass == null) {
+                this.compileError("Could not load \"" + Java.join(siodd.identifiers, ".") + "\"", siodd.getLocation());
+                continue;
+            }
+
+            this.importStatic(iClass, name, result, siodd.getLocation());
+        }
+
+        return result;
     }
 
     private IClass
@@ -8371,7 +8311,11 @@ class UnitCompiler {
 
                 if (this.ias != null) return this.ias;
 
-                return (this.ias = UnitCompiler.this.toIAnnotations(annotations));
+                try {
+                    return (this.ias = UnitCompiler.this.toIAnnotations(annotations));
+                } catch (CompileException ce) {
+                    throw new InternalCompilerException(null, ce);
+                }
             }
 
             // Implement "IField".
@@ -8440,7 +8384,7 @@ class UnitCompiler {
     }
 
     private IAnnotation[]
-    toIAnnotations(Annotation[] annotations) {
+    toIAnnotations(Annotation[] annotations) throws CompileException {
 
         IAnnotation[] result = new IAnnotation[annotations.length];
         for (int i = 0; i < result.length; i++) result[i] = this.toIAnnotation(annotations[i]);
@@ -8449,18 +8393,18 @@ class UnitCompiler {
     }
 
     private IAnnotation
-    toIAnnotation(Annotation annotation) {
+    toIAnnotation(Annotation annotation) throws CompileException {
 
         IAnnotation result = (IAnnotation) annotation.accept(
-            new AnnotationVisitor<IAnnotation, RuntimeException>() {
+            new AnnotationVisitor<IAnnotation, CompileException>() {
 
                 @Override public IAnnotation
-                visitMarkerAnnotation(final MarkerAnnotation ma) {
+                visitMarkerAnnotation(final MarkerAnnotation ma) throws CompileException {
                     return this.toIAnnotation(ma.type, new ElementValuePair[0]);
                 }
 
                 @Override public IAnnotation
-                visitSingleElementAnnotation(SingleElementAnnotation sea) {
+                visitSingleElementAnnotation(SingleElementAnnotation sea) throws CompileException {
                     return this.toIAnnotation(
                         sea.type,
                         new ElementValuePair[] { new ElementValuePair("value", sea.elementValue) }
@@ -8468,12 +8412,12 @@ class UnitCompiler {
                 }
 
                 @Override public IAnnotation
-                visitNormalAnnotation(NormalAnnotation na) {
+                visitNormalAnnotation(NormalAnnotation na) throws CompileException {
                     return this.toIAnnotation(na.type, na.elementValuePairs);
                 }
 
                 private IAnnotation
-                toIAnnotation(final Type type, ElementValuePair[] elementValuePairs) {
+                toIAnnotation(final Type type, ElementValuePair[] elementValuePairs) throws CompileException {
 
                     final Map<String, Object> m = new HashMap<String, Object>();
                     for (ElementValuePair evp : elementValuePairs) {
@@ -8498,7 +8442,7 @@ class UnitCompiler {
                  *         array containing any of the previously described
                  */
                 private Object
-                toObject(ElementValue ev) {
+                toObject(ElementValue ev) throws CompileException {
 
                     try {
                         Object result = ev.accept(new ElementValueVisitor<Object, CompileException>() {
@@ -8542,10 +8486,13 @@ class UnitCompiler {
                             }
 
                             @Override public Object
-                            visitAnnotation(Annotation a) { return UnitCompiler.this.toIAnnotation(a); }
+                            visitAnnotation(Annotation a) throws CompileException {
+                                return UnitCompiler.this.toIAnnotation(a);
+                            }
 
                             @Override public Object
-                            visitElementValueArrayInitializer(ElementValueArrayInitializer evai) {
+                            visitElementValueArrayInitializer(ElementValueArrayInitializer evai)
+                            throws CompileException {
                                 Object[] result = new Object[evai.elementValues.length];
                                 for (int i = 0; i < result.length; i++) {
                                     result[i] = toObject(evai.elementValues[i]);
@@ -8556,6 +8503,7 @@ class UnitCompiler {
                         assert result != null;
                         return result;
                     } catch (/*CompileException*/ Exception ce) {
+                        if (ce instanceof CompileException) throw (CompileException) ce;
                         throw new IllegalStateException(ce);
                     }
                 }
@@ -8845,52 +8793,35 @@ class UnitCompiler {
         }
 
         // JLS7 6.5.2.BL1.B2.1 Static field imported through single static import.
-        {
-            List<Object/*IField+IMethod+IClass*/> l = (List<Object>) this.singleStaticImports.get(identifier);
-            if (l != null) {
-                for (Object o : l) {
-                    if (o instanceof IField) {
-                        FieldAccess fieldAccess = new FieldAccess(
-                            location,
-                            new SimpleType(location, ((IField) o).getDeclaringIClass()),
-                            (IField) o
-                        );
-                        fieldAccess.setEnclosingScope(scope);
-                        return fieldAccess;
-                    }
-                }
+        for (Object o : this.importSingleStatic(identifier)) {
+
+            if (!(o instanceof IField)) continue;
+            IField f = (IField) o;
+
+            if (this.isAccessible(f, scope)) {
+
+                FieldAccess fieldAccess = new FieldAccess(
+                    location,
+                    new SimpleType(location, f.getDeclaringIClass()),
+                    f
+                );
+                fieldAccess.setEnclosingScope(scope);
+                return fieldAccess;
             }
         }
 
         // JLS7 6.5.2.BL1.B2.2 Static field imported through static-import-on-demand.
-        {
-            IField importedField = null;
-            for (IClass iClass : this.staticImportsOnDemand) {
+        for (Object o : this.importStaticOnDemand(identifier)) {
 
-                IField f = iClass.getDeclaredIField(identifier);
-                if (f != null) {
+            if (!(o instanceof IField)) continue;
+            IField f = (IField) o;
 
-                    // JLS7 7.5.4 Static-Import-on-Demand Declaration
-                    if (!this.isAccessible(f, scope)) continue;
+            if (this.isAccessible(f, scope)) {
 
-                    if (importedField != null) {
-                        this.compileError(
-                            "Ambiguous static field import: \""
-                            + importedField.toString()
-                            + "\" vs. \""
-                            + f.toString()
-                            + "\""
-                        );
-                    }
-                    importedField = f;
-                }
-            }
-            if (importedField != null) {
-                if (!importedField.isStatic()) this.compileError("Cannot static-import non-static field");
                 FieldAccess fieldAccess = new FieldAccess(
                     location,
-                    new SimpleType(location, importedField.getDeclaringIClass()),
-                    importedField
+                    new SimpleType(location, f.getDeclaringIClass()),
+                    f
                 );
                 fieldAccess.setEnclosingScope(scope);
                 return fieldAccess;
@@ -8959,41 +8890,104 @@ class UnitCompiler {
         }
 
         // JLS7 6.5.2.BL1.B1.B4.3 Type imported through single static import.
-        {
-            List<Object/*IField+IMethod+IClass*/> l = (List<Object>) this.singleStaticImports.get(identifier);
-            if (l != null) {
-                for (Object o : l) {
-                    if (o instanceof IClass) return new SimpleType(location, (IClass) o);
-                }
-            }
+        for (Object o : this.importSingleStatic(identifier)) {
+            if (o instanceof IClass) return new SimpleType(location, (IClass) o);
         }
 
-        // JLS7 6.5.2.BL1.B1.B4.4 Type imported through static-import-on-demand.
-        {
-            IClass importedType = null;
-            for (IClass ic : this.staticImportsOnDemand) {
-                IClass[] memberTypes = ic.getDeclaredIClasses();
-                for (IClass memberType : memberTypes) {
-                    if (!this.isAccessible(memberType, scope)) continue;
-                    if (memberType.getDescriptor().endsWith('$' + identifier + ';')) {
-                        if (importedType != null) {
-                            this.compileError(
-                                "Ambiguous static type import: \""
-                                + importedType.toString()
-                                + "\" vs. \""
-                                + memberType.toString()
-                                + "\""
-                            );
-                        }
-                        importedType = memberType;
-                    }
-                }
-            }
-            if (importedType != null) return new SimpleType(location, importedType);
+        // JLS7 6.5.2.BL1.B1.B4.4 Member type imported through static-import-on-demand.
+        for (Object o : this.importStaticOnDemand(identifier)) {
+
+            if (!(o instanceof IClass)) continue;
+            IClass mt = (IClass) o;
+
+            if (this.isAccessible(mt, scope)) return new SimpleType(location, mt);
         }
 
         // 6.5.2.BL1.B1.B7 Package name
         return new Package(location, identifier);
+    }
+
+    /**
+     * Imports a member class, member interface, static field or static method via the compilation unit's single
+     * static import declarations.
+     *
+     * @return A list of {@link IField}s, {@link IMethod}s and/or {@link IClass}es; may be empty
+     */
+    private List<Object>
+    importSingleStatic(String simpleName) throws CompileException {
+
+        List<Object> result = new ArrayList<Object>();
+        for (SingleStaticImportDeclaration ssid : this.getSingleStaticImportDeclarations(simpleName)) {
+            Location location = ssid.getLocation();
+
+            IClass dc = this.findTypeByName(location, Java.join(UnitCompiler.allButLast(ssid.identifiers), "."));
+            if (dc == null) continue;
+
+            this.importStatic(dc, simpleName, result, location);
+        }
+
+        return result;
+    }
+
+    private List<SingleStaticImportDeclaration>
+    getSingleStaticImportDeclarations(String simpleName) {
+
+        List<SingleStaticImportDeclaration> result = new ArrayList<SingleStaticImportDeclaration>();
+        for (ImportDeclaration id : this.abstractCompilationUnit.importDeclarations) {
+
+            if (!(id instanceof SingleStaticImportDeclaration)) continue;
+            SingleStaticImportDeclaration ssid = (SingleStaticImportDeclaration) id;
+
+            if (simpleName.equals(UnitCompiler.last(ssid.identifiers))) result.add(ssid);
+        }
+
+        return result;
+    }
+
+    /**
+     * Imports member classes, member interfaces, static fields and static methods with a given <var>simpleName</var>.
+     */
+    private void
+    importStatic(IClass declaringIClass, String simpleName, Collection<Object> result, Location location)
+    throws CompileException {
+
+        // Member type?
+        for (IClass memberIClass : declaringIClass.findMemberType(simpleName)) {
+            if (memberIClass.getDeclaringIClass() == declaringIClass) result.add(memberIClass);
+        }
+
+        // Static field?
+        {
+            IField iField = declaringIClass.getDeclaredIField(simpleName);
+            if (iField != null) {
+                if (!iField.isStatic()) {
+                    this.compileError(
+                        "Field \"" + simpleName + "\" of \"" + declaringIClass + "\" must be static",
+                        location
+                    );
+                }
+                result.add(iField);
+            }
+        }
+
+        // Static method?
+        for (IMethod iMethod : declaringIClass.getDeclaredIMethods(simpleName)) {
+            if (!iMethod.isStatic()) {
+                this.compileError(
+                    "method \"" + iMethod + "\" of \"" + declaringIClass + "\" must be static",
+                    location
+                );
+            }
+            result.add(iMethod);
+        }
+
+//        // Give up.
+//        if (result.isEmpty()) {
+//            this.compileError(
+//                "\"" + declaringIClass + "\" has no static member \"" + identifier + "\"",
+//                location
+//            );
+//        }
     }
 
     private Rvalue
@@ -9138,54 +9132,42 @@ class UnitCompiler {
             }
 
             // Static method declared through single static import?
-            {
-                List<Object/*IField+IMethod+IClass*/> l = (List<Object>) this.singleStaticImports.get(mi.methodName);
-                if (l != null) {
-                    iMethod = null;
-                    for (Object o : l) {
-                        if (o instanceof IMethod) {
-                            IClass  declaringIClass = ((IMethod) o).getDeclaringIClass();
-                            IMethod im              = this.findIMethod(
-                                declaringIClass, // targetType
-                                mi               // invocable
-                            );
-                            if (im != null) {
-                                if (iMethod != null && iMethod != im) {
-                                    this.compileError(
-                                        "Ambiguous static method import: \""
-                                        + iMethod.toString()
-                                        + "\" vs. \""
-                                        + im.toString()
-                                        + "\""
-                                    );
-                                }
-                                iMethod = im;
-                            }
-                        }
-                    }
-                    if (iMethod != null) break FIND_METHOD;
+            iMethod = null;
+            for (Object o : this.importSingleStatic(mi.methodName)) {
+
+                if (!(o instanceof IMethod)) continue;
+                IMethod im = (IMethod) o;
+
+                if (iMethod != null && iMethod != im) {
+                    this.compileError(
+                        "Ambiguous static method import: \""
+                        + iMethod.toString()
+                        + "\" vs. \""
+                        + im.toString()
+                        + "\""
+                    );
                 }
+                iMethod = im;
             }
+            if (iMethod != null) break FIND_METHOD;
 
             // Static method declared through static-import-on-demand?
-            iMethod = null;
-            for (IClass iClass : this.staticImportsOnDemand) {
-                IMethod im = this.findIMethod(
-                    iClass, // targetType
-                    mi      // invocation
-                );
-                if (im != null) {
-                    if (iMethod != null) {
-                        this.compileError(
-                            "Ambiguous static method import: \""
-                            + iMethod.toString()
-                            + "\" vs. \""
-                            + im.toString()
-                            + "\""
-                        );
-                    }
-                    iMethod = im;
+            for (Object o : this.importStaticOnDemand(mi.methodName)) {
+
+                if (!(o instanceof IMethod)) continue;
+                IMethod im = (IMethod) o;
+
+                if (iMethod != null) {
+                    this.compileError(
+                        "Ambiguous static method import: \""
+                        + iMethod.toString()
+                        + "\" vs. \""
+                        + im.toString()
+                        + "\""
+                    );
                 }
+
+                iMethod = im;
             }
             if (iMethod != null) break FIND_METHOD;
 
@@ -10149,7 +10131,7 @@ class UnitCompiler {
             }
 
             @Override protected IAnnotation[]
-            getIAnnotations2() { return UnitCompiler.this.toIAnnotations(td.getAnnotations()); }
+            getIAnnotations2() throws CompileException { return UnitCompiler.this.toIAnnotations(td.getAnnotations()); }
 
             @Override public boolean
             isAbstract() {
@@ -10354,7 +10336,11 @@ class UnitCompiler {
 
                 if (this.ias != null) return this.ias;
 
-                return (this.ias = UnitCompiler.this.toIAnnotations(constructorDeclarator.getAnnotations()));
+                try {
+                    return (this.ias = UnitCompiler.this.toIAnnotations(constructorDeclarator.getAnnotations()));
+                } catch (CompileException ce) {
+                    throw new InternalCompilerException(null, ce);
+                }
             }
 
             // Implement IInvocable.
@@ -10470,7 +10456,11 @@ class UnitCompiler {
 
                 if (this.ias != null) return this.ias;
 
-                return (this.ias = UnitCompiler.this.toIAnnotations(methodDeclarator.getAnnotations()));
+                try {
+                    return (this.ias = UnitCompiler.this.toIAnnotations(methodDeclarator.getAnnotations()));
+                } catch (CompileException ce) {
+                    throw new InternalCompilerException(null, ce);
+                }
             }
 
             // Implement IInvocable.
@@ -10636,67 +10626,71 @@ class UnitCompiler {
      * 6.5.5.1.6 Type-import-on-demand declaration.
      *
      * @return {@code null} if the given <var>simpleTypeName</var> cannot be resolved through any of the
-     *         import-on-demand directives
+     *         type-import-on-demand declarations
      */
     @Nullable public IClass
     importTypeOnDemand(String simpleTypeName, Location location) throws CompileException {
 
-        // Check cache. (A cache for unimportable types is not required, because the class is importable 99.9%.)
-        {
-            IClass importedClass = (IClass) this.onDemandImportableTypes.get(simpleTypeName);
-            if (importedClass != null) return importedClass;
+        IClass importedClass = (IClass) this.onDemandImportableTypes.get(simpleTypeName);
+        if (importedClass == null) {
+            importedClass = this.importTypeOnDemand2(simpleTypeName, location);
+            this.onDemandImportableTypes.put(simpleTypeName, importedClass);
         }
-        // Cache miss...
 
-        // Compile all import-on-demand declarations (done here as late as possible).
-        Collection<String[]> tiods = this.typeImportsOnDemand;
-        if (tiods == null) {
-            tiods = new ArrayList<String[]>();
-            tiods.add(new String[] { "java", "lang" });
-            for (ImportDeclaration id : this.abstractCompilationUnit.importDeclarations) {
-                final Collection<String[]> finalTiods = tiods;
-                id.accept(new ImportVisitor<Void, RuntimeException>() {
+        return importedClass;
+    }
+    private final Map<String /*simpleTypeName*/, IClass> onDemandImportableTypes = new HashMap<String, IClass>();
 
-                    @Override @Nullable public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     { finalTiods.add(tiodd.identifiers); return null; } // SUPPRESS CHECKSTYLE LineLength:3
-                    @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { return null;                                    }
-                    @Override @Nullable public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { return null;                                    }
-                    @Override @Nullable public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { return null;                                    }
-                });
-            }
-
-            this.typeImportsOnDemand = tiods;
-        }
+    /**
+     * @return {@code null} if the given <var>simpleTypeName</var> cannot be resolved through any of the
+     *         type-import-on-demand declarations
+     */
+    @Nullable private IClass
+    importTypeOnDemand2(String simpleTypeName, Location location) throws CompileException {
 
         IClass importedClass = null;
-        for (String[] packageComponents : tiods) {
-            String[] typeComponents = UnitCompiler.concat(packageComponents, simpleTypeName);
-            IClass   iClass         = this.findTypeByFullyQualifiedName(location, typeComponents);
-            if (iClass != null) {
-                if (importedClass != null && importedClass != iClass) {
-                    this.compileError(
-                        "Ambiguous class name: \"" + importedClass + "\" vs. \"" + iClass + "\"",
-                        location
-                    );
-                }
-                importedClass = iClass;
+        for (TypeImportOnDemandDeclaration tiodd : this.getTypeImportOnDemandImportDeclarations()) {
+
+            IClass iClass = this.findTypeByFullyQualifiedName(
+                location,
+                UnitCompiler.concat(tiodd.identifiers, simpleTypeName)
+            );
+            if (iClass == null) continue;
+
+            if (importedClass != null && importedClass != iClass) {
+                this.compileError(
+                    "Ambiguous class name: \"" + importedClass + "\" vs. \"" + iClass + "\"",
+                    location
+                );
             }
+            importedClass = iClass;
         }
         if (importedClass == null) return null;
-
-        // Put in cache and return.
-        this.onDemandImportableTypes.put(simpleTypeName, importedClass);
         return importedClass;
     }
 
-    /**
-     * To be used only by {@link #importTypeOnDemand(String, Location)}; {@code null} means "not yet initialized.
-     */
-    @Nullable private Collection<String[]> typeImportsOnDemand;
+    private Collection<TypeImportOnDemandDeclaration>
+    getTypeImportOnDemandImportDeclarations() {
 
-    /**
-     * To be used only by {@link #importTypeOnDemand(String, Location)}; cache for on-demand-imported types.
-     */
-    private final Map<String /*simpleTypeName*/, IClass> onDemandImportableTypes = new HashMap<String, IClass>();
+        Collection<TypeImportOnDemandDeclaration> result = new ArrayList<TypeImportOnDemandDeclaration>();
+        for (ImportDeclaration id : this.abstractCompilationUnit.importDeclarations) {
+
+            if (!(id instanceof TypeImportOnDemandDeclaration)) continue;
+            TypeImportOnDemandDeclaration tiodd = (TypeImportOnDemandDeclaration) id;
+
+            result.add(tiodd);
+        }
+
+        result.add(new TypeImportOnDemandDeclaration(Location.NOWHERE, new String[] { "java", "lang" }));
+
+        return result;
+    }
+
+//    /**
+//     * To be used only by {@link #importTypeOnDemand(String, Location)}; {@code null} means "not yet initialized.
+//     */
+//    @Nullable private Collection<String[]> typeImportsOnDemand;
+
 
     /**
      * @param value A {@link Character}, {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float},
@@ -12007,7 +12001,7 @@ class UnitCompiler {
     }
 
     /**
-     * Finds one class or interface declared in this compilation unit by name.
+     * Finds one class or interface declaration in this compilation unit and resolves it into an {@link IClass}.
      *
      * @param className Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"
      * @return          {@code null} if a class or an interface with that name is not declared in this compilation unit
@@ -12508,9 +12502,4 @@ class UnitCompiler {
     private boolean debugSource;
     private boolean debugLines;
     private boolean debugVars;
-
-    private final Map<String /*staticMemberName*/, List<Object /*IField+IMethod+IClass*/>>
-    singleStaticImports = new HashMap<String, List<Object>>();
-
-    private final Collection<IClass> staticImportsOnDemand = new ArrayList<IClass>();
 }
