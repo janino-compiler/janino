@@ -218,7 +218,6 @@ class Parser {
     public AbstractCompilationUnit
     parseAbstractCompilationUnit() throws CompileException, IOException {
 
-
         String     docComment = this.doc();
         Modifier[] modifiers  = this.parseModifiers();
 
@@ -369,6 +368,11 @@ class Parser {
      *   PackageDeclaration := 'package' QualifiedIdentifier ';'
      * </pre>
      */
+    public PackageDeclaration
+    parsePackageDeclaration() throws CompileException, IOException {
+        return this.parsePackageDeclarationRest(this.doc(), this.parseModifiers());
+    }
+
     public PackageDeclaration
     parsePackageDeclarationRest(@Nullable String docComment, Modifier[] modifiers)
     throws CompileException, IOException {
@@ -3956,7 +3960,7 @@ class Parser {
 
     private Modifier[]
     packageModifiers(Modifier[] modifiers) throws CompileException {
-        return this.checkModifiers(modifiers, "xxx");
+        return this.checkModifiers(modifiers);
     }
 
     private Modifier[]
