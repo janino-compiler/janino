@@ -201,7 +201,7 @@ class Compiler extends AbstractCompiler {
      *   ErrorHandler} is called; all other error conditions cause a {@link CompileException} to be thrown.
      * </p>
      */
-    public void
+    @Override public void
     setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
         this.compileErrorHandler = compileErrorHandler;
     }
@@ -211,7 +211,7 @@ class Compiler extends AbstractCompiler {
      *
      * @param warningHandler {@code null} to indicate that no warnings be issued
      */
-    public void
+    @Override public void
     setWarningHandler(@Nullable WarningHandler warningHandler) { this.warningHandler = warningHandler; }
 
     /**
@@ -254,7 +254,10 @@ class Compiler extends AbstractCompiler {
                     ),
                     iClassLoader
                 );
+                uc.setCompileErrorHandler(this.compileErrorHandler);
+                uc.setWarningHandler(this.warningHandler);
                 uc.options(this.options);
+
                 this.parsedCompilationUnits.add(uc);
             }
 

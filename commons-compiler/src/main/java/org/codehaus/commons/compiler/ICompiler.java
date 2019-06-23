@@ -232,6 +232,39 @@ class ICompiler {
     public abstract void
     compile(Resource[] sourceResources) throws CompileException, IOException;
 
+    /**
+     * By default, {@link CompileException}s are thrown on compile errors, but an application my install its own
+     * {@link ErrorHandler}.
+     * <p>
+     *   Be aware that a single problem during compilation often causes a bunch of compile errors, so a good {@link
+     *   ErrorHandler} counts errors and throws a {@link CompileException} when a limit is reached.
+     * </p>
+     * <p>
+     *   If the given {@link ErrorHandler} throws {@link CompileException}s, then the compilation is terminated and
+     *   the exception is propagated.
+     * </p>
+     * <p>
+     *   If the given {@link ErrorHandler} does not throw {@link CompileException}s, then the compiler may or may not
+     *   continue compilation, but must eventually throw a {@link CompileException}.
+     * </p>
+     * <p>
+     *   In other words: The {@link ErrorHandler} may throw a {@link CompileException} or not, but the compiler must
+     *   definitely throw a {@link CompileException} if one or more compile errors have occurred.
+     * </p>
+     *
+     * @param errorHandler {@code null} to restore the default behavior (throwing a {@link CompileException}
+     */
+    public abstract void
+    setCompileErrorHandler(@Nullable ErrorHandler errorHandler);
+
+    /**
+     * By default, warnings are discarded, but an application my install a custom {@link WarningHandler}.
+     *
+     * @param warningHandler {@code null} to indicate that no warnings be issued
+     */
+    public abstract void
+    setWarningHandler(WarningHandler warningHandler);
+
     @SuppressWarnings("null") private void
     updateDestinationDirectory() {
 

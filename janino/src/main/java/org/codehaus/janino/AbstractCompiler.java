@@ -34,7 +34,9 @@ import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Set;
 
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICompiler;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.java9.java.lang.module.ModuleFinder;
 import org.codehaus.commons.compiler.java9.java.lang.module.ModuleReference;
 import org.codehaus.commons.compiler.util.StringUtil;
@@ -69,6 +71,9 @@ class AbstractCompiler extends ICompiler {
      */
     @Nullable private File[] bootClassPath = StringUtil.parseOptionalPath(System.getProperty("sun.boot.class.path"));
     { this.updateIClassLoader(); }
+
+    @Nullable protected ErrorHandler   compileErrorHandler;
+    @Nullable protected WarningHandler warningHandler;
 
     @Override public final void
     setBootClassPath(File[] directoriesAndArchives) {
@@ -181,4 +186,14 @@ class AbstractCompiler extends ICompiler {
      */
     public abstract void
     setIClassLoader(IClassLoader iClassLoader);
+
+    @Override public void
+    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
+        this.compileErrorHandler = compileErrorHandler;
+    }
+
+    @Override public void
+    setWarningHandler(@Nullable WarningHandler warningHandler) {
+        this.warningHandler = warningHandler;
+    }
 }
