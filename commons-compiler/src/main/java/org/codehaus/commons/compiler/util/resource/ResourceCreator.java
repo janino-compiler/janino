@@ -32,11 +32,10 @@ import java.io.OutputStream;
 /**
  * Opens a resource, characterized by a name, for writing.
  * <p>
- *   There also exists a concept {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that finds {@link
- *   org.codehaus.commons.compiler.util.resource.janino.util.resource.Resource}s for reading.
+ *   There also exists a concept {@link ResourceFinder} that finds {@link Resource}s for reading.
  * </p>
  *
- * @see org.codehaus.commons.compiler.util.resource.ResourceFinder
+ * @see ResourceFinder
  */
 public
 interface ResourceCreator {

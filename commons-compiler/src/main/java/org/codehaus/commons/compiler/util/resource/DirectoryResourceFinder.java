@@ -37,7 +37,7 @@ import java.util.Set;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link org.codehaus.janino.util.resource.FileResourceFinder} that finds file resources in a directory. The name of
+ * A {@link FileResourceFinder} that finds file resources in a directory. The name of
  * the file is constructed by concatenating a dirctory name with the resource name such that slashes in the resource
  * name map to file separators.
  */
