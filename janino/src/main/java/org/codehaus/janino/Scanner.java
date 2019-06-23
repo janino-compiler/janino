@@ -38,7 +38,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.TeeReader;
@@ -48,6 +47,28 @@ import org.codehaus.janino.util.TeeReader;
  */
 public
 class Scanner {
+
+    /**
+     * Setting this system property to 'true' enables source-level debugging. Typically, this means that compilation
+     * is executed with "{@code -g:all}" instead of "{@code -g:none}".
+     */
+    public static final String SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE = "org.codehaus.janino.source_debugging.enable";
+
+    /**
+     * If the source code is not read from a file, debuggers have a hard time locating the source file for source-level
+     * debugging. As a workaround, a copy of the source code is written to a temporary file, which must be included
+     * in the debugger's source path. If this system property is set, the temporary source file is created in that
+     * directory, otherwise in the default temporary-file directory.
+     *
+     * @see File#createTempFile(String, String, File)
+     */
+    public static final String SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR = "org.codehaus.janino.source_debugging.dir";
+
+    /**
+     * If set to "true", then the temporary source code files are <em>not</em> deleted on exit. That may be useful to
+     * interpret stack traces offline.
+     */
+    public static final String SYSTEM_PROPERTY_SOURCE_DEBUGGING_KEEP = "org.codehaus.janino.source_debugging.keep";
 
     // Public Scanners that read from a file.
 
@@ -183,11 +204,16 @@ class Scanner {
         //     org.codehaus.janino.source_debugging.dir
         // JANINO is designed to compile in memory to save the overhead of disk I/O, so writing this file is only
         // recommended for source code level debugging purposes.
-        if (optionalFileName == null && Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE)) {
-            String dirName       = System.getProperty(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR);
-            File   dir           = dirName == null ? null : new File(dirName);
-            File   temporaryFile = File.createTempFile("janino", ".java", dir);
-            temporaryFile.deleteOnExit();
+        if (optionalFileName == null && Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE)) {
+
+            String  dirName = System.getProperty(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR);
+            boolean keep    = Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_KEEP);
+
+            File dir           = dirName == null ? null : new File(dirName);
+            File temporaryFile = File.createTempFile("janino", ".java", dir);
+
+            if (!keep) temporaryFile.deleteOnExit();
+
             in = new TeeReader(
                 in,                            // in
                 new FileWriter(temporaryFile), // out

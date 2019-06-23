@@ -42,7 +42,6 @@ import java.util.logging.Logger;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.ErrorHandler;
-import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.Sandbox;
@@ -70,7 +69,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     @Nullable private ErrorHandler   optionalCompileErrorHandler;
     @Nullable private WarningHandler optionalWarningHandler;
 
-    private boolean debugSource = Boolean.getBoolean(ICookable.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
+    private boolean debugSource = Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
     private boolean debugLines  = this.debugSource;
     private boolean debugVars   = this.debugSource;
 
