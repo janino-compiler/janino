@@ -629,8 +629,8 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             + "}"
         );
 
-        // If more than 500, then we'd have to increase the JVM stack size.
-        for (int repetitions : new int[] { 5, 50, 300 }) {
+        // If more than 299, then we'd have to increase the JVM stack size.
+        for (int repetitions : new int[] { 5, 50, 260 }) {
 
             StringBuilder sb = new StringBuilder().append(preamble);
 
