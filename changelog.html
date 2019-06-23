@@ -51,9 +51,80 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.0.13-SNAPSHOT (only available as source code)</h4>
+    <h4>Version 3.0.14-SNAPSHOT (only available as source code)</h4>
     <ul>
       <li>...</li>
+    </ul>
+
+    <h4>Version 3.0.13, 2019-06-23</h4>
+    <ul>
+      <li>Added compile error handler and warning handler to ICompiler.</li>
+      <li>Added "parsePackageDeclaration()" for better backwards compatibility.</li>
+      <li>Static single imports did not work for top-level class declaration annotations.</li>
+      <li>Added test cases for the ternary operator.</li>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/91">Issue #91: Read and modify line number table
+        during compilation</a>
+      </li>
+      <li>
+        Test case that reproduces the "NotNullByDefault.java, Line 49, Column 11: Expression TYPE is not an rvalue"
+        bug.
+      </li>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/90">Issue #90: "Incompatible expression types" or
+        verification errors when using ternary expressions with null in one branch</a>
+      </li>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/88">#88: Support for JDK 9/10 in Full Compiler</a>
+      </li>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/86">Issue #86: OSGi Manifest: optional Ant
+        dependencies in OSGi metadata</a>
+      </li>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/85">Fixed #85 "Ternary expression resolves to
+        strange supertype"</a>
+      </li>
+      <li>
+        The syntax elements that can have modifiers now all have sets of "is...()" methods that check for each
+        modifier. Some also have methods "getAccess()" and/or "getAnnotations()".
+      </li>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/83">Issue #83: Implement "type annotations"
+        (JLS8 9.7.4)
+      </li>
+      <li>Implemented parsing (but not compilation) of "modular compilation units" (JLS11 7.3).</li>
+      <li>
+        Simplified the debug configuration; instead of "-D disasm=true" use "-D
+        UnitCompiler.disassembleClassFilesToStdout=true".
+      </li>
+      <li>Allow space in empty method/constructor body (for "}" alignment).</li>
+      <li>
+        CheckStyle clean-up with cs-contrib 1.2.19: Now not only the "{" of method declarations must be aligned, but
+        also the "}".
+      </li>
+      <li>Added test cases for Java modifiers.</li>
+      <li>
+        Replaced all "assert...Uncookable(..., Pattern messageRegex)" and "assert...Uncookable(..., String
+        messageInfix)" method pairs with a single "assert...Uncookable(..., String messageRegex)" method.
+      </li>
+      <li>
+        Minor refactoring: Allowed modifiers are now checked in the Parser, not in Java.*. This saves a lot of THROWS
+        clauses.
+      </li>
+      <li>
+        Major refactoring: Access modifiers (public, static, ...) and annotations now exist in a proper type hierarchy;
+        the parser no longer uses the (.class file-related) "Mod" class.
+      </li>
+      <li>Added "allowMultipleArgsPerLine=true", because that makes sense with VARARGS arguments.</li>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/78">Issue #78: Parse Type inference syntax</a>:
+        Type inference for generic instance creation implemented, test cases added.
+      </li>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/77">Issue #77: Parse MethodReference,
+        ClassInstanceCreationReference and ArrayCreationReference</a>
+      </li>
     </ul>
 
     <h4>Version 3.0.12, 2019-01-18</h4>
