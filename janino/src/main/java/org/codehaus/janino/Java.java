@@ -652,6 +652,14 @@ class Java {
         accept(Visitor.AnnotationVisitor<R, EX> visitor) throws EX { return visitor.visitNormalAnnotation(this); }
     }
 
+    /**
+     * @deprecated Many methods that previously accepted a parameter of this type now take a {@link Modifier}{@code
+     *             []} (incompatible API change in JANINO version 3.0.13)
+     */
+    @Deprecated public static
+    class Modifiers {
+    }
+
     public
     interface Modifier extends Locatable {
 
