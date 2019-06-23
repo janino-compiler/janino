@@ -14,8 +14,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.executable>C:\Program Files\Java\jdk1.6.0_43\bin\javac.exe</maven.compiler.executable>
-    <JAVA_HOME>C:\Program Files\Java\jdk1.6.0_43</JAVA_HOME>
+    <maven.compiler.executable>C:\Program Files\Java\jdk1.6.0_41\bin\javac.exe</maven.compiler.executable>
+    <JAVA_HOME>C:\Program Files\Java\jdk1.6.0_41</JAVA_HOME>
   </properties>
 
   <artifactId>janino-parent</artifactId>
@@ -24,7 +24,7 @@
 
   <groupId>org.codehaus.janino</groupId>
   <packaging>pom</packaging>
-  <version>3.0.13</version>
+  <version>3.0.14-SNAPSHOT</version>
   <dependencyManagement>
   	<dependencies>
   		<dependency>
