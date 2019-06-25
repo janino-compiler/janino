@@ -35,7 +35,6 @@ import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.InternalCompilerException;
 
-
 /**
  * A {@link ClassLoader} that uses a {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} to find
  * ".class" files.
