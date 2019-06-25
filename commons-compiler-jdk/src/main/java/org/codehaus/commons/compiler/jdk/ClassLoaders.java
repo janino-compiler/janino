@@ -40,9 +40,9 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.codehaus.commons.compiler.java8.java.util.function.Consumer;
 import org.codehaus.commons.compiler.java9.java.lang.module.ModuleFinder;
 import org.codehaus.commons.compiler.java9.java.lang.module.ModuleReference;
-import org.codehaus.commons.compiler.java9.java.util.function.Consumer;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -192,6 +192,8 @@ class ClassLoaders {
 
                                 // This ".class" (?) file exists in every module, and we don't want to list it.
                                 if ("module-info.class".equals(resourceName)) return;
+                                // Also this one:
+                                if ("_imported.marker".equals(resourceName)) return;
 
                                 if (
                                     resourceName.startsWith(name)
