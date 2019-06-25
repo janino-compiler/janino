@@ -34,6 +34,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -568,6 +569,45 @@ class JlsTest extends CommonsCompilerTestSuite {
         );
 
         this.assertExpressionUncookable("new Object() { public void toString() {}}.toString()", "incompatible");
+    }
+
+    @Test public void
+    test_8_6__Instance_Initializers() throws Exception {
+
+        this.assertClassBodyMainReturnsTrue((
+            ""
+            + "public static boolean main() { return new " + IClassBodyEvaluator.DEFAULT_CLASS_NAME + "().inited; }\n"
+            + "boolean inited;\n"
+            + "{ this.inited = true; }\n"
+        ));
+
+        // Inistance initializer with local variable.
+        // See issue #89.
+        this.assertClassBodyMainReturnsTrue((
+            ""
+            + "public static boolean main() { return new " + IClassBodyEvaluator.DEFAULT_CLASS_NAME + "().inited; }\n"
+            + "boolean inited;\n"
+            + "{ boolean b = true; this.inited = b; }\n"
+        ));
+    }
+
+    @Test public void
+    test_8_7__Static_Initializers() throws Exception {
+
+        this.assertClassBodyMainReturnsTrue((
+            ""
+            + "public static boolean main() { return " + IClassBodyEvaluator.DEFAULT_CLASS_NAME + ".inited; }\n"
+            + "static boolean inited;\n"
+            + "static { " + IClassBodyEvaluator.DEFAULT_CLASS_NAME + ".inited = true; }\n"
+        ));
+
+        // Static initializer with local variable.
+        this.assertClassBodyMainReturnsTrue((
+            ""
+            + "public static boolean main() { return " + IClassBodyEvaluator.DEFAULT_CLASS_NAME + ".inited; }\n"
+            + "static boolean inited;\n"
+            + "static { boolean b = true; " + IClassBodyEvaluator.DEFAULT_CLASS_NAME + ".inited = b; }\n"
+        ));
     }
 
     @Test public void
