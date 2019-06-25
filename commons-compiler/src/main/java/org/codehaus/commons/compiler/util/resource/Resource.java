@@ -29,7 +29,6 @@ package org.codehaus.commons.compiler.util.resource;
 import java.io.IOException;
 import java.io.InputStream;
 
-
 /**
  * A {@link Resource} is "something" that is typically found by a {@link
  * org.codehaus.commons.compiler.util.resource.ResourceFinder}, can be {@link #open()}ed for reading, and optionally
