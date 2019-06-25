@@ -33,7 +33,8 @@ class Classes {
     private Classes() {}
 
     /**
-     * Shorthand for {@link #load(ClassLoader, String) load}{@code (ClassLoader.getSystemClassLoader(),} <var>className</var>{@code )}.
+     * Shorthand for {@link #load(ClassLoader, String) load}{@code (ClassLoader.getSystemClassLoader(),}
+     * <var>className</var>{@code )}.
      */
     public static Class<?>
     load(String className) { return Classes.load(ClassLoader.getSystemClassLoader(), className); }
