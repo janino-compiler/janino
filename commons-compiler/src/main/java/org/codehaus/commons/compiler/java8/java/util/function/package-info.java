@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2018 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2019 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -23,17 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.java9.java.util;
-
 /**
- * Pre-Java-9-compatible facade for Java 9's {@code java.util.Optional} class.
+ * A set of (rudimentary) proxies for Java-8+ classes that also compile for Java 6 and 7.
  */
-public
-class Optional<T> {
+@NotNullByDefault
+package org.codehaus.commons.compiler.java8.java.util.function;
 
-    private final T value;
-
-    public Optional(T value) { this.value = value; }
-
-    public T get() { return this.value; }
-}
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

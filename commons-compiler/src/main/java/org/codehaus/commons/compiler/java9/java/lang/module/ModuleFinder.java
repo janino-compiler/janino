@@ -25,110 +25,55 @@
 
 package org.codehaus.commons.compiler.java9.java.lang.module;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URI;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.codehaus.commons.compiler.java9.java.util.Optional;
+import org.codehaus.commons.compiler.util.reflect.Classes;
+import org.codehaus.commons.compiler.util.reflect.Methods;
+import org.codehaus.commons.compiler.util.reflect.NoException;
 
 /**
  * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleFinder} class.
  */
-public
+public final
 class ModuleFinder {
 
-    // SUPPRESS CHECKSTYLE ConstantName|LineLength:3
-    private static final Class<?> java_lang_module_ModuleFinder    = ModuleFinder.loadClass("java.lang.module.ModuleFinder");
-    private static final Class<?> java_lang_module_ModuleReference = ModuleFinder.loadClass("java.lang.module.ModuleReference");
-    private static final Class<?> java_util_Optional               = ModuleFinder.loadClass("java.util.Optional");
+    private static final Class<?> CLASS = Classes.load("java.lang.module.ModuleFinder");
 
-    // SUPPRESS CHECKSTYLE ConstantName|LineLength:5
-    private static final Method java_lang_module_ModuleFinder_ofSystem    = ModuleFinder.getDeclaredMethod(ModuleFinder.java_lang_module_ModuleFinder,    "ofSystem");
-    private static final Method java_lang_module_ModuleFinder_findAll     = ModuleFinder.getDeclaredMethod(ModuleFinder.java_lang_module_ModuleFinder,    "findAll");
-    private static final Method java_lang_module_ModuleReference_location = ModuleFinder.getDeclaredMethod(ModuleFinder.java_lang_module_ModuleReference, "location");
-    private static final Method java_util_Optional_get                    = ModuleFinder.getDeclaredMethod(ModuleFinder.java_util_Optional,               "get");
-    private static final Method java_lang_module_ModuleReference_open     = ModuleFinder.getDeclaredMethod(ModuleFinder.java_lang_module_ModuleReference, "open");
+    // SUPPRESS CHECKSTYLE ConstantName:2
+    private static final Method METHOD_ofSystem = Classes.getDeclaredMethod(ModuleFinder.CLASS, "ofSystem");
+    private static final Method METHOD_findAll  = Classes.getDeclaredMethod(ModuleFinder.CLASS, "findAll");
 
-    private static final ModuleFinder INSTANCE = new ModuleFinder();
+    private final /*java.lang.module.ModuleFinder*/ Object delegate;
+
+    private
+    ModuleFinder(/*java.lang.module.ModuleFinder*/ Object delegate) { this.delegate = delegate; }
 
     public static ModuleFinder
-    ofSystem() { return ModuleFinder.INSTANCE; }
+    ofSystem() { return new ModuleFinder(Methods.<Object, NoException>invoke(ModuleFinder.METHOD_ofSystem, null)); }
 
     public Set<ModuleReference>
     findAll() {
-        Set<ModuleReference> result = new HashSet<ModuleReference>();
 
-        try {
+        return (Set<ModuleReference>) ModuleFinder.wrapModuleReferences(
+            (Set<?>) Methods.<Set<?>, NoException>invoke(ModuleFinder.METHOD_findAll, this.delegate),
+            new HashSet<ModuleReference>()
+        );
+    }
 
-
-//          for (final java.lang.module.ModuleReference mref : java.lang.module.ModuleFinder.ofSystem().findAll()) {
-            /*java.lang.module.ModuleFinder*/ Object
-            moduleFinder = ModuleFinder.java_lang_module_ModuleFinder_ofSystem.invoke(null);
-            for (
-                final /*java.lang.module.ModuleReference*/ Object mref
-                : (Set<?>) ModuleFinder.java_lang_module_ModuleFinder_findAll.invoke(moduleFinder)
-            ) {
-
-                result.add(new ModuleReference() {
-
-                    @Override public Optional<URI>
-                    location() {
-
-                        try {
-
-//                          return new Optional<URI>(mref.location().get());
-                            // SUPPRESS CHECKSTYLE LineLength:2
-                            Object /*java.util.Optional<URI>*/ optional = ModuleFinder.java_lang_module_ModuleReference_location.invoke(mref);
-                            URI                                uri      = (URI) ModuleFinder.java_util_Optional_get.invoke(optional);
-                            return new Optional<URI>(uri);
-                        } catch (Exception e) {
-                            throw new AssertionError(e);
-                        }
-                    }
-
-                    @Override public ModuleReader
-                    open() throws IOException {
-
-                        try {
-
-//                          return new ModuleReader(mref.open());
-                            return new ModuleReader(ModuleFinder.java_lang_module_ModuleReference_open.invoke(mref));
-                        } catch (InvocationTargetException ite) {
-                            Throwable te = ite.getTargetException();
-                            if (te instanceof IOException) throw (IOException) te;
-                            throw new AssertionError(ite);
-                        } catch (Exception e) {
-                            throw new AssertionError(e);
-                        }
-                    }
-                });
-            }
-        } catch (Exception e) {
-            throw new AssertionError(e);
+    /**
+     * Wraps each {@code java.lang.module.ModuleReference} in a {@link ModuleReference} and adds these to the
+     * <var>result</var>.
+     *
+     * @return The <var>result</var>
+     */
+    private static <C extends Collection<ModuleReference>> C
+    wrapModuleReferences(Collection</*java.lang.module.ModuleReference*/ ?> moduleReferences, C result) {
+        for (/*java.lang.module.ModuleReference*/ Object mref : moduleReferences) {
+            result.add(new ModuleReference(mref));
         }
-
-
         return result;
-    }
-
-    private static Class<?>
-    loadClass(String className) {
-        try {
-            return ClassLoader.getSystemClassLoader().loadClass(className);
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
-    }
-
-    private static Method
-    getDeclaredMethod(Class<?> declaringClass, String methodName, Class<?>... parameterTypes) {
-        try {
-            return declaringClass.getDeclaredMethod(methodName, parameterTypes);
-        } catch (Exception e) {
-            throw new AssertionError(e);
-        }
     }
 }

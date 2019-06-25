@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2018 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2019 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -23,35 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.java9.java.lang.module;
+@NotNullByDefault
+package org.codehaus.commons.compiler.util.reflect;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-
-import org.codehaus.commons.compiler.java8.java.util.stream.Stream;
-import org.codehaus.commons.compiler.util.reflect.Classes;
-import org.codehaus.commons.compiler.util.reflect.Methods;
-
-/**
- * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleReader} class.
- */
-public
-class ModuleReader {
-
-    private static final Class<?> CLASS = Classes.load("java.lang.module.ModuleReader");
-
-    // SUPPRESS CHECKSTYLE ConstantName:1
-    private static final Method METHOD_list = Classes.getDeclaredMethod(ModuleReader.CLASS, "list");
-
-    private final /*java.lang.module.ModuleReader*/ Object delegate;
-
-    public
-    ModuleReader(/*java.lang.module.ModuleReader*/ Object delegate) {
-        this.delegate = delegate;
-    }
-
-    public Stream<String>
-    list() throws IOException {
-        return new Stream<String>(Methods.<Object, IOException>invoke(ModuleReader.METHOD_list, this.delegate));
-    }
-}
+import org.codehaus.commons.nullanalysis.NotNullByDefault;

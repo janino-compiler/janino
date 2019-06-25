@@ -26,15 +26,38 @@
 package org.codehaus.commons.compiler.java9.java.lang.module;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 
-import org.codehaus.commons.compiler.java9.java.util.Optional;
+import org.codehaus.commons.compiler.java8.java.util.Optional;
+import org.codehaus.commons.compiler.util.reflect.Classes;
+import org.codehaus.commons.compiler.util.reflect.Methods;
+import org.codehaus.commons.compiler.util.reflect.NoException;
 
 /**
  * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleReference} interface.
  */
 public
-interface ModuleReference {
-    Optional<URI> location();
-    ModuleReader  open() throws IOException;
+class ModuleReference {
+
+    private static final Class<?> CLASS = Classes.load("java.lang.module.ModuleReference");
+
+    // SUPPRESS CHECKSTYLE ConstantName:2
+    private static final Method METHOD_location = Classes.getDeclaredMethod(ModuleReference.CLASS, "location");
+    private static final Method METHOD_open     = Classes.getDeclaredMethod(ModuleReference.CLASS, "open");
+
+    private final /*java.lang.module.ModuleReference*/ Object delegate;
+
+    public
+    ModuleReference(/*java.lang.module.ModuleReference*/ Object delegate) { this.delegate = delegate; }
+
+    public Optional<URI>
+    location() {
+        return new Optional<URI>(Methods.<URI, NoException>invoke(ModuleReference.METHOD_location, this.delegate));
+    }
+
+    public ModuleReader
+    open() throws IOException {
+        return new ModuleReader(Methods.<Object, IOException>invoke(ModuleReference.METHOD_open, this.delegate));
+    }
 }

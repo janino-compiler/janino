@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2018 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2019 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -23,35 +23,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.java9.java.lang.module;
+package org.codehaus.commons.compiler.java8.java.util.function;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-
-import org.codehaus.commons.compiler.java8.java.util.stream.Stream;
 import org.codehaus.commons.compiler.util.reflect.Classes;
 import org.codehaus.commons.compiler.util.reflect.Methods;
+import org.codehaus.commons.compiler.util.reflect.NoException;
+import org.codehaus.commons.compiler.util.reflect.Proxies;
 
 /**
- * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleReader} class.
+ * Helper methods for the {@link Consumer} facade.
  */
-public
-class ModuleReader {
+public final
+class Consumers {
 
-    private static final Class<?> CLASS = Classes.load("java.lang.module.ModuleReader");
+    private Consumers() {}
 
-    // SUPPRESS CHECKSTYLE ConstantName:1
-    private static final Method METHOD_list = Classes.getDeclaredMethod(ModuleReader.CLASS, "list");
+    /**
+     * @param delegate Must be a {@code java.util.Consumer}
+     * @return         A {@link Consumer} that forwards all invocations of {@link Consumer#accept(Object)} to the
+     *                 <var>delegate</var>
+     */
+    public static <T> Consumer<T>
+    from(/*java.util.function.Consumer*/ final Object delegate) {
 
-    private final /*java.lang.module.ModuleReader*/ Object delegate;
+        return new Consumer<T>() {
 
-    public
-    ModuleReader(/*java.lang.module.ModuleReader*/ Object delegate) {
-        this.delegate = delegate;
+            @Override public void
+            accept(T t) { Methods.<Void, NoException>invoke(Consumer.METHOD_accept__T, delegate, t); }
+        };
     }
 
-    public Stream<String>
-    list() throws IOException {
-        return new Stream<String>(Methods.<Object, IOException>invoke(ModuleReader.METHOD_list, this.delegate));
+    /**
+     * @return A {@code java.util.Consumer} that forwards all invocations of {@code accept(T)} to the
+     *         <var>delegate</var>.
+     */
+    public static <T> /*java.util.Consumer*/ Object
+    from(Consumer<T> delegate) {
+        return Proxies.newInstance(
+            delegate,
+            Consumer.METHOD_accept__T,
+            Classes.getDeclaredMethod(delegate.getClass(), "accept", Object.class)
+        );
     }
 }

@@ -2,8 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2013 Arno Unkrig. All rights reserved.
- * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
+ * Copyright (c) 2019 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,11 +23,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * A set of (rudimentary) proxies for Java-9+ classes that also compile for Java 6-8.
- */
-@NotNullByDefault
-package org.codehaus.commons.compiler.java9.java.util.function;
+package org.codehaus.commons.compiler.util.reflect;
 
-import org.codehaus.commons.nullanalysis.NotNullByDefault;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
+import org.codehaus.commons.nullanalysis.Nullable;
+
+public final
+class Methods {
+
+    private Methods() {}
+
+    public static <R, EX extends Throwable> R
+    invoke(Method method, @Nullable Object obj, Object... args) throws EX {
+        try {
+            @SuppressWarnings("unchecked") R returnValue = (R) method.invoke(obj, args);
+            return returnValue;
+        } catch (InvocationTargetException ite) {
+            @SuppressWarnings("unchecked") EX targetException = (EX) ite.getTargetException();
+            throw targetException;
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+}

@@ -23,12 +23,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.java9.java.util.function;
+package org.codehaus.commons.compiler.java8.java.util;
+
+import java.lang.reflect.Method;
+
+import org.codehaus.commons.compiler.util.reflect.Classes;
+import org.codehaus.commons.compiler.util.reflect.Methods;
+import org.codehaus.commons.compiler.util.reflect.NoException;
 
 /**
- * Pre-Java-9-compatible facade for Java 9's {@code java.util.function.Consumer} interface.
+ * Pre-Java-9-compatible facade for Java 9's {@code java.util.Optional} class.
  */
 public
-interface Consumer<T> {
-    void accept(T t);
+class Optional<T> {
+
+    private static final Class<?> CLASS = Classes.load("java.util.Optional");
+
+    // SUPPRESS CHECKSTYLE ConstantName:1
+    private static final Method METHOD_get = Classes.getDeclaredMethod(Optional.CLASS, "get");
+
+    private final /*java.util.Optional<T>*/ Object delegate;
+
+    public
+    Optional(/*java.util.Optional<T>*/ Object delegate) { this.delegate = delegate; }
+
+    public T
+    get() { return Methods.<T, NoException>invoke(Optional.METHOD_get, this.delegate); }
 }

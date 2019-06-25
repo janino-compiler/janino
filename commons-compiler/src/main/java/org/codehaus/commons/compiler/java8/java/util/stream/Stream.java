@@ -2,8 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2013 Arno Unkrig. All rights reserved.
- * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
+ * Copyright (c) 2018 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,11 +23,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+package org.codehaus.commons.compiler.java8.java.util.stream;
+
+import java.lang.reflect.Method;
+
+import org.codehaus.commons.compiler.java8.java.util.function.Consumer;
+import org.codehaus.commons.compiler.java8.java.util.function.Consumers;
+import org.codehaus.commons.compiler.util.reflect.Classes;
+import org.codehaus.commons.compiler.util.reflect.Methods;
+import org.codehaus.commons.compiler.util.reflect.NoException;
+
 /**
- * A set of (rudimentary) proxies for Java-9+ classes that also compile for Java 6-8.
+ * Pre-Java-8-compatible facade for Java 8's {@code java.util.stream.Stream} class.
  */
-@NotNullByDefault
-package org.codehaus.commons.compiler.java9.java.util;
+public
+class Stream<T> {
 
-import org.codehaus.commons.nullanalysis.NotNullByDefault;
+    private static final Class<?> CLASS = Classes.load("java.util.stream.Stream");
 
+    // SUPPRESS CHECKSTYLE ConstantName:1
+    private static final Method METHOD_forEach = Classes.getDeclaredMethod(Stream.CLASS, "forEach", Consumer.CLASS);
+
+    private final /*java.util.stream.Stream<T>*/ Object delegate;
+
+    public
+    Stream(/*java.util.stream.Stream<T>*/ Object delegate) { this.delegate = delegate; }
+
+    public void
+    forEach(final Consumer<? super T> action) {
+        Methods.<Void, NoException>invoke(Stream.METHOD_forEach, this.delegate, Consumers.from(action));
+    }
+}

@@ -23,35 +23,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.java9.java.lang.module;
+package org.codehaus.commons.compiler.java8.java.util.function;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 
-import org.codehaus.commons.compiler.java8.java.util.stream.Stream;
 import org.codehaus.commons.compiler.util.reflect.Classes;
-import org.codehaus.commons.compiler.util.reflect.Methods;
 
 /**
- * Pre-Java-9-compatible facade for Java 9's {@code java.lang.module.ModuleReader} class.
+ * Facade for Java 8's {@code java.util.reflect.Consumer} interface.
  */
 public
-class ModuleReader {
+interface Consumer<T> {
 
-    private static final Class<?> CLASS = Classes.load("java.lang.module.ModuleReader");
+    Class<?> CLASS = Classes.load("java.util.function.Consumer");
 
     // SUPPRESS CHECKSTYLE ConstantName:1
-    private static final Method METHOD_list = Classes.getDeclaredMethod(ModuleReader.CLASS, "list");
+    Method METHOD_accept__T = Classes.getDeclaredMethod(Consumer.CLASS, "accept", Object.class);
 
-    private final /*java.lang.module.ModuleReader*/ Object delegate;
-
-    public
-    ModuleReader(/*java.lang.module.ModuleReader*/ Object delegate) {
-        this.delegate = delegate;
-    }
-
-    public Stream<String>
-    list() throws IOException {
-        return new Stream<String>(Methods.<Object, IOException>invoke(ModuleReader.METHOD_list, this.delegate));
-    }
+    void accept(T t);
 }
