@@ -43,7 +43,6 @@ import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
 
-
 /**
  * This {@link org.codehaus.janino.IClassLoader} finds, scans and parses compilation units.
  * <p>
@@ -66,7 +65,6 @@ class JavaSourceIClassLoader extends IClassLoader {
 
     @Nullable private ErrorHandler   optionalCompileErrorHandler;
     @Nullable private WarningHandler optionalWarningHandler;
-
 
     public
     JavaSourceIClassLoader(

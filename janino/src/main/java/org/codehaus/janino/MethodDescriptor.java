@@ -83,7 +83,6 @@ class MethodDescriptor {
         this.returnFd     = s.substring(++from);
     }
 
-
     @Override public boolean
     equals(@Nullable Object obj) {
         if (obj == this) return true;

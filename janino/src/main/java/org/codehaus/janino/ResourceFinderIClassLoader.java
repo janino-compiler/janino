@@ -34,7 +34,6 @@ import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
 
-
 /**
  * This {@link org.codehaus.janino.IClassLoader} loads IClasses through a a {@link
  * org.codehaus.commons.compiler.util.resource.ResourceFinder} that designates {@link

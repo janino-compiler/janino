@@ -568,7 +568,6 @@ class Scanner {
             );
         }
 
-
         if (this.peekRead('.')) { // E.g. ".9" or "123." or "123e"
             if (Scanner.isDecimalDigit(this.peek())) {
                 this.read();

@@ -4224,7 +4224,6 @@ class Java {
         @Override @Nullable public final <R, EX extends Throwable> R
         accept(ElementValueVisitor<R, EX> visitor) throws EX { return visitor.visitRvalue(this); }
 
-
         /**
          * Sets the enclosing scope for this object and all subordinate {@link Java.Rvalue} objects.
          */

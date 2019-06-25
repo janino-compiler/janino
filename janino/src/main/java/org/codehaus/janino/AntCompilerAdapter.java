@@ -182,5 +182,3 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
         return result;
     }
 }
-
-

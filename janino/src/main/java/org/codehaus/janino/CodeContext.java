@@ -126,7 +126,6 @@ class CodeContext {
     public ClassFile
     getClassFile() { return this.classFile; }
 
-
     /**
      * Allocates space for a local variable of the given size (1 or 2) on the local variable array.
      * <p>
