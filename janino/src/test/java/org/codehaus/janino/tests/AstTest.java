@@ -149,7 +149,6 @@ class AstTest {
         clazz.addDeclaredMethod(method);
     }
 
-
     private static LocalVariableDeclarationStatement
     createVarDecl(String name, String fPValue) {
         return new Java.LocalVariableDeclarationStatement(

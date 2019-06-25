@@ -303,7 +303,10 @@ class CompilerTest {
 
         ClassLoader bootstrapClassLoader = ICookable.BOOT_CLASS_LOADER;
         File[]      sourceFiles          = {
-            new File(CompilerTest.COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/java9/java/util/Stream.java"),
+            new File((
+                CompilerTest.COMMONS_COMPILER_SRC
+                + "/org/codehaus/commons/compiler/java8/java/util/stream/Stream.java"
+            )),
         };
         ResourceFinder sourceFinder = new MultiResourceFinder(Arrays.asList(new ResourceFinder[] {
             new DirectoryResourceFinder(new File(CompilerTest.JANINO_SRC)),
@@ -459,7 +462,6 @@ class CompilerTest {
         ISimpleCompiler sc = new SimpleCompiler();
         sc.cook(cu);
     }
-
 
     // This is currently failing
     // https://github.com/codehaus/janino/issues/4

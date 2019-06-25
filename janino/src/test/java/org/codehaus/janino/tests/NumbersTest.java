@@ -112,7 +112,6 @@ class NumbersTest {
         });
     }
 
-
     /**
      * @throws AssertionError {@link Numbers#parseUnsignedLong(String, int)} does not complete normally
      */
