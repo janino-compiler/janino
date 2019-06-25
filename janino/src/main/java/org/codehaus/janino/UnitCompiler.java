@@ -312,7 +312,6 @@ class UnitCompiler {
     public AbstractCompilationUnit
     getAbstractCompilationUnit() { return this.abstractCompilationUnit; }
 
-
     /**
      * Generates an array of {@link ClassFile} objects which represent the classes and interfaces declared in the
      * compilation unit.
@@ -1433,7 +1432,6 @@ class UnitCompiler {
             return;
         }
 
-
         ClassFile.MethodInfo mi = cf.addMethodInfo(
             (short) (Mod.PUBLIC | Mod.SYNTHETIC), // accessFlags
             base.getName(),
@@ -1549,6 +1547,9 @@ class UnitCompiler {
 
     private boolean
     compile2(Initializer i) throws CompileException {
+
+        this.buildLocalVariableMap(i.block, new HashMap<String, LocalVariable>());
+
         return this.compile(i.block);
     }
 
@@ -1820,7 +1821,7 @@ class UnitCompiler {
             }
         } else
         {
-            this.compileError("Cannot iterate over \"" + expressionType + "\"");
+            this.compileError("Cannot iterate over \"" + expressionType + "\"", fes.expression.getLocation());
         }
         return true;
     }
@@ -5461,7 +5462,6 @@ class UnitCompiler {
 
         Location loc                   = naci.getLocation();
         Rvalue   optionalQualification = naci.optionalQualification;
-
 
         // Determine the formal parameters of the anonymous constructor.
         IClass[]         scpts = superclassIConstructor.getParameterTypes();
@@ -10685,12 +10685,6 @@ class UnitCompiler {
 
         return result;
     }
-
-//    /**
-//     * To be used only by {@link #importTypeOnDemand(String, Location)}; {@code null} means "not yet initialized.
-//     */
-//    @Nullable private Collection<String[]> typeImportsOnDemand;
-
 
     /**
      * @param value A {@link Character}, {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float},
