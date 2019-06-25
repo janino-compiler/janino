@@ -990,6 +990,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     @Test public void
     testIssue69_IncompatibleClassChangeError_when_evaluating_against_janino9plus() throws Exception {
 
+        // Return if STREAMS are not (yet) available, i.e. a pre-1.8 JRE.
         try {
             ClassLoader.getSystemClassLoader().loadClass("java.util.stream.Stream");
         } catch (ClassNotFoundException cnfe) {
