@@ -63,7 +63,6 @@ class CommonsCompilerTestSuite {
         JVM_VERSION = Integer.parseInt(m.group(1));
     }
 
-
     public final boolean isJdk, isJanino;
 
     /**
