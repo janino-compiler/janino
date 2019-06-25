@@ -45,6 +45,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.MethodDescriptor;
 import org.codehaus.janino.Mod;
+import org.codehaus.janino.util.ClassFile.ConstantElementValue;
 
 /**
  * An object that implements the Java "class file" format.
@@ -2977,7 +2978,6 @@ class ClassFile implements Annotatable {
             R visitEnumConstValue(EnumConstValue subject) throws EX;
         }
     }
-
 
     /**
      * Convenience class for element values that are constants (as opposed to annotations, enum constants and
