@@ -89,14 +89,23 @@ class JavaSourceClassLoaderTest {
         jscl.loadClass("test.Func1");
     }
 
-    @Test public void
-    testCircularStaticImports() throws Exception {
-        AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
-            ClassLoader.getSystemClassLoader().getParent()
-        );
-        jscl.setSourcePath(new File[] { new File("src/test/resources/testCircularStaticImports/") });
-        jscl.loadClass("test.Func1");
-    }
+   @Test public void
+   testCircularStaticImports() throws Exception {
+      AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
+        ClassLoader.getSystemClassLoader().getParent()
+      );
+      jscl.setSourcePath(new File[] { new File("src/test/resources/testCircularStaticImports/") });
+      jscl.loadClass("test.Func1");
+   }
+
+   @Test public void
+   testOverloadedStaticImports() throws Exception {
+      AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
+        ClassLoader.getSystemClassLoader().getParent()
+      );
+      jscl.setSourcePath(new File[] { new File("src/test/resources/testOverloadedStaticImports/") });
+      jscl.loadClass("test.StaticImports");
+   }
 
     private static ClassLoader
     getExtensionsClassLoader() throws ClassNotFoundException {

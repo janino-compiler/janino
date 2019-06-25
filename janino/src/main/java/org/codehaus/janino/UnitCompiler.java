@@ -9152,22 +9152,21 @@ class UnitCompiler {
             if (iMethod != null) break FIND_METHOD;
 
             // Static method declared through static-import-on-demand?
+           List<IMethod> candidates = new ArrayList<IMethod>();
             for (Object o : this.importStaticOnDemand(mi.methodName)) {
 
-                if (!(o instanceof IMethod)) continue;
-                IMethod im = (IMethod) o;
+               if (!(o instanceof IMethod)) continue;
 
-                if (iMethod != null) {
-                    this.compileError(
-                        "Ambiguous static method import: \""
-                        + iMethod.toString()
-                        + "\" vs. \""
-                        + im.toString()
-                        + "\""
-                    );
-                }
+               candidates.add((IMethod) o);
+            }
 
-                iMethod = im;
+            if (!candidates.isEmpty()) {
+               iMethod = (IMethod) this.findMostSpecificIInvocable(
+                 mi,
+                 (IMethod[]) candidates.toArray(new IMethod[candidates.size()]),
+                 mi.arguments,
+                 mi.getEnclosingScope()
+               );
             }
             if (iMethod != null) break FIND_METHOD;
 
