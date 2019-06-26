@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6};
+var methods = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -47,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../org/codehaus/commons/compiler/IClassBodyEvaluator.html" title="interface in org.codehaus.commons.compiler"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../../org/codehaus/commons/compiler/ICookable.html" title="interface in org.codehaus.commons.compiler"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -139,26 +139,30 @@ var activeTableTab = "activeTableTab";
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/commons/compiler/ICompilerFactory.html#newClassBodyEvaluator--">newClassBodyEvaluator</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
+<td class="colFirst"><code><a href="../../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/commons/compiler/ICompilerFactory.html#newCompiler--">newCompiler</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="../../../../org/codehaus/commons/compiler/IExpressionEvaluator.html" title="interface in org.codehaus.commons.compiler">IExpressionEvaluator</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/commons/compiler/ICompilerFactory.html#newExpressionEvaluator--">newExpressionEvaluator</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code><a href="../../../../org/codehaus/commons/compiler/AbstractJavaSourceClassLoader.html" title="class in org.codehaus.commons.compiler">AbstractJavaSourceClassLoader</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/commons/compiler/ICompilerFactory.html#newJavaSourceClassLoader--">newJavaSourceClassLoader</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code><a href="../../../../org/codehaus/commons/compiler/AbstractJavaSourceClassLoader.html" title="class in org.codehaus.commons.compiler">AbstractJavaSourceClassLoader</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/commons/compiler/ICompilerFactory.html#newJavaSourceClassLoader-java.lang.ClassLoader-">newJavaSourceClassLoader</a></span>(java.lang.ClassLoader&nbsp;parentClassLoader)</code>&nbsp;</td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code><a href="../../../../org/codehaus/commons/compiler/IScriptEvaluator.html" title="interface in org.codehaus.commons.compiler">IScriptEvaluator</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/commons/compiler/ICompilerFactory.html#newScriptEvaluator--">newScriptEvaluator</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code><a href="../../../../org/codehaus/commons/compiler/ISimpleCompiler.html" title="interface in org.codehaus.commons.compiler">ISimpleCompiler</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/commons/compiler/ICompilerFactory.html#newSimpleCompiler--">newSimpleCompiler</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/commons/compiler/ICompilerFactory.html#toString--">toString</a></span>()</code>&nbsp;</td>
 </tr>
@@ -280,6 +284,21 @@ var activeTableTab = "activeTableTab";
 </dl>
 </li>
 </ul>
+<a name="newCompiler--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>newCompiler</h4>
+<pre><a href="../../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a>&nbsp;newCompiler()</pre>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.UnsupportedOperationException</code> - The underlying implementation does not implement an <a href="../../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler"><code>ICompiler</code></a></dd>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="../../../../org/codehaus/commons/compiler/ISimpleCompiler.html" title="interface in org.codehaus.commons.compiler"><code>ISimpleCompiler</code></a></dd>
+</dl>
+</li>
+</ul>
 <a name="newJavaSourceClassLoader--">
 <!--   -->
 </a>
@@ -337,7 +356,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../../org/codehaus/commons/compiler/IClassBodyEvaluator.html" title="interface in org.codehaus.commons.compiler"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../../org/codehaus/commons/compiler/ICookable.html" title="interface in org.codehaus.commons.compiler"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">

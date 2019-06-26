@@ -151,7 +151,7 @@ extends <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/JavaSourceIClassLoader.html#JavaSourceIClassLoader-org.codehaus.janino.util.resource.ResourceFinder-java.lang.String-org.codehaus.janino.IClassLoader-">JavaSourceIClassLoader</a></span>(<a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/JavaSourceIClassLoader.html#JavaSourceIClassLoader-org.codehaus.commons.compiler.util.resource.ResourceFinder-java.lang.String-org.codehaus.janino.IClassLoader-">JavaSourceIClassLoader</a></span>(<a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
                       java.lang.String&nbsp;optionalCharacterEncoding,
                       <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;optionalParentIClassLoader)</code>&nbsp;</td>
 </tr>
@@ -171,7 +171,7 @@ extends <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>protected <a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a></code></td>
+<td class="colFirst"><code>protected <a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/JavaSourceIClassLoader.html#findCompilationUnit-java.lang.String-">findCompilationUnit</a></span>(java.lang.String&nbsp;className)</code>
 <div class="block">Finds the Java source file for the named class through the configured 'source resource finder' and parses it.</div>
 </td>
@@ -208,7 +208,7 @@ extends <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/JavaSourceIClassLoader.html#setSourceFinder-org.codehaus.janino.util.resource.ResourceFinder-">setSourceFinder</a></span>(<a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;pathResourceFinder)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/JavaSourceIClassLoader.html#setSourceFinder-org.codehaus.commons.compiler.util.resource.ResourceFinder-">setSourceFinder</a></span>(<a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;sourceFinder)</code>&nbsp;</td>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>void</code></td>
@@ -220,7 +220,7 @@ extends <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a></h3>
-<code><a href="../../../org/codehaus/janino/IClassLoader.html#createJavacLikePathIClassLoader-java.io.File:A-java.io.File:A-java.io.File:A-">createJavacLikePathIClassLoader</a>, <a href="../../../org/codehaus/janino/IClassLoader.html#defineIClass-org.codehaus.janino.IClass-">defineIClass</a>, <a href="../../../org/codehaus/janino/IClassLoader.html#loadIClass-java.lang.String-">loadIClass</a>, <a href="../../../org/codehaus/janino/IClassLoader.html#postConstruct--">postConstruct</a></code></li>
+<code><a href="../../../org/codehaus/janino/IClassLoader.html#createJavacLikePathIClassLoader-java.io.File:A-java.io.File:A-java.io.File:A-">createJavacLikePathIClassLoader</a>, <a href="../../../org/codehaus/janino/IClassLoader.html#defineIClass-org.codehaus.janino.IClass-">defineIClass</a>, <a href="../../../org/codehaus/janino/IClassLoader.html#getParentIClassLoader--">getParentIClassLoader</a>, <a href="../../../org/codehaus/janino/IClassLoader.html#loadIClass-java.lang.String-">loadIClass</a>, <a href="../../../org/codehaus/janino/IClassLoader.html#postConstruct--">postConstruct</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -243,13 +243,13 @@ extends <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="JavaSourceIClassLoader-org.codehaus.janino.util.resource.ResourceFinder-java.lang.String-org.codehaus.janino.IClassLoader-">
+<a name="JavaSourceIClassLoader-org.codehaus.commons.compiler.util.resource.ResourceFinder-java.lang.String-org.codehaus.janino.IClassLoader-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>JavaSourceIClassLoader</h4>
-<pre>public&nbsp;JavaSourceIClassLoader(<a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
+<pre>public&nbsp;JavaSourceIClassLoader(<a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
                               <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                               java.lang.String&nbsp;optionalCharacterEncoding,
                               <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
@@ -274,16 +274,16 @@ extends <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in
 <div class="block">Returns the set of <a href="../../../org/codehaus/janino/UnitCompiler.html" title="class in org.codehaus.janino"><code>UnitCompiler</code></a>s that were created so far.</div>
 </li>
 </ul>
-<a name="setSourceFinder-org.codehaus.janino.util.resource.ResourceFinder-">
+<a name="setSourceFinder-org.codehaus.commons.compiler.util.resource.ResourceFinder-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>setSourceFinder</h4>
-<pre>public&nbsp;void&nbsp;setSourceFinder(<a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;pathResourceFinder)</pre>
+<pre>public&nbsp;void&nbsp;setSourceFinder(<a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;sourceFinder)</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>pathResourceFinder</code> - The source path</dd>
+<dd><code>sourceFinder</code> - The source path</dd>
 </dl>
 </li>
 </ul>
@@ -408,9 +408,9 @@ public&nbsp;<a href="../../../org/codehaus/janino/IClass.html" title="class in o
 <li class="blockList">
 <h4>findCompilationUnit</h4>
 <pre><a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-protected&nbsp;<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;findCompilationUnit(java.lang.String&nbsp;className)
-                                                       throws java.io.IOException,
-                                                              <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
+protected&nbsp;<a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a>&nbsp;findCompilationUnit(java.lang.String&nbsp;className)
+                                                               throws java.io.IOException,
+                                                                      <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
 <div class="block">Finds the Java source file for the named class through the configured 'source resource finder' and parses it.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>

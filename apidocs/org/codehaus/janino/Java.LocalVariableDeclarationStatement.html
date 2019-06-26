@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10};
+var methods = {"i0":10,"i1":10,"i2":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -147,7 +147,7 @@ extends <a href="../../../org/codehaus/janino/Java.Statement.html" title="class 
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a></code></td>
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.LocalVariableDeclarationStatement.html#modifiers">modifiers</a></span></code>
 <div class="block">The local variable modifiers (annotations and/or flags like FINAL).</div>
 </td>
@@ -193,8 +193,8 @@ extends <a href="../../../org/codehaus/janino/Java.Statement.html" title="class 
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.LocalVariableDeclarationStatement.html#LocalVariableDeclarationStatement-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifiers-org.codehaus.janino.Java.Type-org.codehaus.janino.Java.VariableDeclarator:A-">LocalVariableDeclarationStatement</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-                                 <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a>&nbsp;modifiers,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.LocalVariableDeclarationStatement.html#LocalVariableDeclarationStatement-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.Type-org.codehaus.janino.Java.VariableDeclarator:A-">LocalVariableDeclarationStatement</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+                                 <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                                  <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;type,
                                  <a href="../../../org/codehaus/janino/Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a>[]&nbsp;variableDeclarators)</code>&nbsp;</td>
 </tr>
@@ -221,6 +221,10 @@ extends <a href="../../../org/codehaus/janino/Java.Statement.html" title="class 
 </td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.LocalVariableDeclarationStatement.html#isFinal--">isFinal</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.LocalVariableDeclarationStatement.html#toString--">toString</a></span>()</code>&nbsp;</td>
 </tr>
@@ -273,7 +277,7 @@ extends <a href="../../../org/codehaus/janino/Java.Statement.html" title="class 
 <ul class="blockList">
 <li class="blockList">
 <h4>modifiers</h4>
-<pre>public final&nbsp;<a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a> modifiers</pre>
+<pre>public final&nbsp;<a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[] modifiers</pre>
 <div class="block">The local variable modifiers (annotations and/or flags like FINAL).</div>
 </li>
 </ul>
@@ -305,22 +309,19 @@ extends <a href="../../../org/codehaus/janino/Java.Statement.html" title="class 
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="LocalVariableDeclarationStatement-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifiers-org.codehaus.janino.Java.Type-org.codehaus.janino.Java.VariableDeclarator:A-">
+<a name="LocalVariableDeclarationStatement-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.Type-org.codehaus.janino.Java.VariableDeclarator:A-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>LocalVariableDeclarationStatement</h4>
 <pre>public&nbsp;LocalVariableDeclarationStatement(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-                                         <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a>&nbsp;modifiers,
+                                         <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                                          <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;type,
-                                         <a href="../../../org/codehaus/janino/Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a>[]&nbsp;variableDeclarators)
-                                  throws <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
+                                         <a href="../../../org/codehaus/janino/Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a>[]&nbsp;variableDeclarators)</pre>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>modifiers</code> - Only <code>final</code> allowed</dd>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code><a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -353,7 +354,7 @@ public&nbsp;&lt;R,EX extends java.lang.Throwable&gt;&nbsp;R&nbsp;accept(<a href=
 <a name="toString--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>toString</h4>
 <pre>public&nbsp;java.lang.String&nbsp;toString()</pre>
@@ -361,6 +362,15 @@ public&nbsp;&lt;R,EX extends java.lang.Throwable&gt;&nbsp;R&nbsp;accept(<a href=
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>toString</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
 </dl>
+</li>
+</ul>
+<a name="isFinal--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isFinal</h4>
+<pre>public&nbsp;boolean&nbsp;isFinal()</pre>
 </li>
 </ul>
 </li>

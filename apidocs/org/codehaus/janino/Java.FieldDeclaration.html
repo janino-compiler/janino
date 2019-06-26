@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -149,7 +149,7 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a></code></td>
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#modifiers">modifiers</a></span></code>
 <div class="block">The modifiers of this field declaration.</div>
 </td>
@@ -195,9 +195,9 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#FieldDeclaration-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifiers-org.codehaus.janino.Java.Type-org.codehaus.janino.Java.VariableDeclarator:A-">FieldDeclaration</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#FieldDeclaration-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.Type-org.codehaus.janino.Java.VariableDeclarator:A-">FieldDeclaration</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
                 java.lang.String&nbsp;optionalDocComment,
-                <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a>&nbsp;modifiers,
+                <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                 <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;type,
                 <a href="../../../org/codehaus/janino/Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a>[]&nbsp;variableDeclarators)</code>&nbsp;</td>
 </tr>
@@ -231,41 +231,65 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Access.html" title="enum in org.codehaus.janino">Access</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#getAccess--">getAccess</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#getAnnotations--">getAnnotations</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino">Java.TypeDeclaration</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#getDeclaringType--">getDeclaringType</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#getDocComment--">getDocComment</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#getModifiers--">getModifiers</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#hasDeprecatedDocTag--">hasDeprecatedDocTag</a></span>()</code>
 <div class="block">Returns <code>true</code> if the object has a doc comment and the <code>&amp;#64;deprecated</code> tag appears in the doc
  comment.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#isFinal--">isFinal</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#isPrivate--">isPrivate</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#isStatic--">isStatic</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#isTransient--">isTransient</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#isVolatile--">isVolatile</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#setDeclaringType-org.codehaus.janino.Java.TypeDeclaration-">setDeclaringType</a></span>(<a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino">Java.TypeDeclaration</a>&nbsp;declaringType)</code>
 <div class="block">Sets the type declaration that this declaration belongs to.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#setEnclosingScope-org.codehaus.janino.Java.Scope-">setEnclosingScope</a></span>(<a href="../../../org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>&nbsp;enclosingScope)</code>
 <div class="block">Sets the enclosing scope of this <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino"><code>Java.BlockStatement</code></a>.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FieldDeclaration.html#toString--">toString</a></span>()</code>&nbsp;</td>
 </tr>
@@ -325,7 +349,7 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 <ul class="blockList">
 <li class="blockList">
 <h4>modifiers</h4>
-<pre>public final&nbsp;<a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a> modifiers</pre>
+<pre>public final&nbsp;<a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[] modifiers</pre>
 <div class="block">The modifiers of this field declaration.</div>
 </li>
 </ul>
@@ -357,7 +381,7 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="FieldDeclaration-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifiers-org.codehaus.janino.Java.Type-org.codehaus.janino.Java.VariableDeclarator:A-">
+<a name="FieldDeclaration-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.Type-org.codehaus.janino.Java.VariableDeclarator:A-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -366,7 +390,7 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 <pre>public&nbsp;FieldDeclaration(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
                         <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                         java.lang.String&nbsp;optionalDocComment,
-                        <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a>&nbsp;modifiers,
+                        <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                         <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;type,
                         <a href="../../../org/codehaus/janino/Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a>[]&nbsp;variableDeclarators)</pre>
 </li>
@@ -426,34 +450,16 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 </dl>
 </li>
 </ul>
-<a name="getAnnotations--">
+<a name="getModifiers--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getAnnotations</h4>
-<pre>public&nbsp;<a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]&nbsp;getAnnotations()</pre>
+<h4>getModifiers</h4>
+<pre>public&nbsp;<a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;getModifiers()</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../../org/codehaus/janino/Java.Annotatable.html#getAnnotations--">getAnnotations</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/Java.Annotatable.html" title="interface in org.codehaus.janino">Java.Annotatable</a></code></dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>The annotations of this <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeDeclaration</code></a>, <a href="../../../org/codehaus/janino/Java.FieldDeclaration.html" title="class in org.codehaus.janino"><code>Java.FieldDeclaration</code></a>, <a href="../../../org/codehaus/janino/Java.MethodDeclarator.html" title="class in org.codehaus.janino"><code>Java.MethodDeclarator</code></a>
-         or <a href="../../../org/codehaus/janino/Java.ConstructorDeclarator.html" title="class in org.codehaus.janino"><code>Java.ConstructorDeclarator</code></a></dd>
-</dl>
-</li>
-</ul>
-<a name="isStatic--">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>isStatic</h4>
-<pre>public&nbsp;boolean&nbsp;isStatic()</pre>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../../org/codehaus/janino/Java.TypeBodyDeclaration.html#isStatic--">isStatic</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino">Java.TypeBodyDeclaration</a></code></dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>Whether this declaration has the STATIC modifier</dd>
+<dd><code><a href="../../../org/codehaus/janino/Java.TypeBodyDeclaration.html#getModifiers--">getModifiers</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino">Java.TypeBodyDeclaration</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -529,7 +535,7 @@ public&nbsp;java.lang.String&nbsp;getDocComment()</pre>
 <a name="hasDeprecatedDocTag--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>hasDeprecatedDocTag</h4>
 <pre>public&nbsp;boolean&nbsp;hasDeprecatedDocTag()</pre>
@@ -540,6 +546,76 @@ public&nbsp;java.lang.String&nbsp;getDocComment()</pre>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../../../org/codehaus/janino/Java.DocCommentable.html#hasDeprecatedDocTag--">hasDeprecatedDocTag</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/Java.DocCommentable.html" title="interface in org.codehaus.janino">Java.DocCommentable</a></code></dd>
 </dl>
+</li>
+</ul>
+<a name="getAccess--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAccess</h4>
+<pre>public&nbsp;<a href="../../../org/codehaus/janino/Access.html" title="enum in org.codehaus.janino">Access</a>&nbsp;getAccess()</pre>
+</li>
+</ul>
+<a name="getAnnotations--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAnnotations</h4>
+<pre>public&nbsp;<a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]&nbsp;getAnnotations()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/janino/Java.Annotatable.html#getAnnotations--">getAnnotations</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/Java.Annotatable.html" title="interface in org.codehaus.janino">Java.Annotatable</a></code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The annotations of this <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeDeclaration</code></a>, <a href="../../../org/codehaus/janino/Java.FieldDeclaration.html" title="class in org.codehaus.janino"><code>Java.FieldDeclaration</code></a>, <a href="../../../org/codehaus/janino/Java.MethodDeclarator.html" title="class in org.codehaus.janino"><code>Java.MethodDeclarator</code></a>
+         or <a href="../../../org/codehaus/janino/Java.ConstructorDeclarator.html" title="class in org.codehaus.janino"><code>Java.ConstructorDeclarator</code></a></dd>
+</dl>
+</li>
+</ul>
+<a name="isFinal--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isFinal</h4>
+<pre>public&nbsp;boolean&nbsp;isFinal()</pre>
+</li>
+</ul>
+<a name="isPrivate--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isPrivate</h4>
+<pre>public&nbsp;boolean&nbsp;isPrivate()</pre>
+</li>
+</ul>
+<a name="isStatic--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isStatic</h4>
+<pre>public&nbsp;boolean&nbsp;isStatic()</pre>
+</li>
+</ul>
+<a name="isTransient--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isTransient</h4>
+<pre>public&nbsp;boolean&nbsp;isTransient()</pre>
+</li>
+</ul>
+<a name="isVolatile--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isVolatile</h4>
+<pre>public&nbsp;boolean&nbsp;isVolatile()</pre>
 </li>
 </ul>
 </li>

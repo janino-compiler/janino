@@ -42,7 +42,7 @@
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../org/codehaus/janino/Unparser.html" title="class in org.codehaus.janino"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../org/codehaus/janino/Visitor.AnnotationVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../org/codehaus/janino/Visitor.AbstractCompilationUnitVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?org/codehaus/janino/Visitor.html" target="_top">Frames</a></li>
@@ -124,90 +124,104 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.AbstractCompilationUnitVisitor.html" title="interface in org.codehaus.janino">Visitor.AbstractCompilationUnitVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.AbstractCompilationUnitVisitor.html" title="type parameter in Visitor.AbstractCompilationUnitVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.AbstractCompilationUnitVisitor.html" title="type parameter in Visitor.AbstractCompilationUnitVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
+<div class="block">The visitor for the different kinds of <a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino"><code>Java.AbstractCompilationUnit</code></a>s.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.AnnotationVisitor.html" title="interface in org.codehaus.janino">Visitor.AnnotationVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.AnnotationVisitor.html" title="type parameter in Visitor.AnnotationVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.AnnotationVisitor.html" title="type parameter in Visitor.AnnotationVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino"><code>Java.Annotation</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.AtomVisitor.html" title="interface in org.codehaus.janino">Visitor.AtomVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.AtomVisitor.html" title="type parameter in Visitor.AtomVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.AtomVisitor.html" title="type parameter in Visitor.AtomVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.Atom.html" title="class in org.codehaus.janino"><code>Java.Atom</code></a>s.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.BlockStatementVisitor.html" title="interface in org.codehaus.janino">Visitor.BlockStatementVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino"><code>Java.BlockStatement</code></a>s (statements that may appear with a block).</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.ConstructorInvocationVisitor.html" title="interface in org.codehaus.janino">Visitor.ConstructorInvocationVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.ConstructorInvocationVisitor.html" title="type parameter in Visitor.ConstructorInvocationVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.ConstructorInvocationVisitor.html" title="type parameter in Visitor.ConstructorInvocationVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.ConstructorInvocation.html" title="class in org.codehaus.janino"><code>Java.ConstructorInvocation</code></a>s.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.ElementValueVisitor.html" title="interface in org.codehaus.janino">Visitor.ElementValueVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.ElementValueVisitor.html" title="type parameter in Visitor.ElementValueVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.ElementValueVisitor.html" title="type parameter in Visitor.ElementValueVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.FunctionDeclaratorVisitor.html" title="interface in org.codehaus.janino">Visitor.FunctionDeclaratorVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.FunctionDeclaratorVisitor.html" title="type parameter in Visitor.FunctionDeclaratorVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.FunctionDeclaratorVisitor.html" title="type parameter in Visitor.FunctionDeclaratorVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html" title="class in org.codehaus.janino"><code>Java.FunctionDeclarator</code></a>s.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.ImportVisitor.html" title="interface in org.codehaus.janino">Visitor.ImportVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.ImportVisitor.html" title="type parameter in Visitor.ImportVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.ImportVisitor.html" title="type parameter in Visitor.ImportVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
-<div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.CompilationUnit.ImportDeclaration.html" title="class in org.codehaus.janino"><code>Java.CompilationUnit.ImportDeclaration</code></a>s.</div>
+<div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.ImportDeclaration.html" title="class in org.codehaus.janino"><code>Java.AbstractCompilationUnit.ImportDeclaration</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.LambdaBodyVisitor.html" title="interface in org.codehaus.janino">Visitor.LambdaBodyVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.LambdaBodyVisitor.html" title="type parameter in Visitor.LambdaBodyVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.LambdaBodyVisitor.html" title="type parameter in Visitor.LambdaBodyVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.LambdaParametersVisitor.html" title="interface in org.codehaus.janino">Visitor.LambdaParametersVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.LambdaParametersVisitor.html" title="type parameter in Visitor.LambdaParametersVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.LambdaParametersVisitor.html" title="type parameter in Visitor.LambdaParametersVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.LvalueVisitor.html" title="interface in org.codehaus.janino">Visitor.LvalueVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.LvalueVisitor.html" title="type parameter in Visitor.LvalueVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.LvalueVisitor.html" title="type parameter in Visitor.LvalueVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.Lvalue.html" title="class in org.codehaus.janino"><code>Java.Lvalue</code></a>s.</div>
 </td>
 </tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static interface&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.ModifierVisitor.html" title="interface in org.codehaus.janino">Visitor.ModifierVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.ModifierVisitor.html" title="type parameter in Visitor.ModifierVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.ModifierVisitor.html" title="type parameter in Visitor.ModifierVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>&nbsp;</td>
+</tr>
 <tr class="altColor">
+<td class="colFirst"><code>static interface&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.ModuleDirectiveVisitor.html" title="interface in org.codehaus.janino">Visitor.ModuleDirectiveVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.ModuleDirectiveVisitor.html" title="type parameter in Visitor.ModuleDirectiveVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.ModuleDirectiveVisitor.html" title="type parameter in Visitor.ModuleDirectiveVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.RvalueVisitor.html" title="interface in org.codehaus.janino">Visitor.RvalueVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.Rvalue.html" title="class in org.codehaus.janino"><code>Java.Rvalue</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.TryStatementResourceVisitor.html" title="interface in org.codehaus.janino">Visitor.TryStatementResourceVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.TryStatementResourceVisitor.html" title="type parameter in Visitor.TryStatementResourceVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.TryStatementResourceVisitor.html" title="type parameter in Visitor.TryStatementResourceVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.TryStatement.Resource.html" title="class in org.codehaus.janino"><code>Java.TryStatement.Resource</code></a>s.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.TypeArgumentVisitor.html" title="interface in org.codehaus.janino">Visitor.TypeArgumentVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.TypeArgumentVisitor.html" title="type parameter in Visitor.TypeArgumentVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.TypeArgumentVisitor.html" title="type parameter in Visitor.TypeArgumentVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.TypeArgument.html" title="interface in org.codehaus.janino"><code>Java.TypeArgument</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.TypeBodyDeclarationVisitor.html" title="interface in org.codehaus.janino">Visitor.TypeBodyDeclarationVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.TypeBodyDeclarationVisitor.html" title="type parameter in Visitor.TypeBodyDeclarationVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.TypeBodyDeclarationVisitor.html" title="type parameter in Visitor.TypeBodyDeclarationVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeBodyDeclaration</code></a>s (declarations that may appear in the body of a
  type declaration).</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.TypeDeclarationVisitor.html" title="interface in org.codehaus.janino">Visitor.TypeDeclarationVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.TypeDeclarationVisitor.html" title="type parameter in Visitor.TypeDeclarationVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.TypeDeclarationVisitor.html" title="type parameter in Visitor.TypeDeclarationVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeDeclaration</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Visitor.TypeVisitor.html" title="interface in org.codehaus.janino">Visitor.TypeVisitor</a>&lt;<a href="../../../org/codehaus/janino/Visitor.TypeVisitor.html" title="type parameter in Visitor.TypeVisitor">R</a>,<a href="../../../org/codehaus/janino/Visitor.TypeVisitor.html" title="type parameter in Visitor.TypeVisitor">EX</a> extends java.lang.Throwable&gt;</span></code>
 <div class="block">The visitor for all kinds of <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino"><code>Java.Type</code></a>s.</div>
@@ -257,7 +271,7 @@ extends java.lang.Object</pre>
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../org/codehaus/janino/Unparser.html" title="class in org.codehaus.janino"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../org/codehaus/janino/Visitor.AnnotationVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../org/codehaus/janino/Visitor.AbstractCompilationUnitVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?org/codehaus/janino/Visitor.html" target="_top">Frames</a></li>

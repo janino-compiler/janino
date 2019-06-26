@@ -189,7 +189,7 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/UnitCompiler.html#UnitCompiler-org.codehaus.janino.Java.CompilationUnit-org.codehaus.janino.IClassLoader-">UnitCompiler</a></span>(<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;compilationUnit,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/UnitCompiler.html#UnitCompiler-org.codehaus.janino.Java.AbstractCompilationUnit-org.codehaus.janino.IClassLoader-">UnitCompiler</a></span>(<a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a>&nbsp;abstractCompilationUnit,
             <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;iClassLoader)</code>&nbsp;</td>
 </tr>
 </table>
@@ -226,7 +226,7 @@ extends java.lang.Object</pre>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/UnitCompiler.html#findClass-java.lang.String-">findClass</a></span>(java.lang.String&nbsp;className)</code>
-<div class="block">Finds one class or interface declared in this compilation unit by name.</div>
+<div class="block">Finds one class or interface declaration in this compilation unit and resolves it into an <a href="../../../org/codehaus/janino/IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a>.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
@@ -250,8 +250,8 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i6" class="altColor">
-<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/UnitCompiler.html#getCompilationUnit--">getCompilationUnit</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/UnitCompiler.html#getAbstractCompilationUnit--">getAbstractCompilationUnit</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>java.lang.Object</code></td>
@@ -400,13 +400,13 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="UnitCompiler-org.codehaus.janino.Java.CompilationUnit-org.codehaus.janino.IClassLoader-">
+<a name="UnitCompiler-org.codehaus.janino.Java.AbstractCompilationUnit-org.codehaus.janino.IClassLoader-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>UnitCompiler</h4>
-<pre>public&nbsp;UnitCompiler(<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;compilationUnit,
+<pre>public&nbsp;UnitCompiler(<a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a>&nbsp;abstractCompilationUnit,
                     <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;iClassLoader)</pre>
 </li>
 </ul>
@@ -442,16 +442,16 @@ extends java.lang.Object</pre>
 <div class="block">Sets the options for all future compilations.</div>
 </li>
 </ul>
-<a name="getCompilationUnit--">
+<a name="getAbstractCompilationUnit--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getCompilationUnit</h4>
-<pre>public&nbsp;<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;getCompilationUnit()</pre>
+<h4>getAbstractCompilationUnit</h4>
+<pre>public&nbsp;<a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a>&nbsp;getAbstractCompilationUnit()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The <a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino"><code>Java.CompilationUnit</code></a> that this <a href="../../../org/codehaus/janino/UnitCompiler.html" title="class in org.codehaus.janino"><code>UnitCompiler</code></a> compiles</dd>
+<dd>The <a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino"><code>Java.AbstractCompilationUnit</code></a> that this <a href="../../../org/codehaus/janino/UnitCompiler.html" title="class in org.codehaus.janino"><code>UnitCompiler</code></a> compiles</dd>
 </dl>
 </li>
 </ul>
@@ -708,7 +708,7 @@ public&nbsp;<a href="../../../org/codehaus/janino/IClass.html" title="class in o
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd><code>null</code> if the given <var>simpleTypeName</var> cannot be resolved through any of the
-         import-on-demand directives</dd>
+         type-import-on-demand declarations</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 </dl>
@@ -722,7 +722,7 @@ public&nbsp;<a href="../../../org/codehaus/janino/IClass.html" title="class in o
 <h4>findClass</h4>
 <pre><a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
 public&nbsp;<a href="../../../org/codehaus/janino/IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;findClass(java.lang.String&nbsp;className)</pre>
-<div class="block">Finds one class or interface declared in this compilation unit by name.</div>
+<div class="block">Finds one class or interface declaration in this compilation unit and resolves it into an <a href="../../../org/codehaus/janino/IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>className</code> - Fully qualified class name, e.g. "pkg1.pkg2.Outer$Inner"</dd>

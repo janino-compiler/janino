@@ -187,9 +187,9 @@ implements <a href="../../../org/codehaus/janino/Java.EnumDeclaration.html" titl
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.MemberEnumDeclaration.html#MemberEnumDeclaration-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifiers-java.lang.String-org.codehaus.janino.Java.Type:A-">MemberEnumDeclaration</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.MemberEnumDeclaration.html#MemberEnumDeclaration-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifier:A-java.lang.String-org.codehaus.janino.Java.Type:A-">MemberEnumDeclaration</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
                      java.lang.String&nbsp;optionalDocComment,
-                     <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a>&nbsp;modifiers,
+                     <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                      java.lang.String&nbsp;name,
                      <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>[]&nbsp;implementedTypes)</code>&nbsp;</td>
 </tr>
@@ -255,14 +255,14 @@ implements <a href="../../../org/codehaus/janino/Java.EnumDeclaration.html" titl
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.MemberClassDeclaration.html" title="class in org.codehaus.janino">Java.MemberClassDeclaration</a></h3>
-<code><a href="../../../org/codehaus/janino/Java.MemberClassDeclaration.html#getClassName--">getClassName</a>, <a href="../../../org/codehaus/janino/Java.MemberClassDeclaration.html#getDeclaringType--">getDeclaringType</a>, <a href="../../../org/codehaus/janino/Java.MemberClassDeclaration.html#isStatic--">isStatic</a>, <a href="../../../org/codehaus/janino/Java.MemberClassDeclaration.html#setDeclaringType-org.codehaus.janino.Java.TypeDeclaration-">setDeclaringType</a></code></li>
+<code><a href="../../../org/codehaus/janino/Java.MemberClassDeclaration.html#getAccess--">getAccess</a>, <a href="../../../org/codehaus/janino/Java.MemberClassDeclaration.html#getClassName--">getClassName</a>, <a href="../../../org/codehaus/janino/Java.MemberClassDeclaration.html#getDeclaringType--">getDeclaringType</a>, <a href="../../../org/codehaus/janino/Java.MemberClassDeclaration.html#isStatic--">isStatic</a>, <a href="../../../org/codehaus/janino/Java.MemberClassDeclaration.html#setDeclaringType-org.codehaus.janino.Java.TypeDeclaration-">setDeclaringType</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.codehaus.janino.Java.NamedClassDeclaration">
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html" title="class in org.codehaus.janino">Java.NamedClassDeclaration</a></h3>
-<code><a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#getDocComment--">getDocComment</a>, <a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#getName--">getName</a>, <a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#hasDeprecatedDocTag--">hasDeprecatedDocTag</a>, <a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#toString--">toString</a></code></li>
+<code><a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#getDocComment--">getDocComment</a>, <a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#getName--">getName</a>, <a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#hasDeprecatedDocTag--">hasDeprecatedDocTag</a>, <a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#isAbstract--">isAbstract</a>, <a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#isFinal--">isFinal</a>, <a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#isStrictfp--">isStrictfp</a>, <a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html#toString--">toString</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.codehaus.janino.Java.AbstractClassDeclaration">
@@ -276,7 +276,7 @@ implements <a href="../../../org/codehaus/janino/Java.EnumDeclaration.html" titl
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html" title="class in org.codehaus.janino">Java.AbstractTypeDeclaration</a></h3>
-<code><a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#addDeclaredMethod-org.codehaus.janino.Java.MethodDeclarator-">addDeclaredMethod</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#addMemberTypeDeclaration-org.codehaus.janino.Java.MemberTypeDeclaration-">addMemberTypeDeclaration</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#createAnonymousClassName--">createAnonymousClassName</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#createLocalTypeName-java.lang.String-">createLocalTypeName</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getAnnotations--">getAnnotations</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getEnclosingScope--">getEnclosingScope</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getLocation--">getLocation</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getMemberTypeDeclaration-java.lang.String-">getMemberTypeDeclaration</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getMemberTypeDeclarations--">getMemberTypeDeclarations</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getMethodDeclaration-java.lang.String-">getMethodDeclaration</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getMethodDeclarations--">getMethodDeclarations</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getModifierFlags--">getModifierFlags</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getOptionalTypeParameters--">getOptionalTypeParameters</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#invalidateMethodCaches--">invalidateMethodCaches</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#setEnclosingScope-org.codehaus.janino.Java.Scope-">setEnclosingScope</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#throwCompileException-java.lang.String-">throwCompileException</a></code></li>
+<code><a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#addDeclaredMethod-org.codehaus.janino.Java.MethodDeclarator-">addDeclaredMethod</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#addMemberTypeDeclaration-org.codehaus.janino.Java.MemberTypeDeclaration-">addMemberTypeDeclaration</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#createAnonymousClassName--">createAnonymousClassName</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#createLocalTypeName-java.lang.String-">createLocalTypeName</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getAnnotations--">getAnnotations</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getEnclosingScope--">getEnclosingScope</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getLocation--">getLocation</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getMemberTypeDeclaration-java.lang.String-">getMemberTypeDeclaration</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getMemberTypeDeclarations--">getMemberTypeDeclarations</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getMethodDeclaration-java.lang.String-">getMethodDeclaration</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getMethodDeclarations--">getMethodDeclarations</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getModifiers--">getModifiers</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getOptionalTypeParameters--">getOptionalTypeParameters</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#invalidateMethodCaches--">invalidateMethodCaches</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#setEnclosingScope-org.codehaus.janino.Java.Scope-">setEnclosingScope</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#throwCompileException-java.lang.String-">throwCompileException</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -290,7 +290,7 @@ implements <a href="../../../org/codehaus/janino/Java.EnumDeclaration.html" titl
 <!--   -->
 </a>
 <h3>Methods inherited from interface&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.EnumDeclaration.html" title="interface in org.codehaus.janino">Java.EnumDeclaration</a></h3>
-<code><a href="../../../org/codehaus/janino/Java.EnumDeclaration.html#getName--">getName</a></code></li>
+<code><a href="../../../org/codehaus/janino/Java.EnumDeclaration.html#getModifiers--">getModifiers</a>, <a href="../../../org/codehaus/janino/Java.EnumDeclaration.html#getName--">getName</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.codehaus.janino.Java.ClassDeclaration">
@@ -311,7 +311,7 @@ implements <a href="../../../org/codehaus/janino/Java.EnumDeclaration.html" titl
 <!--   -->
 </a>
 <h3>Methods inherited from interface&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino">Java.TypeDeclaration</a></h3>
-<code><a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#createAnonymousClassName--">createAnonymousClassName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#createLocalTypeName-java.lang.String-">createLocalTypeName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getClassName--">getClassName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMemberTypeDeclaration-java.lang.String-">getMemberTypeDeclaration</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMemberTypeDeclarations--">getMemberTypeDeclarations</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMethodDeclaration-java.lang.String-">getMethodDeclaration</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMethodDeclarations--">getMethodDeclarations</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getModifierFlags--">getModifierFlags</a></code></li>
+<code><a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#createAnonymousClassName--">createAnonymousClassName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#createLocalTypeName-java.lang.String-">createLocalTypeName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getClassName--">getClassName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMemberTypeDeclaration-java.lang.String-">getMemberTypeDeclaration</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMemberTypeDeclarations--">getMemberTypeDeclarations</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMethodDeclaration-java.lang.String-">getMethodDeclaration</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMethodDeclarations--">getMethodDeclarations</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.codehaus.janino.Java.Annotatable">
@@ -341,6 +341,13 @@ implements <a href="../../../org/codehaus/janino/Java.EnumDeclaration.html" titl
 <h3>Methods inherited from interface&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.DocCommentable.html" title="interface in org.codehaus.janino">Java.DocCommentable</a></h3>
 <code><a href="../../../org/codehaus/janino/Java.DocCommentable.html#getDocComment--">getDocComment</a>, <a href="../../../org/codehaus/janino/Java.DocCommentable.html#hasDeprecatedDocTag--">hasDeprecatedDocTag</a></code></li>
 </ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods.inherited.from.class.org.codehaus.janino.Java.TypeBodyDeclaration">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino">Java.TypeBodyDeclaration</a></h3>
+<code><a href="../../../org/codehaus/janino/Java.TypeBodyDeclaration.html#getModifiers--">getModifiers</a></code></li>
+</ul>
 </li>
 </ul>
 </li>
@@ -355,7 +362,7 @@ implements <a href="../../../org/codehaus/janino/Java.EnumDeclaration.html" titl
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="MemberEnumDeclaration-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifiers-java.lang.String-org.codehaus.janino.Java.Type:A-">
+<a name="MemberEnumDeclaration-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifier:A-java.lang.String-org.codehaus.janino.Java.Type:A-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -364,7 +371,7 @@ implements <a href="../../../org/codehaus/janino/Java.EnumDeclaration.html" titl
 <pre>public&nbsp;MemberEnumDeclaration(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
                              <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                              java.lang.String&nbsp;optionalDocComment,
-                             <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a>&nbsp;modifiers,
+                             <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                              java.lang.String&nbsp;name,
                              <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>[]&nbsp;implementedTypes)</pre>
 </li>

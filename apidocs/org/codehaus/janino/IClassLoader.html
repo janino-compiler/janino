@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":9,"i1":10,"i2":6,"i3":10,"i4":10};
+var methods = {"i0":9,"i1":10,"i2":6,"i3":10,"i4":10,"i5":10};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -386,12 +386,16 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/IClassLoader.html#getParentIClassLoader--">getParentIClassLoader</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/IClassLoader.html#loadIClass-java.lang.String-">loadIClass</a></span>(java.lang.String&nbsp;fieldDescriptor)</code>
 <div class="block">Gets an <a href="../../../org/codehaus/janino/IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a> by field descriptor.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/IClassLoader.html#postConstruct--">postConstruct</a></span>()</code>
 <div class="block">This method must be called by the constructor of the <em>derived</em> class.</div>
@@ -900,6 +904,15 @@ public&nbsp;<a href="../../../org/codehaus/janino/IClass.IMethod.html" title="cl
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getParentIClassLoader--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getParentIClassLoader</h4>
+<pre>public&nbsp;<a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;getParentIClassLoader()</pre>
+</li>
+</ul>
 <a name="postConstruct--">
 <!--   -->
 </a>

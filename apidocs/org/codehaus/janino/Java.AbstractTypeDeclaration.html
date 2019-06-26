@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html" title="class in org.codehaus.janino"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../org/codehaus/janino/Java.AlternateConstructorInvocation.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../org/codehaus/janino/Java.AccessModifier.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?org/codehaus/janino/Java.AbstractTypeDeclaration.html" target="_top">Frames</a></li>
@@ -168,8 +168,8 @@ implements <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" titl
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#AbstractTypeDeclaration-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifiers-org.codehaus.janino.Java.TypeParameter:A-">AbstractTypeDeclaration</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-                       <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a>&nbsp;modifiers,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#AbstractTypeDeclaration-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.TypeParameter:A-">AbstractTypeDeclaration</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+                       <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                        <a href="../../../org/codehaus/janino/Java.TypeParameter.html" title="class in org.codehaus.janino">Java.TypeParameter</a>[]&nbsp;optionalTypeParameters)</code>&nbsp;</td>
 </tr>
 </table>
@@ -244,8 +244,8 @@ implements <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" titl
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getMethodDeclarations--">getMethodDeclarations</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i11" class="rowColor">
-<td class="colFirst"><code>short</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getModifierFlags--">getModifierFlags</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractTypeDeclaration.html#getModifiers--">getModifiers</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i12" class="altColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.TypeParameter.html" title="class in org.codehaus.janino">Java.TypeParameter</a>[]</code></td>
@@ -330,14 +330,14 @@ implements <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" titl
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="AbstractTypeDeclaration-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifiers-org.codehaus.janino.Java.TypeParameter:A-">
+<a name="AbstractTypeDeclaration-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.TypeParameter:A-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>AbstractTypeDeclaration</h4>
 <pre>public&nbsp;AbstractTypeDeclaration(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-                               <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a>&nbsp;modifiers,
+                               <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                                <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                                <a href="../../../org/codehaus/janino/Java.TypeParameter.html" title="class in org.codehaus.janino">Java.TypeParameter</a>[]&nbsp;optionalTypeParameters)</pre>
 </li>
@@ -350,19 +350,23 @@ implements <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" titl
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="getModifierFlags--">
+<a name="setEnclosingScope-org.codehaus.janino.Java.Scope-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>getModifierFlags</h4>
-<pre>public&nbsp;short&nbsp;getModifierFlags()</pre>
-<dl>
-<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getModifierFlags--">getModifierFlags</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino">Java.TypeDeclaration</a></code></dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>The or'ed modifier flags of the type, as defined in <a href="../../../org/codehaus/janino/Mod.html" title="class in org.codehaus.janino"><code>Mod</code></a></dd>
-</dl>
+<h4>setEnclosingScope</h4>
+<pre>public&nbsp;void&nbsp;setEnclosingScope(<a href="../../../org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>&nbsp;enclosingScope)</pre>
+<div class="block">Sets the enclosing scope of this <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeDeclaration</code></a>.</div>
+</li>
+</ul>
+<a name="getModifiers--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getModifiers</h4>
+<pre>public&nbsp;<a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;getModifiers()</pre>
 </li>
 </ul>
 <a name="getAnnotations--">
@@ -379,16 +383,6 @@ implements <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" titl
 <dd>The annotations of this <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeDeclaration</code></a>, <a href="../../../org/codehaus/janino/Java.FieldDeclaration.html" title="class in org.codehaus.janino"><code>Java.FieldDeclaration</code></a>, <a href="../../../org/codehaus/janino/Java.MethodDeclarator.html" title="class in org.codehaus.janino"><code>Java.MethodDeclarator</code></a>
          or <a href="../../../org/codehaus/janino/Java.ConstructorDeclarator.html" title="class in org.codehaus.janino"><code>Java.ConstructorDeclarator</code></a></dd>
 </dl>
-</li>
-</ul>
-<a name="setEnclosingScope-org.codehaus.janino.Java.Scope-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setEnclosingScope</h4>
-<pre>public&nbsp;void&nbsp;setEnclosingScope(<a href="../../../org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>&nbsp;enclosingScope)</pre>
-<div class="block">Sets the enclosing scope of this <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeDeclaration</code></a>.</div>
 </li>
 </ul>
 <a name="getOptionalTypeParameters--">
@@ -620,7 +614,7 @@ public&nbsp;<a href="../../../org/codehaus/janino/Java.MethodDeclarator.html" ti
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html" title="class in org.codehaus.janino"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../org/codehaus/janino/Java.AlternateConstructorInvocation.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../org/codehaus/janino/Java.AccessModifier.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?org/codehaus/janino/Java.AbstractTypeDeclaration.html" target="_top">Frames</a></li>

@@ -48,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../org/codehaus/janino/Java.QualifiedThisReference.html" title="class in org.codehaus.janino"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../org/codehaus/janino/Java.ReturnStatement.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../org/codehaus/janino/Java.RequiresModuleDirective.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?org/codehaus/janino/Java.ReferenceType.html" target="_top">Frames</a></li>
@@ -153,12 +153,16 @@ implements <a href="../../../org/codehaus/janino/Java.TypeArgument.html" title="
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ReferenceType.html#annotations">annotations</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ReferenceType.html#identifiers">identifiers</a></span></code>
 <div class="block">The list of (dot-separated) identifiers that pose the reference type, e.g.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.TypeArgument.html" title="interface in org.codehaus.janino">Java.TypeArgument</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ReferenceType.html#optionalTypeArguments">optionalTypeArguments</a></span></code>
 <div class="block">The optional type arguments of the reference type.</div>
@@ -186,7 +190,8 @@ implements <a href="../../../org/codehaus/janino/Java.TypeArgument.html" title="
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ReferenceType.html#ReferenceType-org.codehaus.commons.compiler.Location-java.lang.String:A-org.codehaus.janino.Java.TypeArgument:A-">ReferenceType</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ReferenceType.html#ReferenceType-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Annotation:A-java.lang.String:A-org.codehaus.janino.Java.TypeArgument:A-">ReferenceType</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+             <a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]&nbsp;annotations,
              java.lang.String[]&nbsp;identifiers,
              <a href="../../../org/codehaus/janino/Java.TypeArgument.html" title="interface in org.codehaus.janino">Java.TypeArgument</a>[]&nbsp;optionalTypeArguments)</code>&nbsp;</td>
 </tr>
@@ -270,6 +275,15 @@ implements <a href="../../../org/codehaus/janino/Java.TypeArgument.html" title="
 <!--   -->
 </a>
 <h3>Field Detail</h3>
+<a name="annotations">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>annotations</h4>
+<pre>public final&nbsp;<a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[] annotations</pre>
+</li>
+</ul>
 <a name="identifiers">
 <!--   -->
 </a>
@@ -299,13 +313,14 @@ public final&nbsp;<a href="../../../org/codehaus/janino/Java.TypeArgument.html" 
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="ReferenceType-org.codehaus.commons.compiler.Location-java.lang.String:A-org.codehaus.janino.Java.TypeArgument:A-">
+<a name="ReferenceType-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Annotation:A-java.lang.String:A-org.codehaus.janino.Java.TypeArgument:A-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ReferenceType</h4>
 <pre>public&nbsp;ReferenceType(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+                     <a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]&nbsp;annotations,
                      java.lang.String[]&nbsp;identifiers,
                      <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                      <a href="../../../org/codehaus/janino/Java.TypeArgument.html" title="interface in org.codehaus.janino">Java.TypeArgument</a>[]&nbsp;optionalTypeArguments)</pre>
@@ -417,7 +432,7 @@ public&nbsp;&lt;R,EX extends java.lang.Throwable&gt;&nbsp;R&nbsp;accept(<a href=
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../org/codehaus/janino/Java.QualifiedThisReference.html" title="class in org.codehaus.janino"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../org/codehaus/janino/Java.ReturnStatement.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../org/codehaus/janino/Java.RequiresModuleDirective.html" title="class in org.codehaus.janino"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?org/codehaus/janino/Java.ReferenceType.html" target="_top">Frames</a></li>

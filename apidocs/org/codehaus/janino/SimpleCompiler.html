@@ -142,7 +142,7 @@ implements <a href="../../../org/codehaus/commons/compiler/ISimpleCompiler.html"
 <!--   -->
 </a>
 <h3>Fields inherited from interface&nbsp;org.codehaus.commons.compiler.<a href="../../../org/codehaus/commons/compiler/ICookable.html" title="interface in org.codehaus.commons.compiler">ICookable</a></h3>
-<code><a href="../../../org/codehaus/commons/compiler/ICookable.html#BOOT_CLASS_LOADER">BOOT_CLASS_LOADER</a>, <a href="../../../org/codehaus/commons/compiler/ICookable.html#SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR">SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR</a>, <a href="../../../org/codehaus/commons/compiler/ICookable.html#SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE">SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE</a></code></li>
+<code><a href="../../../org/codehaus/commons/compiler/ICookable.html#BOOT_CLASS_LOADER">BOOT_CLASS_LOADER</a></code></li>
 </ul>
 </li>
 </ul>
@@ -231,7 +231,7 @@ implements <a href="../../../org/codehaus/commons/compiler/ISimpleCompiler.html"
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>protected java.lang.ClassLoader</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/SimpleCompiler.html#compileToClassLoader-org.codehaus.janino.Java.CompilationUnit-">compileToClassLoader</a></span>(<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;compilationUnit)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/SimpleCompiler.html#compileToClassLoader-org.codehaus.janino.Java.AbstractCompilationUnit-">compileToClassLoader</a></span>(<a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a>&nbsp;abstractCompilationUnit)</code>
 <div class="block">Compiles the given compilation unit.</div>
 </td>
 </tr>
@@ -243,7 +243,7 @@ implements <a href="../../../org/codehaus/commons/compiler/ISimpleCompiler.html"
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/SimpleCompiler.html#cook-org.codehaus.janino.Java.CompilationUnit-">cook</a></span>(<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;compilationUnit)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/SimpleCompiler.html#cook-org.codehaus.janino.Java.AbstractCompilationUnit-">cook</a></span>(<a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a>&nbsp;abstractCompilationUnit)</code>
 <div class="block">Cooks this compilation unit directly and invokes <a href="../../../org/codehaus/janino/SimpleCompiler.html#cook-org.codehaus.janino.util.ClassFile:A-"><code>cook(ClassFile[])</code></a>.</div>
 </td>
 </tr>
@@ -560,8 +560,7 @@ implements <a href="../../../org/codehaus/commons/compiler/ISimpleCompiler.html"
                                     boolean&nbsp;debugVars)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICookable.html#setDebuggingInformation-boolean-boolean-boolean-">ICookable</a></code></span></div>
 <div class="block">Determines what kind of debugging information is included in the generates classes. The default is typically
- "<code>-g:none</code>", and "<code>-g:all</code>" if the system property <a href="../../../org/codehaus/commons/compiler/ICookable.html#SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE">"org.codehaus.janino.source_debugging.enable"</a>
- is set to "<code>true</code>".</div>
+ "<code>-g:none</code>".</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../../../org/codehaus/commons/compiler/ICookable.html#setDebuggingInformation-boolean-boolean-boolean-">setDebuggingInformation</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICookable.html" title="interface in org.codehaus.commons.compiler">ICookable</a></code></dd>
@@ -608,13 +607,13 @@ implements <a href="../../../org/codehaus/commons/compiler/ISimpleCompiler.html"
 </dl>
 </li>
 </ul>
-<a name="cook-org.codehaus.janino.Java.CompilationUnit-">
+<a name="cook-org.codehaus.janino.Java.AbstractCompilationUnit-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>cook</h4>
-<pre>public&nbsp;void&nbsp;cook(<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;compilationUnit)
+<pre>public&nbsp;void&nbsp;cook(<a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a>&nbsp;abstractCompilationUnit)
           throws <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
 <div class="block">Cooks this compilation unit directly and invokes <a href="../../../org/codehaus/janino/SimpleCompiler.html#cook-org.codehaus.janino.util.ClassFile:A-"><code>cook(ClassFile[])</code></a>.</div>
 <dl>
@@ -859,18 +858,18 @@ protected&nbsp;<a href="../../../org/codehaus/janino/Java.Type.html" title="clas
 <div class="block">Converts an array of <code>Class</code>es into an array of<a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino"><code>Java.Type</code></a>s.</div>
 </li>
 </ul>
-<a name="compileToClassLoader-org.codehaus.janino.Java.CompilationUnit-">
+<a name="compileToClassLoader-org.codehaus.janino.Java.AbstractCompilationUnit-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>compileToClassLoader</h4>
-<pre>protected final&nbsp;java.lang.ClassLoader&nbsp;compileToClassLoader(<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;compilationUnit)
+<pre>protected final&nbsp;java.lang.ClassLoader&nbsp;compileToClassLoader(<a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a>&nbsp;abstractCompilationUnit)
                                                     throws <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
 <div class="block">Compiles the given compilation unit. (A "compilation unit" is typically the contents of a Java source file.)</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>compilationUnit</code> - The parsed compilation unit</dd>
+<dd><code>abstractCompilationUnit</code> - The parsed compilation unit</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The <code>ClassLoader</code> into which the compiled classes were defined</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>

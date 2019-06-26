@@ -127,8 +127,7 @@ extends <a href="../../../org/codehaus/janino/JavaSourceClassLoader.html" title=
 <div class="block">A <a href="../../../org/codehaus/janino/JavaSourceClassLoader.html" title="class in org.codehaus.janino"><code>JavaSourceClassLoader</code></a> that uses a resource storage provided by the application to
  cache compiled classes and thus saving unnecessary recompilations.
  <p>
-   The application provides access to the resource storage through a pair of a <a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a> and a <a href="../../../org/codehaus/janino/util/resource/ResourceCreator.html" title="interface in org.codehaus.janino.util.resource"><code>ResourceCreator</code></a>
-   (see <a href="../../../org/codehaus/janino/CachingJavaSourceClassLoader.html#CachingJavaSourceClassLoader-java.lang.ClassLoader-org.codehaus.janino.util.resource.ResourceFinder-java.lang.String-org.codehaus.janino.util.resource.ResourceFinder-org.codehaus.janino.util.resource.ResourceCreator-"><code>CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)</code></a>.
+   The application provides access to the resource storage through a pair of a <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a> and a <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceCreator.html" title="interface in org.codehaus.commons.compiler.util.resource"><code>ResourceCreator</code></a> (see <a href="../../../org/codehaus/janino/CachingJavaSourceClassLoader.html#CachingJavaSourceClassLoader-java.lang.ClassLoader-org.codehaus.commons.compiler.util.resource.ResourceFinder-java.lang.String-org.codehaus.commons.compiler.util.resource.ResourceFinder-org.codehaus.commons.compiler.util.resource.ResourceCreator-"><code>CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)</code></a>.
  </p>
  <p>
    See <a href="../../../org/codehaus/commons/compiler/AbstractJavaSourceClassLoader.html#main-java.lang.String:A-"><code>AbstractJavaSourceClassLoader.main(String[])</code></a> for an example how to use this class.
@@ -191,15 +190,15 @@ extends <a href="../../../org/codehaus/janino/JavaSourceClassLoader.html" title=
                             java.io.File[]&nbsp;optionalSourcePath,
                             java.lang.String&nbsp;optionalCharacterEncoding,
                             java.io.File&nbsp;cacheDirectory)</code>
-<div class="block">See <a href="../../../org/codehaus/janino/CachingJavaSourceClassLoader.html#CachingJavaSourceClassLoader-java.lang.ClassLoader-org.codehaus.janino.util.resource.ResourceFinder-java.lang.String-org.codehaus.janino.util.resource.ResourceFinder-org.codehaus.janino.util.resource.ResourceCreator-"><code>CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)</code></a>.</div>
+<div class="block">See <a href="../../../org/codehaus/janino/CachingJavaSourceClassLoader.html#CachingJavaSourceClassLoader-java.lang.ClassLoader-org.codehaus.commons.compiler.util.resource.ResourceFinder-java.lang.String-org.codehaus.commons.compiler.util.resource.ResourceFinder-org.codehaus.commons.compiler.util.resource.ResourceCreator-"><code>CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)</code></a>.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/CachingJavaSourceClassLoader.html#CachingJavaSourceClassLoader-java.lang.ClassLoader-org.codehaus.janino.util.resource.ResourceFinder-java.lang.String-org.codehaus.janino.util.resource.ResourceFinder-org.codehaus.janino.util.resource.ResourceCreator-">CachingJavaSourceClassLoader</a></span>(java.lang.ClassLoader&nbsp;parentClassLoader,
-                            <a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/CachingJavaSourceClassLoader.html#CachingJavaSourceClassLoader-java.lang.ClassLoader-org.codehaus.commons.compiler.util.resource.ResourceFinder-java.lang.String-org.codehaus.commons.compiler.util.resource.ResourceFinder-org.codehaus.commons.compiler.util.resource.ResourceCreator-">CachingJavaSourceClassLoader</a></span>(java.lang.ClassLoader&nbsp;parentClassLoader,
+                            <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
                             java.lang.String&nbsp;optionalCharacterEncoding,
-                            <a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;classFileCacheResourceFinder,
-                            <a href="../../../org/codehaus/janino/util/resource/ResourceCreator.html" title="interface in org.codehaus.janino.util.resource">ResourceCreator</a>&nbsp;classFileCacheResourceCreator)</code>
+                            <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;classFileCacheResourceFinder,
+                            <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceCreator.html" title="interface in org.codehaus.commons.compiler.util.resource">ResourceCreator</a>&nbsp;classFileCacheResourceCreator)</code>
 <div class="block">Notice that this class is thread-safe if and only if the <var>classFileCacheResourceCreator</var> stores its
  data atomically, i.e. the <var>classFileCacheResourceFinder</var> sees the resource written by the <code>classFileCacheResourceCreator</code> only after the <code>OutputStream</code> is closed.</div>
 </td>
@@ -280,7 +279,7 @@ extends <a href="../../../org/codehaus/janino/JavaSourceClassLoader.html" title=
                                     <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                                     java.lang.String&nbsp;optionalCharacterEncoding,
                                     java.io.File&nbsp;cacheDirectory)</pre>
-<div class="block">See <a href="../../../org/codehaus/janino/CachingJavaSourceClassLoader.html#CachingJavaSourceClassLoader-java.lang.ClassLoader-org.codehaus.janino.util.resource.ResourceFinder-java.lang.String-org.codehaus.janino.util.resource.ResourceFinder-org.codehaus.janino.util.resource.ResourceCreator-"><code>CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)</code></a>.</div>
+<div class="block">See <a href="../../../org/codehaus/janino/CachingJavaSourceClassLoader.html#CachingJavaSourceClassLoader-java.lang.ClassLoader-org.codehaus.commons.compiler.util.resource.ResourceFinder-java.lang.String-org.codehaus.commons.compiler.util.resource.ResourceFinder-org.codehaus.commons.compiler.util.resource.ResourceCreator-"><code>CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)</code></a>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>optionalSourcePath</code> - Directories to scan for source files</dd>
@@ -288,23 +287,23 @@ extends <a href="../../../org/codehaus/janino/JavaSourceClassLoader.html" title=
 </dl>
 </li>
 </ul>
-<a name="CachingJavaSourceClassLoader-java.lang.ClassLoader-org.codehaus.janino.util.resource.ResourceFinder-java.lang.String-org.codehaus.janino.util.resource.ResourceFinder-org.codehaus.janino.util.resource.ResourceCreator-">
+<a name="CachingJavaSourceClassLoader-java.lang.ClassLoader-org.codehaus.commons.compiler.util.resource.ResourceFinder-java.lang.String-org.codehaus.commons.compiler.util.resource.ResourceFinder-org.codehaus.commons.compiler.util.resource.ResourceCreator-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>CachingJavaSourceClassLoader</h4>
 <pre>public&nbsp;CachingJavaSourceClassLoader(java.lang.ClassLoader&nbsp;parentClassLoader,
-                                    <a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
+                                    <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
                                     <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                                     java.lang.String&nbsp;optionalCharacterEncoding,
-                                    <a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;classFileCacheResourceFinder,
-                                    <a href="../../../org/codehaus/janino/util/resource/ResourceCreator.html" title="interface in org.codehaus.janino.util.resource">ResourceCreator</a>&nbsp;classFileCacheResourceCreator)</pre>
+                                    <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;classFileCacheResourceFinder,
+                                    <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceCreator.html" title="interface in org.codehaus.commons.compiler.util.resource">ResourceCreator</a>&nbsp;classFileCacheResourceCreator)</pre>
 <div class="block">Notice that this class is thread-safe if and only if the <var>classFileCacheResourceCreator</var> stores its
  data atomically, i.e. the <var>classFileCacheResourceFinder</var> sees the resource written by the <code>classFileCacheResourceCreator</code> only after the <code>OutputStream</code> is closed.
  <p>
-   In order to make the caching scheme work, both the <var>classFileCacheResourceFinder</var> and the <code>sourceFinder</code> must support the <a href="../../../org/codehaus/janino/util/resource/Resource.html#lastModified--"><code>Resource.lastModified()</code></a> method, so
-   that the modification time of the source and the class files can be compared.
+   In order to make the caching scheme work, both the <var>classFileCacheResourceFinder</var> and the <code>sourceFinder</code> must support the <a href="../../../org/codehaus/commons/compiler/util/resource/Resource.html#lastModified--"><code>Resource.lastModified()</code></a>
+   method, so that the modification time of the source and the class files can be compared.
  </p></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

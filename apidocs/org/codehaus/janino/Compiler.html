@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":9,"i3":9,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10};
+var methods = {"i0":10,"i1":9,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -98,7 +98,17 @@ var activeTableTab = "activeTableTab";
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
+<li><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">org.codehaus.commons.compiler.ICompiler</a></li>
+<li>
+<ul class="inheritance">
+<li><a href="../../../org/codehaus/janino/AbstractCompiler.html" title="class in org.codehaus.janino">org.codehaus.janino.AbstractCompiler</a></li>
+<li>
+<ul class="inheritance">
 <li>org.codehaus.janino.Compiler</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -108,26 +118,8 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public class <span class="typeNameLabel">Compiler</span>
-extends java.lang.Object</pre>
-<div class="block">A simplified substitute for the <tt>javac</tt> tool.
- <p>
-   Usage:
- </p>
- <pre>
-     java org.codehaus.janino.Compiler \
-               [ -d <em>destination-dir</em> ] \
-               [ -sourcepath <em>dirlist</em> ] \
-               [ -classpath <em>dirlist</em> ] \
-               [ -extdirs <em>dirlist</em> ] \
-               [ -bootclasspath <em>dirlist</em> ] \
-               [ -encoding <em>encoding</em> ] \
-               [ -verbose ] \
-               [ -g:none ] \
-               [ -g:{source,lines,vars} ] \
-               [ -warn:<em>pattern-list</em> ] \
-               <em>source-file</em> ...
-     java org.codehaus.janino.Compiler -help
- </pre></div>
+extends <a href="../../../org/codehaus/janino/AbstractCompiler.html" title="class in org.codehaus.janino">AbstractCompiler</a></pre>
+<div class="block">JANINO implementation of <a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler"><code>ICompiler</code></a>.</div>
 </li>
 </ul>
 </div>
@@ -147,32 +139,20 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>static <a href="../../../org/codehaus/janino/util/resource/ResourceCreator.html" title="interface in org.codehaus.janino.util.resource">ResourceCreator</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#CREATE_NEXT_TO_SOURCE_FILE">CREATE_NEXT_TO_SOURCE_FILE</a></span></code>
-<div class="block">Special value for <a href="../../../org/codehaus/janino/Compiler.html#classFileCreator"><code>classFileCreator</code></a>: Indicates that each .class file is to be creted in the same
- directory as the corresponding .java file.</div>
-</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../../org/codehaus/janino/util/StringPattern.html" title="class in org.codehaus.janino.util">StringPattern</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#DEFAULT_WARNING_HANDLE_PATTERNS">DEFAULT_WARNING_HANDLE_PATTERNS</a></span></code>
 <div class="block">The default value for the <var>warningHandlerPatterns</var> parameter of <a href="../../../org/codehaus/janino/Compiler.html#Compiler-java.io.File:A-java.io.File:A-java.io.File:A-java.io.File:A-java.io.File-java.lang.String-boolean-boolean-boolean-boolean-org.codehaus.janino.util.StringPattern:A-boolean-"><code>Compiler(File[], File[],
  File[], File[], File, String, boolean, boolean, boolean, boolean, StringPattern[], boolean)</code></a>.</div>
 </td>
 </tr>
-<tr class="altColor">
-<td class="colFirst"><code>static <a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#FIND_NEXT_TO_SOURCE_FILE">FIND_NEXT_TO_SOURCE_FILE</a></span></code>
-<div class="block">Special value for <a href="../../../org/codehaus/janino/Compiler.html#classFileFinder"><code>classFileFinder</code></a>.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>static java.io.File</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#NO_DESTINATION_DIRECTORY">NO_DESTINATION_DIRECTORY</a></span></code>
-<div class="block">Backwards compatibility -- previously, "null" was officially documented.</div>
-</td>
-</tr>
 </table>
+<ul class="blockList">
+<li class="blockList"><a name="fields.inherited.from.class.org.codehaus.commons.compiler.ICompiler">
+<!--   -->
+</a>
+<h3>Fields inherited from class&nbsp;org.codehaus.commons.compiler.<a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></h3>
+<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#CREATE_NEXT_TO_SOURCE_FILE">CREATE_NEXT_TO_SOURCE_FILE</a>, <a href="../../../org/codehaus/commons/compiler/ICompiler.html#FIND_NEXT_TO_SOURCE_FILE">FIND_NEXT_TO_SOURCE_FILE</a>, <a href="../../../org/codehaus/commons/compiler/ICompiler.html#NO_DESTINATION_DIRECTORY">NO_DESTINATION_DIRECTORY</a></code></li>
+</ul>
 </li>
 </ul>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -187,6 +167,11 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#Compiler--">Compiler</a></span>()</code>
+<div class="block">Initializes a new compiler.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#Compiler-java.io.File:A-java.io.File:A-java.io.File:A-java.io.File:A-java.io.File-java.lang.String-boolean-boolean-boolean-boolean-org.codehaus.janino.util.StringPattern:A-boolean-">Compiler</a></span>(java.io.File[]&nbsp;sourcePath,
         java.io.File[]&nbsp;classPath,
         java.io.File[]&nbsp;extDirs,
@@ -199,12 +184,18 @@ extends java.lang.Object</pre>
         boolean&nbsp;debugVars,
         <a href="../../../org/codehaus/janino/util/StringPattern.html" title="class in org.codehaus.janino.util">StringPattern</a>[]&nbsp;warningHandlePatterns,
         boolean&nbsp;rebuild)</code>
-<div class="block">Initializes a Java compiler with the given parameters.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
+<div class="block"><span class="deprecationComment">Use <a href="../../../org/codehaus/janino/Compiler.html#Compiler--"><code>Compiler()</code></a> and the various configuration setters instead</span></div>
+</div>
 </td>
 </tr>
-<tr class="rowColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#Compiler-org.codehaus.janino.util.resource.ResourceFinder-org.codehaus.janino.IClassLoader-">Compiler</a></span>(<a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
-        <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;parentIClassLoader)</code>&nbsp;</td>
+<tr class="altColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#Compiler-org.codehaus.commons.compiler.util.resource.ResourceFinder-org.codehaus.janino.IClassLoader-">Compiler</a></span>(<a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
+        <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;parentIClassLoader)</code>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
+<div class="block"><span class="deprecationComment">Use <a href="../../../org/codehaus/janino/Compiler.html#Compiler--"><code>Compiler()</code></a> and the various configuration setters instead</span></div>
+</div>
+</td>
 </tr>
 </table>
 </li>
@@ -222,18 +213,12 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#compile-java.io.File:A-">compile</a></span>(java.io.File[]&nbsp;sourceFiles)</code>
-<div class="block">Reads a set of Java compilation units (a.k.a.</div>
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#compile-org.codehaus.commons.compiler.util.resource.Resource:A-">compile</a></span>(<a href="../../../org/codehaus/commons/compiler/util/resource/Resource.html" title="interface in org.codehaus.commons.compiler.util.resource">Resource</a>[]&nbsp;sourceResources)</code>
+<div class="block">See <a href="../../../org/codehaus/commons/compiler/ICompiler.html#compile-java.io.File:A-"><code>ICompiler.compile(File[])</code></a>.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#compile-org.codehaus.janino.util.resource.Resource:A-">compile</a></span>(<a href="../../../org/codehaus/janino/util/resource/Resource.html" title="interface in org.codehaus.janino.util.resource">Resource</a>[]&nbsp;sourceResources)</code>
-<div class="block">See <a href="../../../org/codehaus/janino/Compiler.html#compile-java.io.File:A-"><code>compile(File[])</code></a>.</div>
-</td>
-</tr>
-<tr id="i2" class="altColor">
 <td class="colFirst"><code>static java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#getClassFile-java.lang.String-java.io.File-java.io.File-">getClassFile</a></span>(java.lang.String&nbsp;className,
             java.io.File&nbsp;sourceFile,
@@ -241,66 +226,87 @@ extends java.lang.Object</pre>
 <div class="block">Constructs the name of a file that could store the byte code of the class with the given name.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
-<td class="colFirst"><code>static void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;args)</code>
-<div class="block">Command line interface.</div>
-</td>
-</tr>
-<tr id="i4" class="altColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.util.EnumSet&lt;<a href="../../../org/codehaus/janino/JaninoOption.html" title="enum in org.codehaus.janino">JaninoOption</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#options--">options</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Compiler.html" title="class in org.codehaus.janino">Compiler</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#options-java.util.EnumSet-">options</a></span>(java.util.EnumSet&lt;<a href="../../../org/codehaus/janino/JaninoOption.html" title="enum in org.codehaus.janino">JaninoOption</a>&gt;&nbsp;options)</code>
 <div class="block">Sets the options for all future compilations.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setCharacterEncoding-java.lang.String-">setCharacterEncoding</a></span>(java.lang.String&nbsp;characterEncoding)</code>&nbsp;</td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setClassFileCreator-org.codehaus.janino.util.resource.ResourceCreator-">setClassFileCreator</a></span>(<a href="../../../org/codehaus/janino/util/resource/ResourceCreator.html" title="interface in org.codehaus.janino.util.resource">ResourceCreator</a>&nbsp;classFileCreator)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setClassFileCreator-org.codehaus.commons.compiler.util.resource.ResourceCreator-">setClassFileCreator</a></span>(<a href="../../../org/codehaus/commons/compiler/util/resource/ResourceCreator.html" title="interface in org.codehaus.commons.compiler.util.resource">ResourceCreator</a>&nbsp;classFileCreator)</code>&nbsp;</td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setClassFileFinder-org.codehaus.janino.util.resource.ResourceFinder-">setClassFileFinder</a></span>(<a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;classFileFinder)</code>
-<div class="block">If it is impossible to check whether an already-compiled class file exists, or if you want to enforce
- recompilation, pass <a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html#EMPTY_RESOURCE_FINDER"><code>ResourceFinder.EMPTY_RESOURCE_FINDER</code></a> as the <var>classFileFinder</var>.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setClassFileFinder-org.codehaus.commons.compiler.util.resource.ResourceFinder-">setClassFileFinder</a></span>(<a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;classFileFinder)</code>
+<div class="block">This <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a> is used to check whether a .class resource already exists and is younger than the
+ .java resource from which it was generated.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setCompileErrorHandler-org.codehaus.commons.compiler.ErrorHandler-">setCompileErrorHandler</a></span>(<a href="../../../org/codehaus/commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;compileErrorHandler)</code>
 <div class="block">Installs a custom <a href="../../../org/codehaus/commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a>.</div>
 </td>
 </tr>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setDebugLines-boolean-">setDebugLines</a></span>(boolean&nbsp;value)</code>
+<div class="block">Equivalent of <code>-g:lines</code>.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setDebugSource-boolean-">setDebugSource</a></span>(boolean&nbsp;value)</code>
+<div class="block">Equivalent of <code>-g:source</code>.</div>
+</td>
+</tr>
 <tr id="i10" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setDebugLines-boolean-">setDebugLines</a></span>(boolean&nbsp;debugLines)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setDebugVars-boolean-">setDebugVars</a></span>(boolean&nbsp;value)</code>
+<div class="block">Equivalent of <code>-g:vars</code>.</div>
+</td>
 </tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setDebugSource-boolean-">setDebugSource</a></span>(boolean&nbsp;debugSource)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setEncoding-java.nio.charset.Charset-">setEncoding</a></span>(java.nio.charset.Charset&nbsp;encoding)</code>
+<div class="block">Equivalent of -encoding.</div>
+</td>
 </tr>
 <tr id="i12" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setDebugVars-boolean-">setDebugVars</a></span>(boolean&nbsp;debugVars)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setIClassLoader-org.codehaus.janino.IClassLoader-">setIClassLoader</a></span>(<a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;iClassLoader)</code>
+<div class="block">Loads "auxiliary classes", typically from BOOTCLASSPATH + EXTDIR + CLASSPATH (but <em>not</em> from the
+ "destination directory"!).</div>
+</td>
 </tr>
 <tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setVerbose-boolean-">setVerbose</a></span>(boolean&nbsp;verbose)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setSourceFinder-org.codehaus.commons.compiler.util.resource.ResourceFinder-">setSourceFinder</a></span>(<a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;sourceFinder)</code>
+<div class="block">Finds more .java resources that need to be compiled, i.e. implements the "source path".</div>
+</td>
 </tr>
 <tr id="i14" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setVerbose-boolean-">setVerbose</a></span>(boolean&nbsp;verbose)</code>
+<div class="block">Equivalent of <code>-verbose</code>.</div>
+</td>
+</tr>
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#setWarningHandler-org.codehaus.commons.compiler.WarningHandler-">setWarningHandler</a></span>(<a href="../../../org/codehaus/commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;warningHandler)</code>
 <div class="block">By default, warnings are discarded, but an application my install a custom <a href="../../../org/codehaus/commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler"><code>WarningHandler</code></a>.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Compiler.html#storeClassFile-org.codehaus.janino.util.ClassFile-java.io.File-">storeClassFile</a></span>(<a href="../../../org/codehaus/janino/util/ClassFile.html" title="class in org.codehaus.janino.util">ClassFile</a>&nbsp;classFile,
               java.io.File&nbsp;sourceFile)</code>
@@ -308,6 +314,20 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 </table>
+<ul class="blockList">
+<li class="blockList"><a name="methods.inherited.from.class.org.codehaus.janino.AbstractCompiler">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/AbstractCompiler.html" title="class in org.codehaus.janino">AbstractCompiler</a></h3>
+<code><a href="../../../org/codehaus/janino/AbstractCompiler.html#setBootClassPath-java.io.File:A-">setBootClassPath</a>, <a href="../../../org/codehaus/janino/AbstractCompiler.html#setClassPath-java.io.File:A-">setClassPath</a>, <a href="../../../org/codehaus/janino/AbstractCompiler.html#setExtensionDirectories-java.io.File:A-">setExtensionDirectories</a>, <a href="../../../org/codehaus/janino/AbstractCompiler.html#setSourcePath-java.io.File:A-">setSourcePath</a></code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods.inherited.from.class.org.codehaus.commons.compiler.ICompiler">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;org.codehaus.commons.compiler.<a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></h3>
+<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#compile-java.io.File:A-">compile</a>, <a href="../../../org/codehaus/commons/compiler/ICompiler.html#setDestinationDirectory-java.io.File-">setDestinationDirectory</a>, <a href="../../../org/codehaus/commons/compiler/ICompiler.html#setRebuild-boolean-">setRebuild</a></code></li>
+</ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
 <!--   -->
@@ -329,40 +349,6 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Field Detail</h3>
-<a name="FIND_NEXT_TO_SOURCE_FILE">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>FIND_NEXT_TO_SOURCE_FILE</h4>
-<pre><a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-public static final&nbsp;<a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a> FIND_NEXT_TO_SOURCE_FILE</pre>
-<div class="block">Special value for <a href="../../../org/codehaus/janino/Compiler.html#classFileFinder"><code>classFileFinder</code></a>.</div>
-</li>
-</ul>
-<a name="CREATE_NEXT_TO_SOURCE_FILE">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>CREATE_NEXT_TO_SOURCE_FILE</h4>
-<pre><a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-public static final&nbsp;<a href="../../../org/codehaus/janino/util/resource/ResourceCreator.html" title="interface in org.codehaus.janino.util.resource">ResourceCreator</a> CREATE_NEXT_TO_SOURCE_FILE</pre>
-<div class="block">Special value for <a href="../../../org/codehaus/janino/Compiler.html#classFileCreator"><code>classFileCreator</code></a>: Indicates that each .class file is to be creted in the same
- directory as the corresponding .java file.</div>
-</li>
-</ul>
-<a name="NO_DESTINATION_DIRECTORY">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>NO_DESTINATION_DIRECTORY</h4>
-<pre><a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-public static final&nbsp;java.io.File NO_DESTINATION_DIRECTORY</pre>
-<div class="block">Backwards compatibility -- previously, "null" was officially documented.</div>
-</li>
-</ul>
 <a name="DEFAULT_WARNING_HANDLE_PATTERNS">
 <!--   -->
 </a>
@@ -382,87 +368,52 @@ public static final&nbsp;java.io.File NO_DESTINATION_DIRECTORY</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="Compiler-java.io.File:A-java.io.File:A-java.io.File:A-java.io.File:A-java.io.File-java.lang.String-boolean-boolean-boolean-boolean-org.codehaus.janino.util.StringPattern:A-boolean-">
+<a name="Compiler--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>Compiler</h4>
-<pre>public&nbsp;Compiler(<a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                java.io.File[]&nbsp;sourcePath,
-                java.io.File[]&nbsp;classPath,
-                <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                java.io.File[]&nbsp;extDirs,
-                <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                java.io.File[]&nbsp;bootClassPath,
-                <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                java.io.File&nbsp;destinationDirectory,
-                <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                java.lang.String&nbsp;characterEncoding,
-                boolean&nbsp;verbose,
-                boolean&nbsp;debugSource,
-                boolean&nbsp;debugLines,
-                boolean&nbsp;debugVars,
-                <a href="../../../org/codehaus/janino/util/StringPattern.html" title="class in org.codehaus.janino.util">StringPattern</a>[]&nbsp;warningHandlePatterns,
-                boolean&nbsp;rebuild)</pre>
-<div class="block">Initializes a Java compiler with the given parameters.
- <p>
-   Classes are searched in the following order:
- <p>
- <ul>
-   <li>
-     <b>If <var>bootClassPath</var> is <code>null</code>:</b> Through the system class loader of the JVM that runs
-     JANINO
-   </li>
-   <li>
-     <b>If <var>bootClassPath</var> is not <code>null</code>:</b> Through the <var>bootClassPath</var>
-   </li>
-   <li>
-     <b>If <var>extDirs</var> is not <code>null</code>:</b> Through the <var>extDirs</var>
-   </li>
-   <li>
-     Through the <var>classPath</var>
-   </li>
-   <li>
-     <b>If <var>sourcePath</var> is <code>null</code>:</b> Through source files found on the <var>classPath</var>
-   </li>
-   <li>
-     <b>If <var>sourcePath</var> is not <code>null</code>:</b> Through source files found on the <code>sourcePath</code>
-   </li>
- </ul>
- <p>
-   The file name of a class file that represents class "pkg.Example" is determined as follows:
- </p>
- <ul>
-   <li>
-     <b>If <var>destinationDirectory</var> is not <a href="../../../org/codehaus/janino/Compiler.html#NO_DESTINATION_DIRECTORY"><code>NO_DESTINATION_DIRECTORY</code></a>:</b>
-     <var>destinationDirectory</var><code>/pkg/Example.class</code>
-   </li>
-   <li>
-     <b>If <var>destinationDirectory</var> is <a href="../../../org/codehaus/janino/Compiler.html#NO_DESTINATION_DIRECTORY"><code>NO_DESTINATION_DIRECTORY</code></a>:</b> <code>dir1/dir2/Example.class</code> (Assuming that the file name of the source file that declares the class was <code>dir1/dir2/Any.java</code>.)
-   </li>
- </ul></div>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../org/codehaus/janino/Compiler.html#DEFAULT_WARNING_HANDLE_PATTERNS"><code>DEFAULT_WARNING_HANDLE_PATTERNS</code></a></dd>
-</dl>
+<pre>public&nbsp;Compiler()</pre>
+<div class="block">Initializes a new compiler.</div>
 </li>
 </ul>
-<a name="Compiler-org.codehaus.janino.util.resource.ResourceFinder-org.codehaus.janino.IClassLoader-">
+<a name="Compiler-org.codehaus.commons.compiler.util.resource.ResourceFinder-org.codehaus.janino.IClassLoader-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>Compiler</h4>
+<pre>@Deprecated
+public&nbsp;Compiler(<a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
+                             <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;parentIClassLoader)</pre>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Use <a href="../../../org/codehaus/janino/Compiler.html#Compiler--"><code>Compiler()</code></a> and the various configuration setters instead</span></div>
+</li>
+</ul>
+<a name="Compiler-java.io.File:A-java.io.File:A-java.io.File:A-java.io.File:A-java.io.File-java.lang.String-boolean-boolean-boolean-boolean-org.codehaus.janino.util.StringPattern:A-boolean-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>Compiler</h4>
-<pre>public&nbsp;Compiler(<a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;sourceFinder,
-                <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                <a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;parentIClassLoader)</pre>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>sourceFinder</code> - Finds extra Java compilation units that need to be compiled (a.k.a. "-sourcepath")</dd>
-<dd><code>parentIClassLoader</code> - Loads auxiliary <a href="../../../org/codehaus/janino/IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a>es (a.k.a. "-classpath"), e.g. <code>new
-                           ClassLoaderIClassLoader(ClassLoader)</code></dd>
-</dl>
+<pre>@Deprecated
+public&nbsp;Compiler(java.io.File[]&nbsp;sourcePath,
+                             java.io.File[]&nbsp;classPath,
+                             <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                             java.io.File[]&nbsp;extDirs,
+                             <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                             java.io.File[]&nbsp;bootClassPath,
+                             <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                             java.io.File&nbsp;destinationDirectory,
+                             <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                             java.lang.String&nbsp;characterEncoding,
+                             boolean&nbsp;verbose,
+                             boolean&nbsp;debugSource,
+                             boolean&nbsp;debugLines,
+                             boolean&nbsp;debugVars,
+                             <a href="../../../org/codehaus/janino/util/StringPattern.html" title="class in org.codehaus.janino.util">StringPattern</a>[]&nbsp;warningHandlePatterns,
+                             boolean&nbsp;rebuild)</pre>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Use <a href="../../../org/codehaus/janino/Compiler.html#Compiler--"><code>Compiler()</code></a> and the various configuration setters instead</span></div>
 </li>
 </ul>
 </li>
@@ -473,16 +424,6 @@ public static final&nbsp;java.io.File NO_DESTINATION_DIRECTORY</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="main-java.lang.String:A-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>main</h4>
-<pre>public static&nbsp;void&nbsp;main(java.lang.String[]&nbsp;args)</pre>
-<div class="block">Command line interface.</div>
-</li>
-</ul>
 <a name="setCompileErrorHandler-org.codehaus.commons.compiler.ErrorHandler-">
 <!--   -->
 </a>
@@ -503,6 +444,12 @@ public static final&nbsp;java.io.File NO_DESTINATION_DIRECTORY</pre>
  <p>
    In other words: In situations where compilation can reasonably continue after a compile error, the <a href="../../../org/codehaus/commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> is called; all other error conditions cause a <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> to be thrown.
  </p></div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code><a href="../../../org/codehaus/janino/AbstractCompiler.html#setCompileErrorHandler-org.codehaus.commons.compiler.ErrorHandler-">setCompileErrorHandler</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/janino/AbstractCompiler.html" title="class in org.codehaus.janino">AbstractCompiler</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>compileErrorHandler</code> - <code>null</code> to restore the default behavior (throwing a <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a></dd>
+</dl>
 </li>
 </ul>
 <a name="setWarningHandler-org.codehaus.commons.compiler.WarningHandler-">
@@ -515,6 +462,8 @@ public static final&nbsp;java.io.File NO_DESTINATION_DIRECTORY</pre>
                               <a href="../../../org/codehaus/commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;warningHandler)</pre>
 <div class="block">By default, warnings are discarded, but an application my install a custom <a href="../../../org/codehaus/commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler"><code>WarningHandler</code></a>.</div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code><a href="../../../org/codehaus/janino/AbstractCompiler.html#setWarningHandler-org.codehaus.commons.compiler.WarningHandler-">setWarningHandler</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/janino/AbstractCompiler.html" title="class in org.codehaus.janino">AbstractCompiler</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>warningHandler</code> - <code>null</code> to indicate that no warnings be issued</dd>
 </dl>
@@ -544,65 +493,22 @@ public static final&nbsp;java.io.File NO_DESTINATION_DIRECTORY</pre>
 <div class="block">Sets the options for all future compilations.</div>
 </li>
 </ul>
-<a name="compile-java.io.File:A-">
+<a name="compile-org.codehaus.commons.compiler.util.resource.Resource:A-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>compile</h4>
-<pre>public&nbsp;boolean&nbsp;compile(java.io.File[]&nbsp;sourceFiles)
-                throws <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a>,
-                       java.io.IOException</pre>
-<div class="block">Reads a set of Java compilation units (a.k.a. "source files") from the file system, compiles them into a set of
- "class files" and stores these in the file system. Additional source files are parsed and compiled on demand
- through the "source path" set of directories.
- <p>
-   For example, if the source path comprises the directories "A/B" and "../C", then the source file for class
-   "com.acme.Main" is searched in
- </p>
- <dl>
-   <dd>A/B/com/acme/Main.java
-   <dd>../C/com/acme/Main.java
- </dl>
- <p>
-   Notice that it does make a difference whether you pass multiple source files to <a href="../../../org/codehaus/janino/Compiler.html#compile-java.io.File:A-"><code>compile(File[])</code></a> or if
-   you invoke <a href="../../../org/codehaus/janino/Compiler.html#compile-java.io.File:A-"><code>compile(File[])</code></a> multiply: In the former case, the source files may contain arbitrary
-   references among each other (even circular ones). In the latter case, only the source files on the source path
-   may contain circular references, not the <var>sourceFiles</var>.
- </p>
- <p>
-   This method must be called exactly once after object construction.
- </p>
- <p>
-   Compile errors are reported as described at <a href="../../../org/codehaus/janino/Compiler.html#setCompileErrorHandler-org.codehaus.commons.compiler.ErrorHandler-"><code>setCompileErrorHandler(ErrorHandler)</code></a>.
- </p></div>
+<pre>public&nbsp;void&nbsp;compile(<a href="../../../org/codehaus/commons/compiler/util/resource/Resource.html" title="interface in org.codehaus.commons.compiler.util.resource">Resource</a>[]&nbsp;sourceResources)
+             throws <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a>,
+                    java.io.IOException</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#compile-org.codehaus.commons.compiler.util.resource.Resource:A-">ICompiler</a></code></span></div>
+<div class="block">See <a href="../../../org/codehaus/commons/compiler/ICompiler.html#compile-java.io.File:A-"><code>ICompiler.compile(File[])</code></a>.</div>
 <dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>sourceFiles</code> - Contain the compilation units to compile</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> for backwards compatibility (return value can safely be ignored)</dd>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code><a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code> - Fatal compilation error, or the <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> thrown be the installed
-                          compile error handler</dd>
-<dd><code>java.io.IOException</code> - Occurred when reading from the <var>sourceFiles</var></dd>
-</dl>
-</li>
-</ul>
-<a name="compile-org.codehaus.janino.util.resource.Resource:A-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>compile</h4>
-<pre>public&nbsp;boolean&nbsp;compile(<a href="../../../org/codehaus/janino/util/resource/Resource.html" title="interface in org.codehaus.janino.util.resource">Resource</a>[]&nbsp;sourceResources)
-                throws <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a>,
-                       java.io.IOException</pre>
-<div class="block">See <a href="../../../org/codehaus/janino/Compiler.html#compile-java.io.File:A-"><code>compile(File[])</code></a>.</div>
-<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#compile-org.codehaus.commons.compiler.util.resource.Resource:A-">compile</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>sourceResources</code> - Contain the compilation units to compile</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd><code>true</code> for backwards compatibility (return value can safely be ignored)</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 <dd><code>java.io.IOException</code></dd>
@@ -656,33 +562,78 @@ public static final&nbsp;java.io.File NO_DESTINATION_DIRECTORY</pre>
 </dl>
 </li>
 </ul>
-<a name="setClassFileFinder-org.codehaus.janino.util.resource.ResourceFinder-">
+<a name="setIClassLoader-org.codehaus.janino.IClassLoader-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setIClassLoader</h4>
+<pre>public&nbsp;void&nbsp;setIClassLoader(<a href="../../../org/codehaus/janino/IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a>&nbsp;iClassLoader)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../../org/codehaus/janino/AbstractCompiler.html#setIClassLoader-org.codehaus.janino.IClassLoader-">AbstractCompiler</a></code></span></div>
+<div class="block">Loads "auxiliary classes", typically from BOOTCLASSPATH + EXTDIR + CLASSPATH (but <em>not</em> from the
+ "destination directory"!).</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/janino/AbstractCompiler.html#setIClassLoader-org.codehaus.janino.IClassLoader-">setIClassLoader</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/janino/AbstractCompiler.html" title="class in org.codehaus.janino">AbstractCompiler</a></code></dd>
+</dl>
+</li>
+</ul>
+<a name="setClassFileFinder-org.codehaus.commons.compiler.util.resource.ResourceFinder-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>setClassFileFinder</h4>
 <pre>public&nbsp;void&nbsp;setClassFileFinder(<a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                               <a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a>&nbsp;classFileFinder)</pre>
-<div class="block">If it is impossible to check whether an already-compiled class file exists, or if you want to enforce
- recompilation, pass <a href="../../../org/codehaus/janino/util/resource/ResourceFinder.html#EMPTY_RESOURCE_FINDER"><code>ResourceFinder.EMPTY_RESOURCE_FINDER</code></a> as the <var>classFileFinder</var>.</div>
+                               <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;classFileFinder)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setClassFileFinder-org.codehaus.commons.compiler.util.resource.ResourceFinder-">ICompiler</a></code></span></div>
+<div class="block">This <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a> is used to check whether a .class resource already exists and is younger than the
+ .java resource from which it was generated.
+ <p>
+   If it is impossible to check whether an already-compiled class file exists, or if you want to enforce
+   recompilation, pass <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html#EMPTY_RESOURCE_FINDER"><code>ResourceFinder.EMPTY_RESOURCE_FINDER</code></a> as the <var>classFileFinder</var>.
+ </p></div>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setClassFileFinder-org.codehaus.commons.compiler.util.resource.ResourceFinder-">setClassFileFinder</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>classFileFinder</code> - Where to look for up-to-date class files that need not be compiled (a.k.a. "-d")</dd>
+<dd><code>classFileFinder</code> - Special value <a href="../../../org/codehaus/commons/compiler/ICompiler.html#FIND_NEXT_TO_SOURCE_FILE"><code>ICompiler.FIND_NEXT_TO_SOURCE_FILE</code></a> means ".class file is next to
+                                its source file, <em>not</em> in the destination directory"</dd>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="../../../org/codehaus/commons/compiler/ICompiler.html#FIND_NEXT_TO_SOURCE_FILE"><code>ICompiler.FIND_NEXT_TO_SOURCE_FILE</code></a></dd>
 </dl>
 </li>
 </ul>
-<a name="setClassFileCreator-org.codehaus.janino.util.resource.ResourceCreator-">
+<a name="setClassFileCreator-org.codehaus.commons.compiler.util.resource.ResourceCreator-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>setClassFileCreator</h4>
 <pre>public&nbsp;void&nbsp;setClassFileCreator(<a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                                <a href="../../../org/codehaus/janino/util/resource/ResourceCreator.html" title="interface in org.codehaus.janino.util.resource">ResourceCreator</a>&nbsp;classFileCreator)</pre>
+                                <a href="../../../org/codehaus/commons/compiler/util/resource/ResourceCreator.html" title="interface in org.codehaus.commons.compiler.util.resource">ResourceCreator</a>&nbsp;classFileCreator)</pre>
 <dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setClassFileCreator-org.codehaus.commons.compiler.util.resource.ResourceCreator-">setClassFileCreator</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>classFileCreator</code> - Stores the generated class files (a.k.a. "-d")</dd>
+<dd><code>classFileCreator</code> - Stores the generated class files (a.k.a. "-d"); special value <a href="../../../org/codehaus/commons/compiler/ICompiler.html#CREATE_NEXT_TO_SOURCE_FILE"><code>ICompiler.CREATE_NEXT_TO_SOURCE_FILE</code></a> means "create each .class file in the same directory as
+                         its source file"</dd>
+</dl>
+</li>
+</ul>
+<a name="setEncoding-java.nio.charset.Charset-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setEncoding</h4>
+<pre>public&nbsp;void&nbsp;setEncoding(<a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                        java.nio.charset.Charset&nbsp;encoding)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setEncoding-java.nio.charset.Charset-">ICompiler</a></code></span></div>
+<div class="block">Equivalent of -encoding.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setEncoding-java.nio.charset.Charset-">setEncoding</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -694,15 +645,10 @@ public static final&nbsp;java.io.File NO_DESTINATION_DIRECTORY</pre>
 <h4>setCharacterEncoding</h4>
 <pre>public&nbsp;void&nbsp;setCharacterEncoding(<a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                                  java.lang.String&nbsp;characterEncoding)</pre>
-</li>
-</ul>
-<a name="setDebugSource-boolean-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setDebugSource</h4>
-<pre>public&nbsp;void&nbsp;setDebugSource(boolean&nbsp;debugSource)</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setCharacterEncoding-java.lang.String-">setCharacterEncoding</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></dd>
+</dl>
 </li>
 </ul>
 <a name="setDebugLines-boolean-">
@@ -711,7 +657,13 @@ public static final&nbsp;java.io.File NO_DESTINATION_DIRECTORY</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>setDebugLines</h4>
-<pre>public&nbsp;void&nbsp;setDebugLines(boolean&nbsp;debugLines)</pre>
+<pre>public&nbsp;void&nbsp;setDebugLines(boolean&nbsp;value)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setDebugLines-boolean-">ICompiler</a></code></span></div>
+<div class="block">Equivalent of <code>-g:lines</code>.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setDebugLines-boolean-">setDebugLines</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></dd>
+</dl>
 </li>
 </ul>
 <a name="setDebugVars-boolean-">
@@ -720,16 +672,58 @@ public static final&nbsp;java.io.File NO_DESTINATION_DIRECTORY</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>setDebugVars</h4>
-<pre>public&nbsp;void&nbsp;setDebugVars(boolean&nbsp;debugVars)</pre>
+<pre>public&nbsp;void&nbsp;setDebugVars(boolean&nbsp;value)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setDebugVars-boolean-">ICompiler</a></code></span></div>
+<div class="block">Equivalent of <code>-g:vars</code>.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setDebugVars-boolean-">setDebugVars</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></dd>
+</dl>
+</li>
+</ul>
+<a name="setDebugSource-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setDebugSource</h4>
+<pre>public&nbsp;void&nbsp;setDebugSource(boolean&nbsp;value)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setDebugSource-boolean-">ICompiler</a></code></span></div>
+<div class="block">Equivalent of <code>-g:source</code>.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setDebugSource-boolean-">setDebugSource</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></dd>
+</dl>
 </li>
 </ul>
 <a name="setVerbose-boolean-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>setVerbose</h4>
 <pre>public&nbsp;void&nbsp;setVerbose(boolean&nbsp;verbose)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setVerbose-boolean-">ICompiler</a></code></span></div>
+<div class="block">Equivalent of <code>-verbose</code>.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setVerbose-boolean-">setVerbose</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></dd>
+</dl>
+</li>
+</ul>
+<a name="setSourceFinder-org.codehaus.commons.compiler.util.resource.ResourceFinder-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>setSourceFinder</h4>
+<pre>public&nbsp;void&nbsp;setSourceFinder(<a href="../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ResourceFinder</a>&nbsp;sourceFinder)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setSourceFinder-org.codehaus.commons.compiler.util.resource.ResourceFinder-">ICompiler</a></code></span></div>
+<div class="block">Finds more .java resources that need to be compiled, i.e. implements the "source path".</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/commons/compiler/ICompiler.html#setSourceFinder-org.codehaus.commons.compiler.util.resource.ResourceFinder-">setSourceFinder</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/commons/compiler/ICompiler.html" title="class in org.codehaus.commons.compiler">ICompiler</a></code></dd>
+</dl>
 </li>
 </ul>
 </li>

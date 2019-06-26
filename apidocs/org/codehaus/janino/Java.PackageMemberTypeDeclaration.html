@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":6};
+var methods = {"i0":6,"i1":6,"i2":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -103,7 +103,7 @@ var activeTableTab = "activeTableTab";
 </dl>
 <dl>
 <dt>All Known Implementing Classes:</dt>
-<dd><a href="../../../org/codehaus/janino/Java.AbstractPackageMemberClassDeclaration.html" title="class in org.codehaus.janino">Java.AbstractPackageMemberClassDeclaration</a>, <a href="../../../org/codehaus/janino/Java.PackageMemberAnnotationTypeDeclaration.html" title="class in org.codehaus.janino">Java.PackageMemberAnnotationTypeDeclaration</a>, <a href="../../../org/codehaus/janino/Java.PackageMemberClassDeclaration.html" title="class in org.codehaus.janino">Java.PackageMemberClassDeclaration</a>, <a href="../../../org/codehaus/janino/Java.PackageMemberEnumDeclaration.html" title="class in org.codehaus.janino">Java.PackageMemberEnumDeclaration</a>, <a href="../../../org/codehaus/janino/Java.PackageMemberInterfaceDeclaration.html" title="class in org.codehaus.janino">Java.PackageMemberInterfaceDeclaration</a></dd>
+<dd><a href="../../../org/codehaus/janino/Java.PackageMemberAnnotationTypeDeclaration.html" title="class in org.codehaus.janino">Java.PackageMemberAnnotationTypeDeclaration</a>, <a href="../../../org/codehaus/janino/Java.PackageMemberClassDeclaration.html" title="class in org.codehaus.janino">Java.PackageMemberClassDeclaration</a>, <a href="../../../org/codehaus/janino/Java.PackageMemberEnumDeclaration.html" title="class in org.codehaus.janino">Java.PackageMemberEnumDeclaration</a>, <a href="../../../org/codehaus/janino/Java.PackageMemberInterfaceDeclaration.html" title="class in org.codehaus.janino">Java.PackageMemberInterfaceDeclaration</a></dd>
 </dl>
 <dl>
 <dt>Enclosing class:</dt>
@@ -134,13 +134,17 @@ extends <a href="../../../org/codehaus/janino/Java.NamedTypeDeclaration.html" ti
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Access.html" title="enum in org.codehaus.janino">Access</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.PackageMemberTypeDeclaration.html#getAccess--">getAccess</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.PackageMemberTypeDeclaration.html#getDeclaringCompilationUnit--">getDeclaringCompilationUnit</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.PackageMemberTypeDeclaration.html#setDeclaringCompilationUnit-org.codehaus.janino.Java.CompilationUnit-">setDeclaringCompilationUnit</a></span>(<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;declaringCompilationUnit)</code>
-<div class="block">Sets the <a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino"><code>Java.CompilationUnit</code></a> in which this top-level type is declared.</div>
+<div class="block">Sets the <a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino"><code>Java.AbstractCompilationUnit</code></a> in which this top-level type is declared.</div>
 </td>
 </tr>
 </table>
@@ -156,7 +160,7 @@ extends <a href="../../../org/codehaus/janino/Java.NamedTypeDeclaration.html" ti
 <!--   -->
 </a>
 <h3>Methods inherited from interface&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino">Java.TypeDeclaration</a></h3>
-<code><a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#accept-org.codehaus.janino.Visitor.TypeDeclarationVisitor-">accept</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#createAnonymousClassName--">createAnonymousClassName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#createLocalTypeName-java.lang.String-">createLocalTypeName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getClassName--">getClassName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMemberTypeDeclaration-java.lang.String-">getMemberTypeDeclaration</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMemberTypeDeclarations--">getMemberTypeDeclarations</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMethodDeclaration-java.lang.String-">getMethodDeclaration</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMethodDeclarations--">getMethodDeclarations</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getModifierFlags--">getModifierFlags</a></code></li>
+<code><a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#accept-org.codehaus.janino.Visitor.TypeDeclarationVisitor-">accept</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#createAnonymousClassName--">createAnonymousClassName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#createLocalTypeName-java.lang.String-">createLocalTypeName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getClassName--">getClassName</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMemberTypeDeclaration-java.lang.String-">getMemberTypeDeclaration</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMemberTypeDeclarations--">getMemberTypeDeclarations</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMethodDeclaration-java.lang.String-">getMethodDeclaration</a>, <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html#getMethodDeclarations--">getMethodDeclarations</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.codehaus.janino.Java.Annotatable">
@@ -200,20 +204,29 @@ extends <a href="../../../org/codehaus/janino/Java.NamedTypeDeclaration.html" ti
 <li class="blockList">
 <h4>setDeclaringCompilationUnit</h4>
 <pre>void&nbsp;setDeclaringCompilationUnit(<a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;declaringCompilationUnit)</pre>
-<div class="block">Sets the <a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino"><code>Java.CompilationUnit</code></a> in which this top-level type is declared.</div>
+<div class="block">Sets the <a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino"><code>Java.AbstractCompilationUnit</code></a> in which this top-level type is declared.</div>
 </li>
 </ul>
 <a name="getDeclaringCompilationUnit--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getDeclaringCompilationUnit</h4>
 <pre><a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a>&nbsp;getDeclaringCompilationUnit()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The <a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino"><code>Java.CompilationUnit</code></a> in which this top-level type is declared.</dd>
+<dd>The <a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino"><code>Java.AbstractCompilationUnit</code></a> in which this top-level type is declared.</dd>
 </dl>
+</li>
+</ul>
+<a name="getAccess--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getAccess</h4>
+<pre><a href="../../../org/codehaus/janino/Access.html" title="enum in org.codehaus.janino">Access</a>&nbsp;getAccess()</pre>
 </li>
 </ul>
 </li>

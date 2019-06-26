@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -159,7 +159,7 @@ implements <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html" title="class in org.codehaus.janino">Java.AbstractTypeBodyDeclaration</a></h3>
-<code><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#statiC">statiC</a></code></li>
+<code><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#modifiers">modifiers</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="fields.inherited.from.class.org.codehaus.janino.Java.Located">
@@ -182,8 +182,8 @@ implements <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Initializer.html#Initializer-org.codehaus.commons.compiler.Location-boolean-org.codehaus.janino.Java.Block-">Initializer</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-           boolean&nbsp;statiC,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Initializer.html#Initializer-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.Block-">Initializer</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+           <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
            <a href="../../../org/codehaus/janino/Java.Block.html" title="class in org.codehaus.janino">Java.Block</a>&nbsp;block)</code>&nbsp;</td>
 </tr>
 </table>
@@ -220,6 +220,10 @@ implements <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Initializer.html#findLocalVariable-java.lang.String-">findLocalVariable</a></span>(java.lang.String&nbsp;name)</code>&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Initializer.html#isStatic--">isStatic</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Initializer.html#toString--">toString</a></span>()</code>&nbsp;</td>
 </tr>
@@ -229,7 +233,7 @@ implements <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html" title="class in org.codehaus.janino">Java.AbstractTypeBodyDeclaration</a></h3>
-<code><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#getDeclaringType--">getDeclaringType</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#getEnclosingScope--">getEnclosingScope</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#isStatic--">isStatic</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#setDeclaringType-org.codehaus.janino.Java.TypeDeclaration-">setDeclaringType</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#setEnclosingScope-org.codehaus.janino.Java.Scope-">setEnclosingScope</a></code></li>
+<code><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#getAnnotations--">getAnnotations</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#getDeclaringType--">getDeclaringType</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#getEnclosingScope--">getEnclosingScope</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#getModifiers--">getModifiers</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#setDeclaringType-org.codehaus.janino.Java.TypeDeclaration-">setDeclaringType</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#setEnclosingScope-org.codehaus.janino.Java.Scope-">setEnclosingScope</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.codehaus.janino.Java.Located">
@@ -291,14 +295,14 @@ implements <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="Initializer-org.codehaus.commons.compiler.Location-boolean-org.codehaus.janino.Java.Block-">
+<a name="Initializer-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.Block-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>Initializer</h4>
 <pre>public&nbsp;Initializer(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-                   boolean&nbsp;statiC,
+                   <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                    <a href="../../../org/codehaus/janino/Java.Block.html" title="class in org.codehaus.janino">Java.Block</a>&nbsp;block)</pre>
 </li>
 </ul>
@@ -310,6 +314,15 @@ implements <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="isStatic--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isStatic</h4>
+<pre>public&nbsp;boolean&nbsp;isStatic()</pre>
+</li>
+</ul>
 <a name="toString--">
 <!--   -->
 </a>

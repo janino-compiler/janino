@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10};
+var methods = {"i0":10,"i1":10,"i2":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -142,16 +142,14 @@ extends <a href="../../../org/codehaus/janino/Java.Located.html" title="class in
 <th class="colLast" scope="col">Field and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html#finaL">finaL</a></span></code>
-<div class="block">Whether the parameter is declared FINAL.</div>
-</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.LocalVariable.html" title="class in org.codehaus.janino">Java.LocalVariable</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html#localVariable">localVariable</a></span></code>
 <div class="block">The local variable associated with this parameter.</div>
 </td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html#modifiers">modifiers</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
@@ -187,8 +185,8 @@ extends <a href="../../../org/codehaus/janino/Java.Located.html" title="class in
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html#FormalParameter-org.codehaus.commons.compiler.Location-boolean-org.codehaus.janino.Java.Type-java.lang.String-">FormalParameter</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-               boolean&nbsp;finaL,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html#FormalParameter-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.Type-java.lang.String-">FormalParameter</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+               <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;type,
                java.lang.String&nbsp;name)</code>&nbsp;</td>
 </tr>
@@ -208,10 +206,14 @@ extends <a href="../../../org/codehaus/janino/Java.Located.html" title="class in
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html#isFinal--">isFinal</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html#toString--">toString</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameter.html#toString-boolean-">toString</a></span>(boolean&nbsp;hasEllipsis)</code>&nbsp;</td>
 </tr>
@@ -244,14 +246,13 @@ extends <a href="../../../org/codehaus/janino/Java.Located.html" title="class in
 <!--   -->
 </a>
 <h3>Field Detail</h3>
-<a name="finaL">
+<a name="modifiers">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>finaL</h4>
-<pre>public final&nbsp;boolean finaL</pre>
-<div class="block">Whether the parameter is declared FINAL.</div>
+<h4>modifiers</h4>
+<pre>public final&nbsp;<a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[] modifiers</pre>
 </li>
 </ul>
 <a name="type">
@@ -293,14 +294,14 @@ public&nbsp;<a href="../../../org/codehaus/janino/Java.LocalVariable.html" title
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="FormalParameter-org.codehaus.commons.compiler.Location-boolean-org.codehaus.janino.Java.Type-java.lang.String-">
+<a name="FormalParameter-org.codehaus.commons.compiler.Location-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.Type-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>FormalParameter</h4>
 <pre>public&nbsp;FormalParameter(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-                       boolean&nbsp;finaL,
+                       <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                        <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;type,
                        java.lang.String&nbsp;name)</pre>
 </li>
@@ -313,6 +314,15 @@ public&nbsp;<a href="../../../org/codehaus/janino/Java.LocalVariable.html" title
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="isFinal--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isFinal</h4>
+<pre>public&nbsp;boolean&nbsp;isFinal()</pre>
+</li>
+</ul>
 <a name="toString-boolean-">
 <!--   -->
 </a>

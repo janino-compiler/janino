@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":9,"i1":9};
+var methods = {"i0":9,"i1":9,"i2":9,"i3":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -146,8 +146,8 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractPackageMemberClassDeclaration.html" title="class in org.codehaus.janino">Java.AbstractPackageMemberClassDeclaration</a></span></code>
-<div class="block">Base for the various package member (a.k.a.</div>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a></span></code>
+<div class="block">Holds the result of <a href="../../../org/codehaus/janino/Parser.html#parseAbstractCompilationUnit--"><code>Parser.parseAbstractCompilationUnit()</code></a>.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -164,45 +164,55 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AccessModifier.html" title="class in org.codehaus.janino">Java.AccessModifier</a></span></code>
+<div class="block">Representation of the modifier flags and annotations that are associated with a declaration.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AlternateConstructorInvocation.html" title="class in org.codehaus.janino">Java.AlternateConstructorInvocation</a></span></code>
 <div class="block">Representation of a JLS7 8.8.7.1.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AmbiguousName.html" title="class in org.codehaus.janino">Java.AmbiguousName</a></span></code>
 <div class="block">Representation of a JLS7 6.5.2 "ambiguous name".</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Annotatable.html" title="interface in org.codehaus.janino">Java.Annotatable</a></span></code>
 <div class="block">Representation of Java elements that can be annotated: Fields, constructors, methods, type declarations.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a></span></code>
 <div class="block">Representation of a Java  annotation.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AnnotationTypeDeclaration.html" title="interface in org.codehaus.janino">Java.AnnotationTypeDeclaration</a></span></code>
 <div class="block">Base for package member ("top-level") and member ("nested") annotation type declarations.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AnonymousClassDeclaration.html" title="class in org.codehaus.janino">Java.AnonymousClassDeclaration</a></span></code>
 <div class="block">Representation of a JLS7 15.9.5 "anonymous class declaration".</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ArrayAccessExpression.html" title="class in org.codehaus.janino">Java.ArrayAccessExpression</a></span></code>
-<div class="block">Representation of a JLS7 15.13 "array access expression".</div>
+<div class="block">Representation of a JLS7 15.13 (JLS8: 15.10.3) "array access expression".</div>
 </td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ArrayCreationReference.html" title="class in org.codehaus.janino">Java.ArrayCreationReference</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
@@ -326,107 +336,113 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ClassInstanceCreationReference.html" title="class in org.codehaus.janino">Java.ClassInstanceCreationReference</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ClassLiteral.html" title="class in org.codehaus.janino">Java.ClassLiteral</a></span></code>
 <div class="block">Representation of a JLS7 15.8.2 "class literal".</div>
 </td>
 </tr>
-<tr class="rowColor">
-<td class="colFirst"><code>static class&nbsp;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a></span></code>
-<div class="block">Holds the result of <a href="../../../org/codehaus/janino/Parser.html#parseCompilationUnit--"><code>Parser.parseCompilationUnit()</code></a>.</div>
-</td>
-</tr>
 <tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.CompilationUnit.html" title="class in org.codehaus.janino">Java.CompilationUnit</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ConditionalExpression.html" title="class in org.codehaus.janino">Java.ConditionalExpression</a></span></code>
 <div class="block">Representation of a JLS7 15.25 "conditional operation".</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ConstructorDeclarator.html" title="class in org.codehaus.janino">Java.ConstructorDeclarator</a></span></code>
 <div class="block">Representation of a constructor declarator.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ConstructorInvocation.html" title="class in org.codehaus.janino">Java.ConstructorInvocation</a></span></code>
 <div class="block">Abstract bas class for <a href="../../../org/codehaus/janino/Java.SuperConstructorInvocation.html" title="class in org.codehaus.janino"><code>Java.SuperConstructorInvocation</code></a> and <a href="../../../org/codehaus/janino/Java.AlternateConstructorInvocation.html" title="class in org.codehaus.janino"><code>Java.AlternateConstructorInvocation</code></a>.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ContinuableStatement.html" title="class in org.codehaus.janino">Java.ContinuableStatement</a></span></code>
 <div class="block">Base class for statements that support the "continue" statement.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ContinueStatement.html" title="class in org.codehaus.janino">Java.ContinueStatement</a></span></code>
 <div class="block">Representation of the JLS7 14.16 CONTINUE statement.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Crement.html" title="class in org.codehaus.janino">Java.Crement</a></span></code>
 <div class="block">Representation of a JLS7 15.14.2 "postfix increment operation", a JLS7 15.14.3 "postfix decrement operation", a
  JLS7 15.15.1 "prefix increment operation" or a JLS7 15.15.2 "prefix decrement operation".</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.DocCommentable.html" title="interface in org.codehaus.janino">Java.DocCommentable</a></span></code>
 <div class="block">Representation of a Java element that can be annotated with a DOC comment ("<code>&#47;** ...
  *&#47;</code>").</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.DoStatement.html" title="class in org.codehaus.janino">Java.DoStatement</a></span></code>
 <div class="block">Representation of a JLS7 14.13 DO statement.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ElementValue.html" title="interface in org.codehaus.janino">Java.ElementValue</a></span></code>
 <div class="block">Base of the possible element values in a <a href="../../../org/codehaus/janino/Java.NormalAnnotation.html" title="class in org.codehaus.janino"><code>Java.NormalAnnotation</code></a>.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ElementValueArrayInitializer.html" title="class in org.codehaus.janino">Java.ElementValueArrayInitializer</a></span></code>
 <div class="block">An element value in the form of an array initializer, e.g.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ElementValuePair.html" title="class in org.codehaus.janino">Java.ElementValuePair</a></span></code>
 <div class="block">Representation of a "name = value" element in a <a href="../../../org/codehaus/janino/Java.NormalAnnotation.html" title="class in org.codehaus.janino"><code>Java.NormalAnnotation</code></a>.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.EmptyStatement.html" title="class in org.codehaus.janino">Java.EmptyStatement</a></span></code>
 <div class="block">Representation of the "empty statement", i.e. the blank semicolon.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.EnclosingScopeOfTypeDeclaration.html" title="class in org.codehaus.janino">Java.EnclosingScopeOfTypeDeclaration</a></span></code>
 <div class="block">Lazily determines and returns the enclosing <a href="../../../org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino"><code>Java.Scope</code></a> of the given <a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeDeclaration</code></a>.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.EnumConstant.html" title="class in org.codehaus.janino">Java.EnumConstant</a></span></code>
 <div class="block">Representation of an "enum constant", see JLS7 8.9.1.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.EnumDeclaration.html" title="interface in org.codehaus.janino">Java.EnumDeclaration</a></span></code>
 <div class="block">Base for package member (a.k.a.</div>
 </td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ExportsModuleDirective.html" title="class in org.codehaus.janino">Java.ExportsModuleDirective</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
@@ -662,57 +678,85 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.MethodReference.html" title="class in org.codehaus.janino">Java.MethodReference</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static interface&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a></span></code>
-<div class="block">Representation of the modifier flags and annotations that are associated with a declaration.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;
+<div class="block"><span class="deprecationComment">Many methods that previously accepted a parameter of this type now take a <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino"><code>Java.Modifier</code></a><code>[]</code> (incompatible API change in JANINO version 3.0.13)</span></div>
+</div>
 </td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ModularCompilationUnit.html" title="class in org.codehaus.janino">Java.ModularCompilationUnit</a></span></code>
+<div class="block">Represents a <code>ModularCompilationUnit</code> as specified in JLS11 7.3.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ModuleDeclaration.html" title="class in org.codehaus.janino">Java.ModuleDeclaration</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static interface&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ModuleDirective.html" title="interface in org.codehaus.janino">Java.ModuleDirective</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.NamedClassDeclaration.html" title="class in org.codehaus.janino">Java.NamedClassDeclaration</a></span></code>
 <div class="block">Base for the various named class declarations.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static interface&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.NamedTypeDeclaration.html" title="interface in org.codehaus.janino">Java.NamedTypeDeclaration</a></span></code>
 <div class="block">Represents the declaration of a class or an interface that has a name.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.NewAnonymousClassInstance.html" title="class in org.codehaus.janino">Java.NewAnonymousClassInstance</a></span></code>
 <div class="block">Representation of a JLS7 15.9 "anonymous class instance creation expression".</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.NewArray.html" title="class in org.codehaus.janino">Java.NewArray</a></span></code>
 <div class="block">Representation of a JLS7 15.10 "array creation expression".</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.NewClassInstance.html" title="class in org.codehaus.janino">Java.NewClassInstance</a></span></code>
 <div class="block">Representation of a JLS7 "class instance creation expression".</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.NewInitializedArray.html" title="class in org.codehaus.janino">Java.NewInitializedArray</a></span></code>
 <div class="block">Representation of a JLS7 15.10 "array creation expression".</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.NormalAnnotation.html" title="class in org.codehaus.janino">Java.NormalAnnotation</a></span></code>
 <div class="block">A "normal annotation", i.e. an annotation with multiple elements in parentheses and curly braces.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.NullLiteral.html" title="class in org.codehaus.janino">Java.NullLiteral</a></span></code>
 <div class="block">Representation of a "null literal" (JLS7 3.10.7).</div>
 </td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.OpensModuleDirective.html" title="class in org.codehaus.janino">Java.OpensModuleDirective</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
@@ -782,15 +826,23 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ProvidesModuleDirective.html" title="class in org.codehaus.janino">Java.ProvidesModuleDirective</a></span></code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.QualifiedThisReference.html" title="class in org.codehaus.janino">Java.QualifiedThisReference</a></span></code>
 <div class="block">Representation of an JLS7 15.8.4 access to the current object or an enclosing instance.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.ReferenceType.html" title="class in org.codehaus.janino">Java.ReferenceType</a></span></code>
 <div class="block">Representation of a JLS7 4.3 reference type.</div>
 </td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.RequiresModuleDirective.html" title="class in org.codehaus.janino">Java.RequiresModuleDirective</a></span></code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
@@ -934,17 +986,21 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.UsesModuleDirective.html" title="class in org.codehaus.janino">Java.UsesModuleDirective</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a></span></code>
 <div class="block">Used by FieldDeclaration and LocalVariableDeclarationStatement.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.WhileStatement.html" title="class in org.codehaus.janino">Java.WhileStatement</a></span></code>
 <div class="block">Representation of the JLS7 14.2 WHILE statement.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.Wildcard.html" title="class in org.codehaus.janino">Java.Wildcard</a></span></code>
 <div class="block">Representation of a JLS7 4.5.1 "wildcard".</div>
@@ -966,11 +1022,22 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>static <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.html#accessModifiers-org.codehaus.commons.compiler.Location-java.lang.String...-">accessModifiers</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+               java.lang.String...&nbsp;keywords)</code>&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.html#join-java.lang.Object:A:A-java.lang.String-java.lang.String-">join</a></span>(java.lang.Object[][]&nbsp;aa,
+    java.lang.String&nbsp;innerSeparator,
+    java.lang.String&nbsp;outerSeparator)</code>&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.html#join-java.lang.Object:A-java.lang.String-">join</a></span>(java.lang.Object[]&nbsp;a,
     java.lang.String&nbsp;separator)</code>&nbsp;</td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.html#join-java.lang.Object:A-java.lang.String-int-int-">join</a></span>(java.lang.Object[]&nbsp;a,
     java.lang.String&nbsp;separator,
@@ -1014,10 +1081,26 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
+<a name="join-java.lang.Object:A:A-java.lang.String-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>join</h4>
+<pre>public static&nbsp;java.lang.String&nbsp;join(java.lang.Object[][]&nbsp;aa,
+                                    java.lang.String&nbsp;innerSeparator,
+                                    java.lang.String&nbsp;outerSeparator)</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>null</code> iff <code>aa == null</code>, or "" iff <code>aa.length == 0</code>, or the elements of <code>aa</code>,
+         converted to strings concatenated and separated with the <var>outerSeparator</var></dd>
+</dl>
+</li>
+</ul>
 <a name="join-java.lang.Object:A-java.lang.String-int-int-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>join</h4>
 <pre>public static&nbsp;java.lang.String&nbsp;join(java.lang.Object[]&nbsp;a,
@@ -1030,6 +1113,16 @@ extends java.lang.Object</pre>
          <var>len</var><code>-1</code> of <var>a</var>, converted to strings, concatenated and separated with the
          <var>separator</var></dd>
 </dl>
+</li>
+</ul>
+<a name="accessModifiers-org.codehaus.commons.compiler.Location-java.lang.String...-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>accessModifiers</h4>
+<pre>public static&nbsp;<a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;accessModifiers(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+                                              java.lang.String...&nbsp;keywords)</pre>
 </li>
 </ul>
 </li>

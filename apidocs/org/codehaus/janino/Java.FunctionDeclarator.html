@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":6,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
+var methods = {"i0":6,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -191,30 +191,24 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#modifiers">modifiers</a></span></code>
-<div class="block">The <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino"><code>Java.Modifiers</code></a> of this declarator.</div>
-</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#name">name</a></span></code>
 <div class="block">The name of the function (<code>"&lt;init&gt;"</code> for constructors).</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;? extends <a href="../../../org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#optionalStatements">optionalStatements</a></span></code>
 <div class="block">The statements that comprise the function; <code>null</code> for abstract method declarations.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#thrownExceptions">thrownExceptions</a></span></code>
 <div class="block">The types of the declared exceptions.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#type">type</a></span></code>
 <div class="block">The return type of the function (VOID for constructors).</div>
@@ -226,7 +220,7 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html" title="class in org.codehaus.janino">Java.AbstractTypeBodyDeclaration</a></h3>
-<code><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#statiC">statiC</a></code></li>
+<code><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#modifiers">modifiers</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="fields.inherited.from.class.org.codehaus.janino.Java.Located">
@@ -249,9 +243,9 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#FunctionDeclarator-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifiers-org.codehaus.janino.Java.Type-java.lang.String-org.codehaus.janino.Java.FunctionDeclarator.FormalParameters-org.codehaus.janino.Java.Type:A-java.util.List-">FunctionDeclarator</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#FunctionDeclarator-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.Type-java.lang.String-org.codehaus.janino.Java.FunctionDeclarator.FormalParameters-org.codehaus.janino.Java.Type:A-java.util.List-">FunctionDeclarator</a></span>(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
                   java.lang.String&nbsp;optionalDocComment,
-                  <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a>&nbsp;modifiers,
+                  <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                   <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;type,
                   java.lang.String&nbsp;name,
                   <a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameters.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameters</a>&nbsp;formalParameters,
@@ -288,31 +282,39 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code><a href="../../../org/codehaus/janino/Access.html" title="enum in org.codehaus.janino">Access</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#getAccess--">getAccess</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#getAnnotations--">getAnnotations</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#getDocComment--">getDocComment</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#getEnclosingScope--">getEnclosingScope</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#hasDeprecatedDocTag--">hasDeprecatedDocTag</a></span>()</code>
 <div class="block">Returns <code>true</code> if the object has a doc comment and the <code>&amp;#64;deprecated</code> tag appears in the doc
  comment.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#isStrictfp--">isStrictfp</a></span>()</code>&nbsp;</td>
+</tr>
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#setDeclaringType-org.codehaus.janino.Java.TypeDeclaration-">setDeclaringType</a></span>(<a href="../../../org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino">Java.TypeDeclaration</a>&nbsp;declaringType)</code>
 <div class="block">Sets the type declaration that this declaration belongs to.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.FunctionDeclarator.html#setEnclosingScope-org.codehaus.janino.Java.Scope-">setEnclosingScope</a></span>(<a href="../../../org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>&nbsp;enclosingScope)</code>
 <div class="block">Forward-implements <a href="../../../org/codehaus/janino/Java.BlockStatement.html#setEnclosingScope-org.codehaus.janino.Java.Scope-"><code>Java.BlockStatement.setEnclosingScope(Java.Scope)</code></a>.</div>
@@ -324,7 +326,7 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html" title="class in org.codehaus.janino">Java.AbstractTypeBodyDeclaration</a></h3>
-<code><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#getDeclaringType--">getDeclaringType</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#isStatic--">isStatic</a></code></li>
+<code><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#getDeclaringType--">getDeclaringType</a>, <a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#getModifiers--">getModifiers</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.org.codehaus.janino.Java.Located">
@@ -361,16 +363,6 @@ implements <a href="../../../org/codehaus/janino/Java.Annotatable.html" title="i
 <!--   -->
 </a>
 <h3>Field Detail</h3>
-<a name="modifiers">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>modifiers</h4>
-<pre>public final&nbsp;<a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a> modifiers</pre>
-<div class="block">The <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino"><code>Java.Modifiers</code></a> of this declarator.</div>
-</li>
-</ul>
 <a name="type">
 <!--   -->
 </a>
@@ -441,7 +433,7 @@ public&nbsp;java.util.Map&lt;java.lang.String,<a href="../../../org/codehaus/jan
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="FunctionDeclarator-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifiers-org.codehaus.janino.Java.Type-java.lang.String-org.codehaus.janino.Java.FunctionDeclarator.FormalParameters-org.codehaus.janino.Java.Type:A-java.util.List-">
+<a name="FunctionDeclarator-org.codehaus.commons.compiler.Location-java.lang.String-org.codehaus.janino.Java.Modifier:A-org.codehaus.janino.Java.Type-java.lang.String-org.codehaus.janino.Java.FunctionDeclarator.FormalParameters-org.codehaus.janino.Java.Type:A-java.util.List-">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -450,7 +442,7 @@ public&nbsp;java.util.Map&lt;java.lang.String,<a href="../../../org/codehaus/jan
 <pre>public&nbsp;FunctionDeclarator(<a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
                           <a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                           java.lang.String&nbsp;optionalDocComment,
-                          <a href="../../../org/codehaus/janino/Java.Modifiers.html" title="class in org.codehaus.janino">Java.Modifiers</a>&nbsp;modifiers,
+                          <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                           <a href="../../../org/codehaus/janino/Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;type,
                           java.lang.String&nbsp;name,
                           <a href="../../../org/codehaus/janino/Java.FunctionDeclarator.FormalParameters.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameters</a>&nbsp;formalParameters,
@@ -467,6 +459,15 @@ public&nbsp;java.util.Map&lt;java.lang.String,<a href="../../../org/codehaus/jan
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getAccess--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAccess</h4>
+<pre>public&nbsp;<a href="../../../org/codehaus/janino/Access.html" title="enum in org.codehaus.janino">Access</a>&nbsp;getAccess()</pre>
+</li>
+</ul>
 <a name="getAnnotations--">
 <!--   -->
 </a>
@@ -477,6 +478,8 @@ public&nbsp;java.util.Map&lt;java.lang.String,<a href="../../../org/codehaus/jan
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../../../org/codehaus/janino/Java.Annotatable.html#getAnnotations--">getAnnotations</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/Java.Annotatable.html" title="interface in org.codehaus.janino">Java.Annotatable</a></code></dd>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html#getAnnotations--">getAnnotations</a></code>&nbsp;in class&nbsp;<code><a href="../../../org/codehaus/janino/Java.AbstractTypeBodyDeclaration.html" title="class in org.codehaus.janino">Java.AbstractTypeBodyDeclaration</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The annotations of this function</dd>
 </dl>
@@ -587,7 +590,7 @@ public&nbsp;java.lang.String&nbsp;getDocComment()</pre>
 <a name="hasDeprecatedDocTag--">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>hasDeprecatedDocTag</h4>
 <pre>public&nbsp;boolean&nbsp;hasDeprecatedDocTag()</pre>
@@ -598,6 +601,15 @@ public&nbsp;java.lang.String&nbsp;getDocComment()</pre>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../../../org/codehaus/janino/Java.DocCommentable.html#hasDeprecatedDocTag--">hasDeprecatedDocTag</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/Java.DocCommentable.html" title="interface in org.codehaus.janino">Java.DocCommentable</a></code></dd>
 </dl>
+</li>
+</ul>
+<a name="isStrictfp--">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isStrictfp</h4>
+<pre>public&nbsp;boolean&nbsp;isStrictfp()</pre>
 </li>
 </ul>
 </li>

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -107,7 +107,7 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <dl>
 <dt>All Implemented Interfaces:</dt>
-<dd><a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>, <a href="../../../org/codehaus/janino/Java.ElementValue.html" title="interface in org.codehaus.janino">Java.ElementValue</a>, <a href="../../../org/codehaus/janino/Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a></dd>
+<dd><a href="../../../org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a>, <a href="../../../org/codehaus/janino/Java.ElementValue.html" title="interface in org.codehaus.janino">Java.ElementValue</a>, <a href="../../../org/codehaus/janino/Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a>, <a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a></dd>
 </dl>
 <dl>
 <dt>Direct Known Subclasses:</dt>
@@ -186,16 +186,20 @@ implements <a href="../../../org/codehaus/janino/Java.Annotation.html" title="in
 </td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>&lt;R,EX extends java.lang.Throwable&gt;<br>R</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractAnnotation.html#accept-org.codehaus.janino.Visitor.ModifierVisitor-">accept</a></span>(<a href="../../../org/codehaus/janino/Visitor.ModifierVisitor.html" title="interface in org.codehaus.janino">Visitor.ModifierVisitor</a>&lt;R,EX&gt;&nbsp;visitor)</code>&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code><a href="../../../org/codehaus/commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractAnnotation.html#getLocation--">getLocation</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractAnnotation.html#setEnclosingScope-org.codehaus.janino.Java.Scope-">setEnclosingScope</a></span>(<a href="../../../org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>&nbsp;enclosingScope)</code>
 <div class="block">Sets the enclosing scope for this annotation.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/codehaus/janino/Java.AbstractAnnotation.html#throwCompileException-java.lang.String-">throwCompileException</a></span>(java.lang.String&nbsp;message)</code>
 <div class="block">Throws a <a href="../../../org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> with the given message and this object's location.</div>
@@ -311,6 +315,23 @@ public final&nbsp;&lt;R,EX extends java.lang.Throwable&gt;&nbsp;R&nbsp;accept(<a
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../../../org/codehaus/janino/Java.ElementValue.html#accept-org.codehaus.janino.Visitor.ElementValueVisitor-">accept</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/Java.ElementValue.html" title="interface in org.codehaus.janino">Java.ElementValue</a></code></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>EX extends java.lang.Throwable</code></dd>
+</dl>
+</li>
+</ul>
+<a name="accept-org.codehaus.janino.Visitor.ModifierVisitor-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>accept</h4>
+<pre><a href="../../../org/codehaus/commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+public final&nbsp;&lt;R,EX extends java.lang.Throwable&gt;&nbsp;R&nbsp;accept(<a href="../../../org/codehaus/janino/Visitor.ModifierVisitor.html" title="interface in org.codehaus.janino">Visitor.ModifierVisitor</a>&lt;R,EX&gt;&nbsp;visitor)
+                                                             throws EX extends java.lang.Throwable</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../org/codehaus/janino/Java.Modifier.html#accept-org.codehaus.janino.Visitor.ModifierVisitor-">accept</a></code>&nbsp;in interface&nbsp;<code><a href="../../../org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>EX extends java.lang.Throwable</code></dd>
 </dl>

@@ -70,36 +70,13 @@
 <div class="header">
 <h1 title="Package" class="title">Package&nbsp;org.codehaus.janino.util.resource</h1>
 <div class="docSummary">
-<div class="block">Classes related to loading "resources" (<a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a>) and creating
- resources (<a href="../../../../../org/codehaus/janino/util/resource/ResourceCreator.html" title="interface in org.codehaus.janino.util.resource"><code>ResourceCreator</code></a>).</div>
+<div class="block">Classes related to loading "resources" (<a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a>) and
+ creating resources (<a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceCreator.html" title="interface in org.codehaus.commons.compiler.util.resource"><code>ResourceCreator</code></a>).</div>
 </div>
 <p>See:&nbsp;<a href="#package.description">Description</a></p>
 </div>
 <div class="contentContainer">
 <ul class="blockList">
-<li class="blockList">
-<table class="typeSummary" border="0" cellpadding="3" cellspacing="0" summary="Interface Summary table, listing interfaces, and an explanation">
-<caption><span>Interface Summary</span><span class="tabEnd">&nbsp;</span></caption>
-<tr>
-<th class="colFirst" scope="col">Interface</th>
-<th class="colLast" scope="col">Description</th>
-</tr>
-<tbody>
-<tr class="altColor">
-<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/Resource.html" title="interface in org.codehaus.janino.util.resource">Resource</a></td>
-<td class="colLast">
-<div class="block">A <a href="../../../../../org/codehaus/janino/util/resource/Resource.html" title="interface in org.codehaus.janino.util.resource"><code>Resource</code></a> is "something" that is typically found by a <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a>, can be <a href="../../../../../org/codehaus/janino/util/resource/Resource.html#open--"><code>Resource.open()</code></a>ed for reading, and optionally has a <a href="../../../../../org/codehaus/janino/util/resource/Resource.html#lastModified--"><code>Resource.lastModified()</code></a> property.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/ResourceCreator.html" title="interface in org.codehaus.janino.util.resource">ResourceCreator</a></td>
-<td class="colLast">
-<div class="block">Opens a resource, characterized by a name, for writing.</div>
-</td>
-</tr>
-</tbody>
-</table>
-</li>
 <li class="blockList">
 <table class="typeSummary" border="0" cellpadding="3" cellspacing="0" summary="Class Summary table, listing classes, and an explanation">
 <caption><span>Class Summary</span><span class="tabEnd">&nbsp;</span></caption>
@@ -109,81 +86,42 @@
 </tr>
 <tbody>
 <tr class="altColor">
-<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/DirectoryResourceCreator.html" title="class in org.codehaus.janino.util.resource">DirectoryResourceCreator</a></td>
-<td class="colLast">
-<div class="block">Creates a resource in a given directory:
- 
-     <em>destinationDirectory</em>/<em>resourceName</em>
- </div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/DirectoryResourceFinder.html" title="class in org.codehaus.janino.util.resource">DirectoryResourceFinder</a></td>
-<td class="colLast">
-<div class="block">A <a href="../../../../../org/codehaus/janino/util/resource/FileResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>FileResourceFinder</code></a> that finds file resources in a directory.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/FileResource.html" title="class in org.codehaus.janino.util.resource">FileResource</a></td>
-<td class="colLast">
-<div class="block">Representation of a resource that is a <code>File</code>.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/FileResourceCreator.html" title="class in org.codehaus.janino.util.resource">FileResourceCreator</a></td>
-<td class="colLast">
-<div class="block">Stores a stream of bytes in a named resource.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/FileResourceFinder.html" title="class in org.codehaus.janino.util.resource">FileResourceFinder</a></td>
-<td class="colLast">
-<div class="block">This class specializes the <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a> for finding resources in <code>File</code>s.</div>
-</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/JarDirectoriesResourceFinder.html" title="class in org.codehaus.janino.util.resource">JarDirectoriesResourceFinder</a></td>
 <td class="colLast">
 <div class="block">Finds resources in any of the "*.jar" files that exist in a given set of directories.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/LazyMultiResourceFinder.html" title="class in org.codehaus.janino.util.resource">LazyMultiResourceFinder</a></td>
 <td class="colLast">
-<div class="block">A <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a> that examines a set of <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a>s lazily as it searches for resources.</div>
+<div class="block">A <a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a> that examines a set of <a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a>s lazily as it searches for resources.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/MapResourceCreator.html" title="class in org.codehaus.janino.util.resource">MapResourceCreator</a></td>
 <td class="colLast">
 <div class="block">Creates resources as byte arrays in a delegate <code>Map</code>.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/MapResourceFinder.html" title="class in org.codehaus.janino.util.resource">MapResourceFinder</a></td>
 <td class="colLast">
-<div class="block">A <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a> that provides access to resource stored as byte arrays in
- a <code>Map</code>.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/MultiResourceFinder.html" title="class in org.codehaus.janino.util.resource">MultiResourceFinder</a></td>
-<td class="colLast">
-<div class="block">A <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a> that finds its resources through a collection of
- other <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a>s.</div>
+<div class="block">A <a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a> that provides access to resource stored as
+ byte arrays in a <code>Map</code>.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/PathResourceFinder.html" title="class in org.codehaus.janino.util.resource">PathResourceFinder</a></td>
+<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/MultiResourceFinder.html" title="class in org.codehaus.janino.util.resource">MultiResourceFinder</a></td>
 <td class="colLast">
-<div class="block">A <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a> that finds its resources along a "path" consisting of JAR
- file names, ZIP file names, and directory names.</div>
+<div class="block">A <a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a> that finds its resources through a collection of
+ other <a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a>s.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource">ResourceFinder</a></td>
+<td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/PathResourceFinder.html" title="class in org.codehaus.janino.util.resource">PathResourceFinder</a></td>
 <td class="colLast">
-<div class="block">Finds a resource by name.</div>
+<div class="block">A <a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a> that finds its resources along a "path"
+ consisting of JAR file names, ZIP file names, and directory names.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -195,7 +133,7 @@
 <tr class="rowColor">
 <td class="colFirst"><a href="../../../../../org/codehaus/janino/util/resource/ZipFileResourceFinder.html" title="class in org.codehaus.janino.util.resource">ZipFileResourceFinder</a></td>
 <td class="colLast">
-<div class="block">A <a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a> that finds resources in a ZIP file.</div>
+<div class="block">A <a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a> that finds resources in a ZIP file.</div>
 </td>
 </tr>
 </tbody>
@@ -206,8 +144,8 @@
 <!--   -->
 </a>
 <h2 title="Package org.codehaus.janino.util.resource Description">Package org.codehaus.janino.util.resource Description</h2>
-<div class="block">Classes related to loading "resources" (<a href="../../../../../org/codehaus/janino/util/resource/ResourceFinder.html" title="class in org.codehaus.janino.util.resource"><code>ResourceFinder</code></a>) and creating
- resources (<a href="../../../../../org/codehaus/janino/util/resource/ResourceCreator.html" title="interface in org.codehaus.janino.util.resource"><code>ResourceCreator</code></a>).</div>
+<div class="block">Classes related to loading "resources" (<a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a>) and
+ creating resources (<a href="../../../../../org/codehaus/commons/compiler/util/resource/ResourceCreator.html" title="interface in org.codehaus.commons.compiler.util.resource"><code>ResourceCreator</code></a>).</div>
 </div>
 <!-- ======= START OF BOTTOM NAVBAR ====== -->
 <div class="bottomNav"><a name="navbar.bottom">

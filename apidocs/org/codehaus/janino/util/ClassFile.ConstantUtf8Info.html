@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -101,7 +101,12 @@ var activeTableTab = "activeTableTab";
 <li><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantPoolInfo.html" title="class in org.codehaus.janino.util">org.codehaus.janino.util.ClassFile.ConstantPoolInfo</a></li>
 <li>
 <ul class="inheritance">
+<li><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantValuePoolInfo.html" title="class in org.codehaus.janino.util">org.codehaus.janino.util.ClassFile.ConstantValuePoolInfo</a></li>
+<li>
+<ul class="inheritance">
 <li>org.codehaus.janino.util.ClassFile.ConstantUtf8Info</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -117,7 +122,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public static class <span class="typeNameLabel">ClassFile.ConstantUtf8Info</span>
-extends <a href="../../../../org/codehaus/janino/util/ClassFile.ConstantPoolInfo.html" title="class in org.codehaus.janino.util">ClassFile.ConstantPoolInfo</a></pre>
+extends <a href="../../../../org/codehaus/janino/util/ClassFile.ConstantValuePoolInfo.html" title="class in org.codehaus.janino.util">ClassFile.ConstantValuePoolInfo</a></pre>
 <div class="block">See JVMS7 4.4.7.</div>
 </li>
 </ul>
@@ -163,14 +168,18 @@ extends <a href="../../../../org/codehaus/janino/util/ClassFile.ConstantPoolInfo
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantUtf8Info.html#getString--">getString</a></span>()</code>&nbsp;</td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>java.lang.Object</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantUtf8Info.html#getValue-org.codehaus.janino.util.ClassFile-">getValue</a></span>(<a href="../../../../org/codehaus/janino/util/ClassFile.html" title="class in org.codehaus.janino.util">ClassFile</a>&nbsp;classFile)</code>&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantUtf8Info.html#hashCode--">hashCode</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantUtf8Info.html#isWide--">isWide</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantUtf8Info.html#store-java.io.DataOutputStream-">store</a></span>(java.io.DataOutputStream&nbsp;dos)</code>
 <div class="block">Stores this CP entry into a <code>DataOutputStream</code>.</div>
@@ -215,6 +224,21 @@ extends <a href="../../../../org/codehaus/janino/util/ClassFile.ConstantPoolInfo
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="getValue-org.codehaus.janino.util.ClassFile-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getValue</h4>
+<pre>public&nbsp;java.lang.Object&nbsp;getValue(<a href="../../../../org/codehaus/janino/util/ClassFile.html" title="class in org.codehaus.janino.util">ClassFile</a>&nbsp;classFile)</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantValuePoolInfo.html#getValue-org.codehaus.janino.util.ClassFile-">getValue</a></code>&nbsp;in class&nbsp;<code><a href="../../../../org/codehaus/janino/util/ClassFile.ConstantValuePoolInfo.html" title="class in org.codehaus.janino.util">ClassFile.ConstantValuePoolInfo</a></code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The value that this constant pool table entry represents; the actual type is <code>Double</code>, <code>Float</code>, <code>Integer</code>, <code>Long</code> or <code>String</code></dd>
+</dl>
+</li>
+</ul>
 <a name="getString--">
 <!--   -->
 </a>
