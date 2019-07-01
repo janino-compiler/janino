@@ -8613,11 +8613,12 @@ class UnitCompiler {
         IClass res = this.findClass(className);
         if (res != null) return res;
 
+        // Is the type defined on the classpath?
         try {
             return this.iClassLoader.loadIClass(Descriptor.fromClassName(className));
         } catch (ClassNotFoundException ex) {
-            // SUPPRESS CHECKSTYLE AvoidHidingCause
-            if (ex.getException() instanceof CompileException) throw (CompileException) ex.getException();
+            Throwable cause = ex.getCause();
+            if (cause instanceof CompileException) throw (CompileException) cause;
             throw new CompileException(className, location, ex);
         }
     }
@@ -8920,10 +8921,13 @@ class UnitCompiler {
 
             if (simpleName.equals(UnitCompiler.last(ssid.identifiers))) {
 
-                Location location = ssid.getLocation();
-
-                IClass dc = this.findTypeByName(location, Java.join(UnitCompiler.allButLast(ssid.identifiers), "."));
-                if (dc != null) this.importStatic(dc, simpleName, result, location);
+                IClass declaringIClass = this.findTypeByName(
+                    ssid.getLocation(),
+                    Java.join(UnitCompiler.allButLast(ssid.identifiers), ".")
+                );
+                if (declaringIClass != null) {
+                    this.importStatic(declaringIClass, simpleName, result, ssid.getLocation());
+                }
             }
         }
 
@@ -8931,11 +8935,12 @@ class UnitCompiler {
     }
 
     /**
-     * Imports a member class or interface (@{link {@link IClass}), static field ({@link IField}) and/or static
-     * method ({@link IMethod}) with a given <var>simpleName</var>.
+     * Finds all members (member classes, member interfaces, static fields and/or static methods) of the
+     * <var>declaringIClass</var> with the given <var>simpleName</var> and adds them to the <var>result</var>.
      *
-     * @param declaringIClass The class or interface that declares the member
-     * @param result          Results are added to this collection
+     * @param declaringIClass The class or interface that declares the members
+     * @param result          Results ({@link IClass}es, {@link IField}s and/or {@link IMethod}s) are added to this
+     *                        collection
      */
     private void
     importStatic(IClass declaringIClass, String simpleName, Collection<Object> result, Location location)
