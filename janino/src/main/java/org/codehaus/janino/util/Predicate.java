@@ -2,8 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
- * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
+ * Copyright (c) 2019 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,27 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.iterator;
+package org.codehaus.janino.util;
 
-import java.util.Iterator;
+import org.codehaus.commons.nullanalysis.Nullable;
 
-/**
- * An {@link java.util.Iterator} that retrieves its elements from a delegate {@link java.util.Iterator}. The default
- * implementation simply passes all method invocations to the delegate.
- *
- * @param <T> The element type of the iterator
- */
-public abstract
-class FilterIterator<T> implements Iterator<T> {
+public
+interface Predicate<T> {
 
-    /**
-     * @see FilterIterator
-     */
-    protected final Iterator<T> delegate;
-
-    public FilterIterator(Iterator<T> delegate) { this.delegate = delegate; }
-
-    @Override public boolean hasNext() { return this.delegate.hasNext(); }
-    @Override public T       next()    { return this.delegate.next();    }
-    @Override public void    remove()  { this.delegate.remove();         }
+    boolean
+    evaluate(@Nullable T subject);
 }
