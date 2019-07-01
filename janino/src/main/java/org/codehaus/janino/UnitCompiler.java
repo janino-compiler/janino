@@ -6811,7 +6811,7 @@ class UnitCompiler {
         // JLS7 6.5.2.BL1.B2: Member type imported through static-import-on-demand.
         {
             Iterator<IClass>
-            it = Iterables.filterByClass(this.importStaticOnDemand(simpleTypeName), IClass.class).iterator();
+            it = Iterables.filterByClass(this.importStaticOnDemand(simpleTypeName).iterator(), IClass.class);
             if (it.hasNext()) return (IClass) it.next();
         }
 
@@ -8888,7 +8888,8 @@ class UnitCompiler {
 
         // JLS7 6.5.2.BL1.B1.B4.3 Type imported through single static import.
         {
-            Iterator<IClass> it = Iterables.filterByClass(this.importSingleStatic(identifier), IClass.class).iterator();
+            Iterator<IClass>
+            it = Iterables.filterByClass(this.importSingleStatic(identifier).iterator(), IClass.class);
             if (it.hasNext()) return new SimpleType(location, (IClass) it.next());
         }
 
