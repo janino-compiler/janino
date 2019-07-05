@@ -51,9 +51,31 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.0.14-SNAPSHOT (only available as source code)</h4>
+    <h4>Version 3.0.15-SNAPSHOT (only available as source code)</h4>
     <ul>
       <li>...</li>
+    </ul>
+
+    <h4>Version 3.0.14, 2019-07-05</h4>
+    <ul>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/95">Issue #95: Conflict in sbt-assembly</a>
+      </li>
+      <li>
+        <a href="https://github.com/janino-compiler/janino/issues/93">Issue #93: Overloaded static on-demand imported methods cause a CompileException: Ambiguous static method import</a>
+      </li>
+	  <li>
+        <a href="https://github.com/janino-compiler/janino/issues/94">Pull request #94: Handle overloaded static on-demand imports</a>
+      </li>
+	  <li>Major refactoring of the Java 8 and Java 9 retrofit mechanism.</li>
+	  <li>Added tests for "JLS8 8.6 Instance Initializers" and "JLS8 8.7 Static Initializers".</li>
+	  <li>
+        <a href="https://github.com/janino-compiler/janino/issues/89">Issue #89: Local variables in instance initializers don't work</a>
+      </li>
+	  <li>
+        <a href="https://github.com/janino-compiler/janino/issues/92">Issue #92: Provide an option to keep generated code files</a>
+      </li>
+	  <li>Added compile error handler and warning handler to ICompiler.</li>
     </ul>
 
     <h4>Version 3.0.13, 2019-06-23</h4>
@@ -75,14 +97,15 @@ h5 {
         verification errors when using ternary expressions with null in one branch</a>
       </li>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/88">#88: Support for JDK 9/10 in Full Compiler</a>
+        <a href="https://github.com/janino-compiler/janino/issues/88">Issue #88: Support for JDK 9/10 in Full
+        Compiler</a>
       </li>
       <li>
         <a href="https://github.com/janino-compiler/janino/issues/86">Issue #86: OSGi Manifest: optional Ant
         dependencies in OSGi metadata</a>
       </li>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/85">Fixed #85 "Ternary expression resolves to
+        <a href="https://github.com/janino-compiler/janino/issues/85">Issue #85: "Ternary expression resolves to
         strange supertype"</a>
       </li>
       <li>
@@ -91,7 +114,7 @@ h5 {
       </li>
       <li>
         <a href="https://github.com/janino-compiler/janino/issues/83">Issue #83: Implement "type annotations"
-        (JLS8 9.7.4)
+        (JLS8 9.7.4)</a>
       </li>
       <li>Implemented parsing (but not compilation) of "modular compilation units" (JLS11 7.3).</li>
       <li>
@@ -130,8 +153,8 @@ h5 {
     <h4>Version 3.0.12, 2019-01-18</h4>
     <ul>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/73">Github issue #73: Operator "&" not
-        defined on types "java.lang.Long" and "int"</a>
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/73">Issue #73: Operator "&" not defined on
+        types "java.lang.Long" and "int"</a>
       </li>
       <li>
         Fixed <a href="https://github.com/janino-compiler/janino/issues/71">Issue #71: How can I move all local
@@ -144,7 +167,7 @@ h5 {
         versa; instead, the expression type is the "common base type" of the MHS and RHS.
       </li>
       <li>
-        Merged <a href="https://github.com/janino-compiler/janino/pull/70">pull request #70: Reuse local variable
+        Merged <a href="https://github.com/janino-compiler/janino/pull/70">Pull request #70: Reuse local variable
         slots among non-overlapping scopes</a>
       </li>
       <li>
@@ -157,7 +180,7 @@ h5 {
       </li>
       <li>Don't generate bridge methods for PRIVATE methods.</li>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/68">issue #68: compilation failure:
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/68">Issue #68: compilation failure:
         sensitivity to classpath order and package naming</a>:
         Java 9 added "@Override public final CharBuffer CharBuffer.rewind() { ..." -- leads easily to a
         <code>java.lang.NoSuchMethodError: java.nio.CharBuffer.rewind()Ljava/nio/CharBuffer;</code> Cast to "Buffer" is
@@ -188,7 +211,7 @@ h5 {
     <h4>Version 3.0.11, 2018-11-13</h4>
     <ul>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/63">issue #63: Script with many "helper"
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/63">Issue #63: Script with many "helper"
         variables</a>.
       </li>
       <li>At last, the "jdk-9" implementation works.</li>
@@ -198,16 +221,16 @@ h5 {
       </li>
       <li>Fixed Java 9+ compatibility (JRE module system).</li>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/65">issue #65: Compilation Error Messages
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/65">Issue #65: Compilation Error Messages
         Generated by JDK</a>.
       </li>
       <li>Added experimental support for the "StackMapFrame" attribute; not active yet.</li>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/61">issue #61: Make Unparser more flexible</a>.
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/61">Issue #61: Make Unparser more flexible</a>.
       </li>
       <li>Fixed NPEs in various "toString()" methods.</li>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/62">issue #62: Optimize static method
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/62">Issue #62: Optimize static method
         invocation with rvalue target expression</a>.
       </li>
       <li>
@@ -219,7 +242,7 @@ h5 {
     <h4>Version 3.0.10, 2018-09-16</h4>
     <ul>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/58">issue #58: Integer overflow in ClassFile
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/58">Issue #58: Integer overflow in ClassFile
         reader</a>.
       </li>
     </ul>
@@ -246,7 +269,7 @@ h5 {
         using field annotations with enum members</a>.
       </li>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/41">issue #41: Invalid integer literal
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/41">Issue #41: Invalid integer literal
         "9223372036854775808L"</a>.
       </li>
       <li>
@@ -254,7 +277,7 @@ h5 {
         literals of the minimal values of int or long</a>.
       </li>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/47">issue #47: UnitCompiler fails with
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/47">Issue #47: UnitCompiler fails with
         CompileException when parent interface method is overridden in child interface with subtype return type</a>.
       </li>
       <li>
@@ -270,12 +293,12 @@ h5 {
     <h4>Version 3.0.8, 2017-12-04</h4>
     <ul>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/25">issue #308: Stack overflow when using new
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/25">Issue #308: Stack overflow when using new
         permission system in ClassLoader</a>
       </li>
       <li>Added some consistency checks in "IClassLoader.loadIClass()".</li>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/33">issue #33: SIPUSH bytecode is not used for
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/33">Issue #33: SIPUSH bytecode is not used for
         short integer constant</a>
       </li>
       <li>
@@ -290,7 +313,7 @@ h5 {
         hard-coding path</a> from janino-compiler/jdk_16
       </li>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/25">issue #25: Stack overflow when using new
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/25">Issue #25: Stack overflow when using new
         permission system in ClassLoader</a>.
       </li>
     </ul>
@@ -299,22 +322,22 @@ h5 {
     <ul>
       <li>Implemented STRING SWITCH (JLS 14.11).</li>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/13">issue #13: Undeclared runtime dependency on
+        <a href="https://github.com/janino-compiler/janino/issues/13">Issue #13: Undeclared runtime dependency on
         de.unkrig.jdiasm.Disassembler</a>
       </li>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/9">issue #9: High security mode</a>: Added
+        <a href="https://github.com/janino-compiler/janino/issues/9">Issue #9: High security mode</a>: Added
         "ISimpleCompiler.setPermissions()"
       </li>
       <li>
         The JDK implementation now honors the "parentClassLoader" properly, at last.
       </li>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/13">issue #16: Error message should include
+        <a href="https://github.com/janino-compiler/janino/issues/13">Issue #16: Error message should include
         variable/field names for clarity</a>
       </li>
       <li>
-        <a href="https://github.com/janino-compiler/janino/issues/19">issue #19: Get bytecode after compile</a>
+        <a href="https://github.com/janino-compiler/janino/issues/19">Issue #19: Get bytecode after compile</a>
       </li>
     </ul>
 
@@ -341,7 +364,7 @@ h5 {
     <h4>Version 3.0.2, 2016-09-15</h4>
     <ul>
       <li>
-        Fixed <a href="https://github.com/janino-compiler/janino/issues/6">issue #6: "Assertion error for public static
+        Fixed <a href="https://github.com/janino-compiler/janino/issues/6">Issue #6: "Assertion error for public static
         final field declaration"</a>.
       </li>
       <li>Replaced the ANT build with a MAVEN build.</li>
