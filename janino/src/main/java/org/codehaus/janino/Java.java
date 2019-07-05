@@ -660,9 +660,16 @@ class Java {
     class Modifiers {
     }
 
+    /**
+     * Base for the various modifiers (access modifiers, annotations).
+     */
     public
     interface Modifier extends Locatable {
 
+        /**
+         * Invokes the "{@code visit...()}" method of {@link Visitor.ModifierVisitor} for the concrete
+         * {@link Modifier} type.
+         */
         @Nullable <R, EX extends Throwable> R
         accept(ModifierVisitor<R, EX> modifierVisitor) throws EX;
     }
