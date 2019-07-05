@@ -5,7 +5,7 @@
 
 	<fail
 		unless="maven.repo"
-		message='Please create a file "local_build.properties" and define a property "maven.repo".'
+		message='Please create a file "local_build.properties" with a property "maven.repo", or set it differently.'
 	/>
 
 	<xmlproperty file="../janino-parent/pom.xml" prefix="pom.xml" />
