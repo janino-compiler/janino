@@ -107,6 +107,15 @@ class JavaSourceClassLoaderTest {
         jscl.loadClass("test.StaticImports");
     }
 
+    @Test public void
+    testOverloadedSingleStaticImport() throws Exception {
+        AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
+                ClassLoader.getSystemClassLoader().getParent()
+        );
+        jscl.setSourcePath(new File[] { new File("src/test/resources/testOverloadedStaticImports/") });
+        jscl.loadClass("test.SingleStaticImport");
+    }
+
     private static ClassLoader
     getExtensionsClassLoader() throws ClassNotFoundException {
 

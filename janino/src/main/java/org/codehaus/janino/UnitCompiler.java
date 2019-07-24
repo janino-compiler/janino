@@ -9115,21 +9115,22 @@ class UnitCompiler {
             }
 
             // Static method declared through single static import?
-            iMethod = null;
-            for (IMethod im : Iterables.filterByClass(this.importSingleStatic(mi.methodName), IMethod.class)) {
-
-                if (iMethod != null && iMethod != im) {
-                    this.compileError(
-                        "Ambiguous static method import: \""
-                        + iMethod.toString()
-                        + "\" vs. \""
-                        + im.toString()
-                        + "\""
+            {
+                IMethod[] candidates = (IMethod[]) Iterables.toArray(
+                        Iterables.filterByClass(this.importSingleStatic(mi.methodName), IMethod.class),
+                        IMethod.class
+                );
+    
+                if (candidates.length > 0) {
+                    iMethod = (IMethod) this.findMostSpecificIInvocable(
+                            mi,
+                            candidates,
+                            mi.arguments,
+                            mi.getEnclosingScope()
                     );
+                    break FIND_METHOD;
                 }
-                iMethod = im;
             }
-            if (iMethod != null) break FIND_METHOD;
 
             // Static method declared through static-import-on-demand?
             {
@@ -9556,10 +9557,12 @@ class UnitCompiler {
                                 theNonAbstractMethod = m;
                             } else
                             {
-                                throw new InternalCompilerException(
-                                    "SNO: Types declaring \""
-                                    + theNonAbstractMethod
-                                    + "\" are not assignable"
+                                this.compileError(
+                                        "Ambiguous static method import: \""
+                                                + theNonAbstractMethod.toString()
+                                                + "\" vs. \""
+                                                + m.toString()
+                                                + "\""
                                 );
                             }
                         }
