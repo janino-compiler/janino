@@ -9115,21 +9115,22 @@ class UnitCompiler {
             }
 
             // Static method declared through single static import?
-            iMethod = null;
-            for (IMethod im : Iterables.filterByClass(this.importSingleStatic(mi.methodName), IMethod.class)) {
+            {
+                IMethod[] candidates = (IMethod[]) Iterables.toArray(
+                    Iterables.filterByClass(this.importSingleStatic(mi.methodName), IMethod.class),
+                    IMethod.class
+                );
 
-                if (iMethod != null && iMethod != im) {
-                    this.compileError(
-                        "Ambiguous static method import: \""
-                        + iMethod.toString()
-                        + "\" vs. \""
-                        + im.toString()
-                        + "\""
+                if (candidates.length > 0) {
+                    iMethod = (IMethod) this.findMostSpecificIInvocable(
+                        mi,
+                        candidates,
+                        mi.arguments,
+                        mi.getEnclosingScope()
                     );
+                    break FIND_METHOD;
                 }
-                iMethod = im;
             }
-            if (iMethod != null) break FIND_METHOD;
 
             // Static method declared through static-import-on-demand?
             {
@@ -9556,10 +9557,12 @@ class UnitCompiler {
                                 theNonAbstractMethod = m;
                             } else
                             {
-                                throw new InternalCompilerException(
-                                    "SNO: Types declaring \""
+                                this.compileError(
+                                    "Ambiguous static method import: \""
                                     + theNonAbstractMethod
-                                    + "\" are not assignable"
+                                    + "\" vs. \""
+                                    + m
+                                    + "\""
                                 );
                             }
                         }
@@ -9995,9 +9998,10 @@ class UnitCompiler {
                     List<IClass.IField>  l  = new ArrayList<IClass.IField>();
 
                     // Determine static fields.
-                    for (FieldDeclaration fd : Iterables.filterByClass(id.constantDeclarations, FieldDeclaration.class)) {
-                        l.addAll(Arrays.asList(UnitCompiler.this.compileFields(fd)));
-                    }
+                    for (FieldDeclaration fd : Iterables.filterByClass(
+                        id.constantDeclarations,
+                        FieldDeclaration.class
+                    )) l.addAll(Arrays.asList(UnitCompiler.this.compileFields(fd)));
                     return (IClass.IField[]) l.toArray(new IClass.IField[l.size()]);
                 } else
                 {
