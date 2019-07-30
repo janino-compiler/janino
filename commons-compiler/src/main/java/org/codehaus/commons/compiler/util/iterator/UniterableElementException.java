@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2018 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
  * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,33 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import org.codehaus.commons.compiler.util.resource.Resource;
+package org.codehaus.commons.compiler.util.iterator;
 
 /**
- * A resource who's content is a {@link String}.
+ * Thrown by {@link MultiDimensionalIterator} to indicate that it has encountered an element that cannot be iterated.
  */
 public
-class StringResource implements Resource {
+class UniterableElementException extends RuntimeException {
 
-    private final String fileName;
-
-    public
-    StringResource(String fileName, String text) {
-        this.fileName = fileName;
-        this.data     = text.getBytes();
-    }
-
-    // Implement "Resource".
-    @Override public final String      getFileName()  { return this.fileName;                       }
-    @Override public final InputStream open()         { return new ByteArrayInputStream(this.data); }
-    @Override public final long        lastModified() { return 0L;                                  }
-
-    @Override public final String toString() { return this.getFileName(); }
-
-    private final byte[] data;
+    public UniterableElementException() {}
 }

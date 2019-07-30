@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.resource;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -34,10 +34,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.zip.ZipFile;
 
-import org.codehaus.commons.compiler.util.resource.ResourceFinder;
+import org.codehaus.commons.compiler.util.iterator.MultiDimensionalIterator;
+import org.codehaus.commons.compiler.util.iterator.TransformingIterator;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.util.iterator.MultiDimensionalIterator;
-import org.codehaus.janino.util.iterator.TransformingIterator;
 
 /**
  * Finds resources in any of the "*.jar" files that exist in a given set of directories.

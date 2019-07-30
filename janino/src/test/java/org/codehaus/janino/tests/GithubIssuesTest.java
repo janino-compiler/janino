@@ -26,11 +26,14 @@
 
 package org.codehaus.janino.tests;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
@@ -38,7 +41,11 @@ import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.ClassBodyEvaluator;
+import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.ExpressionEvaluator;
+import org.codehaus.janino.IClassLoader;
+import org.codehaus.janino.Java;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.Rvalue;
@@ -46,8 +53,11 @@ import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
 import org.codehaus.janino.SimpleCompiler;
+import org.codehaus.janino.UnitCompiler;
+import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.DeepCopier;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -263,4 +273,42 @@ class GithubIssuesTest {
             Assert.assertEquals(3, top.getLineNumber());
         }
     }
+
+    // This is currently failing
+    // https://github.com/codehaus/janino/issues/4
+    @Ignore
+    @Test public void
+    testReferenceQualifiedSuper() throws Exception {
+        GithubIssuesTest.doCompile(true, true, false, GithubIssuesTest.RESOURCE_DIR + "/a/Test.java");
+    }
+    private static final String RESOURCE_DIR = "../commons-compiler-tests/src/test/resources";
+
+    public static List<ClassFile>
+    doCompile(
+        boolean   debugSource,
+        boolean   debugLines,
+        boolean   debugVars,
+        String... fileNames
+    ) throws Exception {
+
+        // Parse each compilation unit.
+        final List<AbstractCompilationUnit> acus = new LinkedList<AbstractCompilationUnit>();
+        final IClassLoader                  cl   = new ClassLoaderIClassLoader(GithubIssuesTest.class.getClassLoader());
+        List<ClassFile>                     cfs  = new LinkedList<ClassFile>();
+        for (String fileName : fileNames) {
+
+            FileReader r = new FileReader(fileName);
+            try {
+                Java.AbstractCompilationUnit acu = new Parser(new Scanner(fileName, r)).parseAbstractCompilationUnit();
+                acus.add(acu);
+
+                // Compile them.
+                cfs.addAll(Arrays.asList(new UnitCompiler(acu, cl).compileUnit(debugSource, debugLines, debugVars)));
+            } finally {
+                try { r.close(); } catch (Exception e) {}
+            }
+        }
+        return cfs;
+    }
+
 }

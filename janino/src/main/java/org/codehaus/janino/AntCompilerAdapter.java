@@ -102,7 +102,7 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
         @Nullable File[] optionalBootClassPath = AntCompilerAdapter.pathToFiles(this.bootclasspath);
 
         // Determine the encoding.
-        @Nullable Charset encoding2 = Charset.forName(this.encoding);
+        Charset encoding2 = Charset.forName(this.encoding);
 
         // Whether to use verbose output.
         boolean verbose = this.verbose;

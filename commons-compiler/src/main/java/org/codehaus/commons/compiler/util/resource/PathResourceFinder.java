@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.resource;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,9 +33,7 @@ import java.util.Iterator;
 import java.util.zip.ZipFile;
 
 import org.codehaus.commons.compiler.util.StringUtil;
-import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
-import org.codehaus.commons.compiler.util.resource.ResourceFinder;
-import org.codehaus.janino.util.iterator.TransformingIterator;
+import org.codehaus.commons.compiler.util.iterator.TransformingIterator;
 
 /**
  * A {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that finds its resources along a "path"

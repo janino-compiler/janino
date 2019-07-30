@@ -27,10 +27,10 @@
 package org.codehaus.commons.compiler.util.resource;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -65,18 +65,8 @@ class DirectoryResourceFinder extends FileResourceFinder {
             resourceName.substring(0, idx).replace('/', File.separatorChar)
         );
 
-        // Determine files existing in this subdirectory.
-        Set<File> files = (Set<File>) this.subdirectoryNameToFiles.get(subdirectoryName);
-        if (files == null) {
-            File subDirectory = (
-                subdirectoryName == null
-                ? this.directory
-                : new File(this.directory, subdirectoryName)
-            );
-            File[] fa = subDirectory.listFiles();
-            files = fa == null ? Collections.<File>emptySet() : new HashSet<File>(Arrays.asList(fa));
-            this.subdirectoryNameToFiles.put(subdirectoryName, files);
-        }
+        Set<File> files = this.listFiles(subdirectoryName);
+        if (files == null) return null;
 
         // Notice that "File.equals()" performs all the file-system dependent
         // magic like case conversion.
@@ -84,5 +74,41 @@ class DirectoryResourceFinder extends FileResourceFinder {
         if (!files.contains(file)) return null;
 
         return file;
+    }
+
+    @Nullable private Set<File>
+    listFiles(@Nullable String subdirectoryName) {
+
+        // Determine files existing in this subdirectory.
+        Set<File> files = (Set<File>) this.subdirectoryNameToFiles.get(subdirectoryName);
+        if (files == null && !this.subdirectoryNameToFiles.containsKey(subdirectoryName)) {
+            File subDirectory = (
+                subdirectoryName == null
+                ? this.directory
+                : new File(this.directory, subdirectoryName)
+            );
+            File[] fa = subDirectory.listFiles();
+            if (fa != null) {
+                files = new HashSet<File>();
+                for (File file : fa) {
+                    if (file.isFile()) files.add(file);
+                }
+            }
+            this.subdirectoryNameToFiles.put(subdirectoryName, files);
+        }
+
+        return files;
+    }
+
+    @Override @Nullable public Iterable<Resource>
+    list(String resourceNamePrefix, boolean recurse) {
+
+        Set<File> files = this.listFiles(resourceNamePrefix.replace('/', File.separatorChar));
+        if (files == null) return null;
+
+        List<Resource> result = new ArrayList<Resource>();
+        for (File f : files) result.add(new FileResource(f));
+
+        return result;
     }
 }

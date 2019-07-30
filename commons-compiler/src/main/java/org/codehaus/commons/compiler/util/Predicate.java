@@ -2,8 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
- * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
+ * Copyright (c) 2019 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,53 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.iterator;
-
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+package org.codehaus.commons.compiler.util;
 
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.util.Producer;
 
-/**
- * An {@link Iterator} that iterates over all the objects produced by a delegate {@link Producer}.
- *
- * @param <T> The type of the products and the iterator elements
- * @see       Producer
- */
 public
-class ProducerIterator<T> implements Iterator<T> {
+interface Predicate<T> {
 
-    private final Producer<T> producer;
-
-    private static final Object           UNKNOWN     = new Object();
-    @Nullable private static final Object AT_END      = null;
-
-    @Nullable private Object nextElement = ProducerIterator.UNKNOWN;
-
-    public
-    ProducerIterator(Producer<T> producer) { this.producer = producer; }
-
-    @Override public boolean
-    hasNext() {
-        if (this.nextElement == ProducerIterator.UNKNOWN) this.nextElement = this.producer.produce();
-        return this.nextElement != ProducerIterator.AT_END;
-    }
-
-    @Override public T
-    next() {
-
-        if (this.nextElement == ProducerIterator.UNKNOWN) this.nextElement = this.producer.produce();
-
-        if (this.nextElement == ProducerIterator.AT_END) throw new NoSuchElementException();
-
-        @SuppressWarnings("unchecked") T result = (T) this.nextElement;
-        this.nextElement = ProducerIterator.UNKNOWN;
-
-        assert result != null;
-        return result;
-    }
-
-    @Override public void
-    remove() { throw new UnsupportedOperationException("remove"); }
+    boolean
+    evaluate(@Nullable T subject);
 }

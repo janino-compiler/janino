@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util;
+package org.codehaus.commons.compiler.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -33,7 +33,6 @@ import java.io.InputStream;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.InternalCompilerException;
 
 /**
  * A {@link ClassLoader} that uses a {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} to find
@@ -61,7 +60,7 @@ class ResourceFinderClassLoader extends ClassLoader {
         assert className != null;
 
         // Find the resource containing the class bytecode.
-        Resource classFileResource = this.resourceFinder.findResource(ClassFile.getClassFileResourceName(className));
+        Resource classFileResource = this.resourceFinder.findResource(className.replace('.', '/') + ".class");
         if (classFileResource == null) throw new ClassNotFoundException(className);
 
         // Open the class file resource.
@@ -69,7 +68,7 @@ class ResourceFinderClassLoader extends ClassLoader {
         try {
             is = classFileResource.open();
         } catch (IOException ex) {
-            throw new InternalCompilerException((
+            throw new ClassNotFoundException((
                 "Opening class file resource \""
                 + classFileResource.getFileName()
                 + "\": "

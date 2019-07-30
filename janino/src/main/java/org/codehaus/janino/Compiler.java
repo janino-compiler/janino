@@ -33,26 +33,38 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.codehaus.commons.compiler.AbstractCompiler;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.compiler.java9.java.lang.module.ModuleFinder;
+import org.codehaus.commons.compiler.java9.java.lang.module.ModuleReference;
+import org.codehaus.commons.compiler.util.Benchmark;
+import org.codehaus.commons.compiler.util.StringUtil;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.FileResource;
 import org.codehaus.commons.compiler.util.resource.FileResourceCreator;
+import org.codehaus.commons.compiler.util.resource.JarDirectoriesResourceFinder;
+import org.codehaus.commons.compiler.util.resource.MultiResourceFinder;
+import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.StringPattern;
 
@@ -64,18 +76,14 @@ class Compiler extends AbstractCompiler {
 
     private static final Logger LOGGER = Logger.getLogger(Compiler.class.getName());
 
-    private ResourceFinder            sourceFinder     = ResourceFinder.EMPTY_RESOURCE_FINDER;
-    @Nullable private ResourceFinder  classFileFinder  = ICompiler.FIND_NEXT_TO_SOURCE_FILE;
-    private IClassLoader              iClassLoader     = new ClassLoaderIClassLoader();
-    @Nullable private ResourceCreator classFileCreator = ICompiler.CREATE_NEXT_TO_SOURCE_FILE;
-    @Nullable private Charset         encoding;
-    private Benchmark                 benchmark = new Benchmark(false);
-    private boolean                   debugSource;
-    private boolean                   debugLines;
-    private boolean                   debugVars;
     @Nullable private WarningHandler  warningHandler;
     @Nullable private ErrorHandler    compileErrorHandler;
     private EnumSet<JaninoOption>     options = EnumSet.noneOf(JaninoOption.class);
+
+    private IClassLoader              iClassLoader     = new ClassLoaderIClassLoader();
+    private Benchmark                 benchmark        = new Benchmark(false);
+
+    { this.updateIClassLoader(); }
 
     // Compile time state:
 
@@ -90,6 +98,7 @@ class Compiler extends AbstractCompiler {
     /** @deprecated Use {@link #Compiler()} and the various configuration setters instead */
     @Deprecated public
     Compiler(ResourceFinder sourceFinder, IClassLoader parentIClassLoader) {
+        this();
         this.setSourceFinder(sourceFinder);
         this.setIClassLoader(parentIClassLoader);
     }
@@ -420,40 +429,112 @@ class Compiler extends AbstractCompiler {
         }
     }
 
-    @Override public void
-    setIClassLoader(IClassLoader iClassLoader) { this.iClassLoader = iClassLoader; }
-
-    @Override public void
-    setClassFileFinder(@Nullable ResourceFinder classFileFinder) { this.classFileFinder = classFileFinder; }
-
     /**
-     * @param classFileCreator Stores the generated class files (a.k.a. "-d"); special value {@link
-     *                         #CREATE_NEXT_TO_SOURCE_FILE} means "create each .class file in the same directory as
-     *                         its source file"
+     * Loads "auxiliary classes", typically from BOOTCLASSPATH + EXTDIR + CLASSPATH (but <em>not</em> from the
+     * "destination directory"!).
      */
-    @Override public void
-    setClassFileCreator(@Nullable ResourceCreator classFileCreator) { this.classFileCreator = classFileCreator; }
-
-    @Override public void
-    setEncoding(@Nullable Charset encoding) { this.encoding = encoding; }
-
-    @Override public void
-    setCharacterEncoding(@Nullable String characterEncoding) { this.setEncoding(Charset.forName(characterEncoding)); }
-
-    @Override public void
-    setDebugLines(boolean value) { this.debugLines = value; }
-
-    @Override public void
-    setDebugVars(boolean value) { this.debugVars = value; }
-
-    @Override public void
-    setDebugSource(boolean value) { this.debugSource = value; }
+    public void
+    setIClassLoader(IClassLoader iClassLoader) { this.iClassLoader = iClassLoader; }
 
     @Override public void
     setVerbose(boolean verbose) { this.benchmark = new Benchmark(verbose); }
 
     @Override public void
-    setSourceFinder(ResourceFinder sourceFinder) { this.sourceFinder = sourceFinder; }
+    setBootClassPath(File[] directoriesAndArchives) {
+        super.setBootClassPath(directoriesAndArchives);
+        this.updateIClassLoader();
+    }
+
+    @Override public void
+    setExtensionDirectories(File[] directories) {
+        super.setExtensionDirectories(directories);
+        this.updateIClassLoader();
+    }
+
+    @Override public void
+    setClassPath(File[] directoriesAndArchives) {
+        super.setClassPath(directoriesAndArchives);
+        this.updateIClassLoader();
+    }
+
+    private void
+    updateIClassLoader() {
+
+        File[] bcp = this.bootClassPath;
+
+        if (bcp != null) {
+
+            // JVM 1.0-1.8; BOOTCLASSPATH supported:
+            this.setIClassLoader(new ResourceFinderIClassLoader(
+                new MultiResourceFinder(Arrays.asList(
+                    new PathResourceFinder(bcp),
+                    new JarDirectoriesResourceFinder(this.extensionDirectories),
+                    new PathResourceFinder(this.classPath)
+                )),
+                null
+            ));
+        } else {
+
+            // JVM 9+: "Modules" replace the BOOTCLASSPATH:
+            String sbcp = System.getProperty("sun.boot.class.path");
+            if (sbcp != null) {
+                this.bootClassPath = StringUtil.parsePath(sbcp);
+            } else {
+                URL r = ClassLoader.getSystemClassLoader().getResource("java/lang/Object.class");
+                assert r != null;
+
+                assert "jrt".equalsIgnoreCase(r.getProtocol()) : r.toString();
+
+                ResourceFinder rf = new ResourceFinder() {
+
+                    @Override @Nullable public Resource
+                    findResource(final String resourceName) {
+
+                        try {
+                            final Set<ModuleReference> mrs = ModuleFinder.ofSystem().findAll();
+
+                            for (final ModuleReference mr : mrs) {
+                                final URI           moduleContentLocation = (URI) mr.location().get();
+                                final URL           classFileUrl          = new URL(moduleContentLocation + "/" + resourceName); // SUPPRESS CHECKSTYLE LineLength
+                                final URLConnection uc                    = classFileUrl.openConnection();
+                                try {
+                                    uc.connect();
+                                    return new Resource() {
+
+                                        @Override public InputStream
+                                        open() throws IOException {
+                                            try {
+                                                return uc.getInputStream();
+                                            } catch (IOException ioe) {
+                                                throw new IOException(moduleContentLocation + ", " + resourceName, ioe);
+                                            }
+                                        }
+
+                                        @Override public String getFileName()  { return resourceName;         }
+                                        @Override public long   lastModified() { return uc.getLastModified(); }
+                                    };
+                                } catch (IOException ioe) {
+                                    ;
+                                }
+                            }
+                            return null;
+                        } catch (Exception e) {
+                            throw new AssertionError(e);
+                        }
+                    }
+                };
+
+                this.setIClassLoader(new ResourceFinderIClassLoader(
+                    new MultiResourceFinder(Arrays.asList(
+                        rf,
+                        new JarDirectoriesResourceFinder(this.extensionDirectories),
+                        new PathResourceFinder(this.classPath)
+                    )),
+                    null
+                ));
+            }
+        }
+    }
 
     /**
      * A specialized {@link IClassLoader} that loads {@link IClass}es from the following sources:

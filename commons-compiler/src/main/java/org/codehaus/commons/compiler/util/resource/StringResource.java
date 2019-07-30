@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2001-2018 Arno Unkrig. All rights reserved.
  * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
@@ -24,54 +24,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.resource;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.codehaus.commons.compiler.util.resource.ResourceCreator;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 /**
- * Creates resources as byte arrays in a delegate {@link java.util.Map}.
+ * A resource who's content is a {@link String}.
  */
 public
-class MapResourceCreator implements ResourceCreator {
+class StringResource implements Resource {
 
-    private final Map<String, byte[]> map;
+    private final String fileName;
 
-    /**
-     * Auto-create the delegate {@link Map}.
-     */
     public
-    MapResourceCreator() { this.map = new HashMap<String, byte[]>(); }
-
-    /**
-     * @param map String fileName =&gt; byte[] data
-     */
-    public
-    MapResourceCreator(Map<String, byte[]> map) { this.map = map; }
-
-    /**
-     * @return The {@link String}-to-{@code byte[]} map of the resources created
-     */
-    public final Map<String, byte[]>
-    getMap() { return this.map; }
-
-    @Override public final OutputStream
-    createResource(final String resourceName) {
-        return new ByteArrayOutputStream() {
-
-            @Override public void
-            close() throws IOException {
-                super.close();
-                MapResourceCreator.this.map.put(resourceName, this.toByteArray());
-            }
-        };
+    StringResource(String fileName, String text) {
+        this.fileName = fileName;
+        this.data     = text.getBytes();
     }
 
-    @Override public final boolean
-    deleteResource(String resourceName) { return this.map.remove(resourceName) != null; }
+    // Implement "Resource".
+    @Override public final String      getFileName()  { return this.fileName;                       }
+    @Override public final InputStream open()         { return new ByteArrayInputStream(this.data); }
+    @Override public final long        lastModified() { return 0L;                                  }
+
+    @Override public final String toString() { return this.getFileName(); }
+
+    private final byte[] data;
 }

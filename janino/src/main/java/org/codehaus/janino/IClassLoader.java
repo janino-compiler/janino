@@ -36,12 +36,12 @@ import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.util.StringUtil;
+import org.codehaus.commons.compiler.util.resource.JarDirectoriesResourceFinder;
+import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IMethod;
-import org.codehaus.janino.util.resource.JarDirectoriesResourceFinder;
-import org.codehaus.janino.util.resource.PathResourceFinder;
 
 /**
  * Loads an {@link IClass} by type name.

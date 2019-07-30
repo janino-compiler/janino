@@ -24,32 +24,55 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.util.resource;
+package org.codehaus.commons.compiler.util.iterator;
 
-import java.io.File;
-
-import org.codehaus.commons.nullanalysis.Nullable;
+import java.util.ListIterator;
 
 /**
- * This class specializes the {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} for finding resources
- * in {@link java.io.File}s.
- * <p>
- *   It finds {@link FileResource}s instead of simple {@link Resource}s.
- * </p>
+ * A {@link java.util.ListIterator} that reverses the direction of all operations of a delegate {@link
+ * java.util.ListIterator}.
+ *
+ * @param <T> The element type of the list iterator
  */
-public abstract
-class FileResourceFinder extends ListableResourceFinder {
+public
+class ReverseListIterator<T> extends FilterListIterator<T> {
 
-    @Override @Nullable public final Resource
-    findResource(String resourceName) {
-        File file = this.findResourceAsFile(resourceName);
-        if (file == null) return null;
-        return new FileResource(file);
-    }
+    public
+    ReverseListIterator(ListIterator<T> delegate) { super(delegate); }
 
     /**
-     * Converts a given resource resource name into a {@link File}.
+     * Calls {@link #delegate}.{@link java.util.ListIterator#hasPrevious()}
      */
-    @Nullable protected abstract File
-    findResourceAsFile(String resourceName);
+    @Override public boolean
+    hasNext() { return super.hasPrevious(); }
+
+    /**
+     * Calls {@link #delegate}.{@link java.util.ListIterator#hasNext()}
+     */
+    @Override public boolean
+    hasPrevious() { return super.hasNext(); }
+
+    /**
+     * Calls {@link #delegate}.{@link java.util.ListIterator#previous()}
+     */
+    @Override public T
+    next() { return super.previous(); }
+
+    /**
+     * Calls {@link #delegate}.{@link java.util.ListIterator#next()}
+     */
+    @Override public T
+    previous() { return super.next(); }
+
+    /**
+     * Throws an {@link UnsupportedOperationException}.
+     */
+    @Override public int
+    nextIndex() { throw new UnsupportedOperationException(); }
+
+    /**
+     * Throws an {@link UnsupportedOperationException}.
+     */
+    @Override public int
+    previousIndex() { throw new UnsupportedOperationException(); }
 }

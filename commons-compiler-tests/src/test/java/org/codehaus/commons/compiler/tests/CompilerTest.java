@@ -24,78 +24,79 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.tests;
+package org.codehaus.commons.compiler.tests;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
+import org.codehaus.commons.compiler.ICompiler;
+import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.util.Benchmark;
+import org.codehaus.commons.compiler.util.Disassembler;
+import org.codehaus.commons.compiler.util.ResourceFinderClassLoader;
+import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
+import org.codehaus.commons.compiler.util.resource.MapResourceCreator;
+import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
+import org.codehaus.commons.compiler.util.resource.MultiResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.ByteArrayClassLoader;
-import org.codehaus.janino.ClassLoaderIClassLoader;
-import org.codehaus.janino.Compiler;
-import org.codehaus.janino.IClassLoader;
-import org.codehaus.janino.Java;
-import org.codehaus.janino.Java.AbstractCompilationUnit;
-import org.codehaus.janino.Parser;
-import org.codehaus.janino.Scanner;
-import org.codehaus.janino.SimpleCompiler;
-import org.codehaus.janino.UnitCompiler;
-import org.codehaus.janino.util.Benchmark;
-import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.ResourceFinderClassLoader;
-import org.codehaus.janino.util.resource.MapResourceCreator;
-import org.codehaus.janino.util.resource.MapResourceFinder;
-import org.codehaus.janino.util.resource.MultiResourceFinder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
+import util.TestUtil;
 
 // SUPPRESS CHECKSTYLE JavadocMethod:9999
 
 /**
  * Unit tests for the {@link SimpleCompiler}.
  */
-public
+@RunWith(Parameterized.class) public
 class CompilerTest {
 
     private static final String JANINO_SRC           = "../janino/src/main/java";
     private static final String COMMONS_COMPILER_SRC = "../commons-compiler/src/main/java";
     private static final String RESOURCE_DIR         = "src/test/resources";
 
+    /**
+     * The {@link ICompilerFactory} in effect for this test execution.
+     */
+    protected final ICompilerFactory compilerFactory;
+
+    @Parameters(name = "CompilerFactory={0}") public static Collection<Object[]>
+    compilerFactories() throws Exception { return TestUtil.getCompilerFactoriesForParameters(); }
+
+    public
+    CompilerTest(ICompilerFactory compilerFactory) {
+
+        this.compilerFactory = compilerFactory;
+
+//        String compilerFactoryId = compilerFactory.getId();
+//        this.isJdk    = compilerFactoryId.equals("org.codehaus.commons.compiler.jdk"); // SUPPRESS CHECKSTYLE EqualsAvoidNull|LineLength
+//        this.isJanino = compilerFactoryId.equals("org.codehaus.janino");
+    }
+
     @Before
     public void
     setUp() throws Exception {
-
-        // Optionally print class file disassemblies to the console.
-        if (Boolean.parseBoolean(System.getProperty("disasm"))) {
-            Logger scl = Logger.getLogger(UnitCompiler.class.getName());
-            for (Handler h : scl.getHandlers()) {
-                h.setLevel(Level.FINEST);
-            }
-            scl.setLevel(Level.FINEST);
-        }
     }
 
     /**
@@ -136,14 +137,15 @@ class CompilerTest {
     @Test public void
     testSelfCompile() throws Exception {
 
-        ClassLoader bootstrapClassLoader = ICookable.BOOT_CLASS_LOADER;
-        File[]      sourceFiles          = {
+        final ClassLoader bootstrapClassLoader = ICookable.BOOT_CLASS_LOADER;
+        File[]            sourceFiles          = {
             new File(CompilerTest.JANINO_SRC           + "/org/codehaus/janino/Compiler.java"),
-            new File(CompilerTest.COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),
             new File(CompilerTest.JANINO_SRC           + "/org/codehaus/janino/ClassLoaderIClassLoader.java"),
-            new File(CompilerTest.JANINO_SRC           + "/org/codehaus/janino/util/resource/MapResourceCreator.java"),
+            new File(CompilerTest.COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),
+            new File(CompilerTest.COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/util/resource/MapResourceCreator.java"), // SUPPRESS CHECKSTYLE LineLength
+            new File(CompilerTest.COMMONS_COMPILER_SRC + "/org/codehaus/commons/compiler/util/resource/MapResourceFinder.java"),
         };
-        ResourceFinder sourceFinder = new MultiResourceFinder(Arrays.asList(new ResourceFinder[] {
+        ResourceFinder    sourceFinder = new MultiResourceFinder(Arrays.asList(new ResourceFinder[] {
             new DirectoryResourceFinder(new File(CompilerTest.JANINO_SRC)),
             new DirectoryResourceFinder(new File(CompilerTest.COMMONS_COMPILER_SRC)),
         }));
@@ -154,10 +156,15 @@ class CompilerTest {
         b.beginReporting("Compile Janino from scratch");
         MapResourceCreator classFileResources1 = new MapResourceCreator();
         {
-            Compiler c = new Compiler();
+            ICompiler c = this.compilerFactory.newCompiler();
             c.setSourceFinder(sourceFinder);
-            c.setIClassLoader(new ClassLoaderIClassLoader(bootstrapClassLoader));
+            c.setClassPath(new File[0]);
             c.setClassFileCreator(classFileResources1);
+//            c.setClassFileFinder(ResourceFinder.EMPTY_RESOURCE_FINDER);
+//            c.setClassFileFinder(new MapResourceFinder(classFileResources1.getMap()));
+//            c.setDebugLines(true);
+//            c.setDebugSource(true);
+//            c.setDebugVars(true);
             c.setCompileErrorHandler(new ErrorHandler() {
 
                 @Override public void
@@ -181,11 +188,14 @@ class CompilerTest {
         MapResourceFinder  classFileFinder     = new MapResourceFinder(classFileMap1);
         classFileFinder.setLastModified(System.currentTimeMillis());
         {
-            Compiler c = new Compiler();
+            ICompiler c = this.compilerFactory.newCompiler();
             c.setSourceFinder(sourceFinder);
-            c.setIClassLoader(new ClassLoaderIClassLoader(bootstrapClassLoader));
+            c.setClassPath(new File[0]);
             c.setClassFileFinder(classFileFinder);
             c.setClassFileCreator(classFileResources2);
+//            c.setDebugLines(true);
+//            c.setDebugSource(true);
+//            c.setDebugVars(true);
             c.setCompileErrorHandler(new ErrorHandler() {
 
                 @Override public void
@@ -218,11 +228,42 @@ class CompilerTest {
         class Loader {
 
             Class<?>
-            loadClass(Class<?> c) throws ClassNotFoundException { return cl.loadClass(c.getName()); }
+            loadClass(String name) throws ClassNotFoundException { return cl.loadClass(name); }
+
+            Class<?>
+            loadClass(Class<?> c) throws ClassNotFoundException { return this.loadClass(c.getName()); }
 
             Object
-            instantiate(Class<?> c, Class<?>[]  parameterTypes, Object[] arguments) throws Exception {
-                return this.loadClass(c).getDeclaredConstructor(parameterTypes).newInstance(arguments);
+            instantiate(String className) throws Exception {
+                return this.instantiate(className, new Class[0], new Object[0]);
+            }
+
+            Object
+            instantiate(
+                String     className,
+                Class<?>[] constructorParameterTypes,
+                Object[]   constructorArguments
+            ) throws Exception {
+                return (
+                    this
+                    .loadClass(className)
+                    .getDeclaredConstructor(constructorParameterTypes)
+                    .newInstance(constructorArguments)
+                );
+            }
+
+            Object
+            instantiate(
+                Class<?>   c,
+                Class<?>[] constructorParameterTypes,
+                Object[]   constructorArguments
+            ) throws Exception {
+                return (
+                    this
+                    .loadClass(c)
+                    .getDeclaredConstructor(constructorParameterTypes)
+                    .newInstance(constructorArguments)
+                );
             }
 
             Object
@@ -240,52 +281,75 @@ class CompilerTest {
         Loader              l             = new Loader();
         Map<String, byte[]> classFileMap3 = new HashMap<String, byte[]>();
         {
-            Object sf = l.instantiate(MultiResourceFinder.class, new Class[] { Collection.class }, new Object[] {
-                Arrays.asList(new Object[] {
-                    l.instantiate(DirectoryResourceFinder.class, new Class[] { File.class }, new Object[] {
-                        new File(CompilerTest.JANINO_SRC),
+
+            // ICompiler compiler = new org.codehaus.janino.Compiler();
+            Object compiler = l.instantiate("org.codehaus.janino.Compiler");
+
+            // Resourcefinder sf = new MultiResourceFinder(Arrays.asList(
+            //     new DirectoryResourceFinder(new File(JANINO_SRC),
+            //     new DirectoryResourceFinder(new File(COMMONS_COMPILER_SRC)
+            // ));
+            Object sf = l.instantiate(
+                MultiResourceFinder.class,
+                new Class[] { Collection.class },
+                new Object[] {
+                    Arrays.asList(new Object[] {
+                        l.instantiate(DirectoryResourceFinder.class, new Class[] { File.class }, new Object[] {
+                            new File(CompilerTest.JANINO_SRC),
+                        }),
+                        l.instantiate(DirectoryResourceFinder.class, new Class[] { File.class }, new Object[] {
+                            new File(CompilerTest.COMMONS_COMPILER_SRC),
+                        }),
                     }),
-                    l.instantiate(DirectoryResourceFinder.class, new Class[] { File.class }, new Object[] {
-                        new File(CompilerTest.COMMONS_COMPILER_SRC),
-                    }),
-                }),
-            });
-            Object icl = l.instantiate(ClassLoaderIClassLoader.class, new Class[] { ClassLoader.class }, new Object[] {
-                bootstrapClassLoader,
-            });
-            Object cfrf = l.getStaticField(ResourceFinder.class, "EMPTY_RESOURCE_FINDER");
-            Object cfrc = l.instantiate(
-                MapResourceCreator.class,
-                new Class[] { Map.class },
-                new Object[] { classFileMap3 }
+                }
             );
 
-            Object compiler = l.instantiate(Compiler.class, new Class[] {
-                l.loadClass(ResourceFinder.class), // sourceFinder
-                l.loadClass(IClassLoader.class)    // iClassLoader
-            }, new Object[] {
-                sf, // sourceFinder
-                icl // iClassLoader
-            });
+            // compiler.setSourceFinder(sf);
+            l.invoke(
+                compiler,
+                "setSourceFinder",
+                new Class[]  { l.loadClass(ResourceFinder.class) },
+                new Object[] { sf                                }
+            );
 
+            // compiler.setClassFileFinder(new MapResourceFinder(ResourceFinder.EMPTY_RESOURCE_FINDER);
             l.invoke(
                 compiler,
                 "setClassFileFinder",
-                new Class[] { l.loadClass(ResourceFinder.class) },
-                new Object[] { cfrf }
+                new Class[]  { l.loadClass(ResourceFinder.class)                               },
+                new Object[] { l.getStaticField(ResourceFinder.class, "EMPTY_RESOURCE_FINDER") }
             );
+
+            // compiler.setClassPath(new File[0])
+            l.invoke(
+                compiler,
+                "setClassPath",
+                new Class[]  { File[].class },
+                new Object[] { new File[0]  }
+            );
+            // compiler.setClassFileCreator(new MapResourceCreator(classFileMap3));
             l.invoke(
                 compiler,
                 "setClassFileCreator",
                 new Class[] { l.loadClass(ResourceCreator.class) },
-                new Object[] { cfrc }
+                new Object[] {
+                    l.instantiate(
+                        MapResourceCreator.class,
+                        new Class[]  { Map.class     },
+                        new Object[] { classFileMap3 }
+                    )
+                }
             );
+
+//            l.invoke(compiler, "setDebugLines",  new Class[]  { boolean.class }, new Object[] { true });
+//            l.invoke(compiler, "setDebugSource", new Class[]  { boolean.class }, new Object[] { true });
+//            l.invoke(compiler, "setDebugVars",   new Class[]  { boolean.class }, new Object[] { true });
 
             l.invoke(
                 compiler,
                 "compile",
-                new Class[] { File[].class },
-                new Object[] { sourceFiles }
+                new Class[]  { File[].class },
+                new Object[] { sourceFiles  }
             );
         }
         b.endReporting("Generated " + classFileMap3.size() + " class files.");
@@ -294,14 +358,24 @@ class CompilerTest {
         // want to check byte-by-byte identity rather than reference identity.
         Assert.assertEquals(classFileMap1.size(), classFileMap3.size());
         for (Map.Entry<String, byte[]> me : classFileMap1.entrySet()) {
-            Assert.assertTrue(Arrays.equals(me.getValue(), classFileMap3.get(me.getKey())));
+            String resourceName = me.getKey();
+
+            byte[] expectedClassFileBytes = me.getValue();
+            byte[] actualClassFileBytes   = classFileMap3.get(resourceName);
+            if (!Arrays.equals(expectedClassFileBytes, actualClassFileBytes)) {
+                System.out.println("Expected:");
+                Disassembler.disassembleToStdout(expectedClassFileBytes);
+                System.out.println("Actual:");
+                Disassembler.disassembleToStdout(actualClassFileBytes);
+            }
+            Assert.assertArrayEquals(resourceName, expectedClassFileBytes, actualClassFileBytes);
         }
     }
 
     @Test public void
     testTypeBug() throws Exception {
 
-        ClassLoader bootstrapClassLoader = ICookable.BOOT_CLASS_LOADER;
+//        ClassLoader bootstrapClassLoader = ICookable.BOOT_CLASS_LOADER;
         File[]      sourceFiles          = {
             new File((
                 CompilerTest.COMMONS_COMPILER_SRC
@@ -319,10 +393,13 @@ class CompilerTest {
         b.beginReporting("Compile Janino from scratch");
         MapResourceCreator classFileResources1 = new MapResourceCreator();
         {
-            Compiler c = new Compiler();
+            ICompiler c = this.compilerFactory.newCompiler();
             c.setSourceFinder(sourceFinder);
-            c.setIClassLoader(new ClassLoaderIClassLoader(bootstrapClassLoader));
+            c.setClassPath(new File[0]);
             c.setClassFileCreator(classFileResources1);
+//            c.setDebugLines(true);
+//            c.setDebugSource(true);
+//            c.setDebugVars(true);
             c.setCompileErrorHandler(new ErrorHandler() {
 
                 @Override public void
@@ -372,7 +449,7 @@ class CompilerTest {
         ));
 
         try {
-            CompilerTest.compile(sourceFinder);
+            this.compile(sourceFinder);
             Assert.fail("CompileException expected");
         } catch (CompileException ex) {
             Assert.assertTrue(
@@ -411,7 +488,8 @@ class CompilerTest {
             + "}\n"
         ));
 
-        final Map<String, byte[]> classes = CompilerTest.compile(sourceFinder);
+        final Map<String, byte[]> classes = this.compile(sourceFinder);
+        Assert.assertEquals(2, classes.size());
 
         // Set up a class loader that finds and defined the generated classes.
         ClassLoader cl = new ByteArrayClassLoader(classes);
@@ -420,18 +498,21 @@ class CompilerTest {
         Assert.assertEquals("HELLO", cl.loadClass("pkg1.A").getMethod("main").invoke(null));
     }
 
-    private static Map<String, byte[]>
+    private Map<String, byte[]>
     compile(MapResourceFinder sourceFinder) throws CompileException, IOException {
 
         // Storage for generated bytecode.
         final Map<String, byte[]> classes = new HashMap<String, byte[]>();
 
         // Set up the compiler.
-        Compiler compiler = new Compiler();
+        ICompiler compiler = this.compilerFactory.newCompiler();
         compiler.setSourceFinder(sourceFinder);
-        compiler.setIClassLoader(new ClassLoaderIClassLoader(CompilerTest.class.getClassLoader()));
-        compiler.setClassFileCreator(new MapResourceCreator(classes));
+//        compiler.setIClassLoader(new ClassLoaderIClassLoader(CompilerTest.class.getClassLoader()));
         compiler.setClassFileFinder(new MapResourceFinder(classes));
+        compiler.setClassFileCreator(new MapResourceCreator(classes));
+//        compiler.setDebugLines(true);
+//        compiler.setDebugSource(true);
+//        compiler.setDebugVars(true);
 
         // Compile all sources.
         compiler.compile(sourceFinder.resources().toArray(new Resource[0]));
@@ -459,57 +540,17 @@ class CompilerTest {
             + "}\n"
         );
 
-        ISimpleCompiler sc = new SimpleCompiler();
+        ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
         sc.cook(cu);
-    }
-
-    // This is currently failing
-    // https://github.com/codehaus/janino/issues/4
-    @Ignore
-    @Test public void
-    testReferenceQualifiedSuper() throws Exception {
-        CompilerTest.doCompile(true, true, false, CompilerTest.RESOURCE_DIR + "/a/Test.java");
     }
 
     // https://github.com/codehaus/janino/issues/5
     @Test public void
     testLocalVarTableGeneration() throws Exception {
-        SimpleCompiler s = new SimpleCompiler();
-        s.setDebuggingInformation(true, true, true);
-        s.cook(new FileInputStream(CompilerTest.RESOURCE_DIR + "/a/TestLocalVarTable.java"));
-        s.getClassLoader().loadClass("a.TestLocalVarTable");
-    }
-
-    public static List<ClassFile>
-    doCompile(
-        boolean   debugSource,
-        boolean   debugLines,
-        boolean   debugVars,
-        String... fileNames
-    ) throws Exception {
-
-        // Parse each compilation unit.
-        final List<AbstractCompilationUnit> acus = new LinkedList<AbstractCompilationUnit>();
-        final IClassLoader                  cl   = new ClassLoaderIClassLoader(CompilerTest.class.getClassLoader());
-        List<ClassFile>                     cfs  = new LinkedList<ClassFile>();
-        for (String fileName : fileNames) {
-
-            FileReader r = new FileReader(fileName);
-            try {
-                Java.AbstractCompilationUnit acu = new Parser(new Scanner(fileName, r)).parseAbstractCompilationUnit();
-                acus.add(acu);
-
-                // Compile them.
-                ClassFile[] compiled = new UnitCompiler(acu, cl).compileUnit(debugSource, debugLines, debugVars);
-                for (ClassFile cf : compiled) {
-                    cfs.add(cf);
-                }
-            } finally {
-                try { r.close(); } catch (Exception e) {}
-            }
-        }
-        return cfs;
-
+        ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
+        sc.setDebuggingInformation(true, true, true);
+        sc.cook(new FileInputStream(CompilerTest.RESOURCE_DIR + "/a/TestLocalVarTable.java"));
+        sc.getClassLoader().loadClass("a.TestLocalVarTable");
     }
 
     private static void

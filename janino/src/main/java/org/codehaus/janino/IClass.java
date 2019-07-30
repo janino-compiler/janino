@@ -596,7 +596,7 @@ class IClass {
     @Override public String
     toString() {
         String className = Descriptor.toClassName(this.getDescriptor());
-        if (className.startsWith("java.lang.")) className = className.substring(10);
+        if (className.startsWith("java.lang.") && className.indexOf('.', 10) == -1) className = className.substring(10);
         return className;
     }
 

@@ -105,7 +105,7 @@ class ClassFileIClass extends IClass {
 
             // Skip JDK 1.5 synthetic methods (e.g. those generated for
             // covariant return values).
-            if (Mod.isSynthetic(mi.getAccessFlags())) continue;
+//            if (Mod.isSynthetic(mi.getAccessFlags())) continue;
 
             IInvocable ii;
             try {
@@ -199,7 +199,7 @@ class ClassFileIClass extends IClass {
 
     @Override @Nullable protected IClass
     getSuperclass2() throws CompileException {
-        if (this.classFile.superclass == 0) return null;
+        if (this.classFile.superclass == 0 || (this.classFile.accessFlags & Mod.INTERFACE) != 0) return null;
         try {
             return this.resolveClass(this.classFile.superclass);
         } catch (ClassNotFoundException e) {

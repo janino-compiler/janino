@@ -52,6 +52,7 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.util.Disassembler;
+import org.codehaus.commons.compiler.util.iterator.Iterables;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.CodeContext.Inserter;
 import org.codehaus.janino.CodeContext.Offset;
@@ -216,7 +217,6 @@ import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.ClassFileException;
 import org.codehaus.janino.util.Numbers;
 import org.codehaus.janino.util.Objects;
-import org.codehaus.janino.util.iterator.Iterables;
 
 /**
  * This class actually implements the Java compiler. It is associated with exactly one compilation unit which it

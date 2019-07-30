@@ -65,7 +65,7 @@ class CompilerFactory extends AbstractCompilerFactory {
     newSimpleCompiler() { return new SimpleCompiler(); }
 
     @Override public ICompiler
-    newCompiler() { throw new UnsupportedOperationException(this.getClass() + " does not support newCompiler()."); }
+    newCompiler() { return new Compiler(); }
 
     @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader() {

@@ -24,54 +24,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.resource;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import org.codehaus.commons.compiler.util.resource.Resource;
-import org.codehaus.commons.compiler.util.resource.ResourceFinder;
-import org.codehaus.commons.nullanalysis.Nullable;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * A {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that finds resources in a ZIP file.
+ * Creates resources as byte arrays in a delegate {@link java.util.Map}.
  */
 public
-class ZipFileResourceFinder extends ResourceFinder {
-    private final ZipFile zipFile;
+class MapResourceCreator implements ResourceCreator {
 
+    private final Map<String, byte[]> map;
+
+    /**
+     * Auto-create the delegate {@link Map}.
+     */
     public
-    ZipFileResourceFinder(ZipFile zipFile) {
-        this.zipFile = zipFile;
-    }
+    MapResourceCreator() { this.map = new HashMap<String, byte[]>(); }
 
-    @Override public final String toString() { return "zip:" + this.zipFile.getName(); }
+    /**
+     * @param map String fileName =&gt; byte[] data
+     */
+    public
+    MapResourceCreator(Map<String, byte[]> map) { this.map = map; }
 
-    // Implement ResourceFinder.
+    /**
+     * @return The {@link String}-to-{@code byte[]} map of the resources created
+     */
+    public final Map<String, byte[]>
+    getMap() { return this.map; }
 
-    @Override @Nullable public final Resource
-    findResource(final String resourceName) {
-        final ZipEntry ze = this.zipFile.getEntry(resourceName);
-        if (ze == null) return null;
-        return new Resource() {
+    @Override public final OutputStream
+    createResource(final String resourceName) {
+        return new ByteArrayOutputStream() {
 
-            @Override public InputStream
-            open() throws IOException {
-                return ZipFileResourceFinder.this.zipFile.getInputStream(ze);
+            @Override public void
+            close() throws IOException {
+                super.close();
+                MapResourceCreator.this.map.put(resourceName, this.toByteArray());
             }
-
-            @Override public String
-            getFileName() {
-                return ZipFileResourceFinder.this.zipFile.getName() + ':' + resourceName;
-            }
-
-            @Override public long
-            lastModified() { long l = ze.getTime(); return l == -1L ? 0L : l; }
-
-            @Override public String
-            toString() { return this.getFileName(); }
         };
     }
+
+    @Override public final boolean
+    deleteResource(String resourceName) { return this.map.remove(resourceName) != null; }
 }

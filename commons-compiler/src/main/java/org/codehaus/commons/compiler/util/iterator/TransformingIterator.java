@@ -24,14 +24,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.iterator;
+package org.codehaus.commons.compiler.util.iterator;
+
+import java.util.Iterator;
 
 /**
- * Thrown by {@link org.codehaus.janino.util.iterator.MultiDimensionalIterator} to indicate that it has encountered an
- * element that cannot be iterated.
+ * An {@link java.util.Iterator} that transforms its elements on-the-fly.
+ *
+ * @param <T1> The element type of the delegate iterator
+ * @param <T2> The element type of this iterator
  */
-public
-class UniterableElementException extends RuntimeException {
+public abstract
+class TransformingIterator<T1, T2> implements Iterator<T2> {
 
-    public UniterableElementException() {}
+    private final Iterator<? extends T1> delegate;
+
+    public
+    TransformingIterator(Iterator<? extends T1> delegate) { this.delegate = delegate; }
+
+    @Override public boolean
+    hasNext() { return this.delegate.hasNext(); }
+
+    @Override public final T2
+    next() { return this.transform(this.delegate.next()); }
+
+    @Override public void
+    remove() { this.delegate.remove(); }
+
+    /**
+     * Derived classes must implement this method such that it does the desired transformation.
+     */
+    protected abstract T2 transform(T1 o);
 }

@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.resource;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -33,8 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.codehaus.commons.compiler.util.resource.Resource;
-import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -53,7 +51,7 @@ class MapResourceFinder extends ResourceFinder {
     public
     MapResourceFinder(Map<String /*fileName*/, byte[] /*data*/> map) {
         for (Entry<String, byte[]> me : map.entrySet()) {
-            Resource prev = this.addResource(me.getKey(), me.getValue());
+            Resource prev = this.addResource((String) me.getKey(), (byte[]) me.getValue());
             assert prev == null;
         }
     }
@@ -63,7 +61,7 @@ class MapResourceFinder extends ResourceFinder {
      */
     @Nullable public Resource
     addResource(final String fileName, final byte[] data) {
-        return this.map.put(fileName, new Resource() {
+        return (Resource) this.map.put(fileName, new Resource() {
             @Override public InputStream open()         { return new ByteArrayInputStream(data);      }
             @Override public String      getFileName()  { return fileName;                            }
             @Override public long        lastModified() { return MapResourceFinder.this.lastModified; }
@@ -92,7 +90,5 @@ class MapResourceFinder extends ResourceFinder {
     setLastModified(long lastModified) { this.lastModified = lastModified; }
 
     @Override @Nullable public final Resource
-    findResource(final String resourceName) {
-        return this.map.get(resourceName);
-    }
+    findResource(final String resourceName) { return (Resource) this.map.get(resourceName); }
 }

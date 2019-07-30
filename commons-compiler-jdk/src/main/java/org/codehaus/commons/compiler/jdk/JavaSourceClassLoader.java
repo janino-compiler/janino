@@ -172,6 +172,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private Class<?>
     findClass2(String className) throws IOException {
 
+        // Find or generate the .class file.
         JavaFileObject classFileObject = this.findClassFile(className);
 
         // Load the .class file into memory.
@@ -314,7 +315,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         return className.replace('.', '/') + ".java";
     }
 
-    private static
+    public static
     class DiagnosticException extends RuntimeException {
 
         private static final long serialVersionUID = 5589635876875819926L;

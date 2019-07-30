@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino;
+package org.codehaus.commons.compiler.util.reflect;
 
 import java.util.Map;
 

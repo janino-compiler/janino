@@ -48,7 +48,7 @@ class CompilerDemo {
         File[]          classPath             = { new File(".") };
         File[]          extDirs               = new File[0];
         File[]          bootClassPath         = new File[0];
-        Charset         encoding              = null;
+        Charset         encoding              = Charset.defaultCharset();
         boolean         verbose               = false;
         boolean         debugSource           = true;
         boolean         debugLines            = true;

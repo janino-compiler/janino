@@ -72,7 +72,7 @@ class ICompiler {
      * Equivalent of -encoding.
      */
     public abstract void
-    setEncoding(@Nullable Charset encoding);
+    setEncoding(Charset encoding);
 
     /**
      * Equivalent of {@code -g:lines}.
@@ -152,13 +152,16 @@ class ICompiler {
 
     /**
      * Finds more .java resources that need to be compiled, i.e. implements the "source path".
-     * @param sourceFinder
+     *
+     * @param sourceFinder Not really {@code @Nullable}, but {@link ICompiler#FIND_NEXT_TO_SOURCE_FILE} is defined as
+     *                     {@code null}
      */
     public abstract void
     setSourceFinder(ResourceFinder sourceFinder);
 
     /**
-     * @param classFileCreator Sess {@link #CREATE_NEXT_TO_SOURCE_FILE}
+     * @param classFileCreator Not really {@code @Nullable}, but {@link #CREATE_NEXT_TO_SOURCE_FILE} is declared as
+     *                         {@code null}
      */
     public abstract void
     setClassFileCreator(@Nullable ResourceCreator classFileCreator);
@@ -217,11 +220,11 @@ class ICompiler {
      * @see #FIND_NEXT_TO_SOURCE_FILE
      */
     public abstract void
-    setClassFileFinder(@Nullable ResourceFinder resourceFinder);
+    setClassFileFinder(ResourceFinder resourceFinder);
 
     public void
     setCharacterEncoding(@Nullable String characterEncoding) {
-        this.setEncoding(characterEncoding == null ? null : Charset.forName(characterEncoding));
+        this.setEncoding(characterEncoding == null ? Charset.defaultCharset() : Charset.forName(characterEncoding));
     }
 
     /**

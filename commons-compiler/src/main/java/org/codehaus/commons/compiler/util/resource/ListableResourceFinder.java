@@ -2,8 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
- * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
+ * Copyright (c) 2019 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,35 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.iterator;
+package org.codehaus.commons.compiler.util.resource;
 
-import java.util.Iterator;
+import org.codehaus.commons.nullanalysis.Nullable;
 
-/**
- * An {@link java.util.Iterator} that transforms its elements on-the-fly.
- *
- * @param <T1> The element type of the delegate iterator
- * @param <T2> The element type of this iterator
- */
 public abstract
-class TransformingIterator<T1, T2> implements Iterator<T2> {
+class ListableResourceFinder extends ResourceFinder {
 
-    private final Iterator<? extends T1> delegate;
-
-    public
-    TransformingIterator(Iterator<? extends T1> delegate) { this.delegate = delegate; }
-
-    @Override public boolean
-    hasNext() { return this.delegate.hasNext(); }
-
-    @Override public final T2
-    next() { return this.transform(this.delegate.next()); }
-
-    @Override public void
-    remove() { this.delegate.remove(); }
-
-    /**
-     * Derived classes must implement this method such that it does the desired transformation.
-     */
-    protected abstract T2 transform(T1 o);
+    @Nullable public abstract Iterable<Resource>
+    list(String resourceNamePrefix, boolean recurse);
 }

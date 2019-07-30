@@ -2,8 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2013 Arno Unkrig. All rights reserved.
- * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
+ * Copyright (c) 2019 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,11 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Classes related to loading "resources" ({@link org.codehaus.commons.compiler.util.resource.ResourceFinder}) and
- * creating resources ({@link org.codehaus.commons.compiler.util.resource.ResourceCreator}).
- */
+/***/
 @NotNullByDefault
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.iterator;
 
 import org.codehaus.commons.nullanalysis.NotNullByDefault;

@@ -959,6 +959,8 @@ class ClassFile implements Annotatable {
     /**
      * The constant pool index of the {@link ConstantClassInfo} that describes the superclass of this class. Zero
      * for class {@link Object}, {@link Object} for interfaces.
+     *
+     * @see JVMS11 4.1, "The ClassFile Structure"
      */
     public final short superclass;
 

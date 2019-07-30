@@ -24,40 +24,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.resource;
+package org.codehaus.commons.compiler.util.iterator;
 
-import java.util.Collection;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
-import org.codehaus.commons.compiler.util.resource.Resource;
-import org.codehaus.commons.compiler.util.resource.ResourceFinder;
+import org.codehaus.commons.compiler.util.Producer;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that finds its resources through a collection of
- * other {@link org.codehaus.commons.compiler.util.resource.ResourceFinder}s.
+ * An {@link Iterator} that iterates over all the objects produced by a delegate {@link Producer}.
+ *
+ * @param <T> The type of the products and the iterator elements
+ * @see       Producer
  */
 public
-class MultiResourceFinder extends ResourceFinder {
+class ProducerIterator<T> implements Iterator<T> {
 
-    private final Collection<? extends ResourceFinder> resourceFinders; // One for each entry
+    private final Producer<T> producer;
 
-    /**
-     * @param resourceFinders The entries of the "path"
-     */
+    private static final Object           UNKNOWN     = new Object();
+    @Nullable private static final Object AT_END      = null;
+
+    @Nullable private Object nextElement = ProducerIterator.UNKNOWN;
+
     public
-    MultiResourceFinder(Collection<? extends ResourceFinder> resourceFinders) {
-        this.resourceFinders = resourceFinders;
+    ProducerIterator(Producer<T> producer) { this.producer = producer; }
+
+    @Override public boolean
+    hasNext() {
+        if (this.nextElement == ProducerIterator.UNKNOWN) this.nextElement = this.producer.produce();
+        return this.nextElement != ProducerIterator.AT_END;
     }
 
-    // Implement ResourceFinder.
+    @Override public T
+    next() {
 
-    @Override @Nullable public final Resource
-    findResource(String resourceName) {
-        for (ResourceFinder rf : this.resourceFinders) {
-            Resource resource = rf.findResource(resourceName);
-//System.err.println("*** " + resourceName + " in " + rf + "? => " + url);
-            if (resource != null) return resource;
-        }
-        return null;
+        if (this.nextElement == ProducerIterator.UNKNOWN) this.nextElement = this.producer.produce();
+
+        if (this.nextElement == ProducerIterator.AT_END) throw new NoSuchElementException();
+
+        @SuppressWarnings("unchecked") T result = (T) this.nextElement;
+        this.nextElement = ProducerIterator.UNKNOWN;
+
+        assert result != null;
+        return result;
     }
+
+    @Override public void
+    remove() { throw new UnsupportedOperationException("remove"); }
 }

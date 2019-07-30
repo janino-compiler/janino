@@ -32,9 +32,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.codehaus.commons.compiler.util.Producer;
+import org.codehaus.commons.compiler.util.iterator.MultiDimensionalIterator;
+import org.codehaus.commons.compiler.util.iterator.ProducerIterator;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.InternalCompilerException;
-import org.codehaus.janino.util.Producer;
 
 /**
  * An {@link Iterator} that finds the normal {@link File}s who's names are

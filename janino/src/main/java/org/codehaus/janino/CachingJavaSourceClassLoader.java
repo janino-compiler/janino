@@ -36,12 +36,12 @@ import java.util.Map;
 
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceCreator;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
+import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.resource.PathResourceFinder;
 
 /**
  * A {@link org.codehaus.janino.JavaSourceClassLoader} that uses a resource storage provided by the application to

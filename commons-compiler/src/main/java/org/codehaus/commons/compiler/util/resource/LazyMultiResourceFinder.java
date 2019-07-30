@@ -24,31 +24,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.iterator;
+package org.codehaus.commons.compiler.util.resource;
 
-import java.util.Enumeration;
 import java.util.Iterator;
 
+import org.codehaus.commons.compiler.util.iterator.IteratorCollection;
+
 /**
- * An {@link java.util.Iterator} that iterates over the elements of an {@link java.util.Enumeration}.
+ * A {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that examines a set of {@link
+ * org.codehaus.commons.compiler.util.resource.ResourceFinder}s lazily as it searches for resources.
  *
- * @param <T> The element type of the enumeration and the iterator
+ * @see IteratorCollection
  */
 public
-class EnumerationIterator<T> implements Iterator<T> {
-
-    private final Enumeration<? extends T> e;
-
-    public EnumerationIterator(Enumeration<? extends T> e) { this.e = e; }
-
-    @Override public boolean hasNext() { return this.e.hasMoreElements(); }
-    @Override public T       next()    { return this.e.nextElement();     }
+class LazyMultiResourceFinder extends MultiResourceFinder {
 
     /**
-     * Since {@link Enumeration}s don't support element removal, this method always throws an {@link
-     * UnsupportedOperationException}.
-     *
-     * @see Iterator#remove()
+     * @param resourceFinders delegate {@link ResourceFinder}s
      */
-    @Override public void remove() { throw new UnsupportedOperationException("remove"); }
+    public
+    LazyMultiResourceFinder(Iterator<ResourceFinder> resourceFinders) {
+        super(new IteratorCollection<ResourceFinder>(resourceFinders));
+    }
 }

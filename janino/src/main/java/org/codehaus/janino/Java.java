@@ -38,6 +38,7 @@ import java.util.TreeMap;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.util.iterator.ReverseListIterator;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IMethod;
@@ -55,7 +56,6 @@ import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
 import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
 import org.codehaus.janino.util.AbstractTraverser;
-import org.codehaus.janino.util.iterator.ReverseListIterator;
 
 /**
  * This wrapper class defines classes that represent the elements of the Java programming language.

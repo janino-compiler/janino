@@ -24,55 +24,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.iterator;
+package org.codehaus.commons.compiler.util.resource;
 
-import java.util.ListIterator;
+import java.util.Collection;
+
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link java.util.ListIterator} that reverses the direction of all operations of a delegate {@link
- * java.util.ListIterator}.
- *
- * @param <T> The element type of the list iterator
+ * A {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that finds its resources through a collection of
+ * other {@link org.codehaus.commons.compiler.util.resource.ResourceFinder}s.
  */
 public
-class ReverseListIterator<T> extends FilterListIterator<T> {
+class MultiResourceFinder extends ListableResourceFinder {
 
+    private final Collection<? extends ResourceFinder> resourceFinders; // One for each entry
+
+    /**
+     * @param resourceFinders The entries of the "path"
+     */
     public
-    ReverseListIterator(ListIterator<T> delegate) { super(delegate); }
+    MultiResourceFinder(Collection<? extends ResourceFinder> resourceFinders) {
+        this.resourceFinders = resourceFinders;
+    }
 
-    /**
-     * Calls {@link #delegate}.{@link java.util.ListIterator#hasPrevious()}
-     */
-    @Override public boolean
-    hasNext() { return super.hasPrevious(); }
+    // Implement ResourceFinder.
 
-    /**
-     * Calls {@link #delegate}.{@link java.util.ListIterator#hasNext()}
-     */
-    @Override public boolean
-    hasPrevious() { return super.hasNext(); }
+    @Override @Nullable public final Resource
+    findResource(String resourceName) {
+        for (ResourceFinder rf : this.resourceFinders) {
+            Resource resource = rf.findResource(resourceName);
+//System.err.println("*** " + resourceName + " in " + rf + "? => " + url);
+            if (resource != null) return resource;
+        }
+        return null;
+    }
 
-    /**
-     * Calls {@link #delegate}.{@link java.util.ListIterator#previous()}
-     */
-    @Override public T
-    next() { return super.previous(); }
+    @Override @Nullable public Iterable<Resource>
+    list(String resourceNamePrefix, boolean recurse) {
+        for (ResourceFinder rf : this.resourceFinders) {
+            if (rf instanceof ListableResourceFinder) {
+                Iterable<Resource> result = ((ListableResourceFinder) rf).list(resourceNamePrefix, recurse);
+                if (result != null) return result;
+            }
+        }
 
-    /**
-     * Calls {@link #delegate}.{@link java.util.ListIterator#next()}
-     */
-    @Override public T
-    previous() { return super.next(); }
-
-    /**
-     * Throws an {@link UnsupportedOperationException}.
-     */
-    @Override public int
-    nextIndex() { throw new UnsupportedOperationException(); }
-
-    /**
-     * Throws an {@link UnsupportedOperationException}.
-     */
-    @Override public int
-    previousIndex() { throw new UnsupportedOperationException(); }
+        return null;
+    }
 }

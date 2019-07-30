@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util.iterator;
+package org.codehaus.commons.compiler.util.iterator;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -32,8 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.codehaus.commons.compiler.util.Predicate;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.util.Predicate;
 
 /**
  * Utility method around {@link Iterable}s and {@link Iterator}s.

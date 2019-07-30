@@ -2,7 +2,8 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2019 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -23,13 +24,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino.util;
+package org.codehaus.commons.compiler.util.resource;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
+/**
+ * A {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that finds resources in a ZIP file.
+ */
 public
-interface Predicate<T> {
+class ZipFileResourceFinder extends ResourceFinder {
+    private final ZipFile zipFile;
 
-    boolean
-    evaluate(@Nullable T subject);
+    public
+    ZipFileResourceFinder(ZipFile zipFile) {
+        this.zipFile = zipFile;
+    }
+
+    @Override public final String toString() { return "zip:" + this.zipFile.getName(); }
+
+    // Implement ResourceFinder.
+
+    @Override @Nullable public final Resource
+    findResource(final String resourceName) {
+        final ZipEntry ze = this.zipFile.getEntry(resourceName);
+        if (ze == null) return null;
+        return new Resource() {
+
+            @Override public InputStream
+            open() throws IOException {
+                return ZipFileResourceFinder.this.zipFile.getInputStream(ze);
+            }
+
+            @Override public String
+            getFileName() {
+                return ZipFileResourceFinder.this.zipFile.getName() + ':' + resourceName;
+            }
+
+            @Override public long
+            lastModified() { long l = ze.getTime(); return l == -1L ? 0L : l; }
+
+            @Override public String
+            toString() { return this.getFileName(); }
+        };
+    }
 }
