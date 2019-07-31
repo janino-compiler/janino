@@ -52,6 +52,7 @@ import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
 import org.codehaus.commons.compiler.util.resource.MultiResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
+import org.codehaus.commons.compiler.util.resource.StringResource;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.junit.Assert;
 import org.junit.Before;
@@ -473,6 +474,24 @@ class CompilerTest {
         sc.setDebuggingInformation(true, true, true);
         sc.cook(new FileInputStream(CompilerTest.RESOURCE_DIR + "/a/TestLocalVarTable.java"));
         sc.getClassLoader().loadClass("a.TestLocalVarTable");
+    }
+
+    @Test public void
+    testIssue98() throws Exception {
+
+        Map<String, byte[]> classes = new HashMap<String, byte[]>();
+
+        ICompiler compiler = this.compilerFactory.newCompiler();
+        compiler.setClassFileCreator(new MapResourceCreator(classes));
+
+        compiler.compile(new Resource[] {
+            new StringResource("pkg1/A.java", "package pkg1; public class A { public static int meth() { return pkg2.B.meth(); } }"), // SUPPRESS CHECKSTYLE LineLength:4
+            new StringResource("pkg2/B.java", "package pkg2; public class B { public static int meth() { return 77;            } }"),
+        });
+
+        ClassLoader cl = new ResourceFinderClassLoader(new MapResourceFinder(classes), ClassLoader.getSystemClassLoader());
+
+        Assert.assertEquals(77, cl.loadClass("pkg1.A").getDeclaredMethod("meth").invoke(null));
     }
 
     private static void
