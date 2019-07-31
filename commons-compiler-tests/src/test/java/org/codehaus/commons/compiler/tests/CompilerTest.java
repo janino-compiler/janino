@@ -315,7 +315,7 @@ class CompilerTest {
         // --------------------
 
         Benchmark b = new Benchmark(true);
-        b.beginReporting("Compile Janino from scratch");
+        b.beginReporting("Compile Stream.java");
         MapResourceCreator classFileResources1 = new MapResourceCreator();
         {
             ICompiler c = this.compilerFactory.newCompiler();
@@ -377,10 +377,7 @@ class CompilerTest {
             this.compile(sourceFinder);
             Assert.fail("CompileException expected");
         } catch (CompileException ex) {
-            Assert.assertTrue(
-                ex.getMessage(),
-                ex.getMessage().contains("Cannot determine simple type name \"E\"")
-            );
+            CompilerTest.assertMatches("(?si).*cannot.*\\bE\\b.*", ex.getMessage());
         }
     }
 
@@ -491,6 +488,14 @@ class CompilerTest {
         Assert.assertTrue(
             (message == null ? "" : message + ": ") + "Expected more than " + expected + ", but were " + actual,
             actual > expected
+        );
+    }
+
+    private static void
+    assertMatches(final String regex, final String actual) {
+        Assert.assertTrue(
+            "Expected that \"" + actual + "\" would match regex \"" + regex + "\"",
+            actual.matches(regex)
         );
     }
 }
