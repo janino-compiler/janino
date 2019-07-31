@@ -479,18 +479,23 @@ class CompilerTest {
     @Test public void
     testIssue98() throws Exception {
 
-        Map<String, byte[]> classes = new HashMap<String, byte[]>();
-
         ICompiler compiler = this.compilerFactory.newCompiler();
+
+        // Here's the magic: Configure a custom "resource creator", so the .class files are stored in a Map, and no
+        // files are created.
+        Map<String, byte[]> classes = new HashMap<String, byte[]>();
         compiler.setClassFileCreator(new MapResourceCreator(classes));
 
+        // Now compile two units with different package declarations.
         compiler.compile(new Resource[] {
             new StringResource("pkg1/A.java", "package pkg1; public class A { public static int meth() { return pkg2.B.meth(); } }"), // SUPPRESS CHECKSTYLE LineLength:4
             new StringResource("pkg2/B.java", "package pkg2; public class B { public static int meth() { return 77;            } }"),
         });
 
+        // Set up a class loader that uses the generated .class files.
         ClassLoader cl = new ResourceFinderClassLoader(new MapResourceFinder(classes), ClassLoader.getSystemClassLoader());
 
+        // Invoke "pkg1.A.meth()" and verify that the return value is correct.
         Assert.assertEquals(77, cl.loadClass("pkg1.A").getDeclaredMethod("meth").invoke(null));
     }
 
