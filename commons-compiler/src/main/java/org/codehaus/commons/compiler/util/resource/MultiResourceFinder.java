@@ -26,7 +26,7 @@
 
 package org.codehaus.commons.compiler.util.resource;
 
-import java.util.Collection;
+import java.util.Arrays;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -37,15 +37,21 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class MultiResourceFinder extends ListableResourceFinder {
 
-    private final Collection<? extends ResourceFinder> resourceFinders; // One for each entry
+    private final Iterable<? extends ResourceFinder> resourceFinders; // One for each entry
 
     /**
      * @param resourceFinders The entries of the "path"
      */
     public
-    MultiResourceFinder(Collection<? extends ResourceFinder> resourceFinders) {
+    MultiResourceFinder(Iterable<? extends ResourceFinder> resourceFinders) {
         this.resourceFinders = resourceFinders;
     }
+
+    /**
+     * @param resourceFinders The entries of the "path"
+     */
+    public
+    MultiResourceFinder(ResourceFinder... resourceFinders) { this(Arrays.asList(resourceFinders)); }
 
     // Implement ResourceFinder.
 
