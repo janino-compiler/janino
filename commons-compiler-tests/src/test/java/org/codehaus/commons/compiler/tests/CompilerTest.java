@@ -493,7 +493,10 @@ class CompilerTest {
         });
 
         // Set up a class loader that uses the generated .class files.
-        ClassLoader cl = new ResourceFinderClassLoader(new MapResourceFinder(classes), ClassLoader.getSystemClassLoader());
+        ClassLoader cl = new ResourceFinderClassLoader(
+            new MapResourceFinder(classes),    // resourceFinder
+            ClassLoader.getSystemClassLoader() // parent
+        );
 
         // Invoke "pkg1.A.meth()" and verify that the return value is correct.
         Assert.assertEquals(77, cl.loadClass("pkg1.A").getDeclaredMethod("meth").invoke(null));
