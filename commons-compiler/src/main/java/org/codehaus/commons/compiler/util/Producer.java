@@ -35,8 +35,8 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * java.util.Iterator#next()}. This simplifies the implementation of certain complex iterations.
  *
  * @param <T> The type of the products
- * @see       org.codehaus.janino.util.iterator.DirectoryIterator
- * @see       org.codehaus.janino.util.iterator.ProducerIterator
+ * @see       org.codehaus.commons.compiler.util.iterator.DirectoryIterator
+ * @see       org.codehaus.commons.compiler.util.iterator.ProducerIterator
  */
 public
 interface Producer<T> {
