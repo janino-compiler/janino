@@ -31,8 +31,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.InternalCompilerException;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Java.AbstractCompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.AbstractCompilationUnit.SingleStaticImportDeclaration;

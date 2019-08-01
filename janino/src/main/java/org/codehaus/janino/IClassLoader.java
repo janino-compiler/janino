@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.util.StringUtil;
 import org.codehaus.commons.compiler.util.resource.JarDirectoriesResourceFinder;
 import org.codehaus.commons.compiler.util.resource.PathResourceFinder;

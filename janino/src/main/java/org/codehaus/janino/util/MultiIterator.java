@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.codehaus.janino.InternalCompilerException;
+import org.codehaus.commons.compiler.InternalCompilerException;
 
 /**
  * An {@link java.util.Iterator} that traverses a {@link java.util.Collection} of {@link java.util.Iterator}s.
