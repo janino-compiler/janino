@@ -61,8 +61,11 @@ class Compiler extends AbstractCompiler {
     setVerbose(boolean verbose) {}
 
     /**
-     * Notice: Don't use the '-g' options - these are controlled through {@link #setDebuggingInfo(boolean, boolean,
-     * boolean)}.
+     * Adds command line options that are passed unchecked to the {@link java.lang.Compiler}.
+     * <p>
+     *   Notice: Don't use the '-g' options - these are controlled through {@link #setDebugLines(boolean)}, {@link
+     *   #setDebugVars(boolean)} and {@link #setDebugSource(boolean)}.
+     * </p>
      *
      * @param compilerOptions All command line options supported by the JDK JAVAC tool
      */
