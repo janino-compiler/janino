@@ -1,50 +1,18 @@
 #!/bin/bash
 
-declare -a compiler_args;
-declare -a java_args;
-declare -a main_args;
-do_nothing=0;
+# This is JANINOC, the "Janino Java Compiler".
+# It is a drop-in replacement for the JDK's "JAVAC" tool.
 
-lib="`dirname $0`/../../janino-dist/build";
+maven_repo="C:/Server/mavenrepo";
+janino_version="3.0.16-SNAPSHOT";
 
-# Fix CYGWIN pathnames to WINDOWS pathnames.
-lib=`echo $lib | sed -e 's,/cygdrive/\(\w\),\1:,g'`;
+janino_jar="$maven_repo/org/codehaus/janino/janino/$janino_version/janino-$janino_version.jar";
+commons_compiler_jar="$maven_repo/org/codehaus/janino/commons-compiler/$janino_version/commons-compiler-$janino_version.jar";
 
-while (( $# > 0 )); do
-    arg=$1; shift;
-    case $arg in
+main_class=org.codehaus.commons.compiler.samples.CompilerDemo;
 
-    -d | -sourcepath | -classpath | -cp | -extdirs | -bootclasspath | -encoding)
-        compiler_args[${#compiler_args[*]}]="$arg";
-        compiler_args[${#compiler_args[*]}]="$1"; shift;
-        ;;
-
-    -verbose | -g* | -warn* | -rebuild | -help)
-        compiler_args[${#compiler_args[*]}]="$arg";
-        ;;
-
-    -n)
-        do_nothing=1;
-        ;;
-
-    -D* | -version | -X*)
-        java_args[${#java_args[*]}]="$arg";
-        ;;
-
-    -*)
-        echo >&2 "Unrecognized command line option \"$arg\"; try \"-help\".";
-        exit 1;
-        ;;
-
-    *)
-        class_name="$arg";
-        main_args=($*);
-        break;
-        ;;
-    esac;
-done;
+cp="$janino_jar;$commons_compiler_jar";
 
 java="$JAVA_HOME/jre/bin/java";
 
-"$java" -classpath "$lib/janino.jar;$lib/commons-compiler.jar" ${java_args[@]} org.codehaus.janino.Compiler ${compiler_args[@]} $class_name ${main_args[@]};
-
+"$java" -classpath "$cp" "$main_class" "$@";
