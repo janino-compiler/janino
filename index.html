@@ -45,10 +45,13 @@
         </p>
         <p>
           Janino can not only <a href="#janino-as-a-command-line-java-compiler">compile a set of source files to a set
-          of class files</a> like JAVAC, but also <a href="#janino-as-an-expression-evaluator">compile a Java
-          expression</a>, <a href="#janino-as-a-script-evaluator">block</a>, <a
-          href="#janino-as-a-class-body-evaluator">class body</a> or <a href="#janino-as-a-simple-compiler">source
-          file</a> in memory, load the bytecode and execute it directly in the same JVM.
+          of class files</a> like JAVAC, but also compile
+          <a href="#janino-as-an-expression-evaluator">a Java expression</a>,
+          <a href="#janino-as-a-script-evaluator">a block</a>,
+          <a href="#janino-as-a-class-body-evaluator">a class body</a>,
+          <a href="#janino-as-a-simple-compiler">one .java file</a> or
+          <a href="#janino-as-a compiler">a set of .java files</a>
+          in memory, load the bytecode and execute it directly in the same JVM.
         </p>
 
         <p>JANINO is integrated with Apache Commons JCI ("Java Compiler Interface") and JBoss Rules / Drools.</p>
@@ -89,6 +92,7 @@
                   <li><a href="#janino-as-a-script-evaluator"     >Janino as a Script Evaluator</a></li>
                   <li><a href="#janino-as-a-class-body-evaluator" >Janino as a Class Body Evaluator</a></li>
                   <li><a href="#janino-as-a-simple-compiler"      >Janino as a Simple Compiler</a></li>
+                  <li><a href="#janino-as-a compiler"             >Janino as a Compiler</a></li>
                 </ul>
               </li>
               <li>
@@ -976,9 +980,11 @@ $</pre></div>
         </h4>
 
         <p>
-          The <code>SimpleCompiler</code> compiles a single "compilation unit" (a.k.a. ".java" file). Opposed to normal
-          Java compilation, that compilation unit may declare <em>more than one</em> public type. Example:
+          The <code>SimpleCompiler</code> compiles a single .java file ("compilation unit").
+          Opposed to normal Java compilation, that compilation unit may declare <em>more than one</em> public type.
         </p>
+        
+        <p>Example:</p>
 
         <div class="highlight highlight-text-xml"><pre class="brush: java">
 // This is file "Hello.java", but it could have any name.
@@ -1018,6 +1024,59 @@ $ java -cp janino.jar:commons-compiler.jar \
 &gt; Hello.java Foo
 HELLO!
 $</pre></div>
+
+
+        <h4>
+          <a id="janino-as-a compiler" class="anchor" href="#janino-as-a compiler"
+          aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Janino as a Compiler
+        </h4>
+
+        <p>
+          The <code>Compiler</code> compiles a set of .java files ("compilation units"), and creates .class files.
+          Each compilation unit may declare a different package, and the compilation units may reference each other,
+          even in a circular manner.
+        </p>
+        
+        <p>Example:</p>
+
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+
+ICompiler compiler = compilerFactory.newCompiler();
+
+compiler.compile(new File("pkg1/A.java"), new File("pkg2/B.java"));</pre></div>
+
+        <p>
+          However the <code>Compiler</code> can be reconfigured to read the compilation units from a different source,
+          and/or to store the classes in a different place, e.g. into a <code>Map</code>, which is then loaded into
+          the VM through a ClassLoader:
+        </p>
+        <div class="highlight highlight-text-xml"><pre class="brush: java">
+
+ICompiler compiler = compilerFactory.newCompiler();
+
+// Store generated .class files in a Map:
+Map&lt;String, byte[]> classes = new HashMap&lt;String, byte[]>();
+compiler.setClassFileCreator(new MapResourceCreator(classes));
+
+// Now compile two units from strings:
+compiler.compile(new Resource[] {
+    new StringResource(
+        "pkg1/A.java",
+        "package pkg1; public class A { public static int meth() { return pkg2.B.meth(); } }"
+    ),
+    new StringResource(
+        "pkg2/B.java",
+        "package pkg2; public class B { public static int meth() { return 77;            } }"
+    ),
+});
+
+// Set up a class loader that uses the generated classes.
+ClassLoader cl = new ResourceFinderClassLoader(
+    new MapResourceFinder(classes),    // resourceFinder
+    ClassLoader.getSystemClassLoader() // parent
+);
+
+Assert.assertEquals(77, cl.loadClass("pkg1.A").getDeclaredMethod("meth").invoke(null));</pre></div>
 
         <h3>
           <a id="advanced-examples" class="anchor" href="#advanced-examples" aria-hidden="true"><span
