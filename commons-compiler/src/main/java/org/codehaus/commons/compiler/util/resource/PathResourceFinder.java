@@ -39,7 +39,7 @@ import org.codehaus.commons.compiler.util.iterator.TransformingIterator;
  * A {@link org.codehaus.commons.compiler.util.resource.ResourceFinder} that finds its resources along a "path"
  * consisting of JAR file names, ZIP file names, and directory names.
  *
- * @see org.codehaus.janino.util.resource.ZipFileResourceFinder
+ * @see org.codehaus.commons.compiler.util.resource.ZipFileResourceFinder
  * @see org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder
  */
 public
