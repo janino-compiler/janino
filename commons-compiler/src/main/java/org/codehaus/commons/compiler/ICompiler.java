@@ -94,6 +94,9 @@ class ICompiler {
 
     /**
      * Equivalent of {@code --source-path}.
+     * <p>
+     *   Equivalent with {@code setSourceFinder(new PathResourceFinder(directoriesAndArchives))}.
+     * </p>
      */
     public abstract void
     setSourcePath(File[] directoriesAndArchives);
@@ -124,10 +127,16 @@ class ICompiler {
      * Equivalent of <a href="https://docs.oracle.com/en/java/javase/11/tools/javac.html#
      *GUID-AEEC9F07-CB49-4E96-8BC7-BCC2C7F725C9__GUID-45DC2932-19BD-435B-B14C-A230D0A4EC87">
      *-d</a>.
+     * <p>
+     *   Overrides any previously configured {@link #setClassFileFinder(ResourceFinder) class file finder} and {@link
+     *   #setClassFileCreator(ResourceCreator) class file creator}.
+     * </p>
      *
-     * @param destinationDirectory    {@link #NO_DESTINATION_DIRECTORY} means "create .class resources in the
-     *                                directory of the .java resource from which they are generated"
+     * @param destinationDirectory                {@link #NO_DESTINATION_DIRECTORY} means "create .class resources in
+     *                                            the directory of the .java resource from which they are generated"
      * @see #NO_DESTINATION_DIRECTORY
+     * @see #setClassFileFinder(ResourceFinder)
+     * @see #setClassFileCreator(ResourceCreator)
      */
     public final void
     setDestinationDirectory(@Nullable File destinationDirectory) {
@@ -143,6 +152,13 @@ class ICompiler {
 
     /**
      * Equivalent of {@code -rebuild}.
+     * <p>
+     *   Overrides any previously configured {@link #setClassFileFinder(ResourceFinder) class file finder} and {@link
+     *   #setClassFileCreator(ResourceCreator) class file creator}.
+     * </p>
+     *
+     * @see #setClassFileFinder(ResourceFinder)
+     * @see #setClassFileCreator(ResourceCreator)
      */
     public final void
     setRebuild(boolean value) {
@@ -222,6 +238,9 @@ class ICompiler {
     public abstract void
     setClassFileFinder(ResourceFinder resourceFinder);
 
+    /**
+     * Equivalent with {@code setEncoding(Charset.forName(characterEncoding))}.
+     */
     public void
     setCharacterEncoding(@Nullable String characterEncoding) {
         this.setEncoding(characterEncoding == null ? Charset.defaultCharset() : Charset.forName(characterEncoding));
