@@ -146,7 +146,6 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
 
         private final Resource resource;
 
-        public
         ResourceJavaFileObject(Resource resource, String className, Kind kind) {
             super(
                 URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
