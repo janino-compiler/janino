@@ -44,8 +44,8 @@ public
 interface ICompiler {
 
     /**
-     * Special value for {@link #setDestinationDirectory(File)}'s parameter: Indicates that .class files are to be
-     * created in the directory of the .java file from which they are generated.
+     * Special value for {@link #setDestinationDirectory(File, boolean)}'s first parameter: Indicates that .class files
+     * are to be created in the directory of the .java file from which they are generated.
      */
     @Nullable File NO_DESTINATION_DIRECTORY = null;
 

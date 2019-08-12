@@ -3,7 +3,6 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
- * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -30,6 +29,7 @@ import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**

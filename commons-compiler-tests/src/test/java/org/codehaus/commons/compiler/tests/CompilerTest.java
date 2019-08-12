@@ -158,7 +158,9 @@ class CompilerTest {
         SortedMap<String, byte[]> classFileMap1;
         {
             b.beginReporting("Compile Janino from scratch");
-            classFileMap1 = new TreeMap<String, byte[]>(CompilerTest.compileJanino(sourceFiles, this.compilerFactory.newCompiler(), null));
+            classFileMap1 = new TreeMap<String, byte[]>(
+                CompilerTest.compileJanino(sourceFiles, this.compilerFactory.newCompiler(), null)
+            );
             b.endReporting("Generated " + classFileMap1.size() + " class files.");
 
             CompilerTest.assertMoreThan("Number of generated classes", 70, classFileMap1.size());
