@@ -78,6 +78,7 @@ class Compiler extends AbstractCompiler {
         Collection<JavaFileObject> sourceFileObjects = new ArrayList<JavaFileObject>();
         for (int i = 0; i < sourceResources.length; i++) {
             Resource sourceResource = sourceResources[i];
+
             String fn        = sourceResource.getFileName();
             String className = fn.substring(fn.lastIndexOf(File.separatorChar) + 1, fn.length() - 5);
             sourceFileObjects.add(this.getJavaFileManager().new ResourceJavaFileObject(
