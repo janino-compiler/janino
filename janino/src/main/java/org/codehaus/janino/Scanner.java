@@ -39,8 +39,8 @@ import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.io.TeeReader;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.util.TeeReader;
 
 /**
  * Splits up a character stream into tokens and returns them as {@link java.lang.String String} objects.

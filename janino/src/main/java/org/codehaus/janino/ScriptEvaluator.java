@@ -47,6 +47,7 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.util.Objects;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
 import org.codehaus.janino.Java.Atom;
@@ -65,7 +66,6 @@ import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Parser.ClassDeclarationContext;
 import org.codehaus.janino.Parser.MethodDeclarationContext;
 import org.codehaus.janino.util.AbstractTraverser;
-import org.codehaus.janino.util.Objects;
 
 /**
  * An implementation of {@link IScriptEvaluator} that utilizes the JANINO Java compiler.

@@ -29,8 +29,8 @@ package org.codehaus.janino;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.compiler.util.StringPattern;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.util.StringPattern;
 
 /**
  * Invokes a delegate iff the handle of the warning matches one or more of a set of {@link StringPattern}s.

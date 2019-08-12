@@ -55,6 +55,7 @@ import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.java9.java.lang.module.ModuleFinder;
 import org.codehaus.commons.compiler.java9.java.lang.module.ModuleReference;
 import org.codehaus.commons.compiler.util.Benchmark;
+import org.codehaus.commons.compiler.util.StringPattern;
 import org.codehaus.commons.compiler.util.StringUtil;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.FileResource;
@@ -67,7 +68,6 @@ import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.StringPattern;
 
 /**
  * JANINO implementation of {@link ICompiler}.
