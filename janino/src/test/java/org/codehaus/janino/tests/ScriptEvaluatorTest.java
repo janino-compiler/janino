@@ -29,7 +29,6 @@ package org.codehaus.janino.tests;
 import java.util.EnumSet;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.janino.JaninoOption;
 import org.codehaus.janino.ScriptEvaluator;
 import org.junit.Assert;
@@ -42,38 +41,6 @@ import org.junit.Test;
  */
 public
 class ScriptEvaluatorTest {
-
-    @Test public void
-    testSimpleLocalMethod() throws Exception {
-        Assert.assertEquals(7, new ScriptEvaluator((
-            ""
-            + "return meth();\n"
-            + "static int meth() { return 7; }\n"
-        ), int.class).evaluate(null));
-    }
-
-    @Test public void
-    testOverlappingLocalMethods1() throws Exception {
-        IScriptEvaluator se = new ScriptEvaluator();
-        se.cook(new String[] {
-            "void meth1() {}\n",
-            "void meth2() {}\n"
-        });
-    }
-
-    @Test public void
-    testOverlappingLocalMethods2() throws Exception {
-        IScriptEvaluator se = new ScriptEvaluator();
-        try {
-            se.cook(new String[] {
-                "void meth() {}\n",
-                "void meth() {}\n"
-            });
-            Assert.fail("Compilation exception expected");
-        } catch (ClassFormatError cfe) {
-            Assert.assertTrue(cfe.getMessage(), cfe.getMessage().contains("Duplicate method"));
-        }
-    }
 
     @Test public void
     testAccessibilityOfClassMembers1() throws Exception {
