@@ -5213,7 +5213,7 @@ class UnitCompiler {
 
     private static boolean
     isStaticContext(TypeBodyDeclaration tbd) {
-        if (tbd instanceof FieldDeclaration)       {return ((FieldDeclaration)       tbd).isStatic() || ((FieldDeclaration) tbd).getDeclaringType() instanceof InterfaceDeclaration; // SUPPRESS CHECKSTYLE LineLength
+        if (tbd instanceof FieldDeclaration)       return ((FieldDeclaration)       tbd).isStatic() || ((FieldDeclaration) tbd).getDeclaringType() instanceof InterfaceDeclaration; // SUPPRESS CHECKSTYLE LineLength
         if (tbd instanceof MethodDeclarator)       return ((MethodDeclarator)       tbd).isStatic();
         if (tbd instanceof Initializer)            return ((Initializer)            tbd).isStatic();
         if (tbd instanceof MemberClassDeclaration) return ((MemberClassDeclaration) tbd).isStatic();
