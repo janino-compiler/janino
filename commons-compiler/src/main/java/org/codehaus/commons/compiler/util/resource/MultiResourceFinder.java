@@ -26,7 +26,9 @@
 
 package org.codehaus.commons.compiler.util.resource;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -67,13 +69,14 @@ class MultiResourceFinder extends ListableResourceFinder {
 
     @Override @Nullable public Iterable<Resource>
     list(String resourceNamePrefix, boolean recurse) {
+        List<Resource> result = new ArrayList<Resource>();
         for (ResourceFinder rf : this.resourceFinders) {
-            if (rf instanceof ListableResourceFinder) {
-                Iterable<Resource> result = ((ListableResourceFinder) rf).list(resourceNamePrefix, recurse);
-                if (result != null) return result;
+            Iterable<Resource> resources = ((ListableResourceFinder) rf).list(resourceNamePrefix, recurse);
+            if (resources != null) {
+                for (Resource r : resources) result.add(r);
             }
         }
 
-        return null;
+        return result;
     }
 }

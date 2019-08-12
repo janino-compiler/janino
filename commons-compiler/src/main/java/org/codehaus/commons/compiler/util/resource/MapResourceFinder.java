@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.codehaus.commons.compiler.util.Predicate;
+import org.codehaus.commons.compiler.util.iterator.Iterables;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -40,7 +42,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * byte arrays in a {@link java.util.Map}.
  */
 public
-class MapResourceFinder extends ResourceFinder {
+class MapResourceFinder extends ListableResourceFinder {
 
     private final Map<String, Resource> map = new HashMap<String, Resource>();
     private long                        lastModified;
@@ -91,4 +93,28 @@ class MapResourceFinder extends ResourceFinder {
 
     @Override @Nullable public final Resource
     findResource(final String resourceName) { return (Resource) this.map.get(resourceName); }
+
+    @Override @Nullable public Iterable<Resource>
+    list(final String resourceNamePrefix, final boolean recurse) {
+
+        return Iterables.filter(this.map.values(), new Predicate<Object>() {
+
+            @Override public boolean
+            evaluate(@Nullable Object o) {
+                Resource r = (Resource) o;
+
+                assert r != null;
+
+                String    resourceName = r.getFileName();             // E.g. "org/codehaus/janino/util/ClassFile.class"
+                final int rnpl         = resourceNamePrefix.length(); // E.g. "org/codehaus/janino"
+                return (
+                    resourceName.startsWith(resourceNamePrefix)
+                    && (recurse || (
+                        resourceName.charAt(rnpl) == '/'
+                        && resourceName.indexOf('/', rnpl + 1) == -1
+                    ))
+                );
+            }
+        });
+    }
 }

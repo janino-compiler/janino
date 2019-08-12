@@ -133,7 +133,7 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
             compiler.setClassPath(classPath);
             compiler.setExtensionDirectories(optionalExtDirs);
             compiler.setBootClassPath(optionalBootClassPath);
-            compiler.setDestinationDirectory(destinationDirectory);
+            compiler.setDestinationDirectory(destinationDirectory, false);
             compiler.setEncoding(encoding2);
             compiler.setVerbose(verbose);
             compiler.setDebugSource(debugSource);

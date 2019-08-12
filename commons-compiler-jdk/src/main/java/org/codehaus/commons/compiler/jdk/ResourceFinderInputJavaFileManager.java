@@ -68,6 +68,9 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
         Charset          encoding
     ) {
         super(delegate);
+
+        assert resourceFinder != null;
+
         this.location       = location;
         this.kind           = kind;
         this.resourceFinder = resourceFinder;
@@ -77,39 +80,68 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
     @Override public String
     inferBinaryName(Location location, JavaFileObject file) {
 
-        if (file instanceof ResourceJavaFileObject) {
-            String bn = ((ResourceJavaFileObject) file).getName();
-            bn = bn.substring(1, bn.length() - 5);
-            return bn;
+        // A [Java]FIleObject's "name" looks like this: "/orc/codehaus/commons/compiler/Foo.java"
+        String bn = file.getName();
+        if (bn.startsWith("/")) bn = bn.substring(1);
+
+        // Although not obvious from the documentation, binary names look like "java.lang.annotation.Retention".
+        if (file.getKind() == Kind.SOURCE) {
+            assert bn.endsWith(".java") : bn;
+            bn = bn.substring(0, bn.length() - 5);
+            bn = bn.replace('/', '.');
+        } else
+        if (file.getKind() == Kind.CLASS) {
+            assert bn.endsWith(".class") : bn;
+            bn = bn.substring(0, bn.length() - 6);
+            bn = bn.replace('/', '.');
         }
 
-        return super.inferBinaryName(location, file);
+        assert bn != null : file.toString();
+        if (bn.startsWith(".")) {
+            System.currentTimeMillis();
+            file.getName();
+        }
+
+        return bn;
     }
 
     @Override public boolean
     hasLocation(Location location) { return location == this.location || super.hasLocation(location); }
 
-    // TODO: TMP
+    // Must implement "list()", otherwise we'd get "package xyz does not exist" compile errors
     @Override public Iterable<JavaFileObject>
     list(Location location, String packageName, Set<Kind> kinds, boolean recurse) throws IOException {
 
         if (location == this.location && kinds.contains(this.kind)) {
-            if (this.resourceFinder instanceof ListableResourceFinder) {
-                ListableResourceFinder lrf = (ListableResourceFinder) this.resourceFinder;
 
-                Iterable<Resource> resources = lrf.list(packageName.replace('.', '/'), recurse);
-                if (resources != null) {
-                    List<JavaFileObject> result = new ArrayList<JavaFileObject>();
-                    for (Resource r : resources) {
-                        String className = r.getFileName().replace(File.separatorChar, '.');
-                        className = className.substring(className.indexOf(packageName), className.length() - 5);
-                        JavaFileObject jfo = this.getJavaFileForInput(location, className, this.kind);
-                        if (jfo != null) {
-                            result.add(jfo);
-                        }
+            assert this.resourceFinder instanceof ListableResourceFinder : this.resourceFinder;
+            ListableResourceFinder lrf = (ListableResourceFinder) this.resourceFinder;
+
+            Iterable<Resource> resources = lrf.list(packageName.replace('.', '/'), recurse);
+            if (resources != null) {
+                List<JavaFileObject> result = new ArrayList<JavaFileObject>();
+                for (Resource r : resources) {
+
+                    String className = r.getFileName().replace(File.separatorChar, '.');
+                    className = className.replace('/', '.');
+
+                    final int idx = className.indexOf(packageName);
+                    assert idx != -1 : className + "//" + packageName;
+                    className = className.substring(idx);
+
+                    if (className.endsWith(".java")) {
+                        className = className.substring(0, className.length() - 5);
+                    } else
+                    if (className.endsWith(".class") && this.kind == Kind.CLASS) {
+                        className = className.substring(0, className.length() - 6);
                     }
-                    return result;
+
+                    JavaFileObject jfo = this.getJavaFileForInput(location, className, this.kind);
+                    if (jfo != null) {
+                        result.add(jfo);
+                    }
                 }
+                return result;
             }
         }
 
@@ -119,9 +151,10 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
     @Override public JavaFileObject
     getJavaFileForInput(Location location, String className, Kind kind)
     throws IOException {
-        assert location != null;
+
+        assert location  != null;
         assert className != null;
-        assert kind != null;
+        assert kind      != null;
 
         if (location == this.location && kind == this.kind) {
 
@@ -132,7 +165,7 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
             if (resource == null) return null;
 
             // Create and return a JavaFileObject.
-            return new ResourceJavaFileObject(resource, className, kind);
+//            return (JavaFileObject) ApiLog.logMethodInvocations(new ResourceJavaFileObject(resource, className, kind)); // SUPPRESS CHECKSTYLE LineLength
         }
 
         return super.getJavaFileForInput(location, className, kind);
@@ -175,5 +208,8 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
                 r.close();
             }
         }
+
+        @Override public long
+        getLastModified() { return this.resource.lastModified(); }
     }
 }

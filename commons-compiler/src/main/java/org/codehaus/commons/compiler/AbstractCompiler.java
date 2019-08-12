@@ -26,10 +26,15 @@
 package org.codehaus.commons.compiler;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import org.codehaus.commons.compiler.util.StringUtil;
+import org.codehaus.commons.compiler.util.resource.DirectoryResourceCreator;
+import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
+import org.codehaus.commons.compiler.util.resource.FileResource;
 import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
+import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -38,29 +43,45 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * A base class and wrapper for {@link Compiler} that implements all redundant API methods.
  */
 public abstract
-class AbstractCompiler extends ICompiler {
+class AbstractCompiler implements ICompiler {
 
-    protected ResourceFinder            sourceFinder     = ResourceFinder.EMPTY_RESOURCE_FINDER;
-    @Nullable protected ResourceFinder  classFileFinder  = ICompiler.FIND_NEXT_TO_SOURCE_FILE;
-    @Nullable protected ResourceCreator classFileCreator = ICompiler.CREATE_NEXT_TO_SOURCE_FILE;
-    public Charset                      encoding         = Charset.defaultCharset();
-    protected boolean                   debugSource;
-    protected boolean                   debugLines;
-    protected boolean                   debugVars;
+    protected ResourceFinder  sourceFinder     = ResourceFinder.EMPTY_RESOURCE_FINDER;
+    protected ResourceFinder  classFileFinder  = ICompiler.FIND_NEXT_TO_SOURCE_FILE;
+    protected ResourceCreator classFileCreator = ICompiler.CREATE_NEXT_TO_SOURCE_FILE;
+    public Charset            encoding         = Charset.defaultCharset();
+    protected boolean         debugSource;
+    protected boolean         debugLines;
+    protected boolean         debugVars;
 
     @Override public void
     setSourceFinder(ResourceFinder sourceFinder) { this.sourceFinder = sourceFinder; }
 
+    @Override public final void
+    setClassFileFinder(ResourceFinder destination, boolean rebuild) {
+        this.setClassFileFinder(rebuild ? ResourceFinder.EMPTY_RESOURCE_FINDER : destination);
+    }
+
     @Override public void
-    setClassFileFinder(@Nullable ResourceFinder classFileFinder) { this.classFileFinder = classFileFinder; }
+    setClassFileFinder(ResourceFinder classFileFinder) { this.classFileFinder = classFileFinder; }
 
     /**
      * @param classFileCreator Stores the generated class files (a.k.a. "-d"); special value {@link
      *                         #CREATE_NEXT_TO_SOURCE_FILE} means "create each .class file in the same directory as
      *                         its source file"
      */
-    @Override public void
-    setClassFileCreator(@Nullable ResourceCreator classFileCreator) { this.classFileCreator = classFileCreator; }
+    @Override public final void
+    setClassFileCreator(ResourceCreator classFileCreator) { this.classFileCreator = classFileCreator; }
+
+    @Override
+    public final boolean
+    compile(File[] sourceFiles) throws CompileException, IOException {
+
+        Resource[] sourceFileResources = new Resource[sourceFiles.length];
+        for (int i = 0; i < sourceFiles.length; ++i) sourceFileResources[i] = new FileResource(sourceFiles[i]);
+        this.compile(sourceFileResources);
+
+        return true;
+    }
 
     @Override public void
     setEncoding(Charset encoding) { this.encoding = encoding; }
@@ -125,7 +146,18 @@ class AbstractCompiler extends ICompiler {
         this.classPath = directoriesAndArchives;
     }
 
-    // --------------- Destination directory + rebuild logic:
+    @Override public final void
+    setDestinationDirectory(@Nullable File destinationDirectory, boolean rebuild) {
+
+        if (destinationDirectory == ICompiler.NO_DESTINATION_DIRECTORY) {
+            this.setClassFileCreator(ICompiler.CREATE_NEXT_TO_SOURCE_FILE);
+            this.setClassFileFinder(ICompiler.FIND_NEXT_TO_SOURCE_FILE, rebuild);
+        } else {
+            assert destinationDirectory != null;
+            this.setClassFileCreator(new DirectoryResourceCreator(destinationDirectory));
+            this.setClassFileFinder(new DirectoryResourceFinder(destinationDirectory), rebuild);
+        }
+    }
 
     @Override public void
     setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {

@@ -124,7 +124,7 @@ class Compiler extends AbstractCompiler {
         this.setClassPath(classPath);
         this.setExtensionDirectories((File[]) Compiler.nullToEmptyArray(extDirs, File.class));
         this.setBootClassPath((File[]) Compiler.nullToEmptyArray(bootClassPath, File.class));
-        this.setDestinationDirectory(destinationDirectory);
+        this.setDestinationDirectory(destinationDirectory, rebuild);
         this.setCharacterEncoding(characterEncoding);
         this.setVerbose(verbose);
         this.setDebugSource(debugSource);

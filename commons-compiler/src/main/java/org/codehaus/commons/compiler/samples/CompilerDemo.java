@@ -119,13 +119,12 @@ class CompilerDemo {
         compiler.setClassPath(classPath);
         compiler.setExtensionDirectories(extDirs);
         compiler.setBootClassPath(bootClassPath);
-        compiler.setDestinationDirectory(destinationDirectory);
+        compiler.setDestinationDirectory(destinationDirectory, rebuild);
         compiler.setEncoding(encoding);
         compiler.setVerbose(verbose);
         compiler.setDebugSource(debugSource);
         compiler.setDebugLines(debugLines);
         compiler.setDebugVars(debugVars);
-        compiler.setRebuild(rebuild);
 
         // Compile source files.
         try {

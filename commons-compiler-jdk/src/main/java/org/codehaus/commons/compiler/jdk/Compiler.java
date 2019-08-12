@@ -27,6 +27,8 @@ package org.codehaus.commons.compiler.jdk;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,10 +37,13 @@ import java.util.List;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
+import javax.tools.FileObject;
+import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
+import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
@@ -46,6 +51,8 @@ import org.codehaus.commons.compiler.AbstractCompiler;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.jdk.JavaSourceClassLoader.DiagnosticException;
 import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceCreator;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 public
@@ -54,8 +61,6 @@ class Compiler extends AbstractCompiler {
     private static final JavaCompiler SYSTEM_JAVA_COMPILER = Compiler.getSystemJavaCompiler();
 
     private Collection<String> compilerOptions = new ArrayList<String>();
-
-    @Nullable private ResourceFinderInputJavaFileManager fileManager;
 
     @Override public void
     setVerbose(boolean verbose) {}
@@ -80,7 +85,7 @@ class Compiler extends AbstractCompiler {
             Resource sourceResource = sourceResources[i];
 
             String fn        = sourceResource.getFileName();
-            String className = fn.substring(fn.lastIndexOf(File.separatorChar) + 1, fn.length() - 5);
+            String className = fn.substring(fn.lastIndexOf(File.separatorChar) + 1, fn.length() - 5).replace('/', '.');
             sourceFileObjects.add(this.getJavaFileManager().new ResourceJavaFileObject(
                 sourceResource,
                 className,           // className
@@ -104,25 +109,39 @@ class Compiler extends AbstractCompiler {
             options.add(o);
         }
 
+        JavaFileManager fileManager = this.getJavaFileManager();
+
+//        fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
+
         // Run the compiler.
-        if (!Compiler.SYSTEM_JAVA_COMPILER.getTask(
-            null,                                      // out
-            this.getJavaFileManager(),                 // fileManager
-            new DiagnosticListener<JavaFileObject>() { // diagnosticListener
+        try {
+            if (!Compiler.SYSTEM_JAVA_COMPILER.getTask(
+                null,                                      // out
+                fileManager,                               // fileManager
+                new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
-                @Override public void
-                report(@Nullable final Diagnostic<? extends JavaFileObject> diagnostic) {
-                    assert diagnostic != null;
+                    @Override public void
+                    report(@Nullable final Diagnostic<? extends JavaFileObject> diagnostic) {
+                        assert diagnostic != null;
 
-                    if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
-                        throw new DiagnosticException(diagnostic);
+                        if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
+                            throw new DiagnosticException(diagnostic);
+                        }
                     }
-                }
-            },
-            options,                                   // options
-            null,                                      // classes
-            sourceFileObjects                          // compilationUnits
-        ).call()) throw new DiagnosticException("Compilation failed");
+                },
+                options,                                   // options
+                null,                                      // classes
+                sourceFileObjects                          // compilationUnits
+            ).call()) throw new CompileException("Compilation failed", null);
+        } catch (RuntimeException re) {
+            Throwable cause = re.getCause();
+            if (cause instanceof DiagnosticException) {
+                final CompileException ce = new CompileException(((DiagnosticException) cause).getMessage(), null);
+                ce.initCause(re);
+                throw ce;
+            }
+            throw re;
+        }
     }
 
     private static JavaCompiler
@@ -143,23 +162,86 @@ class Compiler extends AbstractCompiler {
     private ResourceFinderInputJavaFileManager
     getJavaFileManager() {
 
-        if (this.fileManager != null) return this.fileManager;
+        if (this.fileManagerEnn != null) return this.fileManagerEnn;
+
+        return (this.fileManagerEnn = this.getJavaFileManager2());
+    }
+    @Nullable private ResourceFinderInputJavaFileManager fileManagerEnn;
+
+    private ResourceFinderInputJavaFileManager
+    getJavaFileManager2() {
 
         // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
         // CLASSPATH.
         JavaFileManager jfm = Compiler.SYSTEM_JAVA_COMPILER.getStandardFileManager(null, null, null);
 
-        // Wrap it so that the output files (in our case class files) are stored in memory rather
-        // than in files.
-        jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
+        // Store .class file via the classFileCreator.
+        jfm = new ResourceCreatorJavaFileManager<JavaFileManager>(Kind.CLASS, this.classFileCreator, jfm);
+
+        // Find existing .class files through the classFileFinder.
+        jfm = new ResourceFinderInputJavaFileManager(
+            jfm,
+            StandardLocation.CLASS_PATH,
+            Kind.CLASS,
+            this.classFileFinder,
+            this.encoding
+        );
 
         // Wrap it in a file manager that finds source files through the .sourceFinder.
-        return (this.fileManager = new ResourceFinderInputJavaFileManager(
+        return (this.fileManagerEnn = new ResourceFinderInputJavaFileManager(
             jfm,
             StandardLocation.SOURCE_PATH,
             Kind.SOURCE,
             this.sourceFinder,
             this.encoding
         ));
+    }
+
+    private static final
+    class ResourceCreatorJavaFileManager<T extends JavaFileManager> extends ForwardingJavaFileManager<T> {
+
+        private final Kind            kind;
+        private final ResourceCreator resourceCreator;
+
+        ResourceCreatorJavaFileManager(Kind kind, ResourceCreator resourceCreator, T delegate) {
+            super(delegate);
+            this.kind            = kind;
+            this.resourceCreator = resourceCreator;
+        }
+
+        @Override @NotNullByDefault(false) public JavaFileObject
+        getJavaFileForOutput(
+            Location     location,
+            final String className,
+            Kind         kind,
+            FileObject   sibling
+        ) throws IOException {
+
+            if (kind != this.kind) {
+                return super.getJavaFileForOutput(location, className, kind, sibling);
+            }
+
+            return new SimpleJavaFileObject(
+                URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
+                kind
+            ) {
+
+                @Override public OutputStream
+                openOutputStream() throws IOException {
+                    return ResourceCreatorJavaFileManager.this.resourceCreator.createResource(
+                        className.replace('.', '/') + ".class"
+                    );
+                }
+
+//                /**
+//                 * @return The bytes that were previously written to this {@link JavaFileObject}
+//                 */
+//                public byte[]
+//                toByteArray() { return this.buffer.toByteArray(); }
+//
+//                @Override public InputStream
+//                openInputStream() throws IOException { return new ByteArrayInputStream(this.toByteArray()); }
+            };
+        }
     }
 }
