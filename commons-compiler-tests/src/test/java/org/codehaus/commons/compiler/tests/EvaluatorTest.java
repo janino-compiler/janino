@@ -1088,4 +1088,75 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             + "x\n" // <= Line 3, unknown variable
         ), 3);
     }
+
+    @Test public void
+    testAnyType1() throws Exception {
+
+        @SuppressWarnings("deprecation") Class<?> anyType = IExpressionEvaluator.ANY_TYPE;
+
+        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
+        ee.setExpressionType(anyType);
+
+        ee.cook("3");
+        Assert.assertEquals(3, ee.evaluate(null));
+
+        ee.cook("\"HELLO\"");
+        Assert.assertEquals("HELLO", ee.evaluate(null));
+    }
+
+    @Test public void
+    testAnyType2() throws Exception {
+
+        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
+        ee.setExpressionType(Object.class);
+
+        ee.cook("3");
+        Assert.assertEquals(3, ee.evaluate(null));
+
+        ee.cook("\"HELLO\"");
+        Assert.assertEquals("HELLO", ee.evaluate(null));
+    }
+
+    @Test public void
+    testMultipleExpressions() throws Exception {
+        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
+    //        ee.setStaticMethod(false);
+            ee.setStaticMethod(new boolean[] { false, false });
+            ee.cook("9*3;7+1".split(";"));
+        }
+
+    @Test public void
+    testSimpleLocalMethod() throws Exception {
+        final IScriptEvaluator se = this.compilerFactory.newScriptEvaluator();
+        se.setReturnType(int.class);
+        se.cook((
+            ""
+            + "return meth();\n"
+            + "static int meth() { return 7; }\n"
+        ));
+        Assert.assertEquals(7, se.evaluate(null));
+    }
+
+    @Test public void
+    testOverlappingLocalMethods1() throws Exception {
+        final IScriptEvaluator se = this.compilerFactory.newScriptEvaluator();
+        se.cook(new String[] {
+            "void meth1() {}\n",
+            "void meth2() {}\n"
+        });
+    }
+
+    @Test public void
+    testOverlappingLocalMethods2() throws Exception {
+        final IScriptEvaluator se = this.compilerFactory.newScriptEvaluator();
+        try {
+            se.cook(new String[] {
+                "void meth() {}\n",
+                "void meth() {}\n"
+            });
+            Assert.fail("Compilation exception expected");
+        } catch (ClassFormatError cfe) {
+            Assert.assertTrue(cfe.getMessage(), cfe.getMessage().contains("Duplicate method"));
+        }
+    }
 }
