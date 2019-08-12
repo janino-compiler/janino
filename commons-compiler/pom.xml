@@ -29,5 +29,12 @@
     </plugins>
   </build>
   <description>The &quot;commons-compiler&quot; API, including the &quot;IExpressionEvaluator&quot;, &quot;IScriptEvaluator&quot;, &quot;IClassBodyEvaluator&quot; and &quot;ISimpleCompiler&quot; interfaces.</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>junit</groupId>
+  		<artifactId>junit</artifactId>
+  		<scope>test</scope>
+  	</dependency>
+  </dependencies>
 </project>
 
