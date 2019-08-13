@@ -28,13 +28,19 @@ package org.codehaus.commons.io;
 import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Iterator;
 
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 public final
 class Readers {
 
     private Readers() {}
+
+    public static final Reader EMPTY_READER = new StringReader("");
 
     /**
      * @return {@link FilterReader} that runs the <var>runnable</var> right before the first character is read
@@ -109,6 +115,55 @@ class Readers {
             @Override public boolean markSupported()                             { return false;            }
             @Override public void    mark(int readAheadLimit) throws IOException { throw new IOException(); }
             @Override public void    reset() throws IOException                  { throw new IOException(); }
+        };
+    }
+
+    public static Reader
+    concat(Reader... delegates) { return Readers.concat(Arrays.asList(delegates)); }
+
+    public static Reader
+    concat(final Iterable<Reader> delegates) {
+
+        return new Reader() {
+
+            private final Iterator<Reader> delegateIterator = delegates.iterator();
+            private Reader                 currentDelegate = Readers.EMPTY_READER;
+
+            /**
+             * Closes all delegates.
+             */
+            @Override public void
+            close() throws IOException { for (Reader delegate : delegates) delegate.close(); }
+
+            @Override public int
+            read() throws IOException {
+                for (;;) {
+                    int result = this.currentDelegate.read();
+                    if (result != -1) return result;
+                    if (!this.delegateIterator.hasNext()) return -1;
+                    this.currentDelegate = this.delegateIterator.next();
+                }
+            }
+
+            @Override public long
+            skip(long n) throws IOException {
+                for (;;) {
+                    long result = this.currentDelegate.skip(n);
+                    if (result != -1L) return result;
+                    if (!this.delegateIterator.hasNext()) return 0;
+                    this.currentDelegate = this.delegateIterator.next();
+                }
+            }
+
+            @Override public int
+            read(@Nullable final char[] cbuf, final int off, final int len) throws IOException {
+                for (;;) {
+                    int result = this.currentDelegate.read(cbuf, off, len);
+                    if (result != -1L) return result;
+                    if (!this.delegateIterator.hasNext()) return -1;
+                    this.currentDelegate = this.delegateIterator.next();
+                }
+            }
         };
     }
 }

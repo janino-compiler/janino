@@ -40,7 +40,6 @@ import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
-import org.codehaus.commons.io.MultiReader;
 import org.codehaus.commons.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -185,11 +184,11 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
                 pw.close();
             }
 
-            r = new MultiReader(new Reader[] {
+            r = Readers.concat(
                 new StringReader(sw1.toString()),
                 this.newFileName(optionalFileName, r),
-                new StringReader(sw2.toString()),
-            });
+                new StringReader(sw2.toString())
+            );
         }
 
         /**
