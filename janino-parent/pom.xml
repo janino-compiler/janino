@@ -15,7 +15,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <jdk16>C:\Program Files\Java\jdk1.6.0_43</jdk16>
+    <jdk16>c:\dev\Java\jdk1.6.0_45</jdk16>
     <maven.compiler.executable>${jdk16}\bin\javac.exe</maven.compiler.executable>
     <JAVA_HOME>${jdk16}</JAVA_HOME>
   </properties>
@@ -26,7 +26,7 @@
 
   <groupId>org.codehaus.janino</groupId>
   <packaging>pom</packaging>
-  <version>3.0.16-SNAPSHOT</version>
+  <version>3.1.0</version>
   <dependencyManagement>
   	<dependencies>
   		<dependency>
