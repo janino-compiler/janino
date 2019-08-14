@@ -46,6 +46,8 @@ class ApiLog  {
     public static Object
     logMethodInvocations(final Object delegate) {
 
+        if (!Boolean.getBoolean(ApiLog.class.getName() + ".enable")) return delegate;
+
         final Class<? extends Object> c = delegate.getClass();
 
         return Proxy.newProxyInstance(
