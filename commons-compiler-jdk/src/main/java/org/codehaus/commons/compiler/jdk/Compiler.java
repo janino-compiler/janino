@@ -50,6 +50,7 @@ import javax.tools.ToolProvider;
 import org.codehaus.commons.compiler.AbstractCompiler;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.jdk.JavaSourceClassLoader.DiagnosticException;
+import org.codehaus.commons.compiler.util.reflect.ApiLog;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
@@ -111,7 +112,7 @@ class Compiler extends AbstractCompiler {
 
         JavaFileManager fileManager = this.getJavaFileManager();
 
-//        fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
+        fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
 
         // Run the compiler.
         try {

@@ -43,6 +43,7 @@ import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 
 import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.util.reflect.ApiLog;
 import org.codehaus.commons.compiler.util.resource.ListableResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
@@ -80,7 +81,13 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
     @Override public String
     inferBinaryName(Location location, JavaFileObject file) {
 
-        // A [Java]FIleObject's "name" looks like this: "/orc/codehaus/commons/compiler/Foo.java"
+        if (!(file instanceof ResourceJavaFileObject)) {
+            String result = super.inferBinaryName(location, file);
+            assert result != null;
+            return result;
+        }
+
+        // A [Java]FileObject's "name" looks like this: "/orc/codehaus/commons/compiler/Foo.java"
         String bn = file.getName();
         if (bn.startsWith("/")) bn = bn.substring(1);
 
@@ -165,7 +172,9 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
             if (resource == null) return null;
 
             // Create and return a JavaFileObject.
-//            return (JavaFileObject) ApiLog.logMethodInvocations(new ResourceJavaFileObject(resource, className, kind)); // SUPPRESS CHECKSTYLE LineLength
+            JavaFileObject result = new ResourceJavaFileObject(resource, className, kind);
+            result = (JavaFileObject) ApiLog.logMethodInvocations(result);
+            return result;
         }
 
         return super.getJavaFileForInput(location, className, kind);
