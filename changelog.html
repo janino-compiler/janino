@@ -51,9 +51,33 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.0.15-SNAPSHOT (only available as source code)</h4>
+    <h4>Version 3.1.1-SNAPSHOT (only available as source code)</h4>
     <ul>
       <li>...</li>
+    </ul>
+
+    <h4>Version 3.1.0, 2019-08-14</h4>
+    <p>
+      In this release, many classes were moved from module <code>janino</code> to module <code>commons-compiler</code>,
+      thus their package declarations changed.
+      The "important" APIs, however, remain unchanged. All in all, it was decided to release this as a "minor" release.
+    </p>
+    <ul>
+      <li>
+        Moved some test which are implementation-independent from "org.codehaus.janino" to "org.codehaus.commons-tests".
+      </li>
+      <li>
+        Continued work on "jdk.Compiler". Thus moved lots of code from "janino" to "commons-compiler", and also the
+        CompilerTests.
+      </li>
+      <li>
+        Removed the (previously deprecated) "JaninoRuntimeException"; moved the "InternalCompilerException" from 
+        "janino" to "commons-compiler".
+      </li>
+      <li>
+        Added a test that illustrates issue #98 "Is there a convenient way to compile multi class form different
+        package?".
+      </li>
     </ul>
 
     <h4>Version 3.0.15, 2019-07-28</h4>
