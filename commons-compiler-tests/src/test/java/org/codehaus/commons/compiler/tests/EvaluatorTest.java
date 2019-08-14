@@ -1126,6 +1126,10 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
 
     @Test public void
     testSimpleLocalMethod() throws Exception {
+
+        // The JDK implementation does not support "local methods" (see JAVADOC of IScriptEvaluator).
+        if (this.isJdk) return;
+
         final IScriptEvaluator se = this.compilerFactory.newScriptEvaluator();
         se.setReturnType(int.class);
         se.cook((
@@ -1138,6 +1142,10 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
 
     @Test public void
     testOverlappingLocalMethods1() throws Exception {
+
+        // The JDK implementation does not support "local methods" (see JAVADOC of IScriptEvaluator).
+        if (this.isJdk) return;
+
         final IScriptEvaluator se = this.compilerFactory.newScriptEvaluator();
         se.cook(new String[] {
             "void meth1() {}\n",
@@ -1147,6 +1155,10 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
 
     @Test public void
     testOverlappingLocalMethods2() throws Exception {
+
+        // The JDK implementation does not support "local methods" (see JAVADOC of IScriptEvaluator).
+        if (this.isJdk) return;
+
         final IScriptEvaluator se = this.compilerFactory.newScriptEvaluator();
         try {
             se.cook(new String[] {
