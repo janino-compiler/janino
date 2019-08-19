@@ -28,6 +28,7 @@ package org.codehaus.commons.compiler.jdk;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +49,9 @@ import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
 import org.codehaus.commons.compiler.util.Disassembler;
+import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
+import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -60,14 +64,16 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     private static final JavaCompiler SYSTEM_JAVA_COMPILER = JavaSourceClassLoader.getSystemJavaCompiler();
 
-    private File[]             sourcePath = { new File(".") };
-    @Nullable private String   optionalCharacterEncoding;
+    private ResourceFinder     sourceFinder   = new DirectoryResourceFinder(new File("."));
+    private Charset            sourceCharset  = Charset.defaultCharset();
+    private ResourceFinder     resourceFinder = this.sourceFinder;
     private boolean            debuggingInfoLines;
     private boolean            debuggingInfoVars;
     private boolean            debuggingInfoSource;
     private Collection<String> compilerOptions = new ArrayList<String>();
 
     @Nullable private JavaFileManager fileManager;
+
 
     /**
      * @see ICompilerFactory#newJavaSourceClassLoader()
@@ -117,24 +123,35 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
 
         // Wrap it in a file manager that finds source files through the source path.
-        jfm = new FileInputJavaFileManager(
+//        jfm = new FileInputJavaFileManager(
+//            jfm,
+//            StandardLocation.SOURCE_PATH,
+//            Kind.SOURCE,
+//            this.sourcePath,
+//            this.optionalCharacterEncoding
+//        );
+        jfm = new ResourceFinderInputJavaFileManager(
             jfm,
             StandardLocation.SOURCE_PATH,
             Kind.SOURCE,
-            this.sourcePath,
-            this.optionalCharacterEncoding
+            this.sourceFinder,
+            this.sourceCharset
         );
 
         return (this.fileManager = jfm);
     }
 
     @Override public void
-    setSourcePath(File[] sourcePath) { this.sourcePath = sourcePath; }
+    setSourcePath(File[] sourcePath) { this.setSourceFinder(new PathResourceFinder(sourcePath)); }
 
     @Override public void
-    setSourceFileCharacterEncoding(@Nullable String optionalCharacterEncoding) {
-        this.optionalCharacterEncoding = optionalCharacterEncoding;
-    }
+    setSourceFinder(ResourceFinder sourceFinder) { this.sourceFinder = sourceFinder; }
+
+    @Override public void
+    setSourceCharset(Charset charset) { this.sourceCharset = charset; }
+
+    @Override public void
+    setResourceFinder(ResourceFinder resourceFinder) { this.resourceFinder = resourceFinder; }
 
     @Override public void
     setDebuggingInfo(boolean lines, boolean vars, boolean source) {
@@ -312,6 +329,21 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         }
 
         return className.replace('.', '/') + ".java";
+    }
+
+    @Override @NotNullByDefault(false) public InputStream
+    getResourceAsStream(String resourceName) {
+
+        {
+            InputStream result = super.getResourceAsStream(resourceName);
+            if (result != null) return result;
+        }
+
+        try {
+            return this.resourceFinder.findResourceAsStream(resourceName);
+        } catch (IOException ioe) {
+            return null;
+        }
     }
 
     public static

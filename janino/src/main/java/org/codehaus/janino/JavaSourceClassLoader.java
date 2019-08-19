@@ -26,7 +26,10 @@
 package org.codehaus.janino;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -126,18 +129,21 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     public
     JavaSourceClassLoader(ClassLoader parentClassLoader, JavaSourceIClassLoader iClassLoader) {
         super(parentClassLoader);
-        this.iClassLoader = iClassLoader;
+        this.iClassLoader   = iClassLoader;
+        this.resourceFinder = this.iClassLoader.getSourceFinder();
     }
 
     @Override public void
-    setSourcePath(File[] sourcePath) {
-        this.iClassLoader.setSourceFinder(new PathResourceFinder(sourcePath));
-    }
+    setSourcePath(File[] sourcePath) { this.setSourceFinder(new PathResourceFinder(sourcePath)); }
 
     @Override public void
-    setSourceFileCharacterEncoding(@Nullable String optionalCharacterEncoding) {
-        this.iClassLoader.setCharacterEncoding(optionalCharacterEncoding);
-    }
+    setSourceFinder(ResourceFinder sourceFinder) { this.iClassLoader.setSourceFinder(sourceFinder); }
+
+    @Override public void
+    setSourceCharset(@Nullable Charset charset) { this.iClassLoader.setSourceCharset(charset); }
+
+    @Override public void
+    setResourceFinder(ResourceFinder resourceFinder) { this.resourceFinder = resourceFinder; }
 
     @Override public void
     setDebuggingInfo(boolean debugSource, boolean debugLines, boolean debugVars) {
@@ -199,6 +205,21 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         return this.defineBytecode(name, bytecode);
     }
 
+    @Override public InputStream
+    getResourceAsStream(String resourceName) {
+
+        {
+            InputStream result = super.getResourceAsStream(resourceName);
+            if (result != null) return result;
+        }
+
+        try {
+            return this.resourceFinder.findResourceAsStream(resourceName);
+        } catch (IOException ioe) {
+            return null;
+        }
+    }
+
     private final Set<UnitCompiler> compiledUnitCompilers = new HashSet<UnitCompiler>();
 
     /**
@@ -257,4 +278,6 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private boolean debugSource = Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
     private boolean debugLines  = this.debugSource;
     private boolean debugVars   = this.debugSource;
+
+    private ResourceFinder resourceFinder;
 }
