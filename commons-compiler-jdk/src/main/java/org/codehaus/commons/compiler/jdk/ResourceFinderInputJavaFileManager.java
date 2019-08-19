@@ -59,14 +59,17 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
     private final Location         location;
     private final Kind             kind;
     private final ResourceFinder   resourceFinder;
-    private final Charset          encoding;
+    private final Charset          charset;
 
+    /**
+     * @param charset Used by {@link JavaFileObject#openReader(boolean)}
+     */
     ResourceFinderInputJavaFileManager(
         JavaFileManager  delegate,
         Location         location,
         Kind             kind,
         ResourceFinder   resourceFinder,
-        Charset          encoding
+        Charset          charset
     ) {
         super(delegate);
 
@@ -75,7 +78,7 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
         this.location       = location;
         this.kind           = kind;
         this.resourceFinder = resourceFinder;
-        this.encoding       = encoding;
+        this.charset        = charset;
     }
 
     @Override public String
@@ -129,12 +132,17 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
                 List<JavaFileObject> result = new ArrayList<JavaFileObject>();
                 for (Resource r : resources) {
 
-                    String className = r.getFileName().replace(File.separatorChar, '.');
-                    className = className.replace('/', '.');
+                    String fileName = r.getFileName();
 
-                    final int idx = className.indexOf(packageName);
-                    assert idx != -1 : className + "//" + packageName;
-                    className = className.substring(idx);
+                    fileName = fileName.replace(File.separatorChar, '.');
+                    fileName = fileName.replace('/',                '.');
+
+                    String className;
+                    {
+                        final int idx = fileName.lastIndexOf(packageName + ".");
+                        assert idx != -1 : fileName + "//" + packageName;
+                        className = fileName.substring(idx);
+                    }
 
                     if (className.endsWith(".java")) {
                         className = className.substring(0, className.length() - 5);
@@ -201,11 +209,7 @@ class ResourceFinderInputJavaFileManager extends ForwardingJavaFileManager<JavaF
 
         @Override public Reader
         openReader(boolean ignoreEncodingErrors) throws IOException {
-            return (
-                ResourceFinderInputJavaFileManager.this.encoding == null
-                ? new InputStreamReader(this.resource.open())
-                : new InputStreamReader(this.resource.open(), ResourceFinderInputJavaFileManager.this.encoding)
-            );
+            return new InputStreamReader(this.resource.open(), ResourceFinderInputJavaFileManager.this.charset);
         }
 
         @Override public CharSequence
