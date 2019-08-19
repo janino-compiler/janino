@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -185,7 +186,7 @@ class Compiler extends AbstractCompiler {
             StandardLocation.CLASS_PATH,
             Kind.CLASS,
             this.classFileFinder,
-            this.encoding
+            Charset.defaultCharset() // irrelevant
         );
 
         // Wrap it in a file manager that finds source files through the .sourceFinder.
@@ -194,7 +195,7 @@ class Compiler extends AbstractCompiler {
             StandardLocation.SOURCE_PATH,
             Kind.SOURCE,
             this.sourceFinder,
-            this.encoding
+            this.sourceCharset
         ));
     }
 

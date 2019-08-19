@@ -259,7 +259,7 @@ class Compiler extends AbstractCompiler {
                     this.parseAbstractCompilationUnit(
                         sourceResource.getFileName(),                   // fileName
                         new BufferedInputStream(sourceResource.open()), // inputStream
-                        this.encoding                                   // encoding
+                        this.sourceCharset                              // charset
                     ),
                     iClassLoader
                 );
@@ -324,16 +324,13 @@ class Compiler extends AbstractCompiler {
      */
     private Java.AbstractCompilationUnit
     parseAbstractCompilationUnit(
-        String            fileName,
-        InputStream       inputStream,
-        @Nullable Charset encoding
+        String      fileName,
+        InputStream inputStream,
+        Charset     charset
     ) throws CompileException, IOException {
         try {
 
-            Scanner scanner = new Scanner(
-                fileName,
-                new InputStreamReader(inputStream, encoding != null ? encoding : Charset.defaultCharset())
-            );
+            Scanner scanner = new Scanner(fileName, new InputStreamReader(inputStream, charset));
 
             Parser parser = new Parser(scanner);
             parser.setWarningHandler(this.warningHandler);
@@ -661,7 +658,7 @@ class Compiler extends AbstractCompiler {
                 Java.AbstractCompilationUnit acu = Compiler.this.parseAbstractCompilationUnit(
                     sourceResource.getFileName(),                   // fileName
                     new BufferedInputStream(sourceResource.open()), // inputStream
-                    Compiler.this.encoding
+                    Compiler.this.sourceCharset                     // charset
                 );
                 uc = new UnitCompiler(acu, this).options(Compiler.this.options);
             } catch (IOException ex) {
