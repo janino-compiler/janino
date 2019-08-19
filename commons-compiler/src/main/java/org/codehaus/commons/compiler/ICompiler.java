@@ -74,14 +74,21 @@ interface ICompiler {
     };
 
     /**
-     * Equivalent of -encoding.
+     * The equivalent of JAVA's "{@code -encoding}" command line option.
+     *
+     * @see #setSourceCharset(Charset)
      */
     void setEncoding(Charset encoding);
 
     /**
-     * Equivalent with {@code setEncoding(Charset.forName(characterEncoding))}.
+     * Same as {@link #setEncoding(Charset)}, but with a more precise name.
      */
-    void setCharacterEncoding(@Nullable String characterEncoding);
+    void setSourceCharset(Charset charset);
+
+    /**
+     * @deprecated Use {@link #setSourceCharset(Charset)} instead
+     */
+    @Deprecated void setCharacterEncoding(@Nullable String characterEncoding);
 
     /**
      * Equivalent of {@code -g:lines}.

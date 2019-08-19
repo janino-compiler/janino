@@ -48,7 +48,7 @@ class AbstractCompiler implements ICompiler {
     protected ResourceFinder  sourceFinder     = ResourceFinder.EMPTY_RESOURCE_FINDER;
     protected ResourceFinder  classFileFinder  = ICompiler.FIND_NEXT_TO_SOURCE_FILE;
     protected ResourceCreator classFileCreator = ICompiler.CREATE_NEXT_TO_SOURCE_FILE;
-    public Charset            encoding         = Charset.defaultCharset();
+    public Charset            sourceCharset    = Charset.defaultCharset();
     protected boolean         debugSource;
     protected boolean         debugLines;
     protected boolean         debugVars;
@@ -83,11 +83,20 @@ class AbstractCompiler implements ICompiler {
         return true;
     }
 
-    @Override public void
-    setEncoding(Charset encoding) { this.encoding = encoding; }
+    @Override public final void
+    setEncoding(Charset encoding) { this.setSourceCharset(encoding); }
 
     @Override public void
-    setCharacterEncoding(@Nullable String characterEncoding) { this.setEncoding(Charset.forName(characterEncoding)); }
+    setSourceCharset(Charset charset) { this.sourceCharset = charset; }
+
+    @Override public final void
+    setCharacterEncoding(@Nullable String characterEncoding) {
+        this.setSourceCharset((
+            characterEncoding == null
+            ? Charset.defaultCharset()
+            : Charset.forName(characterEncoding)
+        ));
+    }
 
     @Override public void
     setDebugLines(boolean value) { this.debugLines = value; }
