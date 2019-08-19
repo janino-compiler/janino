@@ -27,6 +27,8 @@ package org.codehaus.janino;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -54,7 +56,7 @@ class JavaSourceIClassLoader extends IClassLoader {
     private static final Logger LOGGER = Logger.getLogger(JavaSourceIClassLoader.class.getName());
 
     private ResourceFinder        sourceFinder;
-    @Nullable private String      optionalCharacterEncoding;
+    private Charset               sourceCharset;
     private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
     /**
@@ -68,13 +70,13 @@ class JavaSourceIClassLoader extends IClassLoader {
     public
     JavaSourceIClassLoader(
         ResourceFinder         sourceFinder,
-        @Nullable String       optionalCharacterEncoding,
-        @Nullable IClassLoader optionalParentIClassLoader
+        @Nullable String       sourceCharsetName,
+        @Nullable IClassLoader parentIClassLoader
     ) {
-        super(optionalParentIClassLoader);
+        super(parentIClassLoader);
 
-        this.sourceFinder              = sourceFinder;
-        this.optionalCharacterEncoding = optionalCharacterEncoding;
+        this.sourceFinder  = sourceFinder;
+        this.sourceCharset = sourceCharsetName == null ? Charset.defaultCharset() : Charset.forName(sourceCharsetName);
         super.postConstruct();
     }
 
@@ -88,18 +90,26 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @param sourceFinder The source path
      */
     public void
-    setSourceFinder(ResourceFinder sourceFinder) {
-        this.sourceFinder = sourceFinder;
+    setSourceFinder(ResourceFinder sourceFinder) { this.sourceFinder = sourceFinder; }
+
+    public ResourceFinder
+    getSourceFinder() { return this.sourceFinder; }
+
+    /**
+     * @deprecated Use {@link #setSourceCharset(Charset)} instead
+     */
+    @Deprecated public void
+    setCharacterEncoding(@Nullable String sourceCharsetName) {
+        this.setSourceCharset(
+            sourceCharsetName == null ? Charset.defaultCharset() : Charset.forName(sourceCharsetName)
+        );
     }
 
     /**
-     * @param optionalCharacterEncoding The name of the charset that is used to read source files, or {@code null} to
-     *                                  use the platform's 'default charset'
+     * @param sourceCharset The charset that is used to read source files
      */
     public void
-    setCharacterEncoding(@Nullable String optionalCharacterEncoding) {
-        this.optionalCharacterEncoding = optionalCharacterEncoding;
-    }
+    setSourceCharset(Charset sourceCharset) { this.sourceCharset = sourceCharset; }
 
     /**
      * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
@@ -219,8 +229,7 @@ class JavaSourceIClassLoader extends IClassLoader {
 
             Scanner scanner = new Scanner(
                 sourceResource.getFileName(),
-                inputStream,
-                this.optionalCharacterEncoding
+                new InputStreamReader(inputStream, this.sourceCharset)
             );
 
             Parser parser = new Parser(scanner);
