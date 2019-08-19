@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * A {@link Resource} is "something" that is typically found by a {@link
+ * A sequence of bytes that is identified by a "name", is typically found by a {@link
  * org.codehaus.commons.compiler.util.resource.ResourceFinder}, can be {@link #open()}ed for reading, and optionally
  * has a {@link #lastModified()} property.
  * <p>

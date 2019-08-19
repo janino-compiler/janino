@@ -38,6 +38,8 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *   that creates resources for writing.
  * </p>
  *
+ * @see #findResource(String)
+ * @see #findResourceAsStream(String)
  * @see org.codehaus.commons.compiler.util.resource.ResourceCreator
  */
 public abstract
