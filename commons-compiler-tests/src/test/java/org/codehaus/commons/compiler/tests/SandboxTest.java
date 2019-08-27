@@ -140,7 +140,7 @@ class SandboxTest extends CommonsCompilerTestSuite {
     @Test(expected = AccessControlException.class) public void
     testDotClassGetDeclaredField() throws Exception {
 
-        String script = "return (String.class.getDeclaredField(\"value\") != null);";
+        String script = "return (String.class.getDeclaredField(\"CASE_INSENSITIVE_ORDER\") != null);";
         this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
@@ -158,7 +158,7 @@ class SandboxTest extends CommonsCompilerTestSuite {
         // JREs 10, 11, 12, however, are not affected!?
         if (CommonsCompilerTestSuite.JVM_VERSION == 9) return;
 
-        String script = "String.class.getDeclaredField(\"value\").setAccessible(true); return true;";
+        String script = "String.class.getDeclaredField(\"CASE_INSENSITIVE_ORDER\").setAccessible(true); return true;";
         this.confinedScriptTest(script, SandboxTest.ALL_PERMISSIONS).assertResultTrue();
     }
 
