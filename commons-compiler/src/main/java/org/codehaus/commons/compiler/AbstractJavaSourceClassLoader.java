@@ -26,6 +26,7 @@
 package org.codehaus.commons.compiler;
 
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.security.ProtectionDomain;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -58,6 +60,10 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
     public
     AbstractJavaSourceClassLoader(ClassLoader parentClassLoader) { super(parentClassLoader); }
 
+    // Override and delegate to parent.
+    @Override @NotNullByDefault(false) public InputStream
+    getResourceAsStream(String name) { return super.getParent().getResourceAsStream(name); }
+
     /**
      * @param sourcePath The sequence of directories to search for Java source files
      */
@@ -80,12 +86,6 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
      * @param charset The character set to using when reading characters from a source file
      */
     public abstract void setSourceCharset(Charset charset);
-
-    /**
-     * @param resourceFinder Will be used by {@link #getResourceAsStream(String)} to find resources
-     */
-    public abstract void
-    setResourceFinder(ResourceFinder resourceFinder);
 
     /**
      * @param lines  Whether line number debugging information should be generated
