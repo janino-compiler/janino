@@ -48,6 +48,7 @@ import javax.tools.ToolProvider;
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
+import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
@@ -56,8 +57,14 @@ import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link ClassLoader} that loads classes by looking for their source files through a 'source path' and compiling
+ * A {@link ClassLoader} that loads classes by looking for their source files through a "source path" and compiling
  * them on-the-fly.
+ * <p>
+ *   Notice that this class loader does not support resoures in the sense of {@link ClassLoader#getResource(String)},
+ *   {@link ClassLoader#getResourceAsStream(String)} nd {@link ClassLoader#getResources(String)}.
+ * </p>
+ *
+ * @see ClassLoaders
  */
 public
 class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
@@ -66,7 +73,6 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     private ResourceFinder     sourceFinder   = new DirectoryResourceFinder(new File("."));
     private Charset            sourceCharset  = Charset.defaultCharset();
-    private ResourceFinder     resourceFinder = this.sourceFinder;
     private boolean            debuggingInfoLines;
     private boolean            debuggingInfoVars;
     private boolean            debuggingInfoSource;
@@ -149,9 +155,6 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     @Override public void
     setSourceCharset(Charset charset) { this.sourceCharset = charset; }
-
-    @Override public void
-    setResourceFinder(ResourceFinder resourceFinder) { this.resourceFinder = resourceFinder; }
 
     @Override public void
     setDebuggingInfo(boolean lines, boolean vars, boolean source) {
@@ -329,21 +332,6 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         }
 
         return className.replace('.', '/') + ".java";
-    }
-
-    @Override @NotNullByDefault(false) public InputStream
-    getResourceAsStream(String resourceName) {
-
-        {
-            InputStream result = super.getResourceAsStream(resourceName);
-            if (result != null) return result;
-        }
-
-        try {
-            return this.resourceFinder.findResourceAsStream(resourceName);
-        } catch (IOException ioe) {
-            return null;
-        }
     }
 
     public static

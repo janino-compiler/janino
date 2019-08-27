@@ -26,8 +26,6 @@
 package org.codehaus.janino;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -40,6 +38,7 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
@@ -54,6 +53,12 @@ import org.codehaus.janino.util.ClassFile;
  *   As with any {@link ClassLoader}, it is not possible to "update" classes after they've been loaded. The way to
  *   achieve this is to give up on the {@link JavaSourceClassLoader} and create a new one.
  * </p>
+ * <p>
+ *   Notice that this class loader does not support resoures in the sense of {@link ClassLoader#getResource(String)},
+ *   {@link ClassLoader#getResourceAsStream(String)} nd {@link ClassLoader#getResources(String)}.
+ * </p>
+ *
+ * @see ClassLoaders
  */
 public
 class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
@@ -129,8 +134,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     public
     JavaSourceClassLoader(ClassLoader parentClassLoader, JavaSourceIClassLoader iClassLoader) {
         super(parentClassLoader);
-        this.iClassLoader   = iClassLoader;
-        this.resourceFinder = this.iClassLoader.getSourceFinder();
+        this.iClassLoader = iClassLoader;
     }
 
     @Override public void
@@ -140,10 +144,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     setSourceFinder(ResourceFinder sourceFinder) { this.iClassLoader.setSourceFinder(sourceFinder); }
 
     @Override public void
-    setSourceCharset(@Nullable Charset charset) { this.iClassLoader.setSourceCharset(charset); }
-
-    @Override public void
-    setResourceFinder(ResourceFinder resourceFinder) { this.resourceFinder = resourceFinder; }
+    setSourceCharset(Charset charset) { this.iClassLoader.setSourceCharset(charset); }
 
     @Override public void
     setDebuggingInfo(boolean debugSource, boolean debugLines, boolean debugVars) {
@@ -205,21 +206,6 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         return this.defineBytecode(name, bytecode);
     }
 
-    @Override public InputStream
-    getResourceAsStream(String resourceName) {
-
-        {
-            InputStream result = super.getResourceAsStream(resourceName);
-            if (result != null) return result;
-        }
-
-        try {
-            return this.resourceFinder.findResourceAsStream(resourceName);
-        } catch (IOException ioe) {
-            return null;
-        }
-    }
-
     private final Set<UnitCompiler> compiledUnitCompilers = new HashSet<UnitCompiler>();
 
     /**
@@ -278,6 +264,4 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private boolean debugSource = Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
     private boolean debugLines  = this.debugSource;
     private boolean debugVars   = this.debugSource;
-
-    private ResourceFinder resourceFinder;
 }

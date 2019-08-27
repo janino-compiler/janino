@@ -33,6 +33,7 @@ import java.util.ResourceBundle;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.junit.Assert;
 import org.junit.Test;
@@ -117,22 +118,39 @@ class JavaSourceClassLoaderTest {
         jscl.loadClass("test.SingleStaticImport");
     }
 
-    @Test public void
+    @Test @SuppressWarnings("static-method") public void
     testBundles1() throws Exception {
-        AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
+
+        ClassLoader cl = ClassLoaders.getsResourceAsStream(
+            new DirectoryResourceFinder(new File("src/test/resources/testBundles/")),
             ClassLoader.getSystemClassLoader().getParent()
         );
-        jscl.setResourceFinder(new DirectoryResourceFinder(new File("src/test/resources/testBundles/")));
-        Assert.assertNotNull(jscl.getResourceAsStream("path/to/some_resource.txt"));
+
+        Assert.assertNotNull(cl.getResourceAsStream("path/to/some_resource.txt"));
     }
 
     @Test public void
     testBundles2() throws Exception {
+
+        ClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
+            ClassLoaders.getsResourceAsStream(
+                new DirectoryResourceFinder(new File("src/test/resources/testBundles/")),
+                ClassLoader.getSystemClassLoader().getParent()
+            )
+        );
+
+        Assert.assertNotNull(jscl.getResourceAsStream("path/to/some_resource.txt"));
+    }
+
+    @Test public void
+    testBundles3() throws Exception {
         AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
-            ClassLoader.getSystemClassLoader().getParent()
+            ClassLoaders.getsResourceAsStream(
+                new DirectoryResourceFinder(new File("src/test/resources/testBundles/")),
+                ClassLoader.getSystemClassLoader().getParent()
+            )
         );
         jscl.setSourceFinder(new DirectoryResourceFinder(new File("src/test/resources/testBundles/")));
-        jscl.setResourceFinder(new DirectoryResourceFinder(new File("src/test/resources/testBundles/")));
 
         ResourceBundle rb = (ResourceBundle) jscl.loadClass("test.GetBundle").getDeclaredMethod("main").invoke(null);
         Assert.assertNotNull(rb);
