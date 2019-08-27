@@ -45,7 +45,7 @@ import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
-import org.codehaus.commons.io.Readers;
+import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**

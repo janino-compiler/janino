@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
-import org.codehaus.commons.io.Readers;
+import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**

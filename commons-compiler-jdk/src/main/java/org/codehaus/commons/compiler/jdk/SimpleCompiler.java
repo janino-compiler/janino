@@ -73,8 +73,8 @@ import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.Sandbox;
 import org.codehaus.commons.compiler.WarningHandler;
-import org.codehaus.commons.io.LineAndColumnTracker;
-import org.codehaus.commons.io.Readers;
+import org.codehaus.commons.compiler.io.Readers;
+import org.codehaus.commons.compiler.util.LineAndColumnTracker;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
