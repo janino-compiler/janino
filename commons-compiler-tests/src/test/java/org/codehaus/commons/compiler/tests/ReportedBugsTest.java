@@ -1038,6 +1038,78 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         this.assertScriptExecutable("boolean cond = true; Integer result = cond ? null : 1;");
     }
 
+    /**
+     * <a href="https://github.com/janino-compiler/janino/issues/102">Issue #102: "$" in class name can't be handled by
+     * janino</a>
+     */
+    @Test public void
+    testIssue102__1() throws Exception {
+        this.assertExpressionEvaluatable("import java.util.Map; Map.class");
+    }
+
+    @Test public void
+    testIssue102__2() throws Exception {
+        this.assertExpressionEvaluatable("import java.util.Map; Map.Entry.class");
+    }
+
+    @Test public void
+    testIssue102__3() throws Exception {
+        this.assertExpressionUncookable("java.util.Map$Entry.class");
+    }
+
+    @Test public void
+    testIssue102__4() throws Exception {
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "class A$B {}\n"
+            + "public class Main {\n"
+            + "    public static boolean main() {\n"
+            + "        return A$B.class.getName().equals(\"A$B\");\n"
+            + "    }\n"
+            + "}\n"
+        ), "Main");
+    }
+
+    @Test public void
+    testIssue102__5() throws Exception {
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "class A$$B {}\n"
+            + "public class Main {\n"
+            + "    public static boolean main() {\n"
+            + "        new A$$B();\n"
+            + "        return A$$B.class.getName().equals(\"A$$B\");\n"
+            + "    }\n"
+            + "}\n"
+        ), "Main");
+    }
+
+    @Test public void
+    testIssue102__6() throws Exception {
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "class A$B { class C$D {} }\n"
+            + "public class Main {\n"
+            + "    public static boolean main() {\n"
+            + "        return A$B.C$D.class.getName().equals(\"A$B$C$D\");\n"
+            + "    }\n"
+            + "}\n"
+        ), "Main");
+    }
+
+    @Test public void
+    testIssue102__7() throws Exception {
+        this.assertCompilationUnitUncookable((
+            ""
+            + "class A$B { class C$D {} }\n"
+            + "public class Main {\n"
+            + "    public static boolean main() {\n"
+            + "        return A$B$C$D.class.getName().equals(\"A$B$C$D\");\n"
+            + "    }\n"
+            + "}\n"
+        ));
+    }
+
     // SUPPRESS CHECKSTYLE Javadoc:2
     public interface A           { A           theFirstMethod();                           }
     public interface B extends A { @Override B theFirstMethod(); Object theSecondMethod(); }
