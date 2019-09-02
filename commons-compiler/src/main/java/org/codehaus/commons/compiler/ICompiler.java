@@ -155,9 +155,9 @@ interface ICompiler {
     void setDestinationDirectory(@Nullable File destinationDirectory, boolean rebuild);
 
     /**
-     * Equivalent with {@code setClassFileFinder(rebuild ? ResourceFinder.EMPTY_RESOURCE_FINDER : destination)}.
+     * Equivalent with {@code setClassFileFinder(rebuild ? ResourceFinder.EMPTY_RESOURCE_FINDER : classFileFinder)}.
      */
-    void setClassFileFinder(ResourceFinder destination, boolean rebuild);
+    void setClassFileFinder(ResourceFinder classFileFinder, boolean rebuild);
 
     /**
      * This {@link ResourceFinder} is used to check whether a .class resource already exists and is younger than the
