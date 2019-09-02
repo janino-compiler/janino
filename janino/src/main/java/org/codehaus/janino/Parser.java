@@ -278,6 +278,11 @@ class Parser {
         return compilationUnit;
     }
 
+    /**
+     * <pre>
+     *   ModuleDeclarationRest := [ 'open' ] 'module' identifier { '.' identifier} '{' { ModuleDirective } '}'
+     * </pre>
+     */
     public ModuleDeclaration
     parseModuleDeclarationRest(Modifier[] modifiers) throws CompileException, IOException {
 
@@ -311,7 +316,7 @@ class Parser {
                         while (this.peekRead(",")) l.add(this.parseQualifiedIdentifier());
                         toModuleNames = (String[][]) l.toArray(new String[l.size()][]);
                     } else {
-                        toModuleNames = new String[0][];
+                        toModuleNames = null;
                     }
                     md = new ExportsModuleDirective(this.location(), packageName, toModuleNames);
                 }
@@ -327,7 +332,7 @@ class Parser {
                         while (this.peekRead(",")) l.add(this.parseQualifiedIdentifier());
                         toModuleNames = (String[][]) l.toArray(new String[l.size()][]);
                     } else {
-                        toModuleNames = new String[0][];
+                        toModuleNames = null;
                     }
                     md = new OpensModuleDirective(this.location(), packageName, toModuleNames);
                 }
@@ -373,6 +378,11 @@ class Parser {
         return this.parsePackageDeclarationRest(this.doc(), this.parseModifiers());
     }
 
+    /**
+     * <pre>
+     *   PackageDeclaration := { PackageModifier } 'package' identifier { '.' identifier} ';'
+     * </pre>
+     */
     public PackageDeclaration
     parsePackageDeclarationRest(@Nullable String docComment, Modifier[] modifiers)
     throws CompileException, IOException {
@@ -821,8 +831,13 @@ class Parser {
     public
     enum MethodDeclarationContext {
 
+        /** Class method declaration. */
         CLASS_DECLARATION,
+
+        /** Interface method declaration. */
         INTERFACE_DECLARATION,
+
+        /** Annotation type method declaration. */
         ANNOTATION_TYPE_DECLARATION,
     }
 
@@ -3707,7 +3722,7 @@ class Parser {
     public int              peekRead(String... suspected)       throws CompileException, IOException { return this.tokenStream.peekRead(suspected);                }
     @Nullable public String peekRead(TokenType suspected)       throws CompileException, IOException { return this.tokenStream.peekRead(suspected);                }
 
-    public boolean
+    private boolean
     peekLiteral() throws CompileException, IOException {
         return this.peek(
             TokenType.INTEGER_LITERAL, TokenType.FLOATING_POINT_LITERAL, TokenType.BOOLEAN_LITERAL,

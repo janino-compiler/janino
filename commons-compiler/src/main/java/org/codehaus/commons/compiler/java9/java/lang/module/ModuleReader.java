@@ -50,7 +50,7 @@ class ModuleReader {
         this.delegate = delegate;
     }
 
-    public Stream<String>
+    public Stream<String> // SUPPRESS CHECKSTYLE Javadoc
     list() throws IOException {
         return new Stream<String>(Methods.<Object, IOException>invoke(ModuleReader.METHOD_list, this.delegate));
     }

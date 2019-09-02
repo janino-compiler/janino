@@ -35,13 +35,18 @@ import java.util.Set;
 
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
+/**
+ * Simple logging of method invocations.
+ */
 public final
 class ApiLog  {
 
     private ApiLog() {}
 
     /**
-     * @return An object that implements <em>all</em> interfaces that the <var>delegate</var> implements.
+     * Creates and returns an object that implements <em>all</em> interfaces that the <var>delegate</var> implements.
+     * All method invocations are forwarded to the <var>delegate</var>, and, after the <var>delegate</var>'s method
+     * returns, logged to {@code System.err}.
      */
     public static Object
     logMethodInvocations(final Object delegate) {
@@ -62,7 +67,17 @@ class ApiLog  {
                     try {
                         returnValue = method.invoke(delegate, arguments);
                     } catch (InvocationTargetException ite) {
-                        throw ite.getTargetException();
+                        final Throwable targetException = ite.getTargetException();
+
+                        System.err.printf(
+                            "%s.%s(%s) throws %s%n",
+                            delegate.getClass().getSimpleName(),
+                            method.getName(),
+                            ApiLog.truncate(Arrays.deepToString(arguments)),
+                            targetException
+                        );
+
+                        throw targetException;
                     }
 
                     System.err.printf(

@@ -30,11 +30,23 @@ import java.lang.reflect.Method;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
+/**
+ * Utility methods related to {@link Method}.
+ */
 public final
 class Methods {
 
     private Methods() {}
 
+    /**
+     * A wrapper for {@link Method#invoke(Object, Object...) <var>method</var>.invoke(<var>obj</var>,
+     * <var>args</var>)} that catches any exception, wraps it in an {@link AssertionError}, and throws that.
+     *
+     * @throws T                  The method threw that exception
+     * @throws ClassCastException The method threw an unchecked exception that is <em>not</em> a subclass of
+     *                            <var>EX</var>
+     * @throws ClassCastException The method returned a value that is <em>not</em> a subclass of <var>R</var>
+     */
     public static <R, EX extends Throwable> R
     invoke(Method method, @Nullable Object obj, Object... args) throws EX {
         try {

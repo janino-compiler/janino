@@ -160,9 +160,15 @@ class Visitor {
         visitModularCompilationUnit(ModularCompilationUnit mcu) throws EX;
     }
 
+    /**
+     * The visitor for the different kinds of {@link Java.ModuleDirective}s.
+     *
+     * @param <R>  The type of the object returned by the {@code visit*()} methods
+     * @param <EX> The exception that the {@code visit*()} methods may throw
+     */
     public
     interface ModuleDirectiveVisitor<R, EX extends Throwable> {
-        @Nullable R visitRequiresModuleDirective(RequiresModuleDirective rmd) throws EX;
+        @Nullable R visitRequiresModuleDirective(RequiresModuleDirective rmd) throws EX; // SUPPRESS CHECKSTYLE Javadoc|LineLength:4
         @Nullable R visitExportsModuleDirective(ExportsModuleDirective emd)   throws EX;
         @Nullable R visitOpensModuleDirective(OpensModuleDirective omd)       throws EX;
         @Nullable R visitUsesModuleDirective(UsesModuleDirective umd)         throws EX;
@@ -822,18 +828,30 @@ class Visitor {
         @Nullable R visitArrayType(ArrayType arrayType) throws EX;
     }
 
+    /**
+     * The visitor for the different kinds of {@link Java.LambdaParameters} styles.
+     *
+     * @param <R>  The type of the object returned by the {@code visit*()} methods
+     * @param <EX> The exception that the {@code visit*()} methods may throw
+     */
     public
     interface LambdaParametersVisitor<R, EX extends Throwable> {
 
-        @Nullable R visitIdentifierLambdaParameters(IdentifierLambdaParameters ilp) throws EX;
+        @Nullable R visitIdentifierLambdaParameters(IdentifierLambdaParameters ilp) throws EX; // SUPPRESS CHECKSTYLE Javadoc|LineLength:2
         @Nullable R visitFormalLambdaParameters(FormalLambdaParameters flp)         throws EX;
         @Nullable R visitInferredLambdaParameters(InferredLambdaParameters ilp)     throws EX;
     }
 
+    /**
+     * The visitor for the different kinds of {@link Java.LambdaBody}s.
+     *
+     * @param <R>  The type of the object returned by the {@code visit*()} methods
+     * @param <EX> The exception that the {@code visit*()} methods may throw
+     */
     public
     interface LambdaBodyVisitor<R, EX extends Throwable> {
 
-        @Nullable R visitBlockLambdaBody(BlockLambdaBody blockLambdaBody)                throws EX;
+        @Nullable R visitBlockLambdaBody(BlockLambdaBody blockLambdaBody)                throws EX; // SUPPRESS CHECKSTYLE Javadoc|LineLength:1
         @Nullable R visitExpressionLambdaBody(ExpressionLambdaBody expressionLambdaBody) throws EX;
     }
 
@@ -860,10 +878,15 @@ class Visitor {
         visitVariableAccessResource(TryStatement.VariableAccessResource var) throws EX;
     }
 
+    /**
+     * The visitor for the different kinds of {@link Java.Modifier}s.
+     *
+     * @param <R>  The type of the object returned by the {@code visit*()} methods
+     * @param <EX> The exception that the {@code visit*()} methods may throw
+     */
     public
     interface ModifierVisitor<R, EX extends Throwable> extends AnnotationVisitor<R, EX> {
 
-        @Nullable R
-        visitAccessModifier(AccessModifier am) throws EX;
+        @Nullable R visitAccessModifier(AccessModifier am) throws EX; // SUPPRESS CHECKSTYLE Javadoc
     }
 }

@@ -65,12 +65,9 @@ interface ICompiler {
      * created in the directory of the .java resource from which they are generated.
      */
     ResourceCreator CREATE_NEXT_TO_SOURCE_FILE = new ResourceCreator() {
-
-        @Override public boolean
-        deleteResource(String resourceName) { throw new UnsupportedOperationException("CREATE_NEXT_TO_SOURCE_FILE"); }
-
-        @Override public OutputStream
-        createResource(String resourceName) { throw new UnsupportedOperationException("CREATE_NEXT_TO_SOURCE_FILE"); }
+        @Override public boolean      deleteResource(String resourceName) { throw new UnsupportedOperationException("CREATE_NEXT_TO_SOURCE_FILE"); } // SUPPRESS CHECKSTYLE LineLength:2
+        @Override public OutputStream createResource(String resourceName) { throw new UnsupportedOperationException("CREATE_NEXT_TO_SOURCE_FILE"); }
+        @Override public String       toString()                          { return "CREATE_NEXT_TO_SOURCE_FILE";                                   }
     };
 
     /**
@@ -106,7 +103,7 @@ interface ICompiler {
     void setDebugSource(boolean value);
 
     /**
-     * Finds more .java resources that need to be compiled, i.e. implements the "source path".
+     * Finds more {@code .java} resources that need to be compiled, i.e. implements JAVAC's {@code -sourcepath} option.
      */
     void setSourceFinder(ResourceFinder sourceFinder);
 
@@ -160,8 +157,8 @@ interface ICompiler {
     void setClassFileFinder(ResourceFinder classFileFinder, boolean rebuild);
 
     /**
-     * This {@link ResourceFinder} is used to check whether a .class resource already exists and is younger than the
-     * .java resource from which it was generated.
+     * This {@link ResourceFinder} is used to check whether a {@code .class} resource already exists and is younger
+     * than the {@code .java} resource from which it was generated.
      * <p>
      *   If it is impossible to check whether an already-compiled class file exists, or if you want to enforce
      *   recompilation, pass {@link ResourceFinder#EMPTY_RESOURCE_FINDER} as the <var>classFileFinder</var>.
@@ -176,6 +173,18 @@ interface ICompiler {
      */
     void setClassFileFinder(ResourceFinder classFileFinder);
 
+    /**
+     * This {@link ResourceCreator} is used to store generated {@code .class} files.
+     * <p>
+     *   The default is, as for JAVAC, {@link #CREATE_NEXT_TO_SOURCE_FILE}.
+     * </p>
+     *
+     * @param classFileCreator          Special value {@link #CREATE_NEXT_TO_SOURCE_FILE} means "create .class file
+     *                                  next to its source file, <em>not</em> in the destination directory"
+     * @see #CREATE_NEXT_TO_SOURCE_FILE
+     *
+     * @param classFileCreator
+     */
     void setClassFileCreator(ResourceCreator classFileCreator);
 
     /**

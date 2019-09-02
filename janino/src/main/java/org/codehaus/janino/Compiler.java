@@ -46,7 +46,6 @@ import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.AbstractCompiler;
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.Location;
@@ -76,9 +75,7 @@ class Compiler extends AbstractCompiler {
 
     private static final Logger LOGGER = Logger.getLogger(Compiler.class.getName());
 
-    @Nullable private WarningHandler  warningHandler;
-    @Nullable private ErrorHandler    compileErrorHandler;
-    private EnumSet<JaninoOption>     options = EnumSet.noneOf(JaninoOption.class);
+    private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
     private IClassLoader              iClassLoader     = new ClassLoaderIClassLoader();
     private Benchmark                 benchmark        = new Benchmark(false);
@@ -193,35 +190,6 @@ class Compiler extends AbstractCompiler {
      * File[], File[], File, String, boolean, boolean, boolean, boolean, StringPattern[], boolean)}.
      */
     public static final StringPattern[] DEFAULT_WARNING_HANDLE_PATTERNS = StringPattern.PATTERNS_NONE;
-
-    /**
-     * Installs a custom {@link ErrorHandler}. The default {@link ErrorHandler} prints the first 20 compile errors to
-     * {@link System#err} and then throws a {@link CompileException}.
-     * <p>
-     *   Passing {@code null} restores the default {@link ErrorHandler}.
-     * </p>
-     * <p>
-     *   Notice that scan and parse errors are <em>not</em> redirected to this {@link ErrorHandler}, instead, they
-     *   cause a {@link CompileException} to be thrown. Also, the {@link Compiler} may choose to throw {@link
-     *   CompileException}s in certain, fatal compile error situations, even if an {@link ErrorHandler} is installed.
-     * </p>
-     * <p>
-     *   In other words: In situations where compilation can reasonably continue after a compile error, the {@link
-     *   ErrorHandler} is called; all other error conditions cause a {@link CompileException} to be thrown.
-     * </p>
-     */
-    @Override public void
-    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
-        this.compileErrorHandler = compileErrorHandler;
-    }
-
-    /**
-     * By default, warnings are discarded, but an application my install a custom {@link WarningHandler}.
-     *
-     * @param warningHandler {@code null} to indicate that no warnings be issued
-     */
-    @Override public void
-    setWarningHandler(@Nullable WarningHandler warningHandler) { this.warningHandler = warningHandler; }
 
     /**
      * @return A reference to the currently effective compilation options; changes to it take
@@ -464,7 +432,7 @@ class Compiler extends AbstractCompiler {
         if (bcp == null) {
             String sbcp = System.getProperty("sun.boot.class.path");
             if (sbcp != null) {
-                this.bootClassPath = bcp = StringUtil.parsePath(sbcp);
+                this.bootClassPath = (bcp = StringUtil.parsePath(sbcp));
             }
         }
 

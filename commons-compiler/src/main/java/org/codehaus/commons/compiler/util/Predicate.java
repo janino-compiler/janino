@@ -27,9 +27,16 @@ package org.codehaus.commons.compiler.util;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
+/**
+ * @param <T>
+ * @see #evaluate(Object)
+ */
 public
 interface Predicate<T> {
 
+    /**
+     * @return Whether the <var>subject</var> fulfils a particular condition
+     */
     boolean
     evaluate(@Nullable T subject);
 }

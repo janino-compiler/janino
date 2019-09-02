@@ -28,6 +28,7 @@ package org.codehaus.commons.compiler.util.resource;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -58,6 +59,9 @@ class MapResourceFinder extends ListableResourceFinder {
     }
 
     /**
+     * Adds another {@link Resource}, so that it can later be found with {@link #findResource(String)}, {@link
+     * #findResourceAsStream(String)} and {@link #resources()}.
+     *
      * @return The resource that was previously associated with the <var>fileName</var>, or {@code null}
      */
     @Nullable public Resource
@@ -76,13 +80,20 @@ class MapResourceFinder extends ListableResourceFinder {
     @Nullable public Resource
     addResource(String fileName, String data) { return this.addResource(fileName, data.getBytes()); }
 
-    public void
-    addResource(final Resource resource) {
-        this.map.put(resource.getFileName(), resource);
-    }
+    /**
+     * Adds another {@link Resource}, so that it can later be found with {@link #findResource(String)}, {@link
+     * #findResourceAsStream(String)} and {@link #resources()}.
+     *
+     * @return The resource that was previously associated with the <var>fileName</var>, or {@code null}
+     */
+    public Resource
+    addResource(final Resource resource) { return (Resource) this.map.put(resource.getFileName(), resource); }
 
+    /**
+     * @return All resources that were previously added with {@link #addResource(Resource)}
+     */
     public Collection<Resource>
-    resources() { return this.map.values(); }
+    resources() { return Collections.unmodifiableCollection(this.map.values()); }
 
     /**
      * @param lastModified The return value of {@link Resource#lastModified()} for the next resources added

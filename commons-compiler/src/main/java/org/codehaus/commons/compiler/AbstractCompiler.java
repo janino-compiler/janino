@@ -45,13 +45,30 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public abstract
 class AbstractCompiler implements ICompiler {
 
-    protected ResourceFinder  sourceFinder     = ResourceFinder.EMPTY_RESOURCE_FINDER;
-    protected ResourceFinder  classFileFinder  = ICompiler.FIND_NEXT_TO_SOURCE_FILE;
+    /** Implements the JAVAC {@code -sourcepath} option. */
+    protected ResourceFinder sourceFinder = ResourceFinder.EMPTY_RESOURCE_FINDER;
+
+    /** Implements the "read side" of the JAVAC {@code -d} option. */
+    protected ResourceFinder classFileFinder = ICompiler.FIND_NEXT_TO_SOURCE_FILE;
+
+    /** Implements the "write side" of the JAVAC {@code -d} option. */
     protected ResourceCreator classFileCreator = ICompiler.CREATE_NEXT_TO_SOURCE_FILE;
-    public Charset            sourceCharset    = Charset.defaultCharset();
-    protected boolean         debugSource;
-    protected boolean         debugLines;
-    protected boolean         debugVars;
+
+    // TODO: "CompilerTest.testSelfCompile()" fails if this field is PROTECTED -- why?
+    /** Implements the JAVAC {@code -encoding} option. */
+    public Charset sourceCharset = Charset.defaultCharset();
+
+    /** Implements the JAVAC {@code -g:source} option. */
+    protected boolean debugSource;
+
+    /** Implements the JAVAC {@code -g:lines} option. */
+    protected boolean debugLines;
+
+    /** Implements the JAVAC {@code -g:vars} option. */
+    protected boolean debugVars;
+
+    // Temporary, for testing:
+//    { this.debugSource = (this.debugLines = (this.debugVars = true)); }
 
     @Override public void
     setSourceFinder(ResourceFinder sourceFinder) { this.sourceFinder = sourceFinder; }
@@ -129,10 +146,17 @@ class AbstractCompiler implements ICompiler {
      * This is <em>always</em> non-{@code null} for JVMs that support BOOTCLASSPATH (1.0-1.8), and
      * this is <em>always</em> {@code null} for JVMs that don't (9+).
      */
-    @Nullable protected File[]
+    protected @Nullable File[]
     bootClassPath = StringUtil.parseOptionalPath(System.getProperty("sun.boot.class.path"));
 
-    @Nullable protected ErrorHandler   compileErrorHandler;
+    /**
+     * Stores the value configured with {@link #setCompileErrorHandler(ErrorHandler)}.
+     */
+    @Nullable protected ErrorHandler compileErrorHandler;
+
+    /**
+     * Stores the value configured with {@link #setWarningHandler(WarningHandler)}.
+     */
     @Nullable protected WarningHandler warningHandler;
 
     @Override public void

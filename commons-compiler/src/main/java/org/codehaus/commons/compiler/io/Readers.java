@@ -36,11 +36,17 @@ import org.codehaus.commons.compiler.util.LineAndColumnTracker;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
+/**
+ * Utiltity methods related to {@link Reader}.
+ */
 public final
 class Readers {
 
     private Readers() {}
 
+    /**
+     * Any attempts to read return an "end-of-input" condition.
+     */
     public static final Reader EMPTY_READER = new StringReader("");
 
     /**
@@ -122,6 +128,10 @@ class Readers {
     public static Reader
     concat(Reader... delegates) { return Readers.concat(Arrays.asList(delegates)); }
 
+    /**
+     * @return Reads from the first element of the <var>delegates</var>, then, after EOI, from the second until EOI,
+     *         and so forth
+     */
     public static Reader
     concat(final Iterable<Reader> delegates) {
 

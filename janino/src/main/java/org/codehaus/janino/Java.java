@@ -293,6 +293,10 @@ class Java {
         }
     }
 
+    /**
+     * Representation of an "ordinary compilation unit" as explained in JLS9 7.3 (before Java 9 known as "compilation
+     * unit" and described in JLS8 7.3).
+     */
     public static final
     class CompilationUnit extends AbstractCompilationUnit {
 
@@ -370,6 +374,9 @@ class Java {
     public static final
     class ModularCompilationUnit extends AbstractCompilationUnit {
 
+        /**
+         * The single and mandatory "module declaration" of this modular compilation unit, see JLS9 7.3 and 7.7.
+         */
         public final ModuleDeclaration moduleDeclaration;
 
         public
@@ -388,12 +395,31 @@ class Java {
         }
     }
 
+    /**
+     * Representation of a "module declaration", as described in JLS9 7.7.
+     */
     public static final
     class ModuleDeclaration extends Located {
 
-        public final Modifier[]        modifiers;
-        public final boolean           isOpen;
-        public final String[]          moduleName;
+        /**
+         * The modifiers of the module declaration; module declarations must have only annotations, no access
+         * modifiers.
+         */
+        public final Modifier[] modifiers;
+
+        /**
+         * Whether this module is declared with the {@code open} keyword; see JLS9 7.7.
+         */
+        public final boolean isOpen;
+
+        /**
+         * The name of the declared module, see JLS9 7.7.
+         */
+        public final String[] moduleName;
+
+        /**
+         * The directives declared in this module, see JLS9 7.7.
+         */
         public final ModuleDirective[] moduleDirectives;
 
         public
@@ -412,18 +438,35 @@ class Java {
         }
     }
 
+    /**
+     * Representation of a (Java 9+) "module directive", as explained in JLS9 7.7.
+     */
     public
     interface ModuleDirective {
 
+        /**
+         * Invokes the "{@code visit...()}" method of {@link Visitor.ModuleDirectiveVisitor} for the concrete {@link
+         * ModuleDirective} type.
+         */
         @Nullable <R, EX extends Throwable> R
         accept(Visitor.ModuleDirectiveVisitor<R, EX> visitor) throws EX;
     }
 
+    /**
+     * Representation of a (Java 9+) "requires directive", as explained in JLS9 7.7.1.
+     */
     public static final
     class RequiresModuleDirective extends Located implements ModuleDirective {
 
+        /**
+         * The modifiers of the requires directive, see JLS9 7.7.1
+         */
         public final Modifier[] requiresModifiers;
-        public final String[]   moduleName;
+
+        /**
+         * The name of a module on which this module has a dependence.
+         */
+        public final String[] moduleName;
 
         protected
         RequiresModuleDirective(Location location, Modifier[] requiresModifiers, String[] moduleName) {
@@ -436,14 +479,26 @@ class Java {
         accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitRequiresModuleDirective(this); }
     }
 
+    /**
+     * Representation of a (Java 9+) "exports directive", as explained in JLS9 7.7.2.
+     */
     public static final
     class ExportsModuleDirective extends Located implements ModuleDirective {
 
-        public final String[]   packageName;
-        public final String[][] toModuleNames;
+        /**
+         * The name of a package to be exported by this module, see JLS9 7.7.2.
+         */
+        public final String[] packageName;
+
+        /**
+         * The names of the modules for which the public and protected types in this package, and their public and
+         * protected members, are accessible. Iff {@code null}, then this directive is "unqualified", i.e. it has no
+         * "{@code to}" clause
+         */
+        @Nullable public final String[][] toModuleNames;
 
         protected
-        ExportsModuleDirective(Location location, String[] packageName, String[][] toModuleNames) {
+        ExportsModuleDirective(Location location, String[] packageName, @Nullable String[][] toModuleNames) {
             super(location);
             this.packageName   = packageName;
             this.toModuleNames = toModuleNames;
@@ -453,14 +508,26 @@ class Java {
         accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitExportsModuleDirective(this); }
     }
 
+    /**
+     * Representation of a (Java 9+) "opens directive", as explained in JLS9 7.7.2.
+     */
     public static final
     class OpensModuleDirective extends Located implements ModuleDirective {
 
-        public final String[]   packageName;
-        public final String[][] toModuleNames;
+        /**
+         * The name of a package to be opened by this module, see JLS9 7.7.2.
+         */
+        public final String[] packageName;
+
+        /**
+         * The names of the modules for which the public and protected types in this package, and their public and
+         * protected members, are accessible. Iff {@code null}, then this directive is "unqualified", i.e. it has no
+         * "{@code to}" clause
+         */
+        @Nullable public final String[][] toModuleNames;
 
         protected
-        OpensModuleDirective(Location location, String[] packageName, String[][] toModuleNames) {
+        OpensModuleDirective(Location location, String[] packageName, @Nullable String[][] toModuleNames) {
             super(location);
             this.packageName   = packageName;
             this.toModuleNames = toModuleNames;
@@ -470,9 +537,16 @@ class Java {
         accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitOpensModuleDirective(this); }
     }
 
+    /**
+     * Representation of a (Java 9+) "uses directive", as explained in JLS9 7.7.3.
+     */
     public static final
     class UsesModuleDirective extends Located implements ModuleDirective {
 
+        /**
+         * The "service" for which the current module may discover providers via {@link java.util.ServiceLoader}.
+         * See JLS9 7.7.3.
+         */
         public final String[] typeName;
 
         protected
@@ -485,10 +559,20 @@ class Java {
         accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitUsesModuleDirective(this); }
     }
 
+    /**
+     * Representation of a (Java 9+) "provides directive", as explained in JLS9 7.7.4.
+     */
     public static final
     class ProvidesModuleDirective extends Located implements ModuleDirective {
 
-        public final String[]   typeName;
+        /**
+         * The "service", see JLS9 7.7.4.
+         */
+        public final String[] typeName;
+
+        /**
+         * The "service providers" declared in the "{@code with}" clause of the directive; see JLS9 7.7.4.
+         */
         public final String[][] withTypeNames;
 
         protected
@@ -903,17 +987,17 @@ class Java {
         /**
          * Sets the {@link AbstractCompilationUnit} in which this top-level type is declared.
          */
-        void
-        setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
+        void setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
 
         /**
          * @return The {@link AbstractCompilationUnit} in which this top-level type is declared.
          */
-        CompilationUnit
-        getDeclaringCompilationUnit();
+        CompilationUnit getDeclaringCompilationUnit();
 
-        Access
-        getAccess();
+        /**
+         * @return The accessability declared for this top-level type
+         */
+        Access getAccess();
     }
 
     /**
@@ -923,8 +1007,10 @@ class Java {
     public
     interface MemberTypeDeclaration extends NamedTypeDeclaration, TypeBodyDeclaration {
 
-        Access
-        getAccess();
+        /**
+         * @return The accessability declared for this member type
+         */
+        Access getAccess();
     }
 
     /**
@@ -1604,6 +1690,9 @@ class Java {
     public
     interface EnumDeclaration extends ClassDeclaration, NamedTypeDeclaration, DocCommentable {
 
+        /**
+         * @return The {@link Modifier}s declared for this enum
+         */
         Modifier[] getModifiers();
 
         @Override String getName();
@@ -2001,6 +2090,9 @@ class Java {
     public
     interface AnnotationTypeDeclaration extends NamedTypeDeclaration, DocCommentable {
 
+        /**
+         * @return The {@link Modifier}s declared for this annotation type
+         */
         Modifier[] getModifiers();
     }
 
@@ -2059,6 +2151,9 @@ class Java {
          */
         TypeDeclaration getDeclaringType();
 
+        /**
+         * @return The {@link Modifier}s of this declaration
+         */
         Modifier[] getModifiers();
 
         /**
@@ -2077,6 +2172,9 @@ class Java {
 
         @Nullable private TypeDeclaration declaringType;
 
+        /**
+         * The {@link Modifier}s of this declaration.
+         */
         public final Modifier[] modifiers;
 
         protected
@@ -2332,6 +2430,9 @@ class Java {
         public static final
         class FormalParameter extends Located {
 
+            /**
+             * The {@link Modifier}s of this parameter declaration.
+             */
             public final Modifier[] modifiers;
 
             /**
@@ -2430,6 +2531,9 @@ class Java {
             return sb.append(" ").append(this.name).toString();
         }
 
+        /**
+         * @param enclosingScope The scope that encloses this catch parameter declaration
+         */
         public void
         setEnclosingScope(Scope enclosingScope) {
             for (Type t : this.types) t.setEnclosingScope(enclosingScope);
@@ -4093,6 +4197,9 @@ class Java {
     public static final
     class ReferenceType extends Type implements TypeArgument {
 
+        /**
+         * The "type annotations" of this type, see JLS9, 9.7.4.
+         */
         public final Annotation[] annotations;
 
         /**
@@ -5651,11 +5758,21 @@ class Java {
         toString() { return this.value; }
     }
 
+    /**
+     * Representation of a (Java 8+) "lambda expression", see JLS9 15.27.
+     */
     public static
     class LambdaExpression extends Rvalue {
 
+        /**
+         * The parameters of this lambda expression; see JLS9 15.27.1.
+         */
         public final LambdaParameters parameters;
-        public final LambdaBody       body;
+
+        /**
+         * The body of this lambda expression; see JLS9 15.27.2.
+         */
+        public final LambdaBody body;
 
         public
         LambdaExpression(Location location, LambdaParameters parameters, LambdaBody body) {
@@ -5671,16 +5788,29 @@ class Java {
         toString() { return this.parameters + " -> " + this.body; }
     }
 
+    /**
+     * Base for the various "lambda parameters" styles, see JLS9 15.27.1.
+     */
     public
     interface LambdaParameters {
 
+        /**
+         * Invokes the "{@code visit...()}" method of {@link Visitor.LambdaParametersVisitor} for the concrete
+         * {@link LambdaParameters}.
+         */
         @Nullable <R, EX extends Throwable> R
         accept(LambdaParametersVisitor<R, EX> lpv) throws EX;
     }
 
+    /**
+     * Representation of "lamba parameters" that consist of a single identifier; see JLS9 15.27.1
+     */
     public static
     class IdentifierLambdaParameters implements LambdaParameters {
 
+        /**
+         * The single identifier.
+         */
         public final String identifier;
 
         public
@@ -5690,9 +5820,15 @@ class Java {
         accept(LambdaParametersVisitor<R, EX> lpv) throws EX { return lpv.visitIdentifierLambdaParameters(this); }
     }
 
+    /**
+     * Representation of "lamba parameters" that include a formal parameter list; see JLS9 15.27.1.
+     */
     public static
     class FormalLambdaParameters implements LambdaParameters {
 
+        /**
+         * The formal parameter declarations that pose the list.
+         */
         public final FormalParameters formalParameters;
 
         public
@@ -5705,9 +5841,15 @@ class Java {
         toString() { return this.formalParameters.toString(); }
     }
 
+    /**
+     * Representation of "lamba parameters" that include an inferred formal parameter list; see JLS9 15.27.1.
+     */
     public static
     class InferredLambdaParameters implements LambdaParameters {
 
+        /**
+         * The identifiers that pose the list.
+         */
         public final String[] names;
 
         public
@@ -5717,16 +5859,29 @@ class Java {
         accept(LambdaParametersVisitor<R, EX> lpv) throws EX { return lpv.visitInferredLambdaParameters(this); }
     }
 
+    /**
+     * Representation of a "lambda body", see JLS9 15.27.2.
+     */
     public
     interface LambdaBody {
 
+        /**
+         * Invokes the "{@code visit...()}" method of {@link Visitor.LambdaBodyVisitor} for the concrete
+         * {@link LambdaBody}.
+         */
         @Nullable <R, EX extends Throwable> R
         accept(LambdaBodyVisitor<R, EX> lbv) throws EX;
     }
 
+    /**
+     * Representation of a "lambda body" that is a block; see JLS9 15.27.2.
+     */
     public static
     class BlockLambdaBody implements LambdaBody {
 
+        /**
+         * The block that poses the lambda body.
+         */
         public final Block block;
 
         public
@@ -5736,9 +5891,15 @@ class Java {
         accept(LambdaBodyVisitor<R, EX> lbv) throws EX { return lbv.visitBlockLambdaBody(this); }
     }
 
+    /**
+     * Representation of a "lambda body" that is an expression; see JLS9 15.27.2.
+     */
     public static
     class ExpressionLambdaBody implements LambdaBody {
 
+        /**
+         * The expression that poses the lambda body.
+         */
         public final Rvalue expression;
 
         public
@@ -5908,10 +6069,27 @@ class Java {
         toString() { return "[" + this.value + ']'; }
     }
 
+    /**
+     * Representation of a "method reference expression", as described in JLS9 15.13, with the form "{@code
+     * <var>referenceType</var>::identifier}.
+     * <p>
+     *   The form "{@code ::new}" is represented by {@link ClassInstanceCreationReference}.
+     * </p>
+     *
+     * @see ClassInstanceCreationReference
+     * @see ArrayCreationReference
+     */
     public static final
     class MethodReference extends Rvalue {
 
-        public final Atom   lhs;
+        /**
+         * The expression name, primary or reference type that poses the left hand side of the expression.
+         */
+        public final Atom lhs;
+
+        /**
+         * The name of the referenced method.
+         */
         public final String methodName;
 
         public
@@ -5928,10 +6106,21 @@ class Java {
         toString() { return this.lhs + "::" + this.methodName; }
     }
 
+    /**
+     * Representation of a "method reference expression", as described in JLS9 15.13, with the form "{@code
+     * <var>classType</var>::new}".
+     */
     public static final
     class ClassInstanceCreationReference extends Rvalue {
 
-        public final Type                     type;
+        /**
+         * The class type that this expression instantiates.
+         */
+        public final Type type;
+
+        /**
+         * The optional type arguments for the {@link #type}.
+         */
         @Nullable public final TypeArgument[] typeArguments;
 
         public
@@ -5948,9 +6137,16 @@ class Java {
         toString() { return this.type + "::" + (this.typeArguments != null ? this.typeArguments : "") + "new"; }
     }
 
+    /**
+     * Representation of a "method reference expression", as described in JLS9 15.13, with the form "{@code
+     * <var>arrayType</var>::new}".
+     */
     public static final
     class ArrayCreationReference extends Rvalue {
 
+        /**
+         * The array type that this expression instantiates.
+         */
         public final ArrayType type;
 
         public
@@ -6212,9 +6408,12 @@ class Java {
         return sb.toString();
     }
 
-    public static Modifier[]
+    /**
+     * @return An array of {@link Modifier}s, parsed from a sequence of access modifier keywords
+     */
+    public static AccessModifier[]
     accessModifiers(Location location, String... keywords) {
-        Modifier[] result = new Modifier[keywords.length];
+        AccessModifier[] result = new AccessModifier[keywords.length];
         for (int i = 0; i < keywords.length; i++) {
             result[i] = new AccessModifier(keywords[i], location);
         }

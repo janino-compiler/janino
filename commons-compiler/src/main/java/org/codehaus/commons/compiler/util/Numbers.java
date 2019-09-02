@@ -27,6 +27,9 @@ package org.codehaus.commons.compiler.util;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
+/**
+ * Utility methods related to {@link Number}.
+ */
 public final
 class Numbers {
 

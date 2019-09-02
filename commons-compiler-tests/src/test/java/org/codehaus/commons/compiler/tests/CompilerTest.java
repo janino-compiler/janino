@@ -82,10 +82,10 @@ class CompilerTest {
     /**
      * The {@link ICompilerFactory} in effect for this test execution.
      */
-    private final ICompilerFactory compilerFactory;
-    private final String           compilerFactoryId;
-    private final boolean          isJdk;
-    private final boolean          isJanino;
+    private final ICompilerFactory                    compilerFactory;
+    private final String                              compilerFactoryId;
+    private final boolean                             isJdk;
+    @SuppressWarnings("unused") private final boolean isJanino;
 
     @Parameters(name = "CompilerFactory={0}") public static Collection<Object[]>
     compilerFactories() throws Exception { return TestUtil.getCompilerFactoriesForParameters(); }
@@ -96,7 +96,7 @@ class CompilerTest {
         this.compilerFactory = compilerFactory;
 
         this.compilerFactoryId = compilerFactory.getId();
-        this.isJdk             = this.compilerFactoryId.equals("org.codehaus.commons.compiler.jdk"); // SUPPRESS CHECKSTYLE EqualsAvoidNull|LineLength
+        this.isJdk             = this.compilerFactoryId.equals("org.codehaus.commons.compiler.jdk");
         this.isJanino          = this.compilerFactoryId.equals("org.codehaus.janino");
     }
 

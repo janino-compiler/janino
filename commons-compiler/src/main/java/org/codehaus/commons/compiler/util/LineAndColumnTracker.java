@@ -30,23 +30,53 @@ import java.util.regex.Pattern;
 /**
  * Keeps track of "line numbers" and "column numbers" while a char stream is being processed. Line breaks are
  * identified as defined by the {@code \R} pattern of {@link Pattern}. Initially, line number and column number are 1.
+ * <p>
+ *   This class has no public constructors, instead, use one of the static "factory methods".
+ * </p>
+ *
+ * @see #create()
  */
 public abstract
 class LineAndColumnTracker {
 
+    /**
+     * The default "tab width".
+     *
+     * @see #setTabWidth(int)
+     */
     public static final int DEFAULT_TAB_WIDTH = 8;
 
     /**
      * Reconfigures the TAB width. Value {@code 1} will treat TAB characters just like any other (non-line-break)
-     * character.
+     * character. The default tab with is {@link #DEFAULT_TAB_WIDTH} ({@value #DEFAULT_TAB_WIDTH}).
      */
     public abstract void setTabWidth(int tabWidth);
 
+    /**
+     * Consumes the next character of the stream.
+     */
     public abstract void consume(char c);
 
-    public abstract int  getLineNumber();
+    /**
+     * Returns the line number of the previously consumed character (starting at 1). Line separator characters belong
+     * to the "next" line.
+     */
+    public abstract int getLineNumber();
+
+    /**
+     * Sets the "current line number" to the given value.
+     */
     public abstract void setLineNumber(int lineNumber);
-    public abstract int  getColumnNumber();
+
+    /**
+     * Returns the column number of the previously consumed character; 1 after a line separator character has been
+     * consumed, 2 after the first non-line-separator character, and so forth.
+     */
+    public abstract int getColumnNumber();
+
+    /**
+     * Sets the "current column number" to the given value.
+     */
     public abstract void setColumnNumber(int columnNumber);
 
     /**
@@ -55,6 +85,9 @@ class LineAndColumnTracker {
      */
     public abstract void reset();
 
+    /**
+     * @return A {@link LineAndColumnTracker} instance
+     */
     public static LineAndColumnTracker
     create() {
 

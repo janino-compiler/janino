@@ -27,9 +27,15 @@ package org.codehaus.commons.compiler.util.resource;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
+/**
+ * Extends the {@link ResourceFinder} class with a {@link #list(String, boolean)} method.
+ */
 public abstract
 class ListableResourceFinder extends ResourceFinder {
 
+    /**
+     * @return All resources who's name starts with the given prefix
+     */
     @Nullable public abstract Iterable<Resource>
     list(String resourceNamePrefix, boolean recurse);
 }

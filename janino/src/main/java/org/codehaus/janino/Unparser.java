@@ -266,7 +266,7 @@ class Unparser {
         @Override @Nullable public Void
         visitExportsModuleDirective(ExportsModuleDirective emd) {
             Unparser.this.pw.print("exports " + Java.join(emd.packageName, "."));
-            if (emd.toModuleNames.length > 0) {
+            if (emd.toModuleNames != null) {
                 Unparser.this.pw.print(" to " + Java.join(emd.toModuleNames, ".", ", "));
             }
             Unparser.this.pw.print(";");
@@ -276,7 +276,7 @@ class Unparser {
         @Override @Nullable public Void
         visitOpensModuleDirective(OpensModuleDirective omd) {
             Unparser.this.pw.print("opens " + Java.join(omd.packageName, "."));
-            if (omd.toModuleNames.length > 0) {
+            if (omd.toModuleNames != null) {
                 Unparser.this.pw.print(" to " + Java.join(omd.toModuleNames, ".", ", "));
             }
             Unparser.this.pw.print(";");
@@ -1307,6 +1307,9 @@ class Unparser {
         }
     }
 
+    /**
+     * Generates Java code from a sequence of {@link BlockStatement}s.
+     */
     public void
     unparseStatements(List<? extends BlockStatement> statements) {
 
@@ -1369,6 +1372,9 @@ class Unparser {
     public void
     unparseLambdaBody(LambdaBody body) { body.accept(this.lambdaBodyUnparser); }
 
+    /**
+     * Generates Java code from a {@link Block}.
+     */
     public void
     unparseBlock(Block b) {
         if (b.statements.isEmpty()) {
@@ -1597,9 +1603,13 @@ class Unparser {
         }
     }
 
-    // Multi-line!
+    /**
+     * Generates Java code from a {@link AbstractClassDeclaration}.
+     */
     public void
     unparseClassDeclarationBody(AbstractClassDeclaration cd) {
+
+        // Multi-line!
         for (ConstructorDeclarator ctord : cd.constructors) {
             this.pw.println();
             ctord.accept(this.typeBodyDeclarationUnparser);

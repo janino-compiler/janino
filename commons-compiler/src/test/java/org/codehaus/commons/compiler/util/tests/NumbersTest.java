@@ -32,12 +32,12 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.junit.Assert;
 import org.junit.Test;
 
-// SUPPRESS CHECKSTYLE JavadocMethod:9999
+// SUPPRESS CHECKSTYLE Javadoc:9999
 
 public
 class NumbersTest {
 
-    @Test public void
+    @SuppressWarnings("static-method") @Test public void
     testParseUnsignedInt() throws Exception {
         for (int radix = 5/*2*/; radix <= 36; radix++) {
 
@@ -59,7 +59,7 @@ class NumbersTest {
         }
     }
 
-    @Test public void
+    @SuppressWarnings("static-method") @Test public void
     testParseUnsignedLong() throws Exception {
         for (int radix = 2; radix <= 36; radix++) {
             for (int delta = 100; delta >= 0; delta--) {

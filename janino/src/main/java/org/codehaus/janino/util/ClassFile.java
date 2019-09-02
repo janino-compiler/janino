@@ -2526,6 +2526,9 @@ class ClassFile implements Annotatable {
             this.entries = entries;
         }
 
+        /**
+         * Representation of an entry in the {@link StackMapTableAttribute}.
+         */
         public abstract static
         class StackMapFrame {
 
@@ -2541,6 +2544,9 @@ class ClassFile implements Annotatable {
              */
             public abstract <T> T accept(StackMapFrameVisitor<T> smfv);
 
+            /**
+             * Serializes this record and writes it to the given {@link DataOutputStream}.
+             */
             public abstract void store(DataOutputStream dos) throws IOException;
         }
 
@@ -2582,6 +2588,7 @@ class ClassFile implements Annotatable {
          */
         public static
         class SameLocals1StackItemFrame extends StackMapFrame {
+
             public final VerificationTypeInfo stack;
 
             public
@@ -2610,6 +2617,7 @@ class ClassFile implements Annotatable {
          */
         public static
         class SameLocals1StackItemFrameExtended extends StackMapFrame {
+
             public final VerificationTypeInfo stack;
 
             public
@@ -2645,6 +2653,7 @@ class ClassFile implements Annotatable {
          */
         public static
         class ChopFrame extends StackMapFrame {
+
             public final int k;
 
             public
@@ -2690,6 +2699,7 @@ class ClassFile implements Annotatable {
          */
         public static
         class AppendFrame extends StackMapFrame {
+
             public final VerificationTypeInfo[] locals;
 
             public
@@ -2719,6 +2729,7 @@ class ClassFile implements Annotatable {
          */
         public static
         class FullFrame extends StackMapFrame {
+
             public final VerificationTypeInfo[] locals;
             public final VerificationTypeInfo[] stack;
 
@@ -2761,6 +2772,10 @@ class ClassFile implements Annotatable {
          */
         public
         interface VerificationTypeInfo {
+
+            /**
+             * Writes this object to an {@link OutputStream}, in "class file" format.
+             */
             void store(DataOutputStream dos) throws IOException;
         }
 

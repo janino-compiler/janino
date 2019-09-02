@@ -32,6 +32,9 @@ import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.util.StringUtil;
 
+/**
+ * A drop-in replacement for the JDK's {@code JAVAC} tool.
+ */
 public final
 class CompilerDemo {
 

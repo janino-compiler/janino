@@ -28,6 +28,9 @@ package org.codehaus.commons.compiler.util;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+/**
+ * Generates human-readable Java assembler code from Java bytecode.
+ */
 public final
 class Disassembler {
 
