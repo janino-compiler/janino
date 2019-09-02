@@ -1179,8 +1179,8 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
 
     interface Supplier<T> { T get(); }
 
-    public class
-    CompileUnit {
+    public
+    class CompileUnit {
         String               pkg;
         String               mainClassName;
         private final String code;
