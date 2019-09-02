@@ -29,8 +29,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s, does not load byte code, but reads Java source
@@ -71,6 +73,35 @@ class ClassLoaders {
                 } catch (IOException ioe) {
                     return null;
                 }
+            }
+        };
+    }
+
+    /**
+     * @return Finds resources via <var>classLoader</var>{@code .getResource()}
+     */
+    public static ResourceFinder
+    getsResourceAsStream(final ClassLoader classLoader) {
+
+        return new ResourceFinder() {
+
+            @Override @Nullable public Resource
+            findResource(final String resourceName) {
+
+                final URL resource = classLoader.getResource(resourceName);
+                if (resource == null) return null;
+
+                return new Resource() {
+
+                    @Override public InputStream
+                    open() throws IOException { return resource.openStream(); }
+
+                    @Override public String
+                    getFileName() { return resourceName; }
+
+                    @Override public long
+                    lastModified() { return 0; }
+                };
             }
         };
     }
