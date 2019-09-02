@@ -3,7 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2019 Arno Unkrig. All rights reserved.
- * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved. // CHECKSTYLE:OFF CHECKSTYLE:ON
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -12064,7 +12064,7 @@ class UnitCompiler {
      * </p>
      *
      * @param optionalCompileErrorHandler {@code null} to restore the default behavior (throwing a {@link
-     *                                    CompileException}
+     *                                    CompileException})
      */
     public void
     setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
