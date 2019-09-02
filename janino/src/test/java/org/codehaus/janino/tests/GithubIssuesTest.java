@@ -350,10 +350,10 @@ class GithubIssuesTest {
 
     public
     class CompileUnit {
-        String                   pkg;
-        String                   mainClassName;
-        private String           code;
-        private Supplier<String> genCodeFunc;
+        String                             pkg;
+        String                             mainClassName;
+        @Nullable private String           code;
+        @Nullable private Supplier<String> genCodeFunc;
 
         public
         CompileUnit(String pkg, String mainClassName, String code) {
