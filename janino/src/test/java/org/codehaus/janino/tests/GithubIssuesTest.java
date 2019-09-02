@@ -348,8 +348,8 @@ class GithubIssuesTest {
 
     interface Supplier<T> { T get(); }
 
-    public class
-    CompileUnit {
+    public
+    class CompileUnit {
         String                   pkg;
         String                   mainClassName;
         private String           code;
