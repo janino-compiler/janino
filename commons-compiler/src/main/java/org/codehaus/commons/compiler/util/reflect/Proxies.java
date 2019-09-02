@@ -55,7 +55,7 @@ class Proxies {
             Method method         = methodsAndDelegateMethod[i];
             Method delegateMethod = methodsAndDelegateMethod[i + 1];
 
-            // Verify that *all* methods aredeclared by the same interface.
+            // Verify that *all* methods are declared by the same interface.
             assert method.getDeclaringClass().equals(declaringInterface);
 
             delegateMethod.setAccessible(true);
@@ -72,23 +72,29 @@ class Proxies {
                 @Override @NotNullByDefault(false) public Object
                 invoke(Object proxy, Method actualMethod, Object[] args) throws Throwable {
 
-                    for (int i = 0; i < methodsAndDelegateMethod.length; i += 2) {
-                        Method method         = methodsAndDelegateMethod[i];
-                        Method delegateMethod = methodsAndDelegateMethod[i + 1];
+                    Method delegateMethod;
+                    FIND_DELEGATE_METHOD: {
 
-                        if (actualMethod.equals(method)) return delegateMethod.invoke(delegate, args);
+                        for (int i = 0; i < methodsAndDelegateMethod.length; i += 2) {
+                            Method method  = methodsAndDelegateMethod[i];
+                            delegateMethod = methodsAndDelegateMethod[i + 1];
+
+                            if (actualMethod.equals(method)) break FIND_DELEGATE_METHOD;
+                        }
+
+                        String message = "Expected invocation of [";
+                        for (int i = 2; i < methodsAndDelegateMethod.length; i += 2) {
+                            Method method = methodsAndDelegateMethod[i];
+
+                            if (i > 0) message += ", ";
+                            message += method;
+                        }
+                        message += "], but was " + actualMethod;
+
+                        throw new AssertionError(message);
                     }
 
-                    String message = "Expected invocation of [";
-                    for (int i = 2; i < methodsAndDelegateMethod.length; i += 2) {
-                        Method method = methodsAndDelegateMethod[i];
-                        
-                        if (i > 0) message += ", ";
-                        message += method;
-                    }
-                    message += "], but was " + actualMethod;
-
-                    throw new AssertionError(message);
+                    return delegateMethod.invoke(delegate, args);
                 }
             }
         );
