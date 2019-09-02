@@ -11990,13 +11990,21 @@ class UnitCompiler {
             className = className.substring(packageName.length() + 1);
         }
 
-        StringTokenizer st = new StringTokenizer(className, "$");
-        TypeDeclaration td = cu.getPackageMemberTypeDeclaration(st.nextToken());
-        if (td == null) return null;
-        while (st.hasMoreTokens()) {
-            td = td.getMemberTypeDeclaration(st.nextToken());
+        // Attempt to find the type declaration by name "as is", i.e. including any dollar signs.
+        TypeDeclaration td = cu.getPackageMemberTypeDeclaration(className);
+        if (td == null) {
+
+            int idx = className.indexOf('$');
+            if (idx == -1) return null;
+            StringTokenizer st = new StringTokenizer(className, "$");
+            td = cu.getPackageMemberTypeDeclaration(st.nextToken());
             if (td == null) return null;
+            while (st.hasMoreTokens()) {
+                td = td.getMemberTypeDeclaration(st.nextToken());
+                if (td == null) return null;
+            }
         }
+
         return this.resolve(td);
     }
 

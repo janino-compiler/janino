@@ -457,80 +457,80 @@ class Compiler extends AbstractCompiler {
     private void
     updateIClassLoader() {
 
+        ResourceFinder classPathResourceFinder;
+
         File[] bcp = this.bootClassPath;
+
+        if (bcp == null) {
+            String sbcp = System.getProperty("sun.boot.class.path");
+            if (sbcp != null) {
+                this.bootClassPath = bcp = StringUtil.parsePath(sbcp);
+            }
+        }
 
         if (bcp != null) {
 
             // JVM 1.0-1.8; BOOTCLASSPATH supported:
-            this.setIClassLoader(new ResourceFinderIClassLoader(
-                new MultiResourceFinder(Arrays.asList(
-                    new PathResourceFinder(bcp),
-                    new JarDirectoriesResourceFinder(this.extensionDirectories),
-                    new PathResourceFinder(this.classPath)
-                )),
-                null
+            classPathResourceFinder = new MultiResourceFinder(Arrays.asList(
+                new PathResourceFinder(bcp),
+                new JarDirectoriesResourceFinder(this.extensionDirectories),
+                new PathResourceFinder(this.classPath)
             ));
         } else {
 
             // JVM 9+: "Modules" replace the BOOTCLASSPATH:
-            String sbcp = System.getProperty("sun.boot.class.path");
-            if (sbcp != null) {
-                this.bootClassPath = StringUtil.parsePath(sbcp);
-            } else {
-                URL r = ClassLoader.getSystemClassLoader().getResource("java/lang/Object.class");
-                assert r != null;
+            URL r = ClassLoader.getSystemClassLoader().getResource("java/lang/Object.class");
+            assert r != null;
 
-                assert "jrt".equalsIgnoreCase(r.getProtocol()) : r.toString();
+            assert "jrt".equalsIgnoreCase(r.getProtocol()) : r.toString();
 
-                ResourceFinder rf = new ResourceFinder() {
+            ResourceFinder rf = new ResourceFinder() {
 
-                    @Override @Nullable public Resource
-                    findResource(final String resourceName) {
+                @Override @Nullable public Resource
+                findResource(final String resourceName) {
 
-                        try {
-                            final Set<ModuleReference> mrs = ModuleFinder.ofSystem().findAll();
+                    try {
+                        final Set<ModuleReference> mrs = ModuleFinder.ofSystem().findAll();
 
-                            for (final ModuleReference mr : mrs) {
-                                final URI           moduleContentLocation = (URI) mr.location().get();
-                                final URL           classFileUrl          = new URL(moduleContentLocation + "/" + resourceName); // SUPPRESS CHECKSTYLE LineLength
-                                final URLConnection uc                    = classFileUrl.openConnection();
-                                try {
-                                    uc.connect();
-                                    return new Resource() {
+                        for (final ModuleReference mr : mrs) {
+                            final URI           moduleContentLocation = (URI) mr.location().get();
+                            final URL           classFileUrl          = new URL(moduleContentLocation + "/" + resourceName); // SUPPRESS CHECKSTYLE LineLength
+                            final URLConnection uc                    = classFileUrl.openConnection();
+                            try {
+                                uc.connect();
+                                return new Resource() {
 
-                                        @Override public InputStream
-                                        open() throws IOException {
-                                            try {
-                                                return uc.getInputStream();
-                                            } catch (IOException ioe) {
-                                                throw new IOException(moduleContentLocation + ", " + resourceName, ioe);
-                                            }
+                                    @Override public InputStream
+                                    open() throws IOException {
+                                        try {
+                                            return uc.getInputStream();
+                                        } catch (IOException ioe) {
+                                            throw new IOException(moduleContentLocation + ", " + resourceName, ioe);
                                         }
+                                    }
 
-                                        @Override public String getFileName()  { return resourceName;         }
-                                        @Override public long   lastModified() { return uc.getLastModified(); }
-                                    };
-                                } catch (IOException ioe) {
-                                    ;
-                                }
+                                    @Override public String getFileName()  { return resourceName;         }
+                                    @Override public long   lastModified() { return uc.getLastModified(); }
+                                };
+                            } catch (IOException ioe) {
+                                ;
                             }
-                            return null;
-                        } catch (Exception e) {
-                            throw new AssertionError(e);
                         }
+                        return null;
+                    } catch (Exception e) {
+                        throw new AssertionError(e);
                     }
-                };
+                }
+            };
 
-                this.setIClassLoader(new ResourceFinderIClassLoader(
-                    new MultiResourceFinder(Arrays.asList(
-                        rf,
-                        new JarDirectoriesResourceFinder(this.extensionDirectories),
-                        new PathResourceFinder(this.classPath)
-                    )),
-                    null
-                ));
-            }
+            classPathResourceFinder = new MultiResourceFinder(Arrays.asList(
+                rf,
+                new JarDirectoriesResourceFinder(this.extensionDirectories),
+                new PathResourceFinder(this.classPath)
+            ));
         }
+
+        this.setIClassLoader(new ResourceFinderIClassLoader(classPathResourceFinder, null));
     }
 
     /**
@@ -586,25 +586,29 @@ class Compiler extends AbstractCompiler {
             // Do not attempt to load classes from package "java".
             if (className.startsWith("java.")) return null;
 
-            // Determine the name of the top-level class.
-            String topLevelClassName;
-            {
-                int idx = className.indexOf('$');
-                topLevelClassName = idx == -1 ? className : className.substring(0, idx);
-            }
+            // Determine the name of the top-level class. E.g. "pkg.$Outer$Inner" => "pkg.$Outer".
+            for (
+                int idx = className.indexOf('$', className.lastIndexOf('.') + 2);;
+                idx = className.indexOf('$', idx + 2)
+            ) {
 
-            // Check the already-parsed compilation units.
-            for (int i = 0; i < Compiler.this.parsedCompilationUnits.size(); ++i) {
-                UnitCompiler uc  = (UnitCompiler) Compiler.this.parsedCompilationUnits.get(i);
-                IClass       res = uc.findClass(topLevelClassName);
-                if (res != null) {
-                    if (!className.equals(topLevelClassName)) {
-                        res = uc.findClass(className);
-                        if (res == null) return null;
+                String topLevelClassName = idx == -1 ? className : className.substring(0, idx);
+
+                // Check the already-parsed compilation units.
+                for (int i = 0; i < Compiler.this.parsedCompilationUnits.size(); ++i) {
+                    UnitCompiler uc  = (UnitCompiler) Compiler.this.parsedCompilationUnits.get(i);
+                    IClass       res = uc.findClass(topLevelClassName);
+                    if (res != null) {
+                        if (!className.equals(topLevelClassName)) {
+                            res = uc.findClass(className);
+                            if (res == null) return null;
+                        }
+                        this.defineIClass(res);
+                        return res;
                     }
-                    this.defineIClass(res);
-                    return res;
                 }
+
+                if (idx == -1) break;
             }
 
             // Search source path for uncompiled class.
