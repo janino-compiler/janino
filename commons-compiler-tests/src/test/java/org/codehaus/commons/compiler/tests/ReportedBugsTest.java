@@ -1061,11 +1061,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    testIssue102__3() throws Exception {
-        this.assertExpressionUncookable("java.util.Map$Entry.class");
-    }
-
-    @Test public void
     testIssue102__4() throws Exception {
         this.assertCompilationUnitMainReturnsTrue((
             ""
