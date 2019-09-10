@@ -182,8 +182,6 @@ interface ICompiler {
      * @param classFileCreator          Special value {@link #CREATE_NEXT_TO_SOURCE_FILE} means "create .class file
      *                                  next to its source file, <em>not</em> in the destination directory"
      * @see #CREATE_NEXT_TO_SOURCE_FILE
-     *
-     * @param classFileCreator
      */
     void setClassFileCreator(ResourceCreator classFileCreator);
 
