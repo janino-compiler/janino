@@ -27,8 +27,6 @@ package org.codehaus.commons.compiler.jdk;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,23 +36,20 @@ import java.util.List;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
-import javax.tools.FileObject;
-import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
-import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
 import org.codehaus.commons.compiler.AbstractCompiler;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.jdk.JavaSourceClassLoader.DiagnosticException;
+import org.codehaus.commons.compiler.jdk.util.JavaFileManagers;
+import org.codehaus.commons.compiler.jdk.util.JavaFileObjects;
 import org.codehaus.commons.compiler.util.reflect.ApiLog;
 import org.codehaus.commons.compiler.util.resource.Resource;
-import org.codehaus.commons.compiler.util.resource.ResourceCreator;
-import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 public
@@ -88,10 +83,11 @@ class Compiler extends AbstractCompiler {
 
             String fn        = sourceResource.getFileName();
             String className = fn.substring(fn.lastIndexOf(File.separatorChar) + 1, fn.length() - 5).replace('/', '.');
-            sourceFileObjects.add(this.getJavaFileManager().new ResourceJavaFileObject(
+            sourceFileObjects.add(JavaFileObjects.fromResource(
                 sourceResource,
                 className,           // className
-                Kind.SOURCE
+                Kind.SOURCE,
+                this.sourceCharset
             ));
         }
 
@@ -161,16 +157,16 @@ class Compiler extends AbstractCompiler {
      * Creates the underlying {@link JavaFileManager} lazily, because {@link #setSourcePath(File[])} and consorts are
      * called <em>after</em> initialization.
      */
-    private ResourceFinderInputJavaFileManager
+    private JavaFileManager
     getJavaFileManager() {
 
         if (this.fileManagerEnn != null) return this.fileManagerEnn;
 
         return (this.fileManagerEnn = this.getJavaFileManager2());
     }
-    @Nullable private ResourceFinderInputJavaFileManager fileManagerEnn;
+    @Nullable private JavaFileManager fileManagerEnn;
 
-    private ResourceFinderInputJavaFileManager
+    private JavaFileManager
     getJavaFileManager2() {
 
         // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
@@ -178,10 +174,10 @@ class Compiler extends AbstractCompiler {
         JavaFileManager jfm = Compiler.SYSTEM_JAVA_COMPILER.getStandardFileManager(null, null, null);
 
         // Store .class file via the classFileCreator.
-        jfm = new ResourceCreatorJavaFileManager<JavaFileManager>(Kind.CLASS, this.classFileCreator, jfm);
+        jfm = JavaFileManagers.fromResourceCreator(jfm, this.classFileCreator);
 
         // Find existing .class files through the classFileFinder.
-        jfm = new ResourceFinderInputJavaFileManager(
+        jfm = JavaFileManagers.fromResourceFinder(
             jfm,
             StandardLocation.CLASS_PATH,
             Kind.CLASS,
@@ -190,60 +186,14 @@ class Compiler extends AbstractCompiler {
         );
 
         // Wrap it in a file manager that finds source files through the .sourceFinder.
-        return (this.fileManagerEnn = new ResourceFinderInputJavaFileManager(
+        jfm = JavaFileManagers.fromResourceFinder(
             jfm,
             StandardLocation.SOURCE_PATH,
             Kind.SOURCE,
             this.sourceFinder,
             this.sourceCharset
-        ));
-    }
+        );
 
-    private static final
-    class ResourceCreatorJavaFileManager<T extends JavaFileManager> extends ForwardingJavaFileManager<T> {
-
-        private final Kind            kind;
-        private final ResourceCreator resourceCreator;
-
-        ResourceCreatorJavaFileManager(Kind kind, ResourceCreator resourceCreator, T delegate) {
-            super(delegate);
-            this.kind            = kind;
-            this.resourceCreator = resourceCreator;
-        }
-
-        @Override @NotNullByDefault(false) public JavaFileObject
-        getJavaFileForOutput(
-            Location     location,
-            final String className,
-            Kind         kind,
-            FileObject   sibling
-        ) throws IOException {
-
-            if (kind != this.kind) {
-                return super.getJavaFileForOutput(location, className, kind, sibling);
-            }
-
-            return new SimpleJavaFileObject(
-                URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
-                kind
-            ) {
-
-                @Override public OutputStream
-                openOutputStream() throws IOException {
-                    return ResourceCreatorJavaFileManager.this.resourceCreator.createResource(
-                        className.replace('.', '/') + ".class"
-                    );
-                }
-
-//                /**
-//                 * @return The bytes that were previously written to this {@link JavaFileObject}
-//                 */
-//                public byte[]
-//                toByteArray() { return this.buffer.toByteArray(); }
-//
-//                @Override public InputStream
-//                openInputStream() throws IOException { return new ByteArrayInputStream(this.toByteArray()); }
-            };
-        }
+        return (this.fileManagerEnn = jfm);
     }
 }

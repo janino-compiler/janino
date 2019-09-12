@@ -48,6 +48,7 @@ import javax.tools.ToolProvider;
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
+import org.codehaus.commons.compiler.jdk.util.JavaFileManagers;
 import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
@@ -129,14 +130,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
 
         // Wrap it in a file manager that finds source files through the source path.
-//        jfm = new FileInputJavaFileManager(
-//            jfm,
-//            StandardLocation.SOURCE_PATH,
-//            Kind.SOURCE,
-//            this.sourcePath,
-//            this.optionalCharacterEncoding
-//        );
-        jfm = new ResourceFinderInputJavaFileManager(
+        jfm = JavaFileManagers.fromResourceFinder(
             jfm,
             StandardLocation.SOURCE_PATH,
             Kind.SOURCE,
