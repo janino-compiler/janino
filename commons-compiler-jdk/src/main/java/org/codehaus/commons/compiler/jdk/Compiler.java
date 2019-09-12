@@ -174,7 +174,13 @@ class Compiler extends AbstractCompiler {
         JavaFileManager jfm = Compiler.SYSTEM_JAVA_COMPILER.getStandardFileManager(null, null, null);
 
         // Store .class file via the classFileCreator.
-        jfm = JavaFileManagers.fromResourceCreator(jfm, this.classFileCreator);
+        jfm = JavaFileManagers.fromResourceCreator(
+            jfm,
+            StandardLocation.CLASS_OUTPUT,
+            Kind.CLASS,
+            this.classFileCreator,
+            Charset.defaultCharset()
+        );
 
         // Find existing .class files through the classFileFinder.
         jfm = JavaFileManagers.fromResourceFinder(

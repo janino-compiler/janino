@@ -28,6 +28,8 @@ package org.codehaus.commons.compiler.jdk.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -189,21 +191,32 @@ class JavaFileManagers {
     /**
      * @return A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s through a {@link ResourceCreator}
      */
-    public static ForwardingJavaFileManager<JavaFileManager>
-    fromResourceCreator(JavaFileManager jfm, ResourceCreator fileCreator) {
-        return new ResourceCreatorJavaFileManager<JavaFileManager>(Kind.CLASS, fileCreator, jfm);
+    public static <M extends JavaFileManager> ForwardingJavaFileManager<M>
+    fromResourceCreator(M jfm, Location location, Kind kind, ResourceCreator fileCreator, Charset charset) {
+        return new ResourceCreatorJavaFileManager<M>(location, kind, fileCreator, jfm, charset);
     }
 
     private static final
-    class ResourceCreatorJavaFileManager<T extends JavaFileManager> extends ForwardingJavaFileManager<T> {
+    class ResourceCreatorJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
 
+        private final Location        location;
         private final Kind            kind;
         private final ResourceCreator resourceCreator;
+        private final Charset         charset;
 
-        ResourceCreatorJavaFileManager(Kind kind, ResourceCreator resourceCreator, T delegate) {
+        private
+        ResourceCreatorJavaFileManager(
+            Location        location,
+            Kind            kind,
+            ResourceCreator resourceCreator,
+            M               delegate,
+            Charset         charset
+        ) {
             super(delegate);
+            this.location        = location;
             this.kind            = kind;
             this.resourceCreator = resourceCreator;
+            this.charset         = charset;
         }
 
         @Override @NotNullByDefault(false) public JavaFileObject
@@ -214,7 +227,7 @@ class JavaFileManagers {
             FileObject   sibling
         ) throws IOException {
 
-            if (kind != this.kind) {
+            if (kind != this.kind || location != this.location) {
                 return super.getJavaFileForOutput(location, className, kind, sibling);
             }
 
@@ -228,6 +241,11 @@ class JavaFileManagers {
                     return ResourceCreatorJavaFileManager.this.resourceCreator.createResource(
                         className.replace('.', '/') + ".class"
                     );
+                }
+
+                @Override public Writer
+                openWriter() throws IOException {
+                    return new OutputStreamWriter(this.openOutputStream(), ResourceCreatorJavaFileManager.this.charset);
                 }
 
 //                /**
