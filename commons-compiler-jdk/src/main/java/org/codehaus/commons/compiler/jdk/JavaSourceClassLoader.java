@@ -47,8 +47,8 @@ import javax.tools.ToolProvider;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
-import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
 import org.codehaus.commons.compiler.jdk.util.JavaFileManagers;
+import org.codehaus.commons.compiler.jdk.util.JavaFileObjects.ByteArrayJavaFileObject;
 import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
@@ -125,9 +125,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         // CLASSPATH.
         JavaFileManager jfm = JavaSourceClassLoader.SYSTEM_JAVA_COMPILER.getStandardFileManager(null, null, null);
 
-        // Wrap it so that the output files (in our case class files) are stored in memory rather
+        // Wrap it so that the output files (in our case .class files) are stored in memory rather
         // than in files.
-        jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
+        jfm = JavaFileManagers.inMemory(jfm, Charset.defaultCharset());
 
         // Wrap it in a file manager that finds source files through the source path.
         jfm = JavaFileManagers.fromResourceFinder(
@@ -192,8 +192,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         byte[] ba;
         int    size;
         if (classFileObject instanceof ByteArrayJavaFileObject) {
-            ByteArrayJavaFileObject bajfo = (ByteArrayJavaFileObject) classFileObject;
-            ba   = bajfo.toByteArray();
+            ba   = ((ByteArrayJavaFileObject) classFileObject).toByteArray();
             size = ba.length;
         } else
         {
@@ -328,6 +327,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         return className.replace('.', '/') + ".java";
     }
 
+    /**
+     * Container for a {@link Diagnostic} object.
+     */
     public static
     class DiagnosticException extends RuntimeException {
 

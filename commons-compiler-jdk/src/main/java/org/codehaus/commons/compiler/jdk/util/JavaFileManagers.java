@@ -27,13 +27,12 @@ package org.codehaus.commons.compiler.jdk.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.tools.FileObject;
@@ -42,7 +41,7 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
-import javax.tools.SimpleJavaFileObject;
+import javax.tools.StandardJavaFileManager;
 
 import org.codehaus.commons.compiler.jdk.util.JavaFileObjects.ResourceJavaFileObject;
 import org.codehaus.commons.compiler.util.reflect.ApiLog;
@@ -77,45 +76,38 @@ class JavaFileManagers {
 
             ResourceFinderInputJavaFileManager() { super(delegate); }
 
-            @Override public String
-            inferBinaryName(Location location, JavaFileObject file) {
+            @Override @NotNullByDefault(false) public String
+            inferBinaryName(Location location, JavaFileObject jfo) {
 
-                if (!(file instanceof ResourceJavaFileObject)) {
-                    String result = super.inferBinaryName(location, file);
+                if (!(jfo instanceof ResourceJavaFileObject)) {
+                    String result = super.inferBinaryName(location, jfo);
                     assert result != null;
                     return result;
                 }
 
-                // A [Java]FileObject's "name" looks like this: "/orc/codehaus/commons/compiler/Foo.java"
-                String bn = file.getName();
+                // A [Java]FileObject's "name" looks like this: "/orc/codehaus/commons/compiler/Foo.java".
+                // A [Java]FileObject's "binary name" looks like "java.lang.annotation.Retention".
+
+                String bn = jfo.getName();
                 if (bn.startsWith("/")) bn = bn.substring(1);
 
-                // Although not obvious from the documentation, binary names look like "java.lang.annotation.Retention".
-                if (file.getKind() == Kind.SOURCE) {
-                    assert bn.endsWith(".java") : bn;
-                    bn = bn.substring(0, bn.length() - 5);
-                    bn = bn.replace('/', '.');
-                } else
-                if (file.getKind() == Kind.CLASS) {
-                    assert bn.endsWith(".class") : bn;
-                    bn = bn.substring(0, bn.length() - 6);
-                    bn = bn.replace('/', '.');
+                if (!bn.endsWith(jfo.getKind().extension)) {
+                    throw new AssertionError(
+                        "Name \"" + jfo.getName() + "\" does not match kind \"" + jfo.getKind() + "\""
+                    );
                 }
+                bn = bn.substring(0, bn.length() - jfo.getKind().extension.length());
 
-                assert bn != null : file.toString();
-                if (bn.startsWith(".")) {
-                    System.currentTimeMillis();
-                    file.getName();
-                }
+                bn = bn.replace('/', '.');
 
                 return bn;
             }
 
-            @Override public boolean
+            @Override @NotNullByDefault(false) public boolean
             hasLocation(Location location2) { return location2 == location || super.hasLocation(location2); }
 
             // Must implement "list()", otherwise we'd get "package xyz does not exist" compile errors
-            @Override public Iterable<JavaFileObject>
+            @Override @NotNullByDefault(false) public Iterable<JavaFileObject>
             list(Location location2, String packageName, Set<Kind> kinds, boolean recurse) throws IOException {
 
                 if (location2 == location && kinds.contains(kind)) {
@@ -128,24 +120,20 @@ class JavaFileManagers {
                         List<JavaFileObject> result = new ArrayList<JavaFileObject>();
                         for (Resource r : resources) {
 
-                            String fileName = r.getFileName();
+                            String className = r.getFileName();
 
-                            fileName = fileName.replace(File.separatorChar, '.');
-                            fileName = fileName.replace('/',                '.');
+                            if (!className.endsWith(kind.extension)) continue;
+                            className = className.substring(0, className.length() - kind.extension.length());
 
-                            String className;
+                            className = className.replace(File.separatorChar, '.');
+                            className = className.replace('/',                '.');
+
                             {
-                                final int idx = fileName.lastIndexOf(packageName + ".");
-                                assert idx != -1 : fileName + "//" + packageName;
-                                className = fileName.substring(idx);
+                                final int idx = className.lastIndexOf(packageName + ".");
+                                assert idx != -1 : className + "//" + packageName;
+                                className = className.substring(idx);
                             }
 
-                            if (className.endsWith(".java")) {
-                                className = className.substring(0, className.length() - 5);
-                            } else
-                            if (className.endsWith(".class") && kind == Kind.CLASS) {
-                                className = className.substring(0, className.length() - 6);
-                            }
 
                             JavaFileObject jfo = this.getJavaFileForInput(location2, className, kind);
                             if (jfo != null) {
@@ -159,7 +147,7 @@ class JavaFileManagers {
                 return super.list(location2, packageName, kinds, recurse);
             }
 
-            @Override public JavaFileObject
+            @Override @NotNullByDefault(false) public JavaFileObject
             getJavaFileForInput(Location location2, String className, Kind kind2)
             throws IOException {
 
@@ -192,71 +180,127 @@ class JavaFileManagers {
      * @return A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s through a {@link ResourceCreator}
      */
     public static <M extends JavaFileManager> ForwardingJavaFileManager<M>
-    fromResourceCreator(M jfm, Location location, Kind kind, ResourceCreator fileCreator, Charset charset) {
-        return new ResourceCreatorJavaFileManager<M>(location, kind, fileCreator, jfm, charset);
+    fromResourceCreator(
+        M                     delegate,
+        final Location        location,
+        final Kind            kind,
+        final ResourceCreator resourceCreator,
+        final Charset         charset
+    ) {
+
+        return new ForwardingJavaFileManager<M>(delegate) {
+
+            @Override @NotNullByDefault(false) public JavaFileObject
+            getJavaFileForOutput(
+                Location     location2,
+                final String className,
+                Kind         kind2,
+                FileObject   sibling
+            ) throws IOException {
+
+                if (kind2 == kind && location2 == location) {
+                    final String resourceName = className.replace('.', '/') + ".class";
+                    return JavaFileObjects.fromResourceCreator(resourceCreator, resourceName, kind, charset);
+                } else {
+                    return super.getJavaFileForOutput(location2, className, kind2, sibling);
+                }
+            }
+        };
     }
 
-    private static final
-    class ResourceCreatorJavaFileManager<M extends JavaFileManager> extends ForwardingJavaFileManager<M> {
+    /**
+     * @return A {@link ForwardingJavaFileManager} that stores {@link JavaFileObject}s in byte arrays, i.e. in memory
+     *         (as opposed to the {@link StandardJavaFileManager}, which stores them in files)
+     */
+    public static <M extends JavaFileManager> ForwardingJavaFileManager<M>
+    inMemory(M delegate, final Charset charset) {
 
-        private final Location        location;
-        private final Kind            kind;
-        private final ResourceCreator resourceCreator;
-        private final Charset         charset;
+        return new ForwardingJavaFileManager<M>(delegate) {
 
-        private
-        ResourceCreatorJavaFileManager(
-            Location        location,
-            Kind            kind,
-            ResourceCreator resourceCreator,
-            M               delegate,
-            Charset         charset
-        ) {
-            super(delegate);
-            this.location        = location;
-            this.kind            = kind;
-            this.resourceCreator = resourceCreator;
-            this.charset         = charset;
-        }
+            private final Map<Location, Map<Kind, Map<String /*className*/, JavaFileObject>>>
+            javaFiles = new HashMap<Location, Map<Kind, Map<String, JavaFileObject>>>();
 
-        @Override @NotNullByDefault(false) public JavaFileObject
-        getJavaFileForOutput(
-            Location     location,
-            final String className,
-            Kind         kind,
-            FileObject   sibling
-        ) throws IOException {
-
-            if (kind != this.kind || location != this.location) {
-                return super.getJavaFileForOutput(location, className, kind, sibling);
+            @Override @NotNullByDefault(false) public FileObject
+            getFileForInput(Location location, String packageName, String relativeName) {
+                throw new UnsupportedOperationException("getFileForInput");
             }
 
-            return new SimpleJavaFileObject(
-                URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
-                kind
+            @Override @NotNullByDefault(false) public FileObject
+            getFileForOutput(
+                Location   location,
+                String     packageName,
+                String     relativeName,
+                FileObject sibling
             ) {
+                throw new UnsupportedOperationException("getFileForOutput");
+            }
 
-                @Override public OutputStream
-                openOutputStream() throws IOException {
-                    return ResourceCreatorJavaFileManager.this.resourceCreator.createResource(
-                        className.replace('.', '/') + ".class"
-                    );
+            @Override @NotNullByDefault(false) public JavaFileObject
+            getJavaFileForInput(Location location, String className, Kind kind) throws IOException {
+
+                Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
+                if (locationJavaFiles != null) {
+                    Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
+                    if (kindJavaFiles != null) return kindJavaFiles.get(className);
                 }
 
-                @Override public Writer
-                openWriter() throws IOException {
-                    return new OutputStreamWriter(this.openOutputStream(), ResourceCreatorJavaFileManager.this.charset);
+                return super.getJavaFileForInput(location, className, kind);
+            }
+
+            @Override @NotNullByDefault(false) public JavaFileObject
+            getJavaFileForOutput(
+                Location     location,
+                final String className,
+                Kind         kind,
+                FileObject   sibling
+            ) throws IOException {
+
+                Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
+                if (locationJavaFiles == null) {
+                    locationJavaFiles = new HashMap<Kind, Map<String, JavaFileObject>>();
+                    this.javaFiles.put(location, locationJavaFiles);
+                }
+                Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
+                if (kindJavaFiles == null) {
+                    kindJavaFiles = new HashMap<String, JavaFileObject>();
+                    locationJavaFiles.put(kind, kindJavaFiles);
                 }
 
-//                /**
-//                 * @return The bytes that were previously written to this {@link JavaFileObject}
-//                 */
-//                public byte[]
-//                toByteArray() { return this.buffer.toByteArray(); }
-//
-//                @Override public InputStream
-//                openInputStream() throws IOException { return new ByteArrayInputStream(this.toByteArray()); }
-            };
-        }
+                JavaFileObject fileObject = JavaFileObjects.inMemory(className, kind, charset);
+
+                kindJavaFiles.put(className, fileObject);
+
+                return fileObject;
+            }
+
+            @Override @NotNullByDefault(false) public Iterable<JavaFileObject>
+            list(
+                Location  location,
+                String    packageName,
+                Set<Kind> kinds,
+                boolean   recurse
+            ) throws IOException {
+
+                Map<Kind, Map<String, JavaFileObject>> locationFiles = this.javaFiles.get(location);
+                if (locationFiles == null) return super.list(location, packageName, kinds, recurse);
+
+                String               prefix = packageName.isEmpty() ? "" : packageName + ".";
+                int                  pl     = prefix.length();
+                List<JavaFileObject> result = new ArrayList<JavaFileObject>();
+                for (Kind kind : kinds) {
+                    Map<String, JavaFileObject> kindFiles = locationFiles.get(kind);
+                    if (kindFiles == null) continue;
+                    for (Entry<String, JavaFileObject> e : kindFiles.entrySet()) {
+                        final String         className      = e.getKey();
+                        final JavaFileObject javaFileObject = e.getValue();
+
+                        if (!className.startsWith(prefix)) continue;
+                        if (!recurse && className.indexOf('.', pl) != -1) continue;
+                        result.add(javaFileObject);
+                    }
+                }
+                return result;
+            }
+        };
     }
 }

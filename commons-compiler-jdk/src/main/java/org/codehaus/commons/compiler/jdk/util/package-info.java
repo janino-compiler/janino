@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2016 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2013 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -23,30 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.nullanalysis;
+/***/
+@NotNullByDefault
+package org.codehaus.commons.compiler.jdk.util;
 
-import static java.lang.annotation.ElementType.CONSTRUCTOR;
-import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PACKAGE;
-import static java.lang.annotation.ElementType.TYPE;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-/**
- * By default, types in method signatures that lack a null annotation are regarded as <em>nullable</em>.
- * This annotation (with it default value {@code true}) indicates that types in method signatures that lack a null
- * annotation are regarded as <em>non-null</em>.
- * It is generally good practice to add {@code @NotNullByDefault} to all your package declarations (i.e.
- * 'package-into.java' files), because in well-designed code (especially API methods), {@code @NonNull} is
- * significantly more frequent than {@code @Nullable}.
- *
- * @see <a href="http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.jdt.doc.user%2Ftasks%2Ftask-using_null
- *_annotations.htm">ECLIPSE Help - Using null annotations</a>
- */
-@Target({ TYPE, LOCAL_VARIABLE, METHOD, CONSTRUCTOR, PACKAGE }) @Retention(RetentionPolicy.CLASS) public
-@interface NotNullByDefault {
-    boolean value() default true;
-}

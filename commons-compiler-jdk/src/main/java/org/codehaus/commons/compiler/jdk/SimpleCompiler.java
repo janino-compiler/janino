@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -52,8 +51,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.NestingKind;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
@@ -74,6 +71,8 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.Sandbox;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.io.Readers;
+import org.codehaus.commons.compiler.jdk.util.ClassLoaders;
+import org.codehaus.commons.compiler.jdk.util.JavaFileObjects;
 import org.codehaus.commons.compiler.util.LineAndColumnTracker;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -239,9 +238,6 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             .getStandardFileManager(dl, Locale.US, Charset.forName("UTF-8"))
         ) {
 
-            @NotNullByDefault(false) @Override public ClassLoader
-            getClassLoader(JavaFileManager.Location location) { return /*null*/super.getClassLoader(location); }
-
             @NotNullByDefault(false) @Override public Iterable<JavaFileObject>
             list(JavaFileManager.Location location, String packageName, Set<Kind> kinds, boolean recurse)
             throws IOException {
@@ -265,42 +261,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
                     if (!name.endsWith(".class")) continue;
 
-                    final URI subresourceUri;
-                    try {
-                        subresourceUri = url.toURI();
-                    } catch (URISyntaxException use) {
-                        throw new AssertionError(use);
-                    }
-
-                    // Cannot use "javax.tools.SimpleJavaFileObject" here, because that requires a URI with a "path".
-                    result.add(new JavaFileObject() {
-
-                        @Override public URI
-                        toUri() { return subresourceUri; }
-
-                        @Override public String
-                        getName() { return name; }
-
-                        @Override public InputStream
-                        openInputStream() throws IOException { return url.openStream(); }
-
-                        @Override public Kind
-                        getKind() { return Kind.CLASS; }
-
-                        // SUPPRESS CHECKSTYLE LineLength:9
-                        @Override public OutputStream openOutputStream()                             { throw new UnsupportedOperationException(); }
-                        @Override public Reader       openReader(boolean ignoreEncodingErrors)       { throw new UnsupportedOperationException(); }
-                        @Override public CharSequence getCharContent(boolean ignoreEncodingErrors)   { throw new UnsupportedOperationException(); }
-                        @Override public Writer       openWriter()                                   { throw new UnsupportedOperationException(); }
-                        @Override public long         getLastModified()                              { throw new UnsupportedOperationException(); }
-                        @Override public boolean      delete()                                       { throw new UnsupportedOperationException(); }
-                        @Override public boolean      isNameCompatible(String simpleName, Kind kind) { throw new UnsupportedOperationException(); }
-                        @Override public NestingKind  getNestingKind()                               { throw new UnsupportedOperationException(); }
-                        @Override public Modifier     getAccessLevel()                               { throw new UnsupportedOperationException(); }
-
-                        @Override public String
-                        toString() { return name + " from " + this.getClass().getSimpleName(); }
-                    });
+                    result.add(JavaFileObjects.fromUrl(url, name, Kind.CLASS));
                 }
 
                 return result;

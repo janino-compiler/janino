@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.commons.compiler.jdk;
+package org.codehaus.commons.compiler.jdk.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -124,8 +124,14 @@ class ClassLoaders {
         return ClassLoaders.BOOTCLASSPATH_SUBRESOURCES_OF.get(name, includeDirectories, recurse);
     }
 
+    /**
+     * @see SubresourceGetter#get(String, boolean, boolean)
+     */
     interface SubresourceGetter {
 
+        /**
+         * @return All resources that exist "under" a given resource name
+         */
         Map<? extends String, ? extends URL>
         get(String name, boolean includeDirectories, boolean recurse) throws IOException;
     }

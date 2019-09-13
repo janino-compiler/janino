@@ -25,19 +25,30 @@
 
 package org.codehaus.commons.compiler.jdk.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 
 import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceCreator;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
 /**
  * Utility methods related to {@link JavaFileObject}s.
@@ -94,5 +105,122 @@ class JavaFileObjects {
     public static JavaFileObject
     fromResource(Resource resource, String className, Kind kind, Charset charset) {
         return new ResourceJavaFileObject(resource, className, kind, charset);
+    }
+
+    /**
+     * @return The resource designated by the <var>url</var>, wrapped in a {@link JavaFileObject}
+     */
+    public static JavaFileObject
+    fromUrl(final URL url, final String name, final Kind kind) {
+
+        final URI subresourceUri;
+        try {
+            subresourceUri = url.toURI();
+        } catch (URISyntaxException use) {
+            throw new AssertionError(use);
+        }
+
+        // Cannot use "javax.tools.SimpleJavaFileObject" here, because the constructor requires a URI with a "path",
+        // and URIs without a ":/" infix don't have a path.
+        @NotNullByDefault(false) JavaFileObject result = new JavaFileObject() {
+
+            @Override public URI
+            toUri() { return subresourceUri; }
+
+            @Override public String
+            getName() { return name; }
+
+            @Override public InputStream
+            openInputStream() throws IOException { return url.openStream(); }
+
+            @Override public Kind
+            getKind() { return kind; }
+
+            // SUPPRESS CHECKSTYLE LineLength:9
+            @Override public OutputStream openOutputStream()                             { throw new UnsupportedOperationException(); }
+            @Override public Reader       openReader(boolean ignoreEncodingErrors)       { throw new UnsupportedOperationException(); }
+            @Override public CharSequence getCharContent(boolean ignoreEncodingErrors)   { throw new UnsupportedOperationException(); }
+            @Override public Writer       openWriter()                                   { throw new UnsupportedOperationException(); }
+            @Override public long         getLastModified()                              { throw new UnsupportedOperationException(); }
+            @Override public boolean      delete()                                       { throw new UnsupportedOperationException(); }
+            @Override public boolean      isNameCompatible(String simpleName, Kind kind) { throw new UnsupportedOperationException(); }
+            @Override public NestingKind  getNestingKind()                               { throw new UnsupportedOperationException(); }
+            @Override public Modifier     getAccessLevel()                               { throw new UnsupportedOperationException(); }
+
+            @Override public String
+            toString() { return name + " from " + this.getClass().getSimpleName(); }
+        };
+        return result;
+    }
+
+    public static ByteArrayJavaFileObject
+    inMemory(final String className, final Kind kind2, final Charset charset) {
+
+        class MyJavaFileObject extends SimpleJavaFileObject implements ByteArrayJavaFileObject {
+
+            private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+            MyJavaFileObject() {
+                super(URI.create("bytearray:///" + className.replace('.', '/') + kind2.extension), kind2);
+            }
+
+            @Override public InputStream
+            openInputStream() throws IOException { return new ByteArrayInputStream(this.toByteArray()); }
+
+            @Override public OutputStream
+            openOutputStream() throws IOException { return this.buffer; }
+
+            @Override public Reader
+            openReader(boolean ignoreEncodingErrors) throws IOException {
+                return new InputStreamReader(this.openInputStream(), charset);
+            }
+
+            @Override public Writer
+            openWriter() throws IOException { return new OutputStreamWriter(this.openOutputStream(), charset); }
+
+            /**
+             * @return The bytes that were previously written to this {@link JavaFileObject}
+             */
+            @Override
+            public byte[]
+            toByteArray() { return this.buffer.toByteArray(); }
+        }
+
+        return new MyJavaFileObject();
+    }
+
+    /**
+     * Byte array-based implementation of {@link JavaFileObject}.
+     */
+    public
+    interface ByteArrayJavaFileObject extends JavaFileObject {
+
+        /**
+         * @return The bytes that were previously written to this {@link JavaFileObject}
+         */
+        byte[] toByteArray();
+    }
+
+    /**
+     * @param resourceName E.g. {@code "com/foo/pkg/Bar.class"}
+     * @return             A {@link JavaFileObject} that stores data through the given <var>resourceCreator</var> and
+     *                     <var>resourceName</var>
+     */
+    public static JavaFileObject
+    fromResourceCreator(
+        final ResourceCreator resourceCreator,
+        final String          resourceName,
+        Kind                  kind,
+        final Charset         charset
+    ) {
+
+        return new SimpleJavaFileObject(URI.create("bytearray:///" + resourceName), kind) {
+
+            @Override public OutputStream
+            openOutputStream() throws IOException { return resourceCreator.createResource(resourceName); }
+
+            @Override public Writer
+            openWriter() throws IOException { return new OutputStreamWriter(this.openOutputStream(), charset); }
+        };
     }
 }
