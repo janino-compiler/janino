@@ -153,6 +153,9 @@ class JavaFileObjects {
         return result;
     }
 
+    /**
+     * @return A {@link JavaFileObject} that stores its data in an internal byte array
+     */
     public static ByteArrayJavaFileObject
     inMemory(final String className, final Kind kind2, final Charset charset) {
 
