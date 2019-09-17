@@ -528,35 +528,33 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         [65534] ConstantUtf8Info     "_v65523"
         */
 
-        final int[]     repetitionss = new int[]     { 1,    100,  65523, 65525 };
-        final boolean[] cookable     = new boolean[] { true, true, true,  false };
+        final int[]     repetitionss = new int[]     { 1,    100,  65517, 65525 };
+        final boolean[] isCookables  = new boolean[] { true, true, true,  false };
 
         for (int i = 0; i < repetitionss.length; i++) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(preamble);
-            for (int j = 0; j < repetitionss[i]; ++j) {
-                sb.append("boolean _v").append(j).append(";\n");
+            final int     repetitions = repetitionss[i];
+            final boolean isCookable  = isCookables[i];
+
+            final String cu;
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.append(preamble);
+                for (int j = 0; j < repetitions; ++j) {
+                    sb.append("boolean _v").append(j).append(";\n");
+                }
+                sb.append(postamble);
+                cu = sb.toString();
             }
-            sb.append(postamble);
 
             ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
-            if (cookable[i]) {
-                sc.cook(sb.toString());
-                Class<?> c = sc.getClassLoader().loadClass("test.Test");
-                Object   o = c.newInstance();
-                Assert.assertNotNull(o);
+            if (isCookable) {
+                sc.cook(cu);
+                Assert.assertNotNull(sc.getClassLoader().loadClass("test.Test").newInstance());
             } else {
-                try {
-                    sc.cook(sb.toString());
-                    Assert.fail(
-                        repetitionss[i] + " repetitions: Should have issued an error, but compiled successfully"
-                    );
-                } catch (CompileException ce) {
-                    Assert.assertTrue(ce.getMessage(), (
-                        ce.getMessage().contains("too many constants (compiler.err.limit.pool)")
-                        || ce.getMessage().contains("grown past JVM limit of 0xFFFF")
-                    ));
-                }
+                this.assertCompilationUnitUncookable(
+                    cu,
+                    "too many constants (compiler.err.limit.pool)|grown past JVM limit of 0xFFFF"
+                );
             }
         }
     }
