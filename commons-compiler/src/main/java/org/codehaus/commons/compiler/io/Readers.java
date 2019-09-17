@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2018 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2018, 2019 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -29,6 +29,7 @@ import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -152,7 +153,7 @@ class Readers {
                     int result = this.currentDelegate.read();
                     if (result != -1) return result;
                     if (!this.delegateIterator.hasNext()) return -1;
-                    this.currentDelegate = this.delegateIterator.next();
+                    this.currentDelegate = (Reader) this.delegateIterator.next();
                 }
             }
 
@@ -162,7 +163,7 @@ class Readers {
                     long result = this.currentDelegate.skip(n);
                     if (result != -1L) return result;
                     if (!this.delegateIterator.hasNext()) return 0;
-                    this.currentDelegate = this.delegateIterator.next();
+                    this.currentDelegate = (Reader) this.delegateIterator.next();
                 }
             }
 
@@ -172,8 +173,55 @@ class Readers {
                     int result = this.currentDelegate.read(cbuf, off, len);
                     if (result != -1L) return result;
                     if (!this.delegateIterator.hasNext()) return -1;
-                    this.currentDelegate = this.delegateIterator.next();
+                    this.currentDelegate = (Reader) this.delegateIterator.next();
                 }
+            }
+        };
+    }
+
+    /**
+     * @return A {@link Reader} that copies the bytes being passed through to a given {@link Writer}; this is in
+     *         analogy with the UNIX "tee" command
+     */
+    public static Reader
+    teeReader(Reader in, final Writer out, final boolean closeWriterOnEoi) {
+
+        return new FilterReader(in) {
+
+            @Override public void
+            close() throws IOException {
+                this.in.close();
+                out.close();
+            }
+
+            @Override public int
+            read() throws IOException {
+                int c = this.in.read();
+                if (c == -1) {
+                    if (closeWriterOnEoi) {
+                        out.close();
+                    } else {
+                        out.flush();
+                    }
+                } else {
+                    out.write(c);
+                }
+                return c;
+            }
+
+            @Override public int
+            read(@Nullable char[] cbuf, int off, int len) throws IOException {
+                int bytesRead = this.in.read(cbuf, off, len);
+                if (bytesRead == -1) {
+                    if (closeWriterOnEoi) {
+                        out.close();
+                    } else {
+                        out.flush();
+                    }
+                } else {
+                    out.write(cbuf, off, bytesRead);
+                }
+                return bytesRead;
             }
         };
     }

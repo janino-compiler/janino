@@ -38,7 +38,7 @@ import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.io.TeeReader;
+import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -213,10 +213,10 @@ class Scanner {
 
             if (!keep) temporaryFile.deleteOnExit();
 
-            in = new TeeReader(
+            in = Readers.teeReader(
                 in,                            // in
                 new FileWriter(temporaryFile), // out
-                true                           // closeWriterOnEOF
+                true                           // closeWriterOnEoi
             );
             optionalFileName = temporaryFile.getAbsolutePath();
         }
