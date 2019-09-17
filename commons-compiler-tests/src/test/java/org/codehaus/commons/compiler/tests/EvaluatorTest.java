@@ -30,6 +30,8 @@ package org.codehaus.commons.compiler.tests;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
@@ -500,14 +502,6 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
     }
     @Test public void
     test64kConstantPool() throws Exception {
-        String preamble = (
-            ""
-            + "package test;\n"
-            + "public class Test {\n"
-        );
-        final String postamble = (
-            "}"
-        );
 
         /* == expected contant pool ==
         ( 0) fake entry
@@ -537,13 +531,16 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
 
             final String cu;
             {
-                StringBuilder sb = new StringBuilder();
-                sb.append(preamble);
-                for (int j = 0; j < repetitions; ++j) {
-                    sb.append("boolean _v").append(j).append(";\n");
-                }
-                sb.append(postamble);
-                cu = sb.toString();
+                StringWriter sw = new StringWriter();
+                PrintWriter  pw = new PrintWriter(sw);
+
+                pw.printf("package test;%n");
+                pw.printf("public class Test {%n");
+                for (int j = 0; j < repetitions; ++j) pw.printf("    boolean _v%d;%n", j);
+                pw.printf("}%n");
+
+                pw.flush();
+                cu = sw.toString();
             }
 
             ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
