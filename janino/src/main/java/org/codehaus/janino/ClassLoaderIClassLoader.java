@@ -72,28 +72,21 @@ class ClassLoaderIClassLoader extends IClassLoader {
 
         Class<?> clazz;
         try {
-
-            //
-            // See also [ 931385 ] Janino 2.0 throwing exception on arrays of java.io.File:
-            //
-            // "ClassLoader.loadClass()" and "Class.forName()" should be identical,
-            // but "ClassLoader.loadClass("[Ljava.lang.Object;")" throws a
-            // ClassNotFoundException under JDK 1.5.0 beta.
-            // Unclear whether this a beta version bug and SUN will fix this in the final
-            // release, but "Class.forName()" seems to work fine in all cases, so we
-            // use that.
-            //
-
-//            clazz = this.classLoader.loadClass(Descriptor.toClassName(descriptor));
-            clazz = Class.forName(Descriptor.toClassName(descriptor), false, this.classLoader);
+            clazz = this.classLoader.loadClass(Descriptor.toClassName(descriptor));
         } catch (ClassNotFoundException e) {
-            if (e.getException() == null) {
-                return null;
-            } else
+
+            // Determine whether the class DOES NOT EXIST, or whether there were problems loading it. That's easier
+            // said than done... the following seems to work:
+            // (See also https://github.com/janino-compiler/janino/issues/104).
             {
-                throw e;
+                Throwable t = e.getCause();
+                while (t instanceof ClassNotFoundException) t = t.getCause();
+                if (t == null) return null;
             }
+
+            throw e;
         }
+
         ClassLoaderIClassLoader.LOGGER.log(Level.FINE, "clazz={0}", clazz);
 
         IClass result = new ReflectionIClass(clazz, this);
