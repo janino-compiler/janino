@@ -550,7 +550,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             } else {
                 this.assertCompilationUnitUncookable(
                     cu,
-                    "too many constants (compiler.err.limit.pool)|grown past JVM limit of 0xFFFF"
+                    "too many constants \\(compiler.err.limit.pool\\)|grown past JVM limit of 0xFFFF"
                 );
             }
         }
