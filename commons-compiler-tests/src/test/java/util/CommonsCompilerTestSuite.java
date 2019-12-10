@@ -358,7 +358,7 @@ class CommonsCompilerTestSuite {
             this.classBodyEvaluator.getClazz().getClassLoader().setDefaultAssertionStatus(true);
         }
 
-        @Override protected Object
+        @Override @Nullable protected Object
         execute() throws Exception {
             try {
                 Class<?> cbeClass   = this.classBodyEvaluator.getClazz();
@@ -458,7 +458,7 @@ class CommonsCompilerTestSuite {
             this.simpleCompiler.getClassLoader().setDefaultAssertionStatus(true);
         }
 
-        @Override protected Object
+        @Override @Nullable protected Object
         execute() throws Exception {
             try {
                 return (
