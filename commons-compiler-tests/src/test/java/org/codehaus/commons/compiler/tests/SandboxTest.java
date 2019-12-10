@@ -32,7 +32,9 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.security.AccessControlException;
 import java.security.AllPermission;
+import java.security.PermissionCollection;
 import java.security.Permissions;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
@@ -40,6 +42,8 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Sandbox;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -308,16 +312,28 @@ class SandboxTest extends CommonsCompilerTestSuite {
      * <var>permissions</var>.
      */
     private ScriptTest
-    confinedScriptTest(String script, final Permissions permissions) throws Exception {
+    confinedScriptTest(String script, final PermissionCollection permissions) throws Exception {
+
+        final Sandbox sandbox = new Sandbox(permissions);
 
         return new ScriptTest(script) {
 
             @Override protected void
             cook() throws Exception {
                 this.scriptEvaluator.setThrownExceptions(new Class<?>[] { Exception.class });
-                this.scriptEvaluator.setPermissions(permissions);
                 super.cook();
             }
+
+            @Override @Nullable protected Object
+            execute() throws Exception {
+
+                return sandbox.confine(new PrivilegedExceptionAction<Object>() {
+                    @Override public Object run() throws Exception { return execute2(); }
+                });
+            }
+
+            @NotNullByDefault(false) private Object
+            execute2() throws Exception { return super.execute(); }
         };
     }
 
@@ -327,17 +343,24 @@ class SandboxTest extends CommonsCompilerTestSuite {
      */
     private SimpleCompilerTest
     confinedSimpleCompilerTest(
-        String            compilationUnit,
-        String            className,
-        final Permissions permissions
+        String                     compilationUnit,
+        String                     className,
+        final PermissionCollection permissions
     ) throws Exception {
+
+        final Sandbox sandbox = new Sandbox(permissions);
 
         return new SimpleCompilerTest(compilationUnit, className) {
 
-            @Override protected void
-            cook() throws Exception {
-                this.simpleCompiler.setPermissions(permissions);
-                super.cook();
+            @NotNullByDefault(false) private Object
+            execute2() throws Exception { return super.execute(); }
+
+            @Override @Nullable protected Object
+            execute() throws Exception {
+
+                return sandbox.confine(new PrivilegedExceptionAction<Object>() {
+                    @Override public Object run() throws Exception { return execute2(); }
+                });
             }
         };
     }
@@ -347,17 +370,21 @@ class SandboxTest extends CommonsCompilerTestSuite {
      * static void main()} method in a {@link Sandbox} with the given <var>permissions</var>.
      */
     private ClassBodyTest
-    confinedClassBodyTest(
-        String            classBody,
-        final Permissions permissions
-    ) throws Exception {
+    confinedClassBodyTest(String classBody, PermissionCollection permissions) throws Exception {
+
+        final Sandbox sandbox = new Sandbox(permissions);
 
         return new ClassBodyTest(classBody) {
 
-            @Override protected void
-            cook() throws Exception {
-                this.classBodyEvaluator.setPermissions(permissions);
-                super.cook();
+            @NotNullByDefault(false) private Object
+            execute2() throws Exception { return super.execute(); }
+
+            @Override @Nullable protected Object
+            execute() throws Exception {
+
+                return sandbox.confine(new PrivilegedExceptionAction<Object>() {
+                    @Override public Object run() throws Exception { return execute2(); }
+                });
             }
         };
     }
@@ -367,17 +394,21 @@ class SandboxTest extends CommonsCompilerTestSuite {
      * in a {@link Sandbox} with the given <var>permissions</var>.
      */
     private ExpressionTest
-    confinedExpressionTest(
-        String            expression,
-        final Permissions permissions
-    ) throws Exception {
+    confinedExpressionTest(String expression, PermissionCollection permissions) throws Exception {
+
+        final Sandbox sandbox = new Sandbox(permissions);
 
         return new ExpressionTest(expression) {
 
-            @Override protected void
-            cook() throws Exception {
-                this.expressionEvaluator.setPermissions(permissions);
-                super.cook();
+            @NotNullByDefault(false) private Object
+            execute2() throws Exception { return super.execute(); }
+
+            @Override @Nullable protected Object
+            execute() throws Exception {
+
+                return sandbox.confine(new PrivilegedExceptionAction<Object>() {
+                    @Override public Object run() throws Exception { return execute2(); }
+                });
             }
         };
     }

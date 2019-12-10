@@ -74,8 +74,6 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private boolean debugLines  = this.debugSource;
     private boolean debugVars   = this.debugSource;
 
-    @Nullable private Permissions permissions;
-
     private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
     public static void // SUPPRESS CHECKSTYLE JavadocMethod
@@ -278,9 +276,6 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             }
         });
 
-        // Apply any configured permissions.
-        if (this.permissions != null) Sandbox.confine(cl, this.permissions);
-
         this.result = cl;
     }
 
@@ -292,11 +287,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         return this.assertCooked();
     }
 
-    @Override public void
-    setPermissions(Permissions permissions) { this.permissions = permissions;  }
+    @Override public final void
+    setPermissions(Permissions permissions) {}
 
-    @Override public void
-    setNoPermissions() { this.setPermissions(new Permissions()); }
+    @Override public final void
+    setNoPermissions() {}
 
     /**
      * Two {@link SimpleCompiler}s are regarded equal iff
