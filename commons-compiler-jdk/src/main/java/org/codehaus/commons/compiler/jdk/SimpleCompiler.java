@@ -68,7 +68,6 @@ import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.Sandbox;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.compiler.jdk.util.ClassLoaders;
@@ -83,14 +82,13 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
-    private ClassLoader               parentClassLoader = Thread.currentThread().getContextClassLoader();
-    @Nullable private ClassLoader     result;
-    private boolean                   debugSource;
-    private boolean                   debugLines;
-    private boolean                   debugVars;
-    @Nullable private ErrorHandler    optionalCompileErrorHandler;
-    @Nullable private WarningHandler  optionalWarningHandler;
-    @Nullable private Permissions     permissions;
+    private ClassLoader              parentClassLoader = Thread.currentThread().getContextClassLoader();
+    @Nullable private ClassLoader    result;
+    private boolean                  debugSource;
+    private boolean                  debugLines;
+    private boolean                  debugVars;
+    @Nullable private ErrorHandler   optionalCompileErrorHandler;
+    @Nullable private WarningHandler optionalWarningHandler;
 
     // See "addOffset(String)".
     private final LineAndColumnTracker tracker = LineAndColumnTracker.create();
@@ -119,10 +117,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     @Override public void
-    setPermissions(Permissions permissions) { this.permissions = permissions;  }
+    setPermissions(Permissions permissions) {}
 
     @Override public void
-    setNoPermissions() { this.setPermissions(new Permissions()); }
+    setNoPermissions() {}
 
     @Override public void
     cook(@Nullable final String optionalFileName, Reader r) throws CompileException, IOException {
@@ -364,9 +362,6 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             @Override public JavaFileManagerClassLoader
             run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
         });
-
-        // Apply any configured permissions.
-        if (this.permissions != null) Sandbox.confine(cl, this.permissions);
 
         this.result = cl;
     }

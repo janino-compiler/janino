@@ -26,14 +26,16 @@
 package org.codehaus.commons.compiler;
 
 import java.security.AccessControlContext;
+import java.security.AccessController;
 import java.security.Permission;
 import java.security.PermissionCollection;
+import java.security.Policy;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
 
-import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
 /**
  * This class establishes a security manager that confines the permissions for code executed through classes that are
@@ -56,81 +58,62 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public final
 class Sandbox {
 
-    private Sandbox() {}
-
-    private static final Map<ClassLoader, AccessControlContext>
-    CONFINED_CLASS_LOADERS = Collections.synchronizedMap(new WeakHashMap<ClassLoader, AccessControlContext>());
-
     static {
 
-        // Install our custom security manager.
-        final SecurityManager previousSecurityManager = System.getSecurityManager();
+        if (System.getSecurityManager() == null) {
 
-        System.setSecurityManager(new SecurityManager() {
+            // Before installing the security manager, configure a decent ("positive") policy. Otherwise a policy is
+            // determine automatically as follows:
+            // (1) If seccurity property "policy.provider" is set: Load a class with that name, and cast it to "Policy".
+            // (2) Otherwise, use class "sun.security.provider.PolicyFile" as the policy. That class reads a plethora
+            //     of "*.policy" files:
+            //         jre/lib/security/java[ws].policy     (Java 6, 8)
+            //         conf/security/javaws.policy          (Java 9)
+            //         conf/security/java.policy            (Java 9, 10, 11, 12)
+            //         conf/security/policy/[un]limited/**  (Java 9, 10, 11, 12)
+            //         lib/security/default.policy          (Java 9, 10, 11, 12)
+            //     That eventually leads to a very restricted policy which typically allows applications to read only
+            //     a small set of system properties and nothing else.
+            Policy.setPolicy(new Policy() {
 
-            @Override public void
-            checkPermission(@Nullable Permission perm) {
-                assert perm != null;
+                @Override @NotNullByDefault(false) public boolean
+                implies(ProtectionDomain domain, Permission permission) { return true; }
+            });
 
-                if (previousSecurityManager != null) previousSecurityManager.checkPermission(perm);
+            System.setSecurityManager(new SecurityManager());
+        }
+    }
 
-                final Class<?> myClass = this.getClass();
+    private final AccessControlContext accessControlContext;
 
-                Class<?>[] classContext = this.getClassContext();
-
-                // Skip the first frame of the execution stack, because that is THIS class.
-                for (int i = 1; i < classContext.length; i++) {
-                    Class<?> clasS = classContext[i];
-
-                    // Prevent endless recursion when we call "getClassLoader()", below, which
-                    // itself indirectly calls "SecurityManager.checkPermission()".
-                    if (clasS == myClass) return;
-
-                    // Check if an ACC was set for the class loader.
-                    AccessControlContext
-                    acc = (AccessControlContext) Sandbox.CONFINED_CLASS_LOADERS.get(clasS.getClassLoader());
-
-                    if (acc != null) acc.checkPermission(perm);
-                }
-            }
+    /**
+     * @param permissions Will be applied on later calls to {@link #confine(PrivilegedAction)} and {@link
+     *                    #confine(PrivilegedExceptionAction)}
+     */
+    public
+    Sandbox(PermissionCollection permissions) {
+        this.accessControlContext = new AccessControlContext(new ProtectionDomain[] {
+            new ProtectionDomain(null, permissions)
         });
     }
 
-    // --------------------------
-
     /**
-     * All future actions that are executed through classes that were loaded through the given <var>classLoader</var>
-     * will be checked against the given <var>accessControlContext</var>.
+     * Runs the given <var>action</var>, confined by the permissions configured through the {@link
+     * #Sandbox(PermissionCollection) constructor}.
+     *
+     * @return The value returned by the <var>action</var>
      */
-    public static void
-    confine(ClassLoader classLoader, AccessControlContext accessControlContext) {
+    public <R> R
+    confine(PrivilegedAction<R> action) {
+        return AccessController.doPrivileged(action, this.accessControlContext);
+    }
 
-        if (Sandbox.CONFINED_CLASS_LOADERS.containsKey(classLoader)) {
-            throw new SecurityException("Attempt to change the access control context for '" + classLoader + "'");
+    public <R> R
+    confine(PrivilegedExceptionAction<R> action) throws Exception {
+        try {
+            return AccessController.doPrivileged(action, this.accessControlContext);
+        } catch (PrivilegedActionException pae) {
+            throw pae.getException();
         }
-
-        Sandbox.CONFINED_CLASS_LOADERS.put(classLoader, accessControlContext);
-    }
-
-    /**
-     * All future actions that are executed through classes that were loaded through the given <var>classLoader</var>
-     * will be checked against the given <var>protectionDomain</var>.
-     *
-     * @throws SecurityException Permissions are already confined for the <var>classLoader</var>
-     */
-    public static void
-    confine(ClassLoader classLoader, ProtectionDomain protectionDomain) {
-        Sandbox.confine(classLoader, new AccessControlContext(new ProtectionDomain[] { protectionDomain }));
-    }
-
-    /**
-     * All future actions that are executed through classes that were loaded through the given <var>classLoader</var>
-     * will be checked against the given <var>permissions</var>.
-     *
-     * @throws SecurityException Permissions are already confined for the <var>classLoader</var>
-     */
-    public static void
-    confine(ClassLoader classLoader, PermissionCollection permissions) {
-        Sandbox.confine(classLoader, new ProtectionDomain(null, permissions));
     }
 }
