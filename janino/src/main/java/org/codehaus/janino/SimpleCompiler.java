@@ -44,7 +44,6 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.Sandbox;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
 import org.codehaus.commons.nullanalysis.Nullable;
