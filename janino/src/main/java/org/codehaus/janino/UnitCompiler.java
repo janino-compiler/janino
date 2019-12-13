@@ -4417,13 +4417,12 @@ class UnitCompiler {
         }
 
         IClass indexType = this.compileGetValue(aae.index);
-        if (
-            !this.tryIdentityConversion(indexType, IClass.INT)
-            && !this.tryWideningPrimitiveConversion(aae, indexType, IClass.INT)
-        ) this.compileError(
-            "Index expression of type \"" + indexType + "\" cannot be widened to \"int\"",
-            aae.getLocation()
-        );
+        if (this.unaryNumericPromotion(aae.index, indexType) != IClass.INT) {
+            this.compileError(
+                "Index expression of type \"" + indexType + "\" cannot be widened to \"int\"",
+                aae.getLocation()
+            );
+        }
 
         return 2;
     }
