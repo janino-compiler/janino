@@ -4406,8 +4406,12 @@ class UnitCompiler {
         return 1;
     }
 
+    /**
+     * Array access expression; see JLS7 15.13 / JLS8+ 15.10.3.
+     */
     private int
     compileContext2(ArrayAccessExpression aae) throws CompileException {
+
         IClass lhsType = this.compileGetValue(aae.lhs);
         if (!lhsType.isArray()) {
             this.compileError(
@@ -4419,7 +4423,7 @@ class UnitCompiler {
         IClass indexType = this.compileGetValue(aae.index);
         if (this.unaryNumericPromotion(aae.index, indexType) != IClass.INT) {
             this.compileError(
-                "Index expression of type \"" + indexType + "\" cannot be widened to \"int\"",
+                "Index expression of type \"" + indexType + "\" cannot be promoted to \"int\"",
                 aae.getLocation()
             );
         }
