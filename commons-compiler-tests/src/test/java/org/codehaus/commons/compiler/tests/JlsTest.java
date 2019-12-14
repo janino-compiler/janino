@@ -1882,6 +1882,19 @@ class JlsTest extends CommonsCompilerTestSuite {
         ), "A");
     }
 
+    /**
+     * Notice: In JLS2 and JLS7, this section had number "15.3" (which, since JLS8, is the number for section "Method
+     * Reference Expressions"). Since JLS8 it has number "15.10.3".
+     */
+    @Test public void
+    test_15_10_3__Array_Access_Expressions() throws Exception {
+        this.assertExpressionCookable("(new int[3])[(byte) 0]");
+        this.assertExpressionCookable("(new int[3])[(char) 0]");
+        this.assertExpressionCookable("(new int[3])[(short) 0]");
+        this.assertExpressionCookable("(new int[3])[0]");
+        this.assertExpressionUncookable("(new int[3])[0L]", "xx");
+    }
+
     @Test public void
     test_15_11_2__Accessing_Superclass_Members_using_super() throws Exception {
 
