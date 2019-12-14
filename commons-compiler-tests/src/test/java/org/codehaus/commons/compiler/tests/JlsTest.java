@@ -1892,7 +1892,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertExpressionCookable("(new int[3])[(char) 0]");
         this.assertExpressionCookable("(new int[3])[(short) 0]");
         this.assertExpressionCookable("(new int[3])[0]");
-        this.assertExpressionUncookable("(new int[3])[0L]", "xx");
+        this.assertExpressionUncookable("(new int[3])[0L]");
     }
 
     @Test public void
