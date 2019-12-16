@@ -39,7 +39,6 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
-import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.MultiCookable;
 import org.codehaus.commons.compiler.WarningHandler;
@@ -359,14 +358,6 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         }
     }
 
-    /**
-     * Notice: This method is not declared in {@link IScriptEvaluator}, and is hence only available in <em>this</em>
-     * implementation of {@code org.codehaus.commons.compiler}. To be independent from this particular
-     * implementation, try to switch to {@link #createFastEvaluator(Reader, Class, String[])}.
-     *
-     * @param scanner Source of tokens to read
-     * @see #createFastEvaluator(Reader, Class, String[])
-     */
     @Override public <T> T
     createFastEvaluator(Reader reader, Class<T> interfaceToImplement, String... parameterNames)
     throws CompileException, IOException {
