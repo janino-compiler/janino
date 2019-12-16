@@ -139,7 +139,7 @@ class Java {
         /**
          * A string that explains the "file" (or similar resource) where this compilation unit was loaded from.
          */
-        @Nullable public final String optionalFileName;
+        @Nullable public final String fileName;
 
         /**
          * The IMPORT declarations in this compilation unit.
@@ -147,8 +147,8 @@ class Java {
         public final ImportDeclaration[] importDeclarations;
 
         public
-        AbstractCompilationUnit(@Nullable String optionalFileName, ImportDeclaration[] importDeclarations) {
-            this.optionalFileName   = optionalFileName;
+        AbstractCompilationUnit(@Nullable String fileName, ImportDeclaration[] importDeclarations) {
+            this.fileName           = fileName;
             this.importDeclarations = importDeclarations;
         }
 
@@ -317,8 +317,8 @@ class Java {
         }
 
         public
-        CompilationUnit(@Nullable String optionalFileName, ImportDeclaration[] importDeclarations) {
-            super(optionalFileName, importDeclarations);
+        CompilationUnit(@Nullable String fileName, ImportDeclaration[] importDeclarations) {
+            super(fileName, importDeclarations);
         }
 
         /**
@@ -2299,7 +2299,7 @@ class Java {
         /**
          * The statements that comprise the function; {@code null} for abstract method declarations.
          */
-        @Nullable public final List<? extends BlockStatement> optionalStatements;
+        @Nullable public final List<? extends BlockStatement> statements;
 
         public
         FunctionDeclarator(
@@ -2310,7 +2310,7 @@ class Java {
             String                                   name,
             FormalParameters                         formalParameters,
             Type[]                                   thrownExceptions,
-            @Nullable List<? extends BlockStatement> optionalStatements
+            @Nullable List<? extends BlockStatement> statements
         ) {
             super(location, modifiers);
             this.optionalDocComment = optionalDocComment;
@@ -2318,13 +2318,13 @@ class Java {
             this.name               = name;
             this.formalParameters   = formalParameters;
             this.thrownExceptions   = thrownExceptions;
-            this.optionalStatements = optionalStatements;
+            this.statements         = statements;
 
             this.type.setEnclosingScope(this);
             for (FormalParameter fp : formalParameters.parameters) fp.type.setEnclosingScope(this);
             for (Type te : thrownExceptions) te.setEnclosingScope(this);
-            if (optionalStatements != null) {
-                for (Java.BlockStatement bs : optionalStatements) {
+            if (statements != null) {
+                for (Java.BlockStatement bs : statements) {
 
                     // Field declaration initializers are also BlockStatements - their enclosing scope is already
                     // set (the enclosing type declaration), and must not be re-set here.
@@ -2647,7 +2647,7 @@ class Java {
             FormalParameters                         formalParameters,
             Type[]                                   thrownExceptions,
             @Nullable ElementValue                   defaultValue,
-            @Nullable List<? extends BlockStatement> optionalStatements
+            @Nullable List<? extends BlockStatement> statements
         ) {
             super(
                 location,            // location
@@ -2657,7 +2657,7 @@ class Java {
                 name,                // name
                 formalParameters,    // formalParameters
                 thrownExceptions,    // thrownExceptions
-                optionalStatements   // optionalStatements
+                statements           // statements
             );
             this.optionalTypeParameters = optionalTypeParameters;
             this.defaultValue           = defaultValue;
