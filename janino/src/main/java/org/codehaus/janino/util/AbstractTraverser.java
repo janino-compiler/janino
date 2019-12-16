@@ -1034,8 +1034,8 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     @Override public void
     traverseFunctionDeclarator(FunctionDeclarator fd) throws EX {
         this.traverseFormalParameters(fd.formalParameters);
-        if (fd.optionalStatements != null) {
-            for (BlockStatement bs : fd.optionalStatements) bs.accept(this.blockStatementTraverser);
+        if (fd.statements != null) {
+            for (BlockStatement bs : fd.statements) bs.accept(this.blockStatementTraverser);
         }
     }
 
