@@ -606,8 +606,7 @@ class AstTest {
         // Parse the method and get its body.
         MethodDeclarator md1 = new Parser(new Scanner(null, new StringReader(text1))).parseMethodDeclaration();
 
-        List<? extends BlockStatement> ss = md1.optionalStatements;
-        assert ss != null;
+        List<? extends BlockStatement> ss = md1.statements;
 
         // Now generate a "labeled statement".
         LabeledStatement ls2;
