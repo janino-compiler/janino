@@ -290,21 +290,13 @@ interface IExpressionEvaluator extends IMultiCookable {
      * </p>
      */
     <T> Object
-    createFastEvaluator(
-        String    expression,
-        Class<T>  interfaceToImplement,
-        String... parameterNames
-    ) throws CompileException;
+    createFastEvaluator(String expression, Class<T> interfaceToImplement, String... parameterNames)
+    throws CompileException;
 
-    /**
-     * @see #createFastEvaluator(String, Class, String[])
-     */
+    /** @see #createFastEvaluator(String, Class, String[]) */
     <T> Object
-    createFastEvaluator(
-        Reader    reader,
-        Class<T>  interfaceToImplement,
-        String... parameterNames
-    ) throws CompileException, IOException;
+    createFastEvaluator(Reader reader, Class<T> interfaceToImplement, String... parameterNames)
+    throws CompileException, IOException;
 
     /** @see IScriptEvaluator#getMethod() */
     Method getMethod();
