@@ -1249,7 +1249,7 @@ class Unparser {
         );
         this.unparseFunctionDeclaratorRest(cd);
 
-        List<? extends BlockStatement> oss = cd.optionalStatements;
+        List<? extends BlockStatement> oss = cd.statements;
         if (oss == null) {
             this.pw.print(';');
             return;
@@ -1284,7 +1284,7 @@ class Unparser {
     private void
     unparseMethodDeclarator(MethodDeclarator md) {
 
-        final List<? extends BlockStatement> oss = md.optionalStatements;
+        final List<? extends BlockStatement> oss = md.statements;
 
         this.unparseDocComment(md);
         this.unparseModifiers(md.getModifiers());
