@@ -64,7 +64,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  * <p>
  *   <b>Also notice that the parsing of leading IMPORT declarations is heuristic and has certain limitations; see
- *   {@link #parseImportDeclarations(Reader)}.</b>
+ *   {@link ClassBodyEvaluator#parseImportDeclarations(Reader)}.</b>
  * </p>
  */
 public
