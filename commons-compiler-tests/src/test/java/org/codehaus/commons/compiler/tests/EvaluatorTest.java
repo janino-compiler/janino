@@ -1093,19 +1093,34 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
 
         ee.cook("3");
         Assert.assertEquals(3, ee.evaluate(null));
+    }
 
+    @Test public void
+    testAnyType2() throws Exception {
+
+        @SuppressWarnings("deprecation") Class<?> anyType = IExpressionEvaluator.ANY_TYPE;
+
+        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
+        ee.setExpressionType(anyType);
         ee.cook("\"HELLO\"");
         Assert.assertEquals("HELLO", ee.evaluate(null));
     }
 
     @Test public void
-    testAnyType2() throws Exception {
+    testAnyType3() throws Exception {
 
         IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
         ee.setExpressionType(Object.class);
 
         ee.cook("3");
         Assert.assertEquals(3, ee.evaluate(null));
+    }
+
+    @Test public void
+    testAnyType4() throws Exception {
+
+        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
+        ee.setExpressionType(Object.class);
 
         ee.cook("\"HELLO\"");
         Assert.assertEquals("HELLO", ee.evaluate(null));
