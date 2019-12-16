@@ -246,8 +246,8 @@ class Compiler extends AbstractCompiler {
                 File sourceFile;
                 {
                     Java.AbstractCompilationUnit acu = unitCompiler.getAbstractCompilationUnit();
-                    if (acu.optionalFileName == null) throw new InternalCompilerException();
-                    sourceFile = new File(acu.optionalFileName);
+                    if (acu.fileName == null) throw new InternalCompilerException();
+                    sourceFile = new File(acu.fileName);
                 }
 
                 unitCompiler.setCompileErrorHandler(this.compileErrorHandler);
