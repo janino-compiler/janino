@@ -468,7 +468,7 @@ class DeepCopier {
     copyCompilationUnit(CompilationUnit subject) throws CompileException {
 
         CompilationUnit result = new CompilationUnit(
-            subject.optionalFileName,
+            subject.fileName,
             this.copyImportDeclarations(subject.importDeclarations)
         );
 
@@ -485,7 +485,7 @@ class DeepCopier {
     copyModularCompilationUnit(ModularCompilationUnit subject) throws CompileException {
 
         return new ModularCompilationUnit(
-            subject.optionalFileName,
+            subject.fileName,
             this.copyImportDeclarations(subject.importDeclarations),
             subject.moduleDeclaration
         );
@@ -683,7 +683,7 @@ class DeepCopier {
             this.copyFormalParameters(subject.formalParameters),
             this.copyTypes(subject.thrownExceptions),
             this.copyOptionalConstructorInvocation(subject.optionalConstructorInvocation),
-            this.copyBlockStatements(DeepCopier.assertNotNull(subject.optionalStatements))
+            this.copyBlockStatements(DeepCopier.assertNotNull(subject.statements))
         );
     }
 
@@ -709,7 +709,7 @@ class DeepCopier {
             this.copyFormalParameters(subject.formalParameters),
             this.copyTypes(subject.thrownExceptions),
             this.copyOptionalElementValue(subject.defaultValue),
-            this.copyOptionalStatements(subject.optionalStatements)
+            this.copyOptionalStatements(subject.statements)
         );
     }
 
