@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -122,13 +123,47 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  */
 public
-interface IScriptEvaluator extends IClassBodyEvaluator {
+interface IScriptEvaluator extends IMultiCookable {
+
+    /**
+     * The name of the generated method(s), if no custom method name is configured with {@link
+     * #setMethodNames(String[])}.
+     * <p>
+     *   The {@code '*'} in this string is replaced with the method index, starting at 0.
+     * </p>
+     */
+    public static final String DEFAULT_METHOD_NAME = "eval*";
+
+    public static final Class<?> DEFAULT_RETURN_TYPE = void.class;
+
+    /** @see IClassBodyEvaluator#setClassName(String) */
+    void setClassName(String className);
+
+    /** @see IClassBodyEvaluator#setImplementedInterfaces(Class[]) */
+    void setImplementedInterfaces(Class<?>[] implementedInterfaces);
+
+    /** @see IClassBodyEvaluator#setExtendedClass(Class) */
+    void setExtendedClass(Class<?> extendedClass);
+
+    /**
+     * When this {@link IScriptEvaluator} is coooked, then the <var>defaultReturnType</var> applies to all scripts for
+     * which no explicit return type was configured.
+     *
+     * @see #setReturnType(Class)
+     * @see #setReturnTypes(Class[])
+     */
+    void setDefaultReturnType(Class<?> defaultReturnType);
+
+    /**
+     * @return The default return type that was previously configured with {@link #setDefaultReturnType(Class)}, or
+     *         {@link #DEFAULT_RETURN_TYPE}
+     */
+    Class<?> getDefaultReturnType();
 
     /**
      * Defines whether the generated method overrides a methods declared in a supertype.
      */
-    void
-    setOverrideMethod(boolean overrideMethod);
+    void setOverrideMethod(boolean overrideMethod);
 
     /**
      * Defines whether the generated method should be STATIC or not. Defaults to {@code true}.
@@ -136,7 +171,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     void setStaticMethod(boolean staticMethod);
 
     /**
-     * Defines the return type of the generated method. Value {@code null} is equivalent with {@code void.class}.
+     * Defines the return type of the generated method. Value {@code null} means "use the default return type".
      */
     void setReturnType(Class<?> returnType);
 
@@ -181,17 +216,19 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      *   This method is thread-safe.
      * </p>
      *
-     * @param arguments The actual parameter values
+     * @param arguments              The actual parameter values
+     * @throws IllegalStateException This IScriptEvaluator is not yet cooked
      */
     @Nullable Object evaluate(@Nullable Object[] arguments) throws InvocationTargetException;
 
     /**
-     * Returns the loaded {@link java.lang.reflect.Method}.
-     * <p>
-     *   This method must only be called after one of the {@link #cook(String, Reader)} methods was called.
-     * </p>
+     * @return The generated and loaded {@link java.lang.reflect.Method}
+     * @throws IllegalStateException This IScriptEvaluator is not yet cooked
      */
     Method getMethod();
+
+    /** @see IClassBodyEvaluator#getBytecodes() */
+    Map<String, byte[]> getBytecodes();
 
     /**
      * Same as {@link #setOverrideMethod(boolean)}, but for multiple scripts.
@@ -204,10 +241,11 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     void setStaticMethod(boolean[] staticMethod);
 
     /**
-     * Configures the return types of the generated methods. None of the array elements may be {@code null}.
-     * <p>
-     *   Unless this method is invoked, the return type of all script is {@code void.class}.
-     * </p>
+     * Configures the return types of the generated methods. If an element of the array is {@code null}, then use
+     * the "default return type" for that script.
+     *
+     * @see #setDefaultReturnType(Class)
+     * @see #getDefaultReturnType()
      */
     void setReturnTypes(Class<?>[] returnTypes);
 
@@ -237,6 +275,7 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
     /**
      * Same as {@link #cook(Reader)}, but for multiple scripts.
      */
+    @Override
     void cook(Reader[] readers) throws CompileException, IOException;
 
     /**
@@ -251,18 +290,20 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
      * @throws IllegalStateException if any of the preceding {@code set...()} had an array
      *                               size different from that of {@code scanners}
      */
-    void
-    cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException;
+    @Override
+    void cook(@Nullable String[] fileNames, Reader[] readers) throws CompileException, IOException;
 
     /**
      * Same as {@link #cook(String)}, but for multiple scripts.
      */
+    @Override
     void cook(String[] strings) throws CompileException;
 
     /**
      * Same as {@link #cook(String, String)}, but for multiple scripts.
      */
-    void cook(@Nullable String[] optionalFileNames, String[] strings) throws CompileException;
+    @Override
+    void cook(@Nullable String[] fileNames, String[] strings) throws CompileException;
 
     /**
      * Same as {@link #evaluate(Object[])}, but for multiple scripts.
@@ -337,4 +378,25 @@ interface IScriptEvaluator extends IClassBodyEvaluator {
         Class<T> interfaceToImplement,
         String[] parameterNames
     ) throws CompileException, IOException;
+
+    /**
+     * @throws UnsupportedOperationException Always
+     * @deprecated
+     */
+    @Deprecated Object createInstance(Reader reader);
+
+    /** @see IClassBodyEvaluator#setDefaultImports(String...) */
+    void setDefaultImports(String... defaultImports);
+
+    /** @see IClassBodyEvaluator#getDefaultImports() */
+    String[] getDefaultImports();
+
+    /** @see IClassBodyEvaluator#getClazz() */
+    Class<?> getClazz();
+
+    /**
+     * @return                       The generated and loaded methods that implement the cooked scripts
+     * @throws IllegalStateException This {@link IScriptEvaluator} is not yet cooked
+     */
+    Method[] getResult();
 }

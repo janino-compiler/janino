@@ -60,7 +60,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
-    @Nullable private String[] optionalDefaultImports;
+    private String[]           defaultImports = new String[0];
     private String             className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
     @Nullable private Class<?> optionalExtendedType;
     private Class<?>[]         implementedTypes = new Class[0];
@@ -73,9 +73,10 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     setClassName(String className) { this.className = className; }
 
     @Override public void
-    setDefaultImports(@Nullable String... optionalDefaultImports) {
-        this.optionalDefaultImports = optionalDefaultImports;
-    }
+    setDefaultImports(String... defaultImports) { this.defaultImports = defaultImports.clone(); }
+
+    @Override public String[]
+    getDefaultImports() { return this.defaultImports.clone(); }
 
     @Override public void
     setExtendedClass(@Nullable Class<?> optionalExtendedType) { this.optionalExtendedType = optionalExtendedType; }
@@ -137,8 +138,8 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
                 }
 
                 // Print default imports.
-                if (this.optionalDefaultImports != null) {
-                    for (String defaultImport : this.optionalDefaultImports) {
+                if (this.defaultImports != null) {
+                    for (String defaultImport : this.defaultImports) {
                         pw.print("import ");
                         pw.print(defaultImport);
                         pw.println(";");

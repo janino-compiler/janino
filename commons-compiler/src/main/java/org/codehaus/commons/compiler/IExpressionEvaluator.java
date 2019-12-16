@@ -28,6 +28,8 @@ package org.codehaus.commons.compiler;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -112,7 +114,17 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  */
 public
-interface IExpressionEvaluator extends IScriptEvaluator {
+interface IExpressionEvaluator extends IMultiCookable {
+
+    /**
+     * The fully qualified name of the generated class, iff not reconfigured by {@link #setClassName(String)}.
+     */
+    String DEFAULT_CLASS_NAME = "SC";
+
+    /**
+     * The type of all expressions that were not reconfigured with {@link #setExpressionTypes(Class[])}.
+     */
+    Class<?> DEFAULT_EXPRESSION_TYPE = Object.class;
 
     /**
      * Special value for {@link #setExpressionType(Class)} that indicates that the expression may have any type.
@@ -121,6 +133,51 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      *             expression type {@link Object}{@code .class}
      */
     @Deprecated Class<?> ANY_TYPE = Object.class;
+
+    /**
+     * Evaluates the expression with concrete parameter values.
+     * <p>
+     *   Each argument value must have the same type as specified through the "parameterTypes" parameter of {@link
+     *   #setParameters(String[], Class[])}.
+     * </p>
+     * <p>
+     *   Arguments of primitive type must passed with their wrapper class objects.
+     * </p>
+     * <p>
+     *   The object returned has the class as specified through {@link #setExpressionType(Class)}.
+     * </p>
+     * <p>
+     *   This method is thread-safe.
+     * </p>
+     * <p>
+     *   {@code Null} <var>arguments</var> is equivalent with {@code new Object[0]}.
+     * </p>
+     *
+     * @param arguments The actual parameter values
+     */
+    @Nullable Object evaluate(@Nullable Object[] arguments) throws InvocationTargetException;
+
+    /**
+     * Reconfigures the "default expression type"; if no expression type is configured for an expression, then, when
+     * cooking this {@link IExpressionEvaluator}, the "default expression type" is used for the expression
+     */
+    void setDefaultExpressionType(Class<?> defaultExpressionType);
+
+    /**
+     * @return                               The currently configured "default expression type"
+     * @see #setDefaultExpressionType(Class)
+     */
+    Class<?> getDefaultExpressionType();
+
+    /**
+     * Configures the interfaces that the generated class implements.
+     */
+    void setImplementedInterfaces(Class<?>[] implementedTypes);
+
+    /**
+     * @deprecated Use {@link #setExpressionType(Class)} instead
+     */
+    @Deprecated void setReturnType(@Deprecated Class<?> returnType);
 
     /**
      * Defines the type of the expression.
@@ -146,36 +203,52 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      */
     void setExpressionTypes(Class<?>[] expressionTypes);
 
-    /**
-     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionType(Class)} instead
-     */
-    @Override @Deprecated void setReturnType(Class<?> returnType);
+    /** @see IScriptEvaluator#setOverrideMethod(boolean) */
+    void setOverrideMethod(boolean overrideMethod);
+
+    /** @see IScriptEvaluator#setOverrideMethod(boolean[]) */
+    void setOverrideMethod(boolean[] overrideMethod);
+
+    /** @see IScriptEvaluator#setParameters(String[], Class[]) */
+    void setParameters(String[] parameterNames, Class<?>[] parameterTypes);
+
+    /** @see IScriptEvaluator#setParameters(String[][], Class[][]) */
+    void setParameters(String[][] parameterNames, Class<?>[][] parameterTypes);
+
+    /** @see IClassBodyEvaluator#setClassName(String) */
+    void setClassName(String className);
+
+    /** @see IClassBodyEvaluator#setExtendedClass(Class) */
+    void setExtendedClass(Class<?> optionalExtendedType);
+
+    /** @see IClassBodyEvaluator#setDefaultImports(String...) */
+    void setDefaultImports(String... defaultImports);
+
+    /** @see IClassBodyEvaluator#getDefaultImports() */
+    String[] getDefaultImports();
+
+    /** @see IScriptEvaluator#setStaticMethod(boolean) */
+    void setStaticMethod(boolean staticMethod);
+
+    /** @see IScriptEvaluator#setStaticMethod(boolean[]) */
+    void setStaticMethod(boolean[] staticMethod);
+
+    /** @see IScriptEvaluator#setMethodName(String) */
+    void setMethodName(String methodName);
+
+    /** @see IScriptEvaluator#setMethodNames(String[]) */
+    void setMethodNames(String[] methodNames);
+
+    /** @see IScriptEvaluator#setThrownExceptions(Class[]) */
+    void setThrownExceptions(Class<?>[] thrownExceptions);
+
+    /** @see IScriptEvaluator#setThrownExceptions(Class[][]) */
+    void setThrownExceptions(Class<?>[][] thrownExceptions);
 
     /**
-     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])}
-     *             instead
+     * {@code Null} <var>arguments</var> is equivalent with {@code new Object[0]}.
      */
-    @Override @Deprecated void setReturnTypes(Class<?>[] returnTypes);
-
-    /**
-     * Evaluates the expression with concrete parameter values.
-     * <p>
-     *   Each argument value must have the same type as specified through the "parameterTypes" parameter of {@link
-     *   #setParameters(String[], Class[])}.
-     * </p>
-     * <p>
-     *   Arguments of primitive type must passed with their wrapper class objects.
-     * </p>
-     * <p>
-     *   The object returned has the class as specified through {@link #setExpressionType(Class)}.
-     * </p>
-     * <p>
-     *   This method is thread-safe.
-     * </p>
-     *
-     * @param arguments The actual parameter values
-     */
-    @Override @Nullable Object evaluate(@Nullable Object[] arguments) throws InvocationTargetException;
+    @Nullable Object evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException;
 
     /**
      * If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator
@@ -216,20 +289,37 @@ interface IExpressionEvaluator extends IScriptEvaluator {
      *   #setClassName(String)}.
      * </p>
      */
-    @Override <T> Object
+    <T> Object
     createFastEvaluator(
-        String   expression,
-        Class<T> interfaceToImplement,
-        String[] parameterNames
+        String    expression,
+        Class<T>  interfaceToImplement,
+        String... parameterNames
     ) throws CompileException;
 
     /**
      * @see #createFastEvaluator(String, Class, String[])
      */
-    @Override <T> Object
+    <T> Object
     createFastEvaluator(
-        Reader   reader,
-        Class<T> interfaceToImplement,
-        String[] parameterNames
+        Reader    reader,
+        Class<T>  interfaceToImplement,
+        String... parameterNames
     ) throws CompileException, IOException;
+
+    /** @see IScriptEvaluator#getMethod() */
+    Method getMethod();
+
+    /** @see IScriptEvaluator#getMethod(int) */
+    Method getMethod(int idx);
+
+    /** @see IClassBodyEvaluator#getClazz() */
+    Class<?> getClazz();
+
+    /** @see IScriptEvaluator#getResult() */
+    Method[] getResult();
+
+    /**
+     * @return The bytecodes that were generated when {@link #cook(String)} was invoked
+     */
+    Map<String, byte[]> getBytecodes();
 }

@@ -34,6 +34,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,13 +44,15 @@ import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
-import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.util.Objects;
+import org.codehaus.commons.compiler.MultiCookable;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
+import org.codehaus.janino.Java.AbstractCompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.Atom;
 import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.CompilationUnit;
@@ -81,16 +85,9 @@ import org.codehaus.janino.util.AbstractTraverser;
  * </p>
  */
 public
-class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
+class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
 
-    /**
-     * The name of the generated method(s), if no custom method name is configured with {@link
-     * #setMethodNames(String[])}.
-     * <p>
-     *   The {@code '*'} in this string is replaced with the method index, starting at 0.
-     * </p>
-     */
-    public static final String DEFAULT_METHOD_NAME = "eval*";
+    private final ClassBodyEvaluator cbe = new ClassBodyEvaluator();
 
     /**
      * Represents one script that this {@link ScriptEvaluator} declares. Typically there exactly <em>one</em> such
@@ -109,9 +106,11 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         protected boolean staticMethod = true;
 
         /**
-         * The generated method's return type. Defaults to {@link ScriptEvaluator#getDefaultReturnType()}.
+         * The generated method's return type. {@code Null} means "use the default return type".
+         *
+         * @see ScriptEvaluator#setDefaultReturnType(Class)
          */
-        protected Class<?> returnType = ScriptEvaluator.this.getDefaultReturnType();
+        @Nullable protected Class<?> returnType;
 
         /**
          * The name of the generated method.
@@ -124,19 +123,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
         private Class<?>[] thrownExceptions = new Class<?>[0];
 
-        @Nullable private Method result; // null=uncooked
-
         Script(String methodName) { this.methodName = methodName; }
-
-        /**
-         * @return                       The generated method
-         * @throws IllegalStateException The {@link ScriptEvaluator} has not yet be cooked
-         */
-        public Method
-        getResult() {
-            if (this.result != null) return this.result;
-            throw new IllegalStateException("Script is not yet cooked");
-        }
     }
 
     /**
@@ -144,6 +131,40 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * #setStaticMethod(boolean[])} or one of its friends.
      */
     @Nullable private Script[] scripts;
+
+    private Class<?> defaultReturnType = IScriptEvaluator.DEFAULT_RETURN_TYPE;
+
+    @Override public void
+    setParentClassLoader(@Nullable ClassLoader parentClassLoader) { this.cbe.setParentClassLoader(parentClassLoader); }
+
+    @Override public void
+    setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
+        this.cbe.setDebuggingInformation(debugSource, debugLines, debugVars);
+    }
+
+    @Override public void
+    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
+        this.cbe.setCompileErrorHandler(compileErrorHandler);
+    }
+
+    @Override public void
+    setWarningHandler(@Nullable WarningHandler warningHandler) { this.cbe.setWarningHandler(warningHandler); }
+
+    /**
+     * @return A reference to the currently effective compilation options; changes to it take
+     *         effect immediately
+     */
+    public EnumSet<JaninoOption>
+    options() { return this.cbe.options(); }
+
+    /**
+     * Sets the options for all future compilations.
+     */
+    public ScriptEvaluator
+    options(EnumSet<JaninoOption> options) {
+        this.cbe.options(options);
+        return this;
+    }
 
     /**
      * @throws IllegalArgumentException <var>count</var> is different from previous invocations of
@@ -157,7 +178,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         if (ss == null) {
             this.scripts = (ss = new Script[count]);
             for (int i = 0; i < count; i++) {
-                ss[i] = new Script(ScriptEvaluator.DEFAULT_METHOD_NAME.replace("*", Integer.toString(i)));
+                ss[i] = new Script(IScriptEvaluator.DEFAULT_METHOD_NAME.replace("*", Integer.toString(i)));
             }
         } else {
             if (count != ss.length) {
@@ -171,7 +192,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     private Script
     getScript(int index) {
         if (this.scripts != null) return this.scripts[index];
-        throw new IllegalStateException("\"getScript()\" invoked befor \"setScriptCount()\"");
+        throw new IllegalStateException("\"getScript()\" invoked before \"setScriptCount()\"");
     }
 
     /**
@@ -388,7 +409,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public
     ScriptEvaluator(
         Scanner               scanner,
-        @Nullable Class<?>    optionalExtendedType,
+        @Nullable Class<?>    extendedType,
         Class<?>[]            implementedTypes,
         Class<?>              returnType,
         String[]              parameterNames,
@@ -396,7 +417,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         Class<?>[]            thrownExceptions,
         @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
-        this.setExtendedClass(optionalExtendedType);
+        this.setExtendedClass(extendedType);
         this.setImplementedInterfaces(implementedTypes);
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
@@ -460,9 +481,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * Constructs a script evaluator with all the default settings (return type {@code void}
+     * Constructs a script evaluator with all the default settings.
      */
-    public ScriptEvaluator() {}
+    public
+    ScriptEvaluator() {}
 
     /**
      * Constructs a script evaluator with the given number of scripts.
@@ -474,7 +496,6 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      *   {@link #setReturnTypes(Class[])},
      *   {@link #setStaticMethod(boolean[])},
      *   {@link #setThrownExceptions(Class[][])},
-     *   {@link #cook(org.codehaus.janino.util.ClassFile[])},
      *   {@link #cook(Parser[])},
      *   {@link #cook(Reader[])},
      *   {@link #cook(Scanner[])},
@@ -490,6 +511,21 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     public ScriptEvaluator(int count) { this.setScriptCount(count); }
 
+    @Override public void
+    setClassName(String className) { this.cbe.setClassName(className); }
+
+    @Override public void
+    setImplementedInterfaces(Class<?>[] implementedTypes) { this.cbe.setImplementedInterfaces(implementedTypes); }
+
+    @Override public void
+    setExtendedClass(@Nullable Class<?> extendedType) { this.cbe.setExtendedClass(extendedType);}
+
+    @Override public void
+    setDefaultReturnType(Class<?> defaultReturnType) { this.defaultReturnType = defaultReturnType; }
+
+    @Override public Class<?>
+    getDefaultReturnType() { return this.defaultReturnType; }
+
     // ================= SINGLE SCRIPT CONFIGURATION SETTERS =================
 
     @Override public void
@@ -498,17 +534,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Override public void
     setStaticMethod(boolean staticMethod) { this.setStaticMethod(new boolean[] { staticMethod }); }
 
-    /**
-     * Defines the return types of the generated methods.
-     *
-     * @param returnType The method's return type; {@code null} means the "default return type", which is the type
-     *                   returned by {@link #getDefaultReturnType()} ({@code void.class} for {@link ScriptEvaluator}
-     *                   and {@code Object.class} for {@link ExpressionEvaluator})
-     * @see              ScriptEvaluator#getDefaultReturnType()
-     * @see              ExpressionEvaluator#getDefaultReturnType()
-     */
     @Override public void
-    setReturnType(Class<?> returnType) { this.setReturnTypes(new Class[] { returnType }); }
+    setReturnType(@Nullable Class<?> returnType) { this.setReturnTypes(new Class[] { returnType }); }
 
     @Override public void
     setMethodName(String methodName) { this.setMethodNames(new String[] { methodName }); }
@@ -540,20 +567,15 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     /**
      * Defines the return types of the generated methods.
      *
-     * @param returnTypes The methods' return types; {@code null} elements mean the "default return type", which is the
-     *                    type returned by {@link #getDefaultReturnType()} ({@code void.class} for {@link
-     *                    ScriptEvaluator} and {@code Object.class} for {@link ExpressionEvaluator})
+     * @param returnTypes The methods' return types; {@code null} elements mean "use the default return type"
      * @see               ScriptEvaluator#getDefaultReturnType()
-     * @see               ExpressionEvaluator#getDefaultReturnType()
+     * @see               ExpressionEvaluator#getDefaultExpressionType()
      */
     @Override public void
     setReturnTypes(Class<?>[] returnTypes) {
         this.setScriptCount(returnTypes.length);
         for (int i = 0; i < returnTypes.length; i++) {
-            this.getScript(i).returnType = (Class<?>) Objects.or(
-                returnTypes[i],
-                ScriptEvaluator.this.getDefaultReturnType()
-            );
+            this.getScript(i).returnType = returnTypes[i];
         }
     }
 
@@ -585,25 +607,6 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     // ---------------------------------------------------------------
 
-    @Override public final void
-    cook(String[] strings) throws CompileException { this.cook(null, strings); }
-
-    @Override public final void
-    cook(@Nullable String[] optionalFileNames, String[] strings) throws CompileException {
-        Reader[] readers = new Reader[strings.length];
-        for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
-        try {
-            this.cook(optionalFileNames, readers);
-        } catch (IOException ex) {
-            throw new InternalCompilerException("SNO: IOException despite StringReader", ex);
-        }
-    }
-
-    @Override public final void
-    cook(Reader[] readers) throws CompileException, IOException {
-        this.cook(null, readers);
-    }
-
     /**
      * On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling 10000 expressions "a + b"
      * (integer) takes about 4 seconds and 56 MB of main memory. The generated class file is 639203 bytes large.
@@ -615,19 +618,19 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * </p>
      */
     @Override public final void
-    cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
+    cook(@Nullable String[] fileNames, Reader[] readers) throws CompileException, IOException {
 
-        if (optionalFileNames != null) this.setScriptCount(optionalFileNames.length);
+        if (fileNames != null) this.setScriptCount(fileNames.length);
         this.setScriptCount(readers.length);
 
         Scanner[] scanners = new Scanner[readers.length];
         for (int i = 0; i < readers.length; ++i) {
-            scanners[i] = new Scanner(optionalFileNames == null ? null : optionalFileNames[i], readers[i]);
+            scanners[i] = new Scanner(fileNames == null ? null : fileNames[i], readers[i]);
         }
         this.cook(scanners);
     }
 
-    @Override public final void
+    public final void
     cook(Scanner scanner) throws CompileException, IOException { this.cook(new Scanner[] { scanner }); }
 
     /**
@@ -669,29 +672,62 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public final void
     cook(Parser[] parsers) throws CompileException, IOException {
 
-        this.setScriptCount(parsers.length);
+        int count = parsers.length;
+
+        this.setScriptCount(count);
+
+        final Parser parser = count == 1 ? parsers[0] : null;
 
         // Create compilation unit.
-        CompilationUnit compilationUnit = this.makeCompilationUnit(parsers.length == 1 ? parsers[0] : null);
+        Java.AbstractCompilationUnit.ImportDeclaration[]
+        importDeclarations = this.parseImports(parser);
 
-        // Create class declaration.
-        final AbstractClassDeclaration
-        cd = this.addPackageMemberClassDeclaration(parsers[0].location(), compilationUnit);
+        Java.BlockStatement[][]   statementss   = new Java.BlockStatement[count][];
+        Java.MethodDeclarator[][] localMethodss = new Java.MethodDeclarator[count][];
 
         // Create methods with one block each.
-        for (int i = 0; i < parsers.length; ++i) {
-
-            Script es     = this.getScript(i);
-            Parser parser = parsers[i];
+        for (int i = 0; i < count; ++i) {
 
             // Create the statements of the method.
-            List<BlockStatement>   statements   = new ArrayList<BlockStatement>();
-            List<MethodDeclarator> localMethods = new ArrayList<MethodDeclarator>();
-            this.makeStatements(i, parser, statements, localMethods);
+            List<Java.BlockStatement>   statements   = new ArrayList<BlockStatement>();
+            List<Java.MethodDeclarator> localMethods = new ArrayList<MethodDeclarator>();
 
-            // Create the method that holds the statements.
-            Location loc = parser.location();
-            cd.addDeclaredMethod(this.makeMethodDeclaration(
+            this.makeStatements(i, parsers[i], statements, localMethods);
+
+            statementss[i]   = (BlockStatement[])   statements.toArray(new Java.BlockStatement[statements.size()]);
+            localMethodss[i] = (MethodDeclarator[]) localMethods.toArray(new Java.MethodDeclarator[localMethods.size()]);
+        }
+
+        this.cook(
+            parsers.length >= 1 ? parsers[0].getScanner().getFileName() : null, // fileName
+            importDeclarations,
+            statementss,
+            localMethodss
+        );
+    }
+
+    void
+    cook(
+        @Nullable String          fileName,
+        ImportDeclaration[]       importDeclarations,
+        Java.BlockStatement[][]   statementss,
+        Java.MethodDeclarator[][] localMethodss
+    ) throws CompileException {
+        int count = statementss.length;
+
+        Collection<Java.MethodDeclarator> methodDeclarators = new ArrayList<Java.MethodDeclarator>();
+
+        for (int i = 0; i < count; i++) {
+            Script                  es           = this.getScript(i);
+            Java.BlockStatement[]   statements   = statementss[i];
+            Java.MethodDeclarator[] localMethods = localMethodss[i];
+
+            final Location loc = statements.length == 0 ? Location.NOWHERE : statements[0].getLocation();
+
+            Class<?> rt = es.returnType;
+            if (rt == null) rt = this.getDefaultReturnType();
+
+            methodDeclarators.add(this.makeMethodDeclaration(
                 loc,                 // location
                 (                    // annotations
                     es.overrideMethod
@@ -699,7 +735,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                     : new Java.Annotation[0]
                 ),
                 es.staticMethod,     // staticMethod
-                es.returnType,       // returnType
+                rt,                  // returnType
                 es.methodName,       // methodName
                 es.parameterTypes,   // parameterTypes
                 es.parameterNames,   // parameterNames
@@ -708,30 +744,54 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             ));
 
             // Also add the "local methods" that a script my declare.
-            for (MethodDeclarator method : localMethods) {
-                cd.addDeclaredMethod(method);
-            }
+            for (MethodDeclarator lm : localMethods) methodDeclarators.add(lm);
         }
 
-        this.cook2(compilationUnit);
+        this.cook(new Java.CompilationUnit(fileName, importDeclarations), methodDeclarators);
     }
 
-    /**
-     * Compiles the given <var>compilationUnit</var>, defines it into a {@link ClassLoader}, loads the generated class,
-     * gets the script methods from that class, and makes them available through {@link #getMethod(int)}.
-     */
-    protected void
-    cook2(CompilationUnit compilationUnit) throws CompileException {
+    public final void
+    cook(CompilationUnit compilationUnit, Collection<Java.MethodDeclarator> methodDeclarators)
+    throws CompileException {
 
-        // Compile and load the compilation unit.
-        final Class<?> c = this.compileToClass(compilationUnit);
+        // Create class declaration.
+        final AbstractClassDeclaration
+        cd = this.cbe.addPackageMemberClassDeclaration(
+            ((MethodDeclarator) methodDeclarators.iterator().next()).getLocation(),
+            compilationUnit
+        );
+
+        for (MethodDeclarator md : methodDeclarators) cd.addDeclaredMethod(md);
+
+        this.cook(compilationUnit);
+    }
+
+    Java.AbstractCompilationUnit.ImportDeclaration[]
+    parseImports(@Nullable Parser parser) throws CompileException, IOException {
+        return this.cbe.makeImportDeclarations(parser);
+    }
+
+    @Override public Method[]
+    getResult() { return this.getMethods(); }
+
+    /**
+     * @return                       The generated methods
+     * @throws IllegalStateException The {@link ScriptEvaluator} has not yet be cooked
+     */
+    Method[]
+    getMethods() {
+
+        Method[] result = this.getMethodsCache;
+        if (result != null) return result;
+
+        final Class<?> c = this.getClazz();
 
         // Find the script methods by name and parameter types.
         assert this.scripts != null;
         int count = this.scripts.length;
 
         // Clear the generated methods.
-        for (int i = 0; i < count; ++i) this.getScript(i).result = null;
+        result = new Method[count];
 
         // "Class.getDeclaredMethod(name, parameterTypes)" is slow when the class declares MANY methods (say, in
         // the thousands). So let's use "Class.getDeclaredMethods()" instead.
@@ -750,24 +810,40 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             Integer idx = (Integer) dms.get(ScriptEvaluator.methodKey(m.getName(), m.getParameterTypes()));
             if (idx == null) continue;
 
-            Script es = this.getScript(idx);
-            assert es.result == null;
-            es.result = m;
+            assert result[idx] == null;
+            result[idx] = m;
         }
 
         // Verify that the class declared "all our" methods.
         for (int i = 0; i < count; ++i) {
-            Script es = this.getScript(i);
-            if (es.result == null) {
+            if (result[i] == null) {
                 throw new InternalCompilerException(
                     "SNO: Generated class does not declare method \""
-                    + es.methodName
+                    + this.getScript(i).methodName
                     + "\" (index "
                     + i
                     + ")"
                 );
             }
         }
+
+        return (this.getMethodsCache = result);
+    }
+    @Nullable private Method[] getMethodsCache;
+
+    protected Type
+    classToType(Location loc, Class<?> clazz) { return this.cbe.classToType(loc, clazz); }
+
+    protected Type[]
+    classesToTypes(Location location, Class<?>[] classes) { return this.cbe.classesToTypes(location, classes); }
+
+    /**
+     * Compiles the given <var>compilationUnit</var>, defines it into a {@link ClassLoader}, loads the generated class,
+     * gets the script methods from that class, and makes them available through {@link #getMethod(int)}.
+     */
+    protected void
+    cook(CompilationUnit compilationUnit) throws CompileException {
+        this.cbe.cook(compilationUnit);
     }
 
     private static Object
@@ -809,19 +885,19 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     getMethod() { return this.getMethod(0); }
 
     @Override public Method
-    getMethod(int idx) { return this.getScript(idx).getResult(); }
+    getMethod(int idx) { return this.getMethods()[idx]; }
+
+    @Override public Class<?>
+    getClazz() { return this.cbe.getClazz(); }
+
+    @Override public Map<String, byte[]>
+    getBytecodes() { return this.cbe.getBytecodes(); }
 
     /**
-     * @return {@code void.class}
-     * @see    #setReturnTypes(Class[])
+     * @return The return type of the indexed script; {@code null} means "use the {@link #setDefaultReturnType(Class)
+     *         default return type}"
      */
-    protected Class<?>
-    getDefaultReturnType() { return void.class; }
-
-    /**
-     * @return The return type of the indexed script.
-     */
-    protected final Class<?>
+    @Nullable protected final Class<?>
     getReturnType(int index) { return this.getScript(index).returnType; }
 
     /**
@@ -980,16 +1056,17 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
 
     private Java.MethodDeclarator
     makeMethodDeclaration(
-        Location                  location,
-        Java.Annotation[]         annotations,
-        boolean                   staticMethod,
-        Class<?>                  returnType,
-        String                    methodName,
-        Class<?>[]                parameterTypes,
-        String[]                  parameterNames,
-        Class<?>[]                thrownExceptions,
-        List<Java.BlockStatement> statements
+        Location              location,
+        Java.Annotation[]     annotations,
+        boolean               staticMethod,
+        Class<?>              returnType,
+        String                methodName,
+        Class<?>[]            parameterTypes,
+        String[]              parameterNames,
+        Class<?>[]            thrownExceptions,
+        Java.BlockStatement[] statements
     ) {
+
         if (parameterNames.length != parameterTypes.length) {
             throw new InternalCompilerException(
                 "Lengths of \"parameterNames\" ("
@@ -1035,7 +1112,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             fps,                                             // formalParameters
             this.classesToTypes(location, thrownExceptions), // thrownExceptions
             null,                                            // defaultValue
-            statements                                       // optionalStatements
+            Arrays.asList(statements)                        // statements
         );
     }
 
@@ -1089,7 +1166,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     /**
      * <pre>
      *     {@link ScriptEvaluator} se = new {@link ScriptEvaluator#ScriptEvaluator() ScriptEvaluator}();
-     *     se.{@link #setDefaultImports(String[]) setDefaultImports}.(optionalDefaultImports);
+     *     se.{@link #setDefaultImports(String[]) setDefaultImports}.(defaultImports);
      *     se.{@link #setClassName(String) setClassName}.(className);
      *     se.{@link #setExtendedClass(Class) setExtendedClass}.(optionalExtendedClass);
      *     se.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
@@ -1102,7 +1179,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Deprecated public static Object
     createFastScriptEvaluator(
         Scanner               scanner,
-        @Nullable String[]    optionalDefaultImports,
+        String[]              defaultImports,
         String                className,
         @Nullable Class<?>    optionalExtendedClass,
         Class<?>              interfaceToImplement,
@@ -1110,20 +1187,21 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
-        se.setDefaultImports(optionalDefaultImports);
+        se.setDefaultImports(defaultImports);
         se.setClassName(className);
         se.setExtendedClass(optionalExtendedClass);
         se.setParentClassLoader(optionalParentClassLoader);
         return se.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
-    /**
-     * Don't use.
-     */
+    @Override public void
+    setDefaultImports(String... defaultImports) { this.cbe.setDefaultImports(defaultImports); }
+
+    @Override public String[]
+    getDefaultImports() { return this.cbe.getDefaultImports(); }
+
     @Override public final Object
-    createInstance(Reader reader) {
-        throw new UnsupportedOperationException("createInstance");
-    }
+    createInstance(Reader reader) { throw new UnsupportedOperationException("createInstance"); }
 
     @Override public <T> Object
     createFastEvaluator(Reader reader, Class<T> interfaceToImplement, String[] parameterNames)
@@ -1175,13 +1253,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.setImplementedInterfaces(new Class[] { interfaceToImplement });
         this.setOverrideMethod(true);
         this.setStaticMethod(false);
-        if (this instanceof IExpressionEvaluator) {
-
-            // Must not call "IExpressionEvaluator.setReturnType()".
-            ((IExpressionEvaluator) this).setExpressionType(methodToImplement.getReturnType());
-        } else {
-            this.setReturnType(methodToImplement.getReturnType());
-        }
+        this.setReturnType(methodToImplement.getReturnType());
         this.setMethodName(methodToImplement.getName());
         this.setParameters(parameterNames, methodToImplement.getParameterTypes());
         this.setThrownExceptions(methodToImplement.getExceptionTypes());

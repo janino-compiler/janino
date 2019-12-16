@@ -26,7 +26,7 @@
 package org.codehaus.commons.compiler;
 
 import java.io.Reader;
-import java.security.Permissions;
+import java.util.Map;
 
 /**
  * A simplified Java compiler that can compile only a single compilation unit. (A "compilation unit" is the document
@@ -52,6 +52,8 @@ import java.security.Permissions;
 public
 interface ISimpleCompiler extends ICookable {
 
+    Map<String /*className*/, byte[] /*bytes*/> getBytecodes();
+
     /**
      * Returns a {@link ClassLoader} object through which the previously compiled classes can be accessed. This {@link
      * ClassLoader} can be used for subsequent {@link ISimpleCompiler}s in order to compile compilation units that use
@@ -62,16 +64,4 @@ interface ISimpleCompiler extends ICookable {
      * </p>
      */
     ClassLoader getClassLoader();
-
-    /**
-     * @deprecated Use {@link Sandbox#Sandbox(java.security.PermissionCollection)} instead
-     */
-    @Deprecated void
-    setPermissions(Permissions permissions);
-
-    /**
-     * @deprecated Use {@link Sandbox#Sandbox(java.security.PermissionCollection)} instead
-     */
-    @Deprecated void
-    setNoPermissions();
 }

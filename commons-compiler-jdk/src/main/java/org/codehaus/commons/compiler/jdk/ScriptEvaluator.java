@@ -42,9 +42,12 @@ import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
+import org.codehaus.commons.compiler.MultiCookable;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -65,7 +68,9 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  */
 public
-class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
+class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
+
+    final ClassBodyEvaluator cbe = new ClassBodyEvaluator();
 
     /**
      * Whether methods override a method declared by a supertype; {@code null} means "none".
@@ -77,7 +82,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      */
     @Nullable protected boolean[] optionalStaticMethod;
 
-    @Nullable private Class<?>[]   optionalReturnTypes;
+    @Nullable private Class<?>[]   returnTypes;
     @Nullable private String[]     optionalMethodNames;
     @Nullable private String[][]   optionalParameterNames;
     @Nullable private Class<?>[][] optionalParameterTypes;
@@ -87,6 +92,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
      * null=uncooked
      */
     @Nullable private Method[] result;
+
+    private Class<?> defaultReturnType = IScriptEvaluator.DEFAULT_RETURN_TYPE;
 
     /**
      * Equivalent to
@@ -246,6 +253,49 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     public ScriptEvaluator() {}
 
     @Override public void
+    setParentClassLoader(@Nullable ClassLoader parentClassLoader) { this.cbe.setParentClassLoader(parentClassLoader); }
+
+    @Override public void
+    setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
+        this.cbe.setDebuggingInformation(debugSource, debugLines, debugVars);
+    }
+
+    @Override public void
+    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
+        this.cbe.setCompileErrorHandler(compileErrorHandler);
+    }
+
+    @Override public void
+    setWarningHandler(@Nullable WarningHandler warningHandler) {
+        this.cbe.setWarningHandler(warningHandler);
+    }
+
+    @Override public void
+    setClassName(String className) {
+        this.cbe.setClassName(className);
+    }
+
+    @Override public void
+    setImplementedInterfaces(Class<?>[] implementedInterfaces) {
+        this.cbe.setImplementedInterfaces(implementedInterfaces);
+    }
+
+    @Override public void
+    setExtendedClass(@Nullable Class<?> extendedClass) { this.cbe.setExtendedClass(extendedClass); }
+
+    @Override public void
+    setDefaultReturnType(Class<?> defaultReturnType) { this.defaultReturnType = defaultReturnType; }
+
+    @Override public Class<?>
+    getDefaultReturnType() { return this.defaultReturnType; }
+
+    @Override public void
+    setDefaultImports(String... defaultImports) { this.cbe.setDefaultImports(defaultImports); }
+
+    @Override public String[]
+    getDefaultImports() { return this.cbe.getDefaultImports(); }
+
+    @Override public void
     setOverrideMethod(boolean overrideMethod) { this.setOverrideMethod(new boolean[] { overrideMethod }); }
 
     @Override public void
@@ -267,11 +317,6 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         this.setThrownExceptions(new Class[][] { thrownExceptions });
     }
 
-    @Override public void
-    cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException {
-        this.cook(new String[] { optionalFileName }, new Reader[] { r });
-    }
-
     @Override @Nullable public Object
     evaluate(@Nullable Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
 
@@ -287,7 +332,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Override public void
     setReturnTypes(Class<?>[] returnTypes) {
         for (Class<?> rt : returnTypes) assert rt != null;
-        this.optionalReturnTypes = returnTypes.clone();
+        this.returnTypes = returnTypes.clone();
     }
 
     @Override public void
@@ -302,11 +347,8 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     @Override public void
     setThrownExceptions(Class<?>[][] thrownExceptions) { this.optionalThrownExceptions = thrownExceptions.clone(); }
 
-    @Override public final void
-    cook(Reader[] readers) throws CompileException, IOException { this.cook(null, readers); }
-
     @Override public void
-    cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
+    cook(String[] fileNames, Reader[] readers) throws CompileException, IOException {
         String[] imports;
 
         if (readers.length == 1) {
@@ -319,35 +361,21 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             imports = new String[0];
         }
 
-        this.cook(optionalFileNames, readers, imports);
-    }
-
-    @Override public final void
-    cook(String[] strings) throws CompileException { this.cook(null, strings); }
-
-    @Override public void
-    cook(@Nullable String[] optionalFileNames, String[] strings) throws CompileException {
-        Reader[] readers = new Reader[strings.length];
-        for (int i = 0; i < strings.length; ++i) readers[i] = new StringReader(strings[i]);
-        try {
-            this.cook(optionalFileNames, readers);
-        } catch (IOException ioe) {
-            throw new RuntimeException("SNO: IOException despite StringReader", ioe);
-        }
+        this.cook(fileNames, readers, imports);
     }
 
     /**
      * @param readers The scripts to cook
      */
     protected final void
-    cook(@Nullable String[] optionalFileNames, Reader[] readers, String[] imports)
+    cook(String[] fileNames, Reader[] readers, String[] imports)
     throws CompileException, IOException {
 
         // SUPPRESS CHECKSTYLE UsageDistance:7
         String[]     omns = this.optionalMethodNames;
         boolean[]    oom  = this.optionalOverrideMethod;
         boolean[]    osm  = this.optionalStaticMethod;
-        Class<?>[]   orts = this.optionalReturnTypes;
+        Class<?>[]   orts = this.returnTypes;
         String[][]   opns = this.optionalParameterNames;
         Class<?>[][] opts = this.optionalParameterTypes;
         Class<?>[][] otes = this.optionalThrownExceptions;
@@ -379,7 +407,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             boolean overrideMethod = oom != null && oom[i];
             boolean staticMethod   = osm   == null || osm[i];
 
-            final Class<?>   returnType       = orts != null ? orts[i] : this.getDefaultReturnType();
+            final Class<?>   returnType       = orts != null && orts[i] != null ? orts[i] : this.getDefaultReturnType();
             final String[]   parameterNames   = opns != null ? opns[i] : new String[0];
             final Class<?>[] parameterTypes   = opts != null ? opts[i] : new Class<?>[0];
             final Class<?>[] thrownExceptions = otes != null ? otes[i] : new Class<?>[0];
@@ -411,9 +439,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
                 classBody.add(new StringReader(sw.toString()));
             }
 
-            classBody.add(this.newFileName((
-                optionalFileNames != null && optionalFileNames[i] != null ? optionalFileNames[i] :
-                i == 0                                                    ? null                 :
+            classBody.add(this.cbe.newFileName((
+                fileNames[i] != null ? fileNames[i] :
+                i == 0               ? null         :
                 "[" + i + "]"
             ), readers[i]));
 
@@ -426,7 +454,7 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
             }
         }
 
-        super.cook(optionalFileNames == null ? null : optionalFileNames[0], imports, Readers.concat(classBody));
+        this.cbe.cook(fileNames[0], imports, Readers.concat(classBody));
 
         Class<?> c = this.getClazz();
 
@@ -493,19 +521,13 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
     }
 
     /**
-     * The default return type of a script is {@code void}.
-     */
-    protected Class<?>
-    getDefaultReturnType() { return void.class; }
-
-    /**
      * @return The return type of the <var>i</var>th script
      */
     protected final Class<?>
     getReturnType(int i) {
 
-        if (this.optionalReturnTypes != null) {
-            Class<?> rt = this.optionalReturnTypes[i];
+        if (this.returnTypes != null) {
+            Class<?> rt = this.returnTypes[i];
             assert rt != null;
             return rt;
         }
@@ -586,6 +608,9 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         }
     }
 
+    @Override
+    public Method[] getResult() { return this.getMethods(); }
+
     @Override public Method
     getMethod(int idx) {
         return this.getMethods()[idx];
@@ -599,4 +624,10 @@ class ScriptEvaluator extends ClassBodyEvaluator implements IScriptEvaluator {
         if (this.result != null) return this.result;
         throw new IllegalStateException("\"cook()\" has not yet been called");
     }
+
+    @Override public Class<?>
+    getClazz() { return this.cbe.getClazz(); }
+
+    @Override public Map<String, byte[]>
+    getBytecodes() { return this.cbe.getBytecodes(); }
 }

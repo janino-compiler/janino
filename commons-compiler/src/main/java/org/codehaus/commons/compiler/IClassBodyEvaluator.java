@@ -27,6 +27,7 @@ package org.codehaus.commons.compiler;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Map;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -96,7 +97,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </pre>
  */
 public
-interface IClassBodyEvaluator extends ISimpleCompiler {
+interface IClassBodyEvaluator extends ICookable {
 
     /**
      * Default name for the generated class.
@@ -116,12 +117,13 @@ interface IClassBodyEvaluator extends ISimpleCompiler {
      *         "static java.util.Collections.EMPTY_MAP", // Single static import
      *         "static java.util.Collections.*",         // Static-import-on-demand
      *     );</pre>
-     * <p>
-     *   Passing {@code null} as the argument is equivalent with {@code new String[0]}, i.e. <em>no</em> default
-     *   imports.
-     * </p>
      */
-    void setDefaultImports(@Nullable String... optionalDefaultImports);
+    void setDefaultImports(String... defaultImports);
+
+    /**
+     * @return The default imports that were previously configured with {@link #setDefaultImports(String...)}
+     */
+    String[] getDefaultImports();
 
     /**
      * Sets the name of the generated class. Defaults to {@link #DEFAULT_CLASS_NAME}. In most cases, there is no need
@@ -162,13 +164,16 @@ interface IClassBodyEvaluator extends ISimpleCompiler {
     setImplementedTypes(Class<?>[] implementedInterfaces);
 
     /**
-     * Returns the loaded {@link Class}.
-     * <p>
-     *   This method must only be called after exactly one of the {@link #cook(String, java.io.Reader)} methods was
-     *   called.
-     * </p>
+     * @return                       The generated {@link Class}
+     * @throws IllegalStateException This {@link IClassBodyEvaluator} is not yet cooked
      */
     Class<?> getClazz();
+
+    /**
+     * @return                        The generated Java bytecode; maps class name to bytes
+     * @throws IllegalStateException This IClassBodyEvaluator is not yet cooked
+     */
+    Map<String /*className*/, byte[] /*bytes*/> getBytecodes();
 
     /**
      * Scans, parses and compiles a class body from the tokens delivered by the the given {@link Reader}, then creates

@@ -62,7 +62,7 @@ interface ICookable {
      *   The parent class loader defaults to the current thread's context class loader.
      * </p>
      */
-    void setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader);
+    void setParentClassLoader(@Nullable ClassLoader parentClassLoader);
 
     /**
      * Determines what kind of debugging information is included in the generates classes. The default is typically
@@ -73,9 +73,9 @@ interface ICookable {
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link Reader}.
      *
-     * @param optionalFileName Used when reporting errors and warnings
+     * @param fileName Used when reporting errors and warnings
      */
-    void cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException;
+    void cook(@Nullable String fileName, Reader r) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link Reader}.
@@ -137,7 +137,7 @@ interface ICookable {
      * Reads, scans, parses and compiles Java tokens from the given {@link File} with the given {@code encoding}.
      */
     void
-    cookFile(File file, @Nullable String optionalEncoding) throws CompileException, IOException;
+    cookFile(File file, @Nullable String encoding) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the named file, encoded in the "platform default encoding".
@@ -170,15 +170,14 @@ interface ICookable {
      *   definitely throw a {@link CompileException} if one or more compile errors have occurred.
      * </p>
      *
-     * @param optionalCompileErrorHandler {@code null} to restore the default behavior (throwing a {@link
-     *                                    CompileException}
+     * @param compileErrorHandler {@code null} to restore the default behavior (throwing a {@link CompileException}
      */
-    void setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler);
+    void setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler);
 
     /**
      * By default, warnings are discarded, but an application my install a custom {@link WarningHandler}.
      *
-     * @param optionalWarningHandler {@code null} to indicate that no warnings be issued
+     * @param warningHandler {@code null} to indicate that no warnings be issued
      */
-    void setWarningHandler(@Nullable WarningHandler optionalWarningHandler);
+    void setWarningHandler(@Nullable WarningHandler warningHandler);
 }
