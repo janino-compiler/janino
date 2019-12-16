@@ -44,7 +44,7 @@ class ExpressionDemo extends DemoBase {
         String[]   parameterNames         = {};
         Class<?>[] parameterTypes         = {};
         Class<?>[] thrownExceptions       = {};
-        String[]   optionalDefaultImports = null;
+        String[]   defaultImports         = new String[0];
 
         int i;
         for (i = 0; i < args.length; ++i) {
@@ -63,7 +63,7 @@ class ExpressionDemo extends DemoBase {
                 thrownExceptions = DemoBase.stringToTypes(args[++i]);
             } else
             if ("-di".equals(arg)) {
-                optionalDefaultImports = DemoBase.explode(args[++i]);
+                defaultImports = DemoBase.explode(args[++i]);
             } else
             if ("-help".equals(arg)) {
                 System.err.println("Usage:");
@@ -123,7 +123,7 @@ class ExpressionDemo extends DemoBase {
         // Create "ExpressionEvaluator" object.
         IExpressionEvaluator ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
         if (optionalExpressionType != null) ee.setExpressionType(optionalExpressionType);
-        ee.setDefaultImports(optionalDefaultImports);
+        ee.setDefaultImports(defaultImports);
         ee.setParameters(parameterNames, parameterTypes);
         ee.setThrownExceptions(thrownExceptions);
         ee.cook(expression);
