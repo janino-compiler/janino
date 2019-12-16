@@ -342,7 +342,7 @@ class UnitCompiler {
                 throw new CompileException((
                     this.compileErrorCount
                     + " error(s) while compiling unit \""
-                    + this.abstractCompilationUnit.optionalFileName
+                    + this.abstractCompilationUnit.fileName
                     + "\""
                 ), null);
             }
@@ -365,7 +365,7 @@ class UnitCompiler {
                 throw new CompileException(cfe.getMessage(), pmtd.getLocation(), cfe);
             } catch (RuntimeException re) {
                 throw new InternalCompilerException(
-                    "Compiling \"" + pmtd + "\" in \"" + cu.optionalFileName + "\": " + re.getMessage(),
+                    "Compiling \"" + pmtd + "\" in \"" + cu.fileName + "\": " + re.getMessage(),
                     re
                 );
             }
@@ -2545,7 +2545,7 @@ class UnitCompiler {
                 List<? extends BlockStatement> statements = (
                     es instanceof BlockStatement
                     ? ((Block) es).statements
-                    : ((FunctionDeclarator) es).optionalStatements
+                    : ((FunctionDeclarator) es).statements
                 );
                 if (statements != null) {
                     for (BlockStatement bs2 : statements) {
@@ -3304,11 +3304,11 @@ class UnitCompiler {
                 if (((MethodDeclarator) fd).isStatic()) {
                     this.compileError("Static interface method declarations must not have the \"default\" modifier", fd.getLocation()); // SUPPRESS CHECKSTYLE LineLength
                 } else
-                if (fd.optionalStatements == null) {
+                if (fd.statements == null) {
                     this.compileError("Default method declarations must have a body", fd.getLocation());
                 }
             } else {
-                if (fd.optionalStatements != null) this.compileError("Method must not declare a body", fd.getLocation()); // SUPPRESS CHECKSTYLE LineLength
+                if (fd.statements != null) this.compileError("Method must not declare a body", fd.getLocation()); // SUPPRESS CHECKSTYLE LineLength
                 return;
             }
         }
@@ -3413,7 +3413,7 @@ class UnitCompiler {
             }
 
             // Compile the function body.
-            List<? extends BlockStatement> oss = fd.optionalStatements;
+            List<? extends BlockStatement> oss = fd.statements;
             if (oss == null) {
                 this.compileError("Method must have a body", fd.getLocation());
                 return;
@@ -3527,8 +3527,8 @@ class UnitCompiler {
                 UnitCompiler.buildLocalVariableMap(cd.optionalConstructorInvocation, localVars);
             }
         }
-        if (fd.optionalStatements != null) {
-            for (BlockStatement bs : fd.optionalStatements) localVars = this.buildLocalVariableMap(bs, localVars);
+        if (fd.statements != null) {
+            for (BlockStatement bs : fd.statements) localVars = this.buildLocalVariableMap(bs, localVars);
         }
     }
 
@@ -5526,7 +5526,7 @@ class UnitCompiler {
                 optionalQualificationAccess,    // optionalQualification
                 parameterAccesses               // arguments
             ),
-            Collections.<BlockStatement>emptyList() // optionalStatements
+            Collections.<BlockStatement>emptyList() // statements
         ));
 
         // Compile the anonymous class.
@@ -6057,7 +6057,7 @@ class UnitCompiler {
 
                     List<? extends BlockStatement> ss = (
                         is.getEnclosingScope() instanceof FunctionDeclarator
-                        ? ((FunctionDeclarator) is.getEnclosingScope()).optionalStatements
+                        ? ((FunctionDeclarator) is.getEnclosingScope()).statements
                         : is.getEnclosingScope() instanceof Block
                         ? ((Block) is.getEnclosingScope()).statements
                         : null
@@ -8166,7 +8166,7 @@ class UnitCompiler {
                                     statements = ((Block) es).statements;
                                 } else
                                 if (es instanceof FunctionDeclarator) {
-                                    statements = ((FunctionDeclarator) es).optionalStatements;
+                                    statements = ((FunctionDeclarator) es).statements;
                                 } else
                                 if (es instanceof ForEachStatement) {
                                     FunctionDeclarator.FormalParameter fp = ((ForEachStatement) es).currentElement;
