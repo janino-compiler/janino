@@ -37,24 +37,6 @@ import java.security.ProtectionDomain;
 
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
-/**
- * This class establishes a security manager that confines the permissions for code executed through classes that are
- * loaded through specific class loaders.
- * <p>
- *   "To execute through a class" means that the execution stack includes the class. E.g., if a method of class {@code
- *   A} invokes a method of class {@code B}, which then invokes a method of class {@code C}, and any of the three
- *   classes were loaded by a previously {@link #confine(ClassLoader, PermissionCollection) confined} class loader,
- *   then for all actions that are executed by class {@code C} the <i>intersection</i> of the three {@link
- *   PermissionCollection}s applies.
- * </p>
- * <p>
- *   Once the permissions for a class loader are confined, they cannot be changed; this prevents any attempts (e.g.
- *   of a confined class itself) to change the confinement.
- * </p>
- * <p>
- *   This class is a stripped-down copy of {@code de.unkrig.commons.lang.security.Sandbox}.
- * </p>
- */
 public final
 class Sandbox {
 
