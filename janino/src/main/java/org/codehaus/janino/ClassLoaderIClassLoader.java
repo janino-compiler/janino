@@ -44,7 +44,7 @@ class ClassLoaderIClassLoader extends IClassLoader {
     public
     ClassLoaderIClassLoader(ClassLoader classLoader) {
         super(
-            null   // optionalParentIClassLoader
+            null   // parentIClassLoader
         );
         this.classLoader = classLoader;
 

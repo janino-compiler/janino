@@ -43,8 +43,8 @@ class ResourceFinderIClassLoader extends IClassLoader {
     private final ResourceFinder resourceFinder;
 
     public
-    ResourceFinderIClassLoader(ResourceFinder resourceFinder, @Nullable IClassLoader optionalParentIClassLoader) {
-        super(optionalParentIClassLoader);
+    ResourceFinderIClassLoader(ResourceFinder resourceFinder, @Nullable IClassLoader parentIClassLoader) {
+        super(parentIClassLoader);
         this.resourceFinder = resourceFinder;
         this.postConstruct();
     }

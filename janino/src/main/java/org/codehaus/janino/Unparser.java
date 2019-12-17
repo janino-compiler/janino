@@ -193,7 +193,7 @@ class Unparser {
         @Override @Nullable public Void
         visitCompilationUnit(CompilationUnit cu) {
 
-            PackageDeclaration opd = cu.optionalPackageDeclaration;
+            PackageDeclaration opd = cu.packageDeclaration;
             if (opd != null) {
                 Unparser.this.pw.println();
                 Unparser.this.pw.println("package " + opd.packageName + ';');
@@ -369,8 +369,8 @@ class Unparser {
 
             Unparser.this.pw.append(ec.name);
 
-            if (ec.optionalArguments != null) {
-                Unparser.this.unparseFunctionInvocationArguments(ec.optionalArguments);
+            if (ec.arguments != null) {
+                Unparser.this.unparseFunctionInvocationArguments(ec.arguments);
             }
 
             if (!Unparser.classDeclarationBodyIsEmpty(ec)) {
@@ -449,7 +449,7 @@ class Unparser {
         @Override @Nullable public Void
         visitBreakStatement(BreakStatement bs) {
             Unparser.this.pw.print("break");
-            if (bs.optionalLabel != null) Unparser.this.pw.print(' ' + bs.optionalLabel);
+            if (bs.label != null) Unparser.this.pw.print(' ' + bs.label);
             Unparser.this.pw.print(';');
             return null;
         }
@@ -457,7 +457,7 @@ class Unparser {
         @Override @Nullable public Void
         visitContinueStatement(ContinueStatement cs) {
             Unparser.this.pw.print("continue");
-            if (cs.optionalLabel != null) Unparser.this.pw.print(' ' + cs.optionalLabel);
+            if (cs.label != null) Unparser.this.pw.print(' ' + cs.label);
             Unparser.this.pw.print(';');
             return null;
         }
@@ -468,7 +468,7 @@ class Unparser {
             Unparser.this.pw.print("assert ");
             Unparser.this.unparseAtom(as.expression1);
 
-            Rvalue oe2 = as.optionalExpression2;
+            Rvalue oe2 = as.expression2;
             if (oe2 != null) {
                 Unparser.this.pw.print(" : ");
                 Unparser.this.unparseAtom(oe2);
@@ -503,13 +503,13 @@ class Unparser {
         @Override @Nullable public Void
         visitForStatement(ForStatement fs) {
             Unparser.this.pw.print("for (");
-            if (fs.optionalInit != null) {
-                Unparser.this.unparseBlockStatement(fs.optionalInit);
+            if (fs.init != null) {
+                Unparser.this.unparseBlockStatement(fs.init);
             } else {
                 Unparser.this.pw.print(';');
             }
 
-            Rvalue oc = fs.optionalCondition;
+            Rvalue oc = fs.condition;
             if (oc != null) {
                 Unparser.this.pw.print(' ');
                 Unparser.this.unparseAtom(oc);
@@ -517,7 +517,7 @@ class Unparser {
 
             Unparser.this.pw.print(';');
 
-            Rvalue[] ou = fs.optionalUpdate;
+            Rvalue[] ou = fs.update;
             if (ou != null) {
                 Unparser.this.pw.print(' ');
                 for (int i = 0; i < ou.length; ++i) {
@@ -587,7 +587,7 @@ class Unparser {
 
             Unparser.this.pw.print("return");
 
-            Rvalue orv = rs.optionalReturnValue;
+            Rvalue orv = rs.returnValue;
             if (orv != null) {
                 Unparser.this.pw.print(' ');
                 Unparser.this.unparseAtom(orv);
@@ -685,8 +685,8 @@ class Unparser {
 
         @Override @Nullable public Void
         visitSuperConstructorInvocation(SuperConstructorInvocation sci) {
-            if (sci.optionalQualification != null) {
-                Unparser.this.unparseLhs(sci.optionalQualification, ".");
+            if (sci.qualification != null) {
+                Unparser.this.unparseLhs(sci.qualification, ".");
                 Unparser.this.pw.print('.');
             }
             Unparser.this.pw.print("super");
@@ -779,8 +779,8 @@ class Unparser {
 
                         @Override @Nullable public Void
                         visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {
-                            if (scfae.optionalQualification != null) {
-                                Unparser.this.unparseType(scfae.optionalQualification);
+                            if (scfae.qualification != null) {
+                                Unparser.this.unparseType(scfae.qualification);
                                 Unparser.this.pw.print(".super." + scfae.fieldName);
                             } else
                             {
@@ -808,8 +808,8 @@ class Unparser {
 
                 @Override @Nullable public Void
                 visitMethodInvocation(MethodInvocation mi) {
-                    if (mi.optionalTarget != null) {
-                        Unparser.this.unparseLhs(mi.optionalTarget, ".");
+                    if (mi.target != null) {
+                        Unparser.this.unparseLhs(mi.target, ".");
                         Unparser.this.pw.print('.');
                     }
                     Unparser.this.pw.print(mi.methodName);
@@ -819,8 +819,8 @@ class Unparser {
 
                 @Override @Nullable public Void
                 visitNewClassInstance(NewClassInstance nci) {
-                    if (nci.optionalQualification != null) {
-                        Unparser.this.unparseLhs(nci.optionalQualification, ".");
+                    if (nci.qualification != null) {
+                        Unparser.this.unparseLhs(nci.qualification, ".");
                         Unparser.this.pw.print('.');
                     }
                     assert nci.type != null;
@@ -979,8 +979,8 @@ class Unparser {
 
                 @Override @Nullable public Void
                 visitNewAnonymousClassInstance(NewAnonymousClassInstance naci) {
-                    if (naci.optionalQualification != null) {
-                        Unparser.this.unparseLhs(naci.optionalQualification, ".");
+                    if (naci.qualification != null) {
+                        Unparser.this.unparseLhs(naci.qualification, ".");
                         Unparser.this.pw.print('.');
                     }
                     Unparser.this.pw.print("new " + naci.anonymousClassDeclaration.baseType.toString() + '(');
@@ -1257,7 +1257,7 @@ class Unparser {
 
         this.pw.print(' ');
 
-        ConstructorInvocation oci = cd.optionalConstructorInvocation;
+        ConstructorInvocation oci = cd.constructorInvocation;
         if (oci != null) {
             this.pw.println('{');
             this.pw.print(AutoIndentWriter.INDENT);
@@ -1335,7 +1335,7 @@ class Unparser {
         this.pw.print(vd.name);
         for (int i = 0; i < vd.brackets; ++i) this.pw.print("[]");
 
-        ArrayInitializerOrRvalue oi = vd.optionalInitializer;
+        ArrayInitializerOrRvalue oi = vd.initializer;
         if (oi != null) {
             this.pw.print(" = ");
             this.unparseArrayInitializerOrRvalue(oi);
@@ -1562,7 +1562,7 @@ class Unparser {
         this.unparseModifiers(ncd.getModifiers());
         this.pw.print("class " + ncd.name);
 
-        Type oet = ncd.optionalExtendedType;
+        Type oet = ncd.extendedType;
         if (oet != null) {
             this.pw.print(" extends ");
             this.unparseType(oet);
@@ -1700,10 +1700,10 @@ class Unparser {
 
     private void
     unparseDocComment(DocCommentable dc) {
-        String optionalDocComment = dc.getDocComment();
-        if (optionalDocComment != null) {
+        String docComment = dc.getDocComment();
+        if (docComment != null) {
             this.pw.print("/**");
-            BufferedReader br = new BufferedReader(new StringReader(optionalDocComment));
+            BufferedReader br = new BufferedReader(new StringReader(docComment));
             for (;;) {
                 String line;
                 try {
@@ -1745,7 +1745,7 @@ class Unparser {
 
         this.pw.print(typeParameter.name);
 
-        ReferenceType[] bounds = typeParameter.optionalBound;
+        ReferenceType[] bounds = typeParameter.bound;
         if (bounds != null) {
             this.pw.print(" extends ");
             for (int i = 0; i < bounds.length; i++) {

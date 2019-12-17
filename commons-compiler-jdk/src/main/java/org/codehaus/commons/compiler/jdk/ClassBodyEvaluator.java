@@ -62,7 +62,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
     private String[]           defaultImports = new String[0];
     private String             className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
-    @Nullable private Class<?> optionalExtendedType;
+    @Nullable private Class<?> extendedType;
     private Class<?>[]         implementedTypes = new Class[0];
 
     /* {@code null} means "not yet cooked".
@@ -79,13 +79,13 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     getDefaultImports() { return this.defaultImports.clone(); }
 
     @Override public void
-    setExtendedClass(@Nullable Class<?> optionalExtendedType) { this.optionalExtendedType = optionalExtendedType; }
+    setExtendedClass(@Nullable Class<?> extendedType) { this.extendedType = extendedType; }
 
     /**
      * @deprecated Use {@link #setExtendedClass(Class)} instead
      */
     @Deprecated @Override public void
-    setExtendedType(@Nullable Class<?> optionalExtendedClass) { this.setExtendedClass(optionalExtendedClass); }
+    setExtendedType(@Nullable Class<?> extendedClass) { this.setExtendedClass(extendedClass); }
 
     @Override public void
     setImplementedInterfaces(Class<?>[] implementedTypes) { this.implementedTypes = implementedTypes; }
@@ -97,9 +97,9 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     setImplementedTypes(Class<?>[] implementedInterfaces) { this.setImplementedInterfaces(implementedInterfaces); }
 
     @Override public void
-    cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException {
+    cook(@Nullable String fileName, Reader r) throws CompileException, IOException {
         if (!r.markSupported()) r = new BufferedReader(r);
-        this.cook(optionalFileName, ClassBodyEvaluator.parseImportDeclarations(r), r);
+        this.cook(fileName, ClassBodyEvaluator.parseImportDeclarations(r), r);
     }
 
     /**
@@ -107,7 +107,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * @param r The class body to cook, without leading IMPORT declarations
      */
     protected void
-    cook(@Nullable String optionalFileName, String[] imports, Reader r) throws CompileException, IOException {
+    cook(@Nullable String fileName, String[] imports, Reader r) throws CompileException, IOException {
 
         // Wrap the class body in a compilation unit.
         {
@@ -159,7 +159,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
                 pw.print(simpleClassName);
 
                 {
-                    Class<?> oet = this.optionalExtendedType;
+                    Class<?> oet = this.extendedType;
                     if (oet != null) {
                         pw.print(" extends ");
                         pw.print(oet.getCanonicalName());
@@ -187,7 +187,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
             r = Readers.concat(
                 new StringReader(sw1.toString()),
-                this.newFileName(optionalFileName, r),
+                this.newFileName(fileName, r),
                 new StringReader(sw2.toString())
             );
         }
@@ -195,7 +195,7 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         /**
          * Compiles the generated compilation unit.
          */
-        super.cook(optionalFileName, r);
+        super.cook(fileName, r);
 
         try {
 
@@ -213,9 +213,9 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      * {@code char} is read from the <var>reader</var>.
      */
     protected Reader
-    newFileName(@Nullable final String optionalFileName, Reader reader) {
+    newFileName(@Nullable final String fileName, Reader reader) {
         return Readers.onFirstChar(reader, new Runnable() {
-            @Override public void run() { ClassBodyEvaluator.this.addOffset(optionalFileName); }
+            @Override public void run() { ClassBodyEvaluator.this.addOffset(fileName); }
         });
     }
 

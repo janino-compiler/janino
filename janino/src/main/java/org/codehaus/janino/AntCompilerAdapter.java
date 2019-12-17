@@ -95,10 +95,10 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
         File[] classPath = AntCompilerAdapter.pathToFiles(this.compileClasspath, new File[] { new File(".") });
 
         // Determine the ext directories.
-        @Nullable File[] optionalExtDirs = AntCompilerAdapter.pathToFiles(this.extdirs);
+        @Nullable File[] extDirs = AntCompilerAdapter.pathToFiles(this.extdirs);
 
         // Determine the boot class path
-        @Nullable File[] optionalBootClassPath = AntCompilerAdapter.pathToFiles(this.bootclasspath);
+        @Nullable File[] bootClassPath = AntCompilerAdapter.pathToFiles(this.bootclasspath);
 
         // Determine the encoding.
         Charset encoding2 = Charset.forName(this.encoding);
@@ -130,8 +130,8 @@ class AntCompilerAdapter extends DefaultCompilerAdapter {
             ICompiler compiler = new Compiler();
             compiler.setSourcePath(sourcePath);
             compiler.setClassPath(classPath);
-            compiler.setExtensionDirectories(optionalExtDirs);
-            compiler.setBootClassPath(optionalBootClassPath);
+            compiler.setExtensionDirectories(extDirs);
+            compiler.setBootClassPath(bootClassPath);
             compiler.setDestinationDirectory(destinationDirectory, false);
             compiler.setEncoding(encoding2);
             compiler.setVerbose(verbose);

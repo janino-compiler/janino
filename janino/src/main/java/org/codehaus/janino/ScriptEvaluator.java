@@ -287,8 +287,8 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      *     se.setReturnType(returnType);
      *     se.setParameters(parameterNames, parameterTypes);
      *     se.setThrownExceptions(thrownExceptions);
-     *     se.setParentClassLoader(optionalParentClassLoader);
-     *     se.cook(optionalFileName, is);
+     *     se.setParentClassLoader(parentClassLoader);
+     *     se.cook(fileName, is);
      * </pre>
      *
      * @see #ScriptEvaluator()
@@ -300,19 +300,19 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      */
     public
     ScriptEvaluator(
-        @Nullable String      optionalFileName,
+        @Nullable String      fileName,
         InputStream           is,
         Class<?>              returnType,
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
+        @Nullable ClassLoader parentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(optionalParentClassLoader);
-        this.cook(optionalFileName, is);
+        this.setParentClassLoader(parentClassLoader);
+        this.cook(fileName, is);
     }
 
     /**
@@ -322,7 +322,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      *     se.setReturnType(returnType);
      *     se.setParameters(parameterNames, parameterTypes);
      *     se.setThrownExceptions(thrownExceptions);
-     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.setParentClassLoader(parentClassLoader);
      *     se.cook(reader);
      * </pre>
      *
@@ -335,19 +335,19 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      */
     public
     ScriptEvaluator(
-        @Nullable String      optionalFileName,
+        @Nullable String      fileName,
         Reader                reader,
         Class<?>              returnType,
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
+        @Nullable ClassLoader parentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(optionalParentClassLoader);
-        this.cook(optionalFileName, reader);
+        this.setParentClassLoader(parentClassLoader);
+        this.cook(fileName, reader);
     }
 
     /**
@@ -357,7 +357,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      *     se.setReturnType(returnType);
      *     se.setParameters(parameterNames, parameterTypes);
      *     se.setThrownExceptions(thrownExceptions);
-     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.setParentClassLoader(parentClassLoader);
      *     se.cook(scanner);
      * </pre>
      *
@@ -375,12 +375,12 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
+        @Nullable ClassLoader parentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(scanner);
     }
 
@@ -388,12 +388,12 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      * Equivalent to
      * <pre>
      *     ScriptEvaluator se = new ScriptEvaluator();
-     *     se.setExtendedType(optionalExtendedType);
+     *     se.setExtendedType(extendedType);
      *     se.setImplementedTypes(implementedTypes);
      *     se.setReturnType(returnType);
      *     se.setParameters(parameterNames, parameterTypes);
      *     se.setThrownExceptions(thrownExceptions);
-     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.setParentClassLoader(parentClassLoader);
      *     se.cook(scanner);
      * </pre>
      *
@@ -415,14 +415,14 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
+        @Nullable ClassLoader parentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
         this.setExtendedClass(extendedType);
         this.setImplementedInterfaces(implementedTypes);
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(scanner);
     }
 
@@ -431,14 +431,14 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      * <pre>
      *     ScriptEvaluator se = new ScriptEvaluator();
      *     se.setClassName(className);
-     *     se.setExtendedType(optionalExtendedType);
+     *     se.setExtendedType(extendedType);
      *     se.setImplementedTypes(implementedTypes);
      *     se.setStaticMethod(staticMethod);
      *     se.setReturnType(returnType);
      *     se.setMethodName(methodName);
      *     se.setParameters(parameterNames, parameterTypes);
      *     se.setThrownExceptions(thrownExceptions);
-     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.setParentClassLoader(parentClassLoader);
      *     se.cook(scanner);
      * </pre>
      *
@@ -458,7 +458,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     ScriptEvaluator(
         Scanner               scanner,
         String                className,
-        @Nullable Class<?>    optionalExtendedType,
+        @Nullable Class<?>    extendedType,
         Class<?>[]            implementedTypes,
         boolean               staticMethod,
         Class<?>              returnType,
@@ -466,17 +466,17 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader optionalParentClassLoader // null = use current thread's context class loader
+        @Nullable ClassLoader parentClassLoader // null = use current thread's context class loader
     ) throws CompileException, IOException {
         this.setClassName(className);
-        this.setExtendedClass(optionalExtendedType);
+        this.setExtendedClass(extendedType);
         this.setImplementedInterfaces(implementedTypes);
         this.setStaticMethod(staticMethod);
         this.setReturnType(returnType);
         this.setMethodName(methodName);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(scanner);
     }
 
@@ -636,7 +636,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     /**
      * Like {@link #cook(Scanner)}, but cooks a <em>set</em> of scripts into one class. Notice that if <em>any</em> of
      * the scripts causes trouble, the entire compilation will fail. If you need to report <em>which</em> of the
-     * scripts causes the exception, you may want to use the {@code optionalFileName} argument of {@link
+     * scripts causes the exception, you may want to use the {@code fileName} argument of {@link
      * Scanner#Scanner(String, Reader)} to distinguish between the individual token sources.
      * <p>
      *   On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling 10000 expressions "a + b"
@@ -831,6 +831,9 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
     @Nullable private Method[] getMethodsCache;
 
+    @Nullable protected Type
+    optionalClassToType(Location loc, Class<?> clazz) { return this.cbe.optionalClassToType(loc, clazz); }
+
     protected Type
     classToType(Location loc, Class<?> clazz) { return this.cbe.classToType(loc, clazz); }
 
@@ -963,7 +966,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         if (parser.peekRead("class")) {
 
             final LocalClassDeclaration lcd = (LocalClassDeclaration) parser.parseClassDeclarationRest(
-                null,                         // optionalDocComment
+                null,                         // docComment
                 new Modifier[0],              // modifiers
                 ClassDeclarationContext.BLOCK // context
             );
@@ -977,9 +980,9 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         if (parser.peekRead("void")) {
             String name = parser.read(TokenType.IDENTIFIER);
             localMethods.add(parser.parseMethodDeclarationRest(
-                null,                                                 // optionalDocComment
+                null,                                                 // docComment
                 modifiers,                                            // modifiers
-                null,                                                 // optionalTypeParameters
+                null,                                                 // typeParameters
                 new PrimitiveType(parser.location(), Primitive.VOID), // type
                 name,                                                 // name
                 false,                                                // allowDefaultClause
@@ -995,9 +998,9 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
             // Modifiers Type Identifier MethodDeclarationRest ';'
             if (parser.peek(TokenType.IDENTIFIER) && parser.peekNextButOne("(")) {
                 localMethods.add(parser.parseMethodDeclarationRest(
-                    null,                                      // optionalDocComment
+                    null,                                      // docComment
                     modifiers,                                 // modifiers
-                    null,                                      // optionalTypeParameters
+                    null,                                      // typeParameters
                     methodOrVariableType,                      // type
                     parser.read(TokenType.IDENTIFIER),         // name
                     false,                                     // allowDefaultClause
@@ -1033,9 +1036,9 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         // [ Modifiers ] Expression identifier MethodDeclarationRest
         if (parser.peek(TokenType.IDENTIFIER) && parser.peekNextButOne("(")) {
             localMethods.add(parser.parseMethodDeclarationRest(
-                null,                                      // optionalDocComment
+                null,                                      // docComment
                 modifiers,                                 // modifiers
-                null,                                      // optionalTypeParameters
+                null,                                      // typeParameters
                 methodOrVariableType,                      // type
                 parser.read(TokenType.IDENTIFIER),         // name
                 false,                                     // allowDefaultClause
@@ -1104,9 +1107,9 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
 
         return new Java.MethodDeclarator(
             location,                                        // location
-            null,                                            // optionalDocComment
+            null,                                            // docComment
             modifiers,                                       // modifiers
-            null,                                            // optionalTypeParameters
+            null,                                            // typeParameters
             this.classToType(location, returnType),          // type
             methodName,                                      // name
             fps,                                             // formalParameters
@@ -1136,10 +1139,10 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         Scanner               scanner,
         Class<?>              interfaceToImplement,
         String[]              parameterNames,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
-        se.setParentClassLoader(optionalParentClassLoader);
+        se.setParentClassLoader(parentClassLoader);
         return se.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
@@ -1151,15 +1154,15 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     createFastScriptEvaluator(
         Scanner               scanner,
         String                className,
-        @Nullable Class<?>    optionalExtendedType,
+        @Nullable Class<?>    extendedType,
         Class<?>              interfaceToImplement,
         String[]              parameterNames,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setClassName(className);
-        se.setExtendedClass(optionalExtendedType);
-        se.setParentClassLoader(optionalParentClassLoader);
+        se.setExtendedClass(extendedType);
+        se.setParentClassLoader(parentClassLoader);
         return se.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
@@ -1168,8 +1171,8 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      *     {@link ScriptEvaluator} se = new {@link ScriptEvaluator#ScriptEvaluator() ScriptEvaluator}();
      *     se.{@link #setDefaultImports(String[]) setDefaultImports}.(defaultImports);
      *     se.{@link #setClassName(String) setClassName}.(className);
-     *     se.{@link #setExtendedClass(Class) setExtendedClass}.(optionalExtendedClass);
-     *     se.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
+     *     se.{@link #setExtendedClass(Class) setExtendedClass}.(extendedClass);
+     *     se.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(parentClassLoader);
      *     return se.{@link #createFastEvaluator(Scanner, Class, String[]) createFastEvaluator}(scanner,
      *     interfaceToImplement, parameterNames);
      * </pre>
@@ -1181,16 +1184,16 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         Scanner               scanner,
         String[]              defaultImports,
         String                className,
-        @Nullable Class<?>    optionalExtendedClass,
+        @Nullable Class<?>    extendedClass,
         Class<?>              interfaceToImplement,
         String[]              parameterNames,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         ScriptEvaluator se = new ScriptEvaluator();
         se.setDefaultImports(defaultImports);
         se.setClassName(className);
-        se.setExtendedClass(optionalExtendedClass);
-        se.setParentClassLoader(optionalParentClassLoader);
+        se.setExtendedClass(extendedClass);
+        se.setParentClassLoader(parentClassLoader);
         return se.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 

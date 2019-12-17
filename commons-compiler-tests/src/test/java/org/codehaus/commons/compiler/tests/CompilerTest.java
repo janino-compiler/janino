@@ -344,8 +344,8 @@ class CompilerTest {
             c.setCompileErrorHandler(new ErrorHandler() {
 
                 @Override public void
-                handleError(String message, @Nullable Location optionalLocation) throws CompileException {
-                    throw new CompileException(message, optionalLocation);
+                handleError(String message, @Nullable Location location) throws CompileException {
+                    throw new CompileException(message, location);
                 }
             });
             c.compile(sourceFiles);

@@ -65,8 +65,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     @Nullable private ClassLoaderIClassLoader classLoaderIClassLoader;
 
 //    @Nullable private ClassLoader    result;
-    @Nullable private ErrorHandler   optionalCompileErrorHandler;
-    @Nullable private WarningHandler optionalWarningHandler;
+    @Nullable private ErrorHandler   compileErrorHandler;
+    @Nullable private WarningHandler warningHandler;
 
     private boolean debugSource = Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
     private boolean debugLines  = this.debugSource;
@@ -120,30 +120,30 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * Equivalent to
      * <pre>
      *     SimpleCompiler sc = new SimpleCompiler();
-     *     sc.cook(optionalFileName, in);
+     *     sc.cook(fileName, in);
      * </pre>
      *
      * @see #SimpleCompiler()
      * @see Cookable#cook(String, Reader)
      */
     public
-    SimpleCompiler(@Nullable String optionalFileName, Reader in) throws IOException, CompileException {
-        this.cook(optionalFileName, in);
+    SimpleCompiler(@Nullable String fileName, Reader in) throws IOException, CompileException {
+        this.cook(fileName, in);
     }
 
     /**
      * Equivalent to
      * <pre>
      *     SimpleCompiler sc = new SimpleCompiler();
-     *     sc.cook(optionalFileName, is);
+     *     sc.cook(fileName, is);
      * </pre>
      *
      * @see #SimpleCompiler()
      * @see Cookable#cook(String, InputStream)
      */
     public
-    SimpleCompiler(@Nullable String optionalFileName, InputStream is) throws IOException, CompileException {
-        this.cook(optionalFileName, is);
+    SimpleCompiler(@Nullable String fileName, InputStream is) throws IOException, CompileException {
+        this.cook(fileName, is);
     }
 
     /**
@@ -165,7 +165,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * Equivalent to
      * <pre>
      *     SimpleCompiler sc = new SimpleCompiler();
-     *     sc.setParentClassLoader(optionalParentClassLoader);
+     *     sc.setParentClassLoader(parentClassLoader);
      *     sc.cook(scanner);
      * </pre>
      *
@@ -174,19 +174,19 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @see Cookable#cook(Reader)
      */
     public
-    SimpleCompiler(Scanner scanner, @Nullable ClassLoader optionalParentClassLoader)
+    SimpleCompiler(Scanner scanner, @Nullable ClassLoader parentClassLoader)
     throws IOException, CompileException {
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(scanner);
     }
 
     public SimpleCompiler() {}
 
     @Override public void
-    setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader) {
+    setParentClassLoader(@Nullable ClassLoader parentClassLoader) {
         this.parentClassLoader = (
-            optionalParentClassLoader != null
-            ? optionalParentClassLoader
+            parentClassLoader != null
+            ? parentClassLoader
             : Thread.currentThread().getContextClassLoader()
         );
     }
@@ -203,8 +203,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * #getClassLoader()} returns a {@link ClassLoader} that allows for access to the compiled classes.
      */
     @Override public final void
-    cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException {
-        this.cook(new Scanner(optionalFileName, r));
+    cook(@Nullable String fileName, Reader r) throws CompileException, IOException {
+        this.cook(new Scanner(fileName, r));
     }
 
     /**
@@ -231,8 +231,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
             // Compile compilation unit to class files.
             UnitCompiler unitCompiler = new UnitCompiler(abstractCompilationUnit, icl).options(this.options);
-            unitCompiler.setCompileErrorHandler(this.optionalCompileErrorHandler);
-            unitCompiler.setWarningHandler(this.optionalWarningHandler);
+            unitCompiler.setCompileErrorHandler(this.compileErrorHandler);
+            unitCompiler.setWarningHandler(this.warningHandler);
 
             this.classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
         } finally {
@@ -312,13 +312,13 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     hashCode() { return this.parentClassLoader.hashCode(); }
 
     @Override public void
-    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
-        this.optionalCompileErrorHandler = optionalCompileErrorHandler;
+    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
+        this.compileErrorHandler = compileErrorHandler;
     }
 
     @Override public void
-    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
-        this.optionalWarningHandler = optionalWarningHandler;
+    setWarningHandler(@Nullable WarningHandler warningHandler) {
+        this.warningHandler = warningHandler;
     }
 
     /**

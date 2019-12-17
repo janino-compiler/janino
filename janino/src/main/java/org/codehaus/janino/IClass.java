@@ -800,10 +800,10 @@ class IClass {
     }
 
     /**
-     * If <var>optionalName</var> is {@code null}, finds all {@link IClass}es visible in the scope of the current
+     * If <var>name</var> is {@code null}, finds all {@link IClass}es visible in the scope of the current
      * class.
      * <p>
-     *   If <var>optionalName</var> is not {@code null}, finds the member {@link IClass}es that has the given name. If
+     *   If <var>name</var> is not {@code null}, finds the member {@link IClass}es that has the given name. If
      *   the name is ambiguous (i.e. if more than one superclass, interface of enclosing type declares a type with that
      *   name), then the size of the returned array is greater than one.
      * </p>
@@ -814,17 +814,17 @@ class IClass {
      * @return an array of {@link IClass}es in unspecified order, possibly of length zero
      */
     IClass[]
-    findMemberType(@Nullable String optionalName) throws CompileException {
-        IClass[] res = (IClass[]) this.memberTypeCache.get(optionalName);
+    findMemberType(@Nullable String name) throws CompileException {
+        IClass[] res = (IClass[]) this.memberTypeCache.get(name);
         if (res == null) {
 
             // Notice: A type may be added multiply to the result set because we are in its scope
             // multiply. E.g. the type is a member of a superclass AND a member of an enclosing type.
             Set<IClass> s = new HashSet<IClass>();
-            this.findMemberType(optionalName, s);
+            this.findMemberType(name, s);
             res = s.isEmpty() ? IClass.ZERO_ICLASSES : (IClass[]) s.toArray(new IClass[s.size()]);
 
-            this.memberTypeCache.put(optionalName, res);
+            this.memberTypeCache.put(name, res);
         }
 
         return res;
@@ -832,17 +832,17 @@ class IClass {
     private final Map<String /*name*/, IClass[]> memberTypeCache = new HashMap<String, IClass[]>();
     private static final IClass[]                ZERO_ICLASSES   = new IClass[0];
     private void
-    findMemberType(@Nullable String optionalName, Collection<IClass> result) throws CompileException {
+    findMemberType(@Nullable String name, Collection<IClass> result) throws CompileException {
 
         // Search for a type with the given name in the current class.
         IClass[] memberTypes = this.getDeclaredIClasses();
-        if (optionalName == null) {
+        if (name == null) {
             result.addAll(Arrays.asList(memberTypes));
         } else {
             String memberDescriptor = Descriptor.fromClassName(
                 Descriptor.toClassName(this.getDescriptor())
                 + '$'
-                + optionalName
+                + name
             );
             for (final IClass mt : memberTypes) {
                 if (mt.getDescriptor().equals(memberDescriptor)) {
@@ -855,21 +855,21 @@ class IClass {
         // Examine superclass.
         {
             IClass superclass = this.getSuperclass();
-            if (superclass != null) superclass.findMemberType(optionalName, result);
+            if (superclass != null) superclass.findMemberType(name, result);
         }
 
         // Examine interfaces.
-        for (IClass i : this.getInterfaces()) i.findMemberType(optionalName, result);
+        for (IClass i : this.getInterfaces()) i.findMemberType(name, result);
 
         // Examine enclosing type declarations.
         {
             IClass declaringIClass = this.getDeclaringIClass();
             IClass outerIClass     = this.getOuterIClass();
             if (declaringIClass != null) {
-                declaringIClass.findMemberType(optionalName, result);
+                declaringIClass.findMemberType(name, result);
             }
             if (outerIClass != null && outerIClass != declaringIClass) {
-                outerIClass.findMemberType(optionalName, result);
+                outerIClass.findMemberType(name, result);
             }
         }
     }

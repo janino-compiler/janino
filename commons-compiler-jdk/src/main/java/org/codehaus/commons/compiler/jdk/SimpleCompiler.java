@@ -143,7 +143,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     @Nullable private ClassLoader getClassLoaderCache;
 
     @Override public void
-    cook(@Nullable final String optionalFileName, Reader r) throws CompileException, IOException {
+    cook(@Nullable final String fileName, Reader r) throws CompileException, IOException {
 
         // Reset the "offsets" and the line-and-column-tracker; see "addOffset(String)".
         this.tracker.reset();
@@ -199,7 +199,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 assert diagnostic != null;
 
                 Location loc = new Location(
-                    optionalFileName,
+                    fileName,
                     (short) diagnostic.getLineNumber(),
                     (short) diagnostic.getColumnNumber()
                 );
@@ -416,8 +416,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @deprecated Auxiliary classes never really worked... don't use them.
      */
     @Deprecated public void
-    setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
-        this.setParentClassLoader(optionalParentClassLoader);
+    setParentClassLoader(@Nullable ClassLoader parentClassLoader, Class<?>[] auxiliaryClasses) {
+        this.setParentClassLoader(parentClassLoader);
     }
 
     @Override public void
@@ -435,11 +435,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * character, and also changes the "file name" (see {@link #cook(String, Reader)}).
      */
     protected void
-    addOffset(@Nullable String optionalFileName) {
+    addOffset(@Nullable String fileName) {
 
         LineAndColumnTracker t = this.tracker;
         assert t != null;
 
-        this.offsets.add(new Location(optionalFileName, t.getLineNumber(), t.getColumnNumber()));
+        this.offsets.add(new Location(fileName, t.getLineNumber(), t.getColumnNumber()));
     }
 }

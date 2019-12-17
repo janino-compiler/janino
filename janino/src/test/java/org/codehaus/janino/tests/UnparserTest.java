@@ -157,11 +157,11 @@ class UnparserTest {
 
         PackageMemberClassDeclaration pmcd = new PackageMemberClassDeclaration(
             Location.NOWHERE,
-            null,             // optionalDocComment
+            null,             // docComment
             new Modifier[0],  // modifiers
             "SC",             // name
-            null,             // optionalTypeParameters
-            null,             // optionalExtendedType
+            null,             // typeParameters
+            null,             // extendedType
             new Type[0]       // implementedTypes
         );
         while (!p.peek(TokenType.END_OF_INPUT)) p.parseClassBodyDeclaration(pmcd);
@@ -384,7 +384,7 @@ class UnparserTest {
             visitMethodInvocation(MethodInvocation mi) {
                 return new Java.MethodInvocation(
                     mi.getLocation(),
-                    UnparserTest.stripUnnecessaryParenExprsOpt(mi.optionalTarget),
+                    UnparserTest.stripUnnecessaryParenExprsOpt(mi.target),
                     mi.methodName,
                     UnparserTest.stripUnnecessaryParenExprs(mi.arguments)
                 );
@@ -411,7 +411,7 @@ class UnparserTest {
                 assert type != null;
                 return new Java.NewClassInstance(
                     nci.getLocation(),
-                    UnparserTest.stripUnnecessaryParenExprsOpt(nci.optionalQualification),
+                    UnparserTest.stripUnnecessaryParenExprsOpt(nci.qualification),
                     type,
                     UnparserTest.stripUnnecessaryParenExprs(nci.arguments)
                 );
@@ -476,10 +476,10 @@ class UnparserTest {
     testInterfaceHelper(boolean interfaceMod) {
         Java.PackageMemberInterfaceDeclaration decl = new Java.PackageMemberInterfaceDeclaration(
             Location.NOWHERE,                                                            // location
-            "foo",                                                                       // optionalDocComment
+            "foo",                                                                       // docComment
             new Java.Modifier[] { new Java.AccessModifier("public", Location.NOWHERE) }, // modifiers
             "Foo",                                                                       // name
-            null,                                                                        // optionalTypeParameters
+            null,                                                                        // typeParameters
             new Type[0]                                                                  // extendedTypes
         );
         StringWriter sw = new StringWriter();

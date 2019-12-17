@@ -75,18 +75,18 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     /**
      * Whether methods override a method declared by a supertype; {@code null} means "none".
      */
-    @Nullable protected boolean[] optionalOverrideMethod;
+    @Nullable protected boolean[] overrideMethod;
 
     /**
      * Whether methods are static; {@code null} means "all".
      */
-    @Nullable protected boolean[] optionalStaticMethod;
+    @Nullable protected boolean[] staticMethod;
 
     @Nullable private Class<?>[]   returnTypes;
-    @Nullable private String[]     optionalMethodNames;
-    @Nullable private String[][]   optionalParameterNames;
-    @Nullable private Class<?>[][] optionalParameterTypes;
-    @Nullable private Class<?>[][] optionalThrownExceptions;
+    @Nullable private String[]     methodNames;
+    @Nullable private String[][]   parameterNames;
+    @Nullable private Class<?>[][] parameterTypes;
+    @Nullable private Class<?>[][] thrownExceptions;
 
     /**
      * null=uncooked
@@ -185,11 +185,11 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      *     se.setReturnType(returnType);
      *     se.setParameters(parameterNames, parameterTypes);
      *     se.setThrownExceptions(thrownExceptions);
-     *     se.setParentClassLoader(optionalParentClassLoader);
-     *     se.cook(optionalFileName, is);
+     *     se.setParentClassLoader(parentClassLoader);
+     *     se.cook(fileName, is);
      * </pre>
      *
-     * @param optionalParentClassLoader {@code null} means use current thread's context class loader
+     * @param parentClassLoader {@code null} means use current thread's context class loader
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
      * @see #setParameters(String[], Class[])
@@ -199,19 +199,19 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      */
     public
     ScriptEvaluator(
-        @Nullable String      optionalFileName,
+        @Nullable String      fileName,
         InputStream           is,
         Class<?>              returnType,
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(optionalParentClassLoader);
-        this.cook(optionalFileName, is);
+        this.setParentClassLoader(parentClassLoader);
+        this.cook(fileName, is);
     }
 
     /**
@@ -221,11 +221,11 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      *     se.setReturnType(returnType);
      *     se.setParameters(parameterNames, parameterTypes);
      *     se.setThrownExceptions(thrownExceptions);
-     *     se.setParentClassLoader(optionalParentClassLoader);
+     *     se.setParentClassLoader(parentClassLoader);
      *     se.cook(reader);
      * </pre>
      *
-     * @param optionalParentClassLoader {@code null} means use current thread's context class loader
+     * @param parentClassLoader {@code null} means use current thread's context class loader
      * @see #ScriptEvaluator()
      * @see #setReturnType(Class)
      * @see #setParameters(String[], Class[])
@@ -235,19 +235,19 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      */
     public
     ScriptEvaluator(
-        @Nullable String      optionalFileName,
+        @Nullable String      fileName,
         Reader                reader,
         Class<?>              returnType,
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         this.setReturnType(returnType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(optionalParentClassLoader);
-        this.cook(optionalFileName, reader);
+        this.setParentClassLoader(parentClassLoader);
+        this.cook(fileName, reader);
     }
 
     public ScriptEvaluator() {}
@@ -324,10 +324,10 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     getMethod() { return this.getMethod(0); }
 
     @Override public void
-    setOverrideMethod(boolean[] overrideMethod) { this.optionalOverrideMethod = overrideMethod.clone(); }
+    setOverrideMethod(boolean[] overrideMethod) { this.overrideMethod = overrideMethod.clone(); }
 
     @Override public void
-    setStaticMethod(boolean[] staticMethod) { this.optionalStaticMethod = staticMethod.clone(); }
+    setStaticMethod(boolean[] staticMethod) { this.staticMethod = staticMethod.clone(); }
 
     @Override public void
     setReturnTypes(Class<?>[] returnTypes) {
@@ -336,16 +336,16 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     @Override public void
-    setMethodNames(String[] methodNames) { this.optionalMethodNames = methodNames.clone(); }
+    setMethodNames(String[] methodNames) { this.methodNames = methodNames.clone(); }
 
     @Override public void
     setParameters(String[][] names, Class<?>[][] types) {
-        this.optionalParameterNames = names.clone();
-        this.optionalParameterTypes = types.clone();
+        this.parameterNames = names.clone();
+        this.parameterTypes = types.clone();
     }
 
     @Override public void
-    setThrownExceptions(Class<?>[][] thrownExceptions) { this.optionalThrownExceptions = thrownExceptions.clone(); }
+    setThrownExceptions(Class<?>[][] thrownExceptions) { this.thrownExceptions = thrownExceptions.clone(); }
 
     @Override public void
     cook(String[] fileNames, Reader[] readers) throws CompileException, IOException {
@@ -372,13 +372,13 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     throws CompileException, IOException {
 
         // SUPPRESS CHECKSTYLE UsageDistance:7
-        String[]     omns = this.optionalMethodNames;
-        boolean[]    oom  = this.optionalOverrideMethod;
-        boolean[]    osm  = this.optionalStaticMethod;
+        String[]     omns = this.methodNames;
+        boolean[]    oom  = this.overrideMethod;
+        boolean[]    osm  = this.staticMethod;
         Class<?>[]   orts = this.returnTypes;
-        String[][]   opns = this.optionalParameterNames;
-        Class<?>[][] opts = this.optionalParameterTypes;
-        Class<?>[][] otes = this.optionalThrownExceptions;
+        String[][]   opns = this.parameterNames;
+        Class<?>[][] opts = this.parameterTypes;
+        Class<?>[][] otes = this.thrownExceptions;
 
         // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
         // time.

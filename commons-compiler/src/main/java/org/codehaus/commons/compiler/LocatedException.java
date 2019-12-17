@@ -33,18 +33,18 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class LocatedException extends Exception {
 
-    @Nullable private final Location optionalLocation;
+    @Nullable private final Location location;
 
     public
-    LocatedException(String message, @Nullable Location optionalLocation) {
+    LocatedException(String message, @Nullable Location location) {
         super(message);
-        this.optionalLocation = optionalLocation;
+        this.location = location;
     }
 
     public
-    LocatedException(String message, @Nullable Location optionalLocation, @Nullable Throwable optionalCause) {
-        super(message, optionalCause);
-        this.optionalLocation = optionalLocation;
+    LocatedException(String message, @Nullable Location location, @Nullable Throwable cause) {
+        super(message, cause);
+        this.location = location;
     }
 
     /**
@@ -53,8 +53,8 @@ class LocatedException extends Exception {
     @Override public String
     getMessage() {
         return (
-            this.optionalLocation != null
-            ? this.optionalLocation.toString() + ": " + super.getMessage()
+            this.location != null
+            ? this.location.toString() + ": " + super.getMessage()
             : super.getMessage()
         );
     }
@@ -63,5 +63,5 @@ class LocatedException extends Exception {
      * @return The {@link Location} specified at construction time (may be {@code null})
      */
     @Nullable public Location
-    getLocation() { return this.optionalLocation; }
+    getLocation() { return this.location; }
 }

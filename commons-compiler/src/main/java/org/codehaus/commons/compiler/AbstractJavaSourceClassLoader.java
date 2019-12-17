@@ -52,7 +52,7 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
     /**
      * @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain)
      */
-    @Nullable protected ProtectionDomainFactory optionalProtectionDomainFactory;
+    @Nullable protected ProtectionDomainFactory protectionDomainFactory;
 
     public
     AbstractJavaSourceClassLoader() {}
@@ -98,8 +98,8 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
      * @see ClassLoader#defineClass(String, byte[], int, int, ProtectionDomain)
      */
     public final void
-    setProtectionDomainFactory(@Nullable ProtectionDomainFactory optionalProtectionDomainFactory) {
-        this.optionalProtectionDomainFactory = optionalProtectionDomainFactory;
+    setProtectionDomainFactory(@Nullable ProtectionDomainFactory protectionDomainFactory) {
+        this.protectionDomainFactory = protectionDomainFactory;
     }
 
     /**
@@ -133,8 +133,8 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
      */
     public static void
     main(String[] args) throws Exception {
-        File[]  optionalSourcePath        = null;
-        String  optionalCharacterEncoding = null;
+        File[]  sourcePath        = null;
+        String  characterEncoding = null;
 
         boolean debuggingInfoLines  = false;
         boolean debuggingInfoVars   = false;
@@ -148,10 +148,10 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
             if (!arg.startsWith("-")) break;
 
             if ("-sourcepath".equals(arg)) {
-                optionalSourcePath = AbstractJavaSourceClassLoader.splitPath(args[++i]);
+                sourcePath = AbstractJavaSourceClassLoader.splitPath(args[++i]);
             } else
             if ("-encoding".equals(arg)) {
-                optionalCharacterEncoding = args[++i];
+                characterEncoding = args[++i];
             } else
             if ("-g".equals(arg)) {
                 debuggingInfoLines  = true;
@@ -210,8 +210,8 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
             CompilerFactoryFactory.getDefaultCompilerFactory().newJavaSourceClassLoader()
         );
         if (haveDebuggingInfo) ajscl.setDebuggingInfo(debuggingInfoLines, debuggingInfoVars, debuggingInfoSource);
-        if (optionalCharacterEncoding != null) ajscl.setSourceFileCharacterEncoding(optionalCharacterEncoding);
-        if (optionalSourcePath != null) ajscl.setSourcePath(optionalSourcePath);
+        if (characterEncoding != null) ajscl.setSourceFileCharacterEncoding(characterEncoding);
+        if (sourcePath != null) ajscl.setSourcePath(sourcePath);
 
         // Load the given class.
         Class<?> clazz = ajscl.loadClass(className);

@@ -131,7 +131,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      *     ee.setExpressionType(expressionType);
      *     ee.setParameters(parameterNames, parameterTypes);
      *     ee.setThrownExceptions(thrownExceptions);
-     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.setParentClassLoader(parentClassLoader);
      *     ee.cook(expression);
      * </pre>
      *
@@ -149,12 +149,12 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(expression);
     }
 
@@ -165,9 +165,9 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      *     ee.setExpressionType(expressionType);
      *     ee.setParameters(parameterNames, parameterTypes);
      *     ee.setThrownExceptions(thrownExceptions);
-     *     ee.setExtendedType(optionalExtendedType);
+     *     ee.setExtendedType(extendedType);
      *     ee.setImplementedTypes(implementedTypes);
-     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.setParentClassLoader(parentClassLoader);
      *     ee.cook(expression);
      * </pre>
      *
@@ -187,16 +187,16 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable Class<?>    optionalExtendedType,
+        @Nullable Class<?>    extendedType,
         Class<?>[]            implementedTypes,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setExtendedClass(optionalExtendedType);
+        this.setExtendedClass(extendedType);
         this.setImplementedInterfaces(implementedTypes);
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(expression);
     }
 

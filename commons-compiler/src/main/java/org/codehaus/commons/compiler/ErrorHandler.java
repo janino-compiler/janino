@@ -36,5 +36,5 @@ interface ErrorHandler {
     /**
      * May or may not choose to throw a {@link CompileException}.
      */
-    void handleError(String message, @Nullable Location optionalLocation) throws CompileException;
+    void handleError(String message, @Nullable Location location) throws CompileException;
 }

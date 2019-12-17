@@ -56,7 +56,7 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
 
     private String[]           defaultImports = new String[0];
     private String             className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
-    @Nullable private Class<?> optionalExtendedType;
+    @Nullable private Class<?> extendedType;
     private Class<?>[]         implementedTypes = ClassBodyEvaluator.ZERO_CLASSES;
     @Nullable private Class<?> result; // null=uncooked
 
@@ -77,37 +77,37 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
      * Equivalent to
      * <pre>
      *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
-     *     cbe.cook(optionalFileName, is);
+     *     cbe.cook(fileName, is);
      * </pre>
      *
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String, InputStream)
      */
     public
-    ClassBodyEvaluator(@Nullable String optionalFileName, InputStream is) throws CompileException, IOException {
-        this.cook(optionalFileName, is);
+    ClassBodyEvaluator(@Nullable String fileName, InputStream is) throws CompileException, IOException {
+        this.cook(fileName, is);
     }
 
     /**
      * Equivalent to
      * <pre>
      *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
-     *     cbe.cook(optionalFileName, reader);
+     *     cbe.cook(fileName, reader);
      * </pre>
      *
      * @see #ClassBodyEvaluator()
      * @see Cookable#cook(String, Reader)
      */
     public
-    ClassBodyEvaluator(@Nullable String optionalFileName, Reader reader) throws CompileException, IOException {
-        this.cook(optionalFileName, reader);
+    ClassBodyEvaluator(@Nullable String fileName, Reader reader) throws CompileException, IOException {
+        this.cook(fileName, reader);
     }
 
     /**
      * Equivalent to
      * <pre>
      *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
-     *     cbe.setParentClassLoader(optionalParentClassLoader);
+     *     cbe.setParentClassLoader(parentClassLoader);
      *     cbe.cook(scanner);
      * </pre>
      *
@@ -116,9 +116,9 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
      * @see Cookable#cook(Reader)
      */
     public
-    ClassBodyEvaluator(Scanner scanner, @Nullable ClassLoader optionalParentClassLoader)
+    ClassBodyEvaluator(Scanner scanner, @Nullable ClassLoader parentClassLoader)
     throws CompileException, IOException {
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(scanner);
     }
 
@@ -126,9 +126,9 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
      * Equivalent to
      * <pre>
      *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
-     *     cbe.setExtendedType(optionalExtendedType);
+     *     cbe.setExtendedType(extendedType);
      *     cbe.setImplementedTypes(implementedTypes);
-     *     cbe.setParentClassLoader(optionalParentClassLoader);
+     *     cbe.setParentClassLoader(parentClassLoader);
      *     cbe.cook(scanner);
      * </pre>
      *
@@ -141,13 +141,13 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     public
     ClassBodyEvaluator(
         Scanner               scanner,
-        @Nullable Class<?>    optionalExtendedType,
+        @Nullable Class<?>    extendedType,
         Class<?>[]            implementedTypes,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
-        this.setExtendedClass(optionalExtendedType);
+        this.setExtendedClass(extendedType);
         this.setImplementedInterfaces(implementedTypes);
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(scanner);
     }
 
@@ -156,9 +156,9 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
      * <pre>
      *     ClassBodyEvaluator cbe = new ClassBodyEvaluator();
      *     cbe.setClassName(className);
-     *     cbe.setExtendedType(optionalExtendedType);
+     *     cbe.setExtendedType(extendedType);
      *     cbe.setImplementedTypes(implementedTypes);
-     *     cbe.setParentClassLoader(optionalParentClassLoader);
+     *     cbe.setParentClassLoader(parentClassLoader);
      *     cbe.cook(scanner);</pre>
      * </p>
      *
@@ -173,14 +173,14 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     ClassBodyEvaluator(
         Scanner               scanner,
         String                className,
-        @Nullable Class<?>    optionalExtendedType,
+        @Nullable Class<?>    extendedType,
         Class<?>[]            implementedTypes,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         this.setClassName(className);
-        this.setExtendedClass(optionalExtendedType);
+        this.setExtendedClass(extendedType);
         this.setImplementedInterfaces(implementedTypes);
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(scanner);
     }
 
@@ -198,10 +198,10 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     setClassName(String className) { this.className = className; }
 
     @Override public void
-    setExtendedClass(@Nullable Class<?> optionalExtendedType) { this.optionalExtendedType = optionalExtendedType; }
+    setExtendedClass(@Nullable Class<?> extendedType) { this.extendedType = extendedType; }
 
     @Deprecated @Override public void
-    setExtendedType(@Nullable Class<?> optionalExtendedClass) { this.setExtendedClass(optionalExtendedClass); }
+    setExtendedType(@Nullable Class<?> extendedClass) { this.setExtendedClass(extendedClass); }
 
     @Override public void
     setImplementedInterfaces(Class<?>[] implementedTypes) { this.implementedTypes = implementedTypes; }
@@ -252,8 +252,8 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
      * returns a {@link Class} that allows for access to the compiled class.
      */
     @Override public final void
-    cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException {
-        this.cook(new Scanner(optionalFileName, r));
+    cook(@Nullable String fileName, Reader r) throws CompileException, IOException {
+        this.cook(new Scanner(fileName, r));
     }
 
     public void
@@ -343,11 +343,11 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
         }
         Java.PackageMemberClassDeclaration tlcd = new Java.PackageMemberClassDeclaration(
             location,                                                            // location
-            null,                                                                // optionalDocComment
+            null,                                                                // docComment
             new Java.Modifier[] { new Java.AccessModifier("public", location) }, // modifiers
             cn,                                                                  // name
-            null,                                                                // optionalTypeParameters
-            this.optionalClassToType(location, this.optionalExtendedType),       // extendedType
+            null,                                                                // typeParameters
+            this.optionalClassToType(location, this.extendedType),               // extendedType
             this.sc.classesToTypes(location, this.implementedTypes)              // implementedTypes
         );
         compilationUnit.addPackageMemberTypeDeclaration(tlcd);
@@ -435,14 +435,14 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
      *     IClassBodyEvaluator cbe = {@link CompilerFactoryFactory}.{@link
      *     CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
      *     ICompilerFactory#newClassBodyEvaluator() newClassBodyEvaluator}();
-     *     if (optionalBaseType != null) {
-     *         if (optionalBaseType.isInterface()) {
-     *             cbe.{@link #setImplementedInterfaces setImplementedInterfaces}(new Class[] { optionalBaseType });
+     *     if (baseType != null) {
+     *         if (baseType.isInterface()) {
+     *             cbe.{@link #setImplementedInterfaces setImplementedInterfaces}(new Class[] { baseType });
      *         } else {
-     *             cbe.{@link #setExtendedClass(Class) setExtendedClass}(optionalBaseType);
+     *             cbe.{@link #setExtendedClass(Class) setExtendedClass}(baseType);
      *         }
      *     }
-     *     cbe.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
+     *     cbe.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(parentClassLoader);
      *     cbe.{@link IClassBodyEvaluator#createInstance(Reader) createInstance}(reader);
      * </pre>
      *
@@ -451,23 +451,23 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     public static Object
     createFastClassBodyEvaluator(
         Scanner               scanner,
-        @Nullable Class<?>    optionalBaseType,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable Class<?>    baseType,
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         return ClassBodyEvaluator.createFastClassBodyEvaluator(
             scanner,                                // scanner
             IClassBodyEvaluator.DEFAULT_CLASS_NAME, // className
-            (                                       // optionalExtendedType
-                optionalBaseType != null && !optionalBaseType.isInterface()
-                ? optionalBaseType
+            (                                       // extendedType
+                baseType != null && !baseType.isInterface()
+                ? baseType
                 : null
             ),
             (                                       // implementedTypes
-                optionalBaseType != null && optionalBaseType.isInterface()
-                ? new Class[] { optionalBaseType }
+                baseType != null && baseType.isInterface()
+                ? new Class[] { baseType }
                 : new Class[0]
             ),
-            optionalParentClassLoader               // optionalParentClassLoader
+            parentClassLoader                       // parentClassLoader
         );
     }
 
@@ -477,9 +477,9 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
      *     IClassBodyEvaluator cbe = {@link CompilerFactoryFactory}.{@link
      *     CompilerFactoryFactory#getDefaultCompilerFactory() getDefaultCompilerFactory}().{@link
      *     ICompilerFactory#newClassBodyEvaluator() newClassBodyEvaluator}();
-     *     cbe.{@link #setExtendedClass(Class) setExtendedClass}(optionalExtendedClass);
+     *     cbe.{@link #setExtendedClass(Class) setExtendedClass}(extendedClass);
      *     cbe.{@link #setImplementedInterfaces(Class[]) setImplementedInterfaces}(implementedInterfaces);
-     *     cbe.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(optionalParentClassLoader);
+     *     cbe.{@link #setParentClassLoader(ClassLoader) setParentClassLoader}(parentClassLoader);
      *     cbe.{@link IClassBodyEvaluator#createInstance(Reader) createInstance}(reader);
      * </pre>
      *
@@ -490,15 +490,15 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     createFastClassBodyEvaluator(
         Scanner               scanner,
         String                className,
-        @Nullable Class<?>    optionalExtendedClass,
+        @Nullable Class<?>    extendedClass,
         Class<?>[]            implementedInterfaces,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         ClassBodyEvaluator cbe = new ClassBodyEvaluator();
         cbe.setClassName(className);
-        cbe.setExtendedClass(optionalExtendedClass);
+        cbe.setExtendedClass(extendedClass);
         cbe.setImplementedInterfaces(implementedInterfaces);
-        cbe.setParentClassLoader(optionalParentClassLoader);
+        cbe.setParentClassLoader(parentClassLoader);
         cbe.cook(scanner);
         Class<?> c = cbe.getClazz();
         try {

@@ -558,7 +558,7 @@ class ClassFileIClass extends IClass {
             }
         }
 
-        final Object optionalConstantValue = (
+        final Object constantValue = (
             cva == null
             ? IClass.NOT_CONSTANT
             : cva.getConstantValue(this.classFile).getValue(this.classFile)
@@ -574,7 +574,7 @@ class ClassFileIClass extends IClass {
         }
 
         result = new IField() {
-            @Override public Object        getConstantValue() { return optionalConstantValue;                    }
+            @Override public Object        getConstantValue() { return constantValue;                    }
             @Override public String        getName()          { return name;                                     }
             @Override public IClass        getType()          { return type;                                     }
             @Override public boolean       isStatic()         { return Mod.isStatic(fieldInfo.getAccessFlags()); }

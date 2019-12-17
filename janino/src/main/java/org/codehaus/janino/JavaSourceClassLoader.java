@@ -70,8 +70,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     JavaSourceClassLoader(ClassLoader parentClassLoader) {
         this(
             parentClassLoader,
-            (File[]) null,     // optionalSourcePath
-            null               // optionalCharacterEncoding
+            (File[]) null,     // sourcePath
+            null               // characterEncoding
         );
     }
 
@@ -80,25 +80,25 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * the directories specified by the given source path.
      *
      * @param parentClassLoader         See {@link ClassLoader}
-     * @param optionalSourcePath        A collection of directories that are searched for Java source files in
+     * @param sourcePath        A collection of directories that are searched for Java source files in
      *                                  the given order
-     * @param optionalCharacterEncoding The encoding of the Java source files ({@code null} for platform
+     * @param characterEncoding The encoding of the Java source files ({@code null} for platform
      *                                  default encoding)
      */
     public
     JavaSourceClassLoader(
         ClassLoader      parentClassLoader,
-        @Nullable File[] optionalSourcePath,
-        @Nullable String optionalCharacterEncoding
+        @Nullable File[] sourcePath,
+        @Nullable String characterEncoding
     ) {
         this(
             parentClassLoader,        // parentClassLoader
             (                         // sourceFinder
-                optionalSourcePath == null
+                sourcePath == null
                 ? new DirectoryResourceFinder(new File("."))
-                : new PathResourceFinder(optionalSourcePath)
+                : new PathResourceFinder(sourcePath)
             ),
-            optionalCharacterEncoding // optionalCharacterEncoding
+            characterEncoding // characterEncoding
         );
     }
 
@@ -112,19 +112,19 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      *
      * @param parentClassLoader         See {@link ClassLoader}
      * @param sourceFinder              Used to locate additional source files
-     * @param optionalCharacterEncoding The encoding of the Java source files ({@code null} for platform
+     * @param characterEncoding The encoding of the Java source files ({@code null} for platform
      *                                  default encoding)
      */
     public
     JavaSourceClassLoader(
         ClassLoader      parentClassLoader,
         ResourceFinder   sourceFinder,
-        @Nullable String optionalCharacterEncoding
+        @Nullable String characterEncoding
     ) {
         this(parentClassLoader, new JavaSourceIClassLoader(
             sourceFinder,                                  // sourceFinder
-            optionalCharacterEncoding,                     // optionalCharacterEncoding
-            new ClassLoaderIClassLoader(parentClassLoader) // optionalParentIClassLoader
+            characterEncoding,                     // characterEncoding
+            new ClassLoaderIClassLoader(parentClassLoader) // parentIClassLoader
         ));
     }
 
@@ -157,8 +157,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @see UnitCompiler#setCompileErrorHandler
      */
     public void
-    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
-        this.iClassLoader.setCompileErrorHandler(optionalCompileErrorHandler);
+    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
+        this.iClassLoader.setCompileErrorHandler(compileErrorHandler);
     }
 
     /**
@@ -166,8 +166,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
      * @see UnitCompiler#setCompileErrorHandler
      */
     public void
-    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
-        this.iClassLoader.setWarningHandler(optionalWarningHandler);
+    setWarningHandler(@Nullable WarningHandler warningHandler) {
+        this.iClassLoader.setWarningHandler(warningHandler);
     }
 
     /**
@@ -253,8 +253,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     defineBytecode(String className, byte[] ba) {
 
         return this.defineClass(className, ba, 0, ba.length, (
-            this.optionalProtectionDomainFactory != null
-            ? this.optionalProtectionDomainFactory.getProtectionDomain(ClassFile.getSourceResourceName(className))
+            this.protectionDomainFactory != null
+            ? this.protectionDomainFactory.getProtectionDomain(ClassFile.getSourceResourceName(className))
             : null
         ));
     }

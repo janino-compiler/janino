@@ -50,10 +50,10 @@ class FilterWarningHandler implements WarningHandler {
     }
 
     @Override public void
-    handleWarning(@Nullable String handle, String message, @Nullable Location optionalLocation)
+    handleWarning(@Nullable String handle, String message, @Nullable Location location)
     throws CompileException {
         if (handle == null || StringPattern.matches(this.handlePatterns, handle)) {
-            this.delegate.handleWarning(handle, message, optionalLocation);
+            this.delegate.handleWarning(handle, message, location);
         }
     }
 }

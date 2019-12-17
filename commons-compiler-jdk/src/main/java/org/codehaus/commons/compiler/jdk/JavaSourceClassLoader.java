@@ -220,8 +220,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
         // Invoke "ClassLoader.defineClass()", as the ClassLoader API requires.
         return this.defineClass(className, ba, 0, size, (
-            this.optionalProtectionDomainFactory != null
-            ? this.optionalProtectionDomainFactory.getProtectionDomain(
+            this.protectionDomainFactory != null
+            ? this.protectionDomainFactory.getProtectionDomain(
                 JavaSourceClassLoader.getSourceResourceName(className)
             )
             : null

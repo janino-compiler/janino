@@ -219,7 +219,7 @@ interface IExpressionEvaluator extends IMultiCookable {
     void setClassName(String className);
 
     /** @see IClassBodyEvaluator#setExtendedClass(Class) */
-    void setExtendedClass(Class<?> optionalExtendedType);
+    void setExtendedClass(Class<?> extendedType);
 
     /** @see IClassBodyEvaluator#setDefaultImports(String...) */
     void setDefaultImports(String... defaultImports);

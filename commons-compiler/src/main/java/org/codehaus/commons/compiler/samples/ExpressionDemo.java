@@ -40,7 +40,7 @@ class ExpressionDemo extends DemoBase {
     public static void
     main(String[] args) throws Exception {
 
-        Class<?>   optionalExpressionType = null;
+        Class<?>   expressionType = null;
         String[]   parameterNames         = {};
         Class<?>[] parameterTypes         = {};
         Class<?>[] thrownExceptions       = {};
@@ -51,7 +51,7 @@ class ExpressionDemo extends DemoBase {
             String arg = args[i];
             if (!arg.startsWith("-")) break;
             if ("-et".equals(arg)) {
-                optionalExpressionType = DemoBase.stringToType(args[++i]);
+                expressionType = DemoBase.stringToType(args[++i]);
             } else
             if ("-pn".equals(arg)) {
                 parameterNames = DemoBase.explode(args[++i]);
@@ -122,7 +122,7 @@ class ExpressionDemo extends DemoBase {
 
         // Create "ExpressionEvaluator" object.
         IExpressionEvaluator ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
-        if (optionalExpressionType != null) ee.setExpressionType(optionalExpressionType);
+        if (expressionType != null) ee.setExpressionType(expressionType);
         ee.setDefaultImports(defaultImports);
         ee.setParameters(parameterNames, parameterTypes);
         ee.setThrownExceptions(thrownExceptions);

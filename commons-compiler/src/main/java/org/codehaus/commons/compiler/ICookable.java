@@ -92,27 +92,27 @@ interface ICookable {
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream}, encoded
      * in the "platform default encoding".
      *
-     * @param optionalFileName Used when reporting errors and warnings
+     * @param fileName Used when reporting errors and warnings
      */
-    void cook(@Nullable String optionalFileName, InputStream is) throws CompileException, IOException;
+    void cook(@Nullable String fileName, InputStream is) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream} with the given {@code
      * encoding}.
      */
-    void cook(InputStream is, @Nullable String optionalEncoding) throws CompileException, IOException;
+    void cook(InputStream is, @Nullable String encoding) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream} with the given {@code
      * encoding}.
      *
-     * @param optionalFileName Used when reporting errors and warnings
+     * @param fileName Used when reporting errors and warnings
      */
     void
     cook(
-        @Nullable String optionalFileName,
+        @Nullable String fileName,
         InputStream      is,
-        @Nullable String optionalEncoding
+        @Nullable String encoding
     ) throws CompileException, IOException;
 
     /**
@@ -123,9 +123,9 @@ interface ICookable {
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link String}.
      *
-     * @param optionalFileName Used when reporting errors and warnings
+     * @param fileName Used when reporting errors and warnings
      */
-    void cook(@Nullable String optionalFileName, String s) throws CompileException;
+    void cook(@Nullable String fileName, String s) throws CompileException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link File}, encoded in the "platform default
@@ -145,10 +145,10 @@ interface ICookable {
     void cookFile(String fileName) throws CompileException, IOException;
 
     /**
-     * Reads, scans, parses and compiles Java tokens from the named file with the given <var>optionalEncoding</var>.
+     * Reads, scans, parses and compiles Java tokens from the named file with the given <var>encoding</var>.
      */
     void
-    cookFile(String fileName, @Nullable String optionalEncoding) throws CompileException, IOException;
+    cookFile(String fileName, @Nullable String encoding) throws CompileException, IOException;
 
     /**
      * By default, {@link CompileException}s are thrown on compile errors, but an application my install its own

@@ -407,26 +407,26 @@ class IClassLoader {
      * Creates an {@link IClassLoader} that looks for classes in the given "boot class path", then in the given
      * "extension directories", and then in the given "class path".
      * <p>
-     *   The default for the {@code optionalBootClassPath} is the path defined in the system property
-     *   "sun.boot.class.path", and the default for the {@code optionalExtensionDirs} is the path defined in the
+     *   The default for the {@code bootClassPath} is the path defined in the system property
+     *   "sun.boot.class.path", and the default for the {@code extensionDirs} is the path defined in the
      *   "java.ext.dirs" system property.
      * </p>
      */
     public static IClassLoader
     createJavacLikePathIClassLoader(
-        @Nullable final File[] optionalBootClassPath,
-        @Nullable final File[] optionalExtDirs,
+        @Nullable final File[] bootClassPath,
+        @Nullable final File[] extDirs,
         final File[]           classPath
     ) {
         ResourceFinder bootClassPathResourceFinder = new PathResourceFinder(
-            optionalBootClassPath == null
+            bootClassPath == null
             ? StringUtil.parsePath(System.getProperty("sun.boot.class.path"))
-            : optionalBootClassPath
+            : bootClassPath
         );
         ResourceFinder extensionDirectoriesResourceFinder = new JarDirectoriesResourceFinder(
-            optionalExtDirs == null
+            extDirs == null
             ? StringUtil.parsePath(System.getProperty("java.ext.dirs"))
-            : optionalExtDirs
+            : extDirs
         );
         final ResourceFinder classPathResourceFinder = new PathResourceFinder(classPath);
 

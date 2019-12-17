@@ -41,17 +41,17 @@ class Location implements Serializable {
      */
     public static final Location NOWHERE = new Location("<internally generated location>", -1, -1);
 
-    @Nullable private final String optionalFileName;
+    @Nullable private final String fileName;
     private final int              lineNumber;
     private final int              columnNumber;
 
     /**
-     * @param optionalFileName A human-readable indication where the document related to this {@link Location} can be
+     * @param fileName A human-readable indication where the document related to this {@link Location} can be
      *                         found
      */
     public
-    Location(@Nullable String optionalFileName, int lineNumber, int columnNumber) {
-        this.optionalFileName = optionalFileName;
+    Location(@Nullable String fileName, int lineNumber, int columnNumber) {
+        this.fileName = fileName;
         this.lineNumber       = lineNumber;
         this.columnNumber     = columnNumber;
     }
@@ -59,7 +59,7 @@ class Location implements Serializable {
     /**
      * @return The "file name" associated with this location, or {@code null}
      */
-    @Nullable public String getFileName() { return this.optionalFileName; }
+    @Nullable public String getFileName() { return this.fileName; }
 
     /**
      * @return The line number associated with this location, or -1
@@ -78,8 +78,8 @@ class Location implements Serializable {
     toString() {
 
         StringBuilder sb = new StringBuilder();
-        if (this.optionalFileName != null) {
-            sb.append("File '").append(this.optionalFileName).append("', ");
+        if (this.fileName != null) {
+            sb.append("File '").append(this.fileName).append("', ");
         }
         sb.append("Line ").append(this.lineNumber).append(", ");
         sb.append("Column ").append(this.columnNumber);

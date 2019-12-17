@@ -42,6 +42,6 @@ interface WarningHandler {
      *                          warnings have been reported
      */
     void
-    handleWarning(@Nullable String handle, String message, @Nullable Location optionalLocation)
+    handleWarning(@Nullable String handle, String message, @Nullable Location location)
     throws CompileException;
 }

@@ -165,7 +165,7 @@ class ReflectionIClass extends IClass {
             } catch (ClassNotFoundException cnfe) {
                 throw new CompileException(
                     "Loading annotation type",
-                    null, // optionalLocation
+                    null, // location
                     cnfe
                 );
             }

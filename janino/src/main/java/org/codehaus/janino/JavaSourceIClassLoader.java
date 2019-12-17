@@ -64,8 +64,8 @@ class JavaSourceIClassLoader extends IClassLoader {
      */
     private final Set<UnitCompiler>  unitCompilers = new HashSet<UnitCompiler>();
 
-    @Nullable private ErrorHandler   optionalCompileErrorHandler;
-    @Nullable private WarningHandler optionalWarningHandler;
+    @Nullable private ErrorHandler   compileErrorHandler;
+    @Nullable private WarningHandler warningHandler;
 
     public
     JavaSourceIClassLoader(
@@ -115,8 +115,8 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
      */
     public void
-    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
-        this.optionalCompileErrorHandler = optionalCompileErrorHandler;
+    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
+        this.compileErrorHandler = compileErrorHandler;
     }
 
     /**
@@ -124,8 +124,8 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
      */
     public void
-    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
-        this.optionalWarningHandler = optionalWarningHandler;
+    setWarningHandler(@Nullable WarningHandler warningHandler) {
+        this.warningHandler = warningHandler;
     }
 
     /**
@@ -184,8 +184,8 @@ class JavaSourceIClassLoader extends IClassLoader {
             if (acu == null) return null;
 
             UnitCompiler uc = new UnitCompiler(acu, this).options(this.options);
-            uc.setCompileErrorHandler(this.optionalCompileErrorHandler);
-            uc.setWarningHandler(this.optionalWarningHandler);
+            uc.setCompileErrorHandler(this.compileErrorHandler);
+            uc.setWarningHandler(this.warningHandler);
 
             // Remember compilation unit for later compilation.
             this.unitCompilers.add(uc);
@@ -233,7 +233,7 @@ class JavaSourceIClassLoader extends IClassLoader {
             );
 
             Parser parser = new Parser(scanner);
-            parser.setWarningHandler(this.optionalWarningHandler);
+            parser.setWarningHandler(this.warningHandler);
 
             return parser.parseAbstractCompilationUnit();
         } finally {

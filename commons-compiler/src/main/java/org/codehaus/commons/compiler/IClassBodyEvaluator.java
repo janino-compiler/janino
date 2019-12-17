@@ -75,7 +75,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  * <p>
  *   The generated class may optionally extend/implement a given type; the returned instance can safely be type-cast
- *   to that {@code optionalBaseType}.
+ *   to that {@code baseType}.
  * </p>
  * <p>
  *   Example:
@@ -137,20 +137,20 @@ interface IClassBodyEvaluator extends ICookable {
     void setClassName(String className);
 
     /**
-     * Sets a particular superclass that the generated class will extend. If <var>optionalExtendedClass</var> is {@code
+     * Sets a particular superclass that the generated class will extend. If <var>extendedClass</var> is {@code
      * null}, the generated class will extend {@link Object}.
      * <p>
      *   The usual reason to set a base class for an evaluator is that the generated class can directly access the
      *   superclass's (non-private) members.
      * </p>
      */
-    void setExtendedClass(@Nullable Class<?> optionalExtendedClass);
+    void setExtendedClass(@Nullable Class<?> extendedClass);
 
     /**
      * @deprecated Use {@link #setExtendedClass(Class)} instead
      */
     @Deprecated void
-    setExtendedType(@Nullable Class<?> optionalExtendedClass);
+    setExtendedType(@Nullable Class<?> extendedClass);
 
     /**
      * Sets a particular set of interfaces that the generated class will implement.
@@ -180,7 +180,7 @@ interface IClassBodyEvaluator extends ICookable {
      * and returns an instance of that class.
      *
      * @param reader Source of class body tokens
-     * @return       An object that extends the {@code optionalExtendedType} and implements the given
+     * @return       An object that extends the {@code extendedType} and implements the given
      *               {@code implementedTypes}
      */
     Object createInstance(Reader reader) throws CompileException, IOException;

@@ -42,7 +42,7 @@ interface IMultiCookable extends ICookable {
      * Same as {@link #cook(String, Reader)}, but cooks a <em>set</em> of documents into one class.
      * Notice that if <em>any</em> of the documents causes trouble, the entire compilation will fail. If you
      * need to report <em>which</em> of the documents causes the exception, you may want to use the
-     * {@code optionalFileNames} parameter to distinguish between the individual token sources.
+     * {@code fileNames} parameter to distinguish between the individual token sources.
      */
     void cook(String[] fileNames, Reader[] readers) throws CompileException, IOException;
 

@@ -169,13 +169,13 @@ class Benchmark {
      * Reports the {@code title}, a colon, a space, and the pretty-printed {@link Object}.
      */
     public void
-    report(@Nullable String optionalTitle, @Nullable Object o) {
+    report(@Nullable String title, @Nullable Object o) {
         if (!this.reportingEnabled) return;
 
-        String prefix = optionalTitle == null ? "" : (
-            optionalTitle
+        String prefix = title == null ? "" : (
+            title
             + ": "
-            + (optionalTitle.length() < Benchmark.PAD.length() ? Benchmark.PAD.substring(optionalTitle.length()) : "")
+            + (title.length() < Benchmark.PAD.length() ? Benchmark.PAD.substring(title.length()) : "")
         );
 
         if (o == null) {
@@ -189,7 +189,7 @@ class Benchmark {
             if (oa.length == 1) {
                 this.reportIndented(prefix + oa[0].toString());
             } else {
-                this.reportIndented(optionalTitle == null ? "Array:" : optionalTitle + ':');
+                this.reportIndented(title == null ? "Array:" : title + ':');
                 this.begin();
                 try {
                     for (Object o2 : oa) this.report(null, o2);

@@ -549,13 +549,13 @@ class ClassFile implements Annotatable {
         short            accessFlags,
         String           fieldName,
         String           fieldTypeFd,
-        @Nullable Object optionalConstantValue
+        @Nullable Object constantValue
     ) {
         List<AttributeInfo> attributes = new ArrayList<AttributeInfo>();
-        if (optionalConstantValue != null) {
+        if (constantValue != null) {
             attributes.add(new ConstantValueAttribute(
                 this.addConstantUtf8Info("ConstantValue"),
-                this.addConstantSifldInfo(optionalConstantValue)
+                this.addConstantSifldInfo(constantValue)
             ));
         }
         FieldInfo fi = new FieldInfo(

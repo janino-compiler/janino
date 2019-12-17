@@ -134,7 +134,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      *     ee.setExpressionType(expressionType);
      *     ee.setParameters(parameterNames, parameterTypes);
      *     ee.setThrownExceptions(thrownExceptions);
-     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.setParentClassLoader(parentClassLoader);
      *     ee.cook(expression);
      * </pre>
      *
@@ -152,12 +152,12 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(expression);
     }
 
@@ -170,7 +170,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      *     ee.setThrownExceptions(thrownExceptions);
      *     ee.setExtendedClass(extendedClass);
      *     ee.setImplementedTypes(implementedTypes);
-     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.setParentClassLoader(parentClassLoader);
      *     ee.cook(expression);
      * </pre>
      *
@@ -192,14 +192,14 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         Class<?>[]            thrownExceptions,
         Class<?>              extendedClass,
         Class<?>[]            implementedTypes,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
         this.setExtendedClass(extendedClass);
         this.setImplementedInterfaces(implementedTypes);
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(expression);
     }
 
@@ -211,14 +211,14 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      * <pre>
      *     ExpressionEvaluator ee = new ExpressionEvaluator();
      *     ee.setClassName(className);
-     *     ee.setExtendedType(optionalExtendedType);
+     *     ee.setExtendedType(extendedType);
      *     ee.setImplementedTypes(implementedTypes);
      *     ee.setStaticMethod(staticMethod);
      *     ee.setExpressionType(expressionType);
      *     ee.setMethodName(methodName);
      *     ee.setParameters(parameterNames, parameterTypes);
      *     ee.setThrownExceptions(thrownExceptions);
-     *     ee.setParentClassLoader(optionalParentClassLoader);
+     *     ee.setParentClassLoader(parentClassLoader);
      *     ee.cook(scanner);
      * </pre>
      *
@@ -238,7 +238,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     ExpressionEvaluator(
         Scanner               scanner,
         String                className,
-        @Nullable Class<?>    optionalExtendedType,
+        @Nullable Class<?>    extendedType,
         Class<?>[]            implementedTypes,
         boolean               staticMethod,
         Class<?>              expressionType,
@@ -246,17 +246,17 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         this.setClassName(className);
-        this.setExtendedClass(optionalExtendedType);
+        this.setExtendedClass(extendedType);
         this.setImplementedInterfaces(implementedTypes);
         this.setStaticMethod(staticMethod);
         this.setExpressionType(expressionType);
         this.setMethodName(methodName);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(optionalParentClassLoader);
+        this.setParentClassLoader(parentClassLoader);
         this.cook(scanner);
     }
 
@@ -422,7 +422,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     /**
      * Like {@link #cook(Scanner)}, but cooks a <em>set</em> of scripts into one class. Notice that if <em>any</em> of
      * the scripts causes trouble, the entire compilation will fail. If you need to report <em>which</em> of the
-     * scripts causes the exception, you may want to use the {@code optionalFileName} argument of {@link
+     * scripts causes the exception, you may want to use the {@code fileName} argument of {@link
      * Scanner#Scanner(String, Reader)} to distinguish between the individual token sources.
      * <p>
      *   On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling 10000 expressions "a + b"
@@ -515,8 +515,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      */
     @Nullable protected Java.Type
     optionalClassToType(final Location location, @Nullable final Class<?> clazz) {
-        if (clazz == null) return null;
-        return this.classToType(location, clazz);
+        return this.se.optionalClassToType(location, clazz);
     }
 
     /**
@@ -554,10 +553,10 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         String                expression,
         Class<?>              interfaceToImplement,
         String[]              parameterNames,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException {
         IExpressionEvaluator ee = new ExpressionEvaluator();
-        ee.setParentClassLoader(optionalParentClassLoader);
+        ee.setParentClassLoader(parentClassLoader);
         return ee.createFastEvaluator(expression, interfaceToImplement, parameterNames);
     }
 
@@ -568,15 +567,15 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     createFastExpressionEvaluator(
         Scanner               scanner,
         String                className,
-        @Nullable Class<?>    optionalExtendedType,
+        @Nullable Class<?>    extendedType,
         Class<?>              interfaceToImplement,
         String[]              parameterNames,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setClassName(className);
-        ee.setExtendedClass(optionalExtendedType);
-        ee.setParentClassLoader(optionalParentClassLoader);
+        ee.setExtendedClass(extendedType);
+        ee.setParentClassLoader(parentClassLoader);
         return ee.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 
@@ -591,13 +590,13 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         @Nullable Class<?>    extendedType,
         Class<?>              interfaceToImplement,
         String[]              parameterNames,
-        @Nullable ClassLoader optionalParentClassLoader
+        @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
         ExpressionEvaluator ee = new ExpressionEvaluator();
         ee.setClassName(className);
         ee.setExtendedClass(extendedType);
         ee.setDefaultImports(defaultImports);
-        ee.setParentClassLoader(optionalParentClassLoader);
+        ee.setParentClassLoader(parentClassLoader);
         return ee.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
     }
 

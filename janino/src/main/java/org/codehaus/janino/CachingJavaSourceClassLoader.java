@@ -71,24 +71,24 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     /**
      * See {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)}.
      *
-     * @param optionalSourcePath Directories to scan for source files
+     * @param sourcePath Directories to scan for source files
      * @param cacheDirectory     Directory to use for caching generated class files (see class description)
      */
     public
     CachingJavaSourceClassLoader(
         ClassLoader             parentClassLoader,
-        @Nullable File[]        optionalSourcePath,
-        @Nullable String        optionalCharacterEncoding,
+        @Nullable File[]        sourcePath,
+        @Nullable String        characterEncoding,
         File                    cacheDirectory
     ) {
         this(
             parentClassLoader,                           // parentClassLoader
             (                                            // sourceFinder
-                optionalSourcePath == null
+                sourcePath == null
                 ? new DirectoryResourceFinder(new File("."))
-                : new PathResourceFinder(optionalSourcePath)
+                : new PathResourceFinder(sourcePath)
             ),
-            optionalCharacterEncoding,                   // optionalCharacterEncoding
+            characterEncoding,                   // characterEncoding
             new DirectoryResourceFinder(cacheDirectory), // classFileCacheResourceFinder
             new DirectoryResourceCreator(cacheDirectory) // classFileCacheResourceCreator
         );
@@ -107,7 +107,7 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * @param parentClassLoader             Attempt to load classes through this one before looking for source files
      * @param sourceFinder                  Finds Java source for class {@code pkg.Cls} in resource {@code
      *                                      pkg/Cls.java}
-     * @param optionalCharacterEncoding     Encoding of Java source or {@code null} for platform default
+     * @param characterEncoding     Encoding of Java source or {@code null} for platform default
      *                                      encoding
      * @param classFileCacheResourceFinder  Finds precompiled class {@code pkg.Cls} in resource {@code pkg/Cls.class}
      *                                      (see class description)
@@ -118,11 +118,11 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     CachingJavaSourceClassLoader(
         ClassLoader      parentClassLoader,
         ResourceFinder   sourceFinder,
-        @Nullable String optionalCharacterEncoding,
+        @Nullable String characterEncoding,
         ResourceFinder   classFileCacheResourceFinder,
         ResourceCreator  classFileCacheResourceCreator
     ) {
-        super(parentClassLoader, sourceFinder, optionalCharacterEncoding);
+        super(parentClassLoader, sourceFinder, characterEncoding);
         this.classFileCacheResourceFinder  = classFileCacheResourceFinder;
         this.classFileCacheResourceCreator = classFileCacheResourceCreator;
         this.sourceFinder                  = sourceFinder;

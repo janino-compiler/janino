@@ -34,7 +34,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public final
 class Token {
 
-    @Nullable private final String optionalFileName;
+    @Nullable private final String fileName;
     private final int              lineNumber;
     private final int              columnNumber;
 
@@ -60,8 +60,8 @@ class Token {
     public final String value;
 
     public
-    Token(@Nullable String optionalFileName, int lineNumber, int columnNumber, TokenType type, String value) {
-        this.optionalFileName = optionalFileName;
+    Token(@Nullable String fileName, int lineNumber, int columnNumber, TokenType type, String value) {
+        this.fileName = fileName;
         this.lineNumber       = lineNumber;
         this.columnNumber     = columnNumber;
         this.type             = type;
@@ -70,7 +70,7 @@ class Token {
 
     public
     Token(Location location, TokenType type, String value) {
-        this.optionalFileName = location.getFileName();
+        this.fileName = location.getFileName();
         this.lineNumber       = location.getLineNumber();
         this.columnNumber     = location.getColumnNumber();
         this.location         = location;
@@ -86,7 +86,7 @@ class Token {
 
         if (this.location != null) return this.location;
 
-        return (this.location = new Location(this.optionalFileName, this.lineNumber, this.columnNumber));
+        return (this.location = new Location(this.fileName, this.lineNumber, this.columnNumber));
     }
 
     @Override public String

@@ -282,7 +282,7 @@ interface IScriptEvaluator extends IMultiCookable {
      * Same as {@link #cook(String, Reader)}, but cooks a <em>set</em> of scripts into one class. Notice that
      * if <em>any</em> of the scripts causes trouble, the entire compilation will fail. If you
      * need to report <em>which</em> of the scripts causes the exception, you may want to use the
-     * {@code optionalFileNames} parameter to distinguish between the individual token sources.
+     * {@code fileNames} parameter to distinguish between the individual token sources.
      * <p>
      *   Iff the number of scanners is one, then that single script may contain leading IMPORT directives.
      * </p>s

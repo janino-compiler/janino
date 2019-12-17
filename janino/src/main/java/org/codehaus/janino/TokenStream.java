@@ -174,10 +174,10 @@ interface TokenStream {
      *   continue parsing, so there is no need to install a custom parse error handler.
      * </p>
      *
-     * @param optionalWarningHandler {@code null} to indicate that no warnings be issued
+     * @param warningHandler {@code null} to indicate that no warnings be issued
      */
     void
-    setWarningHandler(@Nullable WarningHandler optionalWarningHandler);
+    setWarningHandler(@Nullable WarningHandler warningHandler);
 
     /**
      * @return The location of the first character of the previously <em>read</em> (not <em>peek</em>ed!) token
