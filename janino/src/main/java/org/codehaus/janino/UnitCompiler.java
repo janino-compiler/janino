@@ -3223,6 +3223,8 @@ class UnitCompiler {
 
             short accessFlags = this.accessFlags(fd.getModifiers());
 
+            if (fd.formalParameters.variableArity) accessFlags |= Mod.VARARGS;
+
             if (fd.getDeclaringType() instanceof InterfaceDeclaration) {
 
                 // Static interface methods would require Java 8 class file format, but JANINO is still tied to Java
