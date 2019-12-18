@@ -1004,13 +1004,10 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             return;
         }
 
-        // openjdk-12:
-        //         invokestatic    java.util.stream.Stream.of(Object[]) => java.util.stream.Stream
+        // JANINO currently produces Java 6 .class files where "invokestatic InterfaceMethodref" is not allowed.
+        if (this.isJanino) return;
 
         this.assertExpressionEvaluatable("java.util.stream.Stream.of(1, 2, 3)");
-//        ExpressionEvaluator ee = new ExpressionEvaluator();
-//        ee.cook("java.util.stream.Stream.of(1, 2, 3)");
-//        ee.evaluate(new Object[0]);
     }
 
     /**
