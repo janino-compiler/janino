@@ -154,7 +154,7 @@ class CommonsCompilerTestSuite {
         @Override @Nullable protected Object
         execute() throws Exception {
             try {
-                return this.expressionEvaluator.evaluate(new Object[0]);
+                return this.expressionEvaluator.evaluate();
             } catch (InvocationTargetException ite) {
                 Throwable te = ite.getTargetException();
                 throw te instanceof Exception ? (Exception) te : ite;
