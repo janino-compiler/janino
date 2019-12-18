@@ -24,7 +24,7 @@
  */
 
 /**
- * The core of the Janino Java<sup>TM</sup> compiler.
+ * The core of the Janino Java compiler.
  * <p>
  *   The package comprises a scanner ({@link org.codehaus.janino.Scanner}, a parser ({@link
  *   org.codehaus.janino.Parser}) and a class file library. The parser builds a syntax tree from the "Java.*" classes

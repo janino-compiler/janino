@@ -24,7 +24,7 @@
  */
 
 /**
- * Sample applications for the Janino Java<sup>TM</sup> compiler.
+ * Sample applications for the Janino Java compiler.
  */
 @NotNullByDefault
 package org.codehaus.commons.compiler.samples;
