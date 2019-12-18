@@ -178,9 +178,9 @@ class Scanner {
     Scanner(@Nullable String fileName, Reader in) throws IOException {
         this(
             fileName, // fileName
-            in,               // in
-            1,                // initialLineNumber
-            0                 // initialColumnNumber
+            in,       // in
+            1,        // initialLineNumber
+            0         // initialColumnNumber
         );
     }
 
