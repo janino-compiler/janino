@@ -31,7 +31,7 @@ import java.io.InputStream;
 import java.io.Reader;
 
 public
-interface IMultiCookable extends ICookable {
+interface IMultiCookable {
 
     /**
      * Same as {@link #cook(Reader)}, but cooks a <em>set</em> of documents into one class.
@@ -49,7 +49,7 @@ interface IMultiCookable extends ICookable {
     /**
      * Same as {@link #cook(String)}, but cooks a <em>set</em> of documents into one class.
      */
-    void cook(String... strings) throws CompileException;
+    void cook(String[] strings) throws CompileException;
 
     /**
      * Same as {@link #cook(String, String)}, but cooks a <em>set</em> of documents into one class.
@@ -60,7 +60,7 @@ interface IMultiCookable extends ICookable {
      * Reads, scans, parses and compiles Java tokens from the given {@link InputStream}s, encoded
      * in the "platform default encoding".
      */
-    void cook(InputStream[] inputStreams) throws CompileException, IOException;
+    void cook(InputStream... inputStreams) throws CompileException, IOException;
 
     void cook(InputStream[] inputStreams, String[] encodings) throws CompileException, IOException;
 

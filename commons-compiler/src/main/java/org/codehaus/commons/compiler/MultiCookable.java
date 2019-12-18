@@ -33,79 +33,19 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 
-import org.codehaus.commons.nullanalysis.Nullable;
-
+/**
+ * Implements all methods of {@link IMultiCookable}, except for {@link IMultiCookable#cook(String[], Reader[])}.
+ */
 public abstract
-class MultiCookable implements IMultiCookable {
+class MultiCookable extends Cookable implements IMultiCookable {
 
     @Override public final void
-    cook(@Nullable String fileName, Reader r) throws CompileException, IOException {
-        this.cook(new String[] { fileName }, new Reader[] { r });
-    }
-
-    @Override public final void
-    cook(Reader r) throws CompileException, IOException {
-        this.cook(new Reader[] { r });
-    }
-
-    @Override public final void
-    cook(InputStream is) throws CompileException, IOException {
-        this.cook(new InputStream[] { is });
-    }
-
-    @Override public final void
-    cook(@Nullable String fileName, InputStream inputStream) throws CompileException, IOException {
-        this.cook(new String[] { fileName }, new InputStream[] { inputStream });
-    }
-
-    @Override public final void
-    cook(InputStream is, @Nullable String encoding) throws CompileException, IOException {
-        this.cook(new InputStream[] { is }, new String[] { encoding });
-    }
-
-    @Override public final void
-    cook(@Nullable String fileName, InputStream inputStream, @Nullable String encoding)
-    throws CompileException, IOException {
-        this.cook(new String[] { fileName }, new InputStream[] { inputStream }, new String[] { encoding });
-    }
-
-    @Override public final void
-    cook(String s) throws CompileException {
-        this.cook(new String[] { s });
-    }
-
-    @Override public final void
-    cook(@Nullable String fileName, String s) throws CompileException {
-        this.cook(new String[] { fileName }, new String[] { s });
-    }
-
-    @Override public final void
-    cookFile(File file) throws CompileException, IOException {
-        this.cookFiles(new File[] { file });
-    }
-
-    @Override public final void
-    cookFile(File file, @Nullable String encoding) throws CompileException, IOException {
-        this.cookFiles(new File[] { file }, new String[] { encoding });
-    }
-
-    @Override public final void
-    cookFile(String fileName) throws CompileException, IOException {
-        this.cookFiles(new String[] { fileName });
-    }
-
-    @Override public final void
-    cookFile(String fileName, @Nullable String encoding) throws CompileException, IOException {
-        this.cookFiles(new String[] { fileName }, new String[] { encoding });
-    }
-
-    @Override public final void
-    cook(InputStream[] inputStreams) throws CompileException, IOException {
+    cook(InputStream... inputStreams) throws CompileException, IOException {
         this.cook(new String[inputStreams.length], inputStreams);
     }
 
     @Override public final void
-    cook(String... strings) throws CompileException {
+    cook(String[] strings) throws CompileException {
         this.cook(new String[strings.length], strings);
     }
 
@@ -137,19 +77,23 @@ class MultiCookable implements IMultiCookable {
     }
 
     @Override public final void
-    cook(@Nullable String[] fileNames, String[] strings) throws CompileException {
+    cook(String[] fileNames, String[] strings) throws CompileException {
 
-        final int count = strings.length;
+        final int count = fileNames.length;
 
         Reader[] readers = new Reader[count];
-        for (int i = 0; i < count; ++i) readers[i] = new StringReader(strings[i]);
+        for (int i = 0; i < count; i++) readers[i] = new StringReader(strings[i]);
 
         try {
             this.cook(fileNames, readers);
-        } catch (IOException ex) {
-            throw new InternalCompilerException("SNO: IOException despite StringReader", ex);
+        } catch (IOException ioe) {
+            throw new InternalCompilerException("SNO: IOException despite StringReader", ioe);
         }
     }
+
+    // The only method that must be implemented by a derived class.
+    @Override public abstract void
+    cook(String[] fileNames, Reader[] readers) throws CompileException, IOException;
 
     @Override public final void
     cookFiles(File[] files) throws CompileException, IOException {
@@ -199,7 +143,7 @@ class MultiCookable implements IMultiCookable {
     }
 
     @Override public final void
-    cook(Reader[] readers) throws CompileException, IOException {
+    cook(Reader... readers) throws CompileException, IOException {
         this.cook(new String[readers.length], readers);
     }
 }

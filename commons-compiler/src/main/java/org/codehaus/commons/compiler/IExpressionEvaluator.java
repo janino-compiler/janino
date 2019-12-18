@@ -114,7 +114,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  */
 public
-interface IExpressionEvaluator extends IMultiCookable {
+interface IExpressionEvaluator extends ICookable, IMultiCookable {
 
     /**
      * The fully qualified name of the generated class, iff not reconfigured by {@link #setClassName(String)}.
@@ -155,7 +155,7 @@ interface IExpressionEvaluator extends IMultiCookable {
      *
      * @param arguments The actual parameter values
      */
-    @Nullable Object evaluate(@Nullable Object[] arguments) throws InvocationTargetException;
+    @Nullable Object evaluate(@Nullable Object... arguments) throws InvocationTargetException;
 
     /**
      * Reconfigures the "default expression type"; if no expression type is configured for an expression, then, when
@@ -173,6 +173,9 @@ interface IExpressionEvaluator extends IMultiCookable {
      * Configures the interfaces that the generated class implements.
      */
     void setImplementedInterfaces(Class<?>[] implementedTypes);
+
+    @Override
+    void setParentClassLoader(@Nullable ClassLoader parentClassLoader);
 
     /**
      * @deprecated Use {@link #setExpressionType(Class)} instead
@@ -248,7 +251,7 @@ interface IExpressionEvaluator extends IMultiCookable {
     /**
      * {@code Null} <var>arguments</var> is equivalent with {@code new Object[0]}.
      */
-    @Nullable Object evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException;
+    @Nullable Object evaluate(int idx, @Nullable Object... arguments) throws InvocationTargetException;
 
     /**
      * If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator
@@ -289,13 +292,13 @@ interface IExpressionEvaluator extends IMultiCookable {
      *   #setClassName(String)}.
      * </p>
      */
-    <T> Object
-    createFastEvaluator(String expression, Class<T> interfaceToImplement, String... parameterNames)
+    <T> T
+    createFastEvaluator(String expression, Class<? extends T> interfaceToImplement, String... parameterNames)
     throws CompileException;
 
     /** @see #createFastEvaluator(String, Class, String[]) */
-    <T> Object
-    createFastEvaluator(Reader reader, Class<T> interfaceToImplement, String... parameterNames)
+    <T> T
+    createFastEvaluator(Reader reader, Class<? extends T> interfaceToImplement, String... parameterNames)
     throws CompileException, IOException;
 
     /** @see IScriptEvaluator#getMethod() */

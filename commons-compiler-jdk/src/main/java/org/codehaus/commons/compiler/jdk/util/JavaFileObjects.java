@@ -45,7 +45,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 
-import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
@@ -89,7 +89,7 @@ class JavaFileObjects {
         getCharContent(boolean ignoreEncodingErrors) throws IOException {
             Reader r = this.openReader(true);
             try {
-                return Cookable.readString(r);
+                return Readers.readAll(r);
             } finally {
                 r.close();
             }

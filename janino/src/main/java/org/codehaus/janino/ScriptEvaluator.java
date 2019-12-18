@@ -106,7 +106,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         protected boolean staticMethod = true;
 
         /**
-         * The generated method's return type. {@code Null} means "use the default return type".
+         * The generated method's return type. {@code null} means "use the default return type".
          *
          * @see ScriptEvaluator#setDefaultReturnType(Class)
          */
@@ -127,8 +127,8 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     /**
-     * The scripts to compile. Is initialized on the first call to {@link
-     * #setStaticMethod(boolean[])} or one of its friends.
+     * The scripts to compile. Is initialized on the first call to {@link #setStaticMethod(boolean[])} or one of its
+     * friends.
      */
     @Nullable private Script[] scripts;
 
@@ -538,7 +538,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     setReturnType(@Nullable Class<?> returnType) { this.setReturnTypes(new Class[] { returnType }); }
 
     @Override public void
-    setMethodName(String methodName) { this.setMethodNames(new String[] { methodName }); }
+    setMethodName(@Nullable String methodName) { this.setMethodNames(new String[] { methodName }); }
 
     @Override public void
     setParameters(String[] parameterNames, Class<?>[] parameterTypes) {
@@ -564,13 +564,6 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         for (int i = 0; i < staticMethod.length; i++) this.getScript(i).staticMethod = staticMethod[i];
     }
 
-    /**
-     * Defines the return types of the generated methods.
-     *
-     * @param returnTypes The methods' return types; {@code null} elements mean "use the default return type"
-     * @see               ScriptEvaluator#getDefaultReturnType()
-     * @see               ExpressionEvaluator#getDefaultExpressionType()
-     */
     @Override public void
     setReturnTypes(Class<?>[] returnTypes) {
         this.setScriptCount(returnTypes.length);
@@ -589,13 +582,12 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     setParameters(String[][] parameterNames, Class<?>[][] parameterTypes) {
 
         this.setScriptCount(parameterNames.length);
-        for (int i = 0; i < parameterNames.length; i++) {
-            this.getScript(i).parameterNames = (String[]) parameterNames[i].clone();
-        }
-
         this.setScriptCount(parameterTypes.length);
-        for (int i = 0; i < parameterTypes.length; i++) {
-            this.getScript(i).parameterTypes = (Class[]) parameterTypes[i].clone();
+
+        for (int i = 0; i < parameterNames.length; i++) {
+            final Script script = this.getScript(i);
+            script.parameterNames = (String[]) parameterNames[i].clone();
+            script.parameterTypes = (Class[])  parameterTypes[i].clone();
         }
     }
 
@@ -606,6 +598,11 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     // ---------------------------------------------------------------
+
+    @Override public void
+    cook(@Nullable String fileName, Reader reader) throws CompileException, IOException {
+        this.cook(new Scanner(fileName, reader));
+    }
 
     /**
      * On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling 10000 expressions "a + b"
@@ -618,20 +615,16 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      * </p>
      */
     @Override public final void
-    cook(@Nullable String[] fileNames, Reader[] readers) throws CompileException, IOException {
+    cook(String[] fileNames, Reader[] readers) throws CompileException, IOException {
 
-        if (fileNames != null) this.setScriptCount(fileNames.length);
+        this.setScriptCount(fileNames.length);
         this.setScriptCount(readers.length);
 
         Scanner[] scanners = new Scanner[readers.length];
-        for (int i = 0; i < readers.length; ++i) {
-            scanners[i] = new Scanner(fileNames == null ? null : fileNames[i], readers[i]);
-        }
+        for (int i = 0; i < readers.length; ++i) scanners[i] = new Scanner(fileNames[i], readers[i]);
+
         this.cook(scanners);
     }
-
-    public final void
-    cook(Scanner scanner) throws CompileException, IOException { this.cook(new Scanner[] { scanner }); }
 
     /**
      * Like {@link #cook(Scanner)}, but cooks a <em>set</em> of scripts into one class. Notice that if <em>any</em> of
@@ -656,7 +649,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      *                               {@code scanners}
      */
     public final void
-    cook(Scanner[] scanners) throws CompileException, IOException {
+    cook(Scanner... scanners) throws CompileException, IOException {
 
         this.setScriptCount(scanners.length);
 
@@ -832,7 +825,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     @Nullable private Method[] getMethodsCache;
 
     @Nullable protected Type
-    optionalClassToType(Location loc, Class<?> clazz) { return this.cbe.optionalClassToType(loc, clazz); }
+    optionalClassToType(Location loc, @Nullable Class<?> clazz) { return this.cbe.optionalClassToType(loc, clazz); }
 
     protected Type
     classToType(Location loc, Class<?> clazz) { return this.cbe.classToType(loc, clazz); }

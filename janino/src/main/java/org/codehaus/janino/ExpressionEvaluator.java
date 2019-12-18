@@ -406,6 +406,11 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     getResult() { return this.se.getResult(); }
 
     @Override public void
+    cook(@Nullable String fileName, Reader reader) throws CompileException, IOException {
+        this.cook(new Scanner(fileName, reader));
+    }
+
+    @Override public void
     cook(String[] fileNames, Reader[] readers) throws CompileException, IOException {
 
         final int count = fileNames.length;
@@ -442,7 +447,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      *                               {@code scanners}
      */
     public final void
-    cook(Scanner[] scanners) throws CompileException, IOException {
+    cook(Scanner... scanners) throws CompileException, IOException {
 
         Parser[] parsers = new Parser[scanners.length];
         for (int i = 0; i < scanners.length; ++i) parsers[i] = new Parser(scanners[i]);
@@ -454,7 +459,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      * @see #cook(Scanner[])
      */
     public final void
-    cook(Parser[] parsers) throws CompileException, IOException {
+    cook(Parser... parsers) throws CompileException, IOException {
 
         int count = parsers.length;
         this.se.setScriptCount(count);
@@ -499,7 +504,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      * Converts an array of {@link Class}es into an array of{@link Java.Type}s.
      */
     protected Java.Type[]
-    classesToTypes(Location location, @Nullable Class<?>[] classes) {
+    classesToTypes(Location location, @Nullable Class<?>... classes) {
 
         if (classes == null) return new Java.Type[0];
 
@@ -525,10 +530,10 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     classToType(final Location location, final Class<?> clazz) { return this.se.classToType(location, clazz); }
 
     @Override @Nullable public Object
-    evaluate(@Nullable Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
+    evaluate(@Nullable Object... arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
 
     @Override @Nullable public Object
-    evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException {
+    evaluate(int idx, @Nullable Object... arguments) throws InvocationTargetException {
 
         Method method = this.getMethod(idx);
 
@@ -555,9 +560,20 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         String[]              parameterNames,
         @Nullable ClassLoader parentClassLoader
     ) throws CompileException {
-        IExpressionEvaluator ee = new ExpressionEvaluator();
-        ee.setParentClassLoader(parentClassLoader);
-        return ee.createFastEvaluator(expression, interfaceToImplement, parameterNames);
+        try {
+            return ExpressionEvaluator.createFastExpressionEvaluator(
+                new Scanner(null, new StringReader(expression)), // scanner
+                IExpressionEvaluator.DEFAULT_CLASS_NAME,         // className
+                null,                                            // extendedType
+                interfaceToImplement,                            // interfaceToImplement
+                parameterNames,                                  // parameterNames
+                null                                             // parentClassLoader
+            );
+        } catch (IOException ioe) {
+            final AssertionError ae = new AssertionError("IOException despite StringReader");
+            ae.initCause(ioe);
+            throw ae;
+        }
     }
 
     /**
@@ -572,11 +588,15 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         String[]              parameterNames,
         @Nullable ClassLoader parentClassLoader
     ) throws CompileException, IOException {
-        ExpressionEvaluator ee = new ExpressionEvaluator();
-        ee.setClassName(className);
-        ee.setExtendedClass(extendedType);
-        ee.setParentClassLoader(parentClassLoader);
-        return ee.createFastEvaluator(scanner, interfaceToImplement, parameterNames);
+        return ExpressionEvaluator.createFastExpressionEvaluator(
+            scanner,              // scanner
+            new String[0],        // defaultImports
+            className,            // className
+            extendedType,         // extendedType
+            interfaceToImplement, // interfaceToImplement
+            parameterNames,       // parameterNames
+            parentClassLoader     // parentClassLoader
+        );
     }
 
     /**
@@ -601,13 +621,14 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     }
 
     @Override public <T> T
-    createFastEvaluator(Reader reader, Class<T> interfaceToImplement, String... parameterNames)
+    createFastEvaluator(Reader reader, Class<? extends T> interfaceToImplement, String... parameterNames)
     throws CompileException, IOException {
         return this.createFastEvaluator(new Scanner(null, reader), interfaceToImplement, parameterNames);
     }
 
     @Override public <T> T
-    createFastEvaluator(String script, Class<T> interfaceToImplement, String... parameterNames) throws CompileException {
+    createFastEvaluator(String script, Class<? extends T> interfaceToImplement, String... parameterNames)
+    throws CompileException {
         try {
             return this.createFastEvaluator(
                 new StringReader(script),
@@ -628,7 +649,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      * @see #createFastEvaluator(Reader, Class, String[])
      */
     public <T> T
-    createFastEvaluator(Scanner scanner, Class<T> interfaceToImplement, String[] parameterNames)
+    createFastEvaluator(Scanner scanner, Class<T> interfaceToImplement, String... parameterNames)
     throws CompileException, IOException {
         if (!interfaceToImplement.isInterface()) {
             throw new InternalCompilerException("\"" + interfaceToImplement + "\" is not an interface");

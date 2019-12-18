@@ -42,6 +42,7 @@ import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.MultiCookable;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -289,6 +290,34 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     setThrownExceptions(Class<?>[][] thrownExceptions) { this.se.setThrownExceptions(thrownExceptions); }
 
     @Override public void
+    cook(@Nullable String fileName, Reader reader) throws CompileException, IOException {
+
+        this.se.setScriptCount(1);
+
+        if (!reader.markSupported()) reader = new BufferedReader(reader);
+        String[] imports = ClassBodyEvaluator.parseImportDeclarations(reader);
+
+        StringWriter sw = new StringWriter();
+        PrintWriter  pw = new PrintWriter(sw);
+        try {
+
+            Class<?> returnType = this.se.getReturnType(0);
+            if (returnType != void.class && returnType != Void.class) pw.print("return ");
+
+            Readers.copy(reader, pw);
+            pw.println(";");
+
+            pw.close();
+        } finally {
+            try { pw.close(); } catch (Exception e) {}
+        }
+
+        reader = new StringReader(sw.toString());
+
+        this.se.cook(new String[] { fileName }, new Reader[] { reader }, imports);
+    }
+
+    @Override public void
     cook(String[] fileNames, Reader[] readers) throws CompileException, IOException {
 
         readers = readers.clone(); // Don't modify the argument array.
@@ -312,21 +341,21 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
             if (returnTypes[i] != void.class && returnTypes[i] != Void.class) {
                 pw.print("return ");
             }
-            pw.write(Cookable.readString(readers[i]));
+            Readers.copy(readers[i], pw);
             pw.println(";");
 
             pw.close();
             readers[i] = new StringReader(sw.toString());
         }
-//        super.setReturnTypes(returnTypes);
+
         this.se.cook(fileNames, readers, imports);
     }
 
     @Override @Nullable public Object
-    evaluate(@Nullable Object[] arguments) throws InvocationTargetException { return this.se.evaluate(arguments); }
+    evaluate(@Nullable Object... arguments) throws InvocationTargetException { return this.se.evaluate(arguments); }
 
     @Override @Nullable public Object
-    evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException {
+    evaluate(int idx, @Nullable Object... arguments) throws InvocationTargetException {
         return this.se.evaluate(idx, arguments);
     }
 
@@ -346,10 +375,11 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     getBytecodes() { return this.se.getBytecodes(); }
 
     @Override public <T> T
-    createFastEvaluator(String script, Class<T> interfaceToImplement, String... parameterNames) throws CompileException {
+    createFastEvaluator(String expression, Class<? extends T> interfaceToImplement, String... parameterNames)
+    throws CompileException {
         try {
             return this.createFastEvaluator(
-                new StringReader(script),
+                new StringReader(expression),
                 interfaceToImplement,
                 parameterNames
             );
@@ -359,7 +389,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     }
 
     @Override public <T> T
-    createFastEvaluator(Reader reader, Class<T> interfaceToImplement, String... parameterNames)
+    createFastEvaluator(Reader reader, Class<? extends T> interfaceToImplement, String... parameterNames)
     throws CompileException, IOException {
 
         if (!interfaceToImplement.isInterface()) {

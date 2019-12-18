@@ -72,28 +72,49 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
 
     final ClassBodyEvaluator cbe = new ClassBodyEvaluator();
 
-    /**
-     * Whether methods override a method declared by a supertype; {@code null} means "none".
-     */
-    @Nullable protected boolean[] overrideMethod;
+    private static
+    class Script {
+
+        /**
+         * Whether the generated method overrides a method declared by a supertype.
+         */
+        protected boolean overrideMethod;
+
+        /**
+         * Whether the method is generated {@code static}; defaults to {@code true}.
+         */
+        protected boolean staticMethod = true;
+
+        /**
+         * The generated method's return type. {@code null} means "use the {@link
+         * IScriptEvaluator#getDefaultReturnType() default return type}".
+         *
+         * @see ScriptEvaluator#setDefaultReturnType(Class)
+         */
+        @Nullable private Class<?> returnType;
+
+        /**
+         * The name of the generated method. {@code null} means to use a reasonable defalut.
+         */
+        @Nullable private String methodName;
+
+        private String[]   parameterNames = {};
+        private Class<?>[] parameterTypes = {};
+        private Class<?>[] thrownExceptions = {};
+    }
 
     /**
-     * Whether methods are static; {@code null} means "all".
+     * The scripts to compile. Is initialized on the first call to {@link #setStaticMethod(boolean[])} or one of its
+     * friends.
      */
-    @Nullable protected boolean[] staticMethod;
+    @Nullable private Script[] scripts;
 
-    @Nullable private Class<?>[]   returnTypes;
-    @Nullable private String[]     methodNames;
-    @Nullable private String[][]   parameterNames;
-    @Nullable private Class<?>[][] parameterTypes;
-    @Nullable private Class<?>[][] thrownExceptions;
+    private Class<?> defaultReturnType = IScriptEvaluator.DEFAULT_RETURN_TYPE;
 
     /**
      * null=uncooked
      */
     @Nullable private Method[] result;
-
-    private Class<?> defaultReturnType = IScriptEvaluator.DEFAULT_RETURN_TYPE;
 
     /**
      * Equivalent to
@@ -270,6 +291,32 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         this.cbe.setWarningHandler(warningHandler);
     }
 
+    /**
+     * @throws IllegalArgumentException <var>count</var> is different from previous invocations of
+     *                                  this method
+     */
+    public void
+    setScriptCount(int count) {
+
+        Script[] ss = this.scripts;
+
+        if (ss == null) {
+            this.scripts = (ss = new Script[count]);
+            for (int i = 0; i < count; i++) ss[i] = new Script();
+        } else
+        if (count != ss.length) {
+            throw new IllegalArgumentException(
+                "Inconsistent script count; previously " + ss.length + ", now " + count
+            );
+        }
+    }
+
+    private Script
+    getScript(int index) {
+        if (this.scripts != null) return this.scripts[index];
+        throw new IllegalStateException("\"getScript()\" invoked before \"setScriptCount()\"");
+    }
+
     @Override public void
     setClassName(String className) {
         this.cbe.setClassName(className);
@@ -305,7 +352,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     setReturnType(Class<?> returnType) { this.setReturnTypes(new Class<?>[] { returnType }); }
 
     @Override public void
-    setMethodName(String methodName) { this.setMethodNames(new String[] { methodName }); }
+    setMethodName(@Nullable String methodName) { this.setMethodNames(new String[] { methodName }); }
 
     @Override public void
     setParameters(String[] names, Class<?>[] types) {
@@ -324,44 +371,72 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     getMethod() { return this.getMethod(0); }
 
     @Override public void
-    setOverrideMethod(boolean[] overrideMethod) { this.overrideMethod = overrideMethod.clone(); }
+    setOverrideMethod(boolean[] overrideMethod) {
+        this.setScriptCount(overrideMethod.length);
+        for (int i = 0; i < overrideMethod.length; i++) this.getScript(i).overrideMethod = overrideMethod[i];
+    }
 
     @Override public void
-    setStaticMethod(boolean[] staticMethod) { this.staticMethod = staticMethod.clone(); }
+    setStaticMethod(boolean[] staticMethod) {
+        this.setScriptCount(staticMethod.length);
+        for (int i = 0; i < staticMethod.length; i++) this.getScript(i).staticMethod = staticMethod[i];
+    }
 
     @Override public void
     setReturnTypes(Class<?>[] returnTypes) {
-        for (Class<?> rt : returnTypes) assert rt != null;
-        this.returnTypes = returnTypes.clone();
+        this.setScriptCount(returnTypes.length);
+        for (int i = 0; i < returnTypes.length; i++) this.getScript(i).returnType = returnTypes[i];
     }
 
     @Override public void
-    setMethodNames(String[] methodNames) { this.methodNames = methodNames.clone(); }
-
-    @Override public void
-    setParameters(String[][] names, Class<?>[][] types) {
-        this.parameterNames = names.clone();
-        this.parameterTypes = types.clone();
+    setMethodNames(String[] methodNames) {
+        this.setScriptCount(methodNames.length);
+        for (int i = 0; i < methodNames.length; i++) this.getScript(i).methodName = methodNames[i];
     }
 
     @Override public void
-    setThrownExceptions(Class<?>[][] thrownExceptions) { this.thrownExceptions = thrownExceptions.clone(); }
+    setParameters(String[][] parameterNames, Class<?>[][] parameterTypes) {
+
+        this.setScriptCount(parameterNames.length);
+        this.setScriptCount(parameterTypes.length);
+
+        for (int i = 0; i < parameterNames.length; i++) {
+            final Script script = this.getScript(i);
+            script.parameterNames = parameterNames[i].clone();
+            script.parameterTypes = parameterTypes[i].clone();
+        }
+    }
+
+    @Override public void
+    setThrownExceptions(Class<?>[][] thrownExceptions) {
+        this.setScriptCount(thrownExceptions.length);
+        for (int i = 0; i < thrownExceptions.length; i++) this.getScript(i).thrownExceptions = thrownExceptions[i];
+    }
+
+    // ---------------------------------------------------------------
+
+    @Override public void
+    cook(@Nullable String fileName, Reader reader) throws CompileException, IOException {
+        String[] imports;
+
+        if (!reader.markSupported()) reader = new BufferedReader(reader);
+        imports = ClassBodyEvaluator.parseImportDeclarations(reader);
+
+        this.cook(new String[] { fileName }, new Reader[] { reader }, imports);
+    }
 
     @Override public void
     cook(String[] fileNames, Reader[] readers) throws CompileException, IOException {
-        String[] imports;
 
         if (readers.length == 1) {
-            if (!readers[0].markSupported()) {
-                readers = new Reader[] { new BufferedReader(readers[0]) };
-            }
-            imports = ClassBodyEvaluator.parseImportDeclarations(readers[0]);
-        } else
-        {
-            imports = new String[0];
-        }
 
-        this.cook(fileNames, readers, imports);
+            Reader r = readers[0];
+            if (!r.markSupported()) r = new BufferedReader(r);
+
+            this.cook(fileNames, new Reader[] { r }, ClassBodyEvaluator.parseImportDeclarations(r));
+        } else {
+            this.cook(fileNames, readers, new String[0]);
+        }
     }
 
     /**
@@ -371,46 +446,28 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     cook(String[] fileNames, Reader[] readers, String[] imports)
     throws CompileException, IOException {
 
-        // SUPPRESS CHECKSTYLE UsageDistance:7
-        String[]     omns = this.methodNames;
-        boolean[]    oom  = this.overrideMethod;
-        boolean[]    osm  = this.staticMethod;
-        Class<?>[]   orts = this.returnTypes;
-        String[][]   opns = this.parameterNames;
-        Class<?>[][] opts = this.parameterTypes;
-        Class<?>[][] otes = this.thrownExceptions;
+        this.setScriptCount(fileNames.length);
+        this.setScriptCount(readers.length);
 
         // The "dimension" of this ScriptEvaluator, i.e. how many scripts are cooked at the same
         // time.
         int count = readers.length;
 
-        // Check array sizes.
-        if (omns != null && omns.length != count) throw new IllegalStateException("methodName");
-        if (opns != null && opns.length != count) throw new IllegalStateException("parameterNames");
-        if (opts != null && opts.length != count) throw new IllegalStateException("parameterTypes");
-        if (orts != null && orts.length != count) throw new IllegalStateException("returnTypes");
-        if (oom  != null && oom.length  != count) throw new IllegalStateException("overrideMethod");
-        if (osm  != null && osm.length  != count) throw new IllegalStateException("staticMethod");
-        if (otes != null && otes.length != count) throw new IllegalStateException("thrownExceptions");
-
-        // Determine method names.
-        if (omns == null) {
-            omns = new String[count];
-            for (int i = 0; i < count; ++i) omns[i] = "eval" + i;
-        }
-
         // Create compilation unit.
         List<Reader> classBody = new ArrayList<Reader>();
 
         // Create methods with one block each.
-        for (int i = 0; i < count; ++i) {
-            boolean overrideMethod = oom != null && oom[i];
-            boolean staticMethod   = osm   == null || osm[i];
+        for (int idx = 0; idx < count; ++idx) {
 
-            final Class<?>   returnType       = orts != null && orts[i] != null ? orts[i] : this.getDefaultReturnType();
-            final String[]   parameterNames   = opns != null ? opns[i] : new String[0];
-            final Class<?>[] parameterTypes   = opts != null ? opts[i] : new Class<?>[0];
-            final Class<?>[] thrownExceptions = otes != null ? otes[i] : new Class<?>[0];
+            Script s = this.getScript(idx);
+
+            final boolean    overrideMethod   = s.overrideMethod;
+            final boolean    staticMethod     = s.staticMethod;
+            final Class<?>   returnType       = s.returnType != null ? s.returnType : this.getDefaultReturnType();
+            final String     methodName       = this.getMethodName(idx);
+            final String[]   parameterNames   = s.parameterNames;
+            final Class<?>[] parameterTypes   = s.parameterTypes;
+            final Class<?>[] thrownExceptions = s.thrownExceptions;
 
             {
                 StringWriter sw = new StringWriter();
@@ -421,7 +478,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
                 if (staticMethod) pw.print("static ");
                 pw.print(returnType.getCanonicalName());
                 pw.print(" ");
-                pw.print(omns[i]);
+                pw.print(methodName);
                 pw.print("(");
                 for (int j = 0; j < parameterNames.length; ++j) {
                     if (j > 0) pw.print(", ");
@@ -440,10 +497,10 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
             }
 
             classBody.add(this.cbe.newFileName((
-                fileNames[i] != null ? fileNames[i] :
-                i == 0               ? null         :
-                "[" + i + "]"
-            ), readers[i]));
+                fileNames[idx] != null ? fileNames[idx] :
+                idx == 0               ? null           :
+                "[" + idx + "]"
+            ), readers[idx]));
 
             {
                 StringWriter sw = new StringWriter();
@@ -461,16 +518,17 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         // Find the script methods by name.
         Method[] methods = (this.result = new Method[count]);
         if (count <= 10) {
-            for (int i = 0; i < count; ++i) {
+            for (int idx = 0; idx < count; ++idx) {
+
+                Script sript      = this.getScript(idx);
+                String methodName = this.getMethodName(idx);
+
                 try {
-                    methods[i] = c.getDeclaredMethod(
-                        omns[i],
-                        opts == null ? new Class[0] : opts[i]
-                    );
-                } catch (NoSuchMethodException ex) {
+                    methods[idx] = c.getDeclaredMethod(methodName, sript.parameterTypes);
+                } catch (NoSuchMethodException nsme) {
                     throw new RuntimeException(
-                        "SNO: Loaded class does not declare method \"" + omns[i] + "\"",
-                        ex
+                        "SNO: Loaded class does not declare method \"" + methodName + "\"",
+                        nsme
                     );
                 }
             }
@@ -507,17 +565,28 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
             for (Method m : ma) {
                 dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
             }
-            for (int i = 0; i < count; ++i) {
-                Method m = dms.get(new MethodWrapper(
-                    omns[i],
-                    opts == null ? new Class[0] : opts[i]
-                ));
+            for (int idx = 0; idx < count; ++idx) {
+                String     methodName     = this.getMethodName(idx);
+                Class<?>[] parameterTypes = this.getScript(idx).parameterTypes;
+
+                Method m = dms.get(new MethodWrapper(methodName, parameterTypes));
                 if (m == null) {
-                    throw new RuntimeException("SNO: Loaded class does not declare method \"" + omns[i] + "\"");
+                    throw new RuntimeException("SNO: Loaded class does not declare method \"" + methodName + "\"");
                 }
-                methods[i] = m;
+
+                methods[idx] = m;
             }
         }
+    }
+
+    private String
+    getMethodName(int idx) {
+
+        String result = this.getScript(idx).methodName;
+
+        if (result == null) result = IScriptEvaluator.DEFAULT_METHOD_NAME.replace("*", Integer.toString(idx));
+
+        return result;
     }
 
     /**
@@ -526,13 +595,9 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     protected final Class<?>
     getReturnType(int i) {
 
-        if (this.returnTypes != null) {
-            Class<?> rt = this.returnTypes[i];
-            assert rt != null;
-            return rt;
-        }
+        Class<?> returnType = this.getScript(i).returnType;
 
-        return this.getDefaultReturnType();
+        return returnType != null ? returnType : this.getDefaultReturnType();
     }
 
     /**

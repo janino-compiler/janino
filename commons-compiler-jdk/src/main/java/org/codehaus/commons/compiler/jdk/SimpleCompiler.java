@@ -162,7 +162,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
             // Must read source code in advance so that "openReader()" and "getCharContent()" are idempotent. If they
             // are not, then "diagnostic.get(Line|Column)Number()" will return wrong results.
-            final String text = Cookable.readString(r);
+            final String text = Readers.readAll(r);
 
             compilationUnit = new SimpleJavaFileObject(uri, Kind.SOURCE) {
 

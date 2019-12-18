@@ -123,7 +123,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  */
 public
-interface IScriptEvaluator extends IMultiCookable {
+interface IScriptEvaluator extends ICookable, IMultiCookable {
 
     /**
      * The name of the generated method(s), if no custom method name is configured with {@link
@@ -176,9 +176,9 @@ interface IScriptEvaluator extends IMultiCookable {
     void setReturnType(Class<?> returnType);
 
     /**
-     * Defines the name of the generated method. Defaults to an unspecified name.
+     * Defines the name of the generated method. {@code null} means use a reasonable {@value #DEFAULT_METHOD_NAME}.
      */
-    void setMethodName(String methodName);
+    void setMethodName(@Nullable String methodName);
 
     /**
      * Defines the names and types of the parameters of the generated method.
@@ -244,6 +244,8 @@ interface IScriptEvaluator extends IMultiCookable {
      * Configures the return types of the generated methods. If an element of the array is {@code null}, then use
      * the "default return type" for that script.
      *
+     * @param returnTypes                The methods' return types; {@code null} elements mean "use the default return
+     *                                   type"
      * @see #setDefaultReturnType(Class)
      * @see #getDefaultReturnType()
      */
@@ -276,7 +278,7 @@ interface IScriptEvaluator extends IMultiCookable {
      * Same as {@link #cook(Reader)}, but for multiple scripts.
      */
     @Override
-    void cook(Reader[] readers) throws CompileException, IOException;
+    void cook(Reader... readers) throws CompileException, IOException;
 
     /**
      * Same as {@link #cook(String, Reader)}, but cooks a <em>set</em> of scripts into one class. Notice that
@@ -291,7 +293,7 @@ interface IScriptEvaluator extends IMultiCookable {
      *                               size different from that of {@code scanners}
      */
     @Override
-    void cook(@Nullable String[] fileNames, Reader[] readers) throws CompileException, IOException;
+    void cook(String[] fileNames, Reader[] readers) throws CompileException, IOException;
 
     /**
      * Same as {@link #cook(String)}, but for multiple scripts.
@@ -303,7 +305,7 @@ interface IScriptEvaluator extends IMultiCookable {
      * Same as {@link #cook(String, String)}, but for multiple scripts.
      */
     @Override
-    void cook(@Nullable String[] fileNames, String[] strings) throws CompileException;
+    void cook(String[] fileNames, String[] strings) throws CompileException;
 
     /**
      * Same as {@link #evaluate(Object[])}, but for multiple scripts.

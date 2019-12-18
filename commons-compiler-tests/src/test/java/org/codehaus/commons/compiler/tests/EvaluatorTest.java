@@ -1092,7 +1092,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         ee.setExpressionType(anyType);
 
         ee.cook("3");
-        Assert.assertEquals(3, ee.evaluate(null));
+        Assert.assertEquals(3, ee.evaluate());
     }
 
     @Test public void
@@ -1103,7 +1103,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
         ee.setExpressionType(anyType);
         ee.cook("\"HELLO\"");
-        Assert.assertEquals("HELLO", ee.evaluate(null));
+        Assert.assertEquals("HELLO", ee.evaluate());
     }
 
     @Test public void
@@ -1113,7 +1113,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         ee.setExpressionType(Object.class);
 
         ee.cook("3");
-        Assert.assertEquals(3, ee.evaluate(null));
+        Assert.assertEquals(3, ee.evaluate());
     }
 
     @Test public void
@@ -1123,7 +1123,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         ee.setExpressionType(Object.class);
 
         ee.cook("\"HELLO\"");
-        Assert.assertEquals("HELLO", ee.evaluate(null));
+        Assert.assertEquals("HELLO", ee.evaluate());
     }
 
     @Test public void

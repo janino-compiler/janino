@@ -29,6 +29,7 @@ import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -224,5 +225,22 @@ class Readers {
                 return bytesRead;
             }
         };
+    }
+
+    public static String
+    readAll(Reader in) throws IOException {
+        StringWriter sw = new StringWriter();
+        Readers.copy(in, sw);
+        return sw.toString();
+    }
+
+    public static void
+    copy(Reader in, Writer out) throws IOException {
+        char[] buffer = new char[8192];
+        for (;;) {
+            int n = in.read(buffer);
+            if (n == -1) break;
+            out.write(buffer, 0, n);
+        }
     }
 }

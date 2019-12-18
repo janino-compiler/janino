@@ -45,6 +45,9 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public abstract
 class Cookable implements ICookable {
 
+    @Override public abstract void
+    cook(@Nullable String fileName, Reader reader) throws CompileException, IOException;
+
     @Override public final void
     cook(Reader r) throws CompileException, IOException { this.cook(null, r); }
 
@@ -110,22 +113,5 @@ class Cookable implements ICookable {
     @Override public final void
     cookFile(String fileName, @Nullable String encoding) throws CompileException, IOException {
         this.cookFile(new File(fileName), encoding);
-    }
-
-    /**
-     * Reads all characters from the given {@link Reader} into a {@link String}.
-     */
-    public static String
-    readString(Reader r) throws IOException {
-
-        StringBuilder sb = new StringBuilder();
-        char[]        ca = new char[4096];
-        for (;;) {
-            int count = r.read(ca);
-            if (count == -1) break;
-            sb.append(ca, 0, count);
-        }
-        String s = sb.toString();
-        return s;
     }
 }

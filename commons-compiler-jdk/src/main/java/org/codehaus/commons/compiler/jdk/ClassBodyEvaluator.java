@@ -138,12 +138,10 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
                 }
 
                 // Print default imports.
-                if (this.defaultImports != null) {
-                    for (String defaultImport : this.defaultImports) {
-                        pw.print("import ");
-                        pw.print(defaultImport);
-                        pw.println(";");
-                    }
+                for (String defaultImport : this.defaultImports) {
+                    pw.print("import ");
+                    pw.print(defaultImport);
+                    pw.println(";");
                 }
 
                 // Print imports as declared in the document.
