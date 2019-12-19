@@ -33,11 +33,17 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class CompileException extends LocatedException {
 
+    /**
+     * An infix {@code "NYI"} in the message string indicates that the compiler has a known limitation here.
+     */
     public
     CompileException(String message, @Nullable Location location) {
         super(message, location);
     }
 
+    /**
+     * An infix {@code "NYI"} in the message string indicates that the compiler has a known limitation here.
+     */
     public
     CompileException(String message, @Nullable Location location, Throwable cause) {
         super(message, location, cause);
