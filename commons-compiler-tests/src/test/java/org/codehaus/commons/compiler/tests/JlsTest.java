@@ -1090,7 +1090,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // SUPPRESS CHECKSTYLE LineLength:5
         this.assertScriptExecutable("assert true;");
-        Assert.assertNull(this.assertScriptExecutable("try { assert false; } catch (AssertionError ae) { return ae.getMessage();       } return \"nope\";", String.class));
+        this.assertScriptReturnsTrue("try { assert false;                  } catch (AssertionError ae) { return true;                          } return false;");
         this.assertScriptReturnsTrue("try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
         this.assertScriptReturnsTrue("try { assert false : 3;              } catch (AssertionError ae) { return \"3\".equals(ae.getMessage()); } return false;");
         this.assertScriptReturnsTrue("try { assert false : new Integer(8); } catch (AssertionError ae) { return \"8\".equals(ae.getMessage()); } return false;");
@@ -2077,8 +2077,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_15_13__Method_reference_expressions() throws Exception {
 
-        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 9) return;
-        if (this.isJanino)                                          return;
+        if (CommonsCompilerTestSuite.JVM_VERSION < 9) return;
 
         // ExpressionName '::' [ TypeArguments ] Identifier  (ExpressionName = a{.b})
         this.assertScriptExecutable(
@@ -2706,14 +2705,8 @@ class JlsTest extends CommonsCompilerTestSuite {
     test_15_27_1__Lambda_parameters() throws Exception {
 
         // "java.util.Function" only since Java 8
-        try {
-            ClassLoader.getSystemClassLoader().loadClass("java.util.function.Function");
-        } catch (ClassNotFoundException cnfe) {
-            return;
-        }
+        if (CommonsCompilerTestSuite.JVM_VERSION < 8) return;
 
-        String script = "java.util.function.Function<String, Integer> f = (var s) -> s.length();\n";
-        if (this.isJanino)                                            this.assertScriptUncookable(script, "NYI");
-        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 11) this.assertScriptExecutable(script);
+        this.assertScriptExecutable("java.util.function.Function<String, Integer> f = (var s) -> s.length();\n");
     }
 }

@@ -998,14 +998,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     testIssue69_IncompatibleClassChangeError_when_evaluating_against_janino9plus() throws Exception {
 
         // Return if STREAMS are not (yet) available, i.e. a pre-1.8 JRE.
-        try {
-            ClassLoader.getSystemClassLoader().loadClass("java.util.stream.Stream");
-        } catch (ClassNotFoundException cnfe) {
-            return;
-        }
-
-        // JANINO currently produces Java 6 .class files where "invokestatic InterfaceMethodref" is not allowed.
-        if (this.isJanino) return;
+        if (CommonsCompilerTestSuite.JVM_VERSION < 8) return;
 
         this.assertExpressionEvaluatable("java.util.stream.Stream.of(1, 2, 3)");
     }

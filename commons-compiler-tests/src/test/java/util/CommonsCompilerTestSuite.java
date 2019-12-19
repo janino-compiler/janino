@@ -208,22 +208,6 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that the given <var>script</var> can be cooked and executed.
-     *
-     * @param returnType The return type of the script
-     * @return           The return value of the script execution
-     */
-    @Nullable protected <T> T
-    assertScriptExecutable(String script, Class<T> returnType) throws Exception {
-
-        ScriptTest st = new ScriptTest(script);
-        st.scriptEvaluator.setReturnType(returnType);
-
-        @SuppressWarnings("unchecked") T result = (T) st.assertExecutable();
-        return result;
-    }
-
-    /**
      * Asserts that the given <var>script</var> is cookable and returns TRUE.
      */
     protected void
@@ -254,15 +238,6 @@ class CommonsCompilerTestSuite {
         assertResultNull() throws Exception {
             this.scriptEvaluator.setReturnType(Object.class);
             super.assertResultNull();
-        }
-
-        @Override @Nullable public <T> T
-        assertExecutable(Class<T> returnType) throws Exception {
-
-            this.scriptEvaluator.setReturnType(returnType);
-
-            @SuppressWarnings("unchecked") T result = (T) super.assertExecutable();
-            return result;
         }
 
         @Override protected void
@@ -615,13 +590,20 @@ class CommonsCompilerTestSuite {
 
         /**
          * Asserts that cooking and executing completes normally.
-         *
-         * @return The execution result
          */
-        @Nullable public Object
+        public void
         assertExecutable() throws Exception {
-            this.cook();
-            return this.execute();
+
+            try {
+                this.cook();
+            } catch (CompileException ce) {
+
+                // Have mercy with compile exceptions that have "NYI" ("not yet implemented") in their message.
+                if (ce.getMessage().indexOf("NYI") != -1) return;
+                throw ce;
+            }
+
+            this.execute();
         }
 
         /**
