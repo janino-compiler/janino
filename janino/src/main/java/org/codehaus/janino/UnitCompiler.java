@@ -11882,23 +11882,54 @@ class UnitCompiler {
      */
     private void
     invoke(Locatable locatable, IMethod iMethod) throws CompileException {
-        if (iMethod.getDeclaringIClass().isInterface() && !iMethod.isStatic()) {
+
+        final IClass declaringIClass = iMethod.getDeclaringIClass();
+
+        if (iMethod.isStatic()) {
+
+            // Static class method, or a static interface method (a Java 8 feature).
+            final ClassFile classFile = this.getCodeContext().getClassFile();
+            if (
+                declaringIClass.isInterface()
+                && classFile.getMajorVersion() <= ClassFile.MAJOR_VERSION_JDK_1_7
+                && classFile.getMinorVersion() <= ClassFile.MINOR_VERSION_JDK_1_7
+            ) {
+                // INVOKESTATIC InterfaceMethodRef only allowed since Java 8 class file format.
+                this.compileError(
+                    "Invocation of static interface methods NYI",
+                    locatable.getLocation()
+                );
+            }
+
+            this.writeOpcode(locatable, Opcode.INVOKESTATIC);
+            this.writeConstantMethodrefInfo(
+                declaringIClass.getDescriptor(), // classFD
+                iMethod.getName(),               // methodName
+                iMethod.getDescriptor()          // methodMD
+            );
+        } else
+        if (declaringIClass.isInterface()) {
+
+            // A non-static interface method.
             this.writeOpcode(locatable, Opcode.INVOKEINTERFACE);
             this.writeConstantInterfaceMethodrefInfo(
-                iMethod.getDeclaringIClass().getDescriptor(), // classFD
-                iMethod.getName(),                            // methodName
-                iMethod.getDescriptor()                       // methodMD
+                declaringIClass.getDescriptor(), // classFD
+                iMethod.getName(),               // methodName
+                iMethod.getDescriptor()          // methodMD
             );
             int count = 1;
             for (IClass pt : iMethod.getParameterTypes()) count += Descriptor.size(pt.getDescriptor());
             this.writeByte(count);
             this.writeByte(0);
-        } else {
-            this.writeOpcode(locatable, iMethod.isStatic() ? Opcode.INVOKESTATIC : Opcode.INVOKEVIRTUAL);
+        } else
+        {
+
+            // A non-static class mathod.
+            this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
             this.writeConstantMethodrefInfo(
-                iMethod.getDeclaringIClass().getDescriptor(), // classFD
-                iMethod.getName(),                            // methodName
-                iMethod.getDescriptor()                       // methodMD
+                declaringIClass.getDescriptor(), // classFD
+                iMethod.getName(),               // methodName
+                iMethod.getDescriptor()          // methodMD
             );
         }
     }
