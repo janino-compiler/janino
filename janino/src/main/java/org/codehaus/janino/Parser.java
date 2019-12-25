@@ -2197,9 +2197,9 @@ class Parser {
 
         return new ForStatement(
             forLocation,          // location
-            init,         // init
-            condition,    // condition
-            update,       // update
+            init,                 // init
+            condition,            // condition
+            update,               // update
             this.parseStatement() // body
         );
     }
