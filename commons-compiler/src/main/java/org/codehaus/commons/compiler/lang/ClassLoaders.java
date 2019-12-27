@@ -35,15 +35,23 @@ import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link ClassLoader} that, unlike usual {@link ClassLoader}s, does not load byte code, but reads Java source
- * code and then scans, parses, compiles and loads it into the virtual machine.
- * <p>
- *   As with any {@link ClassLoader}, it is not possible to "update" classes after they've been loaded. The way to
- *   achieve this is to give up on the {@link ClassLoaders} and create a new one.
- * </p>
+ * Utility methods around the {@link java.lang.ClassLoader}.
  */
 public final
 class ClassLoaders {
+
+    /**
+     * The {@link ClassLoader} that loads the classes on the currently executing JVM's "class path", i.e. the JARs in
+     * the JRE's "lib" and "lib/ext" directories, and the JARs and class directories specified through the class path.
+     */
+    public static final ClassLoader CLASSPATH_CLASS_LOADER = ClassLoader.getSystemClassLoader();
+
+    /**
+     * The {@link ClassLoader} that loads the classes on the currently executing JVM's "boot class path", i.e. the JARs
+     * in the JRE's "lib" and "lib/ext" directories, but not the JARs and class directories specified through the
+     * {@code --classpath} command line option.
+     */
+    public static final ClassLoader BOOTCLASSPATH_CLASS_LOADER = ClassLoader.getSystemClassLoader().getParent();
 
     private ClassLoaders() {}
 

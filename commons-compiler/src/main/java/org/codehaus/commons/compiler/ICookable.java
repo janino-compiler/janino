@@ -41,36 +41,6 @@ public
 interface ICookable {
 
     /**
-     * The {@link ClassLoader} that loads this classes on the boot class path, i.e. the JARs in the JRE's "lib" and
-     * "lib/ext" directories, but not the JARs and class directories specified through the class path.
-     */
-    ClassLoader BOOT_CLASS_LOADER = ClassLoader.getSystemClassLoader().getParent();
-
-    /**
-     * The "parent class loader" is used to load referenced classes. Useful values are:
-     * <table border="1"><tr>
-     *   <td>{@code System.getSystemClassLoader()}</td>
-     *   <td>The running JVM's class path</td>
-     * </tr><tr>
-     *   <td>{@code Thread.currentThread().getContextClassLoader()} or {@code null}</td>
-     *   <td>The class loader effective for the invoking thread</td>
-     * </tr><tr>
-     *   <td>{@link #BOOT_CLASS_LOADER}</td>
-     *   <td>The running JVM's boot class path</td>
-     * </tr></table>
-     * <p>
-     *   The parent class loader defaults to the current thread's context class loader.
-     * </p>
-     */
-    void setParentClassLoader(@Nullable ClassLoader parentClassLoader);
-
-    /**
-     * Determines what kind of debugging information is included in the generates classes. The default is typically
-     * "{@code -g:none}".
-     */
-    void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars);
-
-    /**
      * Reads, scans, parses and compiles Java tokens from the given {@link Reader}.
      *
      * @param fileName Used when reporting errors and warnings
@@ -149,35 +119,4 @@ interface ICookable {
      */
     void
     cookFile(String fileName, @Nullable String encoding) throws CompileException, IOException;
-
-    /**
-     * By default, {@link CompileException}s are thrown on compile errors, but an application my install its own
-     * {@link ErrorHandler}.
-     * <p>
-     *   Be aware that a single problem during compilation often causes a bunch of compile errors, so a good {@link
-     *   ErrorHandler} counts errors and throws a {@link CompileException} when a limit is reached.
-     * </p>
-     * <p>
-     *   If the given {@link ErrorHandler} throws {@link CompileException}s, then the compilation is terminated and
-     *   the exception is propagated.
-     * </p>
-     * <p>
-     *   If the given {@link ErrorHandler} does not throw {@link CompileException}s, then the compiler may or may not
-     *   continue compilation, but must eventually throw a {@link CompileException}.
-     * </p>
-     * <p>
-     *   In other words: The {@link ErrorHandler} may throw a {@link CompileException} or not, but the compiler must
-     *   definitely throw a {@link CompileException} if one or more compile errors have occurred.
-     * </p>
-     *
-     * @param compileErrorHandler {@code null} to restore the default behavior (throwing a {@link CompileException}
-     */
-    void setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler);
-
-    /**
-     * By default, warnings are discarded, but an application my install a custom {@link WarningHandler}.
-     *
-     * @param warningHandler {@code null} to indicate that no warnings be issued
-     */
-    void setWarningHandler(@Nullable WarningHandler warningHandler);
 }
