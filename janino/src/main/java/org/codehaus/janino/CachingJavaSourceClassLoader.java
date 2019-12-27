@@ -88,7 +88,7 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
                 ? new DirectoryResourceFinder(new File("."))
                 : new PathResourceFinder(sourcePath)
             ),
-            characterEncoding,                   // characterEncoding
+            characterEncoding,                           // characterEncoding
             new DirectoryResourceFinder(cacheDirectory), // classFileCacheResourceFinder
             new DirectoryResourceCreator(cacheDirectory) // classFileCacheResourceCreator
         );

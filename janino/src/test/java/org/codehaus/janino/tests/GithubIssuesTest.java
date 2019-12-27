@@ -109,7 +109,7 @@ class GithubIssuesTest {
         String[]          parameterNames       = { "o" };
         Class<?>[]        parameterTypes       = { Object.class };
         String            e                    = "7";
-        Object[]          arguments            = { "" };
+        final Object[]    arguments            = { "" };
 
         CASES: for (int i = 0;; i++) {
 
@@ -238,7 +238,7 @@ class GithubIssuesTest {
     private static final String RESOURCE_DIR = "../commons-compiler-tests/src/test/resources";
 
     @Test public void
-    testIssue102__8() throws Exception {
+    testIssue102() throws Exception {
         CompileUnit unit1 = new CompileUnit("demo.pkg1", "A$$1", (
             ""
             + "package demo.pkg1;\n"

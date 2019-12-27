@@ -92,13 +92,13 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         @Nullable String characterEncoding
     ) {
         this(
-            parentClassLoader,        // parentClassLoader
-            (                         // sourceFinder
+            parentClassLoader, // parentClassLoader
+            (                  // sourceFinder
                 sourcePath == null
                 ? new DirectoryResourceFinder(new File("."))
                 : new PathResourceFinder(sourcePath)
             ),
-            characterEncoding // characterEncoding
+            characterEncoding  // characterEncoding
         );
     }
 
@@ -123,7 +123,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     ) {
         this(parentClassLoader, new JavaSourceIClassLoader(
             sourceFinder,                                  // sourceFinder
-            characterEncoding,                     // characterEncoding
+            characterEncoding,                             // characterEncoding
             new ClassLoaderIClassLoader(parentClassLoader) // parentIClassLoader
         ));
     }

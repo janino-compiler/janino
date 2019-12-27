@@ -574,7 +574,7 @@ class ClassFileIClass extends IClass {
         }
 
         result = new IField() {
-            @Override public Object        getConstantValue() { return constantValue;                    }
+            @Override public Object        getConstantValue() { return constantValue;                            }
             @Override public String        getName()          { return name;                                     }
             @Override public IClass        getType()          { return type;                                     }
             @Override public boolean       isStatic()         { return Mod.isStatic(fieldInfo.getAccessFlags()); }

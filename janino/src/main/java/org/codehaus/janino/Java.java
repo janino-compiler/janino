@@ -1093,8 +1093,8 @@ class Java {
             Modifier[]                modifiers,
             @Nullable TypeParameter[] typeParameters
         ) {
-            this.location               = location;
-            this.modifiers              = modifiers;
+            this.location       = location;
+            this.modifiers      = modifiers;
             this.typeParameters = typeParameters;
         }
 
@@ -1426,7 +1426,7 @@ class Java {
         ) {
             super(location, modifiers, typeParameters);
             this.docComment     = docComment;
-            this.name                   = name;
+            this.name           = name;
             this.extendedType   = extendedType;
             if (extendedType != null) {
                 extendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
@@ -1501,13 +1501,13 @@ class Java {
             Type[]                    implementedTypes
         ) {
             super(
-                location,               // location
-                docComment,     // docComment
-                modifiers,              // modifiers
-                name,                   // name
-                typeParameters, // typeParameters
-                extendedType,   // extendedType
-                implementedTypes        // implementedTypes
+                location,        // location
+                docComment,      // docComment
+                modifiers,       // modifiers
+                name,            // name
+                typeParameters,  // typeParameters
+                extendedType,    // extendedType
+                implementedTypes // implementedTypes
             );
         }
 
@@ -1553,13 +1553,13 @@ class Java {
             Type[]           implementedTypes
         ) {
             super(
-                location,           // location
-                docComment, // docComment
-                modifiers,          // modifiers
-                name,               // name
-                null,               // typeParameters
-                null,               // extendedType
-                implementedTypes    // implementedTypes
+                location,        // location
+                docComment,      // docComment
+                modifiers,       // modifiers
+                name,            // name
+                null,            // typeParameters
+                null,            // extendedType
+                implementedTypes // implementedTypes
             );
         }
 
@@ -1594,13 +1594,13 @@ class Java {
             Type[]                    implementedTypes
         ) {
             super(
-                location,               // location
-                docComment,     // docComment
-                modifiers,              // modifiers
-                name,                   // name
-                typeParameters, // typeParameters
-                extendedType,   // extendedType
-                implementedTypes        // implementedTypes
+                location,        // location
+                docComment,      // docComment
+                modifiers,       // modifiers
+                name,            // name
+                typeParameters,  // typeParameters
+                extendedType,    // extendedType
+                implementedTypes // implementedTypes
             );
         }
 
@@ -1638,13 +1638,13 @@ class Java {
             Type[]                    implementedTypes
         ) {
             super(
-                location,               // location
-                docComment,     // docComment
-                modifiers,              // modifiers
-                name,                   // name
-                typeParameters, // typeParameters
-                extendedType,   // extendedType
-                implementedTypes        // implementedTypes
+                location,        // location
+                docComment,      // docComment
+                modifiers,       // modifiers
+                name,            // name
+                typeParameters,  // typeParameters
+                extendedType,    // extendedType
+                implementedTypes // implementedTypes
             );
         }
 
@@ -1746,7 +1746,7 @@ class Java {
         ) {
             super(location, modifiers, null);
             this.docComment = docComment;
-            this.name               = name;
+            this.name       = name;
             this.arguments  = arguments;
         }
 
@@ -1835,9 +1835,9 @@ class Java {
             Type[]                    extendedTypes
         ) {
             super(location, modifiers, typeParameters);
-            this.docComment = docComment;
-            this.name               = name;
-            this.extendedTypes      = extendedTypes;
+            this.docComment    = docComment;
+            this.name          = name;
+            this.extendedTypes = extendedTypes;
             for (Type extendedType : extendedTypes) {
                 extendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
             }
@@ -1908,12 +1908,12 @@ class Java {
             Type[]                    extendedTypes
         ) {
             super(
-                location,               // location
+                location,       // location
                 docComment,     // docComment
-                modifiers,              // modifiers
-                name,                   // name
+                modifiers,      // modifiers
+                name,           // name
                 typeParameters, // typeParameters
-                extendedTypes           // extendedTypes
+                extendedTypes   // extendedTypes
             );
         }
 
@@ -1962,7 +1962,7 @@ class Java {
         ) {
             super(
                 location,                       // location
-                docComment,             // docComment
+                docComment,                     // docComment
                 modifiers,                      // modifiers
                 name,                           // name
                 null,                           // typeParameters
@@ -1999,12 +1999,12 @@ class Java {
             Type[]                    extendedTypes
         ) {
             super(
-                location,               // location
+                location,       // location
                 docComment,     // docComment
-                modifiers,              // modifiers
-                name,                   // name
+                modifiers,      // modifiers
+                name,           // name
                 typeParameters, // typeParameters
-                extendedTypes           // extendedTypes
+                extendedTypes   // extendedTypes
             );
         }
 
@@ -2115,7 +2115,7 @@ class Java {
         public
         TypeParameter(String name, @Nullable ReferenceType[] bound) {
             assert name != null;
-            this.name          = name;
+            this.name  = name;
             this.bound = bound;
         }
 
@@ -2313,7 +2313,7 @@ class Java {
             @Nullable List<? extends BlockStatement> statements
         ) {
             super(location, modifiers);
-            this.docComment = docComment;
+            this.docComment         = docComment;
             this.type               = type;
             this.name               = name;
             this.formalParameters   = formalParameters;
@@ -2568,7 +2568,7 @@ class Java {
         ) {
             super(
                 location,                                    // location
-                docComment,                          // docComment
+                docComment,                                  // docComment
                 modifiers,                                   // modifiers
                 new PrimitiveType(location, Primitive.VOID), // type
                 "<init>",                                    // name
@@ -2650,17 +2650,17 @@ class Java {
             @Nullable List<? extends BlockStatement> statements
         ) {
             super(
-                location,            // location
-                docComment,  // docComment
-                modifiers,           // modifiers
-                type,                // type
-                name,                // name
-                formalParameters,    // formalParameters
-                thrownExceptions,    // thrownExceptions
-                statements           // statements
+                location,         // location
+                docComment,       // docComment
+                modifiers,        // modifiers
+                type,             // type
+                name,             // name
+                formalParameters, // formalParameters
+                thrownExceptions, // thrownExceptions
+                statements        // statements
             );
             this.typeParameters = typeParameters;
-            this.defaultValue           = defaultValue;
+            this.defaultValue   = defaultValue;
         }
 
         /**
@@ -2771,7 +2771,7 @@ class Java {
             VariableDeclarator[] variableDeclarators
         ) {
             super(location);
-            this.docComment  = docComment;
+            this.docComment          = docComment;
             this.modifiers           = modifiers;
             this.type                = type;
             this.variableDeclarators = variableDeclarators;
@@ -2869,8 +2869,8 @@ class Java {
             @Nullable ArrayInitializerOrRvalue initializer
         ) {
             super(location);
-            this.name                = name;
-            this.brackets            = brackets;
+            this.name        = name;
+            this.brackets    = brackets;
             this.initializer = initializer;
 
             // Used both by field declarations an local variable declarations, so naming conventions checking (JLS7
@@ -3959,7 +3959,7 @@ class Java {
         public
         AssertStatement(Location location, Rvalue expression1, @Nullable Rvalue expression2) {
             super(location);
-            this.expression1         = expression1;
+            this.expression1 = expression1;
             this.expression2 = expression2;
 
             this.expression1.setEnclosingScope(this);
@@ -4223,7 +4223,7 @@ class Java {
             assert annotations != null;
             this.annotations = annotations;
             assert identifiers != null;
-            this.identifiers           = identifiers;
+            this.identifiers   = identifiers;
             this.typeArguments = typeArguments;
         }
 
@@ -4985,7 +4985,7 @@ class Java {
         SuperclassFieldAccessExpression(Location location, @Nullable Type qualification, String fieldName) {
             super(location);
             this.qualification = qualification;
-            this.fieldName             = fieldName;
+            this.fieldName     = fieldName;
         }
 
         // Compile time members.
@@ -5462,8 +5462,8 @@ class Java {
         NewClassInstance(Location location, @Nullable Rvalue qualification, Type type, Rvalue[] arguments) {
             super(location);
             this.qualification = qualification;
-            this.type                  = type;
-            this.arguments             = arguments;
+            this.type          = type;
+            this.arguments     = arguments;
         }
 
         // Compile time members.
@@ -5477,9 +5477,9 @@ class Java {
         NewClassInstance(Location location, @Nullable Rvalue qualification, IClass iClass, Rvalue[] arguments) {
             super(location);
             this.qualification = qualification;
-            this.type                  = null;
-            this.arguments             = arguments;
-            this.iClass                = iClass;
+            this.type          = null;
+            this.arguments     = arguments;
+            this.iClass        = iClass;
         }
 
         // Implement "Atom".
@@ -5539,7 +5539,7 @@ class Java {
             Rvalue[]                  arguments
         ) {
             super(location);
-            this.qualification     = qualification;
+            this.qualification             = qualification;
             this.anonymousClassDeclaration = anonymousClassDeclaration;
             this.arguments                 = arguments;
         }

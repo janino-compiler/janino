@@ -55,7 +55,7 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     private final SimpleCompiler sc = new SimpleCompiler();
 
     private String[]           defaultImports = new String[0];
-    private String             className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
+    private String             className      = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
     @Nullable private Class<?> extendedType;
     private Class<?>[]         implementedTypes = ClassBodyEvaluator.ZERO_CLASSES;
     @Nullable private Class<?> result; // null=uncooked
@@ -200,13 +200,13 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     @Override public void
     setExtendedClass(@Nullable Class<?> extendedType) { this.extendedType = extendedType; }
 
-    @Deprecated @Override public void
+    @Override public void
     setExtendedType(@Nullable Class<?> extendedClass) { this.setExtendedClass(extendedClass); }
 
     @Override public void
     setImplementedInterfaces(Class<?>[] implementedTypes) { this.implementedTypes = implementedTypes; }
 
-    @Deprecated @Override public void
+    @Override public void
     setImplementedTypes(Class<?>[] implementedInterfaces) { this.setImplementedInterfaces(implementedInterfaces); }
 
     // Configuration setters and getters that delegate to the SimpleCompiler
@@ -247,10 +247,6 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
 
     // ================================= END OF CONFIGURATION SETTERS AND GETTERS =================================
 
-    /**
-     * Scans, parses and compiles a class body from the given {@link Reader}. After completion, {@link #getClazz()}
-     * returns a {@link Class} that allows for access to the compiled class.
-     */
     @Override public final void
     cook(@Nullable String fileName, Reader r) throws CompileException, IOException {
         this.cook(new Scanner(fileName, r));
@@ -296,6 +292,12 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
         this.result = c;
     }
 
+    @Override public Class<?>
+    getClazz() { return this.assertCooked(); }
+
+    @Override public Map<String, byte[]>
+    getBytecodes() { return this.sc.getBytecodes(); }
+
     /**
      * @return                                  The {@link #setDefaultImports(String...) default imports}, concatenated
      *                                          with the import declarations that can be parsed from the
@@ -305,7 +307,8 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     final Java.AbstractCompilationUnit.ImportDeclaration[]
     makeImportDeclarations(@Nullable Parser parser) throws CompileException, IOException {
 
-        List<Java.AbstractCompilationUnit.ImportDeclaration> l = new ArrayList<Java.AbstractCompilationUnit.ImportDeclaration>();
+        List<Java.AbstractCompilationUnit.ImportDeclaration>
+        l = new ArrayList<Java.AbstractCompilationUnit.ImportDeclaration>();
 
         // Honor the default imports.
         for (String defaultImport : this.defaultImports) {
@@ -391,12 +394,6 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
 //            ), ex);
 //        }
 //    }
-
-    @Override public Class<?>
-    getClazz() { return this.assertCooked(); }
-
-    @Override public Map<String, byte[]>
-    getBytecodes() { return this.sc.getBytecodes(); }
 
     private Class<?>
     assertCooked() {

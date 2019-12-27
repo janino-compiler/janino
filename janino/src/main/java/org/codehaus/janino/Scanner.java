@@ -114,7 +114,7 @@ class Scanner {
         this(
             file.getAbsolutePath(),    // fileName
             new FileInputStream(file), // is
-            encoding           // encoding
+            encoding                   // encoding
         );
     }
 
@@ -129,7 +129,7 @@ class Scanner {
     public
     Scanner(@Nullable String fileName, InputStream is) throws IOException {
         this(
-            fileName,          // fileName
+            fileName,                  // fileName
             new InputStreamReader(is), // in
             1,                         // initialLineNumber
             0                          // initialColumnNumber
@@ -151,14 +151,14 @@ class Scanner {
     Scanner(@Nullable String fileName, InputStream is, @Nullable String encoding)
     throws IOException {
         this(
-            fileName,                  // fileName
-            (                                  // in
+            fileName, // fileName
+            (         // in
                 encoding == null
                 ? new InputStreamReader(is)
                 : new InputStreamReader(is, encoding)
             ),
-            1,                                 // initialLineNumber
-            0                                  // initialColumnNumber
+            1,        // initialLineNumber
+            0         // initialColumnNumber
         );
     }
 
@@ -221,7 +221,7 @@ class Scanner {
             fileName = temporaryFile.getAbsolutePath();
         }
 
-        this.fileName     = fileName;
+        this.fileName             = fileName;
         this.in                   = new UnicodeUnescapeReader(in);
         this.nextCharLineNumber   = initialLineNumber;
         this.nextCharColumnNumber = initialColumnNumber;

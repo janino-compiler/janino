@@ -518,7 +518,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     setImplementedInterfaces(Class<?>[] implementedTypes) { this.cbe.setImplementedInterfaces(implementedTypes); }
 
     @Override public void
-    setExtendedClass(@Nullable Class<?> extendedType) { this.cbe.setExtendedClass(extendedType);}
+    setExtendedClass(@Nullable Class<?> extendedType) { this.cbe.setExtendedClass(extendedType); }
 
     @Override public void
     setDefaultReturnType(Class<?> defaultReturnType) { this.defaultReturnType = defaultReturnType; }
@@ -688,7 +688,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
             this.makeStatements(i, parsers[i], statements, localMethods);
 
             statementss[i]   = (BlockStatement[])   statements.toArray(new Java.BlockStatement[statements.size()]);
-            localMethodss[i] = (MethodDeclarator[]) localMethods.toArray(new Java.MethodDeclarator[localMethods.size()]);
+            localMethodss[i] = (MethodDeclarator[]) localMethods.toArray(new Java.MethodDeclarator[localMethods.size()]); // SUPPRESS CHECKSTYLE LineLength
         }
 
         this.cook(
@@ -1195,9 +1195,6 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
 
     @Override public String[]
     getDefaultImports() { return this.cbe.getDefaultImports(); }
-
-    @Override public final Object
-    createInstance(Reader reader) { throw new UnsupportedOperationException("createInstance"); }
 
     @Override public <T> Object
     createFastEvaluator(Reader reader, Class<T> interfaceToImplement, String[] parameterNames)
