@@ -33,9 +33,9 @@ import java.io.Reader;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * "Cooking" means scanning a sequence of characters and turning them into some JVM-executable artifact. For example,
- * if you cook an {@link IClassBodyEvaluator}, then the tokens are interpreted as a class body and
- * compiled into a {@link Class} which is accessible through {@link IClassBodyEvaluator#getClazz()}.
+ * "Cooking" means processing a sequence of characters (a "document"). For example, if you cook an {@link
+ * IClassBodyEvaluator}, then the tokens are interpreted as a Java class body and compiled into a {@link Class} which
+ * is accessible through {@link IClassBodyEvaluator#getClazz()}.
  */
 public
 interface ICookable {
@@ -79,11 +79,7 @@ interface ICookable {
      * @param fileName Used when reporting errors and warnings
      */
     void
-    cook(
-        @Nullable String fileName,
-        InputStream      is,
-        @Nullable String encoding
-    ) throws CompileException, IOException;
+    cook(@Nullable String fileName, InputStream is, @Nullable String encoding) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link String}.
@@ -106,8 +102,7 @@ interface ICookable {
     /**
      * Reads, scans, parses and compiles Java tokens from the given {@link File} with the given {@code encoding}.
      */
-    void
-    cookFile(File file, @Nullable String encoding) throws CompileException, IOException;
+    void cookFile(File file, @Nullable String encoding) throws CompileException, IOException;
 
     /**
      * Reads, scans, parses and compiles Java tokens from the named file, encoded in the "platform default encoding".
@@ -117,6 +112,5 @@ interface ICookable {
     /**
      * Reads, scans, parses and compiles Java tokens from the named file with the given <var>encoding</var>.
      */
-    void
-    cookFile(String fileName, @Nullable String encoding) throws CompileException, IOException;
+    void cookFile(String fileName, @Nullable String encoding) throws CompileException, IOException;
 }
