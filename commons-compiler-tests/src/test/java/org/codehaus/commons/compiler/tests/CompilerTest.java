@@ -41,9 +41,9 @@ import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.ICompilerFactory;
-import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.compiler.util.Benchmark;
 import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.compiler.util.ResourceFinderClassLoader;
@@ -194,7 +194,7 @@ class CompilerTest {
                     new MapResourceFinder(classFileMap1),
                     new DirectoryResourceFinder(new File("../de.unkrig.jdisasm/bin"))
                 ),
-                ICookable.BOOT_CLASS_LOADER
+                ClassLoaders.BOOTCLASSPATH_CLASS_LOADER
             );
 
             b.beginReporting(

@@ -31,8 +31,8 @@ import java.util.Collection;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompilerFactory;
-import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,7 +66,7 @@ class ExternalClassesTest {
         // Invoke method of a class that is on the CLASSPATH of this JVM, but not on the BOOTCLASSPATH.
         try {
             IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
-            ee.setParentClassLoader(ICookable.BOOT_CLASS_LOADER);
+            ee.setParentClassLoader(ClassLoaders.BOOTCLASSPATH_CLASS_LOADER);
             ee.cook("for_sandbox_tests.ExternalClass.m1()");
             Assert.fail("Should have thrown a CompileException");
         } catch (CompileException ex) {
