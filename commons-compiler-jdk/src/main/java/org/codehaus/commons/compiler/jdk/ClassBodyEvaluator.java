@@ -35,11 +35,15 @@ import java.nio.Buffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.Cookable;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -58,16 +62,15 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * @see IClassBodyEvaluator
  */
 public
-class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
+class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
+
+    private final SimpleCompiler sc = new SimpleCompiler();
 
     private String[]           defaultImports = new String[0];
-    private String             className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
+    private String             className      = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
     @Nullable private Class<?> extendedType;
     private Class<?>[]         implementedTypes = new Class[0];
-
-    /* {@code null} means "not yet cooked".
-    */
-    @Nullable private Class<?> result;
+    @Nullable private Class<?> result; // null=uncooked
 
     @Override public void
     setClassName(String className) { this.className = className; }
@@ -95,6 +98,26 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
      */
     @Deprecated @Override public void
     setImplementedTypes(Class<?>[] implementedInterfaces) { this.setImplementedInterfaces(implementedInterfaces); }
+
+    // Configuration setters and getters that delegate to the SimpleCompiler
+
+    @Override public void
+    setParentClassLoader(@Nullable ClassLoader parentClassLoader) { this.sc.setParentClassLoader(parentClassLoader); }
+
+    @Override public void
+    setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
+        this.sc.setDebuggingInformation(debugSource, debugLines, debugVars);
+    }
+
+    @Override public void
+    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
+        this.sc.setCompileErrorHandler(compileErrorHandler);
+    }
+
+    @Override public void
+    setWarningHandler(@Nullable WarningHandler warningHandler) { this.sc.setWarningHandler(warningHandler); }
+
+    // ================================= END OF CONFIGURATION SETTERS AND GETTERS =================================
 
     @Override public void
     cook(@Nullable String fileName, Reader r) throws CompileException, IOException {
@@ -193,28 +216,17 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
         /**
          * Compiles the generated compilation unit.
          */
-        super.cook(fileName, r);
+        this.sc.cook(fileName, r);
 
         try {
 
             // Load the "main" class through the ClassLoader that was created by
             // "SimpleCompiler.cook()". More classes (e.g. member types will be loaded
             // automatically by the JVM.
-            this.result = this.getClassLoader().loadClass(this.className);
+            this.result = this.sc.getClassLoader().loadClass(this.className);
         } catch (ClassNotFoundException cnfe) {
             throw new IOException(cnfe);
         }
-    }
-
-    /**
-     * Sets the given file name, and the current line number to 1, and the current column number to 1, when the first
-     * {@code char} is read from the <var>reader</var>.
-     */
-    protected Reader
-    newFileName(@Nullable final String fileName, Reader reader) {
-        return Readers.onFirstChar(reader, new Runnable() {
-            @Override public void run() { ClassBodyEvaluator.this.addOffset(fileName); }
-        });
     }
 
     /**
@@ -224,6 +236,20 @@ class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
     getClazz() {
         assert this.result != null;
         return this.result;
+    }
+
+    @Override public Map<String, byte[]>
+    getBytecodes() { return this.sc.getBytecodes(); }
+
+    /**
+     * Sets the given file name, and the current line number to 1, and the current column number to 1, when the first
+     * {@code char} is read from the <var>reader</var>.
+     */
+    protected Reader
+    newFileName(@Nullable final String fileName, Reader reader) {
+        return Readers.onFirstChar(reader, new Runnable() {
+            @Override public void run() { ClassBodyEvaluator.this.sc.addOffset(fileName); }
+        });
     }
 
     /**

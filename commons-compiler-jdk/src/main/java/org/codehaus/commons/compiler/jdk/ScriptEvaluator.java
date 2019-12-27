@@ -98,8 +98,8 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
          */
         @Nullable private String methodName;
 
-        private String[]   parameterNames = {};
-        private Class<?>[] parameterTypes = {};
+        private String[]   parameterNames   = {};
+        private Class<?>[] parameterTypes   = {};
         private Class<?>[] thrownExceptions = {};
     }
 
@@ -617,12 +617,6 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         }
     }
 
-    /**
-     * Don't use.
-     */
-    @Override public final Object
-    createInstance(Reader reader) { throw new UnsupportedOperationException("createInstance"); }
-
     @Override public <T> Object
     createFastEvaluator(
         Reader   r,
@@ -673,8 +667,8 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         }
     }
 
-    @Override
-    public Method[] getResult() { return this.getMethods(); }
+    @Override public Method[]
+    getResult() { return this.getMethods(); }
 
     @Override public Method
     getMethod(int idx) {

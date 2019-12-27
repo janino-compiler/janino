@@ -295,7 +295,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         this.se.setScriptCount(1);
 
         if (!reader.markSupported()) reader = new BufferedReader(reader);
-        String[] imports = ClassBodyEvaluator.parseImportDeclarations(reader);
+        final String[] imports = ClassBodyEvaluator.parseImportDeclarations(reader);
 
         StringWriter sw = new StringWriter();
         PrintWriter  pw = new PrintWriter(sw);
