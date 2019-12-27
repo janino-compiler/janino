@@ -27,6 +27,7 @@ package org.codehaus.commons.compiler.util.resource;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -52,7 +53,16 @@ class ZipFileResourceFinder extends ResourceFinder {
     findResource(final String resourceName) {
         final ZipEntry ze = this.zipFile.getEntry(resourceName);
         if (ze == null) return null;
-        return new Resource() {
+        return new LocatableResource() {
+
+            @Override public URL
+            getLocation() throws IOException {
+                return new URL(
+                    "jar",                                                                      // protocol
+                    null,                                                                       // host
+                    "file:" + ZipFileResourceFinder.this.zipFile.getName() + "!" + resourceName // file
+                );
+            }
 
             @Override public InputStream
             open() throws IOException {

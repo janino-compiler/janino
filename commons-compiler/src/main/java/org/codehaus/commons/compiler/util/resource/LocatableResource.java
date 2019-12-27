@@ -2,7 +2,7 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2019 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -25,37 +25,17 @@
 
 package org.codehaus.commons.compiler.util.resource;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 
 /**
- * Representation of a resource that is a {@link java.io.File}.
+ * A {@link Resource} that can be addressed by a URL.
  */
 public
-class FileResource implements LocatableResource {
-
-    public FileResource(File file) { this.file = file; }
-
-    // Implement "LocatableResource".
-
-    @Override public URL
-    getLocation() throws IOException { return this.file.toURI().toURL(); }
-
-    // Implement "Resource".
-    @Override public final String      getFileName()             { return this.file.toString();           }
-
-    @Override public final InputStream open() throws IOException { return new FileInputStream(this.file); }
-    @Override public final long        lastModified()            { return this.file.lastModified();       }
+interface LocatableResource extends Resource {
 
     /**
-     * @return The file containing the contents of this resource
+     * @return A locator that addresses this resource's contents
      */
-    public final File getFile() { return this.file; }
-
-    @Override public final String toString() { return this.getFileName(); }
-
-    private final File file;
+    URL getLocation() throws IOException;
 }
