@@ -174,8 +174,7 @@ interface IExpressionEvaluator extends ICookable, IMultiCookable {
      */
     void setImplementedInterfaces(Class<?>[] implementedTypes);
 
-    @Override
-    void setParentClassLoader(@Nullable ClassLoader parentClassLoader);
+    @Override void setParentClassLoader(@Nullable ClassLoader parentClassLoader);
 
     /**
      * @deprecated Use {@link #setExpressionType(Class)} instead

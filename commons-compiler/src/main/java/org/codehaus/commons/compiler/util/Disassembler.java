@@ -90,7 +90,7 @@ class Disassembler {
                 "showLineNumbers",
                 "showVariableNames",
                 "symbolicLabels",
-            } ) {
+            }) {
                 String pv = System.getProperty("disasm." + attributeName);
                 if (pv != null) {
                     boolean      argument         = Boolean.parseBoolean(pv);

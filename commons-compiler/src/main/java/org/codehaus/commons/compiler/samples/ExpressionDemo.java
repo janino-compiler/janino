@@ -40,11 +40,11 @@ class ExpressionDemo extends DemoBase {
     public static void
     main(String[] args) throws Exception {
 
-        Class<?>   expressionType = null;
-        String[]   parameterNames         = {};
-        Class<?>[] parameterTypes         = {};
-        Class<?>[] thrownExceptions       = {};
-        String[]   defaultImports         = new String[0];
+        Class<?>   expressionType   = null;
+        String[]   parameterNames   = {};
+        Class<?>[] parameterTypes   = {};
+        Class<?>[] thrownExceptions = {};
+        String[]   defaultImports   = new String[0];
 
         int i;
         for (i = 0; i < args.length; ++i) {

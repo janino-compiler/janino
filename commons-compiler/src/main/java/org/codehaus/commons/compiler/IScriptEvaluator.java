@@ -132,9 +132,12 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
      *   The {@code '*'} in this string is replaced with the method index, starting at 0.
      * </p>
      */
-    public static final String DEFAULT_METHOD_NAME = "eval*";
+    String DEFAULT_METHOD_NAME = "eval*";
 
-    public static final Class<?> DEFAULT_RETURN_TYPE = void.class;
+    /**
+     * The return type for any script for which no return type is explicitly configured.
+     */
+    Class<?> DEFAULT_RETURN_TYPE = void.class;
 
     /** @see IClassBodyEvaluator#setClassName(String) */
     void setClassName(String className);
@@ -277,8 +280,8 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
     /**
      * Same as {@link #cook(Reader)}, but for multiple scripts.
      */
-    @Override
-    void cook(Reader... readers) throws CompileException, IOException;
+    @Override void
+    cook(Reader... readers) throws CompileException, IOException;
 
     /**
      * Same as {@link #cook(String, Reader)}, but cooks a <em>set</em> of scripts into one class. Notice that
@@ -292,20 +295,20 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
      * @throws IllegalStateException if any of the preceding {@code set...()} had an array
      *                               size different from that of {@code scanners}
      */
-    @Override
-    void cook(String[] fileNames, Reader[] readers) throws CompileException, IOException;
+    @Override void
+    cook(String[] fileNames, Reader[] readers) throws CompileException, IOException;
 
     /**
      * Same as {@link #cook(String)}, but for multiple scripts.
      */
-    @Override
-    void cook(String[] strings) throws CompileException;
+    @Override void
+    cook(String[] strings) throws CompileException;
 
     /**
      * Same as {@link #cook(String, String)}, but for multiple scripts.
      */
-    @Override
-    void cook(String[] fileNames, String[] strings) throws CompileException;
+    @Override void
+    cook(String[] fileNames, String[] strings) throws CompileException;
 
     /**
      * Same as {@link #evaluate(Object[])}, but for multiple scripts.
@@ -380,12 +383,6 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
         Class<T> interfaceToImplement,
         String[] parameterNames
     ) throws CompileException, IOException;
-
-    /**
-     * @throws UnsupportedOperationException Always
-     * @deprecated
-     */
-    @Deprecated Object createInstance(Reader reader);
 
     /** @see IClassBodyEvaluator#setDefaultImports(String...) */
     void setDefaultImports(String... defaultImports);

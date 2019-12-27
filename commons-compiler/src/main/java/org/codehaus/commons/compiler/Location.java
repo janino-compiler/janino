@@ -51,9 +51,9 @@ class Location implements Serializable {
      */
     public
     Location(@Nullable String fileName, int lineNumber, int columnNumber) {
-        this.fileName = fileName;
-        this.lineNumber       = lineNumber;
-        this.columnNumber     = columnNumber;
+        this.fileName     = fileName;
+        this.lineNumber   = lineNumber;
+        this.columnNumber = columnNumber;
     }
 
     /**
