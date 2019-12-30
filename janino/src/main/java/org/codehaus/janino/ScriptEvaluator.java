@@ -627,10 +627,11 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     /**
-     * Like {@link #cook(Scanner)}, but cooks a <em>set</em> of scripts into one class. Notice that if <em>any</em> of
-     * the scripts causes trouble, the entire compilation will fail. If you need to report <em>which</em> of the
-     * scripts causes the exception, you may want to use the {@code fileName} argument of {@link
-     * Scanner#Scanner(String, Reader)} to distinguish between the individual token sources.
+     * Cooks a <em>set</em> of scripts into one class.
+     * Notice that if <em>any</em> of the scripts causes trouble, the entire compilation will fail.
+     * If you need to report <em>which</em> of the scripts causes the exception, you may want to use the
+     * <var>fileName</var> argument of {@link Scanner#Scanner(String, Reader)} to distinguish between the individual
+     * token sources.
      * <p>
      *   On a 2 GHz Intel Pentium Core Duo under Windows XP with an IBM 1.4.2 JDK, compiling 10000 expressions "a + b"
      *   (integer) takes about 4 seconds and 56 MB of main memory. The generated class file is 639203 bytes large.
