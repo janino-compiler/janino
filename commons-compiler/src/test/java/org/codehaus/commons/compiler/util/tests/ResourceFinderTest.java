@@ -34,6 +34,7 @@ import java.util.zip.ZipFile;
 import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.compiler.util.resource.LocatableResource;
 import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceFinders;
 import org.codehaus.commons.compiler.util.resource.ZipFileResourceFinder;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,7 +53,7 @@ class ResourceFinderTest {
         URLClassLoader cl = new URLClassLoader(new URL[] { zipFileUrl });
         Assert.assertNotNull(cl.getResource("foo.txt"));
 
-        Resource r = ClassLoaders.getsResourceAsStream(cl).findResource("foo.txt");
+        Resource r = ResourceFinders.getsResourceAsStream(cl).findResource("foo.txt");
         Assert.assertNotNull(r);
 
         Assert.assertTrue(r instanceof LocatableResource);

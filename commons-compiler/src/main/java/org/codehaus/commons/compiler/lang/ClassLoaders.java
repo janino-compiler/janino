@@ -110,41 +110,4 @@ class ClassLoaders {
             }
         };
     }
-
-    /**
-     * @return Finds resources via <var>classLoader</var>{@code .getResource()}; all found resources are {@link
-     *         LocatableResource}s
-     */
-    public static ResourceFinder
-    getsResourceAsStream(final ClassLoader classLoader) {
-
-        return new ResourceFinder() {
-
-            @Override @Nullable public Resource
-            findResource(String resourceName) {
-
-                // "ClassLoader.getResource()" doesn't like leading slashes - not clear why.
-                if (resourceName.startsWith("/")) resourceName = resourceName.substring(1);
-
-                final URL url = classLoader.getResource(resourceName);
-                if (url == null) return null;
-
-                final String finalResourceName = resourceName;
-                return new LocatableResource() {
-
-                    @Override public URL
-                    getLocation() throws IOException { return url; }
-
-                    @Override public InputStream
-                    open() throws IOException { return url.openStream(); }
-
-                    @Override public String
-                    getFileName() { return finalResourceName; }
-
-                    @Override public long
-                    lastModified() { return 0; }
-                };
-            }
-        };
-    }
 }
