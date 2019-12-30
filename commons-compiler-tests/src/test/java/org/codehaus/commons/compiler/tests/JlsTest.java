@@ -2704,8 +2704,8 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_15_27_1__Lambda_parameters() throws Exception {
 
-        // "java.util.Function" only since Java 8
-        if (CommonsCompilerTestSuite.JVM_VERSION < 8) return;
+        // "java.util.Function" only since Java 10.
+        if (CommonsCompilerTestSuite.JVM_VERSION < 10) return;
 
         this.assertScriptExecutable("java.util.function.Function<String, Integer> f = (var s) -> s.length();\n");
     }
