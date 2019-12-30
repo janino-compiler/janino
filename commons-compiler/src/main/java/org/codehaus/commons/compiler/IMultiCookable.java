@@ -34,12 +34,12 @@ public
 interface IMultiCookable {
 
     /**
-     * Same as {@link #cook(Reader)}, but cooks a <em>set</em> of documents into one class.
+     * Same as {@link Cookable#cook(Reader)}, but cooks a <em>set</em> of documents into one class.
      */
     void cook(Reader... readers) throws CompileException, IOException;
 
     /**
-     * Same as {@link #cook(String, Reader)}, but cooks a <em>set</em> of documents into one class.
+     * Same as {@link Cookable#cook(String, Reader)}, but cooks a <em>set</em> of documents into one class.
      * Notice that if <em>any</em> of the documents causes trouble, the entire compilation will fail. If you
      * need to report <em>which</em> of the documents causes the exception, you may want to use the
      * {@code fileNames} parameter to distinguish between the individual token sources.
@@ -47,32 +47,52 @@ interface IMultiCookable {
     void cook(String[] fileNames, Reader[] readers) throws CompileException, IOException;
 
     /**
-     * Same as {@link #cook(String)}, but cooks a <em>set</em> of documents into one class.
+     * Same as {@link Cookable#cook(String)}, but cooks a <em>set</em> of documents into one class.
      */
     void cook(String[] strings) throws CompileException;
 
     /**
-     * Same as {@link #cook(String, String)}, but cooks a <em>set</em> of documents into one class.
+     * Same as {@link Cookable#cook(String, String)}, but cooks a <em>set</em> of documents into one class.
      */
     void cook(String[] fileNames, String[] strings) throws CompileException;
 
     /**
-     * Reads, scans, parses and compiles Java tokens from the given {@link InputStream}s, encoded
-     * in the "platform default encoding".
+     * Same as {@link Cookable#cook(InputStream)}, but cooks a <em>set</em> of documents into one class.
      */
     void cook(InputStream... inputStreams) throws CompileException, IOException;
 
+    /**
+     * Same as {@link Cookable#cook(InputStream, String)}, but cooks a <em>set</em> of documents into one class.
+     */
     void cook(InputStream[] inputStreams, String[] encodings) throws CompileException, IOException;
 
+    /**
+     * Same as {@link Cookable#cook(String, InputStream)}, but cooks a <em>set</em> of documents into one class.
+     */
     void cook(String[] fileNames, InputStream[] inputStreams) throws CompileException, IOException;
 
+    /**
+     * Same as {@link Cookable#cook(String, InputStream, String)}, but cooks a <em>set</em> of documents into one class.
+     */
     void cook(String[] fileNames, InputStream[] inputStreams, String[] encodings) throws CompileException, IOException;
 
+    /**
+     * Same as {@link Cookable#cookFile(File)}, but cooks a <em>set</em> of documents into one class.
+     */
     void cookFiles(File[] files) throws CompileException, IOException;
 
+    /**
+     * Same as {@link Cookable#cookFile(File, String)}, but cooks a <em>set</em> of documents into one class.
+     */
     void cookFiles(File[] files, String[] encodings) throws CompileException, IOException;
 
+    /**
+     * Same as {@link Cookable#cookFile(String)}, but cooks a <em>set</em> of documents into one class.
+     */
     void cookFiles(String[] fileNames) throws CompileException, IOException;
 
+    /**
+     * Same as {@link Cookable#cookFile(String, String)}, but cooks a <em>set</em> of documents into one class.
+     */
     void cookFiles(String[] fileNames, String[] encodings) throws CompileException, IOException;
 }
