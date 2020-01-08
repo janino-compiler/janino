@@ -117,9 +117,6 @@
       <property name="allowedAbbreviationLength" value="1"/>
       <property name="allowedAbbreviations" value="XML,URL,IO,URI,MX"/>
     </module>
-    <module name="LineLength">
-      <property name="max" value="120"/>
-    </module>
     <module name="OperatorWrap">
       <property name="tokens" value="BAND,BOR,BSR,BXOR,DIV,EQUAL,GE,GT,LAND,LE,LITERAL_INSTANCEOF,LOR,LT,MINUS,MOD,NOT_EQUAL,PLUS,QUESTION,SL,SR,STAR"/>
     </module>
@@ -176,18 +173,19 @@
     <module name="de.unkrig.cscontrib.checks.WrapTryCheck"/>
     <module name="SuppressWithNearbyCommentFilter">
       <metadata name="net.sf.eclipsecs.core.comment" value="SUPPRESS CHECKSTYLE (check)"/>
-      <property name="commentFormat" value="SUPPRESS CHECKSTYLE ([\w.: |]++)(?!:)"/>
+      <property name="commentFormat" value="SUPPRESS CHECKSTYLE ([^:]+)"/>
       <property name="checkFormat" value="$1"/>
-      <property name="messageFormat" value="$1"/>
       <property name="influenceFormat" value="1"/>
     </module>
     <module name="SuppressWithNearbyCommentFilter">
       <metadata name="net.sf.eclipsecs.core.comment" value="SUPPRESS CHECKSTYLE (check):(lines)"/>
       <property name="commentFormat" value="SUPPRESS CHECKSTYLE ([\w.: |]+):(-?\d+)"/>
       <property name="checkFormat" value="$1"/>
-      <property name="messageFormat" value="$1"/>
       <property name="influenceFormat" value="$2"/>
     </module>
+  </module>
+  <module name="LineLength">
+    <property name="max" value="120"/>
   </module>
   <module name="JavadocPackage"/>
   <module name="RegexpHeader">
