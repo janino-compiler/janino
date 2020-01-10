@@ -1,0 +1,11 @@
+
+/* Format "<pre class='asciiart'>{@code ...}</pre>" nicely: */
+.asciiart {
+	line-height:      90%;
+	background-color: #eee;
+	margin:           20px 40px 20px 40px;
+}
+.asciiart code {
+	line-height: inherit;
+	font-size:   80%;
+}

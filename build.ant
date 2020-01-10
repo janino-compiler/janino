@@ -3,11 +3,6 @@
 	<property file="local_build.properties" />
 	<property file="build.properties"       />
 
-	<fail
-		unless="maven.repo"
-		message='Please create a file "local_build.properties" with a property "maven.repo", or set it differently.'
-	/>
-
 	<xmlproperty file="../janino-parent/pom.xml" prefix="pom.xml" />
 	<property name="janino.version" value="${pom.xml.project.version}" />
 
@@ -17,11 +12,13 @@
 
 		<delete dir="apidocs" failonerror="false" />
 
+<!--
+		<javadoc executable="C:\dev\Java\jdk1.6.0_45\bin\javadoc.exe" destdir="apidocs">
+-->
 		<javadoc destdir="apidocs">
-
 			<classpath>
-				<pathelement location="${maven.repo}/junit/junit/${junit.version}/junit-${junit.version}.jar" />
-				<pathelement location="${maven.repo}/org/apache/ant/ant/${org.apache.ant.version}/ant-${org.apache.ant.version}.jar" />
+				<!--  "org.codehausjanino.AntCompilerAdapter" JAVADOC has references to APACHE ANT: -->
+				<pathelement location="../janino/lib/ant-1.7.1.jar" />
 			</classpath>
 
 			<doctitle>JANINO ${janino.version}</doctitle>
@@ -30,10 +27,22 @@
 			<arg value="-Xdoclint:none" />
 			<arg value="-overview" /><arg file="../janino/src/main/javadoc/overview.html" />
 
+			<!--
+				Since Java 10, JAVADOC has a nice "-add-stylesheet" command line option, but for backwards
+				compatibility, we use "<concat>", below.
+			<arg value="-add-stylesheet" /><arg file="additional-stylesheet.css" />
+			-->
+			
 			<fileset dir="../commons-compiler"     includes="src/main/java/**/*.java" />
 			<fileset dir="../commons-compiler-jdk" includes="src/main/java/**/*.java" />
 			<fileset dir="../janino"               includes="src/main/java/**/*.java" />
 		</javadoc>
+
+		<!--
+			JAVADOC >=10 has a nice "-add-stylesheet" command line option, but for backwards compatibility, we do it
+			like this instead:
+		-->
+		<concat destfile="apidocs/stylesheet.css" append="true"><fileset file="additional-stylesheet.css" /></concat>
 	</target>
 
 	<property name="baseUrl" value="https://github.com/janino-compiler/janino" />
