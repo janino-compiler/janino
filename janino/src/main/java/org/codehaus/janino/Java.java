@@ -4466,7 +4466,7 @@ class Java {
      * <p>
      *   This class is special: It does not extend/implement the {@link Atom} subclasses, but overrides {@link Atom}'s
      *   "{@code to...()}" methods.
-     * </pS
+     * </p>
      */
     public static final
     class AmbiguousName extends Lvalue {
