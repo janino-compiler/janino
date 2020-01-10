@@ -40,8 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Resource;
-
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
@@ -646,7 +644,7 @@ class Unparser {
             if (!ts.resources.isEmpty()) {
                 Unparser.this.pw.print("(");
                 Unparser.this.unparseResources(
-                    (TryStatement.Resource[]) ts.resources.toArray(new Resource[ts.resources.size()])
+                    (TryStatement.Resource[]) ts.resources.toArray(new TryStatement.Resource[ts.resources.size()])
                 );
                 Unparser.this.pw.print(") ");
             }
