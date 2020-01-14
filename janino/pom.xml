@@ -56,6 +56,24 @@
           </instructions>
         </configuration>
       </plugin>
+      
+      <plugin>
+        <groupId>de.unkrig.txt2html</groupId>
+        <artifactId>txt2html-maven-plugin</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>txt2html</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <keepOriginals>true</keepOriginals>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <description>The &quot;JANINO&quot; implementation of the &quot;commons-compiler&quot; API: Super-small, super-fast, independent from the JDK's &quot;tools.jar&quot;.</description>
