@@ -113,58 +113,37 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
     This compiler reads .java files, compiles them, and creates .class files.
   </p>
 
-  <svg class="asciiart" width="629" height="495" style="font-family:Consolas;font-size:11px">
-  <defs>
-    <marker id="head" markerWidth="4" markerHeight="4"
-      style="fill:rgb(220,220,220)"
-      orient="auto" refY="2">
-      <path d="M0,0 L4,2 0,4" />
-    </marker>
-  </defs>
-<line x1="138" y1="113" x2="138" y2="203" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="261" y1="337" x2="402" y2="337" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="504" y1="217" x2="504" y2="127" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<polyline points="33,457 33,217 261,217" style="fill:none;stroke:black;stroke-width:1" />
-<text x="45" y="236">Java.CompilationUnit</text>
-<polyline points="261,217 261,247 33,247" style="fill:none;stroke:black;stroke-width:1" />
-<text x="45" y="266">Java.PackageMemberTypeDeclaration[]</text>
-<text x="51" y="281">Java.Annotation[]</text>
-<text x="51" y="296">Java.TypeParameter[]</text>
-<text x="51" y="311">Java.FieldDeclaration[]</text>
-<text x="51" y="341">Java.MemberTypeDeclaration[]</text>
-<text x="51" y="371">Java.ConstructorDeclarator[]</text>
-<text x="51" y="401">Java.MethodDeclarator[]</text>
-<text x="57" y="326">Java.Annotation[]</text>
-<text x="57" y="356">...</text>
-<text x="57" y="386">...</text>
-<text x="57" y="416">Java.Annotation[]</text>
-<text x="57" y="431">Java.TypeParameter[]</text>
-<text x="57" y="446">Java.BlockStatements[]</text>
-<polyline points="261,247 261,457 33,457" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="189,37 81,37 81,112 201,112 201,67 189,37 189,67 201,67" style="fill:none;stroke:black;stroke-width:1" />
-<text x="99" y="86">on command line</text>
-<text x="105" y="71">.java files</text>
-<polyline points="417,457 417,217 591,217" style="fill:none;stroke:black;stroke-width:1" />
-<text x="429" y="236">o.c.j.util.ClassFile</text>
-<polyline points="591,217 591,247 417,247" style="fill:none;stroke:black;stroke-width:1" />
-<text x="429" y="266">ClassFile.AttributeInfo[]</text>
-<text x="429" y="281">ClassFile.FieldInfo[]</text>
-<text x="429" y="311">ClassFile.MethodInfo[]</text>
-<text x="435" y="296">ClassFile.AttributeInfo[]</text>
-<text x="435" y="326">ClassFile.AttributeInfo[]</text>
-<polyline points="591,247 591,457 417,457" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="555,37 447,37 447,112 567,112 567,67 555,37 555,67 567,67" style="fill:none;stroke:black;stroke-width:1" />
-<text x="471" y="71">.class files</text>
-<text x="471" y="86">in dest dir</text>
-<text x="105" y="161">o.c.j.Parser</text>
-<text x="111" y="146">parsed by</text>
-<text x="123" y="176">into</text>
-<text x="285" y="341">o.c.j.UnitCompiler</text>
-<text x="303" y="326">compiled by</text>
-<text x="315" y="356">into</text>
-<text x="471" y="176">written to</text>
-</svg>
-
+  <pre class="asciiart"><code>.
+        +-----------------+                                          +-----------------+
+        |                 |\                                         |                 |\
+        |   .java files   +-+                                        |   .class files  +-+
+        |  on command line  |                                        |   in dest dir     |
+        |                   |                                        |                   |
+        +-------------------+                                        +-------------------+
+                 |                                                            ^
+             parsed by                                                        |
+            o.c.j.Parser                                                      |
+               into                                                      written to
+                 |                                                            |
+                 v                                                            |
++-------------------------------------+                         +----------------------------+
+| Java.CompilationUnit                |                         | o.c.j.util.ClassFile       |
++-------------------------------------+                         +----------------------------+
+| Java.PackageMemberTypeDeclaration[] |                         | ClassFile.AttributeInfo[]  |
+|  Java.Annotation[]                  |                         | ClassFile.FieldInfo[]      |
+|  Java.TypeParameter[]               |                         |  ClassFile.AttributeInfo[] |
+|  Java.FieldDeclaration[]            |                         | ClassFile.MethodInfo[]     |
+|   Java.Annotation[]                 |      compiled by        |  ClassFile.AttributeInfo[] |
+|  Java.MemberTypeDeclaration[]       |-- o.c.j.UnitCompiler --&gt;|                            |
+|   ...                               |        into             |                            |
+|  Java.ConstructorDeclarator[]       |                         |                            |
+|   ...                               |                         |                            |
+|  Java.MethodDeclarator[]            |                         |                            |
+|   Java.Annotation[]                 |                         |                            |
+|   Java.TypeParameter[]              |                         |                            |
+|   Java.BlockStatements[]            |                         |                            |
++-------------------------------------+                         +----------------------------+
+  </code></pre>
 
   <p>
     As you know, a ".java" source file can contain <em>multiple</em> type declarations (exactly one of which must be
@@ -242,56 +221,44 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
     Therefore, a <em>third</em> representation of a class/interface must be introduced, which (for JANINO) is the
     <a href="org/codehaus/janino/IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a> hierarchy:
   </p>
-  <svg class="asciiart" width="503" height="600" style="font-family:Consolas;font-size:11px">
-  <defs>
-    <marker id="head" markerWidth="4" markerHeight="4"
-      style="fill:rgb(220,220,220)"
-      orient="auto" refY="2">
-      <path d="M0,0 L4,2 0,4" />
-    </marker>
-  </defs>
-<line x1="102" y1="113" x2="102" y2="203" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="171" y1="247" x2="312" y2="247" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="276" y1="248" x2="276" y2="323" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="390" y1="217" x2="390" y2="127" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<polyline points="33,277 33,217 171,217" style="fill:none;stroke:black;stroke-width:1" />
-<text x="45" y="251">Java.CompilationUnit</text>
-<polyline points="171,217 171,277 33,277" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="147,37 39,37 39,112 159,112 159,67 147,37 147,67 159,67" style="fill:none;stroke:black;stroke-width:1" />
-<text x="57" y="86">on command line</text>
-<text x="63" y="71">.java files</text>
-<polyline points="183,562 183,337 357,337" style="fill:none;stroke:black;stroke-width:1" />
-<text x="195" y="356">o.c.j.IClass</text>
-<polyline points="357,337 357,367 183,367" style="fill:none;stroke:black;stroke-width:1" />
-<text x="195" y="386">IAnnotation[]</text>
-<text x="195" y="401">IField[]</text>
-<text x="195" y="431">IConstructor[]</text>
-<text x="195" y="461">IMethod[]</text>
-<text x="195" y="551">...</text>
-<text x="201" y="416">...</text>
-<text x="201" y="446">...</text>
-<text x="201" y="476">IAnnotation[]</text>
-<text x="201" y="491">IClass returnType</text>
-<text x="201" y="506">IClass[] parameterTypes</text>
-<text x="201" y="521">IClass[] thrownExceptions</text>
-<text x="201" y="536">...</text>
-<polyline points="357,367 357,562 183,562" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="327,277 327,217 465,217" style="fill:none;stroke:black;stroke-width:1" />
-<text x="339" y="251">o.c.j.util.ClassFile</text>
-<polyline points="465,217 465,277 327,277" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="441,37 333,37 333,112 453,112 453,67 441,37 441,67 453,67" style="fill:none;stroke:black;stroke-width:1" />
-<text x="357" y="71">.class files</text>
-<text x="357" y="86">in dest dir</text>
-<text x="69" y="161">o.c.j.Parser</text>
-<text x="75" y="146">parsed by</text>
-<text x="87" y="176">into</text>
-<text x="195" y="251">o.c.j.UnitCompiler</text>
-<text x="213" y="236">compiled by</text>
-<text x="231" y="266">into</text>
-<text x="261" y="296">uses</text>
-<text x="357" y="176">written to</text>
-</svg>
-
+  <pre class="asciiart"><code>.
+ +-----------------+                              +-----------------+
+ |                 |\                             |                 |\
+ |   .java files   +-+                            |   .class files  +-+
+ |  on command line  |                            |   in dest dir     |
+ |                   |                            |                   |
+ +-------------------+                            +-------------------+
+           |                                               ^
+       parsed by                                           |
+      o.c.j.Parser                                         |
+         into                                         written to
+           |                                               |
+           v                                               |
++----------------------+                         +----------------------+
+|                      |      compiled by        |                      |
+| Java.CompilationUnit |-- o.c.j.UnitCompiler --&gt;| o.c.j.util.ClassFile |
+|                      |         into   |        |                      |
++----------------------+                |        +----------------------+
+                                      uses
+                                        |
+                                        v
+                         +----------------------------+
+                         | o.c.j.IClass               |
+                         +----------------------------+
+                         | IAnnotation[]              |
+                         | IField[]                   |
+                         |  ...                       |
+                         | IConstructor[]             |
+                         |  ...                       |
+                         | IMethod[]                  |
+                         |  IAnnotation[]             |
+                         |  IClass returnType         |
+                         |  IClass[] parameterTypes   |
+                         |  IClass[] thrownExceptions |
+                         |  ...                       |
+                         | ...                        |
+                         +----------------------------+
+  </code></pre>
   <p>
     An <code>IClass</code> represents the "outside" of a usable class or interface, which JANINO needs when that class or
     interface is "used".
@@ -299,70 +266,33 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
   <p>
     Now where do we get the <code>IClass</code>es from? A complete implementation requires three different sources:
   </p>
-  <svg class="asciiart" width="743" height="435" style="font-family:Consolas;font-size:11px">
-  <defs>
-    <marker id="head" markerWidth="4" markerHeight="4"
-      style="fill:rgb(220,220,220)"
-      orient="auto" refY="2">
-      <path d="M0,0 L4,2 0,4" />
-    </marker>
-  </defs>
-<line x1="114" y1="113" x2="114" y2="203" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="111" y1="367" x2="216" y2="367" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="297" y1="157" x2="168" y2="157" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="183" y1="247" x2="360" y2="247" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="288" y1="248" x2="288" y2="323" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="300" y1="247" x2="300" y2="127" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="417" y1="367" x2="348" y2="367" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="450" y1="217" x2="450" y2="127" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="609" y1="367" x2="576" y2="367" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="600" y1="113" x2="600" y2="203" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<polyline points="45,277 45,217 183,217" style="fill:none;stroke:black;stroke-width:1" />
-<text x="57" y="251">Java.CompilationUnit</text>
-<polyline points="183,217 183,277 45,277" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="159,37 51,37 51,112 171,112 171,67 159,37 159,67 171,67" style="fill:none;stroke:black;stroke-width:1" />
-<text x="69" y="86">on command line</text>
-<text x="75" y="71">.java files</text>
-<polyline points="309,37 201,37 201,112 321,112 321,67 309,37 309,67 321,67" style="fill:none;stroke:black;stroke-width:1" />
-<text x="225" y="71">.java files</text>
-<text x="225" y="86">on sourcepath</text>
-<polyline points="231,397 231,337 333,337" style="fill:none;stroke:black;stroke-width:1" />
-<text x="249" y="371">o.c.j.IClass</text>
-<polyline points="333,337 333,397 231,397" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="375,277 375,217 513,217" style="fill:none;stroke:black;stroke-width:1" />
-<text x="387" y="251">o.c.j.util.ClassFile</text>
-<polyline points="513,217 513,277 375,277" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="495,37 387,37 387,112 507,112 507,67 495,37 495,67 507,67" style="fill:none;stroke:black;stroke-width:1" />
-<text x="411" y="71">.class files</text>
-<text x="411" y="86">in dest dir</text>
-<polyline points="417,397 417,337 561,337" style="fill:none;stroke:black;stroke-width:1" />
-<text x="429" y="371">o.c.j.ClassFileIClass</text>
-<polyline points="561,337 561,397 417,397" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="645,37 537,37 537,112 657,112 657,67 645,37 645,67 657,67" style="fill:none;stroke:black;stroke-width:1" />
-<text x="561" y="71">.class files</text>
-<text x="561" y="86">on classpath</text>
-<polyline points="537,277 537,217 675,217" style="fill:none;stroke:black;stroke-width:1" />
-<text x="549" y="251">o.c.j.util.ClassFile</text>
-<polyline points="675,217 675,277 537,277" style="fill:none;stroke:black;stroke-width:1" />
-<text x="33" y="326">o.c.j.UnitCompiler.resolve()</text>
-<text x="81" y="161">o.c.j.Parser</text>
-<text x="87" y="146">parsed by</text>
-<text x="87" y="311">wrapped by</text>
-<text x="99" y="176">into</text>
-<text x="99" y="341">as a</text>
-<text x="207" y="251">o.c.j.UnitCompiler</text>
-<text x="225" y="236">compiled by</text>
-<text x="243" y="266">into</text>
-<text x="273" y="296">uses</text>
-<text x="285" y="191">finds</text>
-<text x="351" y="371">implements</text>
-<text x="423" y="176">written to</text>
-<text x="519" y="326">o.c.j.ResourceFinderIClassLoader</text>
-<text x="567" y="161">parsed into</text>
-<text x="585" y="311">wrapped by</text>
-<text x="597" y="341">as a</text>
-</svg>
-
+  <pre class="asciiart"><code>.
+   +-----------------+      +-----------------+            +-----------------+      +-----------------+
+   |                 |\     |                 |\           |                 |\     |                 |\
+   |   .java files   +-+    |   .java files   +-+          |   .class files  +-+    |   .class files  +-+
+   |  on command line  |    |   on sourcepath   |          |   in dest dir     |    |   on classpath    |
+   |                   |    |                   |          |                   |    |                   |
+   +-------------------+    +-------------------+          +-------------------+    +-------------------+
+             |                              ^                        ^                        |
+         parsed by                          |                        |                        |
+        o.c.j.Parser &lt;----------------------|                        |                   parsed into
+           into                             |                    written to                   |
+             |                            finds                      |                        |
+             v                              |                        |                        v
+  +----------------------+                  |            +----------------------+   +----------------------+
+  |                      |      compiled by |            |                      |   |                      |
+  | Java.CompilationUnit |-- o.c.j.UnitCompiler --------&gt;| o.c.j.util.ClassFile |   | o.c.j.util.ClassFile |
+  |                      |         into   |              |                      |   |                      |
+  +----------------------+                |              +----------------------+   +----------------------+
+             |                          uses                                                    |
+         wrapped by                       |                                                 wrapped by
+o.c.j.UnitCompiler.resolve()              v                                      o.c.j.ResourceFinderIClassLoader
+           as a                  +----------------+             +-----------------------+     as a
+             |                   |                |             |                       |       |
+             +------------------&gt;|  o.c.j.IClass  |&lt;-implements-| o.c.j.ClassFileIClass |&lt;------+
+                                 |                |             |                       |
+                                 +----------------+             +-----------------------+
+  </code></pre>
   <ol>
     <li>
       To resove "<code>Car</code>" (declared in the same compilation unit), the <code>UnitCompiler</code> uses its "<a href="org/codehaus/janino/UnitCompiler.html#resolve(org.codehaus.janino.Java.TypeDeclaration)"><code>UnitCompiler.resolve(org.codehaus.janino.Java.TypeDeclaration)</code></a>" method (bottom left), which wraps a parsed type declaration as an
@@ -397,66 +327,33 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
     is much more efficient to use the <em>loaded</em> required classes, instead of parsing class files. Basically that
     is what the <a href="org/codehaus/janino/SimpleCompiler.html" title="class in org.codehaus.janino"><code>org.codehaus.janino.SimpleCompiler</code></a> does:
   </p>
-  <svg class="asciiart" width="725" height="435" style="font-family:Consolas;font-size:11px">
-  <defs>
-    <marker id="head" markerWidth="4" markerHeight="4"
-      style="fill:rgb(220,220,220)"
-      orient="auto" refY="2">
-      <path d="M0,0 L4,2 0,4" />
-    </marker>
-  </defs>
-<line x1="114" y1="113" x2="114" y2="203" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="111" y1="367" x2="192" y2="367" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="183" y1="247" x2="324" y2="247" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="282" y1="248" x2="282" y2="323" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="393" y1="367" x2="324" y2="367" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="402" y1="217" x2="402" y2="127" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="591" y1="367" x2="558" y2="367" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<line x1="588" y1="113" x2="588" y2="203" style="stroke:rgb(220,220,220);stroke-width:4" marker-end='url(#head)' />
-<polyline points="45,277 45,217 183,217" style="fill:none;stroke:black;stroke-width:1" />
-<text x="57" y="251">Java.CompilationUnit</text>
-<polyline points="183,217 183,277 45,277" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="159,37 51,37 51,112 171,112 171,67 159,37 159,67 171,67" style="fill:none;stroke:black;stroke-width:1" />
-<text x="69" y="86">or code snippet</text>
-<text x="75" y="71">.java file</text>
-<polyline points="207,397 207,337 309,337" style="fill:none;stroke:black;stroke-width:1" />
-<text x="225" y="371">o.c.j.IClass</text>
-<polyline points="309,337 309,397 207,397" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="339,277 339,217 477,217" style="fill:none;stroke:black;stroke-width:1" />
-<text x="351" y="251">o.c.j.util.ClassFile</text>
-<polyline points="477,217 477,277 339,277" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="375,112 375,37 603,37" style="fill:none;stroke:black;stroke-width:1" />
-<text x="429" y="86">java.lang.ClassLoader</text>
-<text x="441" y="71">The running JVM's</text>
-<polyline points="603,37 603,112 375,112" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="393,397 393,337 543,337" style="fill:none;stroke:black;stroke-width:1" />
-<text x="405" y="371">o.c.j.ReflectionIClass</text>
-<polyline points="543,337 543,397 393,397" style="fill:none;stroke:black;stroke-width:1" />
-<polyline points="519,277 519,217 657,217" style="fill:none;stroke:black;stroke-width:1" />
-<text x="549" y="251">java.lang.Class</text>
-<polyline points="657,217 657,277 519,277" style="fill:none;stroke:black;stroke-width:1" />
-<text x="33" y="326">o.c.j.UnitCompiler.resolve()</text>
-<text x="81" y="161">o.c.j.Parser</text>
-<text x="87" y="146">parsed by</text>
-<text x="87" y="311">wrapped by</text>
-<text x="99" y="176">into</text>
-<text x="99" y="341">as a</text>
-<text x="207" y="251">o.c.j.UnitCompiler</text>
-<text x="225" y="236">compiled by</text>
-<text x="243" y="266">into</text>
-<text x="267" y="296">uses</text>
-<text x="309" y="176">java.lang.ClassLoader.defineClass()</text>
-<text x="327" y="371">implements</text>
-<text x="369" y="161">loaded via</text>
-<text x="387" y="191">into</text>
-<text x="501" y="326">o.c.j.ResourceFinderIClassLoader</text>
-<text x="531" y="161">ClassLoader.loadClass()</text>
-<text x="561" y="146">finds via</text>
-<text x="567" y="311">wrapped by</text>
-<text x="579" y="176">the</text>
-<text x="579" y="341">as a</text>
-</svg>
-
+  <pre class="asciiart"><code>.
+   +-----------------+                                   +-------------------------------------+
+   |                 |\                                  |                                     |
+   |   .java file    +-+                                 |          The running JVM's          |
+   |  or code snippet  |                                 |        java.lang.ClassLoader        |
+   |                   |                                 |                                     |
+   +-------------------+                                 +-------------------------------------+
+             |                                               ^                              |
+         parsed by                                           |                          finds via
+        o.c.j.Parser                                    loaded via                 ClassLoader.loadClass()
+           into                               java.lang.ClassLoader.defineClass()          the
+             |                                             into                             |
+             v                                               |                              v
+  +----------------------+                         +----------------------+      +----------------------+
+  |                      |      compiled by        |                      |      |                      |
+  | Java.CompilationUnit |-- o.c.j.UnitCompiler --&gt;| o.c.j.util.ClassFile |      |    java.lang.Class   |
+  |                      |         into  |         |                      |      |                      |
+  +----------------------+               |         +----------------------+      +----------------------+
+             |                         uses                                                  |
+         wrapped by                      |                                               wrapped by
+o.c.j.UnitCompiler.resolve()             v                                    o.c.j.ResourceFinderIClassLoader
+           as a              +----------------+             +------------------------+     as a
+             |               |                |             |                        |       |
+             +--------------&gt;|  o.c.j.IClass  |&lt;-implements-| o.c.j.ReflectionIClass |&lt;------+
+                             |                |             |                        |
+                             +----------------+             +------------------------+
+  </code></pre>
   <p>
     The
     <a href="org/codehaus/janino/ClassBodyEvaluator.html" title="class in org.codehaus.janino"><code>org.codehaus.janino.ClassBodyEvaluator</code></a>,

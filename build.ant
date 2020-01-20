@@ -3,6 +3,11 @@
 	<property file="local_build.properties" />
 	<property file="build.properties"       />
 
+	<taskdef
+		resource="de/unkrig/txt2html/antlib/ant.xml"
+		classpath="../txt2html-antlib/target/txt2html-antlib-0.0.1-SNAPSHOT-antlib.jar"
+	/>
+
 	<xmlproperty file="../janino-parent/pom.xml" prefix="pom.xml" />
 	<property name="janino.version" value="${pom.xml.project.version}" />
 
@@ -43,6 +48,12 @@
 			like this instead:
 		-->
 		<concat destfile="apidocs/stylesheet.css" append="true"><fileset file="additional-stylesheet.css" /></concat>
+
+		<txt2html>
+			<fileset dir="apidocs">
+    			<include name="**/*.html"/>
+			</fileset>
+		</txt2html>
 	</target>
 
 	<property name="baseUrl" value="https://github.com/janino-compiler/janino" />
