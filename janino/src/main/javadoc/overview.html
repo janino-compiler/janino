@@ -17,35 +17,35 @@
   </p>
 
   <pre class="asciiart">{@code .
-              +-----------------+                                          +-----------------+
-              |                 |\                                         |                 |\
-              |   .java files   +-+                                        |   .class files  +-+
-              |  on command line  |                                        |   in dest dir     |
-              |                   |                                        |                   |
-              +-------------------+                                        +-------------------+
-                       |                                                            ^
-                   parsed by                                                        |
-                  o.c.j.Parser                                                      |
-                     into                                                      written to
-                       |                                                            |
-                       v                                                            |
-      +-------------------------------------+                         +----------------------------+
-      | Java.CompilationUnit                |                         | o.c.j.util.ClassFile       |
-      +-------------------------------------+                         +----------------------------+
-      | Java.PackageMemberTypeDeclaration[] |                         | ClassFile.AttributeInfo[]  |
-      |  Java.Annotation[]                  |                         | ClassFile.FieldInfo[]      |
-      |  Java.TypeParameter[]               |                         |  ClassFile.AttributeInfo[] |
-      |  Java.FieldDeclaration[]            |                         | ClassFile.MethodInfo[]     |
-      |   Java.Annotation[]                 |      compiled by        |  ClassFile.AttributeInfo[] |
-      |  Java.MemberTypeDeclaration[]       |-- o.c.j.UnitCompiler -->|                            |
-      |   ...                               |        into             |                            |
-      |  Java.ConstructorDeclarator[]       |                         |                            |
-      |   ...                               |                         |                            |
-      |  Java.MethodDeclarator[]            |                         |                            |
-      |   Java.Annotation[]                 |                         |                            |
-      |   Java.TypeParameter[]              |                         |                            |
-      |   Java.BlockStatements[]            |                         |                            |
-      +-------------------------------------+                         +----------------------------+
+        +-----------------+                                          +-----------------+
+        |                 |\                                         |                 |\
+        |   .java files   +-+                                        |   .class files  +-+
+        |  on command line  |                                        |   in dest dir     |
+        |                   |                                        |                   |
+        +-------------------+                                        +-------------------+
+                 |                                                            ^
+             parsed by                                                        |
+            o.c.j.Parser                                                      |
+               into                                                      written to
+                 |                                                            |
+                 v                                                            |
++-------------------------------------+                         +----------------------------+
+| Java.CompilationUnit                |                         | o.c.j.util.ClassFile       |
++-------------------------------------+                         +----------------------------+
+| Java.PackageMemberTypeDeclaration[] |                         | ClassFile.AttributeInfo[]  |
+|  Java.Annotation[]                  |                         | ClassFile.FieldInfo[]      |
+|  Java.TypeParameter[]               |                         |  ClassFile.AttributeInfo[] |
+|  Java.FieldDeclaration[]            |                         | ClassFile.MethodInfo[]     |
+|   Java.Annotation[]                 |      compiled by        |  ClassFile.AttributeInfo[] |
+|  Java.MemberTypeDeclaration[]       |-- o.c.j.UnitCompiler -->|                            |
+|   ...                               |        into             |                            |
+|  Java.ConstructorDeclarator[]       |                         |                            |
+|   ...                               |                         |                            |
+|  Java.MethodDeclarator[]            |                         |                            |
+|   Java.Annotation[]                 |                         |                            |
+|   Java.TypeParameter[]              |                         |                            |
+|   Java.BlockStatements[]            |                         |                            |
++-------------------------------------+                         +----------------------------+
   }</pre>
 
   <p>
@@ -126,44 +126,43 @@
     Therefore, a <em>third</em> representation of a class/interface must be introduced, which (for JANINO) is the
     {@link org.codehaus.janino.IClass} hierarchy:
   </p>
-  <pre class="asciiart">{@code
-.
-       +-----------------+                              +-----------------+
-       |                 |\                             |                 |\
-       |   .java files   +-+                            |   .class files  +-+
-       |  on command line  |                            |   in dest dir     |
-       |                   |                            |                   |
-       +-------------------+                            +-------------------+
-                 |                                               ^
-             parsed by                                           |
-            o.c.j.Parser                                         |
-               into                                         written to
-                 |                                               |
-                 v                                               |
-      +----------------------+                         +----------------------+
-      |                      |      compiled by        |                      |
-      | Java.CompilationUnit |-- o.c.j.UnitCompiler -->| o.c.j.util.ClassFile |
-      |                      |         into   |        |                      |
-      +----------------------+                |        +----------------------+
-                                            uses
-                                              |
-                                              v
-                               +----------------------------+
-                               | o.c.j.IClass               |
-                               +----------------------------+
-                               | IAnnotation[]              |
-                               | IField[]                   |
-                               |  ...                       |
-                               | IConstructor[]             |
-                               |  ...                       |
-                               | IMethod[]                  |
-                               |  IAnnotation[]             |
-                               |  IClass returnType         |
-                               |  IClass[] parameterTypes   |
-                               |  IClass[] thrownExceptions |
-                               |  ...                       |
-                               | ...                        |
-                               +----------------------------+
+  <pre class="asciiart">{@code .
+ +-----------------+                              +-----------------+
+ |                 |\                             |                 |\
+ |   .java files   +-+                            |   .class files  +-+
+ |  on command line  |                            |   in dest dir     |
+ |                   |                            |                   |
+ +-------------------+                            +-------------------+
+           |                                               ^
+       parsed by                                           |
+      o.c.j.Parser                                         |
+         into                                         written to
+           |                                               |
+           v                                               |
++----------------------+                         +----------------------+
+|                      |      compiled by        |                      |
+| Java.CompilationUnit |-- o.c.j.UnitCompiler -->| o.c.j.util.ClassFile |
+|                      |         into   |        |                      |
++----------------------+                |        +----------------------+
+                                      uses
+                                        |
+                                        v
+                         +----------------------------+
+                         | o.c.j.IClass               |
+                         +----------------------------+
+                         | IAnnotation[]              |
+                         | IField[]                   |
+                         |  ...                       |
+                         | IConstructor[]             |
+                         |  ...                       |
+                         | IMethod[]                  |
+                         |  IAnnotation[]             |
+                         |  IClass returnType         |
+                         |  IClass[] parameterTypes   |
+                         |  IClass[] thrownExceptions |
+                         |  ...                       |
+                         | ...                        |
+                         +----------------------------+
   }</pre>
   <p>
     An {@code IClass} represents the "outside" of a usable class or interface, which JANINO needs when that class or
@@ -172,33 +171,32 @@
   <p>
     Now where do we get the {@code IClass}es from? A complete implementation requires three different sources:
   </p>
-  <pre class="asciiart">{@code
-.
-       +-----------------+      +-----------------+            +-----------------+      +-----------------+
-       |                 |\     |                 |\           |                 |\     |                 |\
-       |   .java files   +-+    |   .java files   +-+          |   .class files  +-+    |   .class files  +-+
-       |  on command line  |    |   on sourcepath   |          |   in dest dir     |    |   on classpath    |
-       |                   |    |                   |          |                   |    |                   |
-       +-------------------+    +-------------------+          +-------------------+    +-------------------+
-                 |                              ^                        ^                        |
-             parsed by                          |                        |                        |
-            o.c.j.Parser <----------------------|                        |                   parsed into
-               into                             |                    written to                   |
-                 |                            finds                      |                        |
-                 v                              |                        |                        v
-      +----------------------+                  |            +----------------------+   +----------------------+
-      |                      |      compiled by |            |                      |   |                      |
-      | Java.CompilationUnit |-- o.c.j.UnitCompiler -------->| o.c.j.util.ClassFile |   | o.c.j.util.ClassFile |
-      |                      |         into   |              |                      |   |                      |
-      +----------------------+                |              +----------------------+   +----------------------+
-                 |                          uses                                                    |
-             wrapped by                       |                                                 wrapped by
-    o.c.j.UnitCompiler.resolve()              v                                      o.c.j.ResourceFinderIClassLoader
-               as a                  +----------------+             +-----------------------+     as a
-                 |                   |                |             |                       |       |
-                 +------------------>|  o.c.j.IClass  |<-implements-| o.c.j.ClassFileIClass |<------+
-                                     |                |             |                       |
-                                     +----------------+             +-----------------------+
+  <pre class="asciiart">{@code .
+   +-----------------+      +-----------------+            +-----------------+      +-----------------+
+   |                 |\     |                 |\           |                 |\     |                 |\
+   |   .java files   +-+    |   .java files   +-+          |   .class files  +-+    |   .class files  +-+
+   |  on command line  |    |   on sourcepath   |          |   in dest dir     |    |   on classpath    |
+   |                   |    |                   |          |                   |    |                   |
+   +-------------------+    +-------------------+          +-------------------+    +-------------------+
+             |                              ^                        ^                        |
+         parsed by                          |                        |                        |
+        o.c.j.Parser <----------------------|                        |                   parsed into
+           into                             |                    written to                   |
+             |                            finds                      |                        |
+             v                              |                        |                        v
+  +----------------------+                  |            +----------------------+   +----------------------+
+  |                      |      compiled by |            |                      |   |                      |
+  | Java.CompilationUnit |-- o.c.j.UnitCompiler -------->| o.c.j.util.ClassFile |   | o.c.j.util.ClassFile |
+  |                      |         into   |              |                      |   |                      |
+  +----------------------+                |              +----------------------+   +----------------------+
+             |                          uses                                                    |
+         wrapped by                       |                                                 wrapped by
+o.c.j.UnitCompiler.resolve()              v                                      o.c.j.ResourceFinderIClassLoader
+           as a                  +----------------+             +-----------------------+     as a
+             |                   |                |             |                       |       |
+             +------------------>|  o.c.j.IClass  |<-implements-| o.c.j.ClassFileIClass |<------+
+                                 |                |             |                       |
+                                 +----------------+             +-----------------------+
   }</pre>
   <ol>
     <li>
@@ -236,33 +234,32 @@
     is much more efficient to use the <em>loaded</em> required classes, instead of parsing class files. Basically that
     is what the {@link org.codehaus.janino.SimpleCompiler org.codehaus.janino.SimpleCompiler} does:
   </p>
-  <pre class="asciiart">{@code
-.
-       +-----------------+                                   +-------------------------------------+
-       |                 |\                                  |                                     |
-       |   .java file    +-+                                 |          The running JVM's          |
-       |  or code snippet  |                                 |        java.lang.ClassLoader        |
-       |                   |                                 |                                     |
-       +-------------------+                                 +-------------------------------------+
-                 |                                               ^                              |
-             parsed by                                           |                          finds via
-            o.c.j.Parser                                    loaded via                 ClassLoader.loadClass()
-               into                               java.lang.ClassLoader.defineClass()          the
-                 |                                             into                             |
-                 v                                               |                              v
-      +----------------------+                         +----------------------+      +----------------------+
-      |                      |      compiled by        |                      |      |                      |
-      | Java.CompilationUnit |-- o.c.j.UnitCompiler -->| o.c.j.util.ClassFile |      |    java.lang.Class   |
-      |                      |         into  |         |                      |      |                      |
-      +----------------------+               |         +----------------------+      +----------------------+
-                 |                         uses                                                  |
-             wrapped by                      |                                               wrapped by
-    o.c.j.UnitCompiler.resolve()             v                                    o.c.j.ResourceFinderIClassLoader
-               as a              +----------------+             +------------------------+     as a
-                 |               |                |             |                        |       |
-                 +-------------->|  o.c.j.IClass  |<-implements-| o.c.j.ReflectionIClass |<------+
-                                 |                |             |                        |
-                                 +----------------+             +------------------------+
+  <pre class="asciiart">{@code .
+   +-----------------+                                   +-------------------------------------+
+   |                 |\                                  |                                     |
+   |   .java file    +-+                                 |          The running JVM's          |
+   |  or code snippet  |                                 |        java.lang.ClassLoader        |
+   |                   |                                 |                                     |
+   +-------------------+                                 +-------------------------------------+
+             |                                               ^                              |
+         parsed by                                           |                          finds via
+        o.c.j.Parser                                    loaded via                 ClassLoader.loadClass()
+           into                               java.lang.ClassLoader.defineClass()          the
+             |                                             into                             |
+             v                                               |                              v
+  +----------------------+                         +----------------------+      +----------------------+
+  |                      |      compiled by        |                      |      |                      |
+  | Java.CompilationUnit |-- o.c.j.UnitCompiler -->| o.c.j.util.ClassFile |      |    java.lang.Class   |
+  |                      |         into  |         |                      |      |                      |
+  +----------------------+               |         +----------------------+      +----------------------+
+             |                         uses                                                  |
+         wrapped by                      |                                               wrapped by
+o.c.j.UnitCompiler.resolve()             v                                    o.c.j.ResourceFinderIClassLoader
+           as a              +----------------+             +------------------------+     as a
+             |               |                |             |                        |       |
+             +-------------->|  o.c.j.IClass  |<-implements-| o.c.j.ReflectionIClass |<------+
+                             |                |             |                        |
+                             +----------------+             +------------------------+
   }</pre>
   <p>
     The
