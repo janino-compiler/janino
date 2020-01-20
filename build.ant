@@ -54,6 +54,11 @@
     			<include name="**/*.html"/>
 			</fileset>
 		</txt2html>
+
+		<!--
+			Rename the ".orig" file because file names like that don't work with github.io.
+		-->
+		<rename src="apidocs/.index.html.orig" dest="apidocs/index-orig.html"/>
 	</target>
 
 	<property name="baseUrl" value="https://github.com/janino-compiler/janino" />
