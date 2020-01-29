@@ -365,7 +365,12 @@ class UnitCompiler {
                 throw new CompileException(cfe.getMessage(), pmtd.getLocation(), cfe);
             } catch (RuntimeException re) {
                 throw new InternalCompilerException(
-                    "Compiling \"" + pmtd + "\" in \"" + cu.fileName + "\": " + re.getMessage(),
+                    "Compiling \""
+                    + pmtd
+                    + "\""
+                    + (cu.fileName != null ? " in \"" + cu.fileName + "\"" : "")
+                    + ": "
+                    + re.getMessage(),
                     re
                 );
             }
@@ -1449,7 +1454,7 @@ class UnitCompiler {
             mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
         }
 
-        final CodeContext codeContext      = new CodeContext(mi.getClassFile(), base.toString());
+        final CodeContext codeContext      = new CodeContext(mi.getClassFile(), base.getParameterTypes());
         final CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
 
         // Allocate all our local variables.
@@ -2570,32 +2575,36 @@ class UnitCompiler {
 
         for (VariableDeclarator vd : lvds.variableDeclarators) {
 
-            LocalVariable lv = this.getLocalVariable(lvds, vd);
-            lv.setSlot(
-                this.getCodeContext().allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), vd.name, lv.type)
-            );
+            try {
+                LocalVariable lv = this.getLocalVariable(lvds, vd);
+                lv.setSlot(
+                    this.getCodeContext().allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), vd.name, lv.type)
+                );
 
-            ArrayInitializerOrRvalue oi = vd.initializer;
-            if (oi != null) {
-                if (oi instanceof Rvalue) {
-                    Rvalue rhs = (Rvalue) oi;
-                    this.assignmentConversion(
-                        lvds,                      // locatable
-                        this.compileGetValue(rhs), // sourceType
-                        lv.type,                   // targetType
-                        this.getConstantValue(rhs) // constantValue
-                    );
-                } else
-                if (oi instanceof ArrayInitializer) {
-                    this.compileGetValue((ArrayInitializer) oi, lv.type);
-                } else
-                {
-                    throw new InternalCompilerException(
-                        "Unexpected rvalue or array initialized class "
-                        + oi.getClass().getName()
-                    );
+                ArrayInitializerOrRvalue oi = vd.initializer;
+                if (oi != null) {
+                    if (oi instanceof Rvalue) {
+                        Rvalue rhs = (Rvalue) oi;
+                        this.assignmentConversion(
+                            lvds,                      // locatable
+                            this.compileGetValue(rhs), // sourceType
+                            lv.type,                   // targetType
+                            this.getConstantValue(rhs) // constantValue
+                        );
+                    } else
+                    if (oi instanceof ArrayInitializer) {
+                        this.compileGetValue((ArrayInitializer) oi, lv.type);
+                    } else
+                    {
+                        throw new InternalCompilerException(
+                            "Unexpected rvalue or array initialized class "
+                            + oi.getClass().getName()
+                        );
+                    }
+                    this.store(lvds, lv);
                 }
-                this.store(lvds, lv);
+            } catch (RuntimeException re) {
+                throw new RuntimeException(vd.getLocation().toString(), re);
             }
         }
         return true;
@@ -3170,6 +3179,15 @@ class UnitCompiler {
 
     private void
     compile(FunctionDeclarator fd, final ClassFile classFile) throws CompileException {
+        try {
+            this.compile2(fd, classFile);
+        } catch (RuntimeException re) {
+            throw new InternalCompilerException("Compiling \"" + fd + "\": " + re.getMessage(), re);
+        }
+    }
+
+    private void
+    compile2(FunctionDeclarator fd, final ClassFile classFile) throws CompileException {
         ClassFile.MethodInfo mi;
 
         if (fd instanceof MethodDeclarator && ((MethodDeclarator) fd).isDefault()) {
@@ -3316,7 +3334,7 @@ class UnitCompiler {
         }
 
         // Create CodeContext.
-        final CodeContext codeContext = new CodeContext(mi.getClassFile(), mi.getName() + mi.getDescriptor());
+        final CodeContext codeContext = new CodeContext(mi.getClassFile(), new IClass[0]);
 
         CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
         try {

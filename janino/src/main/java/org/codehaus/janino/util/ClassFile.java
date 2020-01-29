@@ -2521,6 +2521,7 @@ class ClassFile implements Annotatable {
 
         private final StackMapFrame[] entries;
 
+        public
         StackMapTableAttribute(short attributeNameIndex, StackMapFrame[] entries) {
             super(attributeNameIndex);
             this.entries = entries;
@@ -2849,19 +2850,19 @@ class ClassFile implements Annotatable {
         public static
         class ObjectVariableInfo implements VerificationTypeInfo {
 
-            private final ConstantClassInfo constantClassInfo;
+            private final short constantClassInfoIndex;
 
             public
-            ObjectVariableInfo(ConstantClassInfo constantClassInfo) { this.constantClassInfo = constantClassInfo; }
+            ObjectVariableInfo(short constantClassInfoIndex) { this.constantClassInfoIndex = constantClassInfoIndex; }
 
             @Override public void
             store(DataOutputStream dos) throws IOException {
                 dos.writeByte(7);
-                dos.writeShort(this.constantClassInfo.nameIndex);
+                dos.writeShort(this.constantClassInfoIndex);
             }
 
             @Override public String
-            toString() { return this.constantClassInfo.toString(); }
+            toString() { return Integer.toString(this.constantClassInfoIndex); }
         }
 
         /**
@@ -2942,7 +2943,7 @@ class ClassFile implements Annotatable {
             case 4: return new LongVariableInfo();
             case 5: return new NullVariableInfo();
             case 6: return new UninitializedThisVariableInfo();
-            case 7: return new ObjectVariableInfo(new ConstantClassInfo(dis.readShort()));
+            case 7: return new ObjectVariableInfo(dis.readShort());
             case 8: return new UninitializedVariableInfo(dis.readShort());
 
             default: throw new ClassFileException("Invalid verification_type_info tag " + tag);

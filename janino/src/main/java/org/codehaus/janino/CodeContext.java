@@ -45,6 +45,16 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.AttributeInfo;
 import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.DoubleVariableInfo;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.FloatVariableInfo;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.FullFrame;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.IntegerVariableInfo;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.LongVariableInfo;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.NullVariableInfo;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.ObjectVariableInfo;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.StackMapFrame;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo;
 
 /**
  * The context of the compilation of a function (constructor or method). Manages generation of byte code, the exception
@@ -62,7 +72,6 @@ class CodeContext {
     private static final int     MAX_STACK_SIZE = 65535;
 
     private final ClassFile classFile;
-    private final String    functionName;
 
     private int                             maxStack;
     private short                           maxLocals;
@@ -89,10 +98,12 @@ class CodeContext {
         @Nullable final LocalScope         parent;
         final short                        startingLocalVariableSlot;
         final List<Java.LocalVariableSlot> localVars = new ArrayList<Java.LocalVariableSlot>();
+        final StackMap                     startingStackMap;
 
-        LocalScope(@Nullable LocalScope parent, short startingLocalSlot) {
+        LocalScope(@Nullable LocalScope parent, short startingLocalSlot, StackMap startingStackMap) {
             this.parent                    = parent;
             this.startingLocalVariableSlot = startingLocalSlot;
+            this.startingStackMap          = startingStackMap;
         }
     }
 
@@ -103,9 +114,8 @@ class CodeContext {
      * Creates an empty "Code" attribute.
      */
     public
-    CodeContext(ClassFile classFile, String functionName) {
-        this.classFile    = classFile;
-        this.functionName = functionName;
+    CodeContext(ClassFile classFile, IClass[] parameterTypes) {
+        this.classFile = classFile;
 
         this.maxStack              = 0;
         this.maxLocals             = 0;
@@ -114,6 +124,8 @@ class CodeContext {
         this.end                   = new Inserter();
         this.currentInserter       = this.end;
         this.exceptionTableEntries = new ArrayList<ExceptionTableEntry>();
+
+        this.beginning.stackMap = this.end.stackMap = new StackMap(new VerificationTypeInfo[0], new VerificationTypeInfo[0]);
 
         this.beginning.offset = 0;
         this.end.offset       = 0;
@@ -170,6 +182,23 @@ class CodeContext {
             slot.setStart(this.newOffset());
         }
 
+        // Update the stack map.
+        if (this.nextLocalVariableSlot != this.currentInserter.stackMap.locals().length) {
+            throw new InternalCompilerException(
+                "Allocating local variable \""
+                + type
+                + " "
+                + name
+                + "\": nvs="
+                + this.nextLocalVariableSlot
+                + ", smls="
+                + this.currentInserter.stackMap.locals().length
+                + ", ci.stackMap="
+                + this.currentInserter.stackMap
+            );
+        }
+        this.currentInserter.stackMap = this.currentInserter.stackMap.pushLocal(this.verificationTypeInfo(type));
+
         this.nextLocalVariableSlot += size;
         currentVars.add(slot);
         this.allLocalVars.add(slot);
@@ -181,6 +210,30 @@ class CodeContext {
         return slot;
     }
 
+    private VerificationTypeInfo
+    verificationTypeInfo(@Nullable IClass type) {
+
+        if (type == null) return new NullVariableInfo(); // TODO Is that the right thing to do?
+
+        String fd = type.getDescriptor();
+        if (
+            Descriptor.BOOLEAN.equals(fd)
+            || Descriptor.BYTE.equals(fd)
+            || Descriptor.CHAR.equals(fd)
+            || Descriptor.INT.equals(fd)
+            || Descriptor.SHORT.equals(fd)
+        ) return new IntegerVariableInfo();
+        if (Descriptor.LONG.equals(fd)) return new LongVariableInfo();
+        if (Descriptor.FLOAT.equals(fd)) return new FloatVariableInfo();
+        if (Descriptor.DOUBLE.equals(fd)) return new DoubleVariableInfo();
+        if (
+            Descriptor.isClassOrInterfaceReference(fd)
+            || Descriptor.isArrayReference(fd)
+        ) return new ObjectVariableInfo(this.classFile.addConstantClassInfo(fd));
+
+        throw new InternalCompilerException("Cannot make VerificationTypeInfo from \"" + fd + "\"");
+    }
+
     /**
      * Remembers the current size of the local variables array.
      */
@@ -188,7 +241,11 @@ class CodeContext {
     saveLocalVariables() {
 
         // Push empty list on the stack to hold a new block's local vars.
-        return (this.currentLocalScope = new LocalScope(this.currentLocalScope, this.nextLocalVariableSlot)).localVars;
+        return (this.currentLocalScope = new LocalScope(
+            this.currentLocalScope,
+            this.nextLocalVariableSlot,
+            this.currentInserter.stackMap
+        )).localVars;
     }
 
     /**
@@ -206,7 +263,8 @@ class CodeContext {
             if (slot.getName() != null) slot.setEnd(this.newOffset());
         }
 
-        this.currentLocalScope = scopeToPop.parent;
+        this.currentLocalScope        = scopeToPop.parent;
+        this.currentInserter.stackMap = scopeToPop.startingStackMap;
 
         // reuse local variable slots of the popped scope
         this.nextLocalVariableSlot = scopeToPop.startingLocalVariableSlot;
@@ -268,38 +326,28 @@ class CodeContext {
             if (ai != null) attributes.add(ai);
         }
 
-//        // Add "StackMapTable" attribute.
-//        attributes.add(new ClassFile.AttributeInfo(stackMapTableAttributeNameIndex) {
-//            @Override protected void
-//            storeBody(DataOutputStream dos) throws IOException {
-//                if (CodeContext.this.functionName.equals("eval0()Ljava/lang/Object;")) {
-//                    short occi = CodeContext.this.getClassFile().addConstantClassInfo("Ljava/lang/Object;");
-//                    short scci = CodeContext.this.getClassFile().addConstantClassInfo("Ljava/lang/String;");
-//                    dos.write(new byte[] {
-//
-//                        // xxx1:
-//                        0, 3,    // number_of_entries
-//                        66,      // entries[0]: 3: same_locals_1_stack_item_frame(stack=String)
-//                            7, (byte) (scci >> 8), (byte) scci,
-//                        78,      // entries[1]: 17: same_locals_1_stack_item_frame(stack=String)
-//                            7, (byte) (scci >> 8), (byte) scci,
-//                        -1,      // entries[2]: 19: full_frame(offsetDelta=1, locals=[], stack=[String, Object])
-//                            0, 1,                               // offset_delta
-//                            0, 0,                               // number_of_locals
-//                            0, 2,                               // number_of_stack_items
-//                            7, (byte) (scci >> 8), (byte) scci, // stack[0]: String
-//                            7, (byte) (occi >> 8), (byte) occi, // stack[1]: Object
-//
-////                        // xxx2:
-////                        0, 2,    // number_of_entries
-////                        15,      // entries[0]: 15: same_frame
-////                        64, 1,   // entries[1]: 16: same_locals_1_stack_item_frame(stack=int)
-//                    });
-//                } else {
-//                    dos.writeShort(0);
-//                }
-//            }
-//        });
+        if (false) {
+
+            // Add the "StackMapTable" attribute.
+            List<StackMapFrame> smfs = new ArrayList<ClassFile.StackMapTableAttribute.StackMapFrame>();
+            {
+                int previousOffset = -1;
+                for (Offset o = CodeContext.this.beginning; o != null; o = o.next) {
+                    if (o.offset == 0) continue;
+                    if (o.offset == previousOffset) continue;
+                    smfs.add(new FullFrame(
+                        o.offset - previousOffset - 1, // offset_delta
+                        o.stackMap.locals(),           // locals
+                        o.stackMap.operands()          // stack
+                    ));
+                    previousOffset = o.offset;
+                }
+            }
+
+            attributes.add(
+                new StackMapTableAttribute(stackMapTableAttributeNameIndex, smfs.toArray(new StackMapFrame[smfs.size()]))
+            );
+        }
 
         dos.writeShort(attributes.size());                     // attributes_count
         for (ClassFile.AttributeInfo attribute : attributes) { // attributes;
@@ -1027,7 +1075,7 @@ class CodeContext {
             }
 
             // Insert a LineNumberOffset _before_ the current inserter.
-            LineNumberOffset lno = new LineNumberOffset(cio, (short) lineNumber);
+            LineNumberOffset lno = new LineNumberOffset(cio, this.currentInserter.stackMap, (short) lineNumber);
 
             Offset cip = this.currentInserter.prev;
             assert cip != null;
@@ -1050,15 +1098,7 @@ class CodeContext {
             byte[] oldCode = this.code;
             //double size to avoid horrible performance, but don't grow over our limit
             int newSize = Math.max(Math.min(oldCode.length * 2, 0xffff), oldCode.length + size);
-            if (newSize > 0xffff) {
-                throw new InternalCompilerException(
-                    "Code of method \""
-                    + this.functionName
-                    + "\" of class \""
-                    + this.classFile.getThisClassName()
-                    + "\" grows beyond 64 KB"
-                );
-            }
+            if (newSize > 0xffff) throw new InternalCompilerException("Code grows beyond 64 KB");
             this.code = new byte[newSize];
             System.arraycopy(oldCode, 0, this.code, 0, cio);
             System.arraycopy(oldCode, cio, this.code, cio + size, this.end.offset - cio);
@@ -1320,18 +1360,22 @@ class CodeContext {
          */
         static final int UNSET = -1;
 
+        @Nullable StackMap stackMap;     // Is null until "set()".
+
         /**
          * Sets this "Offset" to the offset of the current inserter; inserts this "Offset" before the current inserter.
          */
         public void
         set() {
+
             if (this.offset != Offset.UNSET) {
                 throw new InternalCompilerException("Cannot \"set()\" Offset more than once");
             }
 
             Inserter ci = CodeContext.this.currentInserter;
 
-            this.offset = ci.offset;
+            this.offset   = ci.offset;
+            this.stackMap = ci.stackMap;
 
             Offset cip = ci.prev;
             assert cip != null;
@@ -1402,8 +1446,9 @@ class CodeContext {
          * @param lineNumber 1...65535
          */
         public
-        LineNumberOffset(int offset, short lineNumber) {
+        LineNumberOffset(int offset, StackMap stackMap, short lineNumber) {
             this.lineNumber = lineNumber;
+            this.stackMap   = stackMap;
             this.offset     = offset;
         }
     }
