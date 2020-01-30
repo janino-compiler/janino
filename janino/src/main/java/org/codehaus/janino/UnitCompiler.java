@@ -3181,6 +3181,8 @@ class UnitCompiler {
     compile(FunctionDeclarator fd, final ClassFile classFile) throws CompileException {
         try {
             this.compile2(fd, classFile);
+        } catch (ClassFileException cfe) {
+            throw new ClassFileException("Compiling \"" + fd + "\": " + cfe.getMessage(), cfe);
         } catch (RuntimeException re) {
             throw new InternalCompilerException("Compiling \"" + fd + "\": " + re.getMessage(), re);
         }

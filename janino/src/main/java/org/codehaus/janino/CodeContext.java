@@ -182,21 +182,12 @@ class CodeContext {
             slot.setStart(this.newOffset());
         }
 
+//        // This check would be wrong, because one (Long|Double)_variable_info maps TWO local variable slots.
+//        if (this.nextLocalVariableSlot != this.currentInserter.stackMap.locals().length) {
+//            throw new InternalCompilerException(...);
+//        }
+
         // Update the stack map.
-        if (this.nextLocalVariableSlot != this.currentInserter.stackMap.locals().length) {
-            throw new InternalCompilerException(
-                "Allocating local variable \""
-                + type
-                + " "
-                + name
-                + "\": nvs="
-                + this.nextLocalVariableSlot
-                + ", smls="
-                + this.currentInserter.stackMap.locals().length
-                + ", ci.stackMap="
-                + this.currentInserter.stackMap
-            );
-        }
         this.currentInserter.stackMap = this.currentInserter.stackMap.pushLocal(this.verificationTypeInfo(type));
 
         this.nextLocalVariableSlot += size;
@@ -326,7 +317,7 @@ class CodeContext {
             if (ai != null) attributes.add(ai);
         }
 
-        if (false) {
+        if (Boolean.getBoolean("smt")) {
 
             // Add the "StackMapTable" attribute.
             List<StackMapFrame> smfs = new ArrayList<ClassFile.StackMapTableAttribute.StackMapFrame>();
@@ -345,7 +336,10 @@ class CodeContext {
             }
 
             attributes.add(
-                new StackMapTableAttribute(stackMapTableAttributeNameIndex, smfs.toArray(new StackMapFrame[smfs.size()]))
+                new StackMapTableAttribute(
+                    stackMapTableAttributeNameIndex,
+                    (StackMapFrame[]) smfs.toArray(new StackMapFrame[smfs.size()])
+                )
             );
         }
 

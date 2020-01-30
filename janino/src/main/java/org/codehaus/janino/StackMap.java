@@ -37,8 +37,8 @@ class StackMap {
     private final VerificationTypeInfo[] locals, operands;
 
     StackMap(VerificationTypeInfo[] locals, VerificationTypeInfo[] operands) {
-        this.locals    = locals.clone();
-        this.operands  = operands.clone();
+        this.locals    = (VerificationTypeInfo[]) locals.clone();
+        this.operands  = (VerificationTypeInfo[]) operands.clone();
     }
 
     // -----------------------
@@ -48,7 +48,9 @@ class StackMap {
      *         operand stack
      */
     StackMap
-    pushLocal(VerificationTypeInfo local) { return new StackMap(StackMap.addToArray(this.locals, local), this.operands); }
+    pushLocal(VerificationTypeInfo local) {
+        return new StackMap(StackMap.addToArray(this.locals, local), this.operands);
+    }
 
     /**
      * @return A {@link StackMap} with a local variable stack with one element less, and the same operand stack
@@ -63,7 +65,7 @@ class StackMap {
     peekLocal() { return this.locals[this.locals.length - 1]; }
 
     VerificationTypeInfo[]
-    locals() { return this.locals.clone(); }
+    locals() { return (VerificationTypeInfo[]) this.locals.clone(); }
 
     // -----------------------
 
@@ -72,7 +74,9 @@ class StackMap {
      *         <var>operand</var>
      */
     StackMap
-    pushOperand(VerificationTypeInfo operand) { return new StackMap(this.locals, StackMap.addToArray(this.operands, operand)); }
+    pushOperand(VerificationTypeInfo operand) {
+        return new StackMap(this.locals, StackMap.addToArray(this.operands, operand));
+    }
 
     /**
      * @return A {@link StackMap} with the same local variable stack, and an operand stack with one element less
@@ -87,7 +91,7 @@ class StackMap {
     peekOperand() { return this.operands[this.operands.length - 1]; }
 
     VerificationTypeInfo[]
-    operands() { return this.operands.clone(); }
+    operands() { return (VerificationTypeInfo[]) this.operands.clone(); }
 
     // -----------------------
 
