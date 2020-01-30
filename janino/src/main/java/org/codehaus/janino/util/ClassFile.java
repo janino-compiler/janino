@@ -2586,7 +2586,7 @@ class ClassFile implements Annotatable {
             accept(StackMapFrameVisitor<T> smfv) { return smfv.visitSameFrame(this); }
 
             @Override public String
-            toString() { return "same_frame"; }
+            toString() { return "same_frame (offsetDelta=" + this.offsetDelta + ")"; }
         }
 
         /**
@@ -2614,7 +2614,7 @@ class ClassFile implements Annotatable {
 
             @Override public String
             toString() {
-                return "same_locals_1_stack_item_frame(stack=" + this.stack + ")";
+                return "same_locals_1_stack_item_frame(offsetDelta=" + this.offsetDelta + ", stack=[" + this.stack + "])";
             }
         }
 
@@ -2647,9 +2647,9 @@ class ClassFile implements Annotatable {
                 return (
                     "same_locals_1_stack_item_frame_extended(offsetDelta="
                     + this.offsetDelta
-                    + ", stack="
+                    + ", stack=["
                     + this.stack
-                    + ")"
+                    + "])"
                 );
             }
         }
@@ -2675,7 +2675,7 @@ class ClassFile implements Annotatable {
             accept(StackMapFrameVisitor<T> smfv) { return smfv.visitChopFrame(this); }
 
             @Override public String
-            toString() { return "chop_frame"; }
+            toString() { return "chop_frame(offsetDelta=" + this.offsetDelta + ", locals-=" + this.k + ", stack=[])"; }
         }
 
         /**
@@ -2697,7 +2697,7 @@ class ClassFile implements Annotatable {
             accept(StackMapFrameVisitor<T> smfv) { return smfv.visitSameFrameExtended(this); }
 
             @Override public String
-            toString() { return "same_frame_extended"; }
+            toString() { return "same_frame_extended(offsetDelta=" + this.offsetDelta + ", stack=[])"; }
         }
 
         /**
@@ -2726,7 +2726,7 @@ class ClassFile implements Annotatable {
 
             @Override public String
             toString() {
-                return "append_frame(locals=" + Arrays.toString(this.locals) + ")";
+                return "append_frame(locals+=" + Arrays.toString(this.locals) + ", stack=[])";
             }
         }
 
