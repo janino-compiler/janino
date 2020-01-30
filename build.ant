@@ -15,7 +15,8 @@
 
 	<target name="generate.apidocs.for.publication">
 
-		<delete dir="apidocs" failonerror="false" />
+		<!-- Delete the old files, but not the directory structure (in order to not confus SVN). -->
+		<delete failonerror="false"><fileset dir="apidocs" includes="**/*" /></delete>
 
 <!--
 		<javadoc executable="C:\dev\Java\jdk1.6.0_45\bin\javadoc.exe" destdir="apidocs">
@@ -31,6 +32,7 @@
 			<arg value="-notimestamp" />
 			<arg value="-Xdoclint:none" />
 			<arg value="-overview" /><arg file="../janino/src/main/javadoc/overview.html" />
+			<arg value="-quiet" />
 
 			<!--
 				Since Java 10, JAVADOC has a nice "-add-stylesheet" command line option, but for backwards
