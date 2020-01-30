@@ -367,8 +367,8 @@ class UnitCompiler {
                 throw new InternalCompilerException(
                     "Compiling \""
                     + pmtd
-                    + "\""
-                    + (cu.fileName != null ? " in \"" + cu.fileName + "\"" : "")
+                    + "\" in "
+                    + pmtd.getLocation()
                     + ": "
                     + re.getMessage(),
                     re

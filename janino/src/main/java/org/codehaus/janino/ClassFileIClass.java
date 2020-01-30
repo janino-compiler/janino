@@ -372,7 +372,7 @@ class ClassFileIClass extends IClass {
      */
     public void
     resolveAllClasses() throws ClassNotFoundException {
-        for (short i = 0; i < this.classFile.getConstantPoolSize(); ++i) {
+        for (short i = 1; i < this.classFile.getConstantPoolSize(); ++i) {
             ClassFile.ConstantPoolInfo cpi = this.classFile.getConstantPoolInfo(i);
             if (cpi instanceof ClassFile.ConstantClassInfo) {
                 this.resolveClass(i);
@@ -387,6 +387,8 @@ class ClassFileIClass extends IClass {
                     this.resolveClass(descriptor);
                 }
             }
+
+            if (cpi.isWide()) i++;
         }
     }
 
@@ -397,8 +399,12 @@ class ClassFileIClass extends IClass {
     resolveClass(short index) throws ClassNotFoundException {
         ClassFileIClass.LOGGER.entering(null, "resolveClass", index);
 
-        ConstantClassInfo cci = this.classFile.getConstantClassInfo(index);
-        return this.resolveClass(Descriptor.fromInternalForm(cci.getName(this.classFile)));
+        final String cnif = this.classFile.getConstantClassInfo(index).getName(this.classFile);
+        try {
+            return this.resolveClass(Descriptor.fromInternalForm(cnif));
+        } catch (RuntimeException re) {
+            throw new RuntimeException("Resolving class \"" + cnif + "\": " + re.getMessage(), re);
+        }
     }
 
     private IClass

@@ -601,10 +601,15 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * @return The (read-only) constant pool entry indexed by <var>index</var>
+     * @return                    The (read-only) constant pool entry indexed by <var>index</var>
+     * @throws ClassFileException <var>index</var> is invalid
      */
     public ConstantPoolInfo
-    getConstantPoolInfo(short index) { return (ConstantPoolInfo) this.constantPool.get(0xffff & index); }
+    getConstantPoolInfo(short index) {
+        final ConstantPoolInfo result = (ConstantPoolInfo) this.constantPool.get(0xffff & index);
+        if (result == null) throw new ClassFileException("Invalid constant pool index " + index);
+        return result;
+    }
 
     /**
      * @return The (read-only) constant class info indexed by <var>index</var>
@@ -1004,7 +1009,7 @@ class ClassFile implements Annotatable {
         /**
          * @return Whether this CP entry is "wide" in the sense of JVMS7 4.4.5
          */
-        protected abstract boolean isWide();
+        public abstract boolean isWide();
 
         private static ConstantPoolInfo
         loadConstantPoolInfo(DataInputStream dis) throws IOException {
