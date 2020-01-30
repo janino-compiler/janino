@@ -1485,7 +1485,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">The context of the compilation of a function (constructor or method).</div>
 </dd>
-<dt><span class="memberNameLink"><a href="org/codehaus/janino/CodeContext.html#%3Cinit%3E(org.codehaus.janino.util.ClassFile,java.lang.String)">CodeContext(ClassFile, String)</a></span> - Constructor for class org.codehaus.janino.<a href="org/codehaus/janino/CodeContext.html" title="class in org.codehaus.janino">CodeContext</a></dt>
+<dt><span class="memberNameLink"><a href="org/codehaus/janino/CodeContext.html#%3Cinit%3E(org.codehaus.janino.util.ClassFile,org.codehaus.janino.IClass%5B%5D)">CodeContext(ClassFile, IClass[])</a></span> - Constructor for class org.codehaus.janino.<a href="org/codehaus/janino/CodeContext.html" title="class in org.codehaus.janino">CodeContext</a></dt>
 <dd>
 <div class="block">Creates an empty "Code" attribute.</div>
 </dd>
@@ -5513,7 +5513,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">The fields of the entries in the <code>line_number_table</code>, as described in JVMS7 4.7.12.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="org/codehaus/janino/CodeContext.LineNumberOffset.html#%3Cinit%3E(int,short)">LineNumberOffset(int, short)</a></span> - Constructor for class org.codehaus.janino.<a href="org/codehaus/janino/CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino">CodeContext.LineNumberOffset</a></dt>
+<dt><span class="memberNameLink"><a href="org/codehaus/janino/CodeContext.LineNumberOffset.html#%3Cinit%3E(int,org.codehaus.janino.StackMap,short)">LineNumberOffset(int, StackMap, short)</a></span> - Constructor for class org.codehaus.janino.<a href="org/codehaus/janino/CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino">CodeContext.LineNumberOffset</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/codehaus/janino/util/ClassFile.LineNumberTableAttribute.html#%3Cinit%3E(short,org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry%5B%5D)">LineNumberTableAttribute(short, ClassFile.LineNumberTableAttribute.Entry[])</a></span> - Constructor for class org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.LineNumberTableAttribute.html" title="class in org.codehaus.janino.util">ClassFile.LineNumberTableAttribute</a></dt>
 <dd>&nbsp;</dd>
@@ -6299,7 +6299,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd>
 <div class="block">Utility methods related to <code>Object</code>.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.ObjectVariableInfo.html#%3Cinit%3E(org.codehaus.janino.util.ClassFile.ConstantClassInfo)">ObjectVariableInfo(ClassFile.ConstantClassInfo)</a></span> - Constructor for class org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.ObjectVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.ObjectVariableInfo</a></dt>
+<dt><span class="memberNameLink"><a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.ObjectVariableInfo.html#%3Cinit%3E(short)">ObjectVariableInfo(short)</a></span> - Constructor for class org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.ObjectVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.ObjectVariableInfo</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/codehaus/janino/CodeContext.Offset.html#%3Cinit%3E()">Offset()</a></span> - Constructor for class org.codehaus.janino.<a href="org/codehaus/janino/CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a></dt>
 <dd>&nbsp;</dd>
@@ -8654,6 +8654,8 @@ GUID-AEEC9F07-CB49-4E96-8BC7-BCC2C7F725C9__GUID-45DC2932-19BD-435B-B14C-A230D0A4
 <dt><span class="memberNameLink"><a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.SameLocals1StackItemFrameExtended.html#stack">stack</a></span> - Variable in class org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.SameLocals1StackItemFrameExtended.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.SameLocals1StackItemFrameExtended</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.StackMapFrame.html#%3Cinit%3E(int)">StackMapFrame(int)</a></span> - Constructor for class org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.StackMapFrame.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.StackMapFrame</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.html#%3Cinit%3E(short,org.codehaus.janino.util.ClassFile.StackMapTableAttribute.StackMapFrame%5B%5D)">StackMapTableAttribute(short, ClassFile.StackMapTableAttribute.StackMapFrame[])</a></span> - Constructor for class org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/codehaus/janino/util/ClassFile.LineNumberTableAttribute.Entry.html#startPc">startPc</a></span> - Variable in class org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.LineNumberTableAttribute.Entry.html" title="class in org.codehaus.janino.util">ClassFile.LineNumberTableAttribute.Entry</a></dt>
 <dd>
