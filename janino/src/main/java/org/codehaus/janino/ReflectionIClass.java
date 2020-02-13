@@ -70,15 +70,17 @@ class ReflectionIClass extends IClass {
 
             // Arrays have ONE single method: "Object clone()".
             return new IMethod[] { new IMethod() {
-                @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0];                                       } // SUPPRESS CHECKSTYLE LineLength:8
-                @Override public Access        getAccess()            { return Access.PUBLIC;                                            }
-                @Override public boolean       isStatic()             { return false;                                                    }
-                @Override public boolean       isAbstract()           { return false;                                                    }
-                @Override public IClass        getReturnType()        { return ReflectionIClass.this.iClassLoader.TYPE_java_lang_Object; }
-                @Override public String        getName()              { return "clone";                                                  }
-                @Override public IClass[]      getParameterTypes2()   { return new IClass[0];                                            }
-                @Override public boolean       isVarargs()            { return false;                                                    }
-                @Override public IClass[]      getThrownExceptions2() { return new IClass[0];                                            }
+                @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
+                @Override public Access        getAccess()            { return Access.PUBLIC;      }
+                @Override public boolean       isStatic()             { return false;              }
+                @Override public boolean       isAbstract()           { return false;              }
+                @Override public String        getName()              { return "clone";            }
+                @Override public IClass[]      getParameterTypes2()   { return new IClass[0];      }
+                @Override public boolean       isVarargs()            { return false;              }
+                @Override public IClass[]      getThrownExceptions2() { return new IClass[0];      }
+
+                @Override public IClass
+                getReturnType() { return ReflectionIClass.this.iClassLoader.TYPE_java_lang_Object; }
             } };
         }
 

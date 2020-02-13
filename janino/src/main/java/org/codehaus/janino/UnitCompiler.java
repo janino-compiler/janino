@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -54,10 +55,8 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.compiler.util.Numbers;
-import org.codehaus.commons.compiler.util.Objects;
 import org.codehaus.commons.compiler.util.iterator.Iterables;
 import org.codehaus.commons.nullanalysis.Nullable;
-import org.codehaus.janino.CodeContext.Inserter;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IAnnotation;
 import org.codehaus.janino.IClass.IConstructor;
@@ -218,6 +217,8 @@ import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
 import org.codehaus.janino.util.Annotatable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.ClassFileException;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo;
 
 /**
  * This class actually implements the Java compiler. It is associated with exactly one compilation unit which it
@@ -851,7 +852,7 @@ class UnitCompiler {
                 if (
                     override != null
                     && base.getReturnType() != override.getReturnType()
-                ) this.generateBridgeMethod(cf, base, override);
+                ) this.generateBridgeMethod(cf, iClass, base, override);
             }
         }
 
@@ -1421,7 +1422,7 @@ class UnitCompiler {
      * Generates and compiles a bridge method with signature <var>base</var> that delegates to <var>override</var>.
      */
     private void
-    generateBridgeMethod(ClassFile cf, IMethod base, IMethod override) throws CompileException {
+    generateBridgeMethod(ClassFile cf, IClass declaringIClass, IMethod base, IMethod override) throws CompileException {
 
         if (
             !base.getReturnType().isAssignableFrom(override.getReturnType())
@@ -1456,25 +1457,30 @@ class UnitCompiler {
 
         final CodeContext codeContext      = new CodeContext(mi.getClassFile(), base.getParameterTypes());
         final CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
+        try {
 
-        // Allocate all our local variables.
-        codeContext.saveLocalVariables();
-        codeContext.allocateLocalVariable((short) 1, "this", override.getDeclaringIClass());
-        IClass[]            paramTypes = override.getParameterTypes();
-        LocalVariableSlot[] locals     = new LocalVariableSlot[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; ++i) {
-            locals[i] = codeContext.allocateLocalVariable(
-                Descriptor.size(paramTypes[i].getDescriptor()),
-                "param" + i,
-                paramTypes[i]
-            );
+            // Allocate all our local variables.
+            codeContext.saveLocalVariables();
+            codeContext.allocateLocalVariable((short) 1, "this", override.getDeclaringIClass());
+            IClass[]            paramTypes = override.getParameterTypes();
+            LocalVariableSlot[] locals     = new LocalVariableSlot[paramTypes.length];
+            for (int i = 0; i < paramTypes.length; ++i) {
+                locals[i] = codeContext.allocateLocalVariable(
+                    Descriptor.size(paramTypes[i].getDescriptor()),
+                    "param" + i,
+                    paramTypes[i]
+                );
+            }
+
+            this.load(Located.NOWHERE, declaringIClass, 0);
+            for (LocalVariableSlot l : locals) this.load(Located.NOWHERE, l.getType(), l.getSlotIndex());
+            this.invoke(Located.NOWHERE, override);
+            this.xreturn(Located.NOWHERE, base.getReturnType());
+
+        } finally {
+            this.replaceCodeContext(savedCodeContext);
         }
 
-        this.writeOpcode(Located.NOWHERE, Opcode.ALOAD_0);
-        for (LocalVariableSlot l : locals) this.load(Located.NOWHERE, l.getType(), l.getSlotIndex());
-        this.invoke(Located.NOWHERE, override);
-        this.writeOpcode(Located.NOWHERE, Opcode.ARETURN);
-        this.replaceCodeContext(savedCodeContext);
         codeContext.flowAnalysis(override.getName());
 
         // Add the code context as a code attribute to the MethodInfo.
@@ -1659,7 +1665,7 @@ class UnitCompiler {
             }
 
             CodeContext.Offset toCondition = this.getCodeContext().new Offset();
-            this.writeBranch(fs, Opcode.GOTO, toCondition);
+            this.gotO(fs, toCondition);
 
             // Compile body.
             fs.whereToContinue = null;
@@ -1713,13 +1719,13 @@ class UnitCompiler {
                 short expressionLv = this.getCodeContext().allocateLocalVariable((short) 1);
                 this.store(fes.expression, expressionType, expressionLv);
 
-                this.pushConstant(fes, 0);
+                this.consT(fes, 0);
                 LocalVariable indexLv = new LocalVariable(false, IClass.INT);
                 indexLv.setSlot(this.getCodeContext().allocateLocalVariable((short) 1, null, indexLv.type));
                 this.store(fes, indexLv);
 
                 CodeContext.Offset toCondition = this.getCodeContext().new Offset();
-                this.writeBranch(fes, Opcode.GOTO, toCondition);
+                this.gotO(fes, toCondition);
 
                 // Compile the body.
                 fes.whereToContinue = null;
@@ -1729,7 +1735,7 @@ class UnitCompiler {
                 this.load(fes, indexLv);
                 IClass componentType = expressionType.getComponentType();
                 assert componentType != null;
-                this.writeOpcode(fes, Opcode.IALOAD + UnitCompiler.ilfdabcs(componentType));
+                this.xaload(fes.currentElement, componentType);
                 this.assignmentConversion(fes.currentElement, componentType, elementLv.type, null);
                 this.store(fes, elementLv);
 
@@ -1740,7 +1746,7 @@ class UnitCompiler {
                 if (!bodyCcn && fes.whereToContinue == null) {
                     this.warning("FUUR", "For update is unreachable", fes.getLocation());
                 } else {
-                    this.compileLocalIntVariableCrement(fes, indexLv, "++");
+                    this.iinc(fes, indexLv, "++");
                 }
                 fes.whereToContinue = null;
 
@@ -1748,8 +1754,8 @@ class UnitCompiler {
                 toCondition.set();
                 this.load(fes, indexLv);
                 this.load(fes, expressionType, expressionLv);
-                this.writeOpcode(fes, Opcode.ARRAYLENGTH);
-                this.writeBranch(fes, Opcode.IF_ICMPLT, bodyOffset);
+                this.arraylength(fes);
+                this.if_icmpxx(fes, UnitCompiler.LT, bodyOffset);
             } finally {
                 this.getCodeContext().restoreLocalVariables();
             }
@@ -1779,7 +1785,7 @@ class UnitCompiler {
                 this.store(fes, iteratorLv);
 
                 CodeContext.Offset toCondition = this.getCodeContext().new Offset();
-                this.writeBranch(fes, Opcode.GOTO, toCondition);
+                this.gotO(fes, toCondition);
 
                 // Compile the body.
                 fes.whereToContinue = null;
@@ -1815,7 +1821,7 @@ class UnitCompiler {
                 toCondition.set();
                 this.load(fes, iteratorLv);
                 this.invoke(fes.expression, this.iClassLoader.METH_java_util_Iterator__hasNext);
-                this.writeBranch(fes, Opcode.IFNE, bodyOffset);
+                this.ifxx(fes, UnitCompiler.NE, bodyOffset);
             } finally {
                 this.getCodeContext().restoreLocalVariables();
             }
@@ -1849,7 +1855,7 @@ class UnitCompiler {
 
         // Compile body.
         Offset wtc = (ws.whereToContinue = this.getCodeContext().new Offset());
-        this.writeBranch(ws, Opcode.GOTO, wtc);
+        this.gotO(ws, wtc);
         final CodeContext.Offset bodyOffset = this.getCodeContext().newOffset();
         this.compile(ws.body); // Return value (CCN) is ignored.
         assert ws.whereToContinue == wtc;
@@ -1873,7 +1879,7 @@ class UnitCompiler {
 
         // Compile body.
         Offset wtc = (cs.whereToContinue = this.getCodeContext().newOffset());
-        if (this.compile(body)) this.writeBranch(cs, Opcode.GOTO, wtc);
+        if (this.compile(body)) this.gotO(cs, wtc);
         cs.whereToContinue = null;
 
         Offset wtb = cs.whereToBreak;
@@ -1900,7 +1906,7 @@ class UnitCompiler {
         } else
         {
             for (Rvalue rv : update) this.compile(rv);
-            this.writeBranch(cs, Opcode.GOTO, bodyOffset);
+            this.gotO(cs, bodyOffset);
         }
         cs.whereToContinue = null;
 
@@ -1944,7 +1950,7 @@ class UnitCompiler {
             // Store the string value in a (hidden) local variable, because after we do the SWITCH
             // on the string's hash code, we need to check for string equality with the CASE
             // labels.
-            this.dup(ss, 1);
+            this.dup(ss);
             ssvLvIndex = this.getCodeContext().allocateLocalVariable((short) 1);
             this.store(
                 ss,                                      // locatable
@@ -2106,38 +2112,13 @@ class UnitCompiler {
 
             // The case label values are strictly consecutive or almost consecutive (at most 50%
             // 'gaps'), so let's use a TABLESWITCH.
-            final int low  = (Integer) caseLabelMap.firstKey();
-            final int high = (Integer) caseLabelMap.lastKey();
 
-            this.writeOpcode(ss, Opcode.TABLESWITCH);
-            new Padder(this.getCodeContext()).set();
-            this.writeOffset(switchOffset, defaultLabelOffset);
-            this.writeInt(low);
-            this.writeInt(high);
-            int cur = low;
-            for (Map.Entry<Integer, CodeContext.Offset> me : caseLabelMap.entrySet()) {
-                int                caseLabelValue  = (Integer) me.getKey();
-                CodeContext.Offset caseLabelOffset = (CodeContext.Offset) me.getValue();
-
-                while (cur < caseLabelValue) {
-                    this.writeOffset(switchOffset, defaultLabelOffset);
-                    ++cur;
-                }
-                this.writeOffset(switchOffset, caseLabelOffset);
-                ++cur;
-            }
+            this.tableswitch(ss, caseLabelMap, switchOffset, defaultLabelOffset);
         } else
         {
 
             // The case label values are not 'consecutive enough', so use a LOOKUPSWITCH.
-            this.writeOpcode(ss, Opcode.LOOKUPSWITCH);
-            new Padder(this.getCodeContext()).set();
-            this.writeOffset(switchOffset, defaultLabelOffset);
-            this.writeInt(caseLabelMap.size());
-            for (Map.Entry<Integer, CodeContext.Offset> me : caseLabelMap.entrySet()) {
-                this.writeInt((Integer) me.getKey());
-                this.writeOffset(switchOffset, (CodeContext.Offset) me.getValue());
-            }
+            this.lookupswitch(ss, caseLabelMap, switchOffset, defaultLabelOffset);
         }
 
         if (kind == SwitchKind.STRING) {
@@ -2169,13 +2150,13 @@ class UnitCompiler {
                         if (cv.hashCode() != caseHashCode) continue;
 
                         this.load(sbsg, this.iClassLoader.TYPE_java_lang_String, ssvLvIndex);
-                        this.pushConstant(caseLabel, cv);
+                        this.consT(caseLabel, cv);
                         this.invoke(caseLabel, this.iClassLoader.METH_java_lang_String__equals__java_lang_Object);
-                        this.writeBranch(sbsg, Opcode.IFNE, sbsgOffsets[i]);
+                        this.ifxx(sbsg, UnitCompiler.NE, sbsgOffsets[i]);
                     }
                 }
 
-                this.writeBranch(ss, Opcode.GOTO, defaultLabelOffset);
+                this.gotO(ss, defaultLabelOffset);
             }
         }
 
@@ -2255,7 +2236,7 @@ class UnitCompiler {
             brokenStatement.getEnclosingScope(), // to
             null                                 // stackValueType
         );
-        this.writeBranch(bs, Opcode.GOTO, this.getWhereToBreak(brokenStatement));
+        this.gotO(bs, this.getWhereToBreak(brokenStatement));
         return false;
     }
 
@@ -2325,7 +2306,7 @@ class UnitCompiler {
             null                                    // stackValueType
         );
 
-        this.writeBranch(cs, Opcode.GOTO, wtc);
+        this.gotO(cs, wtc);
 
         return false;
     }
@@ -2341,9 +2322,8 @@ class UnitCompiler {
         try {
             this.compileBoolean(as.expression1, end, UnitCompiler.JUMP_IF_TRUE);
 
-            this.writeOpcode(as, Opcode.NEW);
-            this.writeConstantClassInfo(Descriptor.JAVA_LANG_ASSERTIONERROR);
-            this.writeOpcode(as, Opcode.DUP);
+            this.neW(as, this.iClassLoader.TYPE_java_lang_AssertionError);
+            this.dup(as);
 
             Rvalue[] arguments = (
                 as.expression2 == null
@@ -2357,7 +2337,9 @@ class UnitCompiler {
                 this.iClassLoader.TYPE_java_lang_AssertionError, // targetClass
                 arguments                                        // arguments
             );
-            this.writeOpcode(as, Opcode.ATHROW);
+            this.getCodeContext().popUninitializedVariableOperand();
+            this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_ASSERTIONERROR);
+            this.athrow(as);
         } finally {
             end.set();
         }
@@ -2369,12 +2351,15 @@ class UnitCompiler {
 
     private boolean
     compile2(ExpressionStatement ee) throws CompileException {
+
         this.compile(ee.rvalue);
+
         return true;
     }
 
     private boolean
     compile2(FieldDeclaration fd) throws CompileException {
+        final IClass declaringIClass = this.resolve(fd.getDeclaringType());
         for (VariableDeclarator vd : fd.variableDeclarators) {
 
             ArrayInitializerOrRvalue initializer = this.getNonConstantFinalInitializer(fd, vd);
@@ -2383,10 +2368,9 @@ class UnitCompiler {
             // TODO: Compile annotations on fields.
 //            assert fd.modifiers.annotations.length == 0 : fd.getLocation();
 
-            if (
-                !(fd.getDeclaringType() instanceof InterfaceDeclaration)
-                && !fd.isStatic()
-            ) this.writeOpcode(fd, Opcode.ALOAD_0);
+            this.addLineNumberOffset(vd);
+
+            if (!declaringIClass.isInterface() && !fd.isStatic()) this.load(vd, declaringIClass, 0);
 
             IClass fieldType = this.getType(fd.type);
             if (initializer instanceof Rvalue) {
@@ -2416,7 +2400,7 @@ class UnitCompiler {
             // TODO: Compile annotations on fields.
 //            assert fd.modifiers.annotations.length == 0;
 
-            IField iField = this.resolve(fd.getDeclaringType()).getDeclaredIField(vd.name);
+            IField iField = declaringIClass.getDeclaredIField(vd.name);
             assert iField != null : fd.getDeclaringType() + " has no field " + vd.name;
             this.putfield(fd, iField);
         }
@@ -2461,8 +2445,8 @@ class UnitCompiler {
 
             this.getCodeContext().pushInserter(ins);
             try {
-                this.pushConstant(is, Boolean.FALSE);
-                this.writeBranch(is, Opcode.IFNE, off);
+                this.consT(is, Boolean.FALSE);
+                this.ifxx(is, UnitCompiler.NE, off);
             } finally {
                 this.getCodeContext().popInserter();
             }
@@ -2479,7 +2463,7 @@ class UnitCompiler {
                 CodeContext.Offset end = this.getCodeContext().new Offset();
                 this.compileBoolean(is.condition, eso, UnitCompiler.JUMP_IF_FALSE);
                 boolean tsccn = this.compile(is.thenStatement);
-                if (tsccn) this.writeBranch(is, Opcode.GOTO, end);
+                if (tsccn) this.gotO(is, end);
                 eso.set();
                 boolean esccn = this.compile(es);
                 end.set();
@@ -2651,7 +2635,8 @@ class UnitCompiler {
                 enclosingFunction,      // to
                 null                    // stackValueType
             );
-            this.writeOpcode(rs, Opcode.RETURN);
+
+            this.returN(rs);
             return false;
         }
 
@@ -2672,7 +2657,7 @@ class UnitCompiler {
             enclosingFunction,      // to
             returnType              // stackValueType
         );
-        this.writeOpcode(rs, Opcode.IRETURN + UnitCompiler.ilfda(returnType));
+        this.xreturn(rs, returnType);
         return false;
     }
 
@@ -2695,18 +2680,18 @@ class UnitCompiler {
             ss.monitorLvIndex = this.getCodeContext().allocateLocalVariable((short) 1);
 
             // Store the monitor object.
-            this.writeOpcode(ss, Opcode.DUP);
+            this.dup(ss);
             this.store(ss, this.iClassLoader.TYPE_java_lang_Object, ss.monitorLvIndex);
 
             // Create lock on the monitor object.
-            this.writeOpcode(ss, Opcode.MONITORENTER);
+            this.monitorenter(ss);
 
             // Compile the statement body.
             final CodeContext.Offset monitorExitOffset = this.getCodeContext().new Offset();
             final CodeContext.Offset beginningOfBody   = this.getCodeContext().newOffset();
             canCompleteNormally = this.compile(ss.body);
             if (canCompleteNormally) {
-                this.writeBranch(ss, Opcode.GOTO, monitorExitOffset);
+                this.gotO(ss, monitorExitOffset);
             }
 
             // Generate the exception handler.
@@ -2717,8 +2702,9 @@ class UnitCompiler {
                 here,            // handlerPC
                 null             // catchTypeFD
             );
+            this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
             this.leave(ss, this.iClassLoader.TYPE_java_lang_Throwable);
-            this.writeOpcode(ss, Opcode.ATHROW);
+            this.athrow(ss);
 
             // Unlock monitor object.
             if (canCompleteNormally) {
@@ -2740,7 +2726,7 @@ class UnitCompiler {
             expressionType,        // type
             ts.getEnclosingScope() // scope
         );
-        this.writeOpcode(ts, Opcode.ATHROW);
+        this.athrow(ts);
         return false;
     }
 
@@ -2866,7 +2852,7 @@ class UnitCompiler {
                     tt
                 )
             );
-            this.pushConstant(ts, null);
+            this.consT(ts, (Object) null);
             this.store(ts, primaryExc);
 
             CatchParameter suppressedException = new CatchParameter(
@@ -3001,7 +2987,7 @@ class UnitCompiler {
                     compile() throws CompileException {
                         boolean canCompleteNormally = compileBody.compile();
                         if (canCompleteNormally) {
-                            UnitCompiler.this.writeBranch(ts, Opcode.JSR, fo);
+                            UnitCompiler.this.jsr(ts, fo);
                         }
                         return canCompleteNormally;
                     }
@@ -3019,6 +3005,9 @@ class UnitCompiler {
                         null             // catchTypeFD
                     );
 
+                    // Push the exception on the operand stack.
+                    this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
+
                     // Save the exception object in an anonymous local variable.
                     short evi = this.getCodeContext().allocateLocalVariable((short) 1);
                     this.store(
@@ -3026,15 +3015,16 @@ class UnitCompiler {
                         this.iClassLoader.TYPE_java_lang_Object, // lvType
                         evi                                      // lvIndex
                     );
-                    this.writeBranch(finallY, Opcode.JSR, fo);
+                    this.jsr(finallY, fo);
                     this.load(
                         finallY,                                 // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // type
                         evi                                      // index
                     );
-                    this.writeOpcode(finallY, Opcode.ATHROW);
+                    this.athrow(finallY);
 
                     // Generate the "finally" subroutine.
+                    this.getCodeContext().pushOperand(StackMapTableAttribute.TOP_VARIABLE_INFO);
                     fo.set();
                     ts.finallyOffset = null;
 
@@ -3044,14 +3034,7 @@ class UnitCompiler {
                         pcLvIndex                                // lvIndex
                     );
                     if (this.compile(finallY)) {
-                        if (pcLvIndex > 255) {
-                            this.writeOpcode(finallY, Opcode.WIDE);
-                            this.writeOpcode(finallY, Opcode.RET);
-                            this.writeShort(pcLvIndex);
-                        } else {
-                            this.writeOpcode(finallY, Opcode.RET);
-                            this.writeByte(pcLvIndex);
-                        }
+                        this.ret(finallY, pcLvIndex);
                     }
                 } finally {
 
@@ -3104,11 +3087,7 @@ class UnitCompiler {
         CodeContext.Offset afterBody = this.getCodeContext().newOffset();
 
         if (canCompleteNormally) {
-//            if (tryStatement.finallyOffset != null) {
-//                this.writeBranch(tryStatement, Opcode.JSR, tryStatement.finallyOffset);
-//            }
-
-            this.writeBranch(tryStatement, Opcode.GOTO, afterStatement);
+            this.gotO(tryStatement, afterStatement);
         }
 
         if (beginningOfBody.offset != afterBody.offset) { // Avoid zero-length exception table entries.
@@ -3129,6 +3108,9 @@ class UnitCompiler {
                         if (!catchClause.reachable) {
                             this.compileError("Catch clause is unreachable", catchClause.getLocation());
                         }
+
+                        // Push the exception on the operand stack.
+                        this.getCodeContext().pushObjectOperand(caughtExceptionType.getDescriptor());
 
                         // Allocate the "exception variable".
                         LocalVariableSlot exceptionVarSlot = this.getCodeContext().allocateLocalVariable(
@@ -3156,12 +3138,12 @@ class UnitCompiler {
                         if (this.compile(catchClause.body)) {
                             canCompleteNormally = true;
                             if (tryStatement.finallyOffset != null) {
-                                this.writeBranch(tryStatement, Opcode.JSR, tryStatement.finallyOffset);
+                                this.jsr(tryStatement, tryStatement.finallyOffset);
                             }
                             if (
                                 i < tryStatement.catchClauses.size() - 1
                                 || tryStatement.finallyOffset != null
-                            ) this.writeBranch(catchClause, Opcode.GOTO, afterStatement);
+                            ) this.gotO(catchClause, afterStatement);
                         }
                     } finally {
                         this.getCodeContext().restoreLocalVariables();
@@ -3444,7 +3426,7 @@ class UnitCompiler {
                 if (this.getReturnType(fd) != IClass.VOID) {
                     this.compileError("Method must return a value", fd.getLocation());
                 }
-                this.writeOpcode(fd, Opcode.RETURN);
+                this.returN(fd);
             }
         } finally {
             this.getCodeContext().restoreLocalVariables();
@@ -3784,13 +3766,15 @@ class UnitCompiler {
     fakeCompile(Rvalue rv) throws CompileException {
 
         final Offset from = this.getCodeContext().newOffset();
+        StackMap savedStackMap = this.getCodeContext().currentInserter().getStackMap();
 
         this.compileContext(rv);
         this.compileGet(rv);
 
         Offset to = this.getCodeContext().newOffset();
 
-        this.getCodeContext().removeCode(from, to);
+        this.getCodeContext().removeCode(from, to.next);
+        this.getCodeContext().currentInserter().setStackMap(savedStackMap);
     }
 
     /**
@@ -3857,6 +3841,8 @@ class UnitCompiler {
 
     private void
     compile2(Assignment a) throws CompileException {
+
+        // "Simple" assignment ("=")?
         if (a.operator == "=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
             this.compileContext(a.lhs);
             this.assignmentConversion(
@@ -3870,8 +3856,12 @@ class UnitCompiler {
         }
 
         // Implement "|= ^= &= *= /= %= += -= <<= >>= >>>=".
+
+        // Compile LHS context.
         int lhsCs = this.compileContext(a.lhs);
-        this.dup(a, lhsCs);
+        // Duplicate the LHS context.
+        this.dupn(a.lhs, lhsCs);
+        // Convert RHS value to LHS type (JLS7 15.26.2).
         IClass lhsType    = this.compileGet(a.lhs);
         IClass resultType = this.compileArithmeticBinaryOperation(
             a,                    // locatable
@@ -3883,15 +3873,12 @@ class UnitCompiler {
             */
             a.rhs                 // rhs
         );
-
-        // Convert the result to LHS type (JLS7 15.26.2).
         if (
             !this.tryIdentityConversion(resultType, lhsType)
             && !this.tryNarrowingPrimitiveConversion(a, resultType, lhsType)
             && !this.tryBoxingConversion(a, resultType, lhsType) // Java 5
         ) this.compileError("Operand types unsuitable for \"" + a.operator + "\"", a.getLocation());
-
-        // Assign the result to the left operand.
+        // Assign converted RHS value to LHS.
         this.compileSet(a.lhs);
     }
 
@@ -3900,34 +3887,38 @@ class UnitCompiler {
 
         // Optimized crement of "int" local variable.
         {
-        LocalVariable lv = this.isIntLv(c);
-        if (lv != null) {
-                this.compileLocalIntVariableCrement(c, lv, c.operator);
-            return;
-        }
-        }
-
-        int cs = this.compileContext(c.operand);
-        this.dup(c, cs);
-        IClass type         = this.compileGet(c.operand);
-        IClass promotedType = this.unaryNumericPromotion(c, type);
-        this.writeOpcode(c, UnitCompiler.ilfd(
-            promotedType,
-            Opcode.ICONST_1,
-            Opcode.LCONST_1,
-            Opcode.FCONST_1,
-            Opcode.DCONST_1
-        ));
-        if (c.operator == "++") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-            this.writeOpcode(c, Opcode.IADD + UnitCompiler.ilfd(promotedType));
-        } else
-        if (c.operator == "--") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-            this.writeOpcode(c, Opcode.ISUB + UnitCompiler.ilfd(promotedType));
-        } else {
-            this.compileError("Unexpected operator \"" + c.operator + "\"", c.getLocation());
+            LocalVariable lv = this.isIntLv(c);
+            if (lv != null) {
+                this.iinc(c, lv, c.operator);
+                return;
+            }
         }
 
-        this.reverseUnaryNumericPromotion(c, promotedType, type);
+        // Compile operand context.
+        int operandCs = this.compileContext(c.operand);
+        // DUP operand context.
+        this.dupn(c, operandCs);
+        // Get operand value.
+        IClass type = this.compileGet(c.operand);
+
+        {
+
+            // Apply "unary numeric promotion".
+            IClass promotedType = this.unaryNumericPromotion(c, type);
+            // Crement.
+            this.consT(c, promotedType, 1);
+            if (c.operator == "++") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                this.add(c);
+            } else
+            if (c.operator == "--") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                this.sub(c);
+            } else {
+                this.compileError("Unexpected operator \"" + c.operator + "\"", c.getLocation());
+            }
+            this.reverseUnaryNumericPromotion(c, promotedType, type);
+        }
+
+        // Set operand.
         this.compileSet(c.operand);
     }
 
@@ -3941,8 +3932,8 @@ class UnitCompiler {
         ConstructorDeclarator declaringConstructor = (ConstructorDeclarator) aci.getEnclosingScope();
         IClass                declaringIClass      = this.resolve(declaringConstructor.getDeclaringClass());
 
-        this.writeOpcode(aci, Opcode.ALOAD_0);
-        if (declaringIClass.getOuterIClass() != null) this.writeOpcode(aci, Opcode.ALOAD_1);
+        this.load(aci, declaringIClass, 0);
+        if (declaringIClass.getOuterIClass() != null) this.load(aci, declaringIClass.getOuterIClass(), 1);
         this.invokeConstructor(
             aci,                  // locatable
             declaringConstructor, // scope
@@ -3955,10 +3946,12 @@ class UnitCompiler {
 
     private boolean
     compile2(SuperConstructorInvocation sci) throws CompileException {
-        ConstructorDeclarator declaringConstructor = (ConstructorDeclarator) sci.getEnclosingScope();
-        this.writeOpcode(sci, Opcode.ALOAD_0);
-        AbstractClassDeclaration declaringClass = declaringConstructor.getDeclaringClass();
-        IClass                   superclass     = this.resolve(declaringClass).getSuperclass();
+        ConstructorDeclarator    declaringConstructor = (ConstructorDeclarator) sci.getEnclosingScope();
+        AbstractClassDeclaration declaringClass       = declaringConstructor.getDeclaringClass();
+        IClass                   declaringIClass      = this.resolve(declaringClass);
+        IClass                   superclass           = declaringIClass.getSuperclass();
+
+        this.load(sci, declaringIClass, 0);
 
         if (superclass == null) throw new CompileException("Class has no superclass", sci.getLocation());
 
@@ -3992,7 +3985,7 @@ class UnitCompiler {
      * <p>
      *   Many {@link Rvalue}s compile more efficiently when their value is the condition for a branch, thus
      *   this method generally produces more efficient bytecode than {@link #compile(Rvalue)} followed by {@link
-     *   #writeBranch(Locatable, int, Offset)}.
+     *   #branch(Locatable, int, Offset)}.
      * </p>
      * <p>
      *   Notice that if <var>rv</var> is a constant, then either <var>dst</var> is never branched to, or it is
@@ -4071,7 +4064,7 @@ class UnitCompiler {
         if (type != IClass.BOOLEAN) {
             this.compileError("Not a boolean expression", rv.getLocation());
         }
-        this.writeBranch(rv, orientation == UnitCompiler.JUMP_IF_TRUE ? Opcode.IFNE : Opcode.IFEQ, dst);
+        this.ifxx(rv, orientation == UnitCompiler.JUMP_IF_TRUE ? UnitCompiler.NE : UnitCompiler.EQ, dst);
     }
 
     /**
@@ -4217,16 +4210,28 @@ class UnitCompiler {
                     {
 
                         // null == null
-                        this.pushConstant(bo, null);
+                        this.consT(bo, (Object) null);
                     }
-                    this.writeBranch(bo, Opcode.IFNULL + opIdx, dst);
+
+                    switch (opIdx) {
+
+                    case EQ:
+                        this.ifnull(bo, dst);
+                        break;
+
+                    case NE:
+                        this.ifnonnull(bo, dst);
+                        break;
+
+                    default:
+                        throw new AssertionError(opIdx);
+                    }
                     return;
                 }
             }
 
-            IClass               lhsType            = this.compileGetValue(bo.lhs);
-            CodeContext.Inserter convertLhsInserter = this.getCodeContext().newInserter();
-            IClass               rhsType            = this.compileGetValue(bo.rhs);
+            IClass lhsType = this.compileGetValue(bo.lhs);
+            IClass rhsType = this.getType(bo.rhs);
 
             // 15.20.1 Numerical comparison.
             if (
@@ -4238,33 +4243,15 @@ class UnitCompiler {
                     && !rhsType.isPrimitive()
                 )
             ) {
-                IClass promotedType = this.binaryNumericPromotion(bo, lhsType, convertLhsInserter, rhsType);
-                if (promotedType == IClass.INT) {
-                    this.writeBranch(bo, Opcode.IF_ICMPEQ + opIdx, dst);
-                } else
-                if (promotedType == IClass.LONG) {
-                    this.writeOpcode(bo, Opcode.LCMP);
-                    this.writeBranch(bo, Opcode.IFEQ + opIdx, dst);
-                } else
-                if (promotedType == IClass.FLOAT) {
-                    if (bo.operator == ">" || bo.operator == ">=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-                        this.writeOpcode(bo, Opcode.FCMPL);
-                    } else {
-                        this.writeOpcode(bo, Opcode.FCMPG);
-                    }
-                    this.writeBranch(bo, Opcode.IFEQ + opIdx, dst);
-                } else
-                if (promotedType == IClass.DOUBLE) {
-                    if (bo.operator == ">" || bo.operator == ">=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-                        this.writeOpcode(bo, Opcode.DCMPL);
-                    } else {
-                        this.writeOpcode(bo, Opcode.DCMPG);
-                    }
-                    this.writeBranch(bo, Opcode.IFEQ + opIdx, dst);
-                } else
-                {
-                    throw new InternalCompilerException("Unexpected promoted type \"" + promotedType + "\"");
-                }
+
+                IClass
+                promotedType = this.binaryNumericPromotionType(bo, this.getUnboxedType(lhsType), this.getUnboxedType(rhsType));
+
+                this.numericPromotion(bo.lhs, this.convertToPrimitiveNumericType(bo.lhs, lhsType), promotedType);
+                this.compileGetValue(bo.rhs);
+                this.numericPromotion(bo.rhs, this.convertToPrimitiveNumericType(bo.rhs, rhsType), promotedType);
+
+                this.ifNumeric(bo, opIdx, dst);
                 return;
             }
 
@@ -4283,20 +4270,17 @@ class UnitCompiler {
 
                 // Unbox LHS if necessary.
                 if (lhsType == icl.TYPE_java_lang_Boolean) {
-                    this.getCodeContext().pushInserter(convertLhsInserter);
-                    try {
-                        this.unboxingConversion(bo, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
-                    } finally {
-                        this.getCodeContext().popInserter();
-                    }
+                    this.unboxingConversion(bo, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
                 }
+
+                this.compileGetValue(bo.rhs);
 
                 // Unbox RHS if necessary.
                 if (rhsType == icl.TYPE_java_lang_Boolean) {
                     this.unboxingConversion(bo, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
                 }
 
-                this.writeBranch(bo, Opcode.IF_ICMPEQ + opIdx, dst);
+                this.if_icmpxx(bo, opIdx, dst);
                 return;
             }
 
@@ -4310,7 +4294,10 @@ class UnitCompiler {
                     !this.isCastReferenceConvertible(lhsType, rhsType)
                     || !this.isCastReferenceConvertible(rhsType, lhsType)
                 ) this.compileError("Incomparable types \"" + lhsType + "\" and \"" + rhsType + "\"", bo.getLocation());
-                this.writeBranch(bo, Opcode.IF_ACMPEQ + opIdx, dst);
+
+                this.compileGetValue(bo.rhs);
+
+                this.if_acmpxx(bo, Opcode.IF_ACMPEQ + opIdx, dst);
                 return;
             }
 
@@ -4334,7 +4321,7 @@ class UnitCompiler {
      * expressions do not have a "context", but some do. E.g. for "x[y]", the context is "x, y". The bottom line is
      * that for statements like "x[y] += 3" the context is only evaluated once.
      *
-     * @return The size of the context on the operand stack
+     * @return The number of operands that is pushed on the operand stack (0, 1 or 2)
      */
     private int
     compileContext(Rvalue rv) throws CompileException {
@@ -4534,12 +4521,14 @@ class UnitCompiler {
     private IClass
     compileGet2(BooleanRvalue brv) throws CompileException {
         CodeContext.Offset isTrue = this.getCodeContext().new Offset();
+        isTrue.setStackMap(this.getCodeContext().currentInserter().getStackMap());
         this.compileBoolean(brv, isTrue, UnitCompiler.JUMP_IF_TRUE);
-        this.writeOpcode(brv, Opcode.ICONST_0);
+        this.consT(brv, 0);
         CodeContext.Offset end = this.getCodeContext().new Offset();
-        this.writeBranch(brv, Opcode.GOTO, end);
+        this.gotO(brv, end);
+        this.getCodeContext().currentInserter().setStackMap(null);
         isTrue.set();
-        this.writeOpcode(brv, Opcode.ICONST_1);
+        this.consT(brv, 1);
         end.set();
 
         return IClass.BOOLEAN;
@@ -4562,14 +4551,15 @@ class UnitCompiler {
 
     private IClass
     compileGet2(ArrayLength al) {
-        this.writeOpcode(al, Opcode.ARRAYLENGTH);
+        this.arraylength(al);
         return IClass.INT;
     }
 
     private IClass
     compileGet2(ThisReference tr) throws CompileException {
-        this.referenceThis(tr);
-        return this.getIClass(tr);
+        final IClass currentIClass = this.getIClass(tr);
+        this.referenceThis(tr, currentIClass);
+        return currentIClass;
     }
 
     @SuppressWarnings("static-method") private IClass
@@ -4610,52 +4600,53 @@ class UnitCompiler {
         if (iClass.isPrimitive()) {
 
             // Primitive class literal.
-            this.writeOpcode(cl, Opcode.GETSTATIC);
-            String wrapperClassDescriptor = (
-                iClass == IClass.VOID    ? "Ljava/lang/Void;"      :
-                iClass == IClass.BYTE    ? "Ljava/lang/Byte;"      :
-                iClass == IClass.CHAR    ? "Ljava/lang/Character;" :
-                iClass == IClass.DOUBLE  ? "Ljava/lang/Double;"    :
-                iClass == IClass.FLOAT   ? "Ljava/lang/Float;"     :
-                iClass == IClass.INT     ? "Ljava/lang/Integer;"   :
-                iClass == IClass.LONG    ? "Ljava/lang/Long;"      :
-                iClass == IClass.SHORT   ? "Ljava/lang/Short;"     :
-                iClass == IClass.BOOLEAN ? "Ljava/lang/Boolean;"   :
+            IClass wrapperIClass = (
+                iClass == IClass.VOID    ? this.iClassLoader.TYPE_java_lang_Void      :
+                iClass == IClass.BYTE    ? this.iClassLoader.TYPE_java_lang_Byte      :
+                iClass == IClass.CHAR    ? this.iClassLoader.TYPE_java_lang_Character :
+                iClass == IClass.DOUBLE  ? this.iClassLoader.TYPE_java_lang_Double    :
+                iClass == IClass.FLOAT   ? this.iClassLoader.TYPE_java_lang_Float     :
+                iClass == IClass.INT     ? this.iClassLoader.TYPE_java_lang_Integer   :
+                iClass == IClass.LONG    ? this.iClassLoader.TYPE_java_lang_Long      :
+                iClass == IClass.SHORT   ? this.iClassLoader.TYPE_java_lang_Short     :
+                iClass == IClass.BOOLEAN ? this.iClassLoader.TYPE_java_lang_Boolean   :
                 null
             );
-            if (wrapperClassDescriptor == null) {
-                throw new InternalCompilerException("SNO: Unidentifiable primitive type \"" + iClass + "\"");
-            }
+            assert wrapperIClass != null;
 
-            this.writeConstantFieldrefInfo(
-                wrapperClassDescriptor, // classFD
-                "TYPE",                 // fieldName
-                "Ljava/lang/Class;"     // fieldFD
-            );
-            return this.iClassLoader.TYPE_java_lang_Class;
+            this.getfield(cl, wrapperIClass, "TYPE", this.iClassLoader.TYPE_java_lang_Class, true);
+        } else {
+
+            // Non-primitive class literal.
+
+            this.consT(cl, iClass);
         }
 
-        // Non-primitive class literal.
-
-        return this.pushConstant(cl, iClass);
+        return this.iClassLoader.TYPE_java_lang_Class;
     }
 
     private IClass
     compileGet2(Assignment a) throws CompileException {
+
         if (a.operator == "=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-            int    lhsCs   = this.compileContext(a.lhs);
-            IClass rhsType = this.compileGetValue(a.rhs);
+
+            // Compile LHS context.
+            int lhsCs = this.compileContext(a.lhs);
+            // Convert RHS value to LHS type.
             IClass lhsType = this.getType(a.lhs);
-            Object rhsCv   = this.getConstantValue(a.rhs);
-            this.assignmentConversion(a, rhsType, lhsType, rhsCv);
-            this.dupx(a, lhsType, lhsCs);
+            IClass rhsType = this.compileGetValue(a.rhs);
+            this.assignmentConversion(a, rhsType, lhsType, this.getConstantValue(a.rhs));
+            // Duplicate RHS value below LHS context.
+            this.dupxx(a, lhsCs);
+            // Set LHS.
             this.compileSet(a.lhs);
+
             return lhsType;
         }
 
         // Implement "|= ^= &= *= /= %= += -= <<= >>= >>>=".
         int lhsCs = this.compileContext(a.lhs);
-        this.dup(a, lhsCs);
+        this.dupn(a, lhsCs);
         IClass lhsType    = this.compileGet(a.lhs);
         IClass resultType = this.compileArithmeticBinaryOperation(
             a,                    // locatable
@@ -4663,155 +4654,63 @@ class UnitCompiler {
             a.operator.substring( // operator
                 0,
                 a.operator.length() - 1
-            ).intern(), /* <= IMPORTANT!
-            */
+            ).intern(), /* <= IMPORTANT! */
             a.rhs                 // rhs
         );
+
         // Convert the result to LHS type (JLS7 15.26.2).
         if (
             !this.tryIdentityConversion(resultType, lhsType)
             && !this.tryNarrowingPrimitiveConversion(a, resultType, lhsType)
         ) throw new InternalCompilerException("SNO: \"" + a.operator + "\" reconversion failed");
-        this.dupx(a, lhsType, lhsCs);
+        this.dupx(a);
         this.compileSet(a.lhs);
         return lhsType;
     }
 
     private IClass
     compileGet2(ConditionalExpression ce) throws CompileException {
-        IClass               mhsType, rhsType;
-        CodeContext.Inserter mhsConvertInserter, rhsConvertInserter;
-        CodeContext.Offset   toEnd = this.getCodeContext().new Offset();
+
+        IClass expressionType = this.getType2(ce);
+        IClass mhsType        = this.getType(ce.mhs);
+        IClass rhsType        = this.getType(ce.rhs);
+
         {
-            Object cv = this.getConstantValue(ce.lhs);
-            if (cv instanceof Boolean) {
+            Object lhsCv = this.getConstantValue(ce.lhs);
+            if (lhsCv instanceof Boolean) {
 
                 // LHS is a constant expression.
-                if (((Boolean) cv).booleanValue()) {
-                    mhsType            = this.compileGetValue(ce.mhs);
-                    mhsConvertInserter = this.getCodeContext().newInserter();
-                    rhsType            = this.getType(ce.rhs);
-                    rhsConvertInserter = null;
+                if (((Boolean) lhsCv).booleanValue()) {
+                    this.compileGetValue(ce.mhs);
+                    this.castConversion(ce.mhs, mhsType, expressionType, UnitCompiler.NOT_CONSTANT);
                 } else {
-                    mhsType            = this.getType(ce.mhs);
-                    mhsConvertInserter = null;
-                    rhsType            = this.compileGetValue(ce.rhs);
-                    rhsConvertInserter = null;
+                    this.compileGetValue(ce.rhs);
+                    this.castConversion(ce.rhs, rhsType, expressionType, UnitCompiler.NOT_CONSTANT);
                 }
-            } else {
-                CodeContext.Offset toRhs = this.getCodeContext().new Offset();
-
-                this.compileBoolean(ce.lhs, toRhs, UnitCompiler.JUMP_IF_FALSE);
-                mhsType            = this.compileGetValue(ce.mhs);
-                mhsConvertInserter = this.getCodeContext().newInserter();
-                this.writeBranch(ce, Opcode.GOTO, toEnd);
-                toRhs.set();
-                rhsType            = this.compileGetValue(ce.rhs);
-                rhsConvertInserter = this.getCodeContext().currentInserter();
+                return expressionType;
             }
         }
-        IClass expressionType;
-        if (mhsType == rhsType) {
 
-            // JLS7 15.25, list 1, bullet 1: "b ? T : T => T"
-            expressionType = mhsType;
-        } else
-        if (this.tryUnboxingConversion(ce.mhs, mhsType, rhsType, mhsConvertInserter)) {
-
-            // JLS7 15.25, list 1, bullet 2: "b ? Integer : int => int"
-            expressionType = rhsType;
-        } else
-        if (this.tryUnboxingConversion(ce.rhs, rhsType, mhsType, rhsConvertInserter)) {
-
-            // JLS7 15.25, list 1, bullet 2: "b ? int : Integer => int"
-            expressionType = mhsType;
-        } else
-        if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
-
-            // JLS7 15.25, list 1, bullet 3: "b ? null : String => String"
-            expressionType = rhsType;
-        } else
-        if (this.getConstantValue(ce.mhs) == null && this.isBoxingConvertible(rhsType) != null) {
-
-            // Undocumented JAVAC feature: "b ? null : 7 => Integer"
-            expressionType = this.isBoxingConvertible(rhsType);
-            assert expressionType != null;
-            this.boxingConversion(ce.rhs, rhsType, expressionType);
-        } else
-        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
-
-            // JLS7 15.25, list 1, bullet 3: "b ? String : null => String"
-            expressionType = mhsType;
-        } else
-        if (this.isBoxingConvertible(mhsType) != null && this.getConstantValue(ce.rhs) == null) {
-
-            // Undocumented JAVAC feature: "b ? 7 : null => Integer"
-            expressionType = this.isBoxingConvertible(mhsType);
-            assert expressionType != null;
-            this.boxingConversion(ce.mhs, mhsType, expressionType, mhsConvertInserter);
-        } else
-        if (ce.mhs.constantValue == null && rhsType.isPrimitive()) {
-            expressionType = this.isBoxingConvertible(rhsType);
-            assert expressionType != null : rhsType + " is not boxing convertible";
-        } else
-        if (ce.rhs.constantValue == null && mhsType.isPrimitive()) {
-            expressionType = this.isBoxingConvertible(mhsType);
-            assert expressionType != null : mhsType + " is not boxing convertible";
-        } else
-        if (this.isConvertibleToPrimitiveNumeric(mhsType) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
-
-            // TODO JLS7 15.25, list 1, bullet 4, bullet 1: "b ? Byte : Short => short"
-
-            Object rhscv = ce.rhs.constantValue;
-            Object mhscv = ce.mhs.constantValue;
-
-            if (
-                mhsType == IClass.BYTE
-                && rhsType == IClass.INT
-                && UnitCompiler.isByteConstant(rhscv) != null
-            ) {
-
-                // JLS7 15.25, list 1, bullet 4, bullet 2: "b ? byte : 127 => byte"
-                expressionType = IClass.BYTE;
-                // fix up the constant to be a byte
-                ce.rhs.constantValue = UnitCompiler.isByteConstant(rhscv);
-            } else
-            if (
-                mhsType == IClass.INT
-                && rhsType == IClass.BYTE
-                && UnitCompiler.isByteConstant(mhscv) != null
-            ) {
-
-                // JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
-                expressionType = IClass.BYTE;
-                // fix up the constant to be a byte
-                ce.mhs.constantValue = UnitCompiler.isByteConstant(mhscv);
-            } else
-            {
-
-                // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
-                expressionType = this.binaryNumericPromotion(
-                    ce,                 // locatable
-                    mhsType,            // type1
-                    mhsConvertInserter, // convertInserter1
-                    rhsType,            // type2
-                    rhsConvertInserter  // convertInserter2
-                );
-            }
-        } else
-        if (!mhsType.isPrimitive() || !rhsType.isPrimitive()) {
-
-            // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
-            expressionType = this.commonSupertype(mhsType, rhsType);
-        } else
+        // Non-constant LHS.
         {
-            this.compileError(
-                "Incompatible expression types \"" + mhsType + "\" and \"" + rhsType + "\"",
-                ce.getLocation()
-            );
-            return this.iClassLoader.TYPE_java_lang_Object;
+            final CodeContext.Offset toEnd = this.getCodeContext().new Offset();
+            final CodeContext.Offset toRhs = this.getCodeContext().new Offset();
+
+            StackMap sm = this.getCodeContext().currentInserter().getStackMap();
+
+            this.compileBoolean(ce.lhs, toRhs, UnitCompiler.JUMP_IF_FALSE);
+
+            this.compileGetValue(ce.mhs);
+            this.assignmentConversion(ce.mhs, mhsType, expressionType, UnitCompiler.NOT_CONSTANT);
+            this.gotO(ce, toEnd);
+
+            this.getCodeContext().currentInserter().setStackMap(sm);
+            toRhs.set();
+            this.compileGetValue(ce.rhs);
+            this.assignmentConversion(ce.mhs, rhsType, expressionType, UnitCompiler.NOT_CONSTANT);
+
+            toEnd.set();
         }
-        toEnd.set();
 
         return expressionType;
     }
@@ -4861,67 +4760,49 @@ class UnitCompiler {
         LocalVariable lv = this.isIntLv(c);
         if (lv != null) {
             if (!c.pre) this.load(c, lv);
-            this.compileLocalIntVariableCrement(c, lv, c.operator);
+            this.iinc(c, lv, c.operator);
             if (c.pre) this.load(c, lv);
             return lv.type;
         }
 
         // Compile operand context.
-        int cs = this.compileContext(c.operand);
+        int operandCs = this.compileContext(c.operand);
         // DUP operand context.
-        this.dup(c, cs);
+        this.dupn(c, operandCs);
         // Get operand value.
         IClass type = this.compileGet(c.operand);
-        // DUPX operand value.
-        if (!c.pre) this.dupx(c, type, cs);
-        // Apply "unary numeric promotion".
-        IClass promotedType = this.unaryNumericPromotion(c, type);
-        // Crement.
-        this.writeOpcode(c, UnitCompiler.ilfd(
-            promotedType,
-            Opcode.ICONST_1,
-            Opcode.LCONST_1,
-            Opcode.FCONST_1,
-            Opcode.DCONST_1
-        ));
-        if (c.operator == "++") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-            this.writeOpcode(c, Opcode.IADD + UnitCompiler.ilfd(promotedType));
-        } else
-        if (c.operator == "--") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-            this.writeOpcode(c, Opcode.ISUB + UnitCompiler.ilfd(promotedType));
-        } else {
-            this.compileError("Unexpected operator \"" + c.operator + "\"", c.getLocation());
+        // If postincrement: DUPX the operand value.
+        if (!c.pre) this.dupxx(c, operandCs);
+
+        {
+
+            // Apply "unary numeric promotion".
+            IClass promotedType = this.unaryNumericPromotion(c, type);
+            // Crement.
+            this.consT(c, promotedType, 1);
+            if (c.operator == "++") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                this.add(c);
+            } else
+            if (c.operator == "--") { // SUPPRESS CHECKSTYLE StringLiteralEquality
+                this.sub(c);
+            } else {
+                this.compileError("Unexpected operator \"" + c.operator + "\"", c.getLocation());
+            }
+            this.reverseUnaryNumericPromotion(c, promotedType, type);
         }
-        this.reverseUnaryNumericPromotion(c, promotedType, type);
-        // DUPX cremented operand value.
-        if (c.pre) this.dupx(c, type, cs);
+
+        // If preincrement: DUPX the cremented operand value.
+        if (c.pre) this.dupxx(c, operandCs);
         // Set operand.
         this.compileSet(c.operand);
 
         return type;
     }
 
-    /**
-     * @param operator Must be either "++" or "--", as an @link {@link String#intern() interned} string
-     */
-    private void
-    compileLocalIntVariableCrement(Locatable locatable, LocalVariable lv, String operator) {
-        if (lv.getSlotIndex() > 255) {
-            this.writeOpcode(locatable, Opcode.WIDE);
-            this.writeOpcode(locatable, Opcode.IINC);
-            this.writeShort(lv.getSlotIndex());
-            this.writeShort(operator == "++" ? 1 : -1); // SUPPRESS CHECKSTYLE StringLiteralEquality
-        } else {
-            this.writeOpcode(locatable, Opcode.IINC);
-            this.writeByte(lv.getSlotIndex());
-            this.writeByte(operator == "++" ? 1 : -1); // SUPPRESS CHECKSTYLE StringLiteralEquality
-        }
-    }
-
     private IClass
     compileGet2(ArrayAccessExpression aae) throws CompileException {
         IClass lhsComponentType = this.getType(aae);
-        this.writeOpcode(aae, Opcode.IALOAD + UnitCompiler.ilfdabcs(lhsComponentType));
+        this.xaload(aae, lhsComponentType);
         return lhsComponentType;
     }
 
@@ -4954,7 +4835,7 @@ class UnitCompiler {
             {
                 Object ncv = this.getConstantValue2(uo);
                 if (ncv != UnitCompiler.NOT_CONSTANT) {
-                    return this.unaryNumericPromotion(uo, this.pushConstant(uo, ncv));
+                    return this.unaryNumericPromotion(uo, this.consT(uo, ncv));
                 }
             }
 
@@ -4962,7 +4843,7 @@ class UnitCompiler {
                 uo,
                 this.convertToPrimitiveNumericType(uo, this.compileGetValue(uo.operand))
             );
-            this.writeOpcode(uo, Opcode.INEG + UnitCompiler.ilfd(promotedType));
+            this.neg(uo, promotedType);
             return promotedType;
         }
 
@@ -4971,14 +4852,13 @@ class UnitCompiler {
 
             IClass promotedType = this.unaryNumericPromotion(uo, operandType);
             if (promotedType == IClass.INT) {
-                this.writeOpcode(uo, Opcode.ICONST_M1);
-                this.writeOpcode(uo, Opcode.IXOR);
+                this.consT(uo, -1);
+                this.xor(uo, Opcode.IXOR);
                 return IClass.INT;
             }
             if (promotedType == IClass.LONG) {
-                this.writeOpcode(uo, Opcode.LDC2_W);
-                this.writeConstantLongInfo(-1L);
-                this.writeOpcode(uo, Opcode.LXOR);
+                this.consT(uo, -1L);
+                this.xor(uo, Opcode.LXOR);
                 return IClass.LONG;
             }
             this.compileError("Operator \"~\" not applicable to type \"" + promotedType + "\"", uo.getLocation());
@@ -4999,8 +4879,7 @@ class UnitCompiler {
             || lhsType.isAssignableFrom(rhsType)
             || rhsType.isAssignableFrom(lhsType)
         ) {
-            this.writeOpcode(io, Opcode.INSTANCEOF);
-            this.writeConstantClassInfo(rhsType.getDescriptor());
+            this.instanceoF(io, rhsType);
         } else {
             this.compileError("\"" + lhsType + "\" can never be an instance of \"" + rhsType + "\"", io.getLocation());
         }
@@ -5038,15 +4917,8 @@ class UnitCompiler {
         // JLS7 5.5 Casting Conversion.
         IClass tt = this.getType(c.targetType);
         IClass vt = this.compileGetValue(c.value);
-        if (
-            this.tryIdentityConversion(vt, tt)
-            || this.tryWideningPrimitiveConversion(c, vt, tt)
-            || this.tryNarrowingPrimitiveConversion(c, vt, tt)
-            || this.tryWideningReferenceConversion(vt, tt)
-            || this.tryNarrowingReferenceConversion(c, vt, tt)
-            || this.tryBoxingConversion(c, vt, tt)
-            || this.tryUnboxingConversion(c, vt, tt, null)
-        ) return tt;
+
+        if (this.tryCastConversion(c, vt, tt, this.getConstantValue2(c.value))) return tt;
 
         // JAVAC obviously also permits 'boxing conversion followed by widening reference conversion' and 'unboxing
         // conversion followed by widening primitive conversion', although these are not described in JLS7 5.5. For the
@@ -5164,6 +5036,12 @@ class UnitCompiler {
 
                     // JLS9 15.12.4.1.3.2 and .4.2
                     this.compileGetValue(rot);
+
+                    if (this.getCodeContext().peekNullOperand()) {
+                        this.compileError("Method invocation target is always null");
+                        this.getCodeContext().popOperand();
+                        this.getCodeContext().pushObjectOperand(iMethod.getDeclaringIClass().getDescriptor());
+                    }
                 }
             }
         }
@@ -5205,33 +5083,30 @@ class UnitCompiler {
                 this.getConstantValue(adjustedArgs[i]) // constantValue
             );
         }
-
         // Invoke!
         this.checkAccessible(iMethod, mi.getEnclosingScope(), mi.getLocation());
-        if (iMethod.getDeclaringIClass().isInterface()) {
-            this.invoke(mi, iMethod);
-        } else {
-            if (!iMethod.isStatic() && iMethod.getAccess() == Access.PRIVATE) {
+        if (/*!iMethod.getDeclaringIClass().isInterface() &&*/ !iMethod.isStatic() && iMethod.getAccess() == Access.PRIVATE) {
 
-                // In order to make a non-static private method invocable for enclosing types, enclosed types and types
-                // enclosed by the same type, "compile(FunctionDeclarator)" modifies it on-the-fly as follows:
-                //  + Access is changed from PRIVATE to PACKAGE
-                //  + The name is appended with "$"
-                //  + It is made static
-                //  + A parameter of type "declaring class" is prepended to the signature
-                // Hence, the invocation of such a method must be modified accordingly.
-                this.writeOpcode(mi, Opcode.INVOKESTATIC);
-                this.writeConstantMethodrefInfo(
-                    iMethod.getDeclaringIClass().getDescriptor(), // classFD
-                    iMethod.getName() + '$',                      // methodName
-                    iMethod.getDescriptor().prependParameter(     // methodMD
-                        iMethod.getDeclaringIClass().getDescriptor()
-                    )
-                );
-            } else
-            {
-                this.invoke(mi, iMethod);
-            }
+            // In order to make a non-static private method invocable for enclosing types, enclosed types and types
+            // enclosed by the same type, "compile(FunctionDeclarator)" modifies it on-the-fly as follows:
+            //  + Access is changed from PRIVATE to PACKAGE
+            //  + The name is appended with "$"
+            //  + It is made static
+            //  + A parameter of type "declaring class" is prepended to the signature
+            // Hence, the invocation of such a method must be modified accordingly.
+            this.invokeMethod(
+                mi,                                           // locatable
+                Opcode.INVOKESTATIC,                          // opcode
+                iMethod.getDeclaringIClass(),                 // declaringIClass
+                iMethod.getName() + '$',                      // methodName
+                iMethod.getDescriptor().prependParameter(     // methodMd
+                    iMethod.getDeclaringIClass().getDescriptor()
+                ),
+                false                                         // useInterfaceMethodref
+            );
+        } else
+        {
+            this.invoke(mi, iMethod);
         }
         return iMethod.getReturnType();
     }
@@ -5358,12 +5233,15 @@ class UnitCompiler {
         }
 
         // Invoke!
-        this.writeOpcode(scmi, Opcode.INVOKESPECIAL);
-        this.writeConstantMethodrefInfo(
-            iMethod.getDeclaringIClass().getDescriptor(), // classFD
-            scmi.methodName,                              // methodName
-            iMethod.getDescriptor()                       // methodMD
+        this.invokeMethod(
+            scmi,                         // locatable
+            Opcode.INVOKESPECIAL,         // opcode
+            iMethod.getDeclaringIClass(), // declaringIClass
+            iMethod.getName(),            // methodName
+            iMethod.getDescriptor(),      // methodMd
+            false                         // useInterfaceMethodref
         );
+
         return iMethod.getReturnType();
     }
 
@@ -5376,10 +5254,6 @@ class UnitCompiler {
             assert nci.type != null;
             iClass = (nci.iClass = this.getType(nci.type));
         }
-
-        this.writeOpcode(nci, Opcode.NEW);
-        this.writeConstantClassInfo(iClass.getDescriptor());
-        this.writeOpcode(nci, Opcode.DUP);
 
         if (iClass.isInterface()) this.compileError("Cannot instantiate \"" + iClass + "\"", nci.getLocation());
         this.checkAccessible(iClass, nci.getEnclosingScope(), nci.getLocation());
@@ -5453,13 +5327,17 @@ class UnitCompiler {
             }
         }
 
+        this.neW(nci, iClass);
+        this.dup(nci);
         this.invokeConstructor(
-            nci,                       // l
-            nci.getEnclosingScope(),   // scope
-            enclosingInstance, // enclosingInstance
-            iClass,                    // targetClass
-            nci.arguments              // arguments
+            nci,                     // l
+            nci.getEnclosingScope(), // scope
+            enclosingInstance,       // enclosingInstance
+            iClass,                  // targetClass
+            nci.arguments            // arguments
         );
+        this.getCodeContext().popUninitializedVariableOperand();
+        this.getCodeContext().pushObjectOperand(iClass.getDescriptor());
 
         return iClass;
     }
@@ -5556,12 +5434,12 @@ class UnitCompiler {
             this.compile(acd);
 
             // Instantiate the anonymous class.
-            this.writeOpcode(naci, Opcode.NEW);
-            this.writeConstantClassInfo(this.resolve(naci.anonymousClassDeclaration).getDescriptor());
+            IClass anonymousIClass = this.resolve(acd);
+            this.neW(naci, anonymousIClass);
 
             // TODO: adjust argument (for varargs case ?)
             // Invoke the anonymous constructor.
-            this.writeOpcode(naci, Opcode.DUP);
+            this.dup(naci);
             Rvalue[] arguments2;
             if (qualification == null) {
                 arguments2 = naci.arguments;
@@ -5650,7 +5528,7 @@ class UnitCompiler {
         IClass ct = arrayType.getComponentType();
         assert ct != null;
 
-        this.pushConstant(ai, new Integer(ai.values.length));
+        this.consT(ai, new Integer(ai.values.length));
         this.newArray(
             ai, // locatable
             1,  // dimExprCount
@@ -5659,9 +5537,10 @@ class UnitCompiler {
         );
 
         for (int i = 0; i < ai.values.length; ++i) {
-            this.writeOpcode(ai, Opcode.DUP);
-            this.pushConstant(ai, new Integer(i));
             ArrayInitializerOrRvalue aiorv = ai.values[i];
+
+            this.dup(aiorv);
+            this.consT(ai, i);
             if (aiorv instanceof Rvalue) {
                 Rvalue rv = (Rvalue) aiorv;
                 this.assignmentConversion(
@@ -5679,16 +5558,17 @@ class UnitCompiler {
                     "Unexpected array initializer or rvalue class " + aiorv.getClass().getName()
                 );
             }
-            this.writeOpcode(ai, Opcode.IASTORE + UnitCompiler.ilfdabcs(ct));
+            this.arraystore(aiorv, ct);
         }
     }
+
     private IClass
     compileGet2(Literal l) throws CompileException {
-        return this.pushConstant(l, this.getConstantValue(l));
+        return this.consT(l, this.getConstantValue(l));
     }
     private IClass
     compileGet2(SimpleConstant sl) throws CompileException {
-        return this.pushConstant(sl, sl.value);
+        return this.consT(sl, sl.value);
     }
 
     /**
@@ -5701,7 +5581,7 @@ class UnitCompiler {
         Object cv = this.getConstantValue(rv);
         if (cv != UnitCompiler.NOT_CONSTANT) {
             this.fakeCompile(rv); // To check that, e.g., "a" compiles in "true || a".
-            this.pushConstant(rv, cv);
+            this.consT(rv, cv);
             return this.getType(rv);
         }
 
@@ -5856,15 +5736,21 @@ class UnitCompiler {
 
     @Nullable private Object
     getConstantValue2(ConditionalExpression ce) throws CompileException {
-        Object lhsValue = this.getConstantValue(ce.lhs);
-        if (lhsValue instanceof Boolean) {
-            return (
-                ((Boolean) lhsValue).booleanValue()
-                ? this.getConstantValue(ce.mhs)
-                : this.getConstantValue(ce.rhs)
-            );
+
+        Object lhsCv = this.getConstantValue(ce.lhs);
+        if (!(lhsCv instanceof Boolean)) return UnitCompiler.NOT_CONSTANT;
+
+        IClass ceType = this.getType2(ce);
+
+        if (!ceType.isPrimitive() && ceType != this.iClassLoader.TYPE_java_lang_String) return UnitCompiler.NOT_CONSTANT;
+
+        if (((Boolean) lhsCv).booleanValue()) {
+            this.fakeCompile(ce.rhs);
+            return this.getConstantValue(ce.mhs);
+        } else {
+            this.fakeCompile(ce.mhs);
+            return this.getConstantValue(ce.rhs);
         }
-        return UnitCompiler.NOT_CONSTANT;
     }
 
     @Nullable private Object
@@ -6423,7 +6309,7 @@ class UnitCompiler {
     private void
     leave2(SynchronizedStatement ss, @Nullable IClass stackValueType) {
         this.load(ss, this.iClassLoader.TYPE_java_lang_Object, ss.monitorLvIndex);
-        this.writeOpcode(ss, Opcode.MONITOREXIT);
+        this.monitorexit(ss);
     }
 
     private void
@@ -6445,7 +6331,7 @@ class UnitCompiler {
                 this.store(ts, stackValueType, sv);
             }
 
-            this.writeBranch(ts, Opcode.JSR, fo);
+            this.jsr(ts, fo);
 
             if (stackValueType != null) {
                 this.load(ts, stackValueType, sv);
@@ -6491,11 +6377,10 @@ class UnitCompiler {
     }
     private void
     compileSet2(ArrayAccessExpression aae) throws CompileException {
-        this.writeOpcode(aae, Opcode.IASTORE + UnitCompiler.ilfdabcs(this.getType(aae)));
+        this.arraystore(aae, this.getType(aae));
     }
     private void
     compileSet2(FieldAccessExpression fae) throws CompileException {
-        this.determineValue(fae);
         this.compileSet(this.toLvalueOrCompileException(this.determineValue(fae)));
     }
     private void
@@ -7010,17 +6895,29 @@ class UnitCompiler {
             // JLS7 15.25, list 1, bullet 2: "b ? int : Integer => int"
             return mhsType;
         } else
-        if (this.getConstantValue(ce.mhs) == null) {
+        if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
 
-            // JLS7 15.25, list 1, bullet 3: "b ? null : ReferenceType => ReferenceType"
-            // JAVAC also converts "b ? null : int" to "Integer".
-            return (IClass) Objects.or(this.isBoxingConvertible(rhsType), rhsType);
+            // JLS7 15.25, list 1, bullet 3: "b ? null : String => String"
+            return rhsType;
         } else
-        if (this.getConstantValue(ce.rhs) == null) {
+        if (this.getConstantValue(ce.mhs) == null && this.isBoxingConvertible(rhsType) != null) {
 
-            // JLS7 15.25, list 1, bullet 3: "b ? ReferenceType : null => ReferenceType"
-            // JAVAC also converts "b ? int : null" to "Integer".
-            return (IClass) Objects.or(this.isBoxingConvertible(mhsType), mhsType);
+            // Undocumented JAVAC feature: "b ? null : 7 => Integer"
+            IClass result = this.isBoxingConvertible(rhsType);
+            assert result != null;
+            return result;
+        } else
+        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
+
+            // JLS7 15.25, list 1, bullet 3: "b ? String : null => String"
+            return mhsType;
+        } else
+        if (this.isBoxingConvertible(mhsType) != null && this.getConstantValue(ce.rhs) == null) {
+
+            // Undocumented JAVAC feature: "b ? 7 : null => Integer"
+            IClass result = this.isBoxingConvertible(mhsType);
+            assert result != null;
+            return result;
         } else
         if (this.isConvertibleToPrimitiveNumeric(mhsType) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
 
@@ -7034,28 +6931,55 @@ class UnitCompiler {
                 && (mhsType == IClass.SHORT || mhsType == this.iClassLoader.TYPE_java_lang_Short)
             ) return IClass.SHORT;
 
-            // JLS7 15.25, list 1, bullet 4, bullet 2: "b ? 127 : byte => byte"
+            // JLS7 15.25, list 1, bullet 4, bullet 2: "b ? (byte) 1 : byte => byte"
+            Object rhscv = this.getConstantValue(ce.rhs);
             if (
                 (mhsType == IClass.BYTE || mhsType == IClass.SHORT || mhsType == IClass.CHAR)
-                && ce.rhs.constantValue != null
-                && this.assignmentConversion(ce.rhs, this.getConstantValue(ce.rhs), mhsType) != null
+                && rhscv != null
+                && this.assignmentConversion(ce.rhs, rhscv, mhsType) != null
             ) return mhsType;
+            Object mhscv = this.getConstantValue(ce.mhs);
             if (
                 (rhsType == IClass.BYTE || rhsType == IClass.SHORT || rhsType == IClass.CHAR)
-                && ce.mhs.constantValue != null
-                && this.assignmentConversion(ce.mhs, this.getConstantValue(ce.mhs), rhsType) != null
+                && mhscv != null
+                && this.assignmentConversion(ce.mhs, mhscv, rhsType) != null
             ) return rhsType;
 
-            // TODO JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
+            // JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
+            if (
+                mhsType == IClass.INT
+                && rhsType == IClass.BYTE
+                && UnitCompiler.isByteConstant(mhscv) != null
+            ) {
+
+                // Fix up the constant to be a byte
+                ce.mhs.constantValue = UnitCompiler.isByteConstant(mhscv);
+                return IClass.BYTE;
+            }
+            if (
+                rhsType == IClass.INT
+                && mhsType == IClass.BYTE
+                && UnitCompiler.isByteConstant(rhscv) != null
+            ) {
+
+                // Fix up the constant to be a byte
+                ce.rhs.constantValue = UnitCompiler.isByteConstant(rhscv);
+                return IClass.BYTE;
+            }
 
             // JLS7 15.25, list 1, bullet 4, bullet 4: "b ? Integer : Double => double"
-            return this.binaryNumericPromotionType(ce, this.getUnboxedType(mhsType), this.getUnboxedType(rhsType));
-        } else
+            return this.binaryNumericPromotionType(
+                ce,
+                this.getUnboxedType(mhsType),
+                this.getUnboxedType(rhsType)
+            );
+        }
+
         if (!mhsType.isPrimitive() || !rhsType.isPrimitive()) {
 
-            mhsType = (IClass) Objects.or(this.isBoxingConvertible(mhsType), mhsType);
-            rhsType = (IClass) Objects.or(this.isBoxingConvertible(rhsType), rhsType);
-
+            // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
+//            mhsType = (IClass) Objects.or(this.isBoxingConvertible(mhsType), mhsType);
+//            rhsType = (IClass) Objects.or(this.isBoxingConvertible(rhsType), rhsType);
             return this.commonSupertype(mhsType, rhsType);
         } else
         {
@@ -7737,38 +7661,25 @@ class UnitCompiler {
 
         // Operator which is allowed for BYTE, SHORT, INT, LONG and BOOLEAN operands?
         if (operator == "|" || operator == "^" || operator == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality:5
-            final int iopcode = (
-                operator == "&" ? Opcode.IAND :
-                operator == "|" ? Opcode.IOR  :
-                operator == "^" ? Opcode.IXOR :
-                Integer.MAX_VALUE
-            );
 
             while (operands.hasNext()) {
                 Rvalue operand = (Rvalue) operands.next();
 
-                CodeContext.Inserter convertLhsInserter = this.getCodeContext().newInserter();
-                IClass               rhsType            = this.compileGetValue(operand);
+                IClass rhsType = this.getType(operand);
 
                 if (this.isConvertibleToPrimitiveNumeric(type) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
-                    IClass promotedType = this.binaryNumericPromotion(locatable, type, convertLhsInserter, rhsType);
-                    if (promotedType == IClass.INT) {
-                        this.writeOpcode(locatable, iopcode);
-                    } else
-                    if (promotedType == IClass.LONG) {
-                        this.writeOpcode(locatable, iopcode + 1);
-                    } else
-                    {
-                        this.compileError((
-                            "Operator \""
-                            + operator
-                            + "\" not defined on types \""
-                            + type
-                            + "\" and \""
-                            + rhsType
-                            + "\""
-                        ), locatable.getLocation());
+                    IClass promotedType = this.binaryNumericPromotionType(
+                        operand,
+                        this.getUnboxedType(type),
+                        this.getUnboxedType(rhsType)
+                    );
+                    if (promotedType != IClass.INT && promotedType != IClass.LONG) {
+                        throw new CompileException("Invalid operand type " + promotedType, operand.getLocation());
                     }
+                    this.numericPromotion(operand, this.convertToPrimitiveNumericType(operand, type), promotedType);
+                    this.compileGetValue(operand);
+                    this.numericPromotion(operand, this.convertToPrimitiveNumericType(operand, rhsType), promotedType);
+                    this.andOrXor(operand, operator);
                     type = promotedType;
                 } else
                 if (
@@ -7777,17 +7688,13 @@ class UnitCompiler {
                 ) {
                     IClassLoader icl = this.iClassLoader;
                     if (type == icl.TYPE_java_lang_Boolean) {
-                        this.getCodeContext().pushInserter(convertLhsInserter);
-                        try {
-                            this.unboxingConversion(locatable, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
-                        } finally {
-                            this.getCodeContext().popInserter();
-                        }
+                        this.unboxingConversion(locatable, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
                     }
+                    this.compileGetValue(operand);
                     if (rhsType == icl.TYPE_java_lang_Boolean) {
                         this.unboxingConversion(locatable, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
                     }
-                    this.writeOpcode(locatable, iopcode);
+                    this.andOrXor(operand, operator);
                     type = IClass.BOOLEAN;
                 } else
                 {
@@ -7808,15 +7715,6 @@ class UnitCompiler {
 
         // Operator which is allowed for INT, LONG, FLOAT, DOUBLE and (for operator '+') STRING operands?
         if (operator == "*" || operator == "/" || operator == "%" || operator == "+" || operator == "-") { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength:6
-            final int iopcode = (
-                operator == "*"   ? Opcode.IMUL :
-                operator == "/"   ? Opcode.IDIV :
-                operator == "%"   ? Opcode.IREM :
-                operator == "+"   ? Opcode.IADD :
-                operator == "-"   ? Opcode.ISUB :
-                Integer.MAX_VALUE
-            );
-
             while (operands.hasNext()) {
                 Rvalue operand = (Rvalue) operands.next();
 
@@ -7826,29 +7724,20 @@ class UnitCompiler {
                     || this.getType(operand) == this.iClassLoader.TYPE_java_lang_String
                 )) return this.compileStringConcatenation(locatable, type, operand, operands);
 
-                CodeContext.Inserter convertLhsInserter = this.getCodeContext().newInserter();
-                IClass               rhsType            = this.compileGetValue(operand);
+                // It's a numeric arithmetic operation.
+                IClass rhsType      = this.getType(operand);
+                IClass promotedType = this.binaryNumericPromotionType(
+                    operand,
+                    this.getUnboxedType(type),
+                    this.getUnboxedType(rhsType)
+                );
 
-                type = this.binaryNumericPromotion(locatable, type, convertLhsInserter, rhsType);
+                this.numericPromotion(operand, this.convertToPrimitiveNumericType(operand, type), promotedType);
+                this.compileGetValue(operand);
+                this.numericPromotion(operand, this.convertToPrimitiveNumericType(operand, rhsType), promotedType);
+                this.mulDivRemAddSub(operand, operator);
 
-                int opcode;
-                if (type == IClass.INT) {
-                    opcode = iopcode;
-                } else
-                if (type == IClass.LONG) {
-                    opcode = iopcode + 1;
-                } else
-                if (type == IClass.FLOAT) {
-                    opcode = iopcode + 2;
-                } else
-                if (type == IClass.DOUBLE) {
-                    opcode = iopcode + 3;
-                } else
-                {
-                    this.compileError("Unexpected promoted type \"" + type + "\"", locatable.getLocation());
-                    opcode = iopcode;
-                }
-                this.writeOpcode(locatable, opcode);
+                type = promotedType;
             }
 
             return type;
@@ -7856,38 +7745,19 @@ class UnitCompiler {
 
         // Operator which is allowed for BYTE, SHORT, INT and LONG lhs operand and BYTE, SHORT, INT or LONG rhs operand?
         if (operator == "<<" || operator == ">>" || operator == ">>>") { // SUPPRESS CHECKSTYLE StringLiteralEquality:4
-            final int iopcode = (
-                operator == "<<"  ? Opcode.ISHL  :
-                operator == ">>"  ? Opcode.ISHR  :
-                operator == ">>>" ? Opcode.IUSHR :
-                Integer.MAX_VALUE
-            );
 
             while (operands.hasNext()) {
-                type = this.unaryNumericPromotion(locatable, type);
+                Rvalue operand = (Rvalue) operands.next();
 
-                int opcode;
-                if (type == IClass.INT) {
-                    opcode = iopcode;
-                } else
-                if (type == IClass.LONG) {
-                    opcode = iopcode + 1;
-                } else
-                {
-                    this.compileError(
-                        "Shift operation not allowed on operand type \"" + type + "\"",
-                        locatable.getLocation()
-                    );
-                    opcode = iopcode;
-                }
+                type = this.unaryNumericPromotion(operand, type);
 
-                IClass rhsType         = this.compileGetValue((Rvalue) operands.next());
-                IClass promotedRhsType = this.unaryNumericPromotion(locatable, rhsType);
+                IClass rhsType         = this.compileGetValue(operand);
+                IClass promotedRhsType = this.unaryNumericPromotion(operand, rhsType);
                 if (promotedRhsType == IClass.INT) {
                     ;
                 } else
                 if (promotedRhsType == IClass.LONG) {
-                    this.writeOpcode(locatable, Opcode.L2I);
+                    this.l2i(operand);
                 } else
                 {
                     this.compileError(
@@ -7896,7 +7766,7 @@ class UnitCompiler {
                     );
                 }
 
-                this.writeOpcode(locatable, opcode);
+                this.shift(operand, operator);
             }
 
             return type;
@@ -7979,11 +7849,9 @@ class UnitCompiler {
         }
 
         // String concatenation through "new StringBuilder(a).append(b).append(c).append(d).toString()".
-        // "new StringBuilder(String a)":
-        this.writeOpcode(locatable, Opcode.NEW);
-        this.writeConstantClassInfo(Descriptor.JAVA_LANG_STRINGBUILDER);
-        this.writeOpcode(locatable, Opcode.DUP_X1);
-        this.writeOpcode(locatable, Opcode.SWAP);
+        this.neW(locatable, this.iClassLoader.TYPE_java_lang_StringBuilder);
+        this.dupx(locatable);
+        this.swap(locatable);
         this.invoke(locatable, this.iClassLoader.CTOR_java_lang_StringBuilder__java_lang_String);
 
         for (Iterator<Rvalue> it = tmp.iterator(); it.hasNext();) {
@@ -8090,8 +7958,8 @@ class UnitCompiler {
                 if (fieldName.equals(ec.name)) {
 
                     // Now we know that this field IS an enum constant.
-                    this.pushConstant(locatable, fieldName);
-                    this.pushConstant(locatable, ordinal);
+                    this.consT(locatable, fieldName);
+                    this.consT(locatable, ordinal);
                     break ENUM_CONSTANT;
                 }
                 ordinal++;
@@ -8155,7 +8023,7 @@ class UnitCompiler {
                                     + "\" declared in an enclosing block because none of the methods accesses it. "
                                     + "As a workaround, declare a dummy method that accesses the local variable."
                                 ), locatable.getLocation());
-                                this.writeOpcode(locatable, Opcode.ACONST_NULL);
+                                this.consT(locatable, (Object) null);
                             } else {
                                 this.load(locatable, syntheticParameter);
                             }
@@ -8167,7 +8035,7 @@ class UnitCompiler {
                                 + "\" declared in an enclosing block because none of the methods accesses it. "
                                 + "As a workaround, declare a dummy method that accesses the local variable."
                             ), locatable.getLocation());
-                            this.writeOpcode(scopeTbd, Opcode.ACONST_NULL);
+                            this.consT(locatable, (Object) null);
                         } else
                         {
                             throw new AssertionError(scopeTbd);
@@ -9005,6 +8873,9 @@ class UnitCompiler {
         }
     }
 
+    /**
+     * @return Either the {@link FieldAccess} or an {@link ArrayLength}
+     */
     private Rvalue
     determineValue(FieldAccessExpression fae) throws CompileException {
         if (fae.value != null) return fae.value;
@@ -10192,7 +10063,7 @@ class UnitCompiler {
         int i;
         if (declaringTypeBodyDeclaration instanceof ConstructorDeclarator) {
             if (j == 0) {
-                this.writeOpcode(locatable, Opcode.ALOAD_0);
+                this.load(locatable, this.resolve(declaringClass), 0);
                 return;
             }
 
@@ -10207,7 +10078,7 @@ class UnitCompiler {
             this.load(locatable, syntheticParameter);
             i = 1;
         } else {
-            this.writeOpcode(locatable, Opcode.ALOAD_0);
+            this.load(locatable, this.resolve(declaringClass), 0);
             i = 0;
         }
         for (; i < j; ++i) {
@@ -10686,126 +10557,91 @@ class UnitCompiler {
         return result;
     }
 
+    // ============================================ BYTECODE INSTRUCTIONS ============================================
+
     /**
-     * @param value A {@link Character}, {@link Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float},
-     *              {@link Double}, {@link String}, {@link Boolean}, {@link IClass} or {@code null}
-     * @return      The type of the value that was pushed, e.g. {@link IClass#INT} for {@link Byte}
+     * Pushes one value on the operand stack and pushes the respective {@link VerificationTypeInfo} operand to the
+     * stack map.
+     * <table border="border">
+     *   <tr><th><var>value</var></th><th>Operand stack value</th><th>Verification type info</th></tr>
+     *   <tr>
+     *     <td>
+     *       {@link Character}
+     *       <br />
+     *       {@link Byte}
+     *       <br />
+     *       {@link Short}
+     *       <br />
+     *       {@link Integer}
+     *       <br />
+     *       {@link Boolean}
+     *     </td>
+     *     <td>{@code int}</td>
+     *     <td>{@code integer_variable_info}</td>
+     *   </tr>
+     *   <tr><td>{@link Float}</td><td>{@code float}</td><td>{@code float_variable_info}</td></tr>
+     *   <tr><td>{@link Long}</td><td>{@code msb+lsb} of {@code long}</td><td>{@code long_variable_info}</td></tr>
+     *   <tr><td>{@link Double}</td><td>{@code msb+lsb} of {@code double}</td><td>{@code double_variable_info}</td></tr>
+     *   <tr><td>{@link String}</td><td>{@code ConstantStringInfo} CP index</td><td>{@code object_variable_info(String)}</td></tr>
+     *   <tr><td>{@link IClass}</td><td>{@code ConstantClassInfo} CP index</td><td>{@code object_variable_info(iClass.descriptor())}</td></tr>
+     *   <tr><td>{@code null}</td><td>{@code null}</td><td>{@code null_variable_info(iClass.descriptor())}</td></tr>
+     * </table>
+     *
+     * @return The computational type of the value that was pushed, e.g. {@link IClass#INT} for {@link Byte} or {@link
+     *         IClass#VOID} for {@code null}
      */
     private IClass
-    pushConstant(Locatable locatable, @Nullable Object value) throws CompileException {
+    consT(Locatable locatable, @Nullable Object value) throws CompileException {
 
-        PUSH_INTEGER_CONSTANT: {
-            int iv;
-            if (value instanceof Character) {
-                iv = ((Character) value).charValue();
-            } else
-            if (value instanceof Byte) {
-                iv = ((Byte) value).intValue();
-            } else
-            if (value instanceof Short) {
-                iv = ((Short) value).intValue();
-            } else
-            if (value instanceof Integer) {
-                iv = ((Integer) value).intValue();
-            } else
-            {
-                break PUSH_INTEGER_CONSTANT;
-            }
-
-            if (iv >= -1 && iv <= 5) {
-                this.writeOpcode(locatable, Opcode.ICONST_0 + iv);
-            } else
-            if (iv >= Byte.MIN_VALUE && iv <= Byte.MAX_VALUE) {
-                this.writeOpcode(locatable, Opcode.BIPUSH);
-                this.writeByte((byte) iv);
-            } else
-            if (iv >= Short.MIN_VALUE && iv <= Short.MAX_VALUE) {
-                this.writeOpcode(locatable, Opcode.SIPUSH);
-                this.writeShort(iv);
-            } else
-            {
-                this.writeLdc(locatable, this.addConstantIntegerInfo(iv));
-            }
+        if (value instanceof Character) {
+            this.consT(locatable, ((Character) value).charValue());
             return IClass.INT;
         }
-
-        if (value instanceof Long) {
-            long lv = ((Long) value).longValue();
-
-            if (lv == 0L) {
-                this.writeOpcode(locatable, Opcode.LCONST_0);
-            } else
-            if (lv == 1L) {
-                this.writeOpcode(locatable, Opcode.LCONST_1);
-            } else
-            {
-                this.writeOpcode(locatable, Opcode.LDC2_W);
-                this.writeConstantLongInfo(lv);
-            }
-            return IClass.LONG;
+        if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
+            this.consT(locatable, ((Number) value).intValue());
+            return IClass.INT;
         }
-
+        if (Boolean.TRUE.equals(value)) {
+            this.consT(locatable, 1);
+            return IClass.BOOLEAN;
+        }
+        if (Boolean.FALSE.equals(value)) {
+            this.consT(locatable, 0);
+            return IClass.BOOLEAN;
+        }
         if (value instanceof Float) {
-            float fv = ((Float) value).floatValue();
-
-            if (
-                Float.floatToIntBits(fv) == Float.floatToIntBits(0.0F) // POSITIVE zero!
-                || fv == 1.0F
-                || fv == 2.0F
-            ) {
-                this.writeOpcode(locatable, Opcode.FCONST_0 + (int) fv);
-            } else
-            {
-                this.writeLdc(locatable, this.addConstantFloatInfo(fv));
-            }
+            this.consT(locatable, ((Float) value).floatValue());
             return IClass.FLOAT;
         }
-
+        if (value instanceof Long) {
+            this.consT(locatable, ((Long) value).longValue());
+            return IClass.LONG;
+        }
         if (value instanceof Double) {
-            double dv = ((Double) value).doubleValue();
-
-            if (
-                Double.doubleToLongBits(dv) == Double.doubleToLongBits(0.0D) // POSITIVE zero!
-                || dv == 1.0D
-            ) {
-                this.writeOpcode(locatable, Opcode.DCONST_0 + (int) dv);
-            } else
-            {
-                this.writeOpcode(locatable, Opcode.LDC2_W);
-                this.writeConstantDoubleInfo(dv);
-            }
+            this.consT(locatable, ((Double) value).doubleValue());
             return IClass.DOUBLE;
         }
 
         if (value instanceof String) {
             String   s  = (String) value;
             String[] ss = UnitCompiler.makeUtf8Able(s);
-            this.writeLdc(locatable, this.addConstantStringInfo(ss[0]));
+            this.consT(locatable, ss[0]);
             for (int i = 1; i < ss.length; ++i) {
-                this.writeLdc(locatable, this.addConstantStringInfo(ss[i]));
+                this.consT(locatable, ss[i]);
                 this.invoke(locatable, this.iClassLoader.METH_java_lang_String__concat__java_lang_String);
             }
             return this.iClassLoader.TYPE_java_lang_String;
         }
 
-        if (Boolean.TRUE.equals(value)) {
-            this.writeOpcode(locatable, Opcode.ICONST_1);
-            return IClass.BOOLEAN;
-        }
-
-        if (Boolean.FALSE.equals(value)) {
-            this.writeOpcode(locatable, Opcode.ICONST_0);
-            return IClass.BOOLEAN;
-        }
-
         if (value instanceof IClass) {
-            IClass   iClass  = (IClass) value;
-            this.writeLdc(locatable, this.getCodeContext().getClassFile().addConstantClassInfo(iClass.getDescriptor()));
+            this.consT(locatable, (IClass) value);
             return this.iClassLoader.TYPE_java_lang_Class;
         }
 
         if (value == null) {
-            this.writeOpcode(locatable, Opcode.ACONST_NULL);
+            this.addLineNumberOffset(locatable);
+            this.write(Opcode.ACONST_NULL);
+            this.getCodeContext().pushNullOperand();
             return IClass.VOID;
         }
 
@@ -10855,14 +10691,137 @@ class UnitCompiler {
     }
 
     private void
-    writeLdc(Locatable locatable, short index) {
-        if (0 <= index && index <= 255) {
-            this.writeOpcode(locatable, Opcode.LDC);
-            this.writeByte((byte) index);
-        } else {
-            this.writeOpcode(locatable, Opcode.LDC_W);
-            this.writeShort(index);
+    consT(Locatable locatable, IClass t, int value) {
+        if (t == IClass.BYTE || t == IClass.CHAR || t == IClass.INT || t == IClass.SHORT || t == IClass.BOOLEAN) {
+            this.consT(locatable, value);
+        } else
+        if (t == IClass.LONG) {
+            this.consT(locatable, (long) value);
+        } else
+        if (t == IClass.FLOAT) {
+            this.consT(locatable, (float) value);
+        } else
+        if (t == IClass.DOUBLE) {
+            this.consT(locatable, (double) value);
+        } else
+        {
+            throw new AssertionError(t);
         }
+    }
+
+    private void
+    consT(Locatable locatable, int value) {
+
+        this.addLineNumberOffset(locatable);
+
+        if (value >= -1 && value <= 5) {
+            this.write(Opcode.ICONST_0 + value);
+        } else
+        if (value >= Byte.MIN_VALUE && value <= Byte.MAX_VALUE) {
+            this.write(Opcode.BIPUSH);
+            this.writeByte(value);
+        } else
+        if (value >= Short.MIN_VALUE && value <= Short.MAX_VALUE) {
+            this.write(Opcode.SIPUSH);
+            this.writeShort(value);
+        } else {
+            this.writeLdc(this.addConstantIntegerInfo(value));
+        }
+
+        this.getCodeContext().pushIntOperand();
+    }
+
+    private void
+    consT(Locatable locatable, long value) {
+
+        this.addLineNumberOffset(locatable);
+
+        if (value == 0L || value == 1L) {
+            this.write(Opcode.LCONST_0 + (int) value);
+        } else
+        {
+            this.writeLdc2(this.addConstantLongInfo(value));
+        }
+
+        this.getCodeContext().pushLongOperand();
+    }
+
+    private void
+    consT(Locatable locatable, float value) {
+
+        this.addLineNumberOffset(locatable);
+
+        if (
+            Float.floatToIntBits(value) == Float.floatToIntBits(0.0F) // POSITIVE zero!
+            || value == 1.0F
+            || value == 2.0F
+        ) {
+            this.write(Opcode.FCONST_0 + (int) value);
+        } else {
+            this.writeLdc(this.addConstantFloatInfo(value));
+        }
+
+        this.getCodeContext().pushFloatOperand();
+    }
+
+    private void
+    consT(Locatable locatable, double value) {
+
+        this.addLineNumberOffset(locatable);
+
+        if (
+            Double.doubleToLongBits(value) == Double.doubleToLongBits(0.0D) // POSITIVE zero!
+            || value == 1.0D
+        ) {
+            this.write(Opcode.DCONST_0 + (int) value);
+        } else {
+            this.writeLdc2(this.addConstantDoubleInfo(value));
+        }
+
+        this.getCodeContext().pushDoubleOperand();
+    }
+
+    private void
+    consT(Locatable locatable, final String s) {
+        this.addLineNumberOffset(locatable);
+        this.writeLdc(this.addConstantStringInfo(s));
+        this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_STRING);
+    }
+
+    private void
+    consT(Locatable locatable, IClass iClass) {
+        this.addLineNumberOffset(locatable);
+        this.writeLdc(this.addConstantClassInfo(iClass));
+        this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_CLASS);
+    }
+
+    private void
+    castConversion(
+        Locatable        locatable,
+        IClass           sourceType,
+        IClass           targetType,
+        @Nullable Object constantValue
+    ) throws CompileException {
+        if (!this.tryCastConversion(locatable, sourceType, targetType, constantValue)) {
+            this.compileError(
+                "Cast conversion not possible from type \"" + sourceType + "\" to type \"" + targetType + "\"",
+                locatable.getLocation()
+            );
+        }
+    }
+
+    private boolean
+    tryCastConversion(
+        Locatable        locatable,
+        IClass           sourceType,
+        IClass           targetType,
+        @Nullable Object constantValue
+    ) throws CompileException {
+        return (
+            this.tryAssignmentConversion(locatable, sourceType, targetType, constantValue)
+            || this.tryNarrowingPrimitiveConversion(locatable, sourceType, targetType)
+            || this.tryNarrowingReferenceConversion(locatable, sourceType, targetType)
+        );
     }
 
     /**
@@ -10903,7 +10862,11 @@ class UnitCompiler {
         if (this.tryWideningPrimitiveConversion(locatable, sourceType, targetType)) return true;
 
         // JLS7 5.1.4 Widening reference conversion.
-        if (this.isWideningReferenceConvertible(sourceType, targetType)) return true;
+        if (this.isWideningReferenceConvertible(sourceType, targetType)) {
+            this.getCodeContext().popOperand(sourceType.getDescriptor());
+            this.getCodeContext().pushOperand(targetType.getDescriptor());
+            return true;
+        }
 
         // A boxing conversion (JLS7 5.1.7) optionally followed by a widening reference conversion.
         {
@@ -11060,6 +11023,9 @@ class UnitCompiler {
         } else
         if (value == null && !targetType.isPrimitive()) {
             return null;
+        } else
+        if (value instanceof String && targetType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_String)) {
+            return value;
         }
 
         if (value == null) {
@@ -11096,7 +11062,7 @@ class UnitCompiler {
     }
 
     private void
-    reverseUnaryNumericPromotion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
+    reverseUnaryNumericPromotion(Locatable locatable, IClass sourceType, IClass targetType) {
         IClass unboxedType = this.isUnboxingConvertible(targetType);
         IClass pt          = unboxedType != null ? unboxedType : targetType;
         if (
@@ -11116,7 +11082,9 @@ class UnitCompiler {
      */
     private IClass
     convertToPrimitiveNumericType(Locatable locatable, IClass type) throws CompileException {
+
         if (type.isPrimitiveNumeric()) return type;
+
         IClass unboxedType = this.isUnboxingConvertible(type);
         if (unboxedType != null) {
             this.unboxingConversion(locatable, type, unboxedType);
@@ -11156,72 +11124,6 @@ class UnitCompiler {
             type == IClass.LONG   ? IClass.LONG   :
             IClass.INT
         );
-    }
-
-    /**
-     * Implements "binary numeric promotion" (5.6.2)
-     *
-     * @return The promoted type
-     */
-    private IClass
-    binaryNumericPromotion(
-        Locatable            locatable,
-        IClass               type1,
-        CodeContext.Inserter convertInserter1,
-        IClass               type2
-    ) throws CompileException {
-        return this.binaryNumericPromotion(
-            locatable,
-            type1,
-            convertInserter1,
-            type2,
-            this.getCodeContext().currentInserter()
-        );
-    }
-
-    /**
-     * Implements "binary numeric promotion" (5.6.2), which may perform unboxing conversion.
-     *
-     * @return The promoted type
-     */
-    private IClass
-    binaryNumericPromotion(
-        Locatable                      locatable,
-        IClass                         type1,
-        @Nullable CodeContext.Inserter convertInserter1,
-        IClass                         type2,
-        @Nullable CodeContext.Inserter convertInserter2
-    ) throws CompileException {
-        IClass promotedType;
-        {
-            IClass c1 = this.isUnboxingConvertible(type1);
-            IClass c2 = this.isUnboxingConvertible(type2);
-            promotedType = this.binaryNumericPromotionType(
-                locatable,
-                c1 != null ? c1 : type1,
-                c2 != null ? c2 : type2
-            );
-        }
-
-        if (convertInserter1 != null) {
-            this.getCodeContext().pushInserter(convertInserter1);
-            try {
-                this.numericPromotion(locatable, this.convertToPrimitiveNumericType(locatable, type1), promotedType);
-            } finally {
-                this.getCodeContext().popInserter();
-            }
-        }
-
-        if (convertInserter2 != null) {
-            this.getCodeContext().pushInserter(convertInserter2);
-            try {
-                this.numericPromotion(locatable, this.convertToPrimitiveNumericType(locatable, type2), promotedType);
-            } finally {
-                this.getCodeContext().popInserter();
-            }
-        }
-
-        return promotedType;
     }
 
     private IClass
@@ -11271,60 +11173,63 @@ class UnitCompiler {
      */
     private boolean
     tryWideningPrimitiveConversion(Locatable locatable, IClass sourceType, IClass targetType) {
-        byte[] opcodes = (byte[]) UnitCompiler.PRIMITIVE_WIDENING_CONVERSIONS.get(
+        int[] opcodes = (int[]) UnitCompiler.PRIMITIVE_WIDENING_CONVERSIONS.get(
             sourceType.getDescriptor() + targetType.getDescriptor()
         );
         if (opcodes != null) {
-            this.writeOpcodes(locatable, opcodes);
+            this.addLineNumberOffset(locatable);
+            for (int opcode : opcodes) this.write(opcode);
+            this.getCodeContext().popOperand();
+            this.getCodeContext().pushOperand(targetType.getDescriptor());
             return true;
         }
         return false;
     }
 
-    private static final Map<String /*descriptor*/, byte[] /*opcodes*/>
-    PRIMITIVE_WIDENING_CONVERSIONS = new HashMap<String, byte[]>();
+    private static final Map<String /*descriptor*/, int[] /*opcodes*/>
+    PRIMITIVE_WIDENING_CONVERSIONS = new HashMap<String, int[]>();
 
     static { UnitCompiler.fillConversionMap(new Object[] {
-        new byte[0],
-        Descriptor.BYTE  + Descriptor.SHORT,
 
+        new int[0],
+        Descriptor.BYTE  + Descriptor.SHORT,
         Descriptor.BYTE  + Descriptor.INT,
         Descriptor.SHORT + Descriptor.INT,
         Descriptor.CHAR  + Descriptor.INT,
 
-        new byte[] { Opcode.I2L },
+        new int[] { Opcode.I2L },
         Descriptor.BYTE  + Descriptor.LONG,
         Descriptor.SHORT + Descriptor.LONG,
         Descriptor.CHAR  + Descriptor.LONG,
         Descriptor.INT   + Descriptor.LONG,
 
-        new byte[] { Opcode.I2F },
+        new int[] { Opcode.I2F },
         Descriptor.BYTE  + Descriptor.FLOAT,
         Descriptor.SHORT + Descriptor.FLOAT,
         Descriptor.CHAR  + Descriptor.FLOAT,
         Descriptor.INT   + Descriptor.FLOAT,
 
-        new byte[] { Opcode.L2F },
+        new int[] { Opcode.L2F },
         Descriptor.LONG  + Descriptor.FLOAT,
 
-        new byte[] { Opcode.I2D },
+        new int[] { Opcode.I2D },
         Descriptor.BYTE  + Descriptor.DOUBLE,
         Descriptor.SHORT + Descriptor.DOUBLE,
         Descriptor.CHAR  + Descriptor.DOUBLE,
         Descriptor.INT   + Descriptor.DOUBLE,
 
-        new byte[] { Opcode.L2D },
+        new int[] { Opcode.L2D },
         Descriptor.LONG  + Descriptor.DOUBLE,
 
-        new byte[] { Opcode.F2D },
+        new int[] { Opcode.F2D },
         Descriptor.FLOAT + Descriptor.DOUBLE,
     }, UnitCompiler.PRIMITIVE_WIDENING_CONVERSIONS); }
     private static void
-    fillConversionMap(Object[] array, Map<String /*descriptor*/, byte[] /*opcodes*/> map) {
-        byte[] opcodes = null;
+    fillConversionMap(Object[] array, Map<String /*descriptor*/, int[] /*opcodes*/> map) {
+        int[] opcodes = null;
         for (Object o : array) {
-            if (o instanceof byte[]) {
-                opcodes = (byte[]) o;
+            if (o instanceof int[]) {
+                opcodes = (int[]) o;
             } else {
                 map.put((String) o, opcodes);
             }
@@ -11338,18 +11243,6 @@ class UnitCompiler {
      */
     @SuppressWarnings("static-method") private boolean
     isWideningReferenceConvertible(IClass sourceType, IClass targetType) throws CompileException {
-        if (targetType.isPrimitive() || sourceType == targetType) return false;
-
-        return targetType.isAssignableFrom(sourceType);
-    }
-
-    /**
-     * Performs "widening reference conversion" (5.1.4) if possible.
-     *
-     * @return Whether the conversion was possible
-     */
-    @SuppressWarnings("static-method") private boolean
-    tryWideningReferenceConversion(IClass sourceType, IClass targetType) throws CompileException {
         if (targetType.isPrimitive() || sourceType == targetType) return false;
 
         return targetType.isAssignableFrom(sourceType);
@@ -11372,73 +11265,77 @@ class UnitCompiler {
      */
     private boolean
     tryNarrowingPrimitiveConversion(Locatable locatable, IClass sourceType, IClass targetType) {
-        byte[] opcodes = (byte[]) UnitCompiler.PRIMITIVE_NARROWING_CONVERSIONS.get(
+        int[] opcodes = (int[]) UnitCompiler.PRIMITIVE_NARROWING_CONVERSIONS.get(
             sourceType.getDescriptor() + targetType.getDescriptor()
         );
         if (opcodes != null) {
-            this.writeOpcodes(locatable, opcodes);
+            this.addLineNumberOffset(locatable);
+            for (int opcode : opcodes) this.write(opcode);
+            this.getCodeContext().popOperand();
+            this.getCodeContext().pushOperand(targetType.getDescriptor());
             return true;
         }
         return false;
     }
 
-    private static final Map<String /*descriptor*/, byte[] /*opcodes*/>
-    PRIMITIVE_NARROWING_CONVERSIONS = new HashMap<String, byte[]>();
+    private static final Map<String /*descriptor*/, int[] /*opcodes*/>
+    PRIMITIVE_NARROWING_CONVERSIONS = new HashMap<String, int[]>();
 
     static { UnitCompiler.fillConversionMap(new Object[] {
-        new byte[0],
+
+        new int[0],
         Descriptor.BYTE + Descriptor.CHAR,
         Descriptor.SHORT + Descriptor.CHAR,
         Descriptor.CHAR + Descriptor.SHORT,
 
-        new byte[] { Opcode.I2B },
+        new int[] { Opcode.I2B },
         Descriptor.SHORT + Descriptor.BYTE,
         Descriptor.CHAR + Descriptor.BYTE,
         Descriptor.INT + Descriptor.BYTE,
 
-        new byte[] { Opcode.I2S },
+        new int[] { Opcode.I2S },
         Descriptor.INT + Descriptor.SHORT,
 
-        new byte[] { Opcode.I2C },
+        new int[] { Opcode.I2C },
         Descriptor.INT + Descriptor.CHAR,
 
-        new byte[] { Opcode.L2I, Opcode.I2B },
+        new int[] { Opcode.L2I, Opcode.I2B },
         Descriptor.LONG + Descriptor.BYTE,
 
-        new byte[] { Opcode.L2I, Opcode.I2S },
+        new int[] { Opcode.L2I, Opcode.I2S },
         Descriptor.LONG + Descriptor.SHORT,
         Descriptor.LONG + Descriptor.CHAR,
 
-        new byte[] { Opcode.L2I },
+        new int[] { Opcode.L2I },
         Descriptor.LONG + Descriptor.INT,
 
-        new byte[] { Opcode.F2I, Opcode.I2B },
+        new int[] { Opcode.F2I, Opcode.I2B },
         Descriptor.FLOAT + Descriptor.BYTE,
 
-        new byte[] { Opcode.F2I, Opcode.I2S },
+        new int[] { Opcode.F2I, Opcode.I2S },
         Descriptor.FLOAT + Descriptor.SHORT,
         Descriptor.FLOAT + Descriptor.CHAR,
 
-        new byte[] { Opcode.F2I },
+        new int[] { Opcode.F2I },
         Descriptor.FLOAT + Descriptor.INT,
 
-        new byte[] { Opcode.F2L },
+        new int[] { Opcode.F2L },
         Descriptor.FLOAT + Descriptor.LONG,
 
-        new byte[] { Opcode.D2I, Opcode.I2B },
+        new int[] { Opcode.D2I, Opcode.I2B },
         Descriptor.DOUBLE + Descriptor.BYTE,
 
-        new byte[] { Opcode.D2I, Opcode.I2S },
+        new int[] { Opcode.D2I, Opcode.I2S },
         Descriptor.DOUBLE + Descriptor.SHORT,
         Descriptor.DOUBLE + Descriptor.CHAR,
 
-        new byte[] { Opcode.D2I },
+        new int[] { Opcode.D2I },
         Descriptor.DOUBLE + Descriptor.INT,
 
-        new byte[] { Opcode.D2L },
+        new int[] { Opcode.D2L },
         Descriptor.DOUBLE + Descriptor.LONG,
 
-        new byte[] { Opcode.D2F },
+        new int[] { Opcode.D2F },
         Descriptor.DOUBLE + Descriptor.FLOAT,
     }, UnitCompiler.PRIMITIVE_NARROWING_CONVERSIONS); }
 
@@ -11449,8 +11346,7 @@ class UnitCompiler {
      * @param targetType    The type to convert to
      */
     private boolean
-    tryConstantAssignmentConversion(Locatable locatable, @Nullable Object constantValue, IClass targetType)
-    throws CompileException {
+    tryConstantAssignmentConversion(Locatable locatable, @Nullable Object constantValue, IClass targetType) {
         UnitCompiler.LOGGER.entering(
             null,
             "tryConstantAssignmentConversion",
@@ -11553,8 +11449,12 @@ class UnitCompiler {
     tryNarrowingReferenceConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
         if (!this.isNarrowingReferenceConvertible(sourceType, targetType)) return false;
 
-        this.writeOpcode(locatable, Opcode.CHECKCAST);
-        this.writeConstantClassInfo(targetType.getDescriptor());
+        this.addLineNumberOffset(locatable);
+        this.write(Opcode.CHECKCAST);
+        this.writeConstantClassInfo(targetType);
+        this.getCodeContext().popOperand();
+        this.getCodeContext().pushObjectOperand(targetType.getDescriptor());
+
         return true;
     }
 
@@ -11588,7 +11488,7 @@ class UnitCompiler {
     }
 
     private boolean
-    tryBoxingConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
+    tryBoxingConversion(Locatable locatable, IClass sourceType, IClass targetType) {
         if (this.isBoxingConvertible(sourceType) == targetType) {
             this.boxingConversion(locatable, sourceType, targetType);
             return true;
@@ -11596,61 +11496,23 @@ class UnitCompiler {
         return false;
     }
 
-    private void
-    boxingConversion(Locatable locatable, IClass sourceType, IClass targetType, @Nullable Inserter inserter)
-    throws CompileException {
-        if (inserter == null) {
-            this.boxingConversion(locatable, sourceType, targetType);
-        } else {
-            this.getCodeContext().pushInserter(inserter);
-            try {
-                this.boxingConversion(locatable, sourceType, targetType);
-            } finally {
-                this.getCodeContext().popInserter();
-            }
-        }
-    }
-
     /**
      * @param sourceType a primitive type (except VOID)
      * @param targetType the corresponding wrapper type
      */
     private void
-    boxingConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
+    boxingConversion(Locatable locatable, IClass sourceType, IClass targetType) {
 
-        // In some pre-1.5 JDKs, only some wrapper classes have the static "Target.valueOf(source)" method.
-        if (targetType.hasIMethod("valueOf", new IClass[] { sourceType })) {
-            this.writeOpcode(locatable, Opcode.INVOKESTATIC);
-            this.writeConstantMethodrefInfo(
-                targetType.getDescriptor(), // classFD
-                "valueOf",                  // methodName
-                new MethodDescriptor(       // methodFD
-                    targetType.getDescriptor(), // returnFd
-                    sourceType.getDescriptor()  // parameterFds...
-                )
-            );
-            return;
-        }
-        // new Target(source)
-        this.writeOpcode(locatable, Opcode.NEW);
-        this.writeConstantClassInfo(targetType.getDescriptor());
-        if (Descriptor.hasSize2(sourceType.getDescriptor())) {
-            this.writeOpcode(locatable, Opcode.DUP_X2);
-            this.writeOpcode(locatable, Opcode.DUP_X2);
-            this.writeOpcode(locatable, Opcode.POP);
-        } else
-        {
-            this.writeOpcode(locatable, Opcode.DUP_X1);
-            this.writeOpcode(locatable, Opcode.SWAP);
-        }
-        this.writeOpcode(locatable, Opcode.INVOKESPECIAL);
-        this.writeConstantMethodrefInfo(
-            targetType.getDescriptor(), // classFd
-            "<init>",                   // methodName
-            new MethodDescriptor(       // methodFD
-                Descriptor.VOID,           // returnFd
-                sourceType.getDescriptor() // parameterFds...
-            )
+        this.invokeMethod(
+            locatable,            // locatable
+            Opcode.INVOKESTATIC,  // opcode
+            targetType,           // declaringIClass
+            "valueOf",            // methodName
+            new MethodDescriptor( // methodFD
+                targetType.getDescriptor(), // returnFd
+                sourceType.getDescriptor()  // parameterFds...
+            ),
+            false                 // useInterfaceMethodref
         );
     }
 
@@ -11682,38 +11544,6 @@ class UnitCompiler {
         return unboxedType != null && unboxedType.isPrimitiveNumeric();
     }
 
-    private boolean
-    tryUnboxingConversion(
-        Locatable          locatable,
-        IClass             sourceType,
-        IClass             targetType,
-        @Nullable Inserter inserter
-    ) {
-        if (this.isUnboxingConvertible(sourceType) == targetType) {
-            this.unboxingConversion(locatable, sourceType, targetType, inserter);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param targetType a primitive type (except VOID)
-     * @param sourceType the corresponding wrapper type
-     */
-    private void
-    unboxingConversion(Locatable locatable, IClass sourceType, IClass targetType, @Nullable Inserter inserter) {
-        if (inserter == null) {
-            this.unboxingConversion(locatable, sourceType, targetType);
-        } else {
-            this.getCodeContext().pushInserter(inserter);
-            try {
-                this.unboxingConversion(locatable, sourceType, targetType);
-            } finally {
-                this.getCodeContext().popInserter();
-            }
-        }
-    }
-
     /**
      * @param targetType a primitive type (except VOID)
      * @param sourceType the corresponding wrapper type
@@ -11721,12 +11551,14 @@ class UnitCompiler {
     private void
     unboxingConversion(Locatable locatable, IClass sourceType, IClass targetType) {
 
-        // "source.targetValue()"
-        this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
-        this.writeConstantMethodrefInfo(
-            sourceType.getDescriptor(),                                     // classFD
-            targetType.toString() + "Value",                                // methodName
-            new MethodDescriptor(targetType.getDescriptor(), new String[0]) // methodFD
+        // "source.intValue()"
+        this.invokeMethod(
+            locatable,                                                       // locatable
+            Opcode.INVOKEVIRTUAL,                                            // opcode
+            sourceType,                                                      // declaringIClass
+            targetType.toString() + "Value",                                 // methodName
+            new MethodDescriptor(targetType.getDescriptor(), new String[0]), // methodMd
+            false                                                            // useInterfaceMethodref
         );
     }
 
@@ -11754,26 +11586,628 @@ class UnitCompiler {
         return null;
     }
 
+    /**
+     * Allowed values of <var>opIdx</var>:
+     * <ul>
+     *   <li>"==" ? 0</li>
+     *   <li>"!=" ? 1</li>
+     *   <li>"<"  ? 2</li>
+     *   <li>">=" ? 3</li>
+     *   <li>">"  ? 4</li>
+     *   <li>"<=" ? 5</li>
+     * </ul>
+     */
+    private void
+    ifNumeric(Locatable locatable, int opIdx, Offset dst) {
+        assert opIdx >= 0 && opIdx <= 5;
+
+        VerificationTypeInfo topOperand = this.getCodeContext().peekOperand();
+
+        if (topOperand == StackMapTableAttribute.INTEGER_VARIABLE_INFO) {
+            this.if_icmpxx(locatable, opIdx, dst);
+        } else
+        if (
+            topOperand == StackMapTableAttribute.LONG_VARIABLE_INFO
+            || topOperand == StackMapTableAttribute.FLOAT_VARIABLE_INFO
+            || topOperand == StackMapTableAttribute.DOUBLE_VARIABLE_INFO
+        ) {
+            this.cmp(locatable, opIdx);
+            this.ifxx(locatable, opIdx, dst);
+        } else
+        {
+            throw new InternalCompilerException("Unexpected computational type \"" + topOperand + "\"");
+        }
+    }
+
+    // ============================= BYTE CODE GENERATION METHODS, IN ALPHABETICAL ORDER =============================
+
+    private void
+    add(Locatable locatable) { this.mulDivRemAddSub(locatable, "+"); }
+
+    private void
+    andOrXor(Locatable locatable, String operator) {
+
+        VerificationTypeInfo operand2 = this.getCodeContext().popIntOrLongOperand();
+        VerificationTypeInfo operand1 = this.getCodeContext().popIntOrLongOperand();
+
+        assert operand1 == operand2;
+
+        final int opcode = (
+            operator == "&" ? Opcode.IAND :
+            operator == "|" ? Opcode.IOR  :
+            operator == "^" ? Opcode.IXOR :
+            Integer.MAX_VALUE
+        ) + (operand1 == StackMapTableAttribute.LONG_VARIABLE_INFO ? 1 : 0);
+
+        this.addLineNumberOffset(locatable);
+        this.write(opcode);
+        this.getCodeContext().pushOperand(operand1);
+    }
+
+    private void
+    arraylength(Locatable locatable) {
+        this.addLineNumberOffset(locatable);
+
+        this.getCodeContext().popObjectOperand();
+        this.write(Opcode.ARRAYLENGTH);
+        this.getCodeContext().pushIntOperand();
+    }
+
+    private void
+    arraystore(Locatable locatable, IClass lhsComponentType) {
+        this.addLineNumberOffset(locatable);
+
+        this.getCodeContext().popOperand();
+        this.getCodeContext().popOperand();
+        this.getCodeContext().popOperand();
+        this.write(Opcode.IASTORE + UnitCompiler.ilfdabcs(lhsComponentType));
+    }
+
+    private void
+    athrow(Locatable locatable) {
+        this.addLineNumberOffset(locatable);
+        this.write(Opcode.ATHROW);
+        this.getCodeContext().popReferenceOperand();
+    }
+
+    private void
+    cmp(Locatable locatable, int opIdx) {
+
+        VerificationTypeInfo operand2 = this.getCodeContext().currentInserter().getStackMap().peekOperand();
+        this.getCodeContext().popOperand();
+        VerificationTypeInfo operand1 = this.getCodeContext().currentInserter().getStackMap().peekOperand();
+        this.getCodeContext().popOperand();
+
+        if (operand1 == StackMapTableAttribute.LONG_VARIABLE_INFO && operand2 == StackMapTableAttribute.LONG_VARIABLE_INFO) {
+            this.write(Opcode.LCMP);
+        } else
+        if (operand1 == StackMapTableAttribute.FLOAT_VARIABLE_INFO && operand2 == StackMapTableAttribute.FLOAT_VARIABLE_INFO) {
+            this.write(opIdx == 3 || opIdx == 4 ? Opcode.FCMPL : Opcode.FCMPG);
+        } else
+        if (operand1 == StackMapTableAttribute.DOUBLE_VARIABLE_INFO && operand2 == StackMapTableAttribute.DOUBLE_VARIABLE_INFO) {
+            this.write(opIdx == 3 || opIdx == 4 ? Opcode.DCMPL : Opcode.DCMPG);
+        } else
+        {
+            throw new AssertionError(operand1 + " and " + operand2);
+        }
+        this.getCodeContext().pushIntOperand();
+    }
+
+    /**
+     * Duplicates the top operand: ... a => ... a a
+     */
+    private void
+    dup(Locatable locatable) {
+
+        VerificationTypeInfo topOperand = this.getCodeContext().peekOperand();
+
+        this.addLineNumberOffset(locatable);
+        this.write(topOperand.isSize2() ? Opcode.DUP2 : Opcode.DUP);
+
+        this.getCodeContext().pushOperand(topOperand);
+    }
+
+    /**
+     * Duplicates the top two operands: ... a b => ... a b a b.
+     * This works iff both the top operand <em>and</em> the top-but-one operand have size 1.
+     */
+    private void
+    dup2(Locatable locatable) {
+
+        this.addLineNumberOffset(locatable);
+
+        VerificationTypeInfo topOperand = this.getCodeContext().popOperand();
+        assert topOperand.isSize1();
+        VerificationTypeInfo topButOneOperand = this.getCodeContext().popOperand();
+        assert topButOneOperand.isSize1();
+        this.write(Opcode.DUP2);
+        this.getCodeContext().pushOperand(topButOneOperand);
+        this.getCodeContext().pushOperand(topOperand);
+        this.getCodeContext().pushOperand(topButOneOperand);
+        this.getCodeContext().pushOperand(topOperand);
+    }
+
+    /**
+     * Duplicates the top <var>n</var> operands.
+     * <dl>
+     *   <dt>n == 0</dt><dd>(nothing)</dd>
+     *   <dt>n == 1</dt><dd>... a => ... a a</dd>
+     *   <dt>n == 2</dt><dd>... a b => ... a b a b</dd>
+     * </dl>
+     */
+    private void
+    dupn(Locatable locatable, int n) {
+
+        switch (n) {
+        case 0:  ;                     break;
+        case 1:  this.dup(locatable);  break;
+        case 2:  this.dup2(locatable); break;
+        default: throw new AssertionError(n);
+        }
+    }
+
+    /**
+     * Copies the top operand one position down: b a => a b a
+     */
+    private void
+    dupx(Locatable locatable) {
+
+        VerificationTypeInfo topOperand       = this.getCodeContext().popOperand();
+        VerificationTypeInfo topButOneOperand = this.getCodeContext().popOperand();
+
+        this.addLineNumberOffset(locatable);
+        this.write((
+            topOperand.isSize1()
+            ? (topButOneOperand.isSize1() ? Opcode.DUP_X1  : Opcode.DUP_X2)
+            : (topButOneOperand.isSize1() ? Opcode.DUP2_X1 : Opcode.DUP2_X2)
+        ));
+
+        this.getCodeContext().pushOperand(topOperand);
+        this.getCodeContext().pushOperand(topButOneOperand);
+        this.getCodeContext().pushOperand(topOperand);
+    }
+
+    /**
+     * Copies the top operand <em>two</em> positions down: c b a => a c b a.
+     * This works iff the top-but-one and top-but-two operands <em>both</em> have size 1.
+     */
+    private void
+    dupx2(Locatable locatable) {
+
+        VerificationTypeInfo topOperand       = this.getCodeContext().popOperand();
+        VerificationTypeInfo topButOneOperand = this.getCodeContext().popOperand();
+        VerificationTypeInfo topButTwoOperand = this.getCodeContext().popOperand();
+
+        assert topButOneOperand.isSize1();
+        assert topButTwoOperand.isSize1();
+
+        this.addLineNumberOffset(locatable);
+        this.write(topOperand.isSize1() ? Opcode.DUP_X2 : Opcode.DUP2_X2);
+
+        this.getCodeContext().pushOperand(topOperand);
+        this.getCodeContext().pushOperand(topButTwoOperand);
+        this.getCodeContext().pushOperand(topButOneOperand);
+        this.getCodeContext().pushOperand(topOperand);
+    }
+
+    /**
+     * Copies the top operand <em>positions</em> down.
+     * <dl>
+     *   <dt>n == 0</dt><dd>... a => ... a a</dd>
+     *   <dt>n == 1</dt><dd>... b a => ... a b a</dd>
+     *   <dt>n == 2</dt><dd>... c b a => ... a c b a</dd>
+     * </dl>
+     */
+    private void
+    dupxx(Locatable locatable, int positions) {
+        switch (positions) {
+        case 0:  this.dup(locatable);   break;
+        case 1:  this.dupx(locatable);  break;
+        case 2:  this.dupx2(locatable); break;
+        default: throw new AssertionError(positions);
+        }
+    }
+
+    private void
+    getfield(Locatable locatable, IClass.IField iField) throws CompileException {
+        this.getfield(
+            locatable,                   // locatable
+            iField.getDeclaringIClass(), // declaringIClass
+            iField.getName(),            // fieldName
+            iField.getType(),            // fieldType
+            iField.isStatic()            // statiC
+        );
+    }
+
+    private void
+    getfield(Locatable locatable, IClass declaringIClass, String fieldName, IClass fieldType, boolean statiC) {
+
+        this.addLineNumberOffset(locatable);
+        if (statiC) {
+            this.write(Opcode.GETSTATIC);
+        } else {
+            this.write(Opcode.GETFIELD);
+            this.getCodeContext().popOperand();
+        }
+        this.writeConstantFieldrefInfo(
+            declaringIClass.getDescriptor(), // classFd
+            fieldName,                       // fieldName
+            fieldType.getDescriptor()        // fieldFd
+        );
+        this.getCodeContext().pushOperand(fieldType.getDescriptor());
+    }
+
+    /**
+         * @param opcode One of IF* and GOTO
+         */
+        private void
+        gotO(Locatable locatable, CodeContext.Offset dst) {
+            this.getCodeContext().writeBranch(Opcode.GOTO, dst);
+    //        this.getCodeContext().currentInserter().setStackMap(null);
+        }
+
+    /**
+     * @param opcode One of IF* and GOTO
+     */
+    private void
+    if_acmpxx(Locatable locatable, int opcode, CodeContext.Offset dst) {
+        this.getCodeContext().popReferenceOperand();
+        this.getCodeContext().popReferenceOperand();
+        this.getCodeContext().writeBranch(opcode, dst);
+        dst.setStackMap(this.getCodeContext().currentInserter().getStackMap());
+    }
+
+    /**
+     * Allowed values of <var>opIdx</var>:
+     * <ul>
+     *   <li>"==" ? 0</li>
+     *   <li>"!=" ? 1</li>
+     *   <li>"<"  ? 2</li>
+     *   <li>">=" ? 3</li>
+     *   <li>">"  ? 4</li>
+     *   <li>"<=" ? 5</li>
+     * </ul>
+     */
+    private void
+    if_icmpxx(Locatable locatable, int opIdx, CodeContext.Offset dst) {
+        assert opIdx >= 0 && opIdx <= 5;
+
+        this.addLineNumberOffset(locatable);
+        this.getCodeContext().popIntOperand();
+        this.getCodeContext().popIntOperand();
+        this.getCodeContext().writeBranch(Opcode.IF_ICMPEQ + opIdx, dst);
+        dst.setStackMap(this.getCodeContext().currentInserter().getStackMap());
+    }
+
+    private static final int EQ = 0;
+
+    private static final int NE = 1;
+
+    private static final int LT = 2;
+
+    private static final int GE = 3;
+
+    private static final int GT = 4;
+
+    private static final int LE = 5;
+
+    private void
+    ifnonnull(Locatable locatable, CodeContext.Offset dst) {
+        this.getCodeContext().popReferenceOperand();
+        this.getCodeContext().writeBranch(Opcode.IFNONNULL, dst);
+    }
+
+    private void
+    ifnull(Locatable locatable, CodeContext.Offset dst) {
+        this.getCodeContext().popReferenceOperand();
+        this.getCodeContext().writeBranch(Opcode.IFNULL, dst);
+    }
+
+    /**
+     * Allowed values of <var>opIdx</var>:
+     * <ul>
+     *   <li>"==" ? 0</li>
+     *   <li>"!=" ? 1</li>
+     *   <li>"<"  ? 2</li>
+     *   <li>">=" ? 3</li>
+     *   <li>">"  ? 4</li>
+     *   <li>"<=" ? 5</li>
+     * </ul>
+     */
+    private void
+    ifxx(Locatable locatable, int opIdx, CodeContext.Offset dst) {
+        assert opIdx >= 0 && opIdx <= 5;
+
+        this.addLineNumberOffset(locatable);
+        this.getCodeContext().popIntOperand();
+        this.getCodeContext().writeBranch(Opcode.IFEQ + opIdx, dst);
+    }
+
+    /**
+     * @param operator Must be either "++" or "--", as an @link {@link String#intern() interned} string
+     */
+    private void
+    iinc(Locatable locatable, LocalVariable lv, String operator) {
+        this.addLineNumberOffset(locatable);
+        if (lv.getSlotIndex() > 255) {
+            this.write(Opcode.WIDE);
+            this.write(Opcode.IINC);
+            this.writeShort(lv.getSlotIndex());
+            this.writeShort(operator == "++" ? 1 : -1); // SUPPRESS CHECKSTYLE StringLiteralEquality
+        } else {
+            this.write(Opcode.IINC);
+            this.writeByte(lv.getSlotIndex());
+            this.writeByte(operator == "++" ? 1 : -1); // SUPPRESS CHECKSTYLE StringLiteralEquality
+        }
+    }
+
+    private void
+    instanceoF(Locatable locatable, IClass rhsType) {
+        this.addLineNumberOffset(locatable);
+
+        this.getCodeContext().popReferenceOperand();
+        this.write(Opcode.INSTANCEOF);
+        this.writeConstantClassInfo(rhsType);
+        this.getCodeContext().pushIntOperand();
+    }
+
+    /**
+     * Expects the target object and the arguments on the operand stack.
+     */
+    private void
+    invokeMethod(
+        Locatable        locatable,
+        int              opcode,
+        IClass           declaringIClass,
+        String           methodName,
+        MethodDescriptor methodDescriptor,
+        boolean          useInterfaceMethodRef
+    ) {
+        final ClassFile cf = this.getCodeContext().getClassFile();
+        short methodrefOrInterfaceMethodrefIndex = (
+            useInterfaceMethodRef
+            ? cf.addConstantInterfaceMethodrefInfo(
+                declaringIClass.getDescriptor(), // classFD
+                methodName,                      // methodName
+                methodDescriptor.toString()      // methodMd
+            )
+            : cf.addConstantMethodrefInfo(
+                declaringIClass.getDescriptor(), // classFD
+                methodName,                      // methodName
+                methodDescriptor.toString()      // methodMd
+            )
+        );
+
+        this.addLineNumberOffset(locatable);
+
+        for (int i = methodDescriptor.parameterFds.length - 1; i >= 0; i--) {
+            this.getCodeContext().popOperand(methodDescriptor.parameterFds[i]);
+        }
+        if (opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKEVIRTUAL) {
+            this.getCodeContext().popObjectOrUninitializedOrUninitializedThisOperand();
+        }
+        this.write(opcode);
+        this.writeShort(methodrefOrInterfaceMethodrefIndex);
+
+        switch (opcode) {
+
+        case Opcode.INVOKEDYNAMIC:
+            this.writeByte(0);
+            this.writeByte(0);
+            break;
+
+        case Opcode.INVOKEINTERFACE:
+            int count = 1;
+            for (String pfd : methodDescriptor.parameterFds) count += Descriptor.size(pfd);
+            this.writeByte(count);
+            this.writeByte(0);
+            break;
+
+        case Opcode.INVOKESPECIAL:
+        case Opcode.INVOKESTATIC:
+        case Opcode.INVOKEVIRTUAL:
+            ;
+            break;
+
+        default:
+            throw new AssertionError(opcode);
+        }
+
+        if (!methodDescriptor.returnFd.equals(Descriptor.VOID)) {
+            this.getCodeContext().pushOperand(methodDescriptor.returnFd);
+        }
+    }
+
+    private void
+    jsr(Locatable locatable, CodeContext.Offset dst) {
+        this.getCodeContext().writeBranch(Opcode.JSR, dst);
+        dst.setStackMap(this.getCodeContext().currentInserter().getStackMap().pushOperand(StackMapTableAttribute.TOP_VARIABLE_INFO));
+    }
+
+    private void
+    l2i(Locatable locatable) {
+        this.addLineNumberOffset(locatable);
+
+        this.getCodeContext().popLongOperand();
+        this.write(Opcode.L2I);
+        this.getCodeContext().pushIntOperand();
+
+    }
+
     // Load the value of a local variable onto the stack and return its type.
     private IClass
     load(Locatable locatable, LocalVariable localVariable) {
         this.load(locatable, localVariable.type, localVariable.getSlotIndex());
         return localVariable.type;
     }
+
     private void
-    load(Locatable locatable, IClass type, int index) {
-        if (index <= 3) {
-            this.writeOpcode(locatable, Opcode.ILOAD_0 + 4 * UnitCompiler.ilfda(type) + index);
+    load(Locatable locatable, IClass localVariableType, int localVariableIndex) {
+        assert localVariableIndex >= 0 && localVariableIndex <= 65535;
+
+        this.addLineNumberOffset(locatable);
+
+        if (localVariableIndex <= 3) {
+            this.write(Opcode.ILOAD_0 + 4 * UnitCompiler.ilfda(localVariableType) + localVariableIndex);
         } else
-        if (index <= 255) {
-            this.writeOpcode(locatable, Opcode.ILOAD + UnitCompiler.ilfda(type));
-            this.writeByte(index);
+        if (localVariableIndex <= 255) {
+            this.write(Opcode.ILOAD + UnitCompiler.ilfda(localVariableType));
+            this.write(localVariableIndex);
         } else
         {
-            this.writeOpcode(locatable, Opcode.WIDE);
-            this.writeOpcode(locatable, Opcode.ILOAD + UnitCompiler.ilfda(type));
-            this.writeShort(index);
+            this.write(Opcode.WIDE);
+            this.write(Opcode.ILOAD + UnitCompiler.ilfda(localVariableType));
+            this.writeUnsignedShort(localVariableIndex);
         }
+
+        this.getCodeContext().pushOperand(localVariableType.getDescriptor());
+    }
+
+    private void
+    lookupswitch(
+        Locatable                  locatable,
+        SortedMap<Integer, Offset> caseLabelMap,
+        Offset                     switchOffset,
+        Offset                     defaultLabelOffset
+    ) {
+
+        this.addLineNumberOffset(locatable);
+        this.getCodeContext().popIntOperand();
+        this.write(Opcode.LOOKUPSWITCH);
+        new Padder(this.getCodeContext()).set();
+        this.writeOffset(switchOffset, defaultLabelOffset);
+        this.writeInt(caseLabelMap.size());
+        for (Map.Entry<Integer, CodeContext.Offset> me : caseLabelMap.entrySet()) {
+            this.writeInt((Integer) me.getKey());
+            this.writeOffset(switchOffset, (CodeContext.Offset) me.getValue());
+        }
+    }
+
+    private void
+    monitorenter(Locatable locatable) {
+        this.addLineNumberOffset(locatable);
+
+        this.getCodeContext().popReferenceOperand();
+        this.write(Opcode.MONITORENTER);
+    }
+
+    private void
+    monitorexit(Locatable locatable) {
+        this.addLineNumberOffset(locatable);
+
+        this.getCodeContext().popReferenceOperand();
+        this.write(Opcode.MONITOREXIT);
+    }
+
+    /**
+     * @param operator One of {@code * / % + -}
+     */
+    private void
+    mulDivRemAddSub(Locatable locatable, String operator) {
+
+        VerificationTypeInfo operand2 = this.getCodeContext().popOperand();
+        VerificationTypeInfo operand1 = this.getCodeContext().popOperand();
+        assert operand1 == operand2 : operand1 + " vs. " + operand2;
+
+        final int opcode = (
+            operator == "*"   ? Opcode.IMUL :
+            operator == "/"   ? Opcode.IDIV :
+            operator == "%"   ? Opcode.IREM :
+            operator == "+"   ? Opcode.IADD :
+            operator == "-"   ? Opcode.ISUB :
+            Integer.MAX_VALUE
+        ) + UnitCompiler.ilfd(operand1);
+
+        this.addLineNumberOffset(locatable);
+        this.write(opcode);
+        this.getCodeContext().pushOperand(operand1);
+    }
+
+    /**
+     * @param operandType One of BYTE, CHAR, INT, SHORT, LONG, BOOLEAN, LONG, FLOAT, DOUBLE
+     */
+    private void
+    neg(Locatable locatable, IClass operandType) {
+        this.addLineNumberOffset(locatable);
+        this.write(Opcode.INEG + UnitCompiler.ilfd(operandType));
+    }
+
+    private void
+        neW(Locatable locatable, IClass iClass) {
+            this.addLineNumberOffset(locatable);
+            this.write(Opcode.NEW);
+            this.writeConstantClassInfo(iClass);
+            this.getCodeContext().pushUninitializedOperand();
+    //        this.getCodeContext().pushOperand(iClass.getDescriptor());
+        }
+
+    private void
+    pop(Locatable locatable, IClass type) {
+
+        if (type == IClass.VOID) return;
+
+        this.addLineNumberOffset(locatable);
+        this.write(type == IClass.LONG || type == IClass.DOUBLE ? Opcode.POP2 : Opcode.POP);
+        this.getCodeContext().popOperand(type.getDescriptor());
+    }
+
+    private void
+    putfield(Locatable locatable, IField iField) throws CompileException {
+        this.addLineNumberOffset(locatable);
+        this.getCodeContext().popOperand();
+        if (iField.isStatic()) {
+            this.write(Opcode.PUTSTATIC);
+        } else {
+            this.write(Opcode.PUTFIELD);
+            this.getCodeContext().popOperand();
+        }
+        this.writeConstantFieldrefInfo(
+            iField.getDeclaringIClass().getDescriptor(), // classFD
+            iField.getName(),                            // fieldName
+            iField.getDescriptor()                       // fieldFD
+        );
+    }
+
+    private void
+    ret(Locatable locatable, int lvIndex) {
+        this.addLineNumberOffset(locatable);
+        if (lvIndex > 255) {
+            this.write(Opcode.WIDE);
+            this.write(Opcode.RET);
+            this.writeShort(lvIndex);
+        } else {
+            this.write(Opcode.RET);
+            this.writeByte(lvIndex);
+        }
+    }
+
+    private void
+    returN(Locatable locatable) {
+        this.addLineNumberOffset(locatable);
+        this.write(Opcode.RETURN);
+    }
+
+    /**
+     * @param operator One of {@code << >> >>>}
+     */
+    private void
+    shift(Locatable locatable, String operator) {
+
+        this.getCodeContext().popIntOperand();
+        VerificationTypeInfo operand1 = this.getCodeContext().popIntOrLongOperand();
+
+        final int iopcode = (
+            operator == "<<"  ? Opcode.ISHL  :
+            operator == ">>"  ? Opcode.ISHR  :
+            operator == ">>>" ? Opcode.IUSHR :
+            Integer.MAX_VALUE
+        );
+
+        int opcode = iopcode + UnitCompiler.il(operand1);
+
+        this.addLineNumberOffset(locatable);
+        this.write(opcode);
+        this.getCodeContext().pushOperand(operand1);
     }
 
     /**
@@ -11789,74 +12223,101 @@ class UnitCompiler {
     }
     private void
     store(Locatable locatable, IClass lvType, short lvIndex) {
+        this.addLineNumberOffset(locatable);
+
         if (lvIndex <= 3) {
-            this.writeOpcode(locatable, Opcode.ISTORE_0 + 4 * UnitCompiler.ilfda(lvType) + lvIndex);
+            this.write(Opcode.ISTORE_0 + 4 * UnitCompiler.ilfda(lvType) + lvIndex);
         } else
         if (lvIndex <= 255) {
-            this.writeOpcode(locatable, Opcode.ISTORE + UnitCompiler.ilfda(lvType));
-            this.writeByte(lvIndex);
+            this.write(Opcode.ISTORE + UnitCompiler.ilfda(lvType));
+            this.write(lvIndex);
         } else
         {
-            this.writeOpcode(locatable, Opcode.WIDE);
-            this.writeOpcode(locatable, Opcode.ISTORE + UnitCompiler.ilfda(lvType));
-            this.writeShort(lvIndex);
+            this.write(Opcode.WIDE);
+            this.write(Opcode.ISTORE + UnitCompiler.ilfda(lvType));
+            this.writeUnsignedShort(lvIndex);
         }
+        this.getCodeContext().popOperand();
     }
 
     private void
-    getfield(Locatable locatable, IClass.IField iField) throws CompileException {
-        this.writeOpcode(locatable, iField.isStatic() ? Opcode.GETSTATIC : Opcode.GETFIELD);
-        this.writeConstantFieldrefInfo(
-            iField.getDeclaringIClass().getDescriptor(), // classFD
-            iField.getName(),                            // fieldName
-            iField.getDescriptor()                       // fieldFD
-        );
+    sub(Locatable locatable) { this.mulDivRemAddSub(locatable, "-"); }
+
+    private void
+    swap(Locatable locatable) {
+
+        VerificationTypeInfo topOperand       = this.getCodeContext().popOperand();
+        VerificationTypeInfo topButOneOperand = this.getCodeContext().popOperand();
+
+        this.addLineNumberOffset(locatable);
+        this.write(Opcode.SWAP);
+
+        this.getCodeContext().pushOperand(topOperand);
+        this.getCodeContext().pushOperand(topButOneOperand);
     }
 
     private void
-    putfield(Locatable locatable, IField iField) throws CompileException {
-        this.writeOpcode(locatable, iField.isStatic() ? Opcode.PUTSTATIC : Opcode.PUTFIELD);
-        this.writeConstantFieldrefInfo(
-            iField.getDeclaringIClass().getDescriptor(), // classFD
-            iField.getName(),                            // fieldName
-            iField.getDescriptor()                       // fieldFD
-        );
-    }
+    tableswitch(
+        Locatable                              locatable,
+        SortedMap<Integer, CodeContext.Offset> caseLabelMap,
+        Offset                                 switchOffset,
+        Offset                                 defaultLabelOffset
+    ) {
+        final int low  = (Integer) caseLabelMap.firstKey();
+        final int high = (Integer) caseLabelMap.lastKey();
 
-    private void
-    dup(Locatable locatable, int n) {
-        switch (n) {
+        this.addLineNumberOffset(locatable);
+        this.getCodeContext().popIntOperand();
+        this.write(Opcode.TABLESWITCH);
+        new Padder(this.getCodeContext()).set();
+        this.writeOffset(switchOffset, defaultLabelOffset);
+        this.writeInt(low);
+        this.writeInt(high);
 
-        case 0:
-            ;
-            break;
+        int cur = low;
+        for (Map.Entry<Integer, CodeContext.Offset> me : caseLabelMap.entrySet()) {
+            int                caseLabelValue  = (Integer) me.getKey();
+            CodeContext.Offset caseLabelOffset = (CodeContext.Offset) me.getValue();
 
-        case 1:
-            this.writeOpcode(locatable, Opcode.DUP);
-            break;
-
-        case 2:
-            this.writeOpcode(locatable, Opcode.DUP2);
-            break;
-
-        default:
-            throw new InternalCompilerException("dup(" + n + ")");
+            while (cur < caseLabelValue) {
+                this.writeOffset(switchOffset, defaultLabelOffset);
+                ++cur;
+            }
+            this.writeOffset(switchOffset, caseLabelOffset);
+            ++cur;
         }
-    }
-    private void
-    dupx(Locatable locatable, IClass type, int x) {
-        if (x < 0 || x > 2) throw new InternalCompilerException("SNO: x has value " + x);
-        int dup  = Opcode.DUP  + x;
-        int dup2 = Opcode.DUP2 + x;
-        this.writeOpcode(locatable, type == IClass.LONG || type == IClass.DOUBLE ? dup2 : dup);
+
     }
 
     private void
-    pop(Locatable locatable, IClass type) {
-        if (type == IClass.VOID) return;
-        this.writeOpcode(locatable, type == IClass.LONG || type == IClass.DOUBLE ? Opcode.POP2 : Opcode.POP);
+    xaload(Locatable locatable, IClass componentType) {
+        this.addLineNumberOffset(locatable);
+
+        this.getCodeContext().popIntOperand();
+        this.getCodeContext().popReferenceOperand();
+        this.write(Opcode.IALOAD + UnitCompiler.ilfdabcs(componentType));
+        this.getCodeContext().pushOperand(componentType.getDescriptor());
     }
 
+    private void
+    xor(Locatable locatable, int opcode) {
+        if (opcode != Opcode.IXOR && opcode != Opcode.LXOR) throw new AssertionError(opcode);
+        this.addLineNumberOffset(locatable);
+        this.write(opcode);
+        this.getCodeContext().popOperand();
+    }
+
+    private void
+    xreturn(Locatable locatable, IClass returnType) {
+        this.addLineNumberOffset(locatable);
+
+        this.write(Opcode.IRETURN + UnitCompiler.ilfda(returnType));
+        this.getCodeContext().popOperand(returnType.getDescriptor());
+    }
+
+    /**
+     * @param t One of BYTE, CHAR, INT, SHORT, LONG, BOOLEAN, LONG, FLOAT, DOUBLE
+     */
     private static int
     ilfd(final IClass t) {
         if (t == IClass.BYTE || t == IClass.CHAR || t == IClass.INT || t == IClass.SHORT || t == IClass.BOOLEAN) {
@@ -11869,18 +12330,25 @@ class UnitCompiler {
     }
 
     private static int
-    ilfd(IClass t, int opcodeInt, int opcodeLong, int opcodeFloat, int opcodeDouble) {
-        if (t == IClass.BYTE || t == IClass.CHAR || t == IClass.INT || t == IClass.SHORT || t == IClass.BOOLEAN) {
-            return opcodeInt;
-        }
-        if (t == IClass.LONG)   return opcodeLong;
-        if (t == IClass.FLOAT)  return opcodeFloat;
-        if (t == IClass.DOUBLE) return opcodeDouble;
-        throw new InternalCompilerException("Unexpected type \"" + t + "\"");
+    ilfd(VerificationTypeInfo vti) {
+        if (vti == StackMapTableAttribute.INTEGER_VARIABLE_INFO) return 0;
+        if (vti == StackMapTableAttribute.LONG_VARIABLE_INFO)    return 1;
+        if (vti == StackMapTableAttribute.FLOAT_VARIABLE_INFO)   return 2;
+        if (vti == StackMapTableAttribute.DOUBLE_VARIABLE_INFO)  return 3;
+        throw new InternalCompilerException("Unexpected type \"" + vti + "\"");
     }
 
     private static int
     ilfda(IClass t) { return !t.isPrimitive() ? 4 : UnitCompiler.ilfd(t); }
+
+    private static int
+    il(VerificationTypeInfo vti) {
+
+        if (vti == StackMapTableAttribute.INTEGER_VARIABLE_INFO)  return 0;
+        if (vti == StackMapTableAttribute.LONG_VARIABLE_INFO)     return 1;
+
+        throw new AssertionError(vti);
+    }
 
     private static int
     ilfdabcs(IClass t) {
@@ -11894,78 +12362,6 @@ class UnitCompiler {
         if (t == IClass.CHAR)    return 6;
         if (t == IClass.SHORT)   return 7;
         throw new InternalCompilerException("Unexpected type \"" + t + "\"");
-    }
-
-    /**
-     * Invokes the <var>iMethod</var>; assumes that {@code this} (unless <var>iMethod</var> is static) and the correct
-     * number and types of arguments are on the operand stack.
-     */
-    private void
-    invoke(Locatable locatable, IMethod iMethod) throws CompileException {
-
-        final IClass declaringIClass = iMethod.getDeclaringIClass();
-
-        if (iMethod.isStatic()) {
-
-            // Static class method, or a static interface method (a Java 8 feature).
-            final ClassFile classFile = this.getCodeContext().getClassFile();
-            if (
-                declaringIClass.isInterface()
-                && classFile.getMajorVersion() <= ClassFile.MAJOR_VERSION_JDK_1_7
-                && classFile.getMinorVersion() <= ClassFile.MINOR_VERSION_JDK_1_7
-            ) {
-                // INVOKESTATIC InterfaceMethodRef only allowed since Java 8 class file format.
-                this.compileError(
-                    "Invocation of static interface methods NYI",
-                    locatable.getLocation()
-                );
-            }
-
-            this.writeOpcode(locatable, Opcode.INVOKESTATIC);
-            this.writeConstantMethodrefInfo(
-                declaringIClass.getDescriptor(), // classFD
-                iMethod.getName(),               // methodName
-                iMethod.getDescriptor()          // methodMD
-            );
-        } else
-        if (declaringIClass.isInterface()) {
-
-            // A non-static interface method.
-            this.writeOpcode(locatable, Opcode.INVOKEINTERFACE);
-            this.writeConstantInterfaceMethodrefInfo(
-                declaringIClass.getDescriptor(), // classFD
-                iMethod.getName(),               // methodName
-                iMethod.getDescriptor()          // methodMD
-            );
-            int count = 1;
-            for (IClass pt : iMethod.getParameterTypes()) count += Descriptor.size(pt.getDescriptor());
-            this.writeByte(count);
-            this.writeByte(0);
-        } else
-        {
-
-            // A non-static class mathod.
-            this.writeOpcode(locatable, Opcode.INVOKEVIRTUAL);
-            this.writeConstantMethodrefInfo(
-                declaringIClass.getDescriptor(), // classFD
-                iMethod.getName(),               // methodName
-                iMethod.getDescriptor()          // methodMD
-            );
-        }
-    }
-
-    /**
-     * Invokes the <var>iConstructor</var>; assumes that {@code this} and the correct number and types of arguments are
-     * on the operand stack.
-     */
-    private void
-    invoke(Locatable locatable, IConstructor iConstructor) throws CompileException {
-        this.writeOpcode(locatable, Opcode.INVOKESPECIAL);
-        this.writeConstantMethodrefInfo(
-            iConstructor.getDeclaringIClass().getDescriptor(), // classFD
-            "<init>",                                          // methodName
-            iConstructor.getDescriptor()                       // methodMD
-        );
     }
 
     /**
@@ -12145,103 +12541,203 @@ class UnitCompiler {
     }
 
     private void
+    addLineNumberOffset(Locatable locatable) {
+        this.getCodeContext().addLineNumberOffset(locatable.getLocation().getLineNumber());
+    }
+
+    private void
+    write(int v) { this.getCodeContext().write((byte) v); }
+
+    private void
     writeByte(int v) {
         if (v > Byte.MAX_VALUE - Byte.MIN_VALUE) {
             throw new InternalCompilerException("Byte value out of legal range");
         }
-        this.getCodeContext().write(-1, (byte) v);
+        this.getCodeContext().write((byte) v);
     }
     private void
     writeShort(int v) {
-        if (v > Short.MAX_VALUE - Short.MIN_VALUE) {
+        if (v < Short.MIN_VALUE || v > Short.MAX_VALUE) {
             throw new InternalCompilerException("Short value out of legal range");
         }
-        this.getCodeContext().write(-1, (byte) (v >> 8), (byte) v);
+        this.getCodeContext().write((byte) (v >> 8), (byte) v);
+    }
+    private void
+    writeUnsignedShort(int v) {
+        if (v < 0 || v > 65535) {
+            throw new InternalCompilerException("Unsigned short value out of legal range");
+        }
+        this.getCodeContext().write((byte) (v >> 8), (byte) v);
     }
     private void
     writeInt(int v) {
-        this.getCodeContext().write(-1, (byte) (v >> 24), (byte) (v >> 16), (byte) (v >> 8), (byte) v);
+        this.getCodeContext().write((byte) (v >> 24), (byte) (v >> 16), (byte) (v >> 8), (byte) v);
     }
 
     private void
-    writeOpcode(Locatable locatable, int opcode) {
-        this.getCodeContext().write(locatable.getLocation().getLineNumber(), (byte) opcode);
+    writeLdc(short constantPoolIndex) {
+        if (constantPoolIndex >= 0 && constantPoolIndex <= 255) {
+            this.write(Opcode.LDC);
+            this.write(constantPoolIndex);
+        } else {
+            this.write(Opcode.LDC_W);
+            this.writeShort(constantPoolIndex);
+        }
     }
 
     private void
-    writeOpcodes(Locatable locatable, byte[] opcodes) {
-        this.getCodeContext().write(locatable.getLocation().getLineNumber(), opcodes);
+    writeLdc2(short constantPoolIndex) {
+        this.write(Opcode.LDC2_W);
+        this.getCodeContext().writeShort(constantPoolIndex);
     }
 
+    /**
+     * Invokes the <var>iMethod</var>; assumes that {@code this} (unless <var>iMethod</var> is static) and the correct
+     * number and types of arguments are on the operand stack.
+     */
     private void
-    writeBranch(Locatable locatable, int opcode, final CodeContext.Offset dst) {
-        this.getCodeContext().writeBranch(locatable.getLocation().getLineNumber(), opcode, dst);
+    invoke(Locatable locatable, IMethod iMethod) throws CompileException {
+
+        if (iMethod.isStatic()) {
+
+            // Static class method, or a static interface method (a Java 8 feature).
+            final ClassFile cf = this.getCodeContext().getClassFile();
+            if (
+                iMethod.getDeclaringIClass().isInterface()
+                && cf.getMajorVersion() <= ClassFile.MAJOR_VERSION_JDK_1_7
+                && cf.getMinorVersion() <= ClassFile.MINOR_VERSION_JDK_1_7
+            ) {
+                // INVOKESTATIC InterfaceMethodRef only allowed since Java 8 class file format.
+                this.compileError(
+                    "Invocation of static interface methods NYI",
+                    locatable.getLocation()
+                );
+            }
+
+            this.invokeMethod(
+                locatable,                    // locatable
+                Opcode.INVOKESTATIC,          // opcode
+                iMethod.getDeclaringIClass(), // declaringIClass
+                iMethod.getName(),            // methodName
+                iMethod.getDescriptor(),      // methodMd
+                false                         // useInterfaceMethodref
+            );
+        } else
+        if (iMethod.getDeclaringIClass().isInterface()) {
+
+            // A non-static interface method.
+            this.invokeMethod(
+                locatable,                    // locatable
+                Opcode.INVOKEINTERFACE,       // opcode
+                iMethod.getDeclaringIClass(), // declaringIClass
+                iMethod.getName(),            // methodName
+                iMethod.getDescriptor(),      // methodMD
+                true                          // useInterfaceMethodref
+            );
+        } else
+        {
+
+            // A non-static class mathod.
+            this.invokeMethod(
+                locatable,                    // locatable
+                Opcode.INVOKEVIRTUAL,         // opcode
+                iMethod.getDeclaringIClass(), // declaringIClass
+                iMethod.getName(),            // methodName
+                iMethod.getDescriptor(),      // methodMd
+                false                         // useInterfaceMethodref
+            );
+        }
+    }
+
+    /**
+     * Invokes the <var>iConstructor</var>; assumes that {@code this} and the correct number and types of arguments are
+     * on the operand stack.
+     */
+    private void
+    invoke(Locatable locatable, IConstructor iConstructor) throws CompileException {
+        this.invokeMethod(
+            locatable,                         // locatable
+            Opcode.INVOKESPECIAL,              // opcode
+            iConstructor.getDeclaringIClass(), // declaringIClass
+            "<init>",                          // methodName
+            iConstructor.getDescriptor(),      // methodMd
+            false                              // useInterfaceMethodref
+        );
     }
 
     private void
     writeOffset(CodeContext.Offset src, final CodeContext.Offset dst) {
-        this.getCodeContext().writeOffset(-1, src, dst);
+        this.getCodeContext().writeOffset(src, dst);
     }
 
     // Wrappers for "ClassFile.addConstant...Info()". Saves us some coding overhead.
 
-    private void
-    writeConstantClassInfo(String descriptor) {
-        CodeContext ca = this.getCodeContext();
-        ca.writeShort(ca.getClassFile().addConstantClassInfo(descriptor));
-    }
-    private void
-    writeConstantFieldrefInfo(String classFd, String fieldName, String fieldFd) {
-        CodeContext ca = this.getCodeContext();
-        ca.writeShort(ca.getClassFile().addConstantFieldrefInfo(classFd, fieldName, fieldFd));
-    }
-    private void
-    writeConstantMethodrefInfo(String classFd, String methodName, MethodDescriptor methodMd) {
-        CodeContext ca = this.getCodeContext();
-        ca.writeShort(ca.getClassFile().addConstantMethodrefInfo(classFd, methodName, methodMd.toString()));
-    }
-    private void
-    writeConstantInterfaceMethodrefInfo(String classFd, String methodName, MethodDescriptor methodMd) {
-        CodeContext ca = this.getCodeContext();
-        ca.writeShort(ca.getClassFile().addConstantInterfaceMethodrefInfo(classFd, methodName, methodMd.toString()));
-    }
-/* UNUSED
-    private void writeConstantStringInfo(String value) {
-        this.codeContext.writeShort(-1, this.addConstantStringInfo(value));
-    }
-*/
     private short
     addConstantStringInfo(String value) {
         return this.getCodeContext().getClassFile().addConstantStringInfo(value);
     }
-/* UNUSED
-    private void writeConstantIntegerInfo(int value) {
-        this.codeContext.writeShort(-1, this.addConstantIntegerInfo(value));
-    }
-*/
     private short
     addConstantIntegerInfo(int value) {
         return this.getCodeContext().getClassFile().addConstantIntegerInfo(value);
     }
-/* UNUSED
-    private void writeConstantFloatInfo(float value) {
-        this.codeContext.writeShort(-1, this.addConstantFloatInfo(value));
+    private short
+    addConstantLongInfo(long value) {
+        return this.getCodeContext().getClassFile().addConstantLongInfo(value);
     }
-*/
     private short
     addConstantFloatInfo(float value) {
         return this.getCodeContext().getClassFile().addConstantFloatInfo(value);
     }
+    private short
+    addConstantDoubleInfo(double value) {
+        return this.getCodeContext().getClassFile().addConstantDoubleInfo(value);
+    }
+    private short
+    addConstantClassInfo(IClass iClass) {
+        return this.getCodeContext().getClassFile().addConstantClassInfo(iClass.getDescriptor());
+    }
+
+/* UNUSED
+    private void writeConstantIntegerInfo(int value) {
+        this.getCodeContext().writeShort(-1, this.addConstantIntegerInfo(value));
+    }
+*/
+    private void
+    writeConstantClassInfo(IClass iClass) {
+        CodeContext cc = this.getCodeContext();
+        cc.writeShort(this.addConstantClassInfo(iClass));
+    }
+    private void
+    writeConstantFieldrefInfo(String classFd, String fieldName, String fieldFd) {
+        CodeContext cc = this.getCodeContext();
+        cc.writeShort(cc.getClassFile().addConstantFieldrefInfo(classFd, fieldName, fieldFd));
+    }
+/* UNUSED
+    private void
+    writeConstantMethodrefInfo(String classFd, String methodName, MethodDescriptor methodMd) {
+        CodeContext cc = this.getCodeContext().;
+        cc.writeShort(cc.getClassFile().addConstantMethodrefInfo(classFd, methodName, methodMd.toString()));
+    }
+    private void
+    writeConstantInterfaceMethodrefInfo(String classFd, String methodName, MethodDescriptor methodMd) {
+        CodeContext cc = this.getCodeContext().;
+        cc.writeShort(cc.getClassFile().addConstantInterfaceMethodrefInfo(classFd, methodName, methodMd.toString()));
+    }
+    private void writeConstantStringInfo(String value) {
+        this.getCodeContext().writeShort(-1, this.addConstantStringInfo(value));
+    }
     private void
     writeConstantLongInfo(long value) {
-        CodeContext ca = this.getCodeContext();
-        ca.writeShort(ca.getClassFile().addConstantLongInfo(value));
+        this.getCodeContext().writeShort(this.addConstantLongInfo(value));
+    }
+    private void writeConstantFloatInfo(float value) {
+        this.getCodeContext().writeShort(-1, this.addConstantFloatInfo(value));
     }
     private void
     writeConstantDoubleInfo(double value) {
-        CodeContext ca = this.getCodeContext();
-        ca.writeShort(ca.getClassFile().addConstantDoubleInfo(value));
+        this.getCodeContext().writeShort(this.addConstantDoubleInfo(value));
     }
+*/
 
     private CodeContext.Offset
     getWhereToBreak(BreakableStatement bs) {
@@ -12286,7 +12782,13 @@ class UnitCompiler {
     }
 
     private void
-    referenceThis(Locatable locatable) { this.writeOpcode(locatable, Opcode.ALOAD_0); }
+    referenceThis(Locatable locatable, IClass currentIClass) {
+        this.load(
+            locatable,
+            currentIClass, // localVariableType
+            0              // localVariableIndex
+        );
+    }
 
     /**
      * Expects <var>dimExprCount</var> values of type {@code int} on the operand stack. Creates an array of
@@ -12296,10 +12798,15 @@ class UnitCompiler {
      */
     private IClass
     newArray(Locatable locatable, int dimExprCount, int dims, IClass componentType) {
+
+        this.addLineNumberOffset(locatable);
+
+        IClass at;
         if (dimExprCount == 1 && dims == 0 && componentType.isPrimitive()) {
 
             // "new <primitive>[<size>]"
-            this.writeOpcode(locatable, Opcode.NEWARRAY);
+            this.getCodeContext().popIntOperand();
+            this.write(Opcode.NEWARRAY);
             this.writeByte((
                 componentType == IClass.BOOLEAN ? 4 :
                 componentType == IClass.CHAR    ? 5 :
@@ -12310,28 +12817,32 @@ class UnitCompiler {
                 componentType == IClass.INT     ? 10 :
                 componentType == IClass.LONG    ? 11 : -1
             ));
-            return componentType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
-        }
-
+            at = componentType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+        } else
         if (dimExprCount == 1) {
-            IClass at = componentType.getArrayIClass(dims, this.iClassLoader.TYPE_java_lang_Object);
+            IClass ct = componentType.getArrayIClass(dims, this.iClassLoader.TYPE_java_lang_Object);
 
             // "new <class-or-interface>[<size>]"
             // "new <anything>[<size>][]..."
-            this.writeOpcode(locatable, Opcode.ANEWARRAY);
-            this.writeConstantClassInfo(at.getDescriptor());
-            return at.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
-        } else {
-            IClass at = componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
+            this.getCodeContext().popIntOperand();
+            this.write(Opcode.ANEWARRAY);
+            this.writeConstantClassInfo(ct);
+            at = ct.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+        } else
+        {
 
             // "new <anything>[]..."
             // "new <anything>[<size1>][<size2>]..."
             // "new <anything>[<size1>][<size2>]...[]..."
-            this.writeOpcode(locatable, Opcode.MULTIANEWARRAY);
-            this.writeConstantClassInfo(at.getDescriptor());
+            for (int i = 0; i < dimExprCount; i++) this.getCodeContext().popIntOperand();
+            this.write(Opcode.MULTIANEWARRAY);
+            at = componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
+            this.writeConstantClassInfo(at);
             this.writeByte(dimExprCount);
-            return at;
         }
+
+        this.getCodeContext().pushObjectOperand(at.getDescriptor());
+        return at;
     }
 
     /**

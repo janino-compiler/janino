@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -365,9 +364,4 @@ interface IExpressionEvaluator extends ICookable, IMultiCookable {
 
     /** @see IScriptEvaluator#getResult() */
     Method[] getResult();
-
-    /**
-     * @return The bytecodes that were generated when {@link #cook(String)} was invoked
-     */
-    Map<String, byte[]> getBytecodes();
 }

@@ -168,7 +168,7 @@ class Visitor {
      */
     public
     interface ModuleDirectiveVisitor<R, EX extends Throwable> {
-        @Nullable R visitRequiresModuleDirective(RequiresModuleDirective rmd) throws EX; // SUPPRESS CHECKSTYLE Javadoc|LineLength:4
+        @Nullable R visitRequiresModuleDirective(RequiresModuleDirective rmd) throws EX;
         @Nullable R visitExportsModuleDirective(ExportsModuleDirective emd)   throws EX;
         @Nullable R visitOpensModuleDirective(OpensModuleDirective omd)       throws EX;
         @Nullable R visitUsesModuleDirective(UsesModuleDirective umd)         throws EX;
@@ -835,9 +835,9 @@ class Visitor {
      * @param <EX> The exception that the {@code visit*()} methods may throw
      */
     public
-    interface LambdaParametersVisitor<R, EX extends Throwable> {
+    interface LambdaParametersVisitor<R, EX extends Throwable> { // SUPPRESS CHECKSTYLE Javadoc:4
 
-        @Nullable R visitIdentifierLambdaParameters(IdentifierLambdaParameters ilp) throws EX; // SUPPRESS CHECKSTYLE Javadoc|LineLength:2
+        @Nullable R visitIdentifierLambdaParameters(IdentifierLambdaParameters ilp) throws EX;
         @Nullable R visitFormalLambdaParameters(FormalLambdaParameters flp)         throws EX;
         @Nullable R visitInferredLambdaParameters(InferredLambdaParameters ilp)     throws EX;
     }
@@ -849,9 +849,9 @@ class Visitor {
      * @param <EX> The exception that the {@code visit*()} methods may throw
      */
     public
-    interface LambdaBodyVisitor<R, EX extends Throwable> {
+    interface LambdaBodyVisitor<R, EX extends Throwable> { // SUPPRESS CHECKSTYLE Javadoc:3
 
-        @Nullable R visitBlockLambdaBody(BlockLambdaBody blockLambdaBody)                throws EX; // SUPPRESS CHECKSTYLE Javadoc|LineLength:1
+        @Nullable R visitBlockLambdaBody(BlockLambdaBody blockLambdaBody)                throws EX;
         @Nullable R visitExpressionLambdaBody(ExpressionLambdaBody expressionLambdaBody) throws EX;
     }
 

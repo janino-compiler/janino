@@ -2097,9 +2097,7 @@ class Parser {
 
             // 'for' '(' Modifiers Type VariableDeclarators
             // 'for' '(' [ Modifiers ] PrimitiveType VariableDeclarators
-            if (this.peek(
-                "final", "@", "byte", "short", "char", "int", "long", "float", "double", "boolean" // SUPPRESS CHECKSTYLE LineLength|Wrap
-            ) != -1) {
+            if (this.peek("final", "@", "byte", "short", "char", "int", "long", "float", "double", "boolean") != -1) {
                 Modifier[] modifiers = this.parseModifiers();
                 Type       type      = this.parseType();
                 if (this.peek(TokenType.IDENTIFIER) && this.peekNextButOne(":")) {
@@ -2717,9 +2715,7 @@ class Parser {
     public Atom
     parseAssignmentExpression() throws CompileException, IOException {
         Atom a = this.parseConditionalExpression();
-        if (this.peek(
-            "=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=" // SUPPRESS CHECKSTYLE Wrap|LineLength
-        ) != -1) {
+        if (this.peek("=", "+=", "-=", "*=", "/=", "&=", "|=", "^=", "%=", "<<=", ">>=", ">>>=") != -1) {
             final Lvalue lhs      = a.toLvalueOrCompileException();
             Location     location = this.location();
             String       operator = this.read(TokenType.OPERATOR); // An interned string!

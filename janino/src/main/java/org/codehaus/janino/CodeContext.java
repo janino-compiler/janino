@@ -46,14 +46,10 @@ import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.AttributeInfo;
 import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute;
-import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.DoubleVariableInfo;
-import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.FloatVariableInfo;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.FullFrame;
-import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.IntegerVariableInfo;
-import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.LongVariableInfo;
-import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.NullVariableInfo;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.ObjectVariableInfo;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.StackMapFrame;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.UninitializedVariableInfo;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo;
 
 /**
@@ -117,20 +113,22 @@ class CodeContext {
     CodeContext(ClassFile classFile, IClass[] parameterTypes) {
         this.classFile = classFile;
 
-        this.maxStack              = 0;
-        this.maxLocals             = 0;
-        this.code                  = new byte[CodeContext.INITIAL_SIZE];
-        this.beginning             = new Offset();
-        this.end                   = new Inserter();
-        this.currentInserter       = this.end;
-        this.exceptionTableEntries = new ArrayList<ExceptionTableEntry>();
+        this.maxStack               = 0;
+        this.maxLocals              = 0;
+        this.code                   = new byte[CodeContext.INITIAL_SIZE];
+        this.exceptionTableEntries  = new ArrayList<ExceptionTableEntry>();
 
-        this.beginning.stackMap = this.end.stackMap = new StackMap(new VerificationTypeInfo[0], new VerificationTypeInfo[0]);
+        this.beginning              = new Offset();
+        this.beginning.offset       = 0;
 
-        this.beginning.offset = 0;
-        this.end.offset       = 0;
-        this.beginning.next   = this.end;
-        this.end.prev         = this.beginning;
+        this.currentInserter        = new Inserter();
+        this.currentInserter.offset = 0;
+        this.currentInserter.setStackMap(new StackMap(new VerificationTypeInfo[0], new VerificationTypeInfo[0]));
+
+        this.beginning.next         = this.currentInserter;
+        this.currentInserter.prev   = this.beginning;
+
+        this.end                    = this.currentInserter;
     }
 
     /**
@@ -188,7 +186,7 @@ class CodeContext {
 //        }
 
         // Update the stack map.
-        this.currentInserter.stackMap = this.currentInserter.stackMap.pushLocal(this.verificationTypeInfo(type));
+        this.currentInserter.setStackMap(this.currentInserter.getStackMap().pushLocal(this.verificationTypeInfo(type)));
 
         this.nextLocalVariableSlot += size;
         currentVars.add(slot);
@@ -204,7 +202,7 @@ class CodeContext {
     private VerificationTypeInfo
     verificationTypeInfo(@Nullable IClass type) {
 
-        if (type == null) return new NullVariableInfo(); // TODO Is that the right thing to do?
+        if (type == null) return ClassFile.StackMapTableAttribute.NULL_VARIABLE_INFO; // TODO Is that the right thing to do?
 
         String fd = type.getDescriptor();
         if (
@@ -213,14 +211,14 @@ class CodeContext {
             || Descriptor.CHAR.equals(fd)
             || Descriptor.INT.equals(fd)
             || Descriptor.SHORT.equals(fd)
-        ) return new IntegerVariableInfo();
-        if (Descriptor.LONG.equals(fd)) return new LongVariableInfo();
-        if (Descriptor.FLOAT.equals(fd)) return new FloatVariableInfo();
-        if (Descriptor.DOUBLE.equals(fd)) return new DoubleVariableInfo();
+        ) return ClassFile.StackMapTableAttribute.INTEGER_VARIABLE_INFO;
+        if (Descriptor.LONG.equals(fd))   return ClassFile.StackMapTableAttribute.LONG_VARIABLE_INFO;
+        if (Descriptor.FLOAT.equals(fd))  return ClassFile.StackMapTableAttribute.FLOAT_VARIABLE_INFO;
+        if (Descriptor.DOUBLE.equals(fd)) return ClassFile.StackMapTableAttribute.DOUBLE_VARIABLE_INFO;
         if (
             Descriptor.isClassOrInterfaceReference(fd)
             || Descriptor.isArrayReference(fd)
-        ) return new ObjectVariableInfo(this.classFile.addConstantClassInfo(fd));
+        ) return new ObjectVariableInfo(this.classFile.addConstantClassInfo(fd), fd);
 
         throw new InternalCompilerException("Cannot make VerificationTypeInfo from \"" + fd + "\"");
     }
@@ -231,11 +229,11 @@ class CodeContext {
     public List<Java.LocalVariableSlot>
     saveLocalVariables() {
 
-        // Push empty list on the stack to hold a new block's local vars.
+        // Push empty list on the local scope stack to hold a new block's local vars.
         return (this.currentLocalScope = new LocalScope(
             this.currentLocalScope,
             this.nextLocalVariableSlot,
-            this.currentInserter.stackMap
+            this.currentInserter.getStackMap()
         )).localVars;
     }
 
@@ -254,8 +252,8 @@ class CodeContext {
             if (slot.getName() != null) slot.setEnd(this.newOffset());
         }
 
-        this.currentLocalScope        = scopeToPop.parent;
-        this.currentInserter.stackMap = scopeToPop.startingStackMap;
+        this.currentLocalScope = scopeToPop.parent;
+        this.currentInserter.setStackMap(scopeToPop.startingStackMap);
 
         // reuse local variable slots of the popped scope
         this.nextLocalVariableSlot = scopeToPop.startingLocalVariableSlot;
@@ -323,13 +321,18 @@ class CodeContext {
             List<StackMapFrame> smfs = new ArrayList<ClassFile.StackMapTableAttribute.StackMapFrame>();
             {
                 int previousOffset = -1;
-                for (Offset o = CodeContext.this.beginning; o != null; o = o.next) {
+                for (Offset o = this.beginning; o != null && o.offset != this.end.offset; o = o.next) {
                     if (o.offset == 0) continue;
-                    if (o.offset == previousOffset) continue;
+
+                    {
+                        Offset next = o.next;
+                        if (next != null && o.offset == next.offset) continue;
+                    }
+
                     smfs.add(new FullFrame(
                         o.offset - previousOffset - 1, // offset_delta
-                        o.stackMap.locals(),           // locals
-                        o.stackMap.operands()          // stack
+                        o.getStackMap().locals(),      // locals
+                        o.getStackMap().operands()     // stack
                     ));
                     previousOffset = o.offset;
                 }
@@ -523,20 +526,20 @@ class CodeContext {
             stackSizes[offset] = stackSize;
 
             // Analyze current opcode.
-            byte  opcode        = code[offset];
+            int   opcode        = code[offset] & 0xff;
             int   operandOffset = offset + 1;
             short props;
             if (opcode == Opcode.WIDE) {
-                opcode = code[operandOffset++];
-                props  = Opcode.WIDE_OPCODE_PROPERTIES[0xff & opcode];
+                opcode = code[operandOffset++] & 0xff;
+                props  = Opcode.WIDE_OPCODE_PROPERTIES[opcode];
             } else {
-                props = Opcode.OPCODE_PROPERTIES[0xff & opcode];
+                props = Opcode.OPCODE_PROPERTIES[opcode];
             }
             if (props == Opcode.INVALID_OPCODE) {
                 throw new InternalCompilerException(
                     functionName
                     + ": Invalid opcode "
-                    + (0xff & opcode)
+                    + opcode
                     + " at offset "
                     + offset
                 );
@@ -952,12 +955,12 @@ class CodeContext {
      * @param b
      */
     public void
-    write(int lineNumber, byte[] b) {
+    write(byte[] b) {
 
         if (b.length == 0) return;
 
         // CAVEAT: "makeSpace()" may change "this.code", so make sure to call "makeSpace()" _before_ using "this.code"!
-        int o = this.makeSpace(lineNumber, b.length);
+        int o = this.makeSpace(b.length);
         System.arraycopy(b, 0, this.code, o, b.length);
     }
 
@@ -971,10 +974,10 @@ class CodeContext {
      * @param b1
      */
     public void
-    write(int lineNumber, byte b1) {
+    write(byte b1) {
 
         // CAVEAT: "makeSpace()" may change "this.code", so make sure to call "makeSpace()" _before_ using "this.code"!
-        int o = this.makeSpace(lineNumber, 1);
+        int o = this.makeSpace(1);
         this.code[o] = b1;
     }
 
@@ -987,9 +990,9 @@ class CodeContext {
      * @param lineNumber The line number that corresponds to the byte code, or -1
      */
     public void
-    write(int lineNumber, byte b1, byte b2) {
+    write(byte b1, byte b2) {
 
-        int o = this.makeSpace(lineNumber, 2);
+        int o = this.makeSpace(2);
 
         this.code[o++] = b1;
         this.code[o]   = b2;
@@ -1004,9 +1007,9 @@ class CodeContext {
      * @param lineNumber The line number that corresponds to the byte code, or -1
      */
     public void
-    write(int lineNumber, byte b1, byte b2, byte b3) {
+    write(byte b1, byte b2, byte b3) {
 
-        int o = this.makeSpace(lineNumber, 3);
+        int o = this.makeSpace(3);
 
         this.code[o++] = b1;
         this.code[o++] = b2;
@@ -1022,14 +1025,45 @@ class CodeContext {
      * @param lineNumber The line number that corresponds to the byte code, or -1
      */
     public void
-    write(int lineNumber, byte b1, byte b2, byte b3, byte b4) {
+    write(byte b1, byte b2, byte b3, byte b4) {
 
-        int o = this.makeSpace(lineNumber, 4);
+        int o = this.makeSpace(4);
 
         this.code[o++] = b1;
         this.code[o++] = b2;
         this.code[o++] = b3;
         this.code[o]   = b4;
+    }
+
+    public void
+    addLineNumberOffset(int lineNumber) {
+
+        if (lineNumber == -1) return;
+
+        if (lineNumber > 0xffff) lineNumber = 0xffff;
+
+        // Find out whether the line number is different from the line number of the preceding insertion,
+        // and, if so, insert a LineNumberOffset object, which will later lead to a LineNumberTable entry.
+        for (Offset o = this.currentInserter.prev; o != this.beginning; o = o.prev) {
+            assert o != null;
+            if (o instanceof LineNumberOffset) {
+                if ((((LineNumberOffset) o).lineNumber & 0xffff) == lineNumber) return;
+                break;
+            }
+        }
+
+        // Insert a LineNumberOffset _before_ the current inserter.
+        LineNumberOffset lno = new LineNumberOffset(this.currentInserter.offset, this.currentInserter.getStackMap(), (short) lineNumber);
+
+        Offset cip = this.currentInserter.prev;
+        assert cip != null;
+
+        lno.prev = cip;
+        lno.next = this.currentInserter;
+
+        cip.next = lno;
+
+        this.currentInserter.prev = lno;
     }
 
     /**
@@ -1045,42 +1079,11 @@ class CodeContext {
      * @return           The offset of the first inserted byte
      */
     public int
-    makeSpace(int lineNumber, final int size) {
+    makeSpace(final int size) {
 
         final int cio = this.currentInserter.offset;
 
         if (size == 0) return cio;
-
-        INSERT_LINE_NUMBER_OFFSET:
-        if (lineNumber != -1) {
-
-            if (lineNumber > 0xffff) lineNumber = 0xffff;
-
-            // Find out whether the line number is different from the line number of the preceding insertion,
-            // and, if so, insert a LineNumberOffset object, which will later lead to a LineNumberTable entry.
-            for (Offset o = this.currentInserter.prev; o != this.beginning; o = o.prev) {
-                assert o != null;
-                if (o instanceof LineNumberOffset) {
-                    if ((((LineNumberOffset) o).lineNumber & 0xffff) == lineNumber) {
-                        break INSERT_LINE_NUMBER_OFFSET;
-                    }
-                    break;
-                }
-            }
-
-            // Insert a LineNumberOffset _before_ the current inserter.
-            LineNumberOffset lno = new LineNumberOffset(cio, this.currentInserter.stackMap, (short) lineNumber);
-
-            Offset cip = this.currentInserter.prev;
-            assert cip != null;
-
-            lno.prev = cip;
-            lno.next = this.currentInserter;
-
-            cip.next = lno;
-
-            this.currentInserter.prev = lno;
-        }
 
         if (this.end.offset + size <= this.code.length) {
 
@@ -1106,7 +1109,7 @@ class CodeContext {
     /**
      */
     public void
-    writeShort(int v) { this.write(-1, (byte) (v >> 8), (byte) v); }
+    writeShort(int v) { this.write((byte) (v >> 8), (byte) v); }
 
     /**
      * Generates a "branch" instruction.
@@ -1116,9 +1119,9 @@ class CodeContext {
      * @param dst        Where to branch
      */
     public void
-    writeBranch(int lineNumber, int opcode, final Offset dst) {
+    writeBranch(int opcode, final Offset dst) {
         this.relocatables.add(new Branch(opcode, dst));
-        this.write(lineNumber, (byte) opcode, (byte) -1, (byte) -1);
+        this.write((byte) opcode, (byte) -1, (byte) -1);
     }
 
     private
@@ -1152,10 +1155,7 @@ class CodeContext {
                 {
                     // Promotion to a wide instruction only requires 2 extra bytes. Everything else requires a new
                     // GOTO_W instruction after a negated if (5 extra bytes).
-                    CodeContext.this.makeSpace(
-                        -1,
-                        this.opcode == Opcode.GOTO || this.opcode == Opcode.JSR ? 2 : 5
-                    );
+                    CodeContext.this.makeSpace(this.opcode == Opcode.GOTO || this.opcode == Opcode.JSR ? 2 : 5);
                 }
                 CodeContext.this.popInserter();
                 this.source.offset = pos;
@@ -1188,10 +1188,10 @@ class CodeContext {
                     //  [if !cond skip_goto]
                     //  [GOTO_W offset]
                     ba = new byte[] {
-                        CodeContext.invertBranchOpcode((byte) this.opcode),
+                        (byte) CodeContext.invertBranchOpcode(this.opcode),
                         0,
                         8, // Jump from this instruction past the GOTO_W
-                        Opcode.GOTO_W,
+                        (byte) Opcode.GOTO_W,
                         (byte) (offset >> 24),
                         (byte) (offset >> 16),
                         (byte) (offset >> 8),
@@ -1212,32 +1212,34 @@ class CodeContext {
     /**
      * E.g. {@link Opcode#IFLT} ("less than") inverts to {@link Opcode#IFGE} ("greater than or equal to").
      */
-    private static byte
-    invertBranchOpcode(byte branchOpcode) {
-        return (Byte) CodeContext.BRANCH_OPCODE_INVERSION.get(new Byte(branchOpcode));
+    private static int
+    invertBranchOpcode(int branchOpcode) {
+        final Integer result = (Integer) CodeContext.BRANCH_OPCODE_INVERSION.get(Integer.valueOf(branchOpcode));
+        assert result != null : branchOpcode;
+        return result;
     }
 
-    private static final Map<Byte /*branch-opcode*/, Byte /*inverted-branch-opcode*/>
+    private static final Map<Integer /*branch-opcode*/, Integer /*inverted-branch-opcode*/>
     BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion();
-    private static Map<Byte, Byte>
+    private static Map<Integer, Integer>
     createBranchOpcodeInversion() {
-        Map<Byte, Byte> m = new HashMap<Byte, Byte>();
-        m.put(new Byte(Opcode.IF_ACMPEQ), new Byte(Opcode.IF_ACMPNE));
-        m.put(new Byte(Opcode.IF_ACMPNE), new Byte(Opcode.IF_ACMPEQ));
-        m.put(new Byte(Opcode.IF_ICMPEQ), new Byte(Opcode.IF_ICMPNE));
-        m.put(new Byte(Opcode.IF_ICMPNE), new Byte(Opcode.IF_ICMPEQ));
-        m.put(new Byte(Opcode.IF_ICMPGE), new Byte(Opcode.IF_ICMPLT));
-        m.put(new Byte(Opcode.IF_ICMPLT), new Byte(Opcode.IF_ICMPGE));
-        m.put(new Byte(Opcode.IF_ICMPGT), new Byte(Opcode.IF_ICMPLE));
-        m.put(new Byte(Opcode.IF_ICMPLE), new Byte(Opcode.IF_ICMPGT));
-        m.put(new Byte(Opcode.IFEQ),      new Byte(Opcode.IFNE));
-        m.put(new Byte(Opcode.IFNE),      new Byte(Opcode.IFEQ));
-        m.put(new Byte(Opcode.IFGE),      new Byte(Opcode.IFLT));
-        m.put(new Byte(Opcode.IFLT),      new Byte(Opcode.IFGE));
-        m.put(new Byte(Opcode.IFGT),      new Byte(Opcode.IFLE));
-        m.put(new Byte(Opcode.IFLE),      new Byte(Opcode.IFGT));
-        m.put(new Byte(Opcode.IFNULL),    new Byte(Opcode.IFNONNULL));
-        m.put(new Byte(Opcode.IFNONNULL), new Byte(Opcode.IFNULL));
+        Map<Integer, Integer> m = new HashMap<Integer, Integer>();
+        m.put(Opcode.IF_ACMPEQ, Opcode.IF_ACMPNE);
+        m.put(Opcode.IF_ACMPNE, Opcode.IF_ACMPEQ);
+        m.put(Opcode.IF_ICMPEQ, Opcode.IF_ICMPNE);
+        m.put(Opcode.IF_ICMPNE, Opcode.IF_ICMPEQ);
+        m.put(Opcode.IF_ICMPGE, Opcode.IF_ICMPLT);
+        m.put(Opcode.IF_ICMPLT, Opcode.IF_ICMPGE);
+        m.put(Opcode.IF_ICMPGT, Opcode.IF_ICMPLE);
+        m.put(Opcode.IF_ICMPLE, Opcode.IF_ICMPGT);
+        m.put(Opcode.IFEQ,      Opcode.IFNE);
+        m.put(Opcode.IFNE,      Opcode.IFEQ);
+        m.put(Opcode.IFGE,      Opcode.IFLT);
+        m.put(Opcode.IFLT,      Opcode.IFGE);
+        m.put(Opcode.IFGT,      Opcode.IFLE);
+        m.put(Opcode.IFLE,      Opcode.IFGT);
+        m.put(Opcode.IFNULL,    Opcode.IFNONNULL);
+        m.put(Opcode.IFNONNULL, Opcode.IFNULL);
         return Collections.unmodifiableMap(m);
     }
 
@@ -1245,9 +1247,9 @@ class CodeContext {
      * Writes a four-byte offset (as it is used in TABLESWITCH and LOOKUPSWITCH) into this code context.
      */
     public void
-    writeOffset(int lineNumber, Offset src, final Offset dst) {
+    writeOffset(Offset src, final Offset dst) {
         this.relocatables.add(new OffsetBranch(this.newOffset(), src, dst));
-        this.makeSpace(lineNumber, 4);
+        this.makeSpace(4);
     }
 
     private
@@ -1309,6 +1311,10 @@ class CodeContext {
      */
     public void
     pushInserter(Inserter ins) {
+
+        // The current inserter MUST have a stack map; verify.
+        ins.getStackMap();
+
         if (ins.nextInserter != null) {
             throw new InternalCompilerException("An Inserter can only be pushed once at a time");
         }
@@ -1323,6 +1329,8 @@ class CodeContext {
     popInserter() {
         Inserter ni = this.currentInserter.nextInserter;
         if (ni == null) throw new InternalCompilerException("Code inserter stack underflow");
+        ni.getStackMap();
+
         this.currentInserter.nextInserter = null; // Mark it as "unpushed".
         this.currentInserter              = ni;
     }
@@ -1354,7 +1362,7 @@ class CodeContext {
          */
         static final int UNSET = -1;
 
-        @Nullable StackMap stackMap;     // Is null until "set()".
+        @Nullable private StackMap stackMap;     // Is null until "set()".
 
         /**
          * Sets this "Offset" to the offset of the current inserter; inserts this "Offset" before the current inserter.
@@ -1362,14 +1370,26 @@ class CodeContext {
         public void
         set() {
 
-            if (this.offset != Offset.UNSET) {
-                throw new InternalCompilerException("Cannot \"set()\" Offset more than once");
-            }
-
             Inserter ci = CodeContext.this.currentInserter;
 
-            this.offset   = ci.offset;
-            this.stackMap = ci.stackMap;
+            if (this.offset != Offset.UNSET) throw new InternalCompilerException("Offset already set");
+            this.offset = ci.offset;
+
+            if (((Offset) ci).stackMap == null) {
+
+                // A very special case: The current inserter has no stack map -- this happens when a GOTO has just been
+                // written.
+                ((Offset) ci).stackMap = this.stackMap;
+            } else {
+                final StackMap sm = ci.getStackMap();
+
+                if (this.stackMap == null) {
+                    this.setStackMap(sm);
+                } else
+                if (!sm.equals(this.stackMap)) {
+                    throw new InternalCompilerException("Stack map already set: " + sm + " vs. " + this.stackMap);
+                }
+            }
 
             Offset cip = ci.prev;
             assert cip != null;
@@ -1380,6 +1400,18 @@ class CodeContext {
             cip.next = this;
             ci.prev  = this;
         }
+
+        public StackMap
+        getStackMap() {
+            final StackMap result = this.stackMap;
+            if (result == null) {
+                throw new InternalCompilerException("Stack map not set");
+            }
+            return result;
+        }
+
+        public void
+        setStackMap(StackMap stackMap) { this.stackMap = stackMap; }
 
         /**
          * @return The {@link CodeContext} that this {@link Offset} belongs to
@@ -1442,8 +1474,8 @@ class CodeContext {
         public
         LineNumberOffset(int offset, StackMap stackMap, short lineNumber) {
             this.lineNumber = lineNumber;
-            this.stackMap   = stackMap;
             this.offset     = offset;
+            this.setStackMap(stackMap);
         }
     }
 
@@ -1581,5 +1613,243 @@ class CodeContext {
 
         from.next = to;
         to.prev   = from;
+    }
+
+    @Override public String
+    toString() { return this.classFile.getThisClassName() + "/" + this.currentInserter.offset; }
+
+    /**
+     * Pushes one entry onto the current inserter's operand stack.
+     */
+    public void
+    pushOperand(String fieldDescriptor) {
+
+        final VerificationTypeInfo vti;
+        if (Descriptor.isReference(fieldDescriptor)) {
+            vti = this.classFile.newObjectVariableInfo(fieldDescriptor);
+        } else
+        if (fieldDescriptor.equals(Descriptor.VOID)) {
+            vti = StackMapTableAttribute.NULL_VARIABLE_INFO;
+        } else
+        if (
+            fieldDescriptor.equals(Descriptor.VOID)
+            || fieldDescriptor.equals(Descriptor.BYTE)
+            || fieldDescriptor.equals(Descriptor.CHAR)
+            || fieldDescriptor.equals(Descriptor.INT)
+            || fieldDescriptor.equals(Descriptor.SHORT)
+            || fieldDescriptor.equals(Descriptor.BOOLEAN)
+        ) {
+            vti = StackMapTableAttribute.INTEGER_VARIABLE_INFO;
+        } else
+        if (fieldDescriptor.equals(Descriptor.DOUBLE)) {
+            vti = StackMapTableAttribute.DOUBLE_VARIABLE_INFO;
+        } else
+        if (fieldDescriptor.equals(Descriptor.FLOAT)) {
+            vti = StackMapTableAttribute.FLOAT_VARIABLE_INFO;
+        } else
+        if (fieldDescriptor.equals(Descriptor.LONG)) {
+            vti = StackMapTableAttribute.LONG_VARIABLE_INFO;
+        } else
+        {
+            throw new AssertionError(fieldDescriptor);
+        }
+
+        this.pushOperand(vti);
+    }
+
+    public void
+    pushOperand(VerificationTypeInfo topOperand) {
+        final Inserter ci = this.currentInserter();
+
+        StackMap sm = ci.getStackMap();
+        sm = sm.pushOperand(topOperand);
+        ci.setStackMap(sm);
+    }
+
+    public void
+    pushUninitializedOperand() {
+        Inserter ci = this.currentInserter();
+
+        final UninitializedVariableInfo uvi;
+        {
+            final Offset o = this.newOffset();
+            uvi = this.classFile.newUninitializedVariableInfo((short) o.offset);
+            this.relocatables.add(new Relocatable() {
+
+                @Override public boolean
+                relocate() {
+                    uvi.offset = (short) o.offset;
+                    return true;
+                }
+            });
+        }
+        StackMap sm = ci.getStackMap();
+        sm = sm.pushOperand(uvi);
+        ci.setStackMap(sm);
+    }
+
+    public void pushIntOperand()               { this.pushOperand(StackMapTableAttribute.INTEGER_VARIABLE_INFO);            }
+    public void pushLongOperand()              { this.pushOperand(StackMapTableAttribute.LONG_VARIABLE_INFO);               }
+    public void pushFloatOperand()             { this.pushOperand(StackMapTableAttribute.FLOAT_VARIABLE_INFO);              }
+    public void pushDoubleOperand()            { this.pushOperand(StackMapTableAttribute.DOUBLE_VARIABLE_INFO);             }
+    public void pushNullOperand()              { this.pushOperand(StackMapTableAttribute.NULL_VARIABLE_INFO);               }
+    public void pushUninitializedThisOperand() { this.pushOperand(StackMapTableAttribute.UNINITIALIZED_THIS_VARIABLE_INFO); }
+
+    public void
+    pushObjectOperand(String fieldDescriptor) {
+        this.pushOperand(this.classFile.newObjectVariableInfo(fieldDescriptor));
+    }
+
+
+    /**
+     * @return Whether the top operand is a {@code null_variable_info}
+     */
+    public boolean
+    peekNullOperand() {
+        return this.peekOperand() == StackMapTableAttribute.NULL_VARIABLE_INFO;
+    }
+
+    /**
+     * @return Whether the top operand is a {@code object_variable_info}
+     */
+    public boolean
+    peekObjectOperand() {
+        return this.peekOperand() instanceof StackMapTableAttribute.ObjectVariableInfo;
+    }
+
+    /**
+     * @return The verification type of the top operand
+     */
+    public VerificationTypeInfo
+    peekOperand() { return this.currentInserter().getStackMap().peekOperand(); }
+
+    /**
+     * Pops one entry from the current inserter's operand stack.
+     */
+    public VerificationTypeInfo
+    popOperand() {
+
+        Inserter ci = this.currentInserter();
+        StackMap sm = ci.getStackMap();
+
+        VerificationTypeInfo result = sm.peekOperand();
+
+        ci.setStackMap(sm.popOperand());
+
+        return result;
+    }
+
+    /**
+     * Asserts that the top operand matches the given field descriptor and pops it.
+     */
+    public void
+    popOperand(String actualTypeFd) {
+
+        VerificationTypeInfo vti = this.popOperand();
+
+        if (
+            actualTypeFd.equals(Descriptor.BOOLEAN)
+            || actualTypeFd.equals(Descriptor.BYTE)
+            || actualTypeFd.equals(Descriptor.CHAR)
+            || actualTypeFd.equals(Descriptor.SHORT)
+            || actualTypeFd.equals(Descriptor.INT)
+        ) {
+            assert vti == StackMapTableAttribute.INTEGER_VARIABLE_INFO : vti;
+        } else
+        if (actualTypeFd.equals(Descriptor.LONG)) {
+            assert vti == StackMapTableAttribute.LONG_VARIABLE_INFO : vti;
+        } else
+        if (actualTypeFd.equals(Descriptor.FLOAT)) {
+            assert vti == StackMapTableAttribute.FLOAT_VARIABLE_INFO : vti;
+        } else
+        if (actualTypeFd.equals(Descriptor.DOUBLE)) {
+            assert vti == StackMapTableAttribute.DOUBLE_VARIABLE_INFO : vti;
+        } else
+        {
+            assert (
+                vti instanceof StackMapTableAttribute.ObjectVariableInfo
+                || vti instanceof StackMapTableAttribute.UninitializedVariableInfo
+                || vti == StackMapTableAttribute.UNINITIALIZED_THIS_VARIABLE_INFO
+                || vti == StackMapTableAttribute.NULL_VARIABLE_INFO
+            ) : vti;
+        }
+    }
+
+    /**
+     * Asserts that the top operand is an {@code integer_variable_info} and pops it.
+     */
+    public void
+    popIntOperand() { this.popOperand(Descriptor.INT); }
+
+    /**
+     * Asserts that the top operand is a {@code long_variable_info} and pops it.
+     */
+    public void
+    popLongOperand() { this.popOperand(Descriptor.LONG); }
+
+    /**
+     * Asserts that the top operand is an {@code uninitializedThis_variable_info} and pops it.
+     */
+    public void
+    popUninitializedThisOperand() {
+        assert this.currentInserter().getStackMap().peekOperand() == StackMapTableAttribute.UNINITIALIZED_THIS_VARIABLE_INFO;
+        this.popOperand();
+    }
+
+    /**
+     * Asserts that the top operand is an {@code uninitialized_variable_info} and pops it.
+     */
+    public void
+    popUninitializedVariableOperand() {
+        assert this.currentInserter().getStackMap().peekOperand() instanceof StackMapTableAttribute.UninitializedVariableInfo;
+        this.popOperand();
+    }
+
+    /**
+     * Asserts that the top operand is an {@code object_variable_info} or a {@code null_variable_info} and pops it.
+     */
+    public void
+    popReferenceOperand() {
+        assert this.peekObjectOperand() || this.peekNullOperand() : this.peekOperand();
+        this.popOperand();
+    }
+
+    /**
+     * Asserts that the top operand is an {@code object_variable_info}, and pops it.
+     */
+    public VerificationTypeInfo
+    popObjectOperand() {
+        VerificationTypeInfo result = this.popOperand();
+        assert result instanceof StackMapTableAttribute.ObjectVariableInfo : result;
+        return result;
+    }
+
+    /**
+     * Asserts that the top operand is an {@code object_variable_info}, {@code uninitialized_variable_info} or
+     * {@code uninitializedThis_variable_info}, and pops it.
+     */
+    public VerificationTypeInfo
+    popObjectOrUninitializedOrUninitializedThisOperand() {
+        VerificationTypeInfo result = this.popOperand();
+        assert (
+            result instanceof StackMapTableAttribute.UninitializedVariableInfo
+            || result instanceof StackMapTableAttribute.ObjectVariableInfo
+            || result == StackMapTableAttribute.UNINITIALIZED_THIS_VARIABLE_INFO
+        ) : result;
+        return result;
+    }
+
+    /**
+     * Asserts that the top operand is an {@code int_variable_info} or {@code long_variable_info}, then pops and
+     * returns it.
+     */
+    public VerificationTypeInfo
+    popIntOrLongOperand() {
+        VerificationTypeInfo result = this.popOperand();
+        assert (
+            result == StackMapTableAttribute.INTEGER_VARIABLE_INFO
+            || result == StackMapTableAttribute.LONG_VARIABLE_INFO
+        ) : result;
+        return result;
     }
 }

@@ -26,7 +26,6 @@
 package org.codehaus.commons.compiler;
 
 import java.io.Reader;
-import java.util.Map;
 
 import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -109,8 +108,6 @@ interface ISimpleCompiler extends ICookable {
      * @param warningHandler {@code null} to indicate that no warnings be issued
      */
     void setWarningHandler(@Nullable WarningHandler warningHandler);
-
-    Map<String /*className*/, byte[] /*bytes*/> getBytecodes();
 
     /**
      * Returns a {@link ClassLoader} object through which the previously compiled classes can be accessed. This {@link

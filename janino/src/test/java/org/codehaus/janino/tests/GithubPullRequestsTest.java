@@ -101,7 +101,7 @@ class GithubPullRequestsTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         classFiles[0].store(baos);
 
-        // The 200-byte class file disassembles to:
+        // The class file disassembles to:
         //
         //     // *** Disassembly of 'C:\workspaces\janino\janino\Foo.class'.
         //
@@ -111,19 +111,19 @@ class GithubPullRequestsTest {
         //
         //         public static String meth() {
         //             iconst_1
-        //             istore          [v1]
+        //             istore_0        [v0]
         //             ldc             "true"
         //             areturn
         //         }
         //
         //         public Foo() {
-        //             aload           [this]
+        //             aload_0         [this]
         //             invokespecial   Object()
         //             return
         //         }
         //     }
         //
         // As you see, the IF statement has been optimized away.
-        Assert.assertEquals(216, baos.size());
+        Assert.assertEquals(238, baos.size());
     }
 }

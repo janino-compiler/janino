@@ -27,6 +27,7 @@ package org.codehaus.janino;
 
 import java.util.Arrays;
 
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo;
 
 class StackMap {
@@ -119,4 +120,15 @@ class StackMap {
 
     @Override public String
     toString() { return "locals=" + Arrays.toString(this.locals) + ", stack=" + Arrays.toString(this.operands); }
+
+    @Override public int
+    hashCode() { return Arrays.hashCode(this.locals) ^ Arrays.hashCode(this.operands); }
+
+    @Override public boolean
+    equals(@Nullable Object obj) {
+        if (obj == this) return true;
+        if (!(obj instanceof StackMap)) return false;
+        StackMap that = (StackMap) obj;
+        return Arrays.equals(this.locals, that.locals) && Arrays.equals(this.operands, that.operands);
+    }
 }

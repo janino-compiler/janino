@@ -27,7 +27,6 @@ package org.codehaus.commons.compiler;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Map;
 
 import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -224,12 +223,6 @@ interface IClassBodyEvaluator extends ICookable {
      * @throws IllegalStateException This {@link IClassBodyEvaluator} is not yet cooked
      */
     Class<?> getClazz();
-
-    /**
-     * @return                        The generated Java bytecode; maps class name to bytes
-     * @throws IllegalStateException This IClassBodyEvaluator is not yet cooked
-     */
-    Map<String /*className*/, byte[] /*bytes*/> getBytecodes();
 
     /**
      * Scans, parses and compiles a class body from the tokens delivered by the the given {@link Reader}, then creates

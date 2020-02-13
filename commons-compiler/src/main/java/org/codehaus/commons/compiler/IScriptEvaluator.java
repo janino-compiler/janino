@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -285,9 +284,6 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
      * @throws IllegalStateException This IScriptEvaluator is not yet cooked
      */
     Method getMethod();
-
-    /** @see IClassBodyEvaluator#getBytecodes() */
-    Map<String, byte[]> getBytecodes();
 
     /**
      * Same as {@link #setOverrideMethod(boolean)}, but for multiple scripts.

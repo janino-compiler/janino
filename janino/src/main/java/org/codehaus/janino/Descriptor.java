@@ -435,6 +435,11 @@ class Descriptor {
      */
     public static final String JAVA_LANG_THROWABLE = "Ljava/lang/Throwable;";
 
+    /**
+     * The field descriptor for the class {@link java.lang.Void}.
+     */
+    public static final String JAVA_LANG_VOID = "Ljava/lang/Void;";
+
     // Interfaces.
 
     /**

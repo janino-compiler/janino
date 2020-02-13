@@ -434,9 +434,11 @@ class Unparser {
     private final Visitor.BlockStatementVisitor<Void, RuntimeException>
     blockStatementUnparser = new Visitor.BlockStatementVisitor<Void, RuntimeException>() {
 
-        // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd) { Unparser.this.unparseFieldDeclaration(fd); return null; }
-        @Override @Nullable public Void visitInitializer(Initializer i)            { Unparser.this.unparseInitializer(i);       return null; }
+        @Override @Nullable public Void
+        visitFieldDeclaration(FieldDeclaration fd) { Unparser.this.unparseFieldDeclaration(fd); return null; }
+
+        @Override @Nullable public Void
+        visitInitializer(Initializer i) { Unparser.this.unparseInitializer(i); return null; }
 
         @Override @Nullable public Void
         visitBlock(Block b) {
@@ -1098,9 +1100,16 @@ class Unparser {
             return null;
         }
 
-        @Override @Nullable public Void visitSingleElementAnnotation(SingleElementAnnotation sea) { return sea.accept(Unparser.this.annotationUnparser); } // SUPPRESS CHECKSTYLE LineLength:2
-        @Override @Nullable public Void visitNormalAnnotation(NormalAnnotation na)                { return na.accept(Unparser.this.annotationUnparser);  }
-        @Override @Nullable public Void visitMarkerAnnotation(MarkerAnnotation ma)                { return ma.accept(Unparser.this.annotationUnparser);  }
+        @Override @Nullable public Void
+        visitSingleElementAnnotation(SingleElementAnnotation sea) {
+            return sea.accept(Unparser.this.annotationUnparser);
+        }
+
+        @Override @Nullable public Void
+        visitNormalAnnotation(NormalAnnotation na) { return na.accept(Unparser.this.annotationUnparser);  }
+
+        @Override @Nullable public Void
+        visitMarkerAnnotation(MarkerAnnotation ma) { return ma.accept(Unparser.this.annotationUnparser);  }
     };
 
     private final LambdaParametersVisitor<Void, RuntimeException>
@@ -1818,9 +1827,13 @@ class Unparser {
 
         fd.accept(new Visitor.FunctionDeclaratorVisitor<Void, RuntimeException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:2
-            @Override @Nullable public Void visitConstructorDeclarator(ConstructorDeclarator cd) { Unparser.this.unparseConstructorDeclarator(cd); return null; }
-            @Override @Nullable public Void visitMethodDeclarator(MethodDeclarator md)           { Unparser.this.unparseMethodDeclarator(md);      return null; }
+            @Override @Nullable public Void
+            visitConstructorDeclarator(ConstructorDeclarator cd) {
+                Unparser.this.unparseConstructorDeclarator(cd); return null;
+            }
+
+            @Override @Nullable public Void
+            visitMethodDeclarator(MethodDeclarator md) { Unparser.this.unparseMethodDeclarator(md); return null; }
         });
     }
 

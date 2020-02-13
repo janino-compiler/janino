@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Map;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -113,4 +114,10 @@ interface ICookable {
      * Reads, scans, parses and compiles Java tokens from the named file with the given <var>encoding</var>.
      */
     void cookFile(String fileName, @Nullable String encoding) throws CompileException, IOException;
+
+    /**
+     * @return                        The generated Java bytecode; maps class name to bytes
+     * @throws IllegalStateException This IClassBodyEvaluator is not yet cooked
+     */
+    Map<String /*className*/, byte[] /*bytes*/> getBytecodes();
 }
