@@ -4297,7 +4297,7 @@ class UnitCompiler {
 
                 this.compileGetValue(bo.rhs);
 
-                this.if_acmpxx(bo, Opcode.IF_ACMPEQ + opIdx, dst);
+                this.if_acmpxx(bo, opIdx, dst);
                 return;
             }
 
@@ -10639,9 +10639,7 @@ class UnitCompiler {
         }
 
         if (value == null) {
-            this.addLineNumberOffset(locatable);
-            this.write(Opcode.ACONST_NULL);
-            this.getCodeContext().pushNullOperand();
+            this.aconstnull(locatable);
             return IClass.VOID;
         }
 
@@ -11447,14 +11445,10 @@ class UnitCompiler {
      */
     private boolean
     tryNarrowingReferenceConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
+
         if (!this.isNarrowingReferenceConvertible(sourceType, targetType)) return false;
 
-        this.addLineNumberOffset(locatable);
-        this.write(Opcode.CHECKCAST);
-        this.writeConstantClassInfo(targetType);
-        this.getCodeContext().popOperand();
-        this.getCodeContext().pushObjectOperand(targetType.getDescriptor());
-
+        this.checkcast(locatable, targetType);
         return true;
     }
 
@@ -11622,6 +11616,13 @@ class UnitCompiler {
     // ============================= BYTE CODE GENERATION METHODS, IN ALPHABETICAL ORDER =============================
 
     private void
+    aconstnull(Locatable locatable) {
+        this.addLineNumberOffset(locatable);
+        this.write(Opcode.ACONST_NULL);
+        this.getCodeContext().pushNullOperand();
+    }
+
+    private void
     add(Locatable locatable) { this.mulDivRemAddSub(locatable, "+"); }
 
     private void
@@ -11642,6 +11643,17 @@ class UnitCompiler {
         this.addLineNumberOffset(locatable);
         this.write(opcode);
         this.getCodeContext().pushOperand(operand1);
+    }
+
+    private void
+    anewarray(Locatable locatable, IClass componentType) {
+        IClass arrayType = componentType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+
+        this.addLineNumberOffset(locatable);
+        this.getCodeContext().popIntOperand();
+        this.write(Opcode.ANEWARRAY);
+        this.writeConstantClassInfo(componentType);
+        this.getCodeContext().pushObjectOperand(arrayType.getDescriptor());
     }
 
     private void
@@ -11668,6 +11680,16 @@ class UnitCompiler {
         this.addLineNumberOffset(locatable);
         this.write(Opcode.ATHROW);
         this.getCodeContext().popReferenceOperand();
+    }
+
+    private void
+    checkcast(Locatable locatable, IClass targetType) {
+
+        this.addLineNumberOffset(locatable);
+        this.write(Opcode.CHECKCAST);
+        this.writeConstantClassInfo(targetType);
+        this.getCodeContext().popOperand();
+        this.getCodeContext().pushObjectOperand(targetType.getDescriptor());
     }
 
     private void
@@ -11830,9 +11852,9 @@ class UnitCompiler {
             this.getCodeContext().popOperand();
         }
         this.writeConstantFieldrefInfo(
-            declaringIClass.getDescriptor(), // classFd
-            fieldName,                       // fieldName
-            fieldType.getDescriptor()        // fieldFd
+            declaringIClass, // iClass
+            fieldName,       // fieldName
+            fieldType        // fieldType
         );
         this.getCodeContext().pushOperand(fieldType.getDescriptor());
     }
@@ -11847,13 +11869,16 @@ class UnitCompiler {
         }
 
     /**
-     * @param opcode One of IF* and GOTO
+     * @param opIdx {@link #EQ} or {@link #NE}
      */
     private void
-    if_acmpxx(Locatable locatable, int opcode, CodeContext.Offset dst) {
+    if_acmpxx(Locatable locatable, int opIdx, CodeContext.Offset dst) {
+        assert opIdx >= 0 && opIdx <= 1 : opIdx;
+
+        this.addLineNumberOffset(locatable);
         this.getCodeContext().popReferenceOperand();
         this.getCodeContext().popReferenceOperand();
-        this.getCodeContext().writeBranch(opcode, dst);
+        this.getCodeContext().writeBranch(Opcode.IF_ACMPEQ + opIdx, dst);
         dst.setStackMap(this.getCodeContext().currentInserter().getStackMap());
     }
 
@@ -11963,20 +11988,6 @@ class UnitCompiler {
         MethodDescriptor methodDescriptor,
         boolean          useInterfaceMethodRef
     ) {
-        final ClassFile cf = this.getCodeContext().getClassFile();
-        short methodrefOrInterfaceMethodrefIndex = (
-            useInterfaceMethodRef
-            ? cf.addConstantInterfaceMethodrefInfo(
-                declaringIClass.getDescriptor(), // classFD
-                methodName,                      // methodName
-                methodDescriptor.toString()      // methodMd
-            )
-            : cf.addConstantMethodrefInfo(
-                declaringIClass.getDescriptor(), // classFD
-                methodName,                      // methodName
-                methodDescriptor.toString()      // methodMd
-            )
-        );
 
         this.addLineNumberOffset(locatable);
 
@@ -11986,8 +11997,13 @@ class UnitCompiler {
         if (opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKEVIRTUAL) {
             this.getCodeContext().popObjectOrUninitializedOrUninitializedThisOperand();
         }
+
         this.write(opcode);
-        this.writeShort(methodrefOrInterfaceMethodrefIndex);
+        if (useInterfaceMethodRef) {
+            this.writeConstantInterfaceMethodrefInfo(declaringIClass, methodName, methodDescriptor);
+        } else {
+            this.writeConstantMethodrefInfo(declaringIClass, methodName, methodDescriptor);
+        }
 
         switch (opcode) {
 
@@ -12123,6 +12139,18 @@ class UnitCompiler {
         this.getCodeContext().pushOperand(operand1);
     }
 
+    private void
+    multianewarray(Locatable locatable, int dimExprCount, int dims, IClass componentType) {
+        IClass arrayType = componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
+
+        this.addLineNumberOffset(locatable);
+        for (int i = 0; i < dimExprCount; i++) this.getCodeContext().popIntOperand();
+        this.write(Opcode.MULTIANEWARRAY);
+        this.writeConstantClassInfo(arrayType);
+        this.writeByte(dimExprCount);
+        this.getCodeContext().pushObjectOperand(arrayType.getDescriptor());
+    }
+
     /**
      * @param operandType One of BYTE, CHAR, INT, SHORT, LONG, BOOLEAN, LONG, FLOAT, DOUBLE
      */
@@ -12140,6 +12168,26 @@ class UnitCompiler {
             this.getCodeContext().pushUninitializedOperand();
     //        this.getCodeContext().pushOperand(iClass.getDescriptor());
         }
+
+    private void
+    newarray(Locatable locatable, IClass componentType) {
+        IClass arrayType = componentType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+
+        this.addLineNumberOffset(locatable);
+        this.getCodeContext().popIntOperand();
+        this.write(Opcode.NEWARRAY);
+        this.writeByte((
+            componentType == IClass.BOOLEAN ? 4 :
+            componentType == IClass.CHAR    ? 5 :
+            componentType == IClass.FLOAT   ? 6 :
+            componentType == IClass.DOUBLE  ? 7 :
+            componentType == IClass.BYTE    ? 8 :
+            componentType == IClass.SHORT   ? 9 :
+            componentType == IClass.INT     ? 10 :
+            componentType == IClass.LONG    ? 11 : -1
+        ));
+        this.getCodeContext().pushObjectOperand(arrayType.getDescriptor());
+    }
 
     private void
     pop(Locatable locatable, IClass type) {
@@ -12162,9 +12210,9 @@ class UnitCompiler {
             this.getCodeContext().popOperand();
         }
         this.writeConstantFieldrefInfo(
-            iField.getDeclaringIClass().getDescriptor(), // classFD
-            iField.getName(),                            // fieldName
-            iField.getDescriptor()                       // fieldFD
+            iField.getDeclaringIClass(), // iClass
+            iField.getName(),            // fieldName
+            iField.getType()             // fieldType
         );
     }
 
@@ -12696,6 +12744,18 @@ class UnitCompiler {
     addConstantClassInfo(IClass iClass) {
         return this.getCodeContext().getClassFile().addConstantClassInfo(iClass.getDescriptor());
     }
+    private short
+    addConstantFieldrefInfo(IClass iClass, String fieldName, IClass fieldType) {
+        return this.getCodeContext().getClassFile().addConstantFieldrefInfo(iClass.getDescriptor(), fieldName, fieldType.getDescriptor());
+    }
+    private short
+    addConstantMethodrefInfo(IClass iClass, String methodName, String methodFd) {
+        return this.getCodeContext().getClassFile().addConstantMethodrefInfo(iClass.getDescriptor(), methodName, methodFd);
+    }
+    private short
+    addConstantInterfaceMethodrefInfo(IClass iClass, String methodName, String methodFd) {
+        return this.getCodeContext().getClassFile().addConstantInterfaceMethodrefInfo(iClass.getDescriptor(), methodName, methodFd);
+    }
 
 /* UNUSED
     private void writeConstantIntegerInfo(int value) {
@@ -12704,25 +12764,21 @@ class UnitCompiler {
 */
     private void
     writeConstantClassInfo(IClass iClass) {
-        CodeContext cc = this.getCodeContext();
-        cc.writeShort(this.addConstantClassInfo(iClass));
+        this.writeShort(this.addConstantClassInfo(iClass));
     }
     private void
-    writeConstantFieldrefInfo(String classFd, String fieldName, String fieldFd) {
-        CodeContext cc = this.getCodeContext();
-        cc.writeShort(cc.getClassFile().addConstantFieldrefInfo(classFd, fieldName, fieldFd));
+    writeConstantFieldrefInfo(IClass iClass, String fieldName, IClass fieldType) {
+        this.writeShort(this.addConstantFieldrefInfo(iClass, fieldName, fieldType));
+    }
+    private void
+    writeConstantMethodrefInfo(IClass iClass, String methodName, MethodDescriptor methodMd) {
+        this.writeShort(this.addConstantMethodrefInfo(iClass, methodName, methodMd.toString()));
+    }
+    private void
+    writeConstantInterfaceMethodrefInfo(IClass iClass, String methodName, MethodDescriptor methodMd) {
+        this.writeShort(this.addConstantInterfaceMethodrefInfo(iClass, methodName, methodMd.toString()));
     }
 /* UNUSED
-    private void
-    writeConstantMethodrefInfo(String classFd, String methodName, MethodDescriptor methodMd) {
-        CodeContext cc = this.getCodeContext().;
-        cc.writeShort(cc.getClassFile().addConstantMethodrefInfo(classFd, methodName, methodMd.toString()));
-    }
-    private void
-    writeConstantInterfaceMethodrefInfo(String classFd, String methodName, MethodDescriptor methodMd) {
-        CodeContext cc = this.getCodeContext().;
-        cc.writeShort(cc.getClassFile().addConstantInterfaceMethodrefInfo(classFd, methodName, methodMd.toString()));
-    }
     private void writeConstantStringInfo(String value) {
         this.getCodeContext().writeShort(-1, this.addConstantStringInfo(value));
     }
@@ -12799,50 +12855,26 @@ class UnitCompiler {
     private IClass
     newArray(Locatable locatable, int dimExprCount, int dims, IClass componentType) {
 
-        this.addLineNumberOffset(locatable);
-
-        IClass at;
         if (dimExprCount == 1 && dims == 0 && componentType.isPrimitive()) {
 
             // "new <primitive>[<size>]"
-            this.getCodeContext().popIntOperand();
-            this.write(Opcode.NEWARRAY);
-            this.writeByte((
-                componentType == IClass.BOOLEAN ? 4 :
-                componentType == IClass.CHAR    ? 5 :
-                componentType == IClass.FLOAT   ? 6 :
-                componentType == IClass.DOUBLE  ? 7 :
-                componentType == IClass.BYTE    ? 8 :
-                componentType == IClass.SHORT   ? 9 :
-                componentType == IClass.INT     ? 10 :
-                componentType == IClass.LONG    ? 11 : -1
-            ));
-            at = componentType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+            this.newarray(locatable, componentType);
         } else
         if (dimExprCount == 1) {
-            IClass ct = componentType.getArrayIClass(dims, this.iClassLoader.TYPE_java_lang_Object);
 
-            // "new <class-or-interface>[<size>]"
-            // "new <anything>[<size>][]..."
-            this.getCodeContext().popIntOperand();
-            this.write(Opcode.ANEWARRAY);
-            this.writeConstantClassInfo(ct);
-            at = ct.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+            // "new <class-or-interface> [<size>]"
+            // "new <anything> [<size>] []{dims}"
+            this.anewarray(locatable, componentType.getArrayIClass(dims, this.iClassLoader.TYPE_java_lang_Object));
         } else
         {
 
-            // "new <anything>[]..."
-            // "new <anything>[<size1>][<size2>]..."
-            // "new <anything>[<size1>][<size2>]...[]..."
-            for (int i = 0; i < dimExprCount; i++) this.getCodeContext().popIntOperand();
-            this.write(Opcode.MULTIANEWARRAY);
-            at = componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
-            this.writeConstantClassInfo(at);
-            this.writeByte(dimExprCount);
+            // "new <anything> []{dims}"
+            // "new <anything> [<size>]{dimexprCount}"
+            // "new <anything> [<size>]{dimexprCount} []{dims}"
+            this.multianewarray(locatable, dimExprCount, dims, componentType);
         }
 
-        this.getCodeContext().pushObjectOperand(at.getDescriptor());
-        return at;
+        return componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
     }
 
     /**
