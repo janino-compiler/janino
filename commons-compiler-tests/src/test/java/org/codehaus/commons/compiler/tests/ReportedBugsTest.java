@@ -708,7 +708,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "import java.util.*;\n"
             + "\n"
             + "class Test2 {\n"
-            + "    final Object fld1 = null;\n"
+            + "    final Object fld1 = \"\";\n"
             + "    public void bind(final Object param2) {\n"
             + "        fld1.hashCode();\n"
             + "        final Object lvar3 = param2;\n"
