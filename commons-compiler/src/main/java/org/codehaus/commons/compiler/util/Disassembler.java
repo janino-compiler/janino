@@ -84,14 +84,14 @@ class Disassembler {
             for (String attributeName : new String[] {
                 "verbose",
                 "showClassPoolIndexes",
-                "constantPoolDump",
+                "dumpConstantPool",
                 "printAllAttributes",
                 "printStackMap",
                 "showLineNumbers",
                 "showVariableNames",
                 "symbolicLabels",
             }) {
-                String pv = System.getProperty("disasm." + attributeName);
+                String pv = SystemProperties.getClassProperty(Disassembler.class, attributeName);
                 if (pv != null) {
                     boolean      argument         = Boolean.parseBoolean(pv);
                     final String setterMethodName = (
