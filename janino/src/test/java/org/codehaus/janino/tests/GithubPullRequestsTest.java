@@ -28,11 +28,13 @@ package org.codehaus.janino.tests;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.IClassLoader;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
@@ -124,6 +126,27 @@ class GithubPullRequestsTest {
         //     }
         //
         // As you see, the IF statement has been optimized away.
-        Assert.assertEquals(238, baos.size());
+        GithubPullRequestsTest.assertEqualsOneOf("Class file size", new Object[] { 238, 273 }, baos.size());
+    }
+
+    /**
+     * Asserts that <var>actual</var> equals one of the <var>expected</var>.
+     */
+    public static void
+    assertEqualsOneOf(String message, Object[] expected, Object actual) {
+
+        for (Object e : expected) {
+            if (GithubPullRequestsTest.equals(e, actual)) return;
+        }
+
+        GithubPullRequestsTest.failNotEquals(message, Arrays.toString(expected), actual);
+    }
+
+    private static boolean
+    equals(@Nullable Object o1, @Nullable Object o2) { return o1 == null ? o2 == null : o1.equals(o2); }
+
+    private static void
+    failNotEquals(String message, Object expected, Object actual) {
+        Assert.fail(message + " " + "expected:<" + expected + "> but was:<" + actual + ">");
     }
 }

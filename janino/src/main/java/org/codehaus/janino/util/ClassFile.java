@@ -39,6 +39,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
@@ -82,33 +84,12 @@ class ClassFile implements Annotatable {
     public
     ClassFile(short accessFlags, String thisClassFd, @Nullable String superclassFd, String[] interfaceFds) {
 
-        // Must not set these to "..._1_7", because then the JVM insists on a StackMapTable (JVMS9 4.7.4), which
-        // JANINO currently does not produce:
-        //
-        //    java.lang.VerifyError: Expecting a stackmap frame at branch target 13
-        //
-        // ("jre -noverify" removes that requirement, but we cannot force our users to run their JVMs with that
-        // option.)
-        if (Boolean.getBoolean("smt")) {
-            String jcv = System.getProperty("java.class.version");
-            if ("50.0".equals(jcv)) {
-                this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_6;
-                this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_6;
-            } else
-            if ("52.0".equals(jcv)) {
-                this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_8;
-                this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_8;
-            } else
-            if ("55.0".equals(jcv)) {
-                this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_11;
-                this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_11;
-            } else
-            {
-                throw new AssertionError(jcv);
-            }
-        } else {
-            this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_6;
-            this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_6;
+        {
+            String  jcv = System.getProperty("java.class.version");
+            Matcher m   = Pattern.compile("(\\d+)\\.(\\d+)").matcher(jcv);
+            if (!m.matches()) throw new AssertionError("Unrecognized JVM class file version \"" + jcv + "\"");
+            this.majorVersion = Short.parseShort(m.group(1));
+            this.minorVersion = Short.parseShort(m.group(2));
         }
 
         this.constantPool  = new ArrayList<ConstantPoolInfo>();

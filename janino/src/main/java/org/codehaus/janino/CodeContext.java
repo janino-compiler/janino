@@ -41,13 +41,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.InternalCompilerException;
+import org.codehaus.commons.compiler.util.SystemProperties;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.AttributeInfo;
 import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.FullFrame;
-import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.ObjectVariableInfo;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.StackMapFrame;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.UninitializedVariableInfo;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo;
@@ -59,6 +59,8 @@ import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTyp
  */
 public
 class CodeContext {
+
+    private static final boolean GENERATE_STACK_MAP_TABLE = SystemProperties.getBooleanClassProperty(CodeContext.class, "generateStackMapTable", true);
 
     private static final Logger LOGGER = Logger.getLogger(CodeContext.class.getName());
 
@@ -185,9 +187,6 @@ class CodeContext {
 //            throw new InternalCompilerException(...);
 //        }
 
-        // Update the stack map.
-        this.currentInserter.setStackMap(this.currentInserter.getStackMap().pushLocal(this.verificationTypeInfo(type)));
-
         this.nextLocalVariableSlot += size;
         currentVars.add(slot);
         this.allLocalVars.add(slot);
@@ -197,30 +196,6 @@ class CodeContext {
         }
 
         return slot;
-    }
-
-    private VerificationTypeInfo
-    verificationTypeInfo(@Nullable IClass type) {
-
-        if (type == null) return ClassFile.StackMapTableAttribute.NULL_VARIABLE_INFO; // TODO Is that the right thing to do?
-
-        String fd = type.getDescriptor();
-        if (
-            Descriptor.BOOLEAN.equals(fd)
-            || Descriptor.BYTE.equals(fd)
-            || Descriptor.CHAR.equals(fd)
-            || Descriptor.INT.equals(fd)
-            || Descriptor.SHORT.equals(fd)
-        ) return ClassFile.StackMapTableAttribute.INTEGER_VARIABLE_INFO;
-        if (Descriptor.LONG.equals(fd))   return ClassFile.StackMapTableAttribute.LONG_VARIABLE_INFO;
-        if (Descriptor.FLOAT.equals(fd))  return ClassFile.StackMapTableAttribute.FLOAT_VARIABLE_INFO;
-        if (Descriptor.DOUBLE.equals(fd)) return ClassFile.StackMapTableAttribute.DOUBLE_VARIABLE_INFO;
-        if (
-            Descriptor.isClassOrInterfaceReference(fd)
-            || Descriptor.isArrayReference(fd)
-        ) return new ObjectVariableInfo(this.classFile.addConstantClassInfo(fd), fd);
-
-        throw new InternalCompilerException("Cannot make VerificationTypeInfo from \"" + fd + "\"");
     }
 
     /**
@@ -315,7 +290,7 @@ class CodeContext {
             if (ai != null) attributes.add(ai);
         }
 
-        if (Boolean.getBoolean("smt")) {
+        if (CodeContext.GENERATE_STACK_MAP_TABLE) {
 
             // Add the "StackMapTable" attribute.
             List<StackMapFrame> smfs = new ArrayList<ClassFile.StackMapTableAttribute.StackMapFrame>();
@@ -1668,7 +1643,6 @@ class CodeContext {
 
     public void
     pushUninitializedOperand() {
-        Inserter ci = this.currentInserter();
 
         final UninitializedVariableInfo uvi;
         {
@@ -1683,6 +1657,8 @@ class CodeContext {
                 }
             });
         }
+
+        Inserter ci = this.currentInserter();
         StackMap sm = ci.getStackMap();
         sm = sm.pushOperand(uvi);
         ci.setStackMap(sm);

@@ -55,8 +55,10 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.compiler.util.Numbers;
+import org.codehaus.commons.compiler.util.SystemProperties;
 import org.codehaus.commons.compiler.util.iterator.Iterables;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.CodeContext.Inserter;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IAnnotation;
 import org.codehaus.janino.IClass.IConstructor;
@@ -218,6 +220,7 @@ import org.codehaus.janino.util.Annotatable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.ClassFileException;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.ObjectVariableInfo;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo;
 
 /**
@@ -229,26 +232,8 @@ class UnitCompiler {
     private static final Logger LOGGER = Logger.getLogger(UnitCompiler.class.getName());
 
     // Some debug flags; controlled by system properties.
-    private static final boolean keepClassFilesWithFlowAnalysisErrors = UnitCompiler.debugFlag("keepClassFilesWithFlowAnalysisErrors"); // SUPPRESS CHECKSTYLE LineLength|ConstantName:1
-    private static final boolean disassembleClassFilesToStdout        = UnitCompiler.debugFlag("disassembleClassFilesToStdout");
-
-    private static boolean
-    debugFlag(String name) {
-        return UnitCompiler.debugFlagForClass(UnitCompiler.class, name);
-    }
-
-    private static boolean
-    debugFlagForClass(Class<UnitCompiler> clasS, String name) {
-        return (
-            UnitCompiler.debugFlag(clasS.getSimpleName(), name)
-            || UnitCompiler.debugFlag(clasS.getName(), name)
-        );
-    }
-
-    private static boolean
-    debugFlag(String qualifier, String name) {
-        return Boolean.getBoolean(qualifier + "." + name) || Boolean.getBoolean(qualifier + ".*");
-    }
+    private static final boolean keepClassFilesWithFlowAnalysisErrors = SystemProperties.getBooleanClassProperty(UnitCompiler.class, "keepClassFilesWithFlowAnalysisErrors"); // SUPPRESS CHECKSTYLE LineLength|ConstantName:1
+    private static final boolean disassembleClassFilesToStdout        = SystemProperties.getBooleanClassProperty(UnitCompiler.class, "disassembleClassFilesToStdout");
 
     /**
      * This constant determines the number of operands up to which the
@@ -1483,12 +1468,19 @@ class UnitCompiler {
 
         codeContext.flowAnalysis(override.getName());
 
+        final short smtani = cf.addConstantUtf8Info("StackMapTable");
+
         // Add the code context as a code attribute to the MethodInfo.
         mi.addAttribute(new ClassFile.AttributeInfo(cf.addConstantUtf8Info("Code")) {
 
             @Override protected void
             storeBody(DataOutputStream dos) throws IOException {
-                codeContext.storeCodeAttributeBody(dos, (short) 0, (short) 0, (short) 0);
+                codeContext.storeCodeAttributeBody(
+                    dos,
+                    (short) 0, // lineNumberTableAttributeNameIndex    - optional
+                    (short) 0, // localVariableTableAttributeNameIndex - optional
+                    smtani     // stackMapTableAttributeNameIndex      - mandatory
+                );
             }
         });
     }
@@ -2587,11 +2579,39 @@ class UnitCompiler {
                     }
                     this.store(lvds, lv);
                 }
+
+                // Update the stack map.
+                final Inserter ci = this.getCodeContext().currentInserter();
+                ci.setStackMap(ci.getStackMap().pushLocal(this.verificationTypeInfo(lv.type)));
             } catch (RuntimeException re) {
                 throw new RuntimeException(vd.getLocation().toString(), re);
             }
         }
         return true;
+    }
+
+    private VerificationTypeInfo
+    verificationTypeInfo(@Nullable IClass type) {
+
+        if (type == null) return ClassFile.StackMapTableAttribute.NULL_VARIABLE_INFO; // TODO Is that the right thing to do?
+
+        String fd = type.getDescriptor();
+        if (
+            Descriptor.BOOLEAN.equals(fd)
+            || Descriptor.BYTE.equals(fd)
+            || Descriptor.CHAR.equals(fd)
+            || Descriptor.INT.equals(fd)
+            || Descriptor.SHORT.equals(fd)
+        ) return ClassFile.StackMapTableAttribute.INTEGER_VARIABLE_INFO;
+        if (Descriptor.LONG.equals(fd))   return ClassFile.StackMapTableAttribute.LONG_VARIABLE_INFO;
+        if (Descriptor.FLOAT.equals(fd))  return ClassFile.StackMapTableAttribute.FLOAT_VARIABLE_INFO;
+        if (Descriptor.DOUBLE.equals(fd)) return ClassFile.StackMapTableAttribute.DOUBLE_VARIABLE_INFO;
+        if (
+            Descriptor.isClassOrInterfaceReference(fd)
+            || Descriptor.isArrayReference(fd)
+        ) return new ObjectVariableInfo(this.getCodeContext().getClassFile().addConstantClassInfo(fd), fd);
+
+        throw new InternalCompilerException("Cannot make VerificationTypeInfo from \"" + fd + "\"");
     }
 
     /**
@@ -3476,7 +3496,12 @@ class UnitCompiler {
 
             @Override protected void
             storeBody(DataOutputStream dos) throws IOException {
-                codeContext.storeCodeAttributeBody(dos, lntani, lvtani, smtani);
+                codeContext.storeCodeAttributeBody(
+                    dos,
+                    lntani, // lineNumberTableAttributeNameIndex    - optional
+                    lvtani, // localVariableTableAttributeNameIndex - optional
+                    smtani  // stackMapTableAttributeNameIndex      - mandatory
+                );
             }
         });
     }
@@ -11876,9 +11901,9 @@ class UnitCompiler {
         assert opIdx >= 0 && opIdx <= 1 : opIdx;
 
         this.addLineNumberOffset(locatable);
-        this.getCodeContext().popReferenceOperand();
-        this.getCodeContext().popReferenceOperand();
         this.getCodeContext().writeBranch(Opcode.IF_ACMPEQ + opIdx, dst);
+        this.getCodeContext().popReferenceOperand();
+        this.getCodeContext().popReferenceOperand();
         dst.setStackMap(this.getCodeContext().currentInserter().getStackMap());
     }
 
@@ -11898,9 +11923,9 @@ class UnitCompiler {
         assert opIdx >= 0 && opIdx <= 5;
 
         this.addLineNumberOffset(locatable);
-        this.getCodeContext().popIntOperand();
-        this.getCodeContext().popIntOperand();
         this.getCodeContext().writeBranch(Opcode.IF_ICMPEQ + opIdx, dst);
+        this.getCodeContext().popIntOperand();
+        this.getCodeContext().popIntOperand();
         dst.setStackMap(this.getCodeContext().currentInserter().getStackMap());
     }
 
@@ -11918,14 +11943,16 @@ class UnitCompiler {
 
     private void
     ifnonnull(Locatable locatable, CodeContext.Offset dst) {
-        this.getCodeContext().popReferenceOperand();
         this.getCodeContext().writeBranch(Opcode.IFNONNULL, dst);
+        this.getCodeContext().popReferenceOperand();
+        dst.setStackMap(this.getCodeContext().currentInserter().getStackMap());
     }
 
     private void
     ifnull(Locatable locatable, CodeContext.Offset dst) {
-        this.getCodeContext().popReferenceOperand();
         this.getCodeContext().writeBranch(Opcode.IFNULL, dst);
+        this.getCodeContext().popReferenceOperand();
+        dst.setStackMap(this.getCodeContext().currentInserter().getStackMap());
     }
 
     /**
@@ -11944,8 +11971,9 @@ class UnitCompiler {
         assert opIdx >= 0 && opIdx <= 5;
 
         this.addLineNumberOffset(locatable);
-        this.getCodeContext().popIntOperand();
         this.getCodeContext().writeBranch(Opcode.IFEQ + opIdx, dst);
+        this.getCodeContext().popIntOperand();
+        dst.setStackMap(this.getCodeContext().currentInserter().getStackMap());
     }
 
     /**
@@ -12163,10 +12191,9 @@ class UnitCompiler {
     private void
         neW(Locatable locatable, IClass iClass) {
             this.addLineNumberOffset(locatable);
+            this.getCodeContext().pushUninitializedOperand();
             this.write(Opcode.NEW);
             this.writeConstantClassInfo(iClass);
-            this.getCodeContext().pushUninitializedOperand();
-    //        this.getCodeContext().pushOperand(iClass.getDescriptor());
         }
 
     private void
