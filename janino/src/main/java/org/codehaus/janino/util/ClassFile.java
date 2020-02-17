@@ -46,6 +46,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.MethodDescriptor;
 import org.codehaus.janino.Mod;
+import org.codehaus.janino.util.ClassFile.ConstantElementValue;
 
 /**
  * An object that implements the Java "class file" format.
@@ -2825,8 +2826,10 @@ class ClassFile implements Annotatable {
         public
         interface VerificationTypeInfo {
 
-            boolean isSize1();
-            boolean isSize2();
+            /**
+             * @return The category of the type (1 or 2) (JVMS11 2.11.1)
+             */
+            int category();
 
             /**
              * Writes this object to an {@link OutputStream}, in "class file" format.
@@ -2839,8 +2842,7 @@ class ClassFile implements Annotatable {
          */
         public static final VerificationTypeInfo TOP_VARIABLE_INFO = new VerificationTypeInfo() {
 
-            @Override public boolean isSize1()                                      { return true;        }
-            @Override public boolean isSize2()                                      { return false;       }
+            @Override public int     category()                                     { return 1;           }
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(0);   }
             @Override public String  toString()                                     { return "top";       }
             @Override public int     hashCode()                                     { return 0;           }
@@ -2852,8 +2854,7 @@ class ClassFile implements Annotatable {
          */
         public static final VerificationTypeInfo INTEGER_VARIABLE_INFO = new VerificationTypeInfo() {
 
-            @Override public boolean isSize1()                                      { return true;        }
-            @Override public boolean isSize2()                                      { return false;       }
+            @Override public int     category()                                     { return 1;           }
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(1);   }
             @Override public String  toString()                                     { return "int";       }
             @Override public int     hashCode()                                     { return 1;           }
@@ -2865,8 +2866,7 @@ class ClassFile implements Annotatable {
          */
         public static final VerificationTypeInfo FLOAT_VARIABLE_INFO = new VerificationTypeInfo() {
 
-            @Override public boolean isSize1()                                      { return true;        }
-            @Override public boolean isSize2()                                      { return false;       }
+            @Override public int     category()                                     { return 1;           }
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(2);   }
             @Override public String  toString()                                     { return "float";     }
             @Override public int     hashCode()                                     { return 2;           }
@@ -2878,8 +2878,7 @@ class ClassFile implements Annotatable {
          */
         public static final VerificationTypeInfo DOUBLE_VARIABLE_INFO = new VerificationTypeInfo() {
 
-            @Override public boolean isSize1()                                      { return false;       }
-            @Override public boolean isSize2()                                      { return true;        }
+            @Override public int     category()                                     { return 2;           }
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(3);   }
             @Override public String  toString()                                     { return "double";    }
             @Override public int     hashCode()                                     { return 3;           }
@@ -2891,8 +2890,7 @@ class ClassFile implements Annotatable {
          */
         public static final VerificationTypeInfo LONG_VARIABLE_INFO = new VerificationTypeInfo() {
 
-            @Override public boolean isSize1()                                      { return false;       }
-            @Override public boolean isSize2()                                      { return true;        }
+            @Override public int     category()                                     { return 2;           }
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(4);   }
             @Override public String  toString()                                     { return "long";      }
             @Override public int     hashCode()                                     { return 4;           }
@@ -2904,8 +2902,7 @@ class ClassFile implements Annotatable {
          */
         public static final VerificationTypeInfo NULL_VARIABLE_INFO = new VerificationTypeInfo() {
 
-            @Override public boolean isSize1()                                      { return true;        }
-            @Override public boolean isSize2()                                      { return false;       }
+            @Override public int     category()                                     { return 1;           }
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(5);   }
             @Override public String  toString()                                     { return "null";      }
             @Override public int     hashCode()                                     { return 5;           }
@@ -2917,8 +2914,7 @@ class ClassFile implements Annotatable {
          */
         public static final VerificationTypeInfo UNINITIALIZED_THIS_VARIABLE_INFO = new VerificationTypeInfo() {
 
-            @Override public boolean isSize1()                                      { return true;                }
-            @Override public boolean isSize2()                                      { return false;               }
+            @Override public int     category()                                     { return 1;                   }
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(6);           }
             @Override public String  toString()                                     { return "uninitializedThis"; }
             @Override public int     hashCode()                                     { return 6;                   }
@@ -2943,11 +2939,8 @@ class ClassFile implements Annotatable {
             public short
             getConstantClassInfoIndex() { return this.constantClassInfoIndex; }
 
-            @Override public boolean
-            isSize1() { return true; }
-
-            @Override public boolean
-            isSize2() { return false; }
+            @Override public int
+            category() { return 1; }
 
             @Override public void
             store(DataOutputStream dos) throws IOException {
@@ -2980,11 +2973,8 @@ class ClassFile implements Annotatable {
 
             public UninitializedVariableInfo(short offset) { this.offset = offset; }
 
-            @Override public boolean
-            isSize1() { return true; }
-
-            @Override public boolean
-            isSize2() { return false; }
+            @Override public int
+            category() { return 1; }
 
             @Override public void
             store(DataOutputStream dos) throws IOException {

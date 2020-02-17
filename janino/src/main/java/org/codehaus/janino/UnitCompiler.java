@@ -1694,6 +1694,7 @@ class UnitCompiler {
     private boolean
     compile2(ForEachStatement fes) throws CompileException {
         IClass expressionType = this.getType(fes.expression);
+
         if (expressionType.isArray()) {
             this.getCodeContext().saveLocalVariables();
             try {
@@ -2456,6 +2457,7 @@ class UnitCompiler {
                 this.compileBoolean(is.condition, eso, UnitCompiler.JUMP_IF_FALSE);
                 boolean tsccn = this.compile(is.thenStatement);
                 if (tsccn) this.gotO(is, end);
+                eso.setStackMap(null);
                 eso.set();
                 boolean esccn = this.compile(es);
                 end.set();
@@ -2466,6 +2468,7 @@ class UnitCompiler {
                 CodeContext.Offset end = this.getCodeContext().new Offset();
                 this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_FALSE);
                 this.compile(is.thenStatement);
+                end.setStackMap(null);
                 end.set();
                 return true;
             }
@@ -2476,6 +2479,7 @@ class UnitCompiler {
                 CodeContext.Offset end = this.getCodeContext().new Offset();
                 this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_TRUE);
                 this.compile(es);
+                end.setStackMap(null);
                 end.set();
                 return true;
             } else {
@@ -2579,10 +2583,6 @@ class UnitCompiler {
                     }
                     this.store(lvds, lv);
                 }
-
-                // Update the stack map.
-                final Inserter ci = this.getCodeContext().currentInserter();
-                ci.setStackMap(ci.getStackMap().pushLocal(this.verificationTypeInfo(lv.type)));
             } catch (RuntimeException re) {
                 throw new RuntimeException(vd.getLocation().toString(), re);
             }
@@ -6350,9 +6350,7 @@ class UnitCompiler {
             // Obviously, JSR must always be executed with the operand stack being empty; otherwise we get
             // "java.lang.VerifyError: Inconsistent stack height 1 != 2"
             if (stackValueType != null) {
-                sv = this.getCodeContext().allocateLocalVariable(
-                    Descriptor.size(stackValueType.getDescriptor())
-                );
+                sv = this.getCodeContext().allocateLocalVariable(Descriptor.size(stackValueType.getDescriptor()));
                 this.store(ts, stackValueType, sv);
             }
 
@@ -11749,7 +11747,7 @@ class UnitCompiler {
         VerificationTypeInfo topOperand = this.getCodeContext().peekOperand();
 
         this.addLineNumberOffset(locatable);
-        this.write(topOperand.isSize2() ? Opcode.DUP2 : Opcode.DUP);
+        this.write(topOperand.category() == 1 ? Opcode.DUP : Opcode.DUP2);
 
         this.getCodeContext().pushOperand(topOperand);
     }
@@ -11764,9 +11762,9 @@ class UnitCompiler {
         this.addLineNumberOffset(locatable);
 
         VerificationTypeInfo topOperand = this.getCodeContext().popOperand();
-        assert topOperand.isSize1();
+        assert topOperand.category() == 1;
         VerificationTypeInfo topButOneOperand = this.getCodeContext().popOperand();
-        assert topButOneOperand.isSize1();
+        assert topButOneOperand.category() == 1;
         this.write(Opcode.DUP2);
         this.getCodeContext().pushOperand(topButOneOperand);
         this.getCodeContext().pushOperand(topOperand);
@@ -11804,9 +11802,9 @@ class UnitCompiler {
 
         this.addLineNumberOffset(locatable);
         this.write((
-            topOperand.isSize1()
-            ? (topButOneOperand.isSize1() ? Opcode.DUP_X1  : Opcode.DUP_X2)
-            : (topButOneOperand.isSize1() ? Opcode.DUP2_X1 : Opcode.DUP2_X2)
+            topOperand.category() == 1
+            ? (topButOneOperand.category() == 1 ? Opcode.DUP_X1  : Opcode.DUP_X2)
+            : (topButOneOperand.category() == 1 ? Opcode.DUP2_X1 : Opcode.DUP2_X2)
         ));
 
         this.getCodeContext().pushOperand(topOperand);
@@ -11825,11 +11823,11 @@ class UnitCompiler {
         VerificationTypeInfo topButOneOperand = this.getCodeContext().popOperand();
         VerificationTypeInfo topButTwoOperand = this.getCodeContext().popOperand();
 
-        assert topButOneOperand.isSize1();
-        assert topButTwoOperand.isSize1();
+        assert topButOneOperand.category() == 1;
+        assert topButTwoOperand.category() == 1;
 
         this.addLineNumberOffset(locatable);
-        this.write(topOperand.isSize1() ? Opcode.DUP_X2 : Opcode.DUP2_X2);
+        this.write(topOperand.category() == 1 ? Opcode.DUP_X2 : Opcode.DUP2_X2);
 
         this.getCodeContext().pushOperand(topOperand);
         this.getCodeContext().pushOperand(topButTwoOperand);
@@ -12117,13 +12115,13 @@ class UnitCompiler {
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().popIntOperand();
-        this.write(Opcode.LOOKUPSWITCH);
-        new Padder(this.getCodeContext()).set();
-        this.writeOffset(switchOffset, defaultLabelOffset);
-        this.writeInt(caseLabelMap.size());
+        this.write(Opcode.LOOKUPSWITCH);                                            // lookupswitch
+        new Padder(this.getCodeContext()).set();                                    // 0-3 byte pad
+        this.writeOffset(switchOffset, defaultLabelOffset);                         // defaultbyte1-4
+        this.writeInt(caseLabelMap.size());                                         // npairs1-4
         for (Map.Entry<Integer, CodeContext.Offset> me : caseLabelMap.entrySet()) {
-            this.writeInt((Integer) me.getKey());
-            this.writeOffset(switchOffset, (CodeContext.Offset) me.getValue());
+            this.writeInt((Integer) me.getKey());                                   // match
+            this.writeOffset(switchOffset, (CodeContext.Offset) me.getValue());     // offset
         }
     }
 
@@ -12313,6 +12311,22 @@ class UnitCompiler {
             this.writeUnsignedShort(lvIndex);
         }
         this.getCodeContext().popOperand();
+
+        CHECK_LV_VERIFICATION_TYPE:
+        {
+            final Inserter ci = this.getCodeContext().currentInserter();
+            int nextLvIndex = 0;
+            for (VerificationTypeInfo vti : ci.getStackMap().locals()) {
+                if (nextLvIndex == lvIndex) break CHECK_LV_VERIFICATION_TYPE;
+                nextLvIndex += vti.category();
+            }
+            assert nextLvIndex <= lvIndex;
+            while (nextLvIndex < lvIndex) {
+                ci.setStackMap(ci.getStackMap().pushLocal(StackMapTableAttribute.TOP_VARIABLE_INFO));
+                nextLvIndex++;
+            }
+            ci.setStackMap(ci.getStackMap().pushLocal(this.verificationTypeInfo(lvType)));
+        }
     }
 
     private void

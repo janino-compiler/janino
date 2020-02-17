@@ -228,7 +228,10 @@ class CodeContext {
         }
 
         this.currentLocalScope = scopeToPop.parent;
-        this.currentInserter.setStackMap(scopeToPop.startingStackMap);
+
+        // Do NOT restore the stack map because that would be incorrect, e.g. if the sets a previously unassigned
+        // local variable.
+//        this.currentInserter.setStackMap(scopeToPop.startingStackMap);
 
         // reuse local variable slots of the popped scope
         this.nextLocalVariableSlot = scopeToPop.startingLocalVariableSlot;
@@ -298,6 +301,14 @@ class CodeContext {
                 int previousOffset = -1;
                 for (Offset o = this.beginning; o != null && o.offset != this.end.offset; o = o.next) {
                     if (o.offset == 0) continue;
+
+                    // "Padder" is used to insert the padding bytes of the LOOKUPSWITCH instruction; skip it, because
+                    // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
+                    if (o instanceof Java.Padder) continue;
+
+                    // "FourByteOffset" is used to write the offsets of the LOOKUPSWITCH instruction. Skip it, because
+                    // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
+                    if (o instanceof FourByteOffset) continue;
 
                     {
                         Offset next = o.next;
@@ -1223,9 +1234,13 @@ class CodeContext {
      */
     public void
     writeOffset(Offset src, final Offset dst) {
-        this.relocatables.add(new OffsetBranch(this.newOffset(), src, dst));
+        Offset o = new FourByteOffset();
+        o.set();
+
+        this.relocatables.add(new OffsetBranch(o, src, dst));
         this.makeSpace(4);
     }
+    private final class FourByteOffset extends Offset {}
 
     private
     class OffsetBranch extends Relocatable {
@@ -1345,10 +1360,9 @@ class CodeContext {
         public void
         set() {
 
-            Inserter ci = CodeContext.this.currentInserter;
+            this.setOffset();
 
-            if (this.offset != Offset.UNSET) throw new InternalCompilerException("Offset already set");
-            this.offset = ci.offset;
+            Inserter ci = CodeContext.this.currentInserter;
 
             if (((Offset) ci).stackMap == null) {
 
@@ -1374,6 +1388,14 @@ class CodeContext {
 
             cip.next = this;
             ci.prev  = this;
+        }
+
+        public void
+        setOffset() {
+            Inserter ci = CodeContext.this.currentInserter;
+
+            if (this.offset != Offset.UNSET) throw new InternalCompilerException("Offset already set");
+            this.offset = ci.offset;
         }
 
         public StackMap
