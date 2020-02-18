@@ -300,6 +300,7 @@ class CodeContext {
             {
                 int previousOffset = -1;
                 for (Offset o = this.beginning; o != null && o.offset != this.end.offset; o = o.next) {
+
                     if (o.offset == 0) continue;
 
                     // "Padder" is used to insert the padding bytes of the LOOKUPSWITCH instruction; skip it, because
@@ -1106,6 +1107,13 @@ class CodeContext {
      */
     public void
     writeBranch(int opcode, final Offset dst) {
+
+        if (dst.offset == -1) {
+            if (dst.stackMap == null) {
+                dst.stackMap = this.currentInserter.getStackMap();
+            }
+        }
+
         this.relocatables.add(new Branch(opcode, dst));
         this.write((byte) opcode, (byte) -1, (byte) -1);
     }
@@ -1362,23 +1370,9 @@ class CodeContext {
 
             this.setOffset();
 
+            this.setStackMap();
+
             Inserter ci = CodeContext.this.currentInserter;
-
-            if (((Offset) ci).stackMap == null) {
-
-                // A very special case: The current inserter has no stack map -- this happens when a GOTO has just been
-                // written.
-                ((Offset) ci).stackMap = this.stackMap;
-            } else {
-                final StackMap sm = ci.getStackMap();
-
-                if (this.stackMap == null) {
-                    this.setStackMap(sm);
-                } else
-                if (!sm.equals(this.stackMap)) {
-                    throw new InternalCompilerException("Stack map already set: " + sm + " vs. " + this.stackMap);
-                }
-            }
 
             Offset cip = ci.prev;
             assert cip != null;
@@ -1388,6 +1382,70 @@ class CodeContext {
 
             cip.next = this;
             ci.prev  = this;
+        }
+
+        /**
+         * Merges the stack maps of the current inserter and THIS offset, and assigns the result to the current
+         * inserter and THIS offset.
+         */
+        void
+        setStackMap() {
+
+            Inserter ci = CodeContext.this.currentInserter;
+
+            final StackMap ciSm = ((Offset) ci).stackMap;
+            if (ciSm == null) {
+
+                // A very special case: The current inserter has no stack map -- this happens when a GOTO has just been
+                // written.
+                ((Offset) ci).stackMap = this.stackMap;
+            } else {
+                StackMap thisSm = this.stackMap;
+
+                if (thisSm == null) {
+                    this.stackMap = ciSm;
+                } else
+                if (ciSm == thisSm) {
+                    ;
+                } else
+                if (ciSm.equals(thisSm)) {
+                    this.stackMap = ciSm;
+                } else
+                {
+                    if (!Arrays.equals(ciSm.operands(), thisSm.operands())) {
+                        throw new InternalCompilerException("Inconsistent operand stack: " + ciSm + " vs. " + thisSm);
+                    }
+                    VerificationTypeInfo[] ciLocals   = ciSm.locals();
+                    VerificationTypeInfo[] thisLocals = thisSm.locals();
+                    VerificationTypeInfo[] tmp        = new VerificationTypeInfo[Math.min(ciLocals.length, thisLocals.length)];
+
+                    for (int i = 0; i < tmp.length; i++) {
+                        VerificationTypeInfo ciLocal   = ciLocals[i];
+                        VerificationTypeInfo thisLocal = thisLocals[i];
+                        VerificationTypeInfo tmpLocal;
+                        if (ciLocal.equals(thisLocal)) {
+                            tmpLocal = ciLocal;
+                        } else
+                        if (ciLocal == StackMapTableAttribute.TOP_VARIABLE_INFO || thisLocal == StackMapTableAttribute.TOP_VARIABLE_INFO) {
+                            tmpLocal = StackMapTableAttribute.TOP_VARIABLE_INFO;
+                        } else
+                        {
+                            // This check would be wrong, because the different flow paths may have used the slot
+                            // for different locals.
+//                            throw new InternalCompilerException(
+//                                "Inconsistent local variable #" + i + " verification type: " + ciSm + " vs. " + thisSm
+//                            );
+                            tmpLocal = StackMapTableAttribute.TOP_VARIABLE_INFO;
+                        }
+
+                        tmp[i] = tmpLocal;
+                    }
+
+                    StackMap newSm = new StackMap(tmp, ciSm.operands());
+                    ci.setStackMap(newSm);
+                    this.stackMap = newSm;
+                }
+            }
         }
 
         public void

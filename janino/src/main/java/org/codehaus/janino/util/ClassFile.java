@@ -39,14 +39,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.MethodDescriptor;
 import org.codehaus.janino.Mod;
-import org.codehaus.janino.util.ClassFile.ConstantElementValue;
 
 /**
  * An object that implements the Java "class file" format.
@@ -85,13 +82,17 @@ class ClassFile implements Annotatable {
     public
     ClassFile(short accessFlags, String thisClassFd, @Nullable String superclassFd, String[] interfaceFds) {
 
-        {
-            String  jcv = System.getProperty("java.class.version");
-            Matcher m   = Pattern.compile("(\\d+)\\.(\\d+)").matcher(jcv);
-            if (!m.matches()) throw new AssertionError("Unrecognized JVM class file version \"" + jcv + "\"");
-            this.majorVersion = Short.parseShort(m.group(1));
-            this.minorVersion = Short.parseShort(m.group(2));
-        }
+        // MUST generate version 50 (Java 6) .class files, because JANINO generates JSR and RET instructions, which
+        // are forbidding in 7+ .class files.
+//        {
+//            String  jcv = System.getProperty("java.class.version");
+//            Matcher m   = Pattern.compile("(\\d+)\\.(\\d+)").matcher(jcv);
+//            if (!m.matches()) throw new AssertionError("Unrecognized JVM class file version \"" + jcv + "\"");
+//            this.majorVersion = Short.parseShort(m.group(1));
+//            this.minorVersion = Short.parseShort(m.group(2));
+//        }
+        this.majorVersion = ClassFile.MAJOR_VERSION_JDK_1_6;
+        this.minorVersion = ClassFile.MINOR_VERSION_JDK_1_6;
 
         this.constantPool  = new ArrayList<ConstantPoolInfo>();
         this.constantPool.add(null); // Add fake "0" index entry.

@@ -3102,6 +3102,8 @@ class UnitCompiler {
             }
         }
 
+        StackMap smBeforeBody = this.getCodeContext().currentInserter().getStackMap();
+
         boolean canCompleteNormally = compileBody.compile();
 
         CodeContext.Offset afterBody = this.getCodeContext().newOffset();
@@ -3115,6 +3117,8 @@ class UnitCompiler {
             try {
                 for (int i = 0; i < tryStatement.catchClauses.size(); ++i) {
                     try {
+                        this.getCodeContext().currentInserter().setStackMap(smBeforeBody);
+
                         this.getCodeContext().saveLocalVariables();
 
                         CatchClause catchClause = (CatchClause) tryStatement.catchClauses.get(i);
@@ -3344,13 +3348,23 @@ class UnitCompiler {
         try {
             this.getCodeContext().saveLocalVariables();
 
-            if (!(fd instanceof MethodDeclarator) || !((MethodDeclarator) fd).isStatic()) {
+            if (fd instanceof MethodDeclarator) {
+                MethodDeclarator md = (MethodDeclarator) fd;
+                if (!md.isStatic()) {
 
-                // Define special parameter "this".
-                this.getCodeContext().allocateLocalVariable((short) 1, "this", this.resolve(fd.getDeclaringType()));
+                    // Define special parameter "this".
+                    LocalVariableSlot thisLvSlot = this.getCodeContext().allocateLocalVariable((short) 1, "this", this.resolve(fd.getDeclaringType()));
+                    this.updateLocalVariableInCurrentStackMap(thisLvSlot.getSlotIndex(), this.verificationTypeInfo(thisLvSlot.getType()));
+                }
             }
 
+
             if (fd instanceof ConstructorDeclarator) {
+
+                // Define special parameter "this".
+                LocalVariableSlot thisLvSlot = this.getCodeContext().allocateLocalVariable((short) 1, "this", this.resolve(fd.getDeclaringType()));
+                this.updateLocalVariableInCurrentStackMap(thisLvSlot.getSlotIndex(), StackMapTableAttribute.UNINITIALIZED_THIS_VARIABLE_INFO);
+
                 ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) fd;
 
                 if (fd.getDeclaringType() instanceof EnumDeclaration) {
@@ -3382,11 +3396,17 @@ class UnitCompiler {
             if (fd instanceof ConstructorDeclarator) {
                 ConstructorDeclarator cd = (ConstructorDeclarator) fd;
                 if (cd.constructorInvocation != null) {
-                    this.compile(cd.constructorInvocation);
                     if (cd.constructorInvocation instanceof SuperConstructorInvocation) {
                         this.assignSyntheticParametersToSyntheticFields(cd);
+                    }
+                    this.compile(cd.constructorInvocation);
+                    if (cd.constructorInvocation instanceof SuperConstructorInvocation) {
                         this.initializeInstanceVariablesAndInvokeInstanceInitializers(cd);
                     }
+
+                    // Object initialization is complete; change the verification type info of "this" from
+                    // "uninitializedThis" to "object".
+                    this.updateLocalVariableInCurrentStackMap((short) 0, this.verificationTypeInfo(this.resolve(fd.getDeclaringType())));
                 } else {
 
                     // Determine qualification for superconstructor invocation.
@@ -3403,6 +3423,9 @@ class UnitCompiler {
                             new SimpleType(cd.getLocation(), outerClassOfSuperclass) // qualification
                         );
                     }
+
+                    // Initialize "this.this$0" and friends.
+                    this.assignSyntheticParametersToSyntheticFields(cd);
 
                     // Invoke the superconstructor.
                     Rvalue[] arguments;
@@ -3431,7 +3454,12 @@ class UnitCompiler {
                     );
                     sci.setEnclosingScope(fd);
                     this.compile(sci);
-                    this.assignSyntheticParametersToSyntheticFields(cd);
+
+                    // Object initialization is complete; change the verification type info of "this" from
+                    // "uninitializedThis" to "object".
+                    this.updateLocalVariableInCurrentStackMap((short) 0, this.verificationTypeInfo(this.resolve(fd.getDeclaringType())));
+
+                    // Initialize "this.x = y".
                     this.initializeInstanceVariablesAndInvokeInstanceInitializers(cd);
                 }
             }
@@ -3977,6 +4005,10 @@ class UnitCompiler {
         IClass                   superclass           = declaringIClass.getSuperclass();
 
         this.load(sci, declaringIClass, 0);
+
+        // Fix up the operand stack entry: The loaded object is still unitializied!
+        this.getCodeContext().popObjectOperand();
+        this.getCodeContext().pushUninitializedThisOperand();
 
         if (superclass == null) throw new CompileException("Class has no superclass", sci.getLocation());
 
@@ -12312,21 +12344,7 @@ class UnitCompiler {
         }
         this.getCodeContext().popOperand();
 
-        CHECK_LV_VERIFICATION_TYPE:
-        {
-            final Inserter ci = this.getCodeContext().currentInserter();
-            int nextLvIndex = 0;
-            for (VerificationTypeInfo vti : ci.getStackMap().locals()) {
-                if (nextLvIndex == lvIndex) break CHECK_LV_VERIFICATION_TYPE;
-                nextLvIndex += vti.category();
-            }
-            assert nextLvIndex <= lvIndex;
-            while (nextLvIndex < lvIndex) {
-                ci.setStackMap(ci.getStackMap().pushLocal(StackMapTableAttribute.TOP_VARIABLE_INFO));
-                nextLvIndex++;
-            }
-            ci.setStackMap(ci.getStackMap().pushLocal(this.verificationTypeInfo(lvType)));
-        }
+        this.updateLocalVariableInCurrentStackMap(lvIndex, this.verificationTypeInfo(lvType));
     }
 
     private void
@@ -13095,6 +13113,31 @@ class UnitCompiler {
     private static short
     changeAccessibility(short accessFlags, short newAccessibility) {
         return (short) ((accessFlags & ~(Mod.PUBLIC | Mod.PROTECTED | Mod.PRIVATE)) | newAccessibility);
+    }
+
+    private void
+    updateLocalVariableInCurrentStackMap(short lvIndex, VerificationTypeInfo vti) {
+
+        final Inserter ci = this.getCodeContext().currentInserter();
+
+        int nextLvIndex = 0;
+        final VerificationTypeInfo[] locals = ci.getStackMap().locals();
+        for (int i = 0; i < locals.length; i++) {
+            VerificationTypeInfo vti2 = locals[i];
+            if (nextLvIndex == lvIndex) {
+                if (vti.equals(vti2)) return;
+                locals[i] = vti;
+                ci.setStackMap(new StackMap(locals, ci.getStackMap().operands()));
+                return;
+            }
+            nextLvIndex += vti2.category();
+        }
+        assert nextLvIndex <= lvIndex;
+        while (nextLvIndex < lvIndex) {
+            ci.setStackMap(ci.getStackMap().pushLocal(StackMapTableAttribute.TOP_VARIABLE_INFO));
+            nextLvIndex++;
+        }
+        ci.setStackMap(ci.getStackMap().pushLocal(vti));
     }
 
     // Used to write byte code while compiling one constructor/method.
