@@ -90,6 +90,7 @@ class Disassembler {
                 "showLineNumbers",
                 "showVariableNames",
                 "symbolicLabels",
+                "printAllOffsets",
             }) {
                 String pv = SystemProperties.getClassProperty(Disassembler.class, attributeName);
                 if (pv != null) {
