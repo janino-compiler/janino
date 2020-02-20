@@ -232,8 +232,7 @@ class UnitCompiler {
     private static final Logger LOGGER = Logger.getLogger(UnitCompiler.class.getName());
 
     // Some debug flags; controlled by system properties.
-    private static final boolean keepClassFilesWithFlowAnalysisErrors = SystemProperties.getBooleanClassProperty(UnitCompiler.class, "keepClassFilesWithFlowAnalysisErrors"); // SUPPRESS CHECKSTYLE LineLength|ConstantName:1
-    private static final boolean disassembleClassFilesToStdout        = SystemProperties.getBooleanClassProperty(UnitCompiler.class, "disassembleClassFilesToStdout");
+    private static final boolean disassembleClassFilesToStdout = SystemProperties.getBooleanClassProperty(UnitCompiler.class, "disassembleClassFilesToStdout");
 
     /**
      * This constant determines the number of operands up to which the
@@ -1466,7 +1465,7 @@ class UnitCompiler {
             this.replaceCodeContext(savedCodeContext);
         }
 
-        codeContext.flowAnalysis(override.getName());
+//        codeContext.flowAnalysis(override.getName());
 
         final short smtani = cf.addConstantUtf8Info("StackMapTable");
 
@@ -3044,7 +3043,7 @@ class UnitCompiler {
                     this.athrow(finallY);
 
                     // Generate the "finally" subroutine.
-                    this.getCodeContext().pushOperand(StackMapTableAttribute.TOP_VARIABLE_INFO);
+                    this.getCodeContext().pushTopOperand();
                     fo.set();
                     ts.finallyOffset = null;
 
@@ -3487,20 +3486,20 @@ class UnitCompiler {
         // Fix up and reallocate as needed.
         codeContext.fixUpAndRelocate();
 
-        // Do flow analysis.
-        try {
-            codeContext.flowAnalysis(fd.toString());
-        } catch (RuntimeException re) {
-            UnitCompiler.LOGGER.log(Level.FINE, "*** FLOW ANALYSIS", re);
-
-            if (UnitCompiler.keepClassFilesWithFlowAnalysisErrors) {
-
-                // Continue, so that the .class file is generated and can be examined.
-                ;
-            } else {
-                throw new InternalCompilerException("Compiling \"" + fd + "\"; " + re.getMessage(), re);
-            }
-        }
+//        // Do flow analysis.
+//        try {
+//            codeContext.flowAnalysis(fd.toString());
+//        } catch (RuntimeException re) {
+//            UnitCompiler.LOGGER.log(Level.FINE, "*** FLOW ANALYSIS", re);
+//
+//            if (UnitCompiler.keepClassFilesWithFlowAnalysisErrors) {
+//
+//                // Continue, so that the .class file is generated and can be examined.
+//                ;
+//            } else {
+//                throw new InternalCompilerException("Compiling \"" + fd + "\"; " + re.getMessage(), re);
+//            }
+//        }
 
         final short lntani;
         if (this.debugLines) {
@@ -4210,23 +4209,19 @@ class UnitCompiler {
             return;
         }
 
-        if (
-            bo.operator == "=="    // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.operator == "!=" // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.operator == "<=" // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.operator == ">=" // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.operator == "<"  // SUPPRESS CHECKSTYLE StringLiteralEquality
-            || bo.operator == ">"  // SUPPRESS CHECKSTYLE StringLiteralEquality
-        ) {
+        COMPARISON:
+        {
             int opIdx = (
-                bo.operator == "==" ? 0 : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                bo.operator == "!=" ? 1 : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                bo.operator == "<"  ? 2 : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                bo.operator == ">=" ? 3 : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                bo.operator == ">"  ? 4 : // SUPPRESS CHECKSTYLE StringLiteralEquality
-                bo.operator == "<=" ? 5 : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == "==" ? UnitCompiler.EQ : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == "!=" ? UnitCompiler.NE : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == "<"  ? UnitCompiler.LT : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == ">=" ? UnitCompiler.GE : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == ">"  ? UnitCompiler.GT : // SUPPRESS CHECKSTYLE StringLiteralEquality
+                bo.operator == "<=" ? UnitCompiler.LE : // SUPPRESS CHECKSTYLE StringLiteralEquality
                 Integer.MIN_VALUE
             );
+            if (opIdx == Integer.MIN_VALUE) break COMPARISON;
+
             if (orientation == UnitCompiler.JUMP_IF_FALSE) opIdx ^= 1;
 
             // Comparison with "null".
@@ -11115,7 +11110,7 @@ class UnitCompiler {
     }
 
     private void
-    reverseUnaryNumericPromotion(Locatable locatable, IClass sourceType, IClass targetType) {
+    reverseUnaryNumericPromotion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
         IClass unboxedType = this.isUnboxingConvertible(targetType);
         IClass pt          = unboxedType != null ? unboxedType : targetType;
         if (
@@ -11399,7 +11394,8 @@ class UnitCompiler {
      * @param targetType    The type to convert to
      */
     private boolean
-    tryConstantAssignmentConversion(Locatable locatable, @Nullable Object constantValue, IClass targetType) {
+    tryConstantAssignmentConversion(Locatable locatable, @Nullable Object constantValue, IClass targetType)
+    throws CompileException {
         UnitCompiler.LOGGER.entering(
             null,
             "tryConstantAssignmentConversion",
@@ -11537,7 +11533,7 @@ class UnitCompiler {
     }
 
     private boolean
-    tryBoxingConversion(Locatable locatable, IClass sourceType, IClass targetType) {
+    tryBoxingConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
         if (this.isBoxingConvertible(sourceType) == targetType) {
             this.boxingConversion(locatable, sourceType, targetType);
             return true;
@@ -11550,7 +11546,7 @@ class UnitCompiler {
      * @param targetType the corresponding wrapper type
      */
     private void
-    boxingConversion(Locatable locatable, IClass sourceType, IClass targetType) {
+    boxingConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
 
         this.invokeMethod(
             locatable,            // locatable
@@ -11598,7 +11594,7 @@ class UnitCompiler {
      * @param sourceType the corresponding wrapper type
      */
     private void
-    unboxingConversion(Locatable locatable, IClass sourceType, IClass targetType) {
+    unboxingConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
 
         // "source.intValue()"
         this.invokeMethod(
@@ -11636,19 +11632,11 @@ class UnitCompiler {
     }
 
     /**
-     * Allowed values of <var>opIdx</var>:
-     * <ul>
-     *   <li>"==" ? 0</li>
-     *   <li>"!=" ? 1</li>
-     *   <li>"<"  ? 2</li>
-     *   <li>">=" ? 3</li>
-     *   <li>">"  ? 4</li>
-     *   <li>"<=" ? 5</li>
-     * </ul>
+     * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
      */
     private void
     ifNumeric(Locatable locatable, int opIdx, Offset dst) {
-        assert opIdx >= 0 && opIdx <= 5;
+        assert opIdx >= UnitCompiler.EQ && opIdx <= UnitCompiler.LE;
 
         VerificationTypeInfo topOperand = this.getCodeContext().peekOperand();
 
@@ -11747,8 +11735,12 @@ class UnitCompiler {
         this.getCodeContext().pushObjectOperand(targetType.getDescriptor());
     }
 
+    /**
+     * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
+     */
     private void
     cmp(Locatable locatable, int opIdx) {
+        assert opIdx >= UnitCompiler.EQ && opIdx <= UnitCompiler.LE;
 
         VerificationTypeInfo operand2 = this.getCodeContext().currentInserter().getStackMap().peekOperand();
         this.getCodeContext().popOperand();
@@ -11759,10 +11751,10 @@ class UnitCompiler {
             this.write(Opcode.LCMP);
         } else
         if (operand1 == StackMapTableAttribute.FLOAT_VARIABLE_INFO && operand2 == StackMapTableAttribute.FLOAT_VARIABLE_INFO) {
-            this.write(opIdx == 3 || opIdx == 4 ? Opcode.FCMPL : Opcode.FCMPG);
+            this.write(opIdx == UnitCompiler.GE || opIdx == UnitCompiler.GT ? Opcode.FCMPL : Opcode.FCMPG);
         } else
         if (operand1 == StackMapTableAttribute.DOUBLE_VARIABLE_INFO && operand2 == StackMapTableAttribute.DOUBLE_VARIABLE_INFO) {
-            this.write(opIdx == 3 || opIdx == 4 ? Opcode.DCMPL : Opcode.DCMPG);
+            this.write(opIdx == UnitCompiler.GE || opIdx == UnitCompiler.GT ? Opcode.DCMPL : Opcode.DCMPG);
         } else
         {
             throw new AssertionError(operand1 + " and " + operand2);
@@ -11928,7 +11920,7 @@ class UnitCompiler {
      */
     private void
     if_acmpxx(Locatable locatable, int opIdx, CodeContext.Offset dst) {
-        assert opIdx >= 0 && opIdx <= 1 : opIdx;
+        assert opIdx == UnitCompiler.EQ || opIdx == UnitCompiler.NE : opIdx;
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().writeBranch(Opcode.IF_ACMPEQ + opIdx, dst);
@@ -11938,19 +11930,11 @@ class UnitCompiler {
     }
 
     /**
-     * Allowed values of <var>opIdx</var>:
-     * <ul>
-     *   <li>"==" ? 0</li>
-     *   <li>"!=" ? 1</li>
-     *   <li>"<"  ? 2</li>
-     *   <li>">=" ? 3</li>
-     *   <li>">"  ? 4</li>
-     *   <li>"<=" ? 5</li>
-     * </ul>
+     * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
      */
     private void
     if_icmpxx(Locatable locatable, int opIdx, CodeContext.Offset dst) {
-        assert opIdx >= 0 && opIdx <= 5;
+        assert opIdx >= UnitCompiler.EQ && opIdx <= UnitCompiler.LE;
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().writeBranch(Opcode.IF_ICMPEQ + opIdx, dst);
@@ -11986,19 +11970,11 @@ class UnitCompiler {
     }
 
     /**
-     * Allowed values of <var>opIdx</var>:
-     * <ul>
-     *   <li>"==" ? 0</li>
-     *   <li>"!=" ? 1</li>
-     *   <li>"<"  ? 2</li>
-     *   <li>">=" ? 3</li>
-     *   <li>">"  ? 4</li>
-     *   <li>"<=" ? 5</li>
-     * </ul>
+     * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
      */
     private void
     ifxx(Locatable locatable, int opIdx, CodeContext.Offset dst) {
-        assert opIdx >= 0 && opIdx <= 5;
+        assert opIdx >= UnitCompiler.EQ && opIdx <= UnitCompiler.LE;
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().writeBranch(Opcode.IFEQ + opIdx, dst);
@@ -12036,6 +12012,7 @@ class UnitCompiler {
 
     /**
      * Expects the target object and the arguments on the operand stack.
+     * @throws CompileException
      */
     private void
     invokeMethod(
@@ -12045,12 +12022,12 @@ class UnitCompiler {
         String           methodName,
         MethodDescriptor methodDescriptor,
         boolean          useInterfaceMethodRef
-    ) {
+    ) throws CompileException {
 
         this.addLineNumberOffset(locatable);
 
         for (int i = methodDescriptor.parameterFds.length - 1; i >= 0; i--) {
-            this.getCodeContext().popOperand(methodDescriptor.parameterFds[i]);
+            this.getCodeContext().popOperandAssignableTo(methodDescriptor.parameterFds[i]);
         }
         if (opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKEVIRTUAL) {
             this.getCodeContext().popObjectOrUninitializedOrUninitializedThisOperand();
@@ -12419,7 +12396,8 @@ class UnitCompiler {
         this.addLineNumberOffset(locatable);
 
         this.write(Opcode.IRETURN + UnitCompiler.ilfda(returnType));
-        this.getCodeContext().popOperand(returnType.getDescriptor());
+
+        this.getCodeContext().popOperandAssignableTo(returnType.getDescriptor());
     }
 
     /**
