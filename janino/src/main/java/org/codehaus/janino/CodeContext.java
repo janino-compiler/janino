@@ -629,6 +629,7 @@ class CodeContext {
             }
             int offset = this.destination.offset - this.source.offset;
 
+            @SuppressWarnings("deprecation") final int opcodeJsr = Opcode.JSR;
             if (!this.expanded && (offset > Short.MAX_VALUE || offset < Short.MIN_VALUE)) {
                 //we want to insert the data without skewing our source position,
                 //so we will cache it and then restore it later.
@@ -637,7 +638,7 @@ class CodeContext {
                 {
                     // Promotion to a wide instruction only requires 2 extra bytes. Everything else requires a new
                     // GOTO_W instruction after a negated if (5 extra bytes).
-                    CodeContext.this.makeSpace(this.opcode == Opcode.GOTO || this.opcode == Opcode.JSR ? 2 : 5);
+                    CodeContext.this.makeSpace(this.opcode == Opcode.GOTO || this.opcode == opcodeJsr ? 2 : 5);
                 }
                 CodeContext.this.popInserter();
                 this.source.offset = pos;
@@ -650,7 +651,7 @@ class CodeContext {
                 //we fit in a 16-bit jump
                 ba = new byte[] { (byte) this.opcode, (byte) (offset >> 8), (byte) offset };
             } else {
-                if (this.opcode == Opcode.GOTO || this.opcode == Opcode.JSR) {
+                if (this.opcode == Opcode.GOTO || this.opcode == opcodeJsr) {
                     ba = new byte[] {
                         (byte) (this.opcode + 33), // GOTO => GOTO_W; JSR => JSR_W
                         (byte) (offset >> 24),

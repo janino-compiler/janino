@@ -34,7 +34,7 @@ class Opcode {
 
     // Symbolic JVM opcodes, in alphabetical order.
 
-    // SUPPRESS CHECKSTYLE JavadocVariable:205
+    // SUPPRESS CHECKSTYLE JavadocVariable:216
     public static final int AALOAD          = 50;
     public static final int AASTORE         = 83;
     public static final int ACONST_NULL     = 1;
@@ -186,7 +186,12 @@ class Opcode {
     public static final int ISUB            = 100;
     public static final int IUSHR           = 124;
     public static final int IXOR            = 130;
-    public static final int JSR             = 168;
+
+    /**
+     * @deprecated Only allowed until .class file version 50.0 (Java 6) JVMS 4.10.2.5
+     */
+    @Deprecated public static final int JSR = 168;
+
     public static final int JSR_W           = 201;
     public static final int L2D             = 138;
     public static final int L2F             = 137;
@@ -233,7 +238,12 @@ class Opcode {
     public static final int POP2            = 88;
     public static final int PUTFIELD        = 181;
     public static final int PUTSTATIC       = 179;
-    public static final int RET             = 169;
+
+    /**
+     * @deprecated Only allowed until .class file version 50.0 (Java 6) JVMS 4.10.2.5
+     */
+    @Deprecated public static final int RET = 169;
+
     public static final int RETURN          = 177;
     public static final int SALOAD          = 53;
     public static final int SASTORE         = 86;

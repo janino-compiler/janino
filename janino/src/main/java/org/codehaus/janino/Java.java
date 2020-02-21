@@ -3565,12 +3565,6 @@ class Java {
 
         @Override @Nullable public <R, EX extends Throwable> R
         accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitTryStatement(this); }
-
-        /**
-         * This one's created iff the TRY statement has a FINALLY clause when the compilation of the TRY statement
-         * begins.
-         */
-        @Nullable CodeContext.Offset finallyOffset;
     }
 
     /**

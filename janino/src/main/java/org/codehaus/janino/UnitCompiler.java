@@ -2224,9 +2224,8 @@ class UnitCompiler {
         }
 
         this.leaveStatements(
-            bs.getEnclosingScope(),              // from
-            brokenStatement.getEnclosingScope(), // to
-            null                                 // stackValueType
+            bs.getEnclosingScope(),             // from
+            brokenStatement.getEnclosingScope() // to
         );
         this.gotO(bs, this.getWhereToBreak(brokenStatement));
         return false;
@@ -2293,9 +2292,8 @@ class UnitCompiler {
         }
 
         this.leaveStatements(
-            cs.getEnclosingScope(),                 // from
-            continuedStatement.getEnclosingScope(), // to
-            null                                    // stackValueType
+            cs.getEnclosingScope(),                // from
+            continuedStatement.getEnclosingScope() // to
         );
 
         this.gotO(cs, wtc);
@@ -2651,8 +2649,7 @@ class UnitCompiler {
             if (orv != null) this.compileError("Method must not return a value", rs.getLocation());
             this.leaveStatements(
                 rs.getEnclosingScope(), // from
-                enclosingFunction,      // to
-                null                    // stackValueType
+                enclosingFunction       // to
             );
 
             this.returN(rs);
@@ -2673,8 +2670,7 @@ class UnitCompiler {
 
         this.leaveStatements(
             rs.getEnclosingScope(), // from
-            enclosingFunction,      // to
-            returnType              // stackValueType
+            enclosingFunction       // to
         );
         this.xreturn(rs, returnType);
         return false;
@@ -2722,13 +2718,13 @@ class UnitCompiler {
                 null             // catchTypeFD
             );
             this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
-            this.leave(ss, this.iClassLoader.TYPE_java_lang_Throwable);
+            this.leave(ss);
             this.athrow(ss);
 
             // Unlock monitor object.
             if (canCompleteNormally) {
                 monitorExitOffset.set();
-                this.leave(ss, null);
+                this.leave(ss);
             }
         } finally {
             this.getCodeContext().restoreLocalVariables();
@@ -2782,9 +2778,8 @@ class UnitCompiler {
         @Nullable final Block       finallY
     ) throws CompileException {
 
+        // Short-circuit for zero resources.
         if (resources.isEmpty()) {
-
-            // Short-circuit for zero resources.
             return this.compileTryCatchFinally(ts, compileBody, finallY);
         }
 
@@ -2942,6 +2937,7 @@ class UnitCompiler {
             );
             f.setEnclosingScope(ts);
 
+            // Recurse with one resource less.
             return this.compileTryCatchFinally(
                 ts,                 // tryStatement
                 new Compilable2() { // compileBody
@@ -2970,105 +2966,78 @@ class UnitCompiler {
      */
     private boolean
     compileTryCatchFinally(
-        final TryStatement       ts,
-        final Compilable2        compileBody,
-        @Nullable BlockStatement finallY
+        final TryStatement             ts,
+        final Compilable2              compileBody,
+        @Nullable final BlockStatement finallY
     ) throws CompileException {
 
-        final CodeContext.Offset beginningOfBody = this.getCodeContext().newOffset();
-        final CodeContext.Offset afterStatement  = this.getCodeContext().new Offset();
-
-        boolean canCompleteNormally;
-
         if (finallY == null) {
+            final CodeContext.Offset beginningOfBody = this.getCodeContext().newOffset();
+            final CodeContext.Offset afterStatement  = this.getCodeContext().new Offset();
+
+            boolean canCompleteNormally = this.compileTryCatch(ts, compileBody, beginningOfBody, afterStatement);
+            afterStatement.set();
+            return canCompleteNormally;
+        }
+
+        // Compile a TRY statement *with* a FINALLY clause.
+
+        final CodeContext.Offset afterStatement = this.getCodeContext().new Offset();
+        boolean                  canCompleteNormally;
+
+        this.getCodeContext().saveLocalVariables();
+        try {
+
+            final CodeContext.Offset beginningOfBody = this.getCodeContext().newOffset();
             canCompleteNormally = this.compileTryCatch(ts, compileBody, beginningOfBody, afterStatement);
-        } else {
 
-            // Compile a TRY statement *with* a FINALLY clause.
-
+            // Generate the "catch (Throwable) {" clause that invokes the FINALLY subroutine.
             this.getCodeContext().saveLocalVariables();
             try {
 
-                final Offset fo = (ts.finallyOffset = this.getCodeContext().new Offset());
+                CodeContext.Offset here = this.getCodeContext().newOffset();
+                this.getCodeContext().addExceptionTableEntry(
+                    beginningOfBody, // startPC
+                    here,            // endPC
+                    here,            // handlerPC
+                    null             // catchTypeFD
+                );
 
-                // Allocate a LV for the JSR of the FINALLY clause.
-                //
-                // Notice:
-                //   For unclear reasons, this variable must not overlap with any of the body's variables (although the
-                //   body's variables are out of scope when it comes to the FINALLY clause!?), otherwise you get
-                //     java.lang.VerifyError: ... Accessing value from uninitialized local variable 4
-                //   See bug #56.
-                final short pcLvIndex = this.getCodeContext().allocateLocalVariable((short) 1);
+                // Push the exception on the operand stack.
+                this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
 
-                canCompleteNormally = this.compileTryCatch(ts, new Compilable2() {
+                // Save the exception object in an anonymous local variable.
+                short evi = this.getCodeContext().allocateLocalVariable((short) 1);
+                this.store(
+                    finallY,                                 // locatable
+                    this.iClassLoader.TYPE_java_lang_Object, // lvType
+                    evi                                      // lvIndex
+                );
 
-                    @Override public boolean
-                    compile() throws CompileException {
-                        boolean canCompleteNormally = compileBody.compile();
-                        if (canCompleteNormally) {
-                            UnitCompiler.this.jsr(ts, fo);
-                        }
-                        return canCompleteNormally;
-                    }
-                }, beginningOfBody, afterStatement);
+                if (this.compile(finallY)) {
 
-                // Generate the "catch (Throwable) {" clause that invokes the FINALLY subroutine.
-                this.getCodeContext().saveLocalVariables();
-                try {
-
-                    CodeContext.Offset here = this.getCodeContext().newOffset();
-                    this.getCodeContext().addExceptionTableEntry(
-                        beginningOfBody, // startPC
-                        here,            // endPC
-                        here,            // handlerPC
-                        null             // catchTypeFD
-                    );
-
-                    // Push the exception on the operand stack.
-                    this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
-
-                    // Save the exception object in an anonymous local variable.
-                    short evi = this.getCodeContext().allocateLocalVariable((short) 1);
-                    this.store(
-                        finallY,                                 // locatable
-                        this.iClassLoader.TYPE_java_lang_Object, // lvType
-                        evi                                      // lvIndex
-                    );
-                    this.jsr(finallY, fo);
                     this.load(
                         finallY,                                 // locatable
                         this.iClassLoader.TYPE_java_lang_Object, // type
                         evi                                      // index
                     );
                     this.athrow(finallY);
-
-                    // Generate the "finally" subroutine.
-                    this.getCodeContext().pushTopOperand();
-                    fo.set();
-                    ts.finallyOffset = null;
-
-                    this.store(
-                        finallY,                                 // locatable
-                        this.iClassLoader.TYPE_java_lang_Object, // lvType
-                        pcLvIndex                                // lvIndex
-                    );
-                    if (this.compile(finallY)) {
-                        this.ret(finallY, pcLvIndex);
-                    }
-                } finally {
-
-                    // The exception object local variable allocated above MUST NOT BE RELEASED until after the FINALLY
-                    // block is compiled, for otherwise you get
-                    //   java.lang.VerifyError: ... Accessing value from uninitialized register 7
-                    this.getCodeContext().restoreLocalVariables();
                 }
             } finally {
+
+                // The exception object local variable allocated above MUST NOT BE RELEASED until after the FINALLY
+                // block is compiled, for otherwise you get
+                //   java.lang.VerifyError: ... Accessing value from uninitialized register 7
                 this.getCodeContext().restoreLocalVariables();
             }
+        } finally {
+            this.getCodeContext().restoreLocalVariables();
         }
 
         afterStatement.set();
-//        if (canCompleteNormally) this.leave(ts, null);
+
+        if (canCompleteNormally) canCompleteNormally = UnitCompiler.this.compile(finallY);
+
         return canCompleteNormally;
     }
 
@@ -3103,81 +3072,75 @@ class UnitCompiler {
 
         StackMap smBeforeBody = this.getCodeContext().currentInserter().getStackMap();
 
-        boolean canCompleteNormally = compileBody.compile();
+        boolean tryCatchCcn = compileBody.compile();
 
         CodeContext.Offset afterBody = this.getCodeContext().newOffset();
 
-        if (canCompleteNormally) {
+        if (tryCatchCcn) {
             this.gotO(tryStatement, afterStatement);
         }
 
         if (beginningOfBody.offset != afterBody.offset) { // Avoid zero-length exception table entries.
-            this.getCodeContext().saveLocalVariables();
-            try {
-                for (int i = 0; i < tryStatement.catchClauses.size(); ++i) {
-                    try {
-                        this.getCodeContext().currentInserter().setStackMap(smBeforeBody);
+            for (int i = 0; i < tryStatement.catchClauses.size(); ++i) {
+                this.getCodeContext().currentInserter().setStackMap(smBeforeBody);
 
-                        this.getCodeContext().saveLocalVariables();
+                this.getCodeContext().saveLocalVariables();
+                try {
 
-                        CatchClause catchClause = (CatchClause) tryStatement.catchClauses.get(i);
+                    CatchClause catchClause = (CatchClause) tryStatement.catchClauses.get(i);
 
-                        if (catchClause.catchParameter.types.length != 1) {
-                            throw UnitCompiler.compileException(catchClause, "Multi-type CATCH parameter NYI");
-                        }
-                        IClass caughtExceptionType = this.getType(catchClause.catchParameter.types[0]);
-
-                        // Verify that the CATCH clause is reachable.
-                        if (!catchClause.reachable) {
-                            this.compileError("Catch clause is unreachable", catchClause.getLocation());
-                        }
-
-                        // Push the exception on the operand stack.
-                        this.getCodeContext().pushObjectOperand(caughtExceptionType.getDescriptor());
-
-                        // Allocate the "exception variable".
-                        LocalVariableSlot exceptionVarSlot = this.getCodeContext().allocateLocalVariable(
-                            (short) 1,
-                            catchClause.catchParameter.name,
-                            caughtExceptionType
-                        );
-                        final short evi = exceptionVarSlot.getSlotIndex();
-
-                        // Kludge: Treat the exception variable like a local variable of the catch clause body.
-                        this.getLocalVariable(catchClause.catchParameter).setSlot(exceptionVarSlot);
-
-                        this.getCodeContext().addExceptionTableEntry(
-                            beginningOfBody,                    // startPC
-                            afterBody,                          // endPC
-                            this.getCodeContext().newOffset(),  // handlerPC
-                            caughtExceptionType.getDescriptor() // catchTypeFD
-                        );
-                        this.store(
-                            catchClause,         // locatable
-                            caughtExceptionType, // lvType
-                            evi                  // lvIndex
-                        );
-
-                        if (this.compile(catchClause.body)) {
-                            canCompleteNormally = true;
-                            if (tryStatement.finallyOffset != null) {
-                                this.jsr(tryStatement, tryStatement.finallyOffset);
-                            }
-                            if (
-                                i < tryStatement.catchClauses.size() - 1
-                                || tryStatement.finallyOffset != null
-                            ) this.gotO(catchClause, afterStatement);
-                        }
-                    } finally {
-                        this.getCodeContext().restoreLocalVariables();
+                    if (catchClause.catchParameter.types.length != 1) {
+                        throw UnitCompiler.compileException(catchClause, "Multi-type CATCH parameter NYI");
                     }
+                    IClass caughtExceptionType = this.getType(catchClause.catchParameter.types[0]);
+
+                    // Verify that the CATCH clause is reachable.
+                    if (!catchClause.reachable) {
+                        this.compileError("Catch clause is unreachable", catchClause.getLocation());
+                    }
+
+                    // Push the exception on the operand stack.
+                    this.getCodeContext().pushObjectOperand(caughtExceptionType.getDescriptor());
+
+                    // Allocate the "exception variable".
+                    LocalVariableSlot exceptionVarSlot = this.getCodeContext().allocateLocalVariable(
+                        (short) 1,
+                        catchClause.catchParameter.name,
+                        caughtExceptionType
+                    );
+                    final short evi = exceptionVarSlot.getSlotIndex();
+
+                    // Kludge: Treat the exception variable like a local variable of the catch clause body.
+                    this.getLocalVariable(catchClause.catchParameter).setSlot(exceptionVarSlot);
+
+                    this.getCodeContext().addExceptionTableEntry(
+                        beginningOfBody,                    // startPC
+                        afterBody,                          // endPC
+                        this.getCodeContext().newOffset(),  // handlerPC
+                        caughtExceptionType.getDescriptor() // catchTypeFD
+                    );
+                    this.store(
+                        catchClause,         // locatable
+                        caughtExceptionType, // lvType
+                        evi                  // lvIndex
+                    );
+
+                    if (this.compile(catchClause.body)) {
+
+                        if (tryStatement.finallY == null || this.compile(tryStatement.finallY)) {
+                            tryCatchCcn = true;
+                            this.gotO(catchClause, afterStatement);
+                        }
+                    }
+                } finally {
+                    this.getCodeContext().restoreLocalVariables();
                 }
-            } finally {
-                this.getCodeContext().restoreLocalVariables();
             }
         }
 
-        return canCompleteNormally;
+        this.getCodeContext().currentInserter().setStackMap(smBeforeBody);
+
+        return tryCatchCcn;
     }
 
     // ------------ FunctionDeclarator.compile() -------------
@@ -6316,76 +6279,57 @@ class UnitCompiler {
      *   Statements like {@code return}, {@code break}, {@code continue} must call this method for all the statements
      *   they terminate.
      * </p>
-     * <p>
-     *   Notice: If <var>stackValueType</var> is {@code null}, then the operand stack is empty; otherwise
-     *   exactly one operand with that type is on the stack. This information is vital to implementations of {@link
-     *   #leave(BlockStatement, IClass)} that require a specific operand stack state (e.g. an empty operand stack for
-     *   JSR).
-     * </p>
      */
     private void
-    leave(BlockStatement bs, @Nullable final IClass stackValueType) {
-        BlockStatementVisitor<Void, RuntimeException> bsv = new BlockStatementVisitor<Void, RuntimeException>() {
+    leave(BlockStatement bs) throws CompileException {
+        BlockStatementVisitor<Void, CompileException> bsv = new BlockStatementVisitor<Void, CompileException>() {
 
             // SUPPRESS CHECKSTYLE LineLengthCheck:23
-            @Override @Nullable public Void visitInitializer(Initializer i)                                                { UnitCompiler.this.leave2(i,    stackValueType); return null; }
-            @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd)                                     { UnitCompiler.this.leave2(fd,   stackValueType); return null; }
-            @Override @Nullable public Void visitLabeledStatement(LabeledStatement ls)                                     { UnitCompiler.this.leave2(ls,   stackValueType); return null; }
-            @Override @Nullable public Void visitBlock(Block b)                                                            { UnitCompiler.this.leave2(b,    stackValueType); return null; }
-            @Override @Nullable public Void visitExpressionStatement(ExpressionStatement es)                               { UnitCompiler.this.leave2(es,   stackValueType); return null; }
-            @Override @Nullable public Void visitIfStatement(IfStatement is)                                               { UnitCompiler.this.leave2(is,   stackValueType); return null; }
-            @Override @Nullable public Void visitForStatement(ForStatement fs)                                             { UnitCompiler.this.leave2(fs,   stackValueType); return null; }
-            @Override @Nullable public Void visitForEachStatement(ForEachStatement fes)                                    { UnitCompiler.this.leave2(fes,  stackValueType); return null; }
-            @Override @Nullable public Void visitWhileStatement(WhileStatement ws)                                         { UnitCompiler.this.leave2(ws,   stackValueType); return null; }
-            @Override @Nullable public Void visitTryStatement(TryStatement ts)                                             { UnitCompiler.this.leave2(ts,   stackValueType); return null; }
-            @Override @Nullable public Void visitSwitchStatement(SwitchStatement ss)                                       { UnitCompiler.this.leave2(ss,   stackValueType); return null; }
-            @Override @Nullable public Void visitSynchronizedStatement(SynchronizedStatement ss)                           { UnitCompiler.this.leave2(ss,   stackValueType); return null; }
-            @Override @Nullable public Void visitDoStatement(DoStatement ds)                                               { UnitCompiler.this.leave2(ds,   stackValueType); return null; }
-            @Override @Nullable public Void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { UnitCompiler.this.leave2(lvds, stackValueType); return null; }
-            @Override @Nullable public Void visitReturnStatement(ReturnStatement rs)                                       { UnitCompiler.this.leave2(rs,   stackValueType); return null; }
-            @Override @Nullable public Void visitThrowStatement(ThrowStatement ts)                                         { UnitCompiler.this.leave2(ts,   stackValueType); return null; }
-            @Override @Nullable public Void visitBreakStatement(BreakStatement bs)                                         { UnitCompiler.this.leave2(bs,   stackValueType); return null; }
-            @Override @Nullable public Void visitContinueStatement(ContinueStatement cs)                                   { UnitCompiler.this.leave2(cs,   stackValueType); return null; }
-            @Override @Nullable public Void visitAssertStatement(AssertStatement as)                                       { UnitCompiler.this.leave2(as,   stackValueType); return null; }
-            @Override @Nullable public Void visitEmptyStatement(EmptyStatement es)                                         { UnitCompiler.this.leave2(es,   stackValueType); return null; }
-            @Override @Nullable public Void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       { UnitCompiler.this.leave2(lcds, stackValueType); return null; }
-            @Override @Nullable public Void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        { UnitCompiler.this.leave2(aci,  stackValueType); return null; }
-            @Override @Nullable public Void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                { UnitCompiler.this.leave2(sci,  stackValueType); return null; }
+            @Override @Nullable public Void visitInitializer(Initializer i)                                                { UnitCompiler.this.leave2(i);    return null; }
+            @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd)                                     { UnitCompiler.this.leave2(fd);   return null; }
+            @Override @Nullable public Void visitLabeledStatement(LabeledStatement ls)                                     { UnitCompiler.this.leave2(ls);   return null; }
+            @Override @Nullable public Void visitBlock(Block b)                                                            { UnitCompiler.this.leave2(b);    return null; }
+            @Override @Nullable public Void visitExpressionStatement(ExpressionStatement es)                               { UnitCompiler.this.leave2(es);   return null; }
+            @Override @Nullable public Void visitIfStatement(IfStatement is)                                               { UnitCompiler.this.leave2(is);   return null; }
+            @Override @Nullable public Void visitForStatement(ForStatement fs)                                             { UnitCompiler.this.leave2(fs);   return null; }
+            @Override @Nullable public Void visitForEachStatement(ForEachStatement fes)                                    { UnitCompiler.this.leave2(fes);  return null; }
+            @Override @Nullable public Void visitWhileStatement(WhileStatement ws)                                         { UnitCompiler.this.leave2(ws);   return null; }
+            @Override @Nullable public Void visitTryStatement(TryStatement ts) throws CompileException                     { UnitCompiler.this.leave2(ts);   return null; }
+            @Override @Nullable public Void visitSwitchStatement(SwitchStatement ss)                                       { UnitCompiler.this.leave2(ss);   return null; }
+            @Override @Nullable public Void visitSynchronizedStatement(SynchronizedStatement ss)                           { UnitCompiler.this.leave2(ss);   return null; }
+            @Override @Nullable public Void visitDoStatement(DoStatement ds)                                               { UnitCompiler.this.leave2(ds);   return null; }
+            @Override @Nullable public Void visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) { UnitCompiler.this.leave2(lvds); return null; }
+            @Override @Nullable public Void visitReturnStatement(ReturnStatement rs)                                       { UnitCompiler.this.leave2(rs);   return null; }
+            @Override @Nullable public Void visitThrowStatement(ThrowStatement ts)                                         { UnitCompiler.this.leave2(ts);   return null; }
+            @Override @Nullable public Void visitBreakStatement(BreakStatement bs)                                         { UnitCompiler.this.leave2(bs);   return null; }
+            @Override @Nullable public Void visitContinueStatement(ContinueStatement cs)                                   { UnitCompiler.this.leave2(cs);   return null; }
+            @Override @Nullable public Void visitAssertStatement(AssertStatement as)                                       { UnitCompiler.this.leave2(as);   return null; }
+            @Override @Nullable public Void visitEmptyStatement(EmptyStatement es)                                         { UnitCompiler.this.leave2(es);   return null; }
+            @Override @Nullable public Void visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       { UnitCompiler.this.leave2(lcds); return null; }
+            @Override @Nullable public Void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        { UnitCompiler.this.leave2(aci);  return null; }
+            @Override @Nullable public Void visitSuperConstructorInvocation(SuperConstructorInvocation sci)                { UnitCompiler.this.leave2(sci);  return null; }
         };
         bs.accept(bsv);
     }
 
     private void
-    leave2(BlockStatement bs, @Nullable IClass stackValueType) {}
+    leave2(BlockStatement bs) {}
 
     private void
-    leave2(SynchronizedStatement ss, @Nullable IClass stackValueType) {
+    leave2(SynchronizedStatement ss) {
         this.load(ss, this.iClassLoader.TYPE_java_lang_Object, ss.monitorLvIndex);
         this.monitorexit(ss);
     }
 
     private void
-    leave2(TryStatement ts, @Nullable IClass stackValueType) {
+    leave2(TryStatement ts) throws CompileException {
 
-        Offset fo = ts.finallyOffset;
-        if (fo == null) return;
+        Block f = ts.finallY;
+        if (f == null) return;
 
         this.getCodeContext().saveLocalVariables();
         try {
-            short sv = 0;
-
-            // Obviously, JSR must always be executed with the operand stack being empty; otherwise we get
-            // "java.lang.VerifyError: Inconsistent stack height 1 != 2"
-            if (stackValueType != null) {
-                sv = this.getCodeContext().allocateLocalVariable(Descriptor.size(stackValueType.getDescriptor()));
-                this.store(ts, stackValueType, sv);
-            }
-
-            this.jsr(ts, fo);
-
-            if (stackValueType != null) {
-                this.load(ts, stackValueType, sv);
-            }
+            if (this.compile(f)) return;
         } finally {
             this.getCodeContext().restoreLocalVariables();
         }
@@ -7657,11 +7601,16 @@ class UnitCompiler {
      * executed.
      */
     private void
-    leaveStatements(Scope from, Scope to, @Nullable IClass stackValueType) {
+    leaveStatements(Scope from, Scope to) throws CompileException {
+        Scope prev = null;
         for (Scope s = from; s != to; s = s.getEnclosingScope()) {
-            if (s instanceof BlockStatement) {
-                this.leave((BlockStatement) s, stackValueType);
+            if (
+                s instanceof BlockStatement
+                && !(s instanceof TryStatement && ((TryStatement) s).finallY == prev)
+            ) {
+                this.leave((BlockStatement) s);
             }
+            prev = s;
         }
     }
 
@@ -12070,12 +12019,6 @@ class UnitCompiler {
     }
 
     private void
-    jsr(Locatable locatable, CodeContext.Offset dst) {
-        this.getCodeContext().writeBranch(Opcode.JSR, dst);
-        dst.setStackMap(this.getCodeContext().currentInserter().getStackMap().pushOperand(StackMapTableAttribute.TOP_VARIABLE_INFO));
-    }
-
-    private void
     l2i(Locatable locatable) {
         this.addLineNumberOffset(locatable);
 
@@ -12248,19 +12191,6 @@ class UnitCompiler {
             iField.getName(),            // fieldName
             iField.getType()             // fieldType
         );
-    }
-
-    private void
-    ret(Locatable locatable, int lvIndex) {
-        this.addLineNumberOffset(locatable);
-        if (lvIndex > 255) {
-            this.write(Opcode.WIDE);
-            this.write(Opcode.RET);
-            this.writeShort(lvIndex);
-        } else {
-            this.write(Opcode.RET);
-            this.writeByte(lvIndex);
-        }
     }
 
     private void
