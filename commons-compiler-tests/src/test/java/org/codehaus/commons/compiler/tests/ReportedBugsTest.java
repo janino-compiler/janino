@@ -182,7 +182,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    testBug54() throws Exception {
+    testBug54a() throws Exception {
         this.assertScriptReturnsTrue(
             ""
             + "String s = \"\";\n"
@@ -209,6 +209,10 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "}\n"
             + "return \"set1returnfinally\".equals(s);"
         );
+    }
+
+    @Test public void
+    testBug54b() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "void foo() {\n"
@@ -230,6 +234,10 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
+    }
+
+    @Test public void
+    testBug54c() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "void baz1() {\n"
@@ -243,6 +251,10 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
+    }
+
+    @Test public void
+    testBug54d() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "void baz2() {\n"
@@ -256,6 +268,10 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
+    }
+
+    @Test public void
+    testBug54e() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
@@ -264,6 +280,10 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
+    }
+
+    @Test public void
+    testBug54f() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
@@ -272,6 +292,10 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
+    }
+
+    @Test public void
+    testBug54g() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
@@ -294,6 +318,10 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
+    }
+
+    @Test public void
+    testBug54h() throws Exception {
         this.assertScriptExecutable(
             ""
             + "int c = 5;\n"
