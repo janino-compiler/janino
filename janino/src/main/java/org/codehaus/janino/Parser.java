@@ -1802,8 +1802,8 @@ class Parser {
      */
     public Block
     parseBlock() throws CompileException, IOException {
-        Block block = new Block(this.location());
         this.read("{");
+        Block block = new Block(this.location());
         block.addStatements(this.parseBlockStatements());
         this.read("}");
         return block;
@@ -2050,8 +2050,8 @@ class Parser {
      */
     public Statement
     parseIfStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("if");
+        final Location location = this.location();
         this.read("(");
         final Rvalue condition = this.parseExpression().toRvalueOrCompileException();
         this.read(")");
@@ -2263,9 +2263,9 @@ class Parser {
      */
     public Statement
     parseTryStatement() throws CompileException, IOException {
-        final Location location = this.location();
 
         this.read("try");
+        final Location location = this.location();
 
         // '(' Resource { ';' Resource } [ ';' ] ')'
         List<TryStatement.Resource> resources = new ArrayList<TryStatement.Resource>();
