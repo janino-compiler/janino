@@ -27,6 +27,7 @@ package org.codehaus.janino;
 
 import java.util.Arrays;
 
+import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo;
 
@@ -89,7 +90,10 @@ class StackMap {
      * @return The top element of the operand stack
      */
     VerificationTypeInfo
-    peekOperand() { return this.operands[this.operands.length - 1]; }
+    peekOperand() {
+        if (this.operands.length == 0) throw new InternalCompilerException("Operand stack underflow");
+        return this.operands[this.operands.length - 1];
+    }
 
     VerificationTypeInfo[]
     operands() { return (VerificationTypeInfo[]) this.operands.clone(); }
