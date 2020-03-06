@@ -266,6 +266,56 @@ class GithubIssuesTest {
         );
     }
 
+    @Test public void
+    testIssue113() throws Exception {
+        CompileUnit unit1 = new CompileUnit("demo.pkg3", "A$$1", (
+            ""
+            + "package demo.pkg3;\n"
+            + "public class A$$1 {\n"
+            + "    public static String main() {\n"
+            + "        StringBuilder sb = new StringBuilder();\n"
+            + "        short b = 1;\n"
+            + "        for (int i = 0; i < 4; i++) {\n"
+            + "            ;\n"
+            + "            switch (i) {\n"
+            + "                case 0:\n"
+            + "                    sb.append(\"A\");\n"
+            + "                    break;\n"
+            + "                case 1:\n"
+            + "                    sb.append(\"B\");\n"
+            + "                    break;\n"
+            + "                case 2:\n"
+            + "                    sb.append(\"C\");\n"
+            + "                    break;\n"
+            + "                case 3:\n"
+            + "                    sb.append(\"D\");\n"
+            + "                    break;\n"
+            + "            }\n"
+            + injectDummyLargeCodeExceedingShort()
+            + "        }\n"
+            + "        return sb.toString();\n"
+            + "    }\n"
+            + "}\n"
+            ));
+
+        ClassLoader
+            classLoader = this.compile(Thread.currentThread().getContextClassLoader(), unit1);
+
+        Assert.assertEquals(
+            "ABCD",
+            classLoader.loadClass("demo.pkg3.A$$1").getMethod("main").invoke(null)
+        );
+    }
+
+    private String injectDummyLargeCodeExceedingShort() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("int a = -1;\n");
+        for (int i = 0 ; i < Short.MAX_VALUE / 3 ; i++) {
+            sb.append("a = " + i + ";\n");
+        }
+        return sb.toString();
+    }
+
     public ClassLoader
     compile(ClassLoader parentClassLoader, CompileUnit... compileUnits) {
 

@@ -385,14 +385,19 @@ class CodeContext {
      */
     public void
     fixUpAndRelocate() {
+        maybeGrow();
+        fixUp();
+        relocate();
+    }
 
-        // We do this in a loop to allow relocatables to adjust the size
-        // of things in the byte stream.  It is extremely unlikely, but possible
-        // that a late relocatable will grow the size of the bytecode, and require
-        // an earlier relocatable to switch from 32K mode to 64K mode branching
-        do {
-            this.fixUp();
-        } while (!this.relocate());
+    /**
+     * Grow the code if relocatables are required to.
+     */
+    private void
+    maybeGrow() {
+        for (Relocatable relocatable : this.relocatables) {
+            relocatable.grow();
+        }
     }
 
     /**
@@ -407,20 +412,13 @@ class CodeContext {
     }
 
     /**
-     * Relocates all relocatables and aggregate their response into a single one.
-     *
-     * @return {@code true} if all of them relocated successfully, {@code false} if any of them needed to change size
+     * Relocates all relocatables.
      */
-    private boolean
+    private void
     relocate() {
-        boolean finished = true;
         for (Relocatable relocatable : this.relocatables) {
-
-            // Do not terminate earlier so that everything gets a chance to grow in the first pass changes the common
-            // case for this to be O(n) instead of O(n**2).
-            finished &= relocatable.relocate();
+            relocatable.relocate();
         }
-        return finished;
     }
 
     /**
@@ -622,8 +620,8 @@ class CodeContext {
             }
         }
 
-        @Override public boolean
-        relocate() {
+        @Override public void
+        grow() {
             if (this.destination.offset == Offset.UNSET) {
                 throw new InternalCompilerException("Cannot relocate branch to unset destination offset");
             }
@@ -643,9 +641,17 @@ class CodeContext {
                 CodeContext.this.popInserter();
                 this.source.offset = pos;
                 this.expanded      = true;
-                return false;
             }
+        }
 
+        @Override public void
+        relocate() {
+            if (this.destination.offset == Offset.UNSET) {
+                throw new InternalCompilerException("Cannot relocate branch to unset destination offset");
+            }
+            int offset = this.destination.offset - this.source.offset;
+
+            @SuppressWarnings("deprecation") final int opcodeJsr = Opcode.JSR;
             final byte[] ba;
             if (!this.expanded) {
                 //we fit in a 16-bit jump
@@ -683,7 +689,6 @@ class CodeContext {
                 }
             }
             System.arraycopy(ba, 0, CodeContext.this.code, this.source.offset, ba.length);
-            return true;
         }
 
         private boolean        expanded; //marks whether this has been expanded to account for a wide branch
@@ -748,7 +753,10 @@ class CodeContext {
             this.destination = destination;
         }
 
-        @Override public boolean
+        @Override public void
+        grow() {}
+
+        @Override public void
         relocate() {
             if (this.source.offset == Offset.UNSET || this.destination.offset == Offset.UNSET) {
                 throw new InternalCompilerException("Cannot relocate offset branch to unset destination offset");
@@ -761,7 +769,6 @@ class CodeContext {
                 (byte) offset
             };
             System.arraycopy(ba, 0, CodeContext.this.code, this.where.offset, 4);
-            return true;
         }
         private final Offset where, source, destination;
     }
@@ -1027,12 +1034,14 @@ class CodeContext {
     class Relocatable {
 
         /**
-         * Relocates this object.
-         *
-         * @return {@code true} if the relocation succeeded in place; {@code false} if the relocation grew the number
-         *         of bytes required
+         * Grow the code if the relocation cannot be done without growing code.
          */
-        public abstract boolean relocate();
+        public abstract void grow();
+
+        /**
+         * Relocates this object.
+         */
+        public abstract void relocate();
     }
 
     /**
@@ -1213,10 +1222,12 @@ class CodeContext {
 
         this.relocatables.add(new Relocatable() {
 
-            @Override public boolean
+            @Override public void
+            grow() {}
+
+            @Override public void
             relocate() {
                 uvi.offset = (short) o.offset;
-                return true;
             }
         });
 
