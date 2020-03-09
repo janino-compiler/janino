@@ -3009,17 +3009,17 @@ class UnitCompiler {
                 // Save the exception object in an anonymous local variable.
                 short evi = this.getCodeContext().allocateLocalVariable((short) 1);
                 this.store(
-                    finallY,                                 // locatable
-                    this.iClassLoader.TYPE_java_lang_Object, // lvType
-                    evi                                      // lvIndex
+                    finallY,                                    // locatable
+                    this.iClassLoader.TYPE_java_lang_Throwable, // lvType
+                    evi                                         // lvIndex
                 );
 
                 if (this.compile(finallY)) {
 
                     this.load(
-                        finallY,                                 // locatable
-                        this.iClassLoader.TYPE_java_lang_Object, // type
-                        evi                                      // index
+                        finallY,                                    // locatable
+                        this.iClassLoader.TYPE_java_lang_Throwable, // type
+                        evi                                         // index
                     );
                     this.athrow(finallY);
                 }
@@ -3173,7 +3173,7 @@ class UnitCompiler {
                 //  + The name is appended with "$"
                 //  + It is made static
                 //  + A parameter of type "declaring class" is prepended to the signature
-                short accessFlags = UnitCompiler.changeAccessibility(this.accessFlags(fd.getModifiers()), (short) 0);
+                short accessFlags = UnitCompiler.changeAccessibility(this.accessFlags(fd.getModifiers()), Mod.PACKAGE);
                 accessFlags |= Mod.STATIC;
 
                 mi = classFile.addMethodInfo(
