@@ -423,9 +423,6 @@ class CodeContext {
 
     /**
      * Inserts a sequence of bytes at the current insertion position. Creates {@link LineNumberOffset}s as necessary.
-     *
-     * @param lineNumber The line number that corresponds to the byte code, or -1
-     * @param b
      */
     public void
     write(byte[] b) {
@@ -442,9 +439,6 @@ class CodeContext {
      * <p>
      *   This method is an optimization to avoid allocating small byte[] and ease GC load.
      * </p>
-     *
-     * @param lineNumber The line number that corresponds to the byte code, or -1
-     * @param b1
      */
     public void
     write(byte b1) {
@@ -459,8 +453,6 @@ class CodeContext {
      * <p>
      *   This method is an optimization to avoid allocating small byte[] and ease GC load.
      * </p>
-     *
-     * @param lineNumber The line number that corresponds to the byte code, or -1
      */
     public void
     write(byte b1, byte b2) {
@@ -476,8 +468,6 @@ class CodeContext {
      * <p>
      *   This method is an optimization to avoid allocating small byte[] and ease GC load.
      * </p>
-     *
-     * @param lineNumber The line number that corresponds to the byte code, or -1
      */
     public void
     write(byte b1, byte b2, byte b3) {
@@ -494,8 +484,6 @@ class CodeContext {
      * <p>
      *   This method is an optimization to avoid allocating small byte[] and ease GC load.
      * </p>
-     *
-     * @param lineNumber The line number that corresponds to the byte code, or -1
      */
     public void
     write(byte b1, byte b2, byte b3, byte b4) {
@@ -547,9 +535,8 @@ class CodeContext {
      *   Because the class file format does not support line numbers greater than 65535, these are treated as 65535.
      * </p>
      *
-     * @param lineNumber -1 indicates that no particular line in the source code corresponds to this offset
-     * @param size       The number of NUL bytes to inject
-     * @return           The offset of the first inserted byte
+     * @param size The number of NUL bytes to inject
+     * @return     The offset of the first inserted byte
      */
     public int
     makeSpace(final int size) {
@@ -587,9 +574,8 @@ class CodeContext {
     /**
      * Generates a "branch" instruction.
      *
-     * @param lineNumber The line number that corresponds to the byte code, or -1
-     * @param opcode     One of {@link Opcode#GOTO}, {@link Opcode#JSR} and <code>Opcode.IF*</code>
-     * @param dst        Where to branch
+     * @param opcode One of {@link Opcode#GOTO}, {@link Opcode#JSR} and <code>Opcode.IF*</code>
+     * @param dst    Where to branch
      */
     public void
     writeBranch(int opcode, final Offset dst) {
