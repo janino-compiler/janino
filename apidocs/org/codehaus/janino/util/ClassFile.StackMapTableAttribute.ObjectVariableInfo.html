@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -163,7 +163,8 @@ implements <a href="ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" 
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
-<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(short)">ObjectVariableInfo</a></span>&#8203;(short&nbsp;constantClassInfoIndex)</code></th>
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(short,java.lang.String)">ObjectVariableInfo</a></span>&#8203;(short&nbsp;constantClassInfoIndex,
+                  java.lang.String&nbsp;fieldDescriptor)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -185,13 +186,33 @@ implements <a href="ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" 
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>int</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#category()">category</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#equals(java.lang.Object)">equals</a></span>&#8203;(java.lang.Object&nbsp;obj)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>short</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getConstantClassInfoIndex()">getConstantClassInfoIndex</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>int</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#hashCode()">hashCode</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#store(java.io.DataOutputStream)">store</a></span>&#8203;(java.io.DataOutputStream&nbsp;dos)</code></th>
 <td class="colLast">
 <div class="block">Writes this object to an <code>OutputStream</code>, in "class file" format.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toString()">toString</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
@@ -202,7 +223,7 @@ implements <a href="ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" 
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;java.lang.Object</h3>
-<code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, wait, wait, wait</code></li>
+<code>clone, finalize, getClass, notify, notifyAll, wait, wait, wait</code></li>
 </ul>
 </li>
 </ul>
@@ -220,13 +241,14 @@ implements <a href="ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" 
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a id="&lt;init&gt;(short)">
+<a id="&lt;init&gt;(short,java.lang.String)">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>ObjectVariableInfo</h4>
-<pre>public&nbsp;ObjectVariableInfo&#8203;(short&nbsp;constantClassInfoIndex)</pre>
+<pre>public&nbsp;ObjectVariableInfo&#8203;(short&nbsp;constantClassInfoIndex,
+                          java.lang.String&nbsp;fieldDescriptor)</pre>
 </li>
 </ul>
 </li>
@@ -239,6 +261,30 @@ implements <a href="ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" 
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a id="getConstantClassInfoIndex()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getConstantClassInfoIndex</h4>
+<pre class="methodSignature">public&nbsp;short&nbsp;getConstantClassInfoIndex()</pre>
+</li>
+</ul>
+<a id="category()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>category</h4>
+<pre class="methodSignature">public&nbsp;int&nbsp;category()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="ClassFile.StackMapTableAttribute.VerificationTypeInfo.html#category()">category</a></code>&nbsp;in interface&nbsp;<code><a href="ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a></code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The category of the type (1 or 2) (JVMS11 2.11.1)</dd>
+</dl>
+</li>
+</ul>
 <a id="store(java.io.DataOutputStream)">
 <!--   -->
 </a>
@@ -260,13 +306,39 @@ implements <a href="ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" 
 <a id="toString()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>toString</h4>
 <pre class="methodSignature">public&nbsp;java.lang.String&nbsp;toString()</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>toString</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
+</dl>
+</li>
+</ul>
+<a id="hashCode()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>hashCode</h4>
+<pre class="methodSignature">public&nbsp;int&nbsp;hashCode()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code>hashCode</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
+</dl>
+</li>
+</ul>
+<a id="equals(java.lang.Object)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>equals</h4>
+<pre class="methodSignature">public&nbsp;boolean&nbsp;equals&#8203;(java.lang.Object&nbsp;obj)</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code>equals</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
 </dl>
 </li>
 </ul>

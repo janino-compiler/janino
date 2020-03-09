@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6};
+var data = {"i0":6,"i1":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -124,7 +124,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="blockList">
 <dl>
 <dt>All Known Implementing Classes:</dt>
-<dd><code><a href="ClassFile.StackMapTableAttribute.DoubleVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.DoubleVariableInfo</a></code>, <code><a href="ClassFile.StackMapTableAttribute.FloatVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.FloatVariableInfo</a></code>, <code><a href="ClassFile.StackMapTableAttribute.IntegerVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.IntegerVariableInfo</a></code>, <code><a href="ClassFile.StackMapTableAttribute.LongVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.LongVariableInfo</a></code>, <code><a href="ClassFile.StackMapTableAttribute.NullVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.NullVariableInfo</a></code>, <code><a href="ClassFile.StackMapTableAttribute.ObjectVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.ObjectVariableInfo</a></code>, <code><a href="ClassFile.StackMapTableAttribute.TopVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.TopVariableInfo</a></code>, <code><a href="ClassFile.StackMapTableAttribute.UninitializedThisVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.UninitializedThisVariableInfo</a></code>, <code><a href="ClassFile.StackMapTableAttribute.UninitializedVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.UninitializedVariableInfo</a></code></dd>
+<dd><code><a href="ClassFile.StackMapTableAttribute.ObjectVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.ObjectVariableInfo</a></code>, <code><a href="ClassFile.StackMapTableAttribute.UninitializedVariableInfo.html" title="class in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.UninitializedVariableInfo</a></code></dd>
 </dl>
 <dl>
 <dt>Enclosing class:</dt>
@@ -154,6 +154,11 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>int</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#category()">category</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#store(java.io.DataOutputStream)">store</a></span>&#8203;(java.io.DataOutputStream&nbsp;dos)</code></th>
 <td class="colLast">
@@ -177,6 +182,19 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a id="category()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>category</h4>
+<pre class="methodSignature">int&nbsp;category()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The category of the type (1 or 2) (JVMS11 2.11.1)</dd>
+</dl>
+</li>
+</ul>
 <a id="store(java.io.DataOutputStream)">
 <!--   -->
 </a>

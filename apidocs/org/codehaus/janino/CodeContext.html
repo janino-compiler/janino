@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10,"i42":10,"i43":10,"i44":10,"i45":10,"i46":10,"i47":10,"i48":10,"i49":10,"i50":10,"i51":10,"i52":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -237,13 +237,18 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#addLineNumberOffset(int)">addLineNumberOffset</a></span>&#8203;(int&nbsp;lineNumber)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>short</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#allocateLocalVariable(short)">allocateLocalVariable</a></span>&#8203;(short&nbsp;size)</code></th>
 <td class="colLast">
 <div class="block">Allocates space for a local variable of the given size (1 or 2) on the local variable array.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="Java.LocalVariableSlot.html" title="class in org.codehaus.janino">Java.LocalVariableSlot</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#allocateLocalVariable(short,java.lang.String,org.codehaus.janino.IClass)">allocateLocalVariable</a></span>&#8203;(short&nbsp;size,
                      java.lang.String&nbsp;name,
@@ -252,23 +257,16 @@ extends java.lang.Object</pre>
 <div class="block">Allocates space for a local variable of the given size (1 or 2) on the local variable array.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="CodeContext.Inserter.html" title="class in org.codehaus.janino">CodeContext.Inserter</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#currentInserter()">currentInserter</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#fixUpAndRelocate()">fixUpAndRelocate</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Fixes up all of the offsets and relocate() all relocatables.</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#flowAnalysis(java.lang.String)">flowAnalysis</a></span>&#8203;(java.lang.String&nbsp;functionName)</code></th>
-<td class="colLast">
-<div class="block">Checks the code for consistency; updates the "maxStack" member.</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
@@ -285,8 +283,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>int</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#makeSpace(int,int)">makeSpace</a></span>&#8203;(int&nbsp;lineNumber,
-         int&nbsp;size)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#makeSpace(int)">makeSpace</a></span>&#8203;(int&nbsp;size)</code></th>
 <td class="colLast">
 <div class="block">Inserts <var>size</var> NUL bytes at the current inserter's offset, advances the current inserter's offset by
  <var>size</var>, creates <a href="CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino"><code>CodeContext.LineNumberOffset</code></a>s as necessary, and returns the current inserter's original
@@ -308,20 +305,179 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i11" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peekNullOperand()">peekNullOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peekObjectOperand()">peekObjectOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i13" class="rowColor">
+<td class="colFirst"><code><a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peekOperand()">peekOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popInserter()">popInserter</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Replaces the current <a href="CodeContext.Inserter.html" title="class in org.codehaus.janino"><code>CodeContext.Inserter</code></a> with the remembered one (see <a href="#pushInserter(org.codehaus.janino.CodeContext.Inserter)"><code>pushInserter(CodeContext.Inserter)</code></a>).</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i15" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popIntOperand()">popIntOperand</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Asserts that the top operand is an <code>integer_variable_info</code> and pops it.</div>
+</td>
+</tr>
+<tr id="i16" class="altColor">
+<td class="colFirst"><code><a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popIntOrLongOperand()">popIntOrLongOperand</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Asserts that the top operand is an <code>int_variable_info</code> or <code>long_variable_info</code>, then pops and
+ returns it.</div>
+</td>
+</tr>
+<tr id="i17" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popLongOperand()">popLongOperand</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Asserts that the top operand is a <code>long_variable_info</code> and pops it.</div>
+</td>
+</tr>
+<tr id="i18" class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popObjectOperand()">popObjectOperand</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Asserts that the top operand is an <code>object_variable_info</code>, and pops it.</div>
+</td>
+</tr>
+<tr id="i19" class="rowColor">
+<td class="colFirst"><code><a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popObjectOrUninitializedOrUninitializedThisOperand()">popObjectOrUninitializedOrUninitializedThisOperand</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Asserts that the top operand is an <code>object_variable_info</code>, <code>uninitialized_variable_info</code> or
+ <code>uninitializedThis_variable_info</code>, and pops it.</div>
+</td>
+</tr>
+<tr id="i20" class="altColor">
+<td class="colFirst"><code><a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popOperand()">popOperand</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Pops one entry from the current inserter's operand stack.</div>
+</td>
+</tr>
+<tr id="i21" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popOperand(java.lang.String)">popOperand</a></span>&#8203;(java.lang.String&nbsp;expectedFd)</code></th>
+<td class="colLast">
+<div class="block">Pops the top operand, asserts that it is an <code>integer_variable_info</code>, <code>long_variable_info</code>, <code>
+ float_variable_info</code>, <code>double_variable_info</code> or <code>variable_object_info</code>, and asserts that it matches
+ the given field descriptor.</div>
+</td>
+</tr>
+<tr id="i22" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popOperand(org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo)">popOperand</a></span>&#8203;(<a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a>&nbsp;expected)</code></th>
+<td class="colLast">
+<div class="block">Pops the top entry from the operand stack and assert that it equals <var>expected</var>.</div>
+</td>
+</tr>
+<tr id="i23" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popOperandAssignableTo(java.lang.String)">popOperandAssignableTo</a></span>&#8203;(java.lang.String&nbsp;declaredFd)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i24" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popReferenceOperand()">popReferenceOperand</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Asserts that the top operand is an <code>object_variable_info</code> or a <code>null_variable_info</code> and pops it.</div>
+</td>
+</tr>
+<tr id="i25" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popUninitializedThisOperand()">popUninitializedThisOperand</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Asserts that the top operand is an <code>uninitializedThis_variable_info</code> and pops it.</div>
+</td>
+</tr>
+<tr id="i26" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#popUninitializedVariableOperand()">popUninitializedVariableOperand</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Asserts that the top operand is an <code>uninitialized_variable_info</code> and pops it.</div>
+</td>
+</tr>
+<tr id="i27" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushDoubleOperand()">pushDoubleOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i28" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushFloatOperand()">pushFloatOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i29" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushInserter(org.codehaus.janino.CodeContext.Inserter)">pushInserter</a></span>&#8203;(<a href="CodeContext.Inserter.html" title="class in org.codehaus.janino">CodeContext.Inserter</a>&nbsp;ins)</code></th>
 <td class="colLast">
 <div class="block">Remembers the current <a href="CodeContext.Inserter.html" title="class in org.codehaus.janino"><code>CodeContext.Inserter</code></a>, then replaces it with the new one.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i30" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushIntOperand()">pushIntOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i31" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushLongOperand()">pushLongOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i32" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushNullOperand()">pushNullOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i33" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushObjectOperand(java.lang.String)">pushObjectOperand</a></span>&#8203;(java.lang.String&nbsp;fieldDescriptor)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i34" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushOperand(java.lang.String)">pushOperand</a></span>&#8203;(java.lang.String&nbsp;fieldDescriptor)</code></th>
+<td class="colLast">
+<div class="block">Pushes one <code>object_variable_info</code>, <code>integer_variable_info</code>, <code>double_variable_info</code>, <code>
+ float_variable_info</code> or <code>long_variable_info</code> entry onto the current inserter's operand stack.</div>
+</td>
+</tr>
+<tr id="i35" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushOperand(org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo)">pushOperand</a></span>&#8203;(<a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a>&nbsp;topOperand)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i36" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushTopOperand()">pushTopOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i37" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushUninitializedOperand()">pushUninitializedOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i38" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#pushUninitializedThisOperand()">pushUninitializedThisOperand</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i39" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#removeCode(org.codehaus.janino.CodeContext.Offset,org.codehaus.janino.CodeContext.Offset)">removeCode</a></span>&#8203;(<a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;from,
           <a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;to)</code></th>
@@ -329,21 +485,21 @@ extends java.lang.Object</pre>
 <div class="block">Removes all code between <var>from</var> and <var>to</var>.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i40" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#restoreLocalVariables()">restoreLocalVariables</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Restores the previous size of the local variables array.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i41" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="Java.LocalVariableSlot.html" title="class in org.codehaus.janino">Java.LocalVariableSlot</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#saveLocalVariables()">saveLocalVariables</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Remembers the current size of the local variables array.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i42" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#storeCodeAttributeBody(java.io.DataOutputStream,short,short,short)">storeCodeAttributeBody</a></span>&#8203;(java.io.DataOutputStream&nbsp;dos,
                       short&nbsp;lineNumberTableAttributeNameIndex,
@@ -351,51 +507,51 @@ extends java.lang.Object</pre>
                       short&nbsp;stackMapTableAttributeNameIndex)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i43" class="rowColor">
 <td class="colFirst"><code>protected <a href="util/ClassFile.AttributeInfo.html" title="class in org.codehaus.janino.util">ClassFile.AttributeInfo</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#storeLocalVariableTable(java.io.DataOutputStream,short)">storeLocalVariableTable</a></span>&#8203;(java.io.DataOutputStream&nbsp;dos,
                        short&nbsp;localVariableTableAttributeNameIndex)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i44" class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toString()">toString</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i45" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(int,byte)">write</a></span>&#8203;(int&nbsp;lineNumber,
-     byte&nbsp;b1)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(byte)">write</a></span>&#8203;(byte&nbsp;b1)</code></th>
 <td class="colLast">
 <div class="block">Inserts a byte at the current insertion position.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i46" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(int,byte%5B%5D)">write</a></span>&#8203;(int&nbsp;lineNumber,
-     byte[]&nbsp;b)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(byte%5B%5D)">write</a></span>&#8203;(byte[]&nbsp;b)</code></th>
 <td class="colLast">
 <div class="block">Inserts a sequence of bytes at the current insertion position.</div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i47" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(int,byte,byte)">write</a></span>&#8203;(int&nbsp;lineNumber,
-     byte&nbsp;b1,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(byte,byte)">write</a></span>&#8203;(byte&nbsp;b1,
      byte&nbsp;b2)</code></th>
 <td class="colLast">
 <div class="block">Inserts bytes at the current insertion position.</div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i48" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(int,byte,byte,byte)">write</a></span>&#8203;(int&nbsp;lineNumber,
-     byte&nbsp;b1,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(byte,byte,byte)">write</a></span>&#8203;(byte&nbsp;b1,
      byte&nbsp;b2,
      byte&nbsp;b3)</code></th>
 <td class="colLast">
 <div class="block">Inserts bytes at the current insertion position.</div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i49" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(int,byte,byte,byte,byte)">write</a></span>&#8203;(int&nbsp;lineNumber,
-     byte&nbsp;b1,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#write(byte,byte,byte,byte)">write</a></span>&#8203;(byte&nbsp;b1,
      byte&nbsp;b2,
      byte&nbsp;b3,
      byte&nbsp;b4)</code></th>
@@ -403,25 +559,23 @@ extends java.lang.Object</pre>
 <div class="block">Inserts bytes at the current insertion position.</div>
 </td>
 </tr>
-<tr id="i23" class="rowColor">
+<tr id="i50" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#writeBranch(int,int,org.codehaus.janino.CodeContext.Offset)">writeBranch</a></span>&#8203;(int&nbsp;lineNumber,
-           int&nbsp;opcode,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#writeBranch(int,org.codehaus.janino.CodeContext.Offset)">writeBranch</a></span>&#8203;(int&nbsp;opcode,
            <a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;dst)</code></th>
 <td class="colLast">
 <div class="block">Generates a "branch" instruction.</div>
 </td>
 </tr>
-<tr id="i24" class="altColor">
+<tr id="i51" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#writeOffset(int,org.codehaus.janino.CodeContext.Offset,org.codehaus.janino.CodeContext.Offset)">writeOffset</a></span>&#8203;(int&nbsp;lineNumber,
-           <a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;src,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#writeOffset(org.codehaus.janino.CodeContext.Offset,org.codehaus.janino.CodeContext.Offset)">writeOffset</a></span>&#8203;(<a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;src,
            <a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;dst)</code></th>
 <td class="colLast">
 <div class="block">Writes a four-byte offset (as it is used in TABLESWITCH and LOOKUPSWITCH) into this code context.</div>
 </td>
 </tr>
-<tr id="i25" class="rowColor">
+<tr id="i52" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#writeShort(int)">writeShort</a></span>&#8203;(int&nbsp;v)</code></th>
 <td class="colLast">&nbsp;</td>
@@ -432,7 +586,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;java.lang.Object</h3>
-<code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</code></li>
+<code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, wait, wait, wait</code></li>
 </ul>
 </li>
 </ul>
@@ -583,20 +737,6 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 </dl>
 </li>
 </ul>
-<a id="flowAnalysis(java.lang.String)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>flowAnalysis</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;flowAnalysis&#8203;(java.lang.String&nbsp;functionName)</pre>
-<div class="block">Checks the code for consistency; updates the "maxStack" member.</div>
-<dl>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code><a href="../commons/compiler/InternalCompilerException.html" title="class in org.codehaus.commons.compiler">InternalCompilerException</a></code> - The bytecode is inconsistent wrt/ the operand stack</dd>
-</dl>
-</li>
-</ul>
 <a id="fixUpAndRelocate()">
 <!--   -->
 </a>
@@ -607,14 +747,13 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 <div class="block">Fixes up all of the offsets and relocate() all relocatables.</div>
 </li>
 </ul>
-<a id="write(int,byte[])">
+<a id="write(byte[])">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>write</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(int&nbsp;lineNumber,
-                  byte[]&nbsp;b)</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(byte[]&nbsp;b)</pre>
 <div class="block">Inserts a sequence of bytes at the current insertion position. Creates <a href="CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino"><code>CodeContext.LineNumberOffset</code></a>s as necessary.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -623,14 +762,13 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 </dl>
 </li>
 </ul>
-<a id="write(int,byte)">
+<a id="write(byte)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>write</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(int&nbsp;lineNumber,
-                  byte&nbsp;b1)</pre>
+<pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(byte&nbsp;b1)</pre>
 <div class="block">Inserts a byte at the current insertion position. Creates <a href="CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino"><code>CodeContext.LineNumberOffset</code></a>s as necessary.
  <p>
    This method is an optimization to avoid allocating small byte[] and ease GC load.
@@ -642,14 +780,13 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 </dl>
 </li>
 </ul>
-<a id="write(int,byte,byte)">
+<a id="write(byte,byte)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>write</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(int&nbsp;lineNumber,
-                  byte&nbsp;b1,
+<pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(byte&nbsp;b1,
                   byte&nbsp;b2)</pre>
 <div class="block">Inserts bytes at the current insertion position. Creates <a href="CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino"><code>CodeContext.LineNumberOffset</code></a>s as necessary.
  <p>
@@ -661,14 +798,13 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 </dl>
 </li>
 </ul>
-<a id="write(int,byte,byte,byte)">
+<a id="write(byte,byte,byte)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>write</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(int&nbsp;lineNumber,
-                  byte&nbsp;b1,
+<pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(byte&nbsp;b1,
                   byte&nbsp;b2,
                   byte&nbsp;b3)</pre>
 <div class="block">Inserts bytes at the current insertion position. Creates <a href="CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino"><code>CodeContext.LineNumberOffset</code></a>s as necessary.
@@ -681,14 +817,13 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 </dl>
 </li>
 </ul>
-<a id="write(int,byte,byte,byte,byte)">
+<a id="write(byte,byte,byte,byte)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>write</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(int&nbsp;lineNumber,
-                  byte&nbsp;b1,
+<pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(byte&nbsp;b1,
                   byte&nbsp;b2,
                   byte&nbsp;b3,
                   byte&nbsp;b4)</pre>
@@ -702,14 +837,22 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 </dl>
 </li>
 </ul>
-<a id="makeSpace(int,int)">
+<a id="addLineNumberOffset(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>addLineNumberOffset</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;addLineNumberOffset&#8203;(int&nbsp;lineNumber)</pre>
+</li>
+</ul>
+<a id="makeSpace(int)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>makeSpace</h4>
-<pre class="methodSignature">public&nbsp;int&nbsp;makeSpace&#8203;(int&nbsp;lineNumber,
-                     int&nbsp;size)</pre>
+<pre class="methodSignature">public&nbsp;int&nbsp;makeSpace&#8203;(int&nbsp;size)</pre>
 <div class="block">Inserts <var>size</var> NUL bytes at the current inserter's offset, advances the current inserter's offset by
  <var>size</var>, creates <a href="CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino"><code>CodeContext.LineNumberOffset</code></a>s as necessary, and returns the current inserter's original
  offset (the offset of the first NUL byte that was inserted).
@@ -734,14 +877,13 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 <pre class="methodSignature">public&nbsp;void&nbsp;writeShort&#8203;(int&nbsp;v)</pre>
 </li>
 </ul>
-<a id="writeBranch(int,int,org.codehaus.janino.CodeContext.Offset)">
+<a id="writeBranch(int,org.codehaus.janino.CodeContext.Offset)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>writeBranch</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;writeBranch&#8203;(int&nbsp;lineNumber,
-                        int&nbsp;opcode,
+<pre class="methodSignature">public&nbsp;void&nbsp;writeBranch&#8203;(int&nbsp;opcode,
                         <a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;dst)</pre>
 <div class="block">Generates a "branch" instruction.</div>
 <dl>
@@ -752,14 +894,13 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 </dl>
 </li>
 </ul>
-<a id="writeOffset(int,org.codehaus.janino.CodeContext.Offset,org.codehaus.janino.CodeContext.Offset)">
+<a id="writeOffset(org.codehaus.janino.CodeContext.Offset,org.codehaus.janino.CodeContext.Offset)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>writeOffset</h4>
-<pre class="methodSignature">public&nbsp;void&nbsp;writeOffset&#8203;(int&nbsp;lineNumber,
-                        <a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;src,
+<pre class="methodSignature">public&nbsp;void&nbsp;writeOffset&#8203;(<a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;src,
                         <a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;dst)</pre>
 <div class="block">Writes a four-byte offset (as it is used in TABLESWITCH and LOOKUPSWITCH) into this code context.</div>
 </li>
@@ -855,13 +996,293 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 <a id="removeCode(org.codehaus.janino.CodeContext.Offset,org.codehaus.janino.CodeContext.Offset)">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>removeCode</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;removeCode&#8203;(<a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;from,
                        <a href="CodeContext.Offset.html" title="class in org.codehaus.janino">CodeContext.Offset</a>&nbsp;to)</pre>
 <div class="block">Removes all code between <var>from</var> and <var>to</var>. Also removes any <code>CodeContext.Relocatable</code>s
  existing in that range.</div>
+</li>
+</ul>
+<a id="toString()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>toString</h4>
+<pre class="methodSignature">public&nbsp;java.lang.String&nbsp;toString()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code>toString</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
+</dl>
+</li>
+</ul>
+<a id="pushOperand(java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushOperand&#8203;(java.lang.String&nbsp;fieldDescriptor)</pre>
+<div class="block">Pushes one <code>object_variable_info</code>, <code>integer_variable_info</code>, <code>double_variable_info</code>, <code>
+ float_variable_info</code> or <code>long_variable_info</code> entry onto the current inserter's operand stack.</div>
+</li>
+</ul>
+<a id="pushTopOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushTopOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushTopOperand()</pre>
+</li>
+</ul>
+<a id="pushIntOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushIntOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushIntOperand()</pre>
+</li>
+</ul>
+<a id="pushLongOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushLongOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushLongOperand()</pre>
+</li>
+</ul>
+<a id="pushFloatOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushFloatOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushFloatOperand()</pre>
+</li>
+</ul>
+<a id="pushDoubleOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushDoubleOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushDoubleOperand()</pre>
+</li>
+</ul>
+<a id="pushNullOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushNullOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushNullOperand()</pre>
+</li>
+</ul>
+<a id="pushUninitializedThisOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushUninitializedThisOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushUninitializedThisOperand()</pre>
+</li>
+</ul>
+<a id="pushUninitializedOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushUninitializedOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushUninitializedOperand()</pre>
+</li>
+</ul>
+<a id="pushObjectOperand(java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushObjectOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushObjectOperand&#8203;(java.lang.String&nbsp;fieldDescriptor)</pre>
+</li>
+</ul>
+<a id="pushOperand(org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>pushOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;pushOperand&#8203;(<a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a>&nbsp;topOperand)</pre>
+</li>
+</ul>
+<a id="peekNullOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>peekNullOperand</h4>
+<pre class="methodSignature">public&nbsp;boolean&nbsp;peekNullOperand()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Whether the top operand is a <code>null_variable_info</code></dd>
+</dl>
+</li>
+</ul>
+<a id="peekObjectOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>peekObjectOperand</h4>
+<pre class="methodSignature">public&nbsp;boolean&nbsp;peekObjectOperand()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Whether the top operand is a <code>object_variable_info</code></dd>
+</dl>
+</li>
+</ul>
+<a id="peekOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>peekOperand</h4>
+<pre class="methodSignature">public&nbsp;<a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a>&nbsp;peekOperand()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The verification type of the top operand</dd>
+</dl>
+</li>
+</ul>
+<a id="popOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popOperand</h4>
+<pre class="methodSignature">public&nbsp;<a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a>&nbsp;popOperand()</pre>
+<div class="block">Pops one entry from the current inserter's operand stack.</div>
+</li>
+</ul>
+<a id="popOperand(org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;popOperand&#8203;(<a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a>&nbsp;expected)</pre>
+<div class="block">Pops the top entry from the operand stack and assert that it equals <var>expected</var>.</div>
+</li>
+</ul>
+<a id="popOperand(java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;popOperand&#8203;(java.lang.String&nbsp;expectedFd)</pre>
+<div class="block">Pops the top operand, asserts that it is an <code>integer_variable_info</code>, <code>long_variable_info</code>, <code>
+ float_variable_info</code>, <code>double_variable_info</code> or <code>variable_object_info</code>, and asserts that it matches
+ the given field descriptor.</div>
+</li>
+</ul>
+<a id="popOperandAssignableTo(java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popOperandAssignableTo</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;popOperandAssignableTo&#8203;(java.lang.String&nbsp;declaredFd)</pre>
+</li>
+</ul>
+<a id="popIntOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popIntOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;popIntOperand()</pre>
+<div class="block">Asserts that the top operand is an <code>integer_variable_info</code> and pops it.</div>
+</li>
+</ul>
+<a id="popLongOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popLongOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;popLongOperand()</pre>
+<div class="block">Asserts that the top operand is a <code>long_variable_info</code> and pops it.</div>
+</li>
+</ul>
+<a id="popUninitializedThisOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popUninitializedThisOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;popUninitializedThisOperand()</pre>
+<div class="block">Asserts that the top operand is an <code>uninitializedThis_variable_info</code> and pops it.</div>
+</li>
+</ul>
+<a id="popUninitializedVariableOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popUninitializedVariableOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;popUninitializedVariableOperand()</pre>
+<div class="block">Asserts that the top operand is an <code>uninitialized_variable_info</code> and pops it.</div>
+</li>
+</ul>
+<a id="popReferenceOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popReferenceOperand</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;popReferenceOperand()</pre>
+<div class="block">Asserts that the top operand is an <code>object_variable_info</code> or a <code>null_variable_info</code> and pops it.</div>
+</li>
+</ul>
+<a id="popObjectOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popObjectOperand</h4>
+<pre class="methodSignature">public&nbsp;java.lang.String&nbsp;popObjectOperand()</pre>
+<div class="block">Asserts that the top operand is an <code>object_variable_info</code>, and pops it.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The field descriptor of the popped object operand</dd>
+</dl>
+</li>
+</ul>
+<a id="popObjectOrUninitializedOrUninitializedThisOperand()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>popObjectOrUninitializedOrUninitializedThisOperand</h4>
+<pre class="methodSignature">public&nbsp;<a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a>&nbsp;popObjectOrUninitializedOrUninitializedThisOperand()</pre>
+<div class="block">Asserts that the top operand is an <code>object_variable_info</code>, <code>uninitialized_variable_info</code> or
+ <code>uninitializedThis_variable_info</code>, and pops it.</div>
+</li>
+</ul>
+<a id="popIntOrLongOperand()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>popIntOrLongOperand</h4>
+<pre class="methodSignature">public&nbsp;<a href="util/ClassFile.StackMapTableAttribute.VerificationTypeInfo.html" title="interface in org.codehaus.janino.util">ClassFile.StackMapTableAttribute.VerificationTypeInfo</a>&nbsp;popIntOrLongOperand()</pre>
+<div class="block">Asserts that the top operand is an <code>int_variable_info</code> or <code>long_variable_info</code>, then pops and
+ returns it.</div>
 </li>
 </ul>
 </li>

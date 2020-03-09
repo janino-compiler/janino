@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6};
+var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -250,6 +250,11 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <td class="colLast">
 <div class="block">Reads, scans, parses and compiles Java tokens from the named file with the given <var>encoding</var>.</div>
 </td>
+</tr>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>java.util.Map&lt;java.lang.String,&#8203;byte[]&gt;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getBytecodes()">getBytecodes</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -481,7 +486,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <a id="cookFile(java.lang.String,java.lang.String)">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>cookFile</h4>
 <pre class="methodSignature">void&nbsp;cookFile&#8203;(java.lang.String&nbsp;fileName,
@@ -494,6 +499,21 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 <dd><code>java.io.IOException</code></dd>
+</dl>
+</li>
+</ul>
+<a id="getBytecodes()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getBytecodes</h4>
+<pre class="methodSignature">java.util.Map&lt;java.lang.String,&#8203;byte[]&gt;&nbsp;getBytecodes()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The generated Java bytecode; maps class name to bytes</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.IllegalStateException</code> - This IClassBodyEvaluator is not yet cooked</dd>
 </dl>
 </li>
 </ul>

@@ -27,7 +27,7 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":38,"i10":6,"i11":38,"i12":6,"i13":6};
+var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":38,"i9":6,"i10":38,"i11":6,"i12":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -248,28 +248,23 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.util.Map&lt;java.lang.String,&#8203;byte[]&gt;</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getBytecodes()">getBytecodes</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.Class&lt;?&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getClazz()">getClazz</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getDefaultImports()">getDefaultImports</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setClassName(java.lang.String)">setClassName</a></span>&#8203;(java.lang.String&nbsp;className)</code></th>
 <td class="colLast">
 <div class="block">Sets the name of the generated class.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">setCompileErrorHandler</a></span>&#8203;(<a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;compileErrorHandler)</code></th>
 <td class="colLast">
@@ -277,7 +272,7 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
  <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a>.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setDebuggingInformation(boolean,boolean,boolean)">setDebuggingInformation</a></span>&#8203;(boolean&nbsp;debugSource,
                        boolean&nbsp;debugLines,
@@ -286,7 +281,7 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
 <div class="block">Determines what kind of debugging information is included in the generates classes.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setDefaultImports(java.lang.String...)">setDefaultImports</a></span>&#8203;(java.lang.String...&nbsp;defaultImports)</code></th>
 <td class="colLast">
@@ -294,14 +289,14 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
  default imports without having to explicitly declare IMPORT statements.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setExtendedClass(java.lang.Class)">setExtendedClass</a></span>&#8203;(java.lang.Class&lt;?&gt;&nbsp;extendedClass)</code></th>
 <td class="colLast">
 <div class="block">Sets a particular superclass that the generated class will extend.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setExtendedType(java.lang.Class)">setExtendedType</a></span>&#8203;(java.lang.Class&lt;?&gt;&nbsp;extendedClass)</code></th>
 <td class="colLast">
@@ -310,14 +305,14 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
 </div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setImplementedInterfaces(java.lang.Class%5B%5D)">setImplementedInterfaces</a></span>&#8203;(java.lang.Class&lt;?&gt;[]&nbsp;implementedInterfaces)</code></th>
 <td class="colLast">
 <div class="block">Sets a particular set of interfaces that the generated class will implement.</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setImplementedTypes(java.lang.Class%5B%5D)">setImplementedTypes</a></span>&#8203;(java.lang.Class&lt;?&gt;[]&nbsp;implementedInterfaces)</code></th>
 <td class="colLast">
@@ -326,14 +321,14 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
 </div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setParentClassLoader(java.lang.ClassLoader)">setParentClassLoader</a></span>&#8203;(java.lang.ClassLoader&nbsp;parentClassLoader)</code></th>
 <td class="colLast">
 <div class="block">The "parent class loader" is used to load referenced classes.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setWarningHandler(org.codehaus.commons.compiler.WarningHandler)">setWarningHandler</a></span>&#8203;(<a href="WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;warningHandler)</code></th>
 <td class="colLast">
@@ -346,7 +341,7 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
 <!--   -->
 </a>
 <h3>Methods inherited from interface&nbsp;org.codehaus.commons.compiler.<a href="ICookable.html" title="interface in org.codehaus.commons.compiler">ICookable</a></h3>
-<code><a href="ICookable.html#cook(java.io.InputStream)">cook</a>, <a href="ICookable.html#cook(java.io.InputStream,java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.io.Reader)">cook</a>, <a href="ICookable.html#cook(java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.InputStream)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.InputStream,java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.Reader)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.lang.String)">cook</a>, <a href="ICookable.html#cookFile(java.io.File)">cookFile</a>, <a href="ICookable.html#cookFile(java.io.File,java.lang.String)">cookFile</a>, <a href="ICookable.html#cookFile(java.lang.String)">cookFile</a>, <a href="ICookable.html#cookFile(java.lang.String,java.lang.String)">cookFile</a></code></li>
+<code><a href="ICookable.html#cook(java.io.InputStream)">cook</a>, <a href="ICookable.html#cook(java.io.InputStream,java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.io.Reader)">cook</a>, <a href="ICookable.html#cook(java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.InputStream)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.InputStream,java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.Reader)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.lang.String)">cook</a>, <a href="ICookable.html#cookFile(java.io.File)">cookFile</a>, <a href="ICookable.html#cookFile(java.io.File,java.lang.String)">cookFile</a>, <a href="ICookable.html#cookFile(java.lang.String)">cookFile</a>, <a href="ICookable.html#cookFile(java.lang.String,java.lang.String)">cookFile</a>, <a href="ICookable.html#getBytecodes()">getBytecodes</a></code></li>
 </ul>
 </li>
 </ul>
@@ -586,21 +581,6 @@ void&nbsp;setImplementedTypes&#8203;(java.lang.Class&lt;?&gt;[]&nbsp;implemented
 <dd>The generated <code>Class</code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.IllegalStateException</code> - This <a href="IClassBodyEvaluator.html" title="interface in org.codehaus.commons.compiler"><code>IClassBodyEvaluator</code></a> is not yet cooked</dd>
-</dl>
-</li>
-</ul>
-<a id="getBytecodes()">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>getBytecodes</h4>
-<pre class="methodSignature">java.util.Map&lt;java.lang.String,&#8203;byte[]&gt;&nbsp;getBytecodes()</pre>
-<dl>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>The generated Java bytecode; maps class name to bytes</dd>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.IllegalStateException</code> - This IClassBodyEvaluator is not yet cooked</dd>
 </dl>
 </li>
 </ul>
