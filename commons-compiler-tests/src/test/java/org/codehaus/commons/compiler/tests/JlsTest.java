@@ -1859,7 +1859,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_9_5__Anonymous_Class_Declarations() throws Exception {
+    test_15_9_5a__Anonymous_Class_Declarations() throws Exception {
 
         this.assertCompilationUnitMainExecutable((
             ""
@@ -1870,6 +1870,11 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         ), "Foo");
+    }
+
+    @Test public void
+    test_15_9_5b__Anonymous_Class_Declarations() throws Exception {
+
         this.assertCompilationUnitMainExecutable((
             ""
             + "public class A {\n"
