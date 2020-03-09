@@ -57,8 +57,8 @@
     The {@link org.codehaus.janino.Parser org.codehaus.janino.Parser} (abbreviated as "{@code o.c.j.Parser}" in the
     figure above) parses the compilation unit, understands the Java grammar, and creates a tree of objects <em>that
     exactly reflects the contents of the compilation unit</em> (except some irrelevant aspects like
-    (non-JAVADOC) comments and the ordering of access flags). The classes names of the objects of the syntax tree are
-    all "{@code org.codehaus.janino.Java.*}".
+    (non-JAVADOC) comments). The classes names of the objects of the syntax tree are all "{@code
+    org.codehaus.janino.Java.*}".
   </p>
   <p>
     Like the {@link org.codehaus.janino.Java.CompilationUnit} structure is a one-to-one representation of the parsed
@@ -165,7 +165,7 @@
                          +----------------------------+
   }</pre>
   <p>
-    An {@code IClass} represents the "outside" of a usable class or interface, which JANINO needs when that class or
+    An {@code IClass} represents the "outer face" of a usable class or interface, which JANINO needs when that class or
     interface is "used".
   </p>
   <p>
@@ -226,7 +226,7 @@ o.c.j.UnitCompiler.resolve()              v                                     
   <h2>Using <em>loaded</em> classes instead of parsing class files</h2>
 
   <p>
-    Typically, to compile a small set of compilation units, <em>many</em> other required classes have to be loaded and
+    Typically, to compile a set of compilation units, <em>many</em> other required classes have to be loaded and
     parsed via the compilation classpath. This costs a considerable amount of time and memory.
   </p>
   <p>
