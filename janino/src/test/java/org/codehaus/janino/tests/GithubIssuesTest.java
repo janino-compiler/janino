@@ -38,12 +38,14 @@ import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
 import org.codehaus.commons.compiler.util.resource.MapResourceCreator;
 import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.ClassLoaderIClassLoader;
+import org.codehaus.janino.CodeContext;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.IClassLoader;
 import org.codehaus.janino.Java;
@@ -53,6 +55,7 @@ import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
+import org.codehaus.janino.ScriptEvaluator;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.util.ClassFile;
@@ -341,6 +344,44 @@ class GithubIssuesTest {
             sb.append("a = " + i + ";\n");
         }
         return sb.toString();
+    }
+
+    @Test public void
+    testIssue119() throws Exception {
+        try {
+            // This only happens when assert is disabled, so we disable it temporary.
+            CodeContext.class.getClassLoader().setClassAssertionStatus(CodeContext.class.getName(), false);
+
+            IScriptEvaluator eval = new ScriptEvaluator();
+            eval.setReturnType(Object.class);
+            eval.cook(
+                ""
+                    + "class A {\n"
+                    + "    private int val1;\n"
+                    + "    private int val2;\n"
+                    + "    public A(int v1, int v2) {\n"
+                    + "         val1 = v1;\n"
+                    + "         val2 = v2;\n"
+                    + "    }\n"
+                    + "    public int getValue1() {\n"
+                    + "        return val1;\n"
+                    + "    }\n"
+                    + "    public int getValue2() {\n"
+                    + "        return val2;\n"
+                    + "    }\n"
+                    + "}\n"
+                    + "Integer a = 1;"
+                    + "Object[] b = new Object[]{\n"
+                    // Technically stack map will be broken while calling constructor, but to force checking
+                    // stack map and make test fail, we leverage ternary operator.
+                    + "a == null ? null : new A(3, 4).getValue1()};\n"
+                    + "return b;"
+            );
+            Object[] ret = (Object[]) eval.evaluate(new Object[]{});
+            Assert.assertEquals(3, ret[0]);
+        } finally {
+            CodeContext.class.getClassLoader().setClassAssertionStatus(CodeContext.class.getName(), false);
+        }
     }
 
     public ClassLoader
