@@ -297,8 +297,10 @@ class CodeContext {
             // Skip the "zeroth" frame.
             Offset frame = this.beginning;
             Offset previousFrame = null;
-            for (; frame.offset == 0; frame = frame.next) {
+            while (frame.offset == 0) {
                 previousFrame = frame;
+                frame = frame.next;
+                assert frame != null;
             }
             assert previousFrame != null;
 

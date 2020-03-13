@@ -296,48 +296,18 @@ class GithubIssuesTest {
             + "        return sb.toString();\n"
             + "    }\n"
             + "}\n"
-            ));
+        ));
 
         ClassLoader classLoader = this.compile(Thread.currentThread().getContextClassLoader(), unit1);
 
         Assert.assertEquals("ABCD", classLoader.loadClass("demo.pkg3.A$$1").getMethod("main").invoke(null));
     }
-//    java.lang.VerifyError: (class: demo/pkg3/A$$1, method: main signature: ()Ljava/lang/String;) Illegal instruction found at offset 18
-//    at java.lang.Class.getDeclaredMethods0(Native Method)
-//    at java.lang.Class.privateGetDeclaredMethods(Class.java:2436)
-//    at java.lang.Class.getMethod0(Class.java:2679)
-//    at java.lang.Class.getMethod(Class.java:1605)
-//    at org.codehaus.janino.tests.GithubIssuesTest.testIssue113(GithubIssuesTest.java:306)
-//    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-//    at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
-//    at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
-//    at java.lang.reflect.Method.invoke(Method.java:597)
-//    at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
-//    at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
-//    at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
-//    at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
-//    at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
-//    at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
-//    at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
-//    at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
-//    at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
-//    at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
-//    at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
-//    at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
-//    at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
-//    at org.eclipse.jdt.internal.junit4.runner.JUnit4TestReference.run(JUnit4TestReference.java:89)
-//    at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:41)
-//    at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:541)
-//    at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:763)
-//    at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:463)
-//    at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:209)
-
 
     private static String
     injectDummyLargeCodeExceedingShort() {
         StringBuilder sb = new StringBuilder();
         sb.append("int a = -1;\n");
-        for (int i = 0 ; i < Short.MAX_VALUE / 3 ; i++) {
+        for (int i = 0; i < Short.MAX_VALUE / 3; i++) {
             sb.append("a = " + i + ";\n");
         }
         return sb.toString();
@@ -379,8 +349,8 @@ class GithubIssuesTest {
 
     public
     class CompileUnit {
-        String                             pkg;
-        String                             mainClassName;
+        private final String               pkg;
+        private final String               mainClassName;
         @Nullable private String           code;
         @Nullable private Supplier<String> genCodeFunc;
 

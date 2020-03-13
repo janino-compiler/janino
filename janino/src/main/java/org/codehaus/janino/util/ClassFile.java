@@ -2643,7 +2643,7 @@ class ClassFile implements Annotatable {
         public static
         class SameLocals1StackItemFrame extends StackMapFrame {
 
-            public final VerificationTypeInfo stack;
+            private final VerificationTypeInfo stack;
 
             public
             SameLocals1StackItemFrame(int offsetDelta, VerificationTypeInfo stack) {
@@ -2662,7 +2662,13 @@ class ClassFile implements Annotatable {
 
             @Override public String
             toString() {
-                return "same_locals_1_stack_item_frame(offsetDelta=" + this.offsetDelta + ", stack=[" + this.stack + "])";
+                return (
+                    "same_locals_1_stack_item_frame(offsetDelta="
+                    + this.offsetDelta
+                    + ", stack=["
+                    + this.stack
+                    + "])"
+                );
             }
         }
 
@@ -2672,7 +2678,7 @@ class ClassFile implements Annotatable {
         public static
         class SameLocals1StackItemFrameExtended extends StackMapFrame {
 
-            public final VerificationTypeInfo stack;
+            private final VerificationTypeInfo stack;
 
             public
             SameLocals1StackItemFrameExtended(int offsetDelta, VerificationTypeInfo stack) {
@@ -2708,7 +2714,7 @@ class ClassFile implements Annotatable {
         public static
         class ChopFrame extends StackMapFrame {
 
-            public final int k;
+            private final int k;
 
             public
             ChopFrame(int offsetDelta, int k) {
@@ -2758,7 +2764,7 @@ class ClassFile implements Annotatable {
         public static
         class AppendFrame extends StackMapFrame {
 
-            public final VerificationTypeInfo[] locals;
+            private final VerificationTypeInfo[] locals;
 
             public
             AppendFrame(int offsetDelta, VerificationTypeInfo[] locals) {
@@ -2790,8 +2796,8 @@ class ClassFile implements Annotatable {
         public static
         class FullFrame extends StackMapFrame {
 
-            public final VerificationTypeInfo[] locals;
-            public final VerificationTypeInfo[] stack;
+            private final VerificationTypeInfo[] locals;
+            private final VerificationTypeInfo[] stack;
 
             public
             FullFrame(int offsetDelta, VerificationTypeInfo[] locals, VerificationTypeInfo[] stack) {
@@ -2976,6 +2982,7 @@ class ClassFile implements Annotatable {
         public static
         class UninitializedVariableInfo implements VerificationTypeInfo {
 
+            /** The code offset where the variable is declared. */
             public short offset;
 
             public UninitializedVariableInfo(short offset) { this.offset = offset; }
