@@ -45,8 +45,14 @@ import org.codehaus.janino.util.ClassFile.AttributeInfo;
 import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
 import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.AppendFrame;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.ChopFrame;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.FullFrame;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.ObjectVariableInfo;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.SameFrame;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.SameFrameExtended;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.SameLocals1StackItemFrame;
+import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.SameLocals1StackItemFrameExtended;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.StackMapFrame;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.UninitializedVariableInfo;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo;
@@ -104,7 +110,7 @@ class CodeContext {
      * Creates an empty "Code" attribute.
      */
     public
-    CodeContext(ClassFile classFile, IClass[] parameterTypes) {
+    CodeContext(ClassFile classFile) {
         this.classFile = classFile;
 
         this.maxStack               = 0;
@@ -288,33 +294,102 @@ class CodeContext {
         // Add the "StackMapTable" attribute.
         {
 
+            // Skip the "zeroth" frame.
+            Offset frame = this.beginning;
+            Offset previousFrame = null;
+            for (; frame.offset == 0; frame = frame.next) {
+                previousFrame = frame;
+            }
+            assert previousFrame != null;
+
             List<StackMapFrame> smfs = new ArrayList<ClassFile.StackMapTableAttribute.StackMapFrame>();
-            {
-                int previousOffset = -1;
-                for (Offset o = this.beginning; o != null && o.offset != this.end.offset; o = o.next) {
+            for (; frame != null && frame.offset != this.end.offset; frame = frame.next) {
 
-                    if (o.offset == 0) continue;
+                // "Padder" is used to insert the padding bytes of the LOOKUPSWITCH instruction; skip it, because
+                // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
+                if (frame instanceof Java.Padder) continue;
 
-                    // "Padder" is used to insert the padding bytes of the LOOKUPSWITCH instruction; skip it, because
-                    // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
-                    if (o instanceof Java.Padder) continue;
+                // "FourByteOffset" is used to write the offsets of the LOOKUPSWITCH instruction. Skip it, because
+                // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
+                if (frame instanceof FourByteOffset) continue;
 
-                    // "FourByteOffset" is used to write the offsets of the LOOKUPSWITCH instruction. Skip it, because
-                    // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
-                    if (o instanceof FourByteOffset) continue;
-
-                    {
-                        Offset next = o.next;
-                        if (next != null && o.offset == next.offset) continue;
-                    }
-
-                    smfs.add(new FullFrame(
-                        o.offset - previousOffset - 1, // offset_delta
-                        o.getStackMap().locals(),      // locals
-                        o.getStackMap().operands()     // stack
-                    ));
-                    previousOffset = o.offset;
+                {
+                    Offset next = frame.next;
+                    if (next != null && frame.offset == next.offset) continue;
                 }
+
+                final int                    offsetDelta               = frame.offset - previousFrame.offset - 1;
+                final VerificationTypeInfo[] frameOperands             = frame.getStackMap().operands();
+                final int                    frameOperandsLength       = frameOperands.length;
+                final VerificationTypeInfo[] frameLocals               = frame.getStackMap().locals();
+                final int                    frameLocalsLength         = frameLocals.length;
+                final VerificationTypeInfo[] previousFrameLocals       = previousFrame.getStackMap().locals();
+                final int                    previousFrameLocalsLength = previousFrameLocals.length;
+                int                          k;
+
+                // Encode the stack map entry delat as "frames", see JVMS11 4.7.4
+                if (
+                    frameOperandsLength == 0
+                    && Arrays.equals(frameLocals, previousFrameLocals)
+                ) {
+                    if (offsetDelta <= 63) {
+                        smfs.add(new SameFrame(offsetDelta));           // same_frame
+                    } else {
+                        smfs.add(new SameFrameExtended(offsetDelta));   // same_frame_extended
+                    }
+                } else
+
+                if (
+                    frameOperandsLength == 1
+                    && Arrays.equals(frameLocals, previousFrameLocals)
+                ) {
+                    if (offsetDelta <= 63) {
+                        smfs.add(new SameLocals1StackItemFrame(         // same_locals_1_stack_item_frame
+                            offsetDelta,                                //   offset_delta
+                            frameOperands[0]                            //   stack
+                        ));
+                    } else {
+                        smfs.add(new SameLocals1StackItemFrameExtended( // same_locals_1_stack_item_frame_extended
+                            offsetDelta,                                //   offset_delta
+                            frameOperands[0]                            //   stack
+                        ));
+                    }
+                } else
+
+                if (
+                    frameOperandsLength == 0
+                    && (k = previousFrameLocalsLength - frameLocalsLength) >= 1
+                    && k <= 3
+                    && Arrays.equals(frameLocals, Arrays.copyOf(previousFrameLocals, frameLocalsLength))
+                ) {
+                    smfs.add(new ChopFrame(offsetDelta, k));            // chop_frame
+                } else
+
+                if (
+                    frameOperandsLength == 0
+                    && (k = frameLocalsLength - previousFrameLocalsLength) >= 1
+                    && k <= 3
+                    && Arrays.equals(previousFrameLocals, Arrays.copyOf(frameLocals, previousFrameLocalsLength))
+                ) {
+                    smfs.add(new AppendFrame(                           // append_frame
+                        offsetDelta,                                    //   offset_delta
+                        (VerificationTypeInfo[]) Arrays.copyOfRange(    //   locals
+                            frameLocals,
+                            previousFrameLocalsLength,
+                            frameLocalsLength
+                        )
+                    ));
+                } else
+
+                {
+                    smfs.add(new FullFrame(                             // full_frame
+                        offsetDelta,                                    //   offset_delta
+                        frameLocals,                                    //   locals
+                        frameOperands                                   //   stack
+                    ));
+                }
+
+                previousFrame = frame;
             }
 
             attributes.add(

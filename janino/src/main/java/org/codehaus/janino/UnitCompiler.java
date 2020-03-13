@@ -1439,7 +1439,7 @@ class UnitCompiler {
             mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
         }
 
-        final CodeContext codeContext      = new CodeContext(mi.getClassFile(), base.getParameterTypes());
+        final CodeContext codeContext      = new CodeContext(mi.getClassFile());
         final CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
         try {
 
@@ -3304,7 +3304,7 @@ class UnitCompiler {
         }
 
         // Create CodeContext.
-        final CodeContext codeContext = new CodeContext(mi.getClassFile(), new IClass[0]);
+        final CodeContext codeContext = new CodeContext(mi.getClassFile());
 
         CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
         try {

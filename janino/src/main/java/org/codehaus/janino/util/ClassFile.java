@@ -2711,11 +2711,15 @@ class ClassFile implements Annotatable {
             public final int k;
 
             public
-            ChopFrame(int offsetDelta, int k) { super(offsetDelta); this.k = k; }
+            ChopFrame(int offsetDelta, int k) {
+                super(offsetDelta);
+                assert k >= 1 && k <= 3 : k;
+                this.k = k;
+            }
 
             @Override public void
             store(DataOutputStream dos) throws IOException {
-                dos.writeByte(251 - this.k);
+                dos.writeByte(251 - this.k); // k = 3, 2, 1 => frame_type = 248, 249, 250
                 dos.writeShort(this.offsetDelta);
             }
 
@@ -2759,6 +2763,8 @@ class ClassFile implements Annotatable {
             public
             AppendFrame(int offsetDelta, VerificationTypeInfo[] locals) {
                 super(offsetDelta);
+
+                assert locals.length >= 1 && locals.length <= 3;
                 this.locals = locals;
             }
 
@@ -3006,15 +3012,31 @@ class ClassFile implements Annotatable {
                 int frameType = dis.readUnsignedByte();
 
                 StackMapFrame e = (
-                    frameType <= 63 ? new SameFrame(frameType) :
-                    frameType <= 127 ? new SameLocals1StackItemFrame(frameType - 64, StackMapTableAttribute.loadVerificationTypeInfo(dis, classFile)) : // SUPPRESS CHECKSTYLE LineLength:5
+                    frameType <= 63 ? new SameFrame(
+                        frameType // offsetDelta
+                    ) :
+                    frameType <= 127 ? new SameLocals1StackItemFrame(
+                        frameType - 64,                                                 // offsetDelta
+                        StackMapTableAttribute.loadVerificationTypeInfo(dis, classFile) // stack
+                    ) :
                     frameType <= 246 ? null :
-                    frameType == 247 ? new SameLocals1StackItemFrameExtended(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfo(dis, classFile)) :
-                    frameType <= 250 ? new ChopFrame(dis.readUnsignedShort(), 251 - frameType) :
-                    frameType == 251 ? new SameFrameExtended(dis.readUnsignedShort()) :
-                    frameType <= 254 ? new AppendFrame(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfos(dis, frameType - 251, classFile)) :
+                    frameType == 247 ? new SameLocals1StackItemFrameExtended(
+                        dis.readUnsignedShort(),                                        // offsetDelta
+                        StackMapTableAttribute.loadVerificationTypeInfo(dis, classFile) // stack
+                    ) :
+                    frameType <= 250 ? new ChopFrame(
+                        dis.readUnsignedShort(), // offsetDelta
+                        251 - frameType          // k
+                    ) :
+                    frameType == 251 ? new SameFrameExtended(
+                        dis.readUnsignedShort() // offsetDelta
+                    ) :
+                    frameType <= 254 ? new AppendFrame(
+                        dis.readUnsignedShort(),                                                          // offsetDelta
+                        StackMapTableAttribute.loadVerificationTypeInfos(dis, frameType - 251, classFile) // locals
+                    ) :
                     frameType == 255 ? new FullFrame(
-                        dis.readUnsignedShort(),                                                                   // offsetDelta
+                        dis.readUnsignedShort(),                                                                   // offsetDelta SUPPRESS CHECKSTYLE LineLength:2
                         StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort(), classFile), // locals
                         StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort(), classFile)  // stack
                     ) :
