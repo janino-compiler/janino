@@ -38,6 +38,7 @@ import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
+import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
 import org.codehaus.commons.compiler.util.resource.MapResourceCreator;
 import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
@@ -53,6 +54,7 @@ import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
+import org.codehaus.janino.ScriptEvaluator;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.util.ClassFile;
@@ -341,6 +343,46 @@ class GithubIssuesTest {
             sb.append("a = " + i + ";\n");
         }
         return sb.toString();
+    }
+
+    @Test public void
+    testIssue116() throws Exception {
+        IScriptEvaluator eval = new ScriptEvaluator();
+        eval.setReturnType(Object[].class);
+        eval.cook(
+            ""
+                + "class A {\n"
+                + "    private Integer val;\n"
+                + "    public A(Integer v) {\n"
+                + "         val = v;\n"
+                + "    }\n"
+                + "    public boolean isNull() {\n"
+                + "        return val == null;\n"
+                + "    }\n"
+                + "    public int getInt() {\n"
+                + "        return val;\n"
+                + "    }\n"
+                + "}\n"
+                + "A a = new A(3);\n"
+                + "Object[] c = new Object[]{\n"
+                // auto boxing & casting in LHS
+                + "!a.isNull() ? (Object) a.getInt() : null,\n"
+                // auto boxing & no explicit casting in LHS
+                + "!a.isNull() ? a.getInt() : null,\n"
+                // auto boxing & casting in RHS
+                + "a.isNull() ? null : (Object) a.getInt(),\n"
+                // auto boxing & no explicit casting in RHS
+                + "a.isNull() ? null : a.getInt(),\n"
+                // simple casting
+                + "(Object) \"hello\"};\n"
+                + "return c;"
+        );
+        Object[] ret = (Object[]) eval.evaluate(new Object[]{});
+        Assert.assertEquals(3, ret[0]);
+        Assert.assertEquals(3, ret[1]);
+        Assert.assertEquals(3, ret[2]);
+        Assert.assertEquals(3, ret[3]);
+        Assert.assertEquals("hello", ret[4]);
     }
 
     public ClassLoader
