@@ -1,0 +1,22 @@
+os: linux
+dist: trusty
+
+language: java
+
+# TODO: support various openjdk versions
+jdk:
+  - oraclejdk8
+
+# This enables test matrix for 2 properties: enable/disable assertion
+env:
+  - ENABLE_ASSERTION=true
+  - ENABLE_ASSERTION=false
+
+install: 
+  - cd janino-parent
+  # set MAVEN_SKIP_RC to true to ignore default Maven configuration of Travis CI
+  - MAVEN_SKIP_RC=true mvn clean install -DskipTests
+
+script:
+  # set MAVEN_SKIP_RC to true to ignore default Maven configuration of Travis CI
+  - MAVEN_SKIP_RC=true mvn test -DenableAssertions=`echo ${ENABLE_ASSERTION}` -DargLine="-Xss2m -Xmx2g"
