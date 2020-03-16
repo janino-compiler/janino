@@ -201,10 +201,27 @@ class CommonsCompilerTestSuite {
     /**
      * Asserts that the given <var>script</var> can be cooked and executed. The return type of the scipt is {@code
      * void}.
+     * Returns silently if cooking fails with a message that contains{@code "NYI"}.
      */
     protected void
     assertScriptExecutable(String script) throws Exception {
         new ScriptTest(script).assertExecutable();
+    }
+
+    /**
+     * Asserts that the given <var>script</var> can be cooked and executed.
+     *
+     * @return The value returned by the script, or {@code null} if cooking failed with a message that contains
+     *         {@code "NYI"}
+     */
+    protected <T> T
+    assertScriptExecutable(String script, Class<T> returnType) throws Exception {
+
+        final ScriptTest st = new ScriptTest(script);
+        st.scriptEvaluator.setReturnType(returnType);
+
+        @SuppressWarnings("unchecked") final T result = (T) st.assertExecutable();
+        return result;
     }
 
     /**
@@ -477,7 +494,8 @@ class CommonsCompilerTestSuite {
         protected abstract void cook() throws Exception;
 
         /**
-         * @see CompileAndExecuteTest
+         * @return The value produced by the execution
+         * @see    CompileAndExecuteTest
          */
         @Nullable protected abstract Object execute() throws Exception;
 
@@ -590,8 +608,11 @@ class CommonsCompilerTestSuite {
 
         /**
          * Asserts that cooking and executing completes normally.
+         *
+         * @return The value produced by the execution, or {@code null} if cooking failed with a message that contains
+         *         {@code "NYI"}
          */
-        public void
+        public Object
         assertExecutable() throws Exception {
 
             try {
@@ -599,11 +620,11 @@ class CommonsCompilerTestSuite {
             } catch (CompileException ce) {
 
                 // Have mercy with compile exceptions that have "NYI" ("not yet implemented") in their message.
-                if (ce.getMessage().indexOf("NYI") != -1) return;
+                if (ce.getMessage().indexOf("NYI") != -1) return null;
                 throw ce;
             }
 
-            this.execute();
+            return this.execute();
         }
 
         /**
