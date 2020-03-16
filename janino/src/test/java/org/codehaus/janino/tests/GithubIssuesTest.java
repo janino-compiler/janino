@@ -263,4 +263,58 @@ class GithubIssuesTest {
             Assert.assertEquals(3, top.getLineNumber());
         }
     }
+
+    @Test public void
+    testIssue113() throws Exception {
+        CompilationUnit cu = (CompilationUnit) new Parser(new Scanner(
+            "issue113", // This will appear in stack traces as "file name".
+            new StringReader(
+                ""
+                    + "package demo.pkg3;\n"
+                    + "public class A$$1 {\n"
+                    + "    public static String main() {\n"
+                    + "        StringBuilder sb = new StringBuilder();\n"
+                    + "        short b = 1;\n"
+                    + "        for (int i = 0; i < 4; i++) {\n"
+                    + "            ;\n"
+                    + "            switch (i) {\n"
+                    + "                case 0:\n"
+                    + "                    sb.append(\"A\");\n"
+                    + "                    break;\n"
+                    + "                case 1:\n"
+                    + "                    sb.append(\"B\");\n"
+                    + "                    break;\n"
+                    + "                case 2:\n"
+                    + "                    sb.append(\"C\");\n"
+                    + "                    break;\n"
+                    + "                case 3:\n"
+                    + "                    sb.append(\"D\");\n"
+                    + "                    break;\n"
+                    + "            }\n"
+                    + GithubIssuesTest.injectDummyLargeCodeExceedingShort()
+                    + "        }\n"
+                    + "        return sb.toString();\n"
+                    + "    }\n"
+                    + "}\n"
+            )
+        )).parseAbstractCompilationUnit();
+
+        // Compile the code into a ClassLoader.
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.setDebuggingInformation(true, true, true);
+        sc.cook(cu);
+        ClassLoader cl = sc.getClassLoader();
+
+        Assert.assertEquals("ABCD", cl.loadClass("demo.pkg3.A$$1").getMethod("main").invoke(null));
+    }
+
+    private static String
+    injectDummyLargeCodeExceedingShort() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("int a = -1;\n");
+        for (int i = 0 ; i < Short.MAX_VALUE / 3 ; i++) {
+            sb.append("a = " + i + ";\n");
+        }
+        return sb.toString();
+    }
 }
