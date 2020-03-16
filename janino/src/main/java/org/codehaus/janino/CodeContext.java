@@ -1441,7 +1441,8 @@ class CodeContext {
      */
     public void
     popUninitializedVariableOperand() {
-        assert this.popOperand() instanceof StackMapTableAttribute.UninitializedVariableInfo;
+        final VerificationTypeInfo op = this.popOperand();
+        assert op instanceof StackMapTableAttribute.UninitializedVariableInfo;
     }
 
     /**
