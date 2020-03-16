@@ -31,7 +31,7 @@
 
   <groupId>org.codehaus.janino</groupId>
   <packaging>pom</packaging>
-  <version>3.1.2-SNASPSHOT</version>
+  <version>3.1.2-SNAPSHOT</version>
   <dependencyManagement>
   	<dependencies>
   		<dependency>
