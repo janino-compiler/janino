@@ -31,8 +31,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.InternalCompilerException;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Java.AbstractCompilationUnit.ImportDeclaration;
 import org.codehaus.janino.Java.AbstractCompilationUnit.SingleStaticImportDeclaration;
@@ -468,11 +468,11 @@ class DeepCopier {
     copyCompilationUnit(CompilationUnit subject) throws CompileException {
 
         CompilationUnit result = new CompilationUnit(
-            subject.fileName,
+            subject.optionalFileName,
             this.copyImportDeclarations(subject.importDeclarations)
         );
 
-        result.setPackageDeclaration(this.copyOptionalPackageDeclaration(subject.packageDeclaration));
+        result.setPackageDeclaration(this.copyOptionalPackageDeclaration(subject.optionalPackageDeclaration));
 
         for (PackageMemberTypeDeclaration pmtd : subject.packageMemberTypeDeclarations) {
             result.addPackageMemberTypeDeclaration(this.copyPackageMemberTypeDeclaration(pmtd));
@@ -485,7 +485,7 @@ class DeepCopier {
     copyModularCompilationUnit(ModularCompilationUnit subject) throws CompileException {
 
         return new ModularCompilationUnit(
-            subject.fileName,
+            subject.optionalFileName,
             this.copyImportDeclarations(subject.importDeclarations),
             subject.moduleDeclaration
         );
@@ -552,7 +552,7 @@ class DeepCopier {
             this.copyModifiers(subject.getModifiers()),
             subject.name,
             subject.getOptionalTypeParameters(),
-            subject.extendedType,
+            subject.optionalExtendedType,
             this.copyTypes(subject.implementedTypes)
         );
 
@@ -580,7 +580,7 @@ class DeepCopier {
             this.copyModifiers(subject.getModifiers()),
             subject.name,
             this.copyOptionalTypeParameters(subject.getOptionalTypeParameters()),
-            this.copyOptionalType(subject.extendedType),
+            this.copyOptionalType(subject.optionalExtendedType),
             this.copyTypes(subject.implementedTypes)
         );
         for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
@@ -654,7 +654,7 @@ class DeepCopier {
             this.copyModifiers(subject.getModifiers()),
             subject.name,
             this.copyOptionalTypeParameters(subject.getOptionalTypeParameters()),
-            this.copyOptionalType(subject.extendedType),
+            this.copyOptionalType(subject.optionalExtendedType),
             this.copyTypes(subject.implementedTypes)
         );
 
@@ -682,8 +682,8 @@ class DeepCopier {
             this.copyModifiers(subject.getModifiers()),
             this.copyFormalParameters(subject.formalParameters),
             this.copyTypes(subject.thrownExceptions),
-            this.copyOptionalConstructorInvocation(subject.constructorInvocation),
-            this.copyBlockStatements(DeepCopier.assertNotNull(subject.statements))
+            this.copyOptionalConstructorInvocation(subject.optionalConstructorInvocation),
+            this.copyBlockStatements(DeepCopier.assertNotNull(subject.optionalStatements))
         );
     }
 
@@ -703,13 +703,13 @@ class DeepCopier {
             subject.getLocation(),
             subject.getDocComment(),
             this.copyModifiers(subject.getModifiers()),
-            this.copyOptionalTypeParameters(subject.typeParameters),
+            this.copyOptionalTypeParameters(subject.optionalTypeParameters),
             this.copyType(subject.type),
             subject.name,
             this.copyFormalParameters(subject.formalParameters),
             this.copyTypes(subject.thrownExceptions),
             this.copyOptionalElementValue(subject.defaultValue),
-            this.copyOptionalStatements(subject.statements)
+            this.copyOptionalStatements(subject.optionalStatements)
         );
     }
 
@@ -730,7 +730,7 @@ class DeepCopier {
             subject.getLocation(),
             subject.name,
             subject.brackets,
-            this.copyOptionalArrayInitializerOrRvalue(subject.initializer)
+            this.copyOptionalArrayInitializerOrRvalue(subject.optionalInitializer)
         );
     }
 
@@ -765,9 +765,9 @@ class DeepCopier {
     copyForStatement(ForStatement fs) throws CompileException {
         return new ForStatement(
             fs.getLocation(),
-            this.copyOptionalBlockStatement(fs.init),
-            this.copyOptionalRvalue(fs.condition),
-            this.copyOptionalRvalues(fs.update),
+            this.copyOptionalBlockStatement(fs.optionalInit),
+            this.copyOptionalRvalue(fs.optionalCondition),
+            this.copyOptionalRvalues(fs.optionalUpdate),
             this.copyBlockStatement(fs.body)
         );
     }
@@ -860,7 +860,7 @@ class DeepCopier {
 
     public BlockStatement
     copyReturnStatement(ReturnStatement subject) throws CompileException {
-        return new ReturnStatement(subject.getLocation(), this.copyOptionalRvalue(subject.returnValue));
+        return new ReturnStatement(subject.getLocation(), this.copyOptionalRvalue(subject.optionalReturnValue));
     }
 
     public BlockStatement
@@ -870,12 +870,12 @@ class DeepCopier {
 
     public BlockStatement
     copyBreakStatement(BreakStatement subject) throws CompileException {
-        return new BreakStatement(subject.getLocation(), subject.label);
+        return new BreakStatement(subject.getLocation(), subject.optionalLabel);
     }
 
     public BlockStatement
     copyContinueStatement(ContinueStatement subject) throws CompileException {
-        return new ContinueStatement(subject.getLocation(), subject.label);
+        return new ContinueStatement(subject.getLocation(), subject.optionalLabel);
     }
 
     public BlockStatement
@@ -883,7 +883,7 @@ class DeepCopier {
         return new AssertStatement(
             subject.getLocation(),
             this.copyRvalue(subject.expression1),
-            this.copyOptionalRvalue(subject.expression2)
+            this.copyOptionalRvalue(subject.optionalExpression2)
         );
     }
 
@@ -974,7 +974,7 @@ class DeepCopier {
     copyMethodInvocation(MethodInvocation subject) throws CompileException {
         return new MethodInvocation(
             subject.getLocation(),
-            this.copyOptionalAtom(subject.target),
+            this.copyOptionalAtom(subject.optionalTarget),
             subject.methodName,
             this.copyRvalues(subject.arguments)
         );
@@ -1026,7 +1026,7 @@ class DeepCopier {
     copyNewAnonymousClassInstance(NewAnonymousClassInstance subject) throws CompileException {
         return new NewAnonymousClassInstance(
             subject.getLocation(),
-            this.copyOptionalRvalue(subject.qualification),
+            this.copyOptionalRvalue(subject.optionalQualification),
             this.copyAnonymousClassDeclaration(subject.anonymousClassDeclaration),
             this.copyRvalues(subject.arguments)
         );
@@ -1075,13 +1075,13 @@ class DeepCopier {
             subject.type != null
             ? new NewClassInstance(
                 subject.getLocation(),
-                this.copyOptionalRvalue(subject.qualification),
+                this.copyOptionalRvalue(subject.optionalQualification),
                 this.copyType(DeepCopier.assertNotNull(subject.type)),
                 this.copyRvalues(subject.arguments)
             )
             : new NewClassInstance(
                 subject.getLocation(),
-                this.copyOptionalRvalue(subject.qualification),
+                this.copyOptionalRvalue(subject.optionalQualification),
                 DeepCopier.assertNotNull(subject.iClass),
                 this.copyRvalues(subject.arguments)
             )
@@ -1141,7 +1141,7 @@ class DeepCopier {
             subject.getLocation(),
             this.copyAnnotations(subject.annotations),
             subject.identifiers,
-            this.copyOptionalTypeArguments(subject.typeArguments)
+            this.copyOptionalTypeArguments(subject.optionalTypeArguments)
         );
     }
 
@@ -1162,7 +1162,7 @@ class DeepCopier {
     copySuperConstructorInvocation(SuperConstructorInvocation subject) throws CompileException {
         return new SuperConstructorInvocation(
             subject.getLocation(),
-            this.copyOptionalRvalue(subject.qualification),
+            this.copyOptionalRvalue(subject.optionalQualification),
             this.copyRvalues(subject.arguments)
         );
     }
@@ -1195,7 +1195,7 @@ class DeepCopier {
     copySuperclassFieldAccessExpression(SuperclassFieldAccessExpression subject) throws CompileException {
         return new SuperclassFieldAccessExpression(
             subject.getLocation(),
-            this.copyOptionalType(subject.qualification),
+            this.copyOptionalType(subject.optionalQualification),
             subject.fieldName
         );
     }
@@ -1271,10 +1271,10 @@ class DeepCopier {
 
         EnumConstant result = new EnumConstant(
             subject.getLocation(),
-            subject.docComment,
+            subject.optionalDocComment,
             this.copyModifiers(subject.getModifiers()),
             subject.name,
-            this.copyOptionalRvalues(subject.arguments)
+            this.copyOptionalRvalues(subject.optionalArguments)
         );
 
         for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
@@ -1416,7 +1416,7 @@ class DeepCopier {
 
     public TypeParameter
     copyTypeParameter(TypeParameter subject) throws CompileException {
-        return new TypeParameter(subject.name, this.copyOptionalReferenceTypes(subject.bound));
+        return new TypeParameter(subject.name, this.copyOptionalReferenceTypes(subject.optionalBound));
     }
 
     // -----------------------------------

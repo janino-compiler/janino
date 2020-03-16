@@ -23,9 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Utility functionality related to {@code java.util.reflect}.
- */
 @NotNullByDefault
 package org.codehaus.commons.compiler.util.reflect;
 

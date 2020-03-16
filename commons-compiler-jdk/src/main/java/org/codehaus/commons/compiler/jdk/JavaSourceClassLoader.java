@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -28,7 +29,6 @@ package org.codehaus.commons.compiler.jdk;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,40 +47,28 @@ import javax.tools.ToolProvider;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
-import org.codehaus.commons.compiler.jdk.util.JavaFileManagers;
-import org.codehaus.commons.compiler.jdk.util.JavaFileObjects.ByteArrayJavaFileObject;
-import org.codehaus.commons.compiler.lang.ClassLoaders;
+import org.codehaus.commons.compiler.jdk.ByteArrayJavaFileManager.ByteArrayJavaFileObject;
 import org.codehaus.commons.compiler.util.Disassembler;
-import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
-import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
-import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link ClassLoader} that loads classes by looking for their source files through a "source path" and compiling
+ * A {@link ClassLoader} that loads classes by looking for their source files through a 'source path' and compiling
  * them on-the-fly.
- * <p>
- *   Notice that this class loader does not support resoures in the sense of {@link ClassLoader#getResource(String)},
- *   {@link ClassLoader#getResourceAsStream(String)} nd {@link ClassLoader#getResources(String)}.
- * </p>
- *
- * @see ClassLoaders
  */
 public
 class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
     private static final JavaCompiler SYSTEM_JAVA_COMPILER = JavaSourceClassLoader.getSystemJavaCompiler();
 
-    private ResourceFinder     sourceFinder   = new DirectoryResourceFinder(new File("."));
-    private Charset            sourceCharset  = Charset.defaultCharset();
+    private File[]             sourcePath = { new File(".") };
+    @Nullable private String   optionalCharacterEncoding;
     private boolean            debuggingInfoLines;
     private boolean            debuggingInfoVars;
     private boolean            debuggingInfoSource;
     private Collection<String> compilerOptions = new ArrayList<String>();
 
     @Nullable private JavaFileManager fileManager;
-
 
     /**
      * @see ICompilerFactory#newJavaSourceClassLoader()
@@ -125,30 +113,29 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         // CLASSPATH.
         JavaFileManager jfm = JavaSourceClassLoader.SYSTEM_JAVA_COMPILER.getStandardFileManager(null, null, null);
 
-        // Wrap it so that the output files (in our case .class files) are stored in memory rather
+        // Wrap it so that the output files (in our case class files) are stored in memory rather
         // than in files.
-        jfm = JavaFileManagers.inMemory(jfm, Charset.defaultCharset());
+        jfm = new ByteArrayJavaFileManager<JavaFileManager>(jfm);
 
         // Wrap it in a file manager that finds source files through the source path.
-        jfm = JavaFileManagers.fromResourceFinder(
+        jfm = new FileInputJavaFileManager(
             jfm,
             StandardLocation.SOURCE_PATH,
             Kind.SOURCE,
-            this.sourceFinder,
-            this.sourceCharset
+            this.sourcePath,
+            this.optionalCharacterEncoding
         );
 
         return (this.fileManager = jfm);
     }
 
     @Override public void
-    setSourcePath(File[] sourcePath) { this.setSourceFinder(new PathResourceFinder(sourcePath)); }
+    setSourcePath(File[] sourcePath) { this.sourcePath = sourcePath; }
 
     @Override public void
-    setSourceFinder(ResourceFinder sourceFinder) { this.sourceFinder = sourceFinder; }
-
-    @Override public void
-    setSourceCharset(Charset charset) { this.sourceCharset = charset; }
+    setSourceFileCharacterEncoding(@Nullable String optionalCharacterEncoding) {
+        this.optionalCharacterEncoding = optionalCharacterEncoding;
+    }
 
     @Override public void
     setDebuggingInfo(boolean lines, boolean vars, boolean source) {
@@ -185,14 +172,14 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private Class<?>
     findClass2(String className) throws IOException {
 
-        // Find or generate the .class file.
         JavaFileObject classFileObject = this.findClassFile(className);
 
         // Load the .class file into memory.
         byte[] ba;
         int    size;
         if (classFileObject instanceof ByteArrayJavaFileObject) {
-            ba   = ((ByteArrayJavaFileObject) classFileObject).toByteArray();
+            ByteArrayJavaFileObject bajfo = (ByteArrayJavaFileObject) classFileObject;
+            ba   = bajfo.toByteArray();
             size = ba.length;
         } else
         {
@@ -220,8 +207,8 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
         // Invoke "ClassLoader.defineClass()", as the ClassLoader API requires.
         return this.defineClass(className, ba, 0, size, (
-            this.protectionDomainFactory != null
-            ? this.protectionDomainFactory.getProtectionDomain(
+            this.optionalProtectionDomainFactory != null
+            ? this.optionalProtectionDomainFactory.getProtectionDomain(
                 JavaSourceClassLoader.getSourceResourceName(className)
             )
             : null
@@ -327,10 +314,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         return className.replace('.', '/') + ".java";
     }
 
-    /**
-     * Container for a {@link Diagnostic} object.
-     */
-    public static
+    private static
     class DiagnosticException extends RuntimeException {
 
         private static final long serialVersionUID = 5589635876875819926L;

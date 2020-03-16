@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -32,40 +33,28 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.codehaus.commons.compiler.AbstractCompiler;
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICompiler;
-import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
-import org.codehaus.commons.compiler.java9.java.lang.module.ModuleFinder;
-import org.codehaus.commons.compiler.java9.java.lang.module.ModuleReference;
-import org.codehaus.commons.compiler.util.Benchmark;
-import org.codehaus.commons.compiler.util.StringPattern;
-import org.codehaus.commons.compiler.util.StringUtil;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.FileResource;
 import org.codehaus.commons.compiler.util.resource.FileResourceCreator;
-import org.codehaus.commons.compiler.util.resource.JarDirectoriesResourceFinder;
-import org.codehaus.commons.compiler.util.resource.MultiResourceFinder;
-import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.util.Benchmark;
 import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.StringPattern;
 
 /**
  * JANINO implementation of {@link ICompiler}.
@@ -75,12 +64,18 @@ class Compiler extends AbstractCompiler {
 
     private static final Logger LOGGER = Logger.getLogger(Compiler.class.getName());
 
-    private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
-
+    private ResourceFinder            sourceFinder     = ResourceFinder.EMPTY_RESOURCE_FINDER;
+    @Nullable private ResourceFinder  classFileFinder  = ICompiler.FIND_NEXT_TO_SOURCE_FILE;
     private IClassLoader              iClassLoader     = new ClassLoaderIClassLoader();
-    private Benchmark                 benchmark        = new Benchmark(false);
-
-    { this.updateIClassLoader(); }
+    @Nullable private ResourceCreator classFileCreator = ICompiler.CREATE_NEXT_TO_SOURCE_FILE;
+    @Nullable private Charset         encoding;
+    private Benchmark                 benchmark = new Benchmark(false);
+    private boolean                   debugSource;
+    private boolean                   debugLines;
+    private boolean                   debugVars;
+    @Nullable private WarningHandler  warningHandler;
+    @Nullable private ErrorHandler    compileErrorHandler;
+    private EnumSet<JaninoOption>     options = EnumSet.noneOf(JaninoOption.class);
 
     // Compile time state:
 
@@ -95,7 +90,6 @@ class Compiler extends AbstractCompiler {
     /** @deprecated Use {@link #Compiler()} and the various configuration setters instead */
     @Deprecated public
     Compiler(ResourceFinder sourceFinder, IClassLoader parentIClassLoader) {
-        this();
         this.setSourceFinder(sourceFinder);
         this.setIClassLoader(parentIClassLoader);
     }
@@ -120,7 +114,7 @@ class Compiler extends AbstractCompiler {
         this.setClassPath(classPath);
         this.setExtensionDirectories((File[]) Compiler.nullToEmptyArray(extDirs, File.class));
         this.setBootClassPath((File[]) Compiler.nullToEmptyArray(bootClassPath, File.class));
-        this.setDestinationDirectory(destinationDirectory, rebuild);
+        this.setDestinationDirectory(destinationDirectory);
         this.setCharacterEncoding(characterEncoding);
         this.setVerbose(verbose);
         this.setDebugSource(debugSource);
@@ -192,6 +186,35 @@ class Compiler extends AbstractCompiler {
     public static final StringPattern[] DEFAULT_WARNING_HANDLE_PATTERNS = StringPattern.PATTERNS_NONE;
 
     /**
+     * Installs a custom {@link ErrorHandler}. The default {@link ErrorHandler} prints the first 20 compile errors to
+     * {@link System#err} and then throws a {@link CompileException}.
+     * <p>
+     *   Passing {@code null} restores the default {@link ErrorHandler}.
+     * </p>
+     * <p>
+     *   Notice that scan and parse errors are <em>not</em> redirected to this {@link ErrorHandler}, instead, they
+     *   cause a {@link CompileException} to be thrown. Also, the {@link Compiler} may choose to throw {@link
+     *   CompileException}s in certain, fatal compile error situations, even if an {@link ErrorHandler} is installed.
+     * </p>
+     * <p>
+     *   In other words: In situations where compilation can reasonably continue after a compile error, the {@link
+     *   ErrorHandler} is called; all other error conditions cause a {@link CompileException} to be thrown.
+     * </p>
+     */
+    @Override public void
+    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
+        this.compileErrorHandler = compileErrorHandler;
+    }
+
+    /**
+     * By default, warnings are discarded, but an application my install a custom {@link WarningHandler}.
+     *
+     * @param warningHandler {@code null} to indicate that no warnings be issued
+     */
+    @Override public void
+    setWarningHandler(@Nullable WarningHandler warningHandler) { this.warningHandler = warningHandler; }
+
+    /**
      * @return A reference to the currently effective compilation options; changes to it take
      *         effect immediately
      */
@@ -227,7 +250,7 @@ class Compiler extends AbstractCompiler {
                     this.parseAbstractCompilationUnit(
                         sourceResource.getFileName(),                   // fileName
                         new BufferedInputStream(sourceResource.open()), // inputStream
-                        this.sourceCharset                              // charset
+                        this.encoding                                   // encoding
                     ),
                     iClassLoader
                 );
@@ -246,8 +269,8 @@ class Compiler extends AbstractCompiler {
                 File sourceFile;
                 {
                     Java.AbstractCompilationUnit acu = unitCompiler.getAbstractCompilationUnit();
-                    if (acu.fileName == null) throw new InternalCompilerException();
-                    sourceFile = new File(acu.fileName);
+                    if (acu.optionalFileName == null) throw new InternalCompilerException();
+                    sourceFile = new File(acu.optionalFileName);
                 }
 
                 unitCompiler.setCompileErrorHandler(this.compileErrorHandler);
@@ -292,13 +315,16 @@ class Compiler extends AbstractCompiler {
      */
     private Java.AbstractCompilationUnit
     parseAbstractCompilationUnit(
-        String      fileName,
-        InputStream inputStream,
-        Charset     charset
+        String            fileName,
+        InputStream       inputStream,
+        @Nullable Charset encoding
     ) throws CompileException, IOException {
         try {
 
-            Scanner scanner = new Scanner(fileName, new InputStreamReader(inputStream, charset));
+            Scanner scanner = new Scanner(
+                fileName,
+                new InputStreamReader(inputStream, encoding != null ? encoding : Charset.defaultCharset())
+            );
 
             Parser parser = new Parser(scanner);
             parser.setWarningHandler(this.warningHandler);
@@ -394,112 +420,40 @@ class Compiler extends AbstractCompiler {
         }
     }
 
-    /**
-     * Loads "auxiliary classes", typically from BOOTCLASSPATH + EXTDIR + CLASSPATH (but <em>not</em> from the
-     * "destination directory"!).
-     */
-    public void
+    @Override public void
     setIClassLoader(IClassLoader iClassLoader) { this.iClassLoader = iClassLoader; }
+
+    @Override public void
+    setClassFileFinder(@Nullable ResourceFinder classFileFinder) { this.classFileFinder = classFileFinder; }
+
+    /**
+     * @param classFileCreator Stores the generated class files (a.k.a. "-d"); special value {@link
+     *                         #CREATE_NEXT_TO_SOURCE_FILE} means "create each .class file in the same directory as
+     *                         its source file"
+     */
+    @Override public void
+    setClassFileCreator(@Nullable ResourceCreator classFileCreator) { this.classFileCreator = classFileCreator; }
+
+    @Override public void
+    setEncoding(@Nullable Charset encoding) { this.encoding = encoding; }
+
+    @Override public void
+    setCharacterEncoding(@Nullable String characterEncoding) { this.setEncoding(Charset.forName(characterEncoding)); }
+
+    @Override public void
+    setDebugLines(boolean value) { this.debugLines = value; }
+
+    @Override public void
+    setDebugVars(boolean value) { this.debugVars = value; }
+
+    @Override public void
+    setDebugSource(boolean value) { this.debugSource = value; }
 
     @Override public void
     setVerbose(boolean verbose) { this.benchmark = new Benchmark(verbose); }
 
     @Override public void
-    setBootClassPath(File[] directoriesAndArchives) {
-        super.setBootClassPath(directoriesAndArchives);
-        this.updateIClassLoader();
-    }
-
-    @Override public void
-    setExtensionDirectories(File[] directories) {
-        super.setExtensionDirectories(directories);
-        this.updateIClassLoader();
-    }
-
-    @Override public void
-    setClassPath(File[] directoriesAndArchives) {
-        super.setClassPath(directoriesAndArchives);
-        this.updateIClassLoader();
-    }
-
-    private void
-    updateIClassLoader() {
-
-        ResourceFinder classPathResourceFinder;
-
-        File[] bcp = this.bootClassPath;
-
-        if (bcp == null) {
-            String sbcp = System.getProperty("sun.boot.class.path");
-            if (sbcp != null) {
-                this.bootClassPath = (bcp = StringUtil.parsePath(sbcp));
-            }
-        }
-
-        if (bcp != null) {
-
-            // JVM 1.0-1.8; BOOTCLASSPATH supported:
-            classPathResourceFinder = new MultiResourceFinder(Arrays.asList(
-                new PathResourceFinder(bcp),
-                new JarDirectoriesResourceFinder(this.extensionDirectories),
-                new PathResourceFinder(this.classPath)
-            ));
-        } else {
-
-            // JVM 9+: "Modules" replace the BOOTCLASSPATH:
-            URL r = ClassLoader.getSystemClassLoader().getResource("java/lang/Object.class");
-            assert r != null;
-
-            assert "jrt".equalsIgnoreCase(r.getProtocol()) : r.toString();
-
-            ResourceFinder rf = new ResourceFinder() {
-
-                @Override @Nullable public Resource
-                findResource(final String resourceName) {
-
-                    try {
-                        final Set<ModuleReference> mrs = ModuleFinder.ofSystem().findAll();
-
-                        for (final ModuleReference mr : mrs) {
-                            final URI           moduleContentLocation = (URI) mr.location().get();
-                            final URL           classFileUrl          = new URL(moduleContentLocation + "/" + resourceName); // SUPPRESS CHECKSTYLE LineLength
-                            final URLConnection uc                    = classFileUrl.openConnection();
-                            try {
-                                uc.connect();
-                                return new Resource() {
-
-                                    @Override public InputStream
-                                    open() throws IOException {
-                                        try {
-                                            return uc.getInputStream();
-                                        } catch (IOException ioe) {
-                                            throw new IOException(moduleContentLocation + ", " + resourceName, ioe);
-                                        }
-                                    }
-
-                                    @Override public String getFileName()  { return resourceName;         }
-                                    @Override public long   lastModified() { return uc.getLastModified(); }
-                                };
-                            } catch (IOException ioe) {
-                                ;
-                            }
-                        }
-                        return null;
-                    } catch (Exception e) {
-                        throw new AssertionError(e);
-                    }
-                }
-            };
-
-            classPathResourceFinder = new MultiResourceFinder(Arrays.asList(
-                rf,
-                new JarDirectoriesResourceFinder(this.extensionDirectories),
-                new PathResourceFinder(this.classPath)
-            ));
-        }
-
-        this.setIClassLoader(new ResourceFinderIClassLoader(classPathResourceFinder, null));
-    }
+    setSourceFinder(ResourceFinder sourceFinder) { this.sourceFinder = sourceFinder; }
 
     /**
      * A specialized {@link IClassLoader} that loads {@link IClass}es from the following sources:
@@ -554,29 +508,25 @@ class Compiler extends AbstractCompiler {
             // Do not attempt to load classes from package "java".
             if (className.startsWith("java.")) return null;
 
-            // Determine the name of the top-level class. E.g. "pkg.$Outer$Inner" => "pkg.$Outer".
-            for (
-                int idx = className.indexOf('$', className.lastIndexOf('.') + 2);;
-                idx = className.indexOf('$', idx + 2)
-            ) {
+            // Determine the name of the top-level class.
+            String topLevelClassName;
+            {
+                int idx = className.indexOf('$');
+                topLevelClassName = idx == -1 ? className : className.substring(0, idx);
+            }
 
-                String topLevelClassName = idx == -1 ? className : className.substring(0, idx);
-
-                // Check the already-parsed compilation units.
-                for (int i = 0; i < Compiler.this.parsedCompilationUnits.size(); ++i) {
-                    UnitCompiler uc  = (UnitCompiler) Compiler.this.parsedCompilationUnits.get(i);
-                    IClass       res = uc.findClass(topLevelClassName);
-                    if (res != null) {
-                        if (!className.equals(topLevelClassName)) {
-                            res = uc.findClass(className);
-                            if (res == null) return null;
-                        }
-                        this.defineIClass(res);
-                        return res;
+            // Check the already-parsed compilation units.
+            for (int i = 0; i < Compiler.this.parsedCompilationUnits.size(); ++i) {
+                UnitCompiler uc  = (UnitCompiler) Compiler.this.parsedCompilationUnits.get(i);
+                IClass       res = uc.findClass(topLevelClassName);
+                if (res != null) {
+                    if (!className.equals(topLevelClassName)) {
+                        res = uc.findClass(className);
+                        if (res == null) return null;
                     }
+                    this.defineIClass(res);
+                    return res;
                 }
-
-                if (idx == -1) break;
             }
 
             // Search source path for uncompiled class.
@@ -630,7 +580,7 @@ class Compiler extends AbstractCompiler {
                 Java.AbstractCompilationUnit acu = Compiler.this.parseAbstractCompilationUnit(
                     sourceResource.getFileName(),                   // fileName
                     new BufferedInputStream(sourceResource.open()), // inputStream
-                    Compiler.this.sourceCharset                     // charset
+                    Compiler.this.encoding
                 );
                 uc = new UnitCompiler(acu, this).options(Compiler.this.options);
             } catch (IOException ex) {

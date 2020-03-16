@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -29,24 +30,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 
 /**
  * Representation of a resource that is a {@link java.io.File}.
  */
 public
-class FileResource implements LocatableResource {
-
+class FileResource implements Resource {
     public FileResource(File file) { this.file = file; }
-
-    // Implement "LocatableResource".
-
-    @Override public URL
-    getLocation() throws IOException { return this.file.toURI().toURL(); }
 
     // Implement "Resource".
     @Override public final String      getFileName()             { return this.file.toString();           }
-
     @Override public final InputStream open() throws IOException { return new FileInputStream(this.file); }
     @Override public final long        lastModified()            { return this.file.lastModified();       }
 

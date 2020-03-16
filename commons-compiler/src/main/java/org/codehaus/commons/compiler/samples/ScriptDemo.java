@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -40,11 +41,11 @@ class ScriptDemo extends DemoBase {
     public static void
     main(String[] args) throws Exception {
 
-        Class<?>   returnType       = void.class;
-        String[]   parameterNames   = {};
-        Class<?>[] parameterTypes   = {};
-        Class<?>[] thrownExceptions = {};
-        String[]   defaultImports   = {};
+        Class<?>   returnType             = void.class;
+        String[]   parameterNames         = {};
+        Class<?>[] parameterTypes         = {};
+        Class<?>[] thrownExceptions       = {};
+        String[]   optionalDefaultImports = null;
 
         int i;
         for (i = 0; i < args.length; ++i) {
@@ -63,7 +64,7 @@ class ScriptDemo extends DemoBase {
                 thrownExceptions = DemoBase.stringToTypes(args[++i]);
             } else
             if ("-di".equals(arg)) {
-                defaultImports = DemoBase.explode(args[++i]);
+                optionalDefaultImports = DemoBase.explode(args[++i]);
             } else
            if ("-help".equals(arg)) {
                System.err.println("Usage:");
@@ -110,7 +111,7 @@ class ScriptDemo extends DemoBase {
         // Create "ScriptEvaluator" object.
         IScriptEvaluator se = CompilerFactoryFactory.getDefaultCompilerFactory().newScriptEvaluator();
         se.setReturnType(returnType);
-        se.setDefaultImports(defaultImports);
+        se.setDefaultImports(optionalDefaultImports);
         se.setParameters(parameterNames, parameterTypes);
         se.setThrownExceptions(thrownExceptions);
         se.cook(script);

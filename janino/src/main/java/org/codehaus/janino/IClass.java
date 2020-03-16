@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -112,26 +113,24 @@ class IClass {
 
         PrimitiveIClass(String fieldDescriptor) { this.fieldDescriptor = fieldDescriptor; }
 
-        @Override @Nullable protected IClass getComponentType2()         { return null;                 }
-        @Override protected IClass[]         getDeclaredIClasses2()      { return new IClass[0];        }
-        @Override protected IConstructor[]   getDeclaredIConstructors2() { return new IConstructor[0];  }
-        @Override protected IField[]         getDeclaredIFields2()       { return new IField[0];        }
-        @Override protected IMethod[]        getDeclaredIMethods2()      { return new IMethod[0];       }
-        @Override @Nullable protected IClass getDeclaringIClass2()       { return null;                 }
-        @Override protected String           getDescriptor2()            { return this.fieldDescriptor; }
-        @Override protected IClass[]         getInterfaces2()            { return new IClass[0];        }
-        @Override @Nullable protected IClass getOuterIClass2()           { return null;                 }
-        @Override @Nullable protected IClass getSuperclass2()            { return null;                 }
-        @Override public boolean             isAbstract()                { return false;                }
-        @Override public boolean             isArray()                   { return false;                }
-        @Override public boolean             isFinal()                   { return true;                 }
-        @Override public boolean             isEnum()                    { return false;                }
-        @Override public boolean             isInterface()               { return false;                }
-        @Override public boolean             isPrimitive()               { return true;                 }
-        @Override public Access              getAccess()                 { return Access.PUBLIC;        }
-
-        @Override public boolean
-        isPrimitiveNumeric() { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); }
+        @Override @Nullable protected IClass getComponentType2()         { return null;                                                } // SUPPRESS CHECKSTYLE LineLength:17
+        @Override protected IClass[]         getDeclaredIClasses2()      { return new IClass[0];                                       }
+        @Override protected IConstructor[]   getDeclaredIConstructors2() { return new IConstructor[0];                                 }
+        @Override protected IField[]         getDeclaredIFields2()       { return new IField[0];                                       }
+        @Override protected IMethod[]        getDeclaredIMethods2()      { return new IMethod[0];                                      }
+        @Override @Nullable protected IClass getDeclaringIClass2()       { return null;                                                }
+        @Override protected String           getDescriptor2()            { return this.fieldDescriptor;                                }
+        @Override protected IClass[]         getInterfaces2()            { return new IClass[0];                                       }
+        @Override @Nullable protected IClass getOuterIClass2()           { return null;                                                }
+        @Override @Nullable protected IClass getSuperclass2()            { return null;                                                }
+        @Override public boolean             isAbstract()                { return false;                                               }
+        @Override public boolean             isArray()                   { return false;                                               }
+        @Override public boolean             isFinal()                   { return true;                                                }
+        @Override public boolean             isEnum()                    { return false;                                               }
+        @Override public boolean             isInterface()               { return false;                                               }
+        @Override public boolean             isPrimitive()               { return true;                                                }
+        @Override public boolean             isPrimitiveNumeric()        { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); }
+        @Override public Access              getAccess()                 { return Access.PUBLIC;                                       }
     }
 
     /**
@@ -597,7 +596,7 @@ class IClass {
     @Override public String
     toString() {
         String className = Descriptor.toClassName(this.getDescriptor());
-        if (className.startsWith("java.lang.") && className.indexOf('.', 10) == -1) className = className.substring(10);
+        if (className.startsWith("java.lang.")) className = className.substring(10);
         return className;
     }
 
@@ -779,32 +778,33 @@ class IClass {
                 };
             }
 
-            @Override public IClass.IField[]  getDeclaredIFields2()  { return new IClass.IField[0];                }
-            @Override public IClass[]         getDeclaredIClasses2() { return new IClass[0];                       }
-            @Override @Nullable public IClass getDeclaringIClass2()  { return null;                                }
-            @Override @Nullable public IClass getOuterIClass2()      { return null;                                }
-            @Override public IClass           getSuperclass2()       { return objectType;                          }
-            @Override public IClass[]         getInterfaces2()       { return new IClass[0];                       }
-            @Override public String           getDescriptor2()       { return '[' + componentType.getDescriptor(); }
-            @Override public Access           getAccess()            { return componentType.getAccess();           }
-            @Override public boolean          isFinal()              { return true;                                }
-            @Override public boolean          isEnum()               { return false;                               }
-            @Override public boolean          isInterface()          { return false;                               }
-            @Override public boolean          isAbstract()           { return false;                               }
-            @Override public boolean          isArray()              { return true;                                }
-            @Override public boolean          isPrimitive()          { return false;                               }
-            @Override public boolean          isPrimitiveNumeric()   { return false;                               }
-            @Override public IClass           getComponentType2()    { return componentType;                       }
+            // SUPPRESS CHECKSTYLE LineLength:16
+            @Override public IClass.IField[]       getDeclaredIFields2()  { return new IClass.IField[0];                }
+            @Override public IClass[]              getDeclaredIClasses2() { return new IClass[0];                       }
+            @Override @Nullable public IClass      getDeclaringIClass2()  { return null;                                }
+            @Override @Nullable public IClass      getOuterIClass2()      { return null;                                }
+            @Override public IClass                getSuperclass2()       { return objectType;                          }
+            @Override public IClass[]              getInterfaces2()       { return new IClass[0];                       }
+            @Override public String                getDescriptor2()       { return '[' + componentType.getDescriptor(); }
+            @Override public Access                getAccess()            { return componentType.getAccess();           }
+            @Override public boolean               isFinal()              { return true;                                }
+            @Override public boolean               isEnum()               { return false;                               }
+            @Override public boolean               isInterface()          { return false;                               }
+            @Override public boolean               isAbstract()           { return false;                               }
+            @Override public boolean               isArray()              { return true;                                }
+            @Override public boolean               isPrimitive()          { return false;                               }
+            @Override public boolean               isPrimitiveNumeric()   { return false;                               }
+            @Override public IClass                getComponentType2()    { return componentType;                       }
 
             @Override public String toString() { return componentType.toString() + "[]"; }
         };
     }
 
     /**
-     * If <var>name</var> is {@code null}, finds all {@link IClass}es visible in the scope of the current
+     * If <var>optionalName</var> is {@code null}, finds all {@link IClass}es visible in the scope of the current
      * class.
      * <p>
-     *   If <var>name</var> is not {@code null}, finds the member {@link IClass}es that has the given name. If
+     *   If <var>optionalName</var> is not {@code null}, finds the member {@link IClass}es that has the given name. If
      *   the name is ambiguous (i.e. if more than one superclass, interface of enclosing type declares a type with that
      *   name), then the size of the returned array is greater than one.
      * </p>
@@ -815,17 +815,17 @@ class IClass {
      * @return an array of {@link IClass}es in unspecified order, possibly of length zero
      */
     IClass[]
-    findMemberType(@Nullable String name) throws CompileException {
-        IClass[] res = (IClass[]) this.memberTypeCache.get(name);
+    findMemberType(@Nullable String optionalName) throws CompileException {
+        IClass[] res = (IClass[]) this.memberTypeCache.get(optionalName);
         if (res == null) {
 
             // Notice: A type may be added multiply to the result set because we are in its scope
             // multiply. E.g. the type is a member of a superclass AND a member of an enclosing type.
             Set<IClass> s = new HashSet<IClass>();
-            this.findMemberType(name, s);
+            this.findMemberType(optionalName, s);
             res = s.isEmpty() ? IClass.ZERO_ICLASSES : (IClass[]) s.toArray(new IClass[s.size()]);
 
-            this.memberTypeCache.put(name, res);
+            this.memberTypeCache.put(optionalName, res);
         }
 
         return res;
@@ -833,17 +833,17 @@ class IClass {
     private final Map<String /*name*/, IClass[]> memberTypeCache = new HashMap<String, IClass[]>();
     private static final IClass[]                ZERO_ICLASSES   = new IClass[0];
     private void
-    findMemberType(@Nullable String name, Collection<IClass> result) throws CompileException {
+    findMemberType(@Nullable String optionalName, Collection<IClass> result) throws CompileException {
 
         // Search for a type with the given name in the current class.
         IClass[] memberTypes = this.getDeclaredIClasses();
-        if (name == null) {
+        if (optionalName == null) {
             result.addAll(Arrays.asList(memberTypes));
         } else {
             String memberDescriptor = Descriptor.fromClassName(
                 Descriptor.toClassName(this.getDescriptor())
                 + '$'
-                + name
+                + optionalName
             );
             for (final IClass mt : memberTypes) {
                 if (mt.getDescriptor().equals(memberDescriptor)) {
@@ -856,21 +856,21 @@ class IClass {
         // Examine superclass.
         {
             IClass superclass = this.getSuperclass();
-            if (superclass != null) superclass.findMemberType(name, result);
+            if (superclass != null) superclass.findMemberType(optionalName, result);
         }
 
         // Examine interfaces.
-        for (IClass i : this.getInterfaces()) i.findMemberType(name, result);
+        for (IClass i : this.getInterfaces()) i.findMemberType(optionalName, result);
 
         // Examine enclosing type declarations.
         {
             IClass declaringIClass = this.getDeclaringIClass();
             IClass outerIClass     = this.getOuterIClass();
             if (declaringIClass != null) {
-                declaringIClass.findMemberType(name, result);
+                declaringIClass.findMemberType(optionalName, result);
             }
             if (outerIClass != null && outerIClass != declaringIClass) {
-                outerIClass.findMemberType(name, result);
+                outerIClass.findMemberType(optionalName, result);
             }
         }
     }
@@ -1014,14 +1014,14 @@ class IClass {
             IClass.LOGGER.entering(null, "isMoreSpecificThan", that);
 
             // a variable-length argument is always less specific than a fixed arity.
-            final boolean thatIsVarargs;
+            final boolean thatIsVararg;
 
-            if ((thatIsVarargs = that.isVarargs()) != this.isVarargs()) {
+            if ((thatIsVararg = that.isVarargs()) != this.isVarargs()) {
 
                 // Only one of the two is varargs.
-                return thatIsVarargs;
+                return thatIsVararg;
             } else
-            if (thatIsVarargs) {
+            if (thatIsVararg) {
 
                 // Both are varargs.
                 final IClass[] thisParameterTypes = this.getParameterTypes();

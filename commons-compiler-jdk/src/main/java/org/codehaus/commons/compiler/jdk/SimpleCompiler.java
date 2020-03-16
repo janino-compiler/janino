@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -32,11 +33,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.AccessController;
+import java.security.Permissions;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +53,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.FileObject;
@@ -67,13 +72,10 @@ import org.codehaus.commons.compiler.Cookable;
 import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.Sandbox;
 import org.codehaus.commons.compiler.WarningHandler;
-import org.codehaus.commons.compiler.io.InputStreams;
-import org.codehaus.commons.compiler.io.Readers;
-import org.codehaus.commons.compiler.jdk.util.ClassLoaders;
-import org.codehaus.commons.compiler.jdk.util.JavaFileObjects;
-import org.codehaus.commons.compiler.util.LineAndColumnTracker;
-import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
+import org.codehaus.commons.io.LineAndColumnTracker;
+import org.codehaus.commons.io.Readers;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -83,14 +85,14 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
-    private ClassLoader              parentClassLoader = Thread.currentThread().getContextClassLoader();
-    private boolean                  debugSource;
-    private boolean                  debugLines;
-    private boolean                  debugVars;
-    @Nullable private ErrorHandler   compileErrorHandler;
-    @Nullable private WarningHandler warningHandler;
-
-    @Nullable Map<String, byte[]> bytecodes;
+    private ClassLoader               parentClassLoader = Thread.currentThread().getContextClassLoader();
+    @Nullable private ClassLoader     result;
+    private boolean                   debugSource;
+    private boolean                   debugLines;
+    private boolean                   debugVars;
+    @Nullable private ErrorHandler    optionalCompileErrorHandler;
+    @Nullable private WarningHandler  optionalWarningHandler;
+    @Nullable private Permissions     permissions;
 
     // See "addOffset(String)".
     private final LineAndColumnTracker tracker = LineAndColumnTracker.create();
@@ -106,44 +108,26 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         }
     });
 
-    @Override public Map<String /*className*/, byte[] /*bytes*/>
-    getBytecodes() { return this.assertCooked(); }
-
-    private Map<String /*className*/, byte[] /*bytes*/>
-    assertCooked() {
-
-        Map<String /*className*/, byte[] /*bytes*/> result = this.bytecodes;
-        if (result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
-
-        return result;
-    }
-
+    /**
+     * @throws IllegalStateException This {@link Cookable} is not yet cooked
+     */
     @Override public ClassLoader
     getClassLoader() {
 
-        ClassLoader result = this.getClassLoaderCache;
-        if (result != null) return result;
+        ClassLoader cl = this.result;
+        if (cl == null) throw new IllegalStateException("Not yet cooked");
 
-        final Map<String, byte[]> bytecode = this.getBytecodes();
-
-        // Create a ClassLoader that loads the generated classes.
-        result = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-
-            @Override public ClassLoader
-            run() {
-                return new ByteArrayClassLoader(
-                    bytecode,                             // classes
-                    SimpleCompiler.this.parentClassLoader // parent
-                );
-            }
-        });
-
-        return (this.getClassLoaderCache = result);
+        return cl;
     }
-    @Nullable private ClassLoader getClassLoaderCache;
 
     @Override public void
-    cook(@Nullable final String fileName, Reader r) throws CompileException, IOException {
+    setPermissions(Permissions permissions) { this.permissions = permissions;  }
+
+    @Override public void
+    setNoPermissions() { this.setPermissions(new Permissions()); }
+
+    @Override public void
+    cook(@Nullable final String optionalFileName, Reader r) throws CompileException, IOException {
 
         // Reset the "offsets" and the line-and-column-tracker; see "addOffset(String)".
         this.tracker.reset();
@@ -162,7 +146,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
             // Must read source code in advance so that "openReader()" and "getCharContent()" are idempotent. If they
             // are not, then "diagnostic.get(Line|Column)Number()" will return wrong results.
-            final String text = Readers.readAll(r);
+            final String text = Cookable.readString(r);
 
             compilationUnit = new SimpleJavaFileObject(uri, Kind.SOURCE) {
 
@@ -199,7 +183,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 assert diagnostic != null;
 
                 Location loc = new Location(
-                    fileName,
+                    optionalFileName,
                     (short) diagnostic.getLineNumber(),
                     (short) diagnostic.getColumnNumber()
                 );
@@ -225,14 +209,14 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                     switch (diagnostic.getKind()) {
 
                     case ERROR:
-                        ErrorHandler oceh = SimpleCompiler.this.compileErrorHandler;
+                        ErrorHandler oceh = SimpleCompiler.this.optionalCompileErrorHandler;
                         if (oceh == null) throw new CompileException(message, loc);
                         oceh.handleError(message, loc);
                         break;
 
                     case MANDATORY_WARNING:
                     case WARNING:
-                        WarningHandler owh = SimpleCompiler.this.warningHandler;
+                        WarningHandler owh = SimpleCompiler.this.optionalWarningHandler;
                         if (owh != null) owh.handleWarning(null, message, loc);
                         break;
 
@@ -249,13 +233,15 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
         // Set up a JavaFileManager that reads .class files through the this.parentClassLoader, and stores .class
         // files in byte arrays
-        final Map<String /*className*/, JavaFileObject> classFiles = new HashMap<String, JavaFileObject>();
         final JavaFileManager
         fileManager = new ForwardingJavaFileManager<JavaFileManager>(
             ToolProvider
             .getSystemJavaCompiler()
             .getStandardFileManager(dl, Locale.US, Charset.forName("UTF-8"))
         ) {
+
+            @NotNullByDefault(false) @Override public ClassLoader
+            getClassLoader(JavaFileManager.Location location) { return /*null*/super.getClassLoader(location); }
 
             @NotNullByDefault(false) @Override public Iterable<JavaFileObject>
             list(JavaFileManager.Location location, String packageName, Set<Kind> kinds, boolean recurse)
@@ -280,7 +266,42 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
                     if (!name.endsWith(".class")) continue;
 
-                    result.add(JavaFileObjects.fromUrl(url, name, Kind.CLASS));
+                    final URI subresourceUri;
+                    try {
+                        subresourceUri = url.toURI();
+                    } catch (URISyntaxException use) {
+                        throw new AssertionError(use);
+                    }
+
+                    // Cannot use "javax.tools.SimpleJavaFileObject" here, because that requires a URI with a "path".
+                    result.add(new JavaFileObject() {
+
+                        @Override public URI
+                        toUri() { return subresourceUri; }
+
+                        @Override public String
+                        getName() { return name; }
+
+                        @Override public InputStream
+                        openInputStream() throws IOException { return url.openStream(); }
+
+                        @Override public Kind
+                        getKind() { return Kind.CLASS; }
+
+                        // SUPPRESS CHECKSTYLE LineLength:9
+                        @Override public OutputStream openOutputStream()                             { throw new UnsupportedOperationException(); }
+                        @Override public Reader       openReader(boolean ignoreEncodingErrors)       { throw new UnsupportedOperationException(); }
+                        @Override public CharSequence getCharContent(boolean ignoreEncodingErrors)   { throw new UnsupportedOperationException(); }
+                        @Override public Writer       openWriter()                                   { throw new UnsupportedOperationException(); }
+                        @Override public long         getLastModified()                              { throw new UnsupportedOperationException(); }
+                        @Override public boolean      delete()                                       { throw new UnsupportedOperationException(); }
+                        @Override public boolean      isNameCompatible(String simpleName, Kind kind) { throw new UnsupportedOperationException(); }
+                        @Override public NestingKind  getNestingKind()                               { throw new UnsupportedOperationException(); }
+                        @Override public Modifier     getAccessLevel()                               { throw new UnsupportedOperationException(); }
+
+                        @Override public String
+                        toString() { return name + " from " + this.getClass().getSimpleName(); }
+                    });
                 }
 
                 return result;
@@ -297,11 +318,13 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             throws IOException {
 
                 if (location == StandardLocation.CLASS_OUTPUT) {
-                    return classFiles.get(className);
+                    return this.classFiles.get(className);
                 }
 
                 return super.getJavaFileForInput(location, className, kind);
             }
+
+            Map<String /*className*/, JavaFileObject> classFiles = new HashMap<String, JavaFileObject>();
 
             @NotNullByDefault(false) @Override public JavaFileObject
             getJavaFileForOutput(
@@ -331,7 +354,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                     openInputStream() throws IOException { return new ByteArrayInputStream(this.buffer.toByteArray()); }
                 };
 
-                classFiles.put(className, fileObject);
+                this.classFiles.put(className, fileObject);
 
                 return fileObject;
             }
@@ -375,25 +398,17 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             fileManager.close();
         }
 
-        // Fill "this.bytecodes" from the JavaFileManager.
-        Map<String /*className*/, byte[] /*bytes*/> bytecodes = new HashMap<String /*className*/, byte[] /*bytes*/>();
-        for (Entry<String, JavaFileObject> e : classFiles.entrySet()) {
-            String         className = e.getKey();
-            JavaFileObject jfo       = e.getValue();
+        // Create a ClassLoader that reads class files from our FM.
+        ClassLoader cl = AccessController.doPrivileged(new PrivilegedAction<JavaFileManagerClassLoader>() {
 
-            byte[] bytes;
+            @Override public JavaFileManagerClassLoader
+            run() { return new JavaFileManagerClassLoader(fileManager, SimpleCompiler.this.parentClassLoader); }
+        });
 
-            final InputStream is = jfo.openInputStream();
-            try {
-                bytes = InputStreams.readAll(is);
-            } finally {
-                try { is.close(); } catch (Exception ex) {}
-            }
+        // Apply any configured permissions.
+        if (this.permissions != null) Sandbox.confine(cl, this.permissions);
 
-            bytecodes.put(className, bytes);
-        }
-
-        this.bytecodes = bytecodes;
+        this.result = cl;
     }
 
     @Override public void
@@ -404,10 +419,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     }
 
     @Override public void
-    setParentClassLoader(@Nullable ClassLoader parentClassLoader) {
+    setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader) {
         this.parentClassLoader = (
-            parentClassLoader != null
-            ? parentClassLoader
+            optionalParentClassLoader != null
+            ? optionalParentClassLoader
             : Thread.currentThread().getContextClassLoader()
         );
     }
@@ -416,18 +431,18 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @deprecated Auxiliary classes never really worked... don't use them.
      */
     @Deprecated public void
-    setParentClassLoader(@Nullable ClassLoader parentClassLoader, Class<?>[] auxiliaryClasses) {
-        this.setParentClassLoader(parentClassLoader);
+    setParentClassLoader(@Nullable ClassLoader optionalParentClassLoader, Class<?>[] auxiliaryClasses) {
+        this.setParentClassLoader(optionalParentClassLoader);
     }
 
     @Override public void
-    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
-        this.compileErrorHandler = compileErrorHandler;
+    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
+        this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
     @Override public void
-    setWarningHandler(@Nullable WarningHandler warningHandler) {
-        this.warningHandler = warningHandler;
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
+        this.optionalWarningHandler = optionalWarningHandler;
     }
 
     /**
@@ -435,11 +450,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * character, and also changes the "file name" (see {@link #cook(String, Reader)}).
      */
     protected void
-    addOffset(@Nullable String fileName) {
+    addOffset(@Nullable String optionalFileName) {
 
         LineAndColumnTracker t = this.tracker;
         assert t != null;
 
-        this.offsets.add(new Location(fileName, t.getLineNumber(), t.getColumnNumber()));
+        this.offsets.add(new Location(optionalFileName, t.getLineNumber(), t.getColumnNumber()));
     }
 }

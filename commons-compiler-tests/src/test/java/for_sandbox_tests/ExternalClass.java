@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -32,7 +33,7 @@ public
 class ExternalClass extends BaseOfExternalClass implements InterfaceOfExternalClass {
     public final OtherExternalClass x = new OtherExternalClass();
 
-    public static int                                            m1()                      { return OtherExternalClass.m1(); } // SUPPRESS CHECKSTYLE LineLength:2
-    @SuppressWarnings("static-method") public OtherExternalClass m2()                      { return null; }
-    public void                                                  m2(OtherExternalClass fc) {}
+    public static int         m1()                      { return OtherExternalClass.m1(); }
+    public OtherExternalClass m2()                      { return null; }
+    public void               m2(OtherExternalClass fc) {}
 }

@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2013 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -24,7 +25,7 @@
  */
 
 /**
- * Sample applications for the Janino Java compiler.
+ * Sample applications for the Janino Java<sup>TM</sup> compiler.
  */
 @NotNullByDefault
 package org.codehaus.janino.samples;

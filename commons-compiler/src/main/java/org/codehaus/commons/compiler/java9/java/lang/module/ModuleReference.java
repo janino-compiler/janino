@@ -51,12 +51,12 @@ class ModuleReference {
     public
     ModuleReference(/*java.lang.module.ModuleReference*/ Object delegate) { this.delegate = delegate; }
 
-    public Optional<URI> // SUPPRESS CHECKSTYLE Javadoc
+    public Optional<URI>
     location() {
         return new Optional<URI>(Methods.<URI, NoException>invoke(ModuleReference.METHOD_location, this.delegate));
     }
 
-    public ModuleReader // SUPPRESS CHECKSTYLE Javadoc|Alignment
+    public ModuleReader
     open() throws IOException {
         return new ModuleReader(Methods.<Object, IOException>invoke(ModuleReference.METHOD_open, this.delegate));
     }

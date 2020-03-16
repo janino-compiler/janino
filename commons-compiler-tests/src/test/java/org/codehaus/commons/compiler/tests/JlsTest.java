@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2019 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -1090,7 +1091,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // SUPPRESS CHECKSTYLE LineLength:5
         this.assertScriptExecutable("assert true;");
-        this.assertScriptReturnsTrue("try { assert false;                  } catch (AssertionError ae) { return true;                          } return false;");
+        Assert.assertNull(this.assertScriptExecutable("try { assert false; } catch (AssertionError ae) { return ae.getMessage();       } return \"nope\";", String.class));
         this.assertScriptReturnsTrue("try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
         this.assertScriptReturnsTrue("try { assert false : 3;              } catch (AssertionError ae) { return \"3\".equals(ae.getMessage()); } return false;");
         this.assertScriptReturnsTrue("try { assert false : new Integer(8); } catch (AssertionError ae) { return \"8\".equals(ae.getMessage()); } return false;");
@@ -1859,7 +1860,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_9_5a__Anonymous_Class_Declarations() throws Exception {
+    test_15_9_5__Anonymous_Class_Declarations() throws Exception {
 
         this.assertCompilationUnitMainExecutable((
             ""
@@ -1870,11 +1871,6 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         ), "Foo");
-    }
-
-    @Test public void
-    test_15_9_5b__Anonymous_Class_Declarations() throws Exception {
-
         this.assertCompilationUnitMainExecutable((
             ""
             + "public class A {\n"
@@ -1885,19 +1881,6 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         ), "A");
-    }
-
-    /**
-     * Notice: In JLS2 and JLS7, this section had number "15.3" (which, since JLS8, is the number for section "Method
-     * Reference Expressions"). Since JLS8 it has number "15.10.3".
-     */
-    @Test public void
-    test_15_10_3__Array_Access_Expressions() throws Exception {
-        this.assertExpressionCookable("(new int[3])[(byte) 0]");
-        this.assertExpressionCookable("(new int[3])[(char) 0]");
-        this.assertExpressionCookable("(new int[3])[(short) 0]");
-        this.assertExpressionCookable("(new int[3])[0]");
-        this.assertExpressionUncookable("(new int[3])[0L]");
     }
 
     @Test public void
@@ -2082,7 +2065,8 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_15_13__Method_reference_expressions() throws Exception {
 
-        if (CommonsCompilerTestSuite.JVM_VERSION < 9) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 9) return;
+        if (this.isJanino)                                          return;
 
         // ExpressionName '::' [ TypeArguments ] Identifier  (ExpressionName = a{.b})
         this.assertScriptExecutable(
@@ -2588,7 +2572,7 @@ class JlsTest extends CommonsCompilerTestSuite {
      * 15.25 Conditional Operator ? :
      */
     @Test public void
-    test_15_25__Conditional_operator__1() throws Exception {
+    test_15_25__Conditional_operator() throws Exception {
 
         this.assertExpressionEvaluatesTrue("99 == (true ? 99 : -1)");
         this.assertExpressionEvaluatesTrue("-1 == (false ? 99 : -1)");
@@ -2685,44 +2669,6 @@ class JlsTest extends CommonsCompilerTestSuite {
     public static class D3 extends C1 implements I1, I2 { @Override public void i1() {} @Override public void i2() {} }
     public static class D4 extends C1 implements I1, I2 { @Override public void i1() {} @Override public void i2() {} } // SUPPRESS CHECKSTYLE Align|LineLength
 
-    @Test public void
-    test_15_25__Conditional_operator__2() throws Exception {
-//        IScriptEvaluator eval = new ScriptEvaluator();
-//        eval.setReturnType(Object[].class);
-        String script = (
-            ""
-            + "class A {\n"
-            + "    private Integer val;\n"
-            + "    public A(Integer v) {\n"
-            + "         val = v;\n"
-            + "    }\n"
-            + "    public boolean isNull() {\n"
-            + "        return val == null;\n"
-            + "    }\n"
-            + "    public int getInt() {\n"
-            + "        return val;\n"
-            + "    }\n"
-            + "}\n"
-            + "A a = new A(3);\n"
-            + "Object[] c = new Object[] {\n"
-            + "    !a.isNull() ? (Object) a.getInt() : null,\n" // auto boxing & casting in LHS
-            + "    !a.isNull() ? a.getInt() : null,\n"          // auto boxing & no explicit casting in LHS
-            + "    a.isNull() ? null : (Object) a.getInt(),\n"  // auto boxing & casting in RHS
-            + "    a.isNull() ? null : a.getInt(),\n"           // auto boxing & no explicit casting in RHS
-            + "    (Object) \"hello\",\n"                       // simple casting
-            + "};\n"
-            + "return c;"
-        );
-        final Object[] result = (Object[]) this.assertScriptExecutable(script, Object[].class);
-        Assert.assertArrayEquals(new Object[] {
-            3,
-            3,
-            3,
-            3,
-            "hello",
-        }, result);
-    }
-
     /**
      * 15.26 Assignment Operators
      */
@@ -2747,9 +2693,15 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_15_27_1__Lambda_parameters() throws Exception {
 
-        // "java.util.Function" only since Java 10.
-        if (CommonsCompilerTestSuite.JVM_VERSION < 10) return;
+        // "java.util.Function" only since Java 8
+        try {
+            ClassLoader.getSystemClassLoader().loadClass("java.util.function.Function");
+        } catch (ClassNotFoundException cnfe) {
+            return;
+        }
 
-        this.assertScriptExecutable("java.util.function.Function<String, Integer> f = (var s) -> s.length();\n");
+        String script = "java.util.function.Function<String, Integer> f = (var s) -> s.length();\n";
+        if (this.isJanino)                                            this.assertScriptUncookable(script, "NYI");
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 11) this.assertScriptExecutable(script);
     }
 }

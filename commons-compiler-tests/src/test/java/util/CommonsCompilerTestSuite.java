@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -154,7 +155,7 @@ class CommonsCompilerTestSuite {
         @Override @Nullable protected Object
         execute() throws Exception {
             try {
-                return this.expressionEvaluator.evaluate();
+                return this.expressionEvaluator.evaluate(new Object[0]);
             } catch (InvocationTargetException ite) {
                 Throwable te = ite.getTargetException();
                 throw te instanceof Exception ? (Exception) te : ite;
@@ -201,7 +202,6 @@ class CommonsCompilerTestSuite {
     /**
      * Asserts that the given <var>script</var> can be cooked and executed. The return type of the scipt is {@code
      * void}.
-     * Returns silently if cooking fails with a message that contains{@code "NYI"}.
      */
     protected void
     assertScriptExecutable(String script) throws Exception {
@@ -211,16 +211,16 @@ class CommonsCompilerTestSuite {
     /**
      * Asserts that the given <var>script</var> can be cooked and executed.
      *
-     * @return The value returned by the script, or {@code null} if cooking failed with a message that contains
-     *         {@code "NYI"}
+     * @param returnType The return type of the script
+     * @return           The return value of the script execution
      */
-    protected <T> T
+    @Nullable protected <T> T
     assertScriptExecutable(String script, Class<T> returnType) throws Exception {
 
-        final ScriptTest st = new ScriptTest(script);
+        ScriptTest st = new ScriptTest(script);
         st.scriptEvaluator.setReturnType(returnType);
 
-        @SuppressWarnings("unchecked") final T result = (T) st.assertExecutable();
+        @SuppressWarnings("unchecked") T result = (T) st.assertExecutable();
         return result;
     }
 
@@ -255,6 +255,15 @@ class CommonsCompilerTestSuite {
         assertResultNull() throws Exception {
             this.scriptEvaluator.setReturnType(Object.class);
             super.assertResultNull();
+        }
+
+        @Override @Nullable public <T> T
+        assertExecutable(Class<T> returnType) throws Exception {
+
+            this.scriptEvaluator.setReturnType(returnType);
+
+            @SuppressWarnings("unchecked") T result = (T) super.assertExecutable();
+            return result;
         }
 
         @Override protected void
@@ -350,7 +359,7 @@ class CommonsCompilerTestSuite {
             this.classBodyEvaluator.getClazz().getClassLoader().setDefaultAssertionStatus(true);
         }
 
-        @Override @Nullable protected Object
+        @Override protected Object
         execute() throws Exception {
             try {
                 Class<?> cbeClass   = this.classBodyEvaluator.getClazz();
@@ -450,7 +459,7 @@ class CommonsCompilerTestSuite {
             this.simpleCompiler.getClassLoader().setDefaultAssertionStatus(true);
         }
 
-        @Override @Nullable protected Object
+        @Override protected Object
         execute() throws Exception {
             try {
                 return (
@@ -494,8 +503,7 @@ class CommonsCompilerTestSuite {
         protected abstract void cook() throws Exception;
 
         /**
-         * @return The value produced by the execution
-         * @see    CompileAndExecuteTest
+         * @see CompileAndExecuteTest
          */
         @Nullable protected abstract Object execute() throws Exception;
 
@@ -609,21 +617,11 @@ class CommonsCompilerTestSuite {
         /**
          * Asserts that cooking and executing completes normally.
          *
-         * @return The value produced by the execution, or {@code null} if cooking failed with a message that contains
-         *         {@code "NYI"}
+         * @return The execution result
          */
-        public Object
+        @Nullable public Object
         assertExecutable() throws Exception {
-
-            try {
-                this.cook();
-            } catch (CompileException ce) {
-
-                // Have mercy with compile exceptions that have "NYI" ("not yet implemented") in their message.
-                if (ce.getMessage().indexOf("NYI") != -1) return null;
-                throw ce;
-            }
-
+            this.cook();
             return this.execute();
         }
 

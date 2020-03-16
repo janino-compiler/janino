@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -29,7 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * A sequence of bytes that is identified by a "name", is typically found by a {@link
+ * A {@link Resource} is "something" that is typically found by a {@link
  * org.codehaus.commons.compiler.util.resource.ResourceFinder}, can be {@link #open()}ed for reading, and optionally
  * has a {@link #lastModified()} property.
  * <p>

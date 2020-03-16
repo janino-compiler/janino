@@ -6,7 +6,7 @@ import static test.C2.*;
 
 public
 class StaticImports {
-
+    
     public void
     execute() {
         System.out.println(testOverload((short) 1));

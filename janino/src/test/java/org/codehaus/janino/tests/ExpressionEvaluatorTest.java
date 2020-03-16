@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
@@ -64,5 +66,41 @@ class ExpressionEvaluatorTest {
             ))))
         );
         Assert.assertEquals(new HashSet<String>(Arrays.asList("b", "d")), parameterNames);
+    }
+
+    @Test public void
+    testAnyType1() throws Exception {
+
+        @SuppressWarnings("deprecation") Class<?> anyType = IExpressionEvaluator.ANY_TYPE;
+
+        ExpressionEvaluator ee = new ExpressionEvaluator();
+        ee.setExpressionType(anyType);
+
+        ee.cook("3");
+        Assert.assertEquals(3, ee.evaluate(null));
+
+        ee.cook("\"HELLO\"");
+        Assert.assertEquals("HELLO", ee.evaluate(null));
+    }
+
+    @Test public void
+    testAnyType2() throws Exception {
+
+        ExpressionEvaluator ee = new ExpressionEvaluator();
+        ee.setExpressionType(Object.class);
+
+        ee.cook("3");
+        Assert.assertEquals(3, ee.evaluate(null));
+
+        ee.cook("\"HELLO\"");
+        Assert.assertEquals("HELLO", ee.evaluate(null));
+    }
+
+    @Test public void
+    testMultipleExpressions() throws Exception {
+        ExpressionEvaluator ee = new ExpressionEvaluator();
+//        ee.setStaticMethod(false);
+        ee.setStaticMethod(new boolean[] { false, false });
+        ee.cook("9*3;7+1".split(";"));
     }
 }

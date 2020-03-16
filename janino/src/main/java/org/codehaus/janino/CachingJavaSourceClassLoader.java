@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -35,12 +36,12 @@ import java.util.Map;
 
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceCreator;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
-import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.resource.PathResourceFinder;
 
 /**
  * A {@link org.codehaus.janino.JavaSourceClassLoader} that uses a resource storage provided by the application to
@@ -71,24 +72,24 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     /**
      * See {@link #CachingJavaSourceClassLoader(ClassLoader, ResourceFinder, String, ResourceFinder, ResourceCreator)}.
      *
-     * @param sourcePath Directories to scan for source files
+     * @param optionalSourcePath Directories to scan for source files
      * @param cacheDirectory     Directory to use for caching generated class files (see class description)
      */
     public
     CachingJavaSourceClassLoader(
         ClassLoader             parentClassLoader,
-        @Nullable File[]        sourcePath,
-        @Nullable String        characterEncoding,
+        @Nullable File[]        optionalSourcePath,
+        @Nullable String        optionalCharacterEncoding,
         File                    cacheDirectory
     ) {
         this(
             parentClassLoader,                           // parentClassLoader
             (                                            // sourceFinder
-                sourcePath == null
+                optionalSourcePath == null
                 ? new DirectoryResourceFinder(new File("."))
-                : new PathResourceFinder(sourcePath)
+                : new PathResourceFinder(optionalSourcePath)
             ),
-            characterEncoding,                           // characterEncoding
+            optionalCharacterEncoding,                   // optionalCharacterEncoding
             new DirectoryResourceFinder(cacheDirectory), // classFileCacheResourceFinder
             new DirectoryResourceCreator(cacheDirectory) // classFileCacheResourceCreator
         );
@@ -107,7 +108,7 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
      * @param parentClassLoader             Attempt to load classes through this one before looking for source files
      * @param sourceFinder                  Finds Java source for class {@code pkg.Cls} in resource {@code
      *                                      pkg/Cls.java}
-     * @param characterEncoding     Encoding of Java source or {@code null} for platform default
+     * @param optionalCharacterEncoding     Encoding of Java source or {@code null} for platform default
      *                                      encoding
      * @param classFileCacheResourceFinder  Finds precompiled class {@code pkg.Cls} in resource {@code pkg/Cls.class}
      *                                      (see class description)
@@ -118,11 +119,11 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
     CachingJavaSourceClassLoader(
         ClassLoader      parentClassLoader,
         ResourceFinder   sourceFinder,
-        @Nullable String characterEncoding,
+        @Nullable String optionalCharacterEncoding,
         ResourceFinder   classFileCacheResourceFinder,
         ResourceCreator  classFileCacheResourceCreator
     ) {
-        super(parentClassLoader, sourceFinder, characterEncoding);
+        super(parentClassLoader, sourceFinder, optionalCharacterEncoding);
         this.classFileCacheResourceFinder  = classFileCacheResourceFinder;
         this.classFileCacheResourceCreator = classFileCacheResourceCreator;
         this.sourceFinder                  = sourceFinder;

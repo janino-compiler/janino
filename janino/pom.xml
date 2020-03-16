@@ -7,15 +7,13 @@
   <parent>
     <groupId>org.codehaus.janino</groupId>
     <artifactId>janino-parent</artifactId>
-    <version>3.1.2-SNAPSHOT</version>
+    <version>3.0.16-SNAPSHOT</version>
     <relativePath>../janino-parent</relativePath>
   </parent>
 
   <artifactId>janino</artifactId>
 
   <name>janino</name>
-  
-  <description>The &quot;JANINO&quot; implementation of the &quot;commons-compiler&quot; API: Super-small, super-fast, independent from the JDK's &quot;tools.jar&quot;.</description>
 
   <dependencies>
     <dependency>
@@ -60,29 +58,5 @@
       </plugin>
     </plugins>
   </build>
-  
-  <profiles>
-    <profile>
-      <id>have_txt2html</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>de.unkrig.txt2html</groupId>
-            <artifactId>txt2html-maven-plugin</artifactId>
-            <version>1.0.0</version>
-
-            <executions>
-              <execution>
-                <phase>package</phase>
-                <goals><goal>txt2html</goal></goals>
-              </execution>
-            </executions>
-            <configuration>
-              <keepOriginals>true</keepOriginals>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+  <description>The &quot;JANINO&quot; implementation of the &quot;commons-compiler&quot; API: Super-small, super-fast, independent from the JDK's &quot;tools.jar&quot;.</description>
 </project>

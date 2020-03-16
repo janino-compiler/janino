@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Check Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.3//EN" "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
 
 <!--
     This configuration file was written by the eclipse-cs plugin configuration editor
@@ -117,6 +117,9 @@
       <property name="allowedAbbreviationLength" value="1"/>
       <property name="allowedAbbreviations" value="XML,URL,IO,URI,MX"/>
     </module>
+    <module name="LineLength">
+      <property name="max" value="120"/>
+    </module>
     <module name="OperatorWrap">
       <property name="tokens" value="BAND,BOR,BSR,BXOR,DIV,EQUAL,GE,GT,LAND,LE,LITERAL_INSTANCEOF,LOR,LT,MINUS,MOD,NOT_EQUAL,PLUS,QUESTION,SL,SR,STAR"/>
     </module>
@@ -173,19 +176,18 @@
     <module name="de.unkrig.cscontrib.checks.WrapTryCheck"/>
     <module name="SuppressWithNearbyCommentFilter">
       <metadata name="net.sf.eclipsecs.core.comment" value="SUPPRESS CHECKSTYLE (check)"/>
-      <property name="commentFormat" value="SUPPRESS CHECKSTYLE ([^:]+)"/>
+      <property name="commentFormat" value="SUPPRESS CHECKSTYLE ([\w.: |]++)(?!:)"/>
       <property name="checkFormat" value="$1"/>
+      <property name="messageFormat" value="$1"/>
       <property name="influenceFormat" value="1"/>
     </module>
     <module name="SuppressWithNearbyCommentFilter">
       <metadata name="net.sf.eclipsecs.core.comment" value="SUPPRESS CHECKSTYLE (check):(lines)"/>
       <property name="commentFormat" value="SUPPRESS CHECKSTYLE ([\w.: |]+):(-?\d+)"/>
       <property name="checkFormat" value="$1"/>
+      <property name="messageFormat" value="$1"/>
       <property name="influenceFormat" value="$2"/>
     </module>
-  </module>
-  <module name="LineLength">
-    <property name="max" value="120"/>
   </module>
   <module name="JavadocPackage"/>
   <module name="RegexpHeader">
@@ -196,5 +198,4 @@
     <property name="fileExtensions" value=".java"/>
   </module>
   <module name="NewlineAtEndOfFile"/>
-  <module name="SuppressWithPlainTextCommentFilter"/>
 </module>

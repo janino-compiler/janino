@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -40,7 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.commons.compiler.InternalCompilerException;
+import javax.annotation.Resource;
+
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
@@ -191,7 +193,7 @@ class Unparser {
         @Override @Nullable public Void
         visitCompilationUnit(CompilationUnit cu) {
 
-            PackageDeclaration opd = cu.packageDeclaration;
+            PackageDeclaration opd = cu.optionalPackageDeclaration;
             if (opd != null) {
                 Unparser.this.pw.println();
                 Unparser.this.pw.println("package " + opd.packageName + ';');
@@ -264,7 +266,7 @@ class Unparser {
         @Override @Nullable public Void
         visitExportsModuleDirective(ExportsModuleDirective emd) {
             Unparser.this.pw.print("exports " + Java.join(emd.packageName, "."));
-            if (emd.toModuleNames != null) {
+            if (emd.toModuleNames.length > 0) {
                 Unparser.this.pw.print(" to " + Java.join(emd.toModuleNames, ".", ", "));
             }
             Unparser.this.pw.print(";");
@@ -274,7 +276,7 @@ class Unparser {
         @Override @Nullable public Void
         visitOpensModuleDirective(OpensModuleDirective omd) {
             Unparser.this.pw.print("opens " + Java.join(omd.packageName, "."));
-            if (omd.toModuleNames != null) {
+            if (omd.toModuleNames.length > 0) {
                 Unparser.this.pw.print(" to " + Java.join(omd.toModuleNames, ".", ", "));
             }
             Unparser.this.pw.print(";");
@@ -367,8 +369,8 @@ class Unparser {
 
             Unparser.this.pw.append(ec.name);
 
-            if (ec.arguments != null) {
-                Unparser.this.unparseFunctionInvocationArguments(ec.arguments);
+            if (ec.optionalArguments != null) {
+                Unparser.this.unparseFunctionInvocationArguments(ec.optionalArguments);
             }
 
             if (!Unparser.classDeclarationBodyIsEmpty(ec)) {
@@ -434,11 +436,9 @@ class Unparser {
     private final Visitor.BlockStatementVisitor<Void, RuntimeException>
     blockStatementUnparser = new Visitor.BlockStatementVisitor<Void, RuntimeException>() {
 
-        @Override @Nullable public Void
-        visitFieldDeclaration(FieldDeclaration fd) { Unparser.this.unparseFieldDeclaration(fd); return null; }
-
-        @Override @Nullable public Void
-        visitInitializer(Initializer i) { Unparser.this.unparseInitializer(i); return null; }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd) { Unparser.this.unparseFieldDeclaration(fd); return null; }
+        @Override @Nullable public Void visitInitializer(Initializer i)            { Unparser.this.unparseInitializer(i);       return null; }
 
         @Override @Nullable public Void
         visitBlock(Block b) {
@@ -449,7 +449,7 @@ class Unparser {
         @Override @Nullable public Void
         visitBreakStatement(BreakStatement bs) {
             Unparser.this.pw.print("break");
-            if (bs.label != null) Unparser.this.pw.print(' ' + bs.label);
+            if (bs.optionalLabel != null) Unparser.this.pw.print(' ' + bs.optionalLabel);
             Unparser.this.pw.print(';');
             return null;
         }
@@ -457,7 +457,7 @@ class Unparser {
         @Override @Nullable public Void
         visitContinueStatement(ContinueStatement cs) {
             Unparser.this.pw.print("continue");
-            if (cs.label != null) Unparser.this.pw.print(' ' + cs.label);
+            if (cs.optionalLabel != null) Unparser.this.pw.print(' ' + cs.optionalLabel);
             Unparser.this.pw.print(';');
             return null;
         }
@@ -468,7 +468,7 @@ class Unparser {
             Unparser.this.pw.print("assert ");
             Unparser.this.unparseAtom(as.expression1);
 
-            Rvalue oe2 = as.expression2;
+            Rvalue oe2 = as.optionalExpression2;
             if (oe2 != null) {
                 Unparser.this.pw.print(" : ");
                 Unparser.this.unparseAtom(oe2);
@@ -503,13 +503,13 @@ class Unparser {
         @Override @Nullable public Void
         visitForStatement(ForStatement fs) {
             Unparser.this.pw.print("for (");
-            if (fs.init != null) {
-                Unparser.this.unparseBlockStatement(fs.init);
+            if (fs.optionalInit != null) {
+                Unparser.this.unparseBlockStatement(fs.optionalInit);
             } else {
                 Unparser.this.pw.print(';');
             }
 
-            Rvalue oc = fs.condition;
+            Rvalue oc = fs.optionalCondition;
             if (oc != null) {
                 Unparser.this.pw.print(' ');
                 Unparser.this.unparseAtom(oc);
@@ -517,7 +517,7 @@ class Unparser {
 
             Unparser.this.pw.print(';');
 
-            Rvalue[] ou = fs.update;
+            Rvalue[] ou = fs.optionalUpdate;
             if (ou != null) {
                 Unparser.this.pw.print(' ');
                 for (int i = 0; i < ou.length; ++i) {
@@ -587,7 +587,7 @@ class Unparser {
 
             Unparser.this.pw.print("return");
 
-            Rvalue orv = rs.returnValue;
+            Rvalue orv = rs.optionalReturnValue;
             if (orv != null) {
                 Unparser.this.pw.print(' ');
                 Unparser.this.unparseAtom(orv);
@@ -646,7 +646,7 @@ class Unparser {
             if (!ts.resources.isEmpty()) {
                 Unparser.this.pw.print("(");
                 Unparser.this.unparseResources(
-                    (TryStatement.Resource[]) ts.resources.toArray(new TryStatement.Resource[ts.resources.size()])
+                    (TryStatement.Resource[]) ts.resources.toArray(new Resource[ts.resources.size()])
                 );
                 Unparser.this.pw.print(") ");
             }
@@ -685,8 +685,8 @@ class Unparser {
 
         @Override @Nullable public Void
         visitSuperConstructorInvocation(SuperConstructorInvocation sci) {
-            if (sci.qualification != null) {
-                Unparser.this.unparseLhs(sci.qualification, ".");
+            if (sci.optionalQualification != null) {
+                Unparser.this.unparseLhs(sci.optionalQualification, ".");
                 Unparser.this.pw.print('.');
             }
             Unparser.this.pw.print("super");
@@ -779,8 +779,8 @@ class Unparser {
 
                         @Override @Nullable public Void
                         visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) {
-                            if (scfae.qualification != null) {
-                                Unparser.this.unparseType(scfae.qualification);
+                            if (scfae.optionalQualification != null) {
+                                Unparser.this.unparseType(scfae.optionalQualification);
                                 Unparser.this.pw.print(".super." + scfae.fieldName);
                             } else
                             {
@@ -808,8 +808,8 @@ class Unparser {
 
                 @Override @Nullable public Void
                 visitMethodInvocation(MethodInvocation mi) {
-                    if (mi.target != null) {
-                        Unparser.this.unparseLhs(mi.target, ".");
+                    if (mi.optionalTarget != null) {
+                        Unparser.this.unparseLhs(mi.optionalTarget, ".");
                         Unparser.this.pw.print('.');
                     }
                     Unparser.this.pw.print(mi.methodName);
@@ -819,8 +819,8 @@ class Unparser {
 
                 @Override @Nullable public Void
                 visitNewClassInstance(NewClassInstance nci) {
-                    if (nci.qualification != null) {
-                        Unparser.this.unparseLhs(nci.qualification, ".");
+                    if (nci.optionalQualification != null) {
+                        Unparser.this.unparseLhs(nci.optionalQualification, ".");
                         Unparser.this.pw.print('.');
                     }
                     assert nci.type != null;
@@ -979,8 +979,8 @@ class Unparser {
 
                 @Override @Nullable public Void
                 visitNewAnonymousClassInstance(NewAnonymousClassInstance naci) {
-                    if (naci.qualification != null) {
-                        Unparser.this.unparseLhs(naci.qualification, ".");
+                    if (naci.optionalQualification != null) {
+                        Unparser.this.unparseLhs(naci.optionalQualification, ".");
                         Unparser.this.pw.print('.');
                     }
                     Unparser.this.pw.print("new " + naci.anonymousClassDeclaration.baseType.toString() + '(');
@@ -1100,16 +1100,9 @@ class Unparser {
             return null;
         }
 
-        @Override @Nullable public Void
-        visitSingleElementAnnotation(SingleElementAnnotation sea) {
-            return sea.accept(Unparser.this.annotationUnparser);
-        }
-
-        @Override @Nullable public Void
-        visitNormalAnnotation(NormalAnnotation na) { return na.accept(Unparser.this.annotationUnparser);  }
-
-        @Override @Nullable public Void
-        visitMarkerAnnotation(MarkerAnnotation ma) { return ma.accept(Unparser.this.annotationUnparser);  }
+        @Override @Nullable public Void visitSingleElementAnnotation(SingleElementAnnotation sea) { return sea.accept(Unparser.this.annotationUnparser); } // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public Void visitNormalAnnotation(NormalAnnotation na)                { return na.accept(Unparser.this.annotationUnparser);  }
+        @Override @Nullable public Void visitMarkerAnnotation(MarkerAnnotation ma)                { return ma.accept(Unparser.this.annotationUnparser);  }
     };
 
     private final LambdaParametersVisitor<Void, RuntimeException>
@@ -1256,7 +1249,7 @@ class Unparser {
         );
         this.unparseFunctionDeclaratorRest(cd);
 
-        List<? extends BlockStatement> oss = cd.statements;
+        List<? extends BlockStatement> oss = cd.optionalStatements;
         if (oss == null) {
             this.pw.print(';');
             return;
@@ -1264,7 +1257,7 @@ class Unparser {
 
         this.pw.print(' ');
 
-        ConstructorInvocation oci = cd.constructorInvocation;
+        ConstructorInvocation oci = cd.optionalConstructorInvocation;
         if (oci != null) {
             this.pw.println('{');
             this.pw.print(AutoIndentWriter.INDENT);
@@ -1291,7 +1284,7 @@ class Unparser {
     private void
     unparseMethodDeclarator(MethodDeclarator md) {
 
-        final List<? extends BlockStatement> oss = md.statements;
+        final List<? extends BlockStatement> oss = md.optionalStatements;
 
         this.unparseDocComment(md);
         this.unparseModifiers(md.getModifiers());
@@ -1314,9 +1307,6 @@ class Unparser {
         }
     }
 
-    /**
-     * Generates Java code from a sequence of {@link BlockStatement}s.
-     */
     public void
     unparseStatements(List<? extends BlockStatement> statements) {
 
@@ -1342,7 +1332,7 @@ class Unparser {
         this.pw.print(vd.name);
         for (int i = 0; i < vd.brackets; ++i) this.pw.print("[]");
 
-        ArrayInitializerOrRvalue oi = vd.initializer;
+        ArrayInitializerOrRvalue oi = vd.optionalInitializer;
         if (oi != null) {
             this.pw.print(" = ");
             this.unparseArrayInitializerOrRvalue(oi);
@@ -1379,9 +1369,6 @@ class Unparser {
     public void
     unparseLambdaBody(LambdaBody body) { body.accept(this.lambdaBodyUnparser); }
 
-    /**
-     * Generates Java code from a {@link Block}.
-     */
     public void
     unparseBlock(Block b) {
         if (b.statements.isEmpty()) {
@@ -1569,7 +1556,7 @@ class Unparser {
         this.unparseModifiers(ncd.getModifiers());
         this.pw.print("class " + ncd.name);
 
-        Type oet = ncd.extendedType;
+        Type oet = ncd.optionalExtendedType;
         if (oet != null) {
             this.pw.print(" extends ");
             this.unparseType(oet);
@@ -1610,13 +1597,9 @@ class Unparser {
         }
     }
 
-    /**
-     * Generates Java code from a {@link AbstractClassDeclaration}.
-     */
+    // Multi-line!
     public void
     unparseClassDeclarationBody(AbstractClassDeclaration cd) {
-
-        // Multi-line!
         for (ConstructorDeclarator ctord : cd.constructors) {
             this.pw.println();
             ctord.accept(this.typeBodyDeclarationUnparser);
@@ -1707,10 +1690,10 @@ class Unparser {
 
     private void
     unparseDocComment(DocCommentable dc) {
-        String docComment = dc.getDocComment();
-        if (docComment != null) {
+        String optionalDocComment = dc.getDocComment();
+        if (optionalDocComment != null) {
             this.pw.print("/**");
-            BufferedReader br = new BufferedReader(new StringReader(docComment));
+            BufferedReader br = new BufferedReader(new StringReader(optionalDocComment));
             for (;;) {
                 String line;
                 try {
@@ -1752,7 +1735,7 @@ class Unparser {
 
         this.pw.print(typeParameter.name);
 
-        ReferenceType[] bounds = typeParameter.bound;
+        ReferenceType[] bounds = typeParameter.optionalBound;
         if (bounds != null) {
             this.pw.print(" extends ");
             for (int i = 0; i < bounds.length; i++) {
@@ -1827,13 +1810,9 @@ class Unparser {
 
         fd.accept(new Visitor.FunctionDeclaratorVisitor<Void, RuntimeException>() {
 
-            @Override @Nullable public Void
-            visitConstructorDeclarator(ConstructorDeclarator cd) {
-                Unparser.this.unparseConstructorDeclarator(cd); return null;
-            }
-
-            @Override @Nullable public Void
-            visitMethodDeclarator(MethodDeclarator md) { Unparser.this.unparseMethodDeclarator(md); return null; }
+            // SUPPRESS CHECKSTYLE LineLength:2
+            @Override @Nullable public Void visitConstructorDeclarator(ConstructorDeclarator cd) { Unparser.this.unparseConstructorDeclarator(cd); return null; }
+            @Override @Nullable public Void visitMethodDeclarator(MethodDeclarator md)           { Unparser.this.unparseMethodDeclarator(md);      return null; }
         });
     }
 

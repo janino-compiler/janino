@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -34,14 +35,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.util.StringUtil;
-import org.codehaus.commons.compiler.util.resource.JarDirectoriesResourceFinder;
-import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.IClass.IConstructor;
 import org.codehaus.janino.IClass.IMethod;
+import org.codehaus.janino.util.resource.JarDirectoriesResourceFinder;
+import org.codehaus.janino.util.resource.PathResourceFinder;
 
 /**
  * Loads an {@link IClass} by type name.
@@ -80,7 +80,6 @@ class IClassLoader {
     public IClass TYPE_java_lang_StringBuilder;
     public IClass TYPE_java_lang_System;
     public IClass TYPE_java_lang_Throwable;
-    public IClass TYPE_java_lang_Void;
     public IClass TYPE_java_io_Serializable;
     public IClass TYPE_java_util_Iterator;
 
@@ -154,7 +153,6 @@ class IClassLoader {
             this.TYPE_java_lang_StringBuilder        = this.requireType(Descriptor.JAVA_LANG_STRINGBUILDER);
             this.TYPE_java_lang_System               = this.requireType(Descriptor.JAVA_LANG_SYSTEM);
             this.TYPE_java_lang_Throwable            = this.requireType(Descriptor.JAVA_LANG_THROWABLE);
-            this.TYPE_java_lang_Void                 = this.requireType(Descriptor.JAVA_LANG_VOID);
             this.TYPE_java_io_Serializable           = this.requireType(Descriptor.JAVA_IO_SERIALIZABLE);
             this.TYPE_java_util_Iterator             = this.requireType(Descriptor.JAVA_UTIL_ITERATOR);
 
@@ -409,26 +407,26 @@ class IClassLoader {
      * Creates an {@link IClassLoader} that looks for classes in the given "boot class path", then in the given
      * "extension directories", and then in the given "class path".
      * <p>
-     *   The default for the {@code bootClassPath} is the path defined in the system property
-     *   "sun.boot.class.path", and the default for the {@code extensionDirs} is the path defined in the
+     *   The default for the {@code optionalBootClassPath} is the path defined in the system property
+     *   "sun.boot.class.path", and the default for the {@code optionalExtensionDirs} is the path defined in the
      *   "java.ext.dirs" system property.
      * </p>
      */
     public static IClassLoader
     createJavacLikePathIClassLoader(
-        @Nullable final File[] bootClassPath,
-        @Nullable final File[] extDirs,
+        @Nullable final File[] optionalBootClassPath,
+        @Nullable final File[] optionalExtDirs,
         final File[]           classPath
     ) {
         ResourceFinder bootClassPathResourceFinder = new PathResourceFinder(
-            bootClassPath == null
+            optionalBootClassPath == null
             ? StringUtil.parsePath(System.getProperty("sun.boot.class.path"))
-            : bootClassPath
+            : optionalBootClassPath
         );
         ResourceFinder extensionDirectoriesResourceFinder = new JarDirectoriesResourceFinder(
-            extDirs == null
+            optionalExtDirs == null
             ? StringUtil.parsePath(System.getProperty("java.ext.dirs"))
-            : extDirs
+            : optionalExtDirs
         );
         final ResourceFinder classPathResourceFinder = new PathResourceFinder(classPath);
 

@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -30,8 +31,6 @@ package org.codehaus.commons.compiler.tests;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
@@ -502,6 +501,14 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
     }
     @Test public void
     test64kConstantPool() throws Exception {
+        String preamble = (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+        );
+        final String postamble = (
+            "}"
+        );
 
         /* == expected contant pool ==
         ( 0) fake entry
@@ -522,36 +529,35 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         [65534] ConstantUtf8Info     "_v65523"
         */
 
-        final int[]     repetitionss = new int[]     { 1,    100,  65517, 65525 };
-        final boolean[] isCookables  = new boolean[] { true, true, true,  false };
+        final int[]     repetitionss = new int[]     { 1,    100,  65523, 65525 };
+        final boolean[] cookable     = new boolean[] { true, true, true,  false };
 
         for (int i = 0; i < repetitionss.length; i++) {
-            final int     repetitions = repetitionss[i];
-            final boolean isCookable  = isCookables[i];
-
-            final String cu;
-            {
-                StringWriter sw = new StringWriter();
-                PrintWriter  pw = new PrintWriter(sw);
-
-                pw.printf("package test;%n");
-                pw.printf("public class Test {%n");
-                for (int j = 0; j < repetitions; ++j) pw.printf("    boolean _v%d;%n", j);
-                pw.printf("}%n");
-
-                pw.flush();
-                cu = sw.toString();
+            StringBuilder sb = new StringBuilder();
+            sb.append(preamble);
+            for (int j = 0; j < repetitionss[i]; ++j) {
+                sb.append("boolean _v").append(j).append(";\n");
             }
+            sb.append(postamble);
 
             ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
-            if (isCookable) {
-                sc.cook(cu);
-                Assert.assertNotNull(sc.getClassLoader().loadClass("test.Test").newInstance());
+            if (cookable[i]) {
+                sc.cook(sb.toString());
+                Class<?> c = sc.getClassLoader().loadClass("test.Test");
+                Object   o = c.newInstance();
+                Assert.assertNotNull(o);
             } else {
-                this.assertCompilationUnitUncookable(
-                    cu,
-                    "too many constants \\(compiler.err.limit.pool\\)|grown past JVM limit of 0xFFFF"
-                );
+                try {
+                    sc.cook(sb.toString());
+                    Assert.fail(
+                        repetitionss[i] + " repetitions: Should have issued an error, but compiled successfully"
+                    );
+                } catch (CompileException ce) {
+                    Assert.assertTrue(ce.getMessage(), (
+                        ce.getMessage().contains("too many constants (compiler.err.limit.pool)")
+                        || ce.getMessage().contains("grown past JVM limit of 0xFFFF")
+                    ));
+                }
             }
         }
     }
@@ -1081,103 +1087,5 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             + "+\n"
             + "x\n" // <= Line 3, unknown variable
         ), 3);
-    }
-
-    @Test public void
-    testAnyType1() throws Exception {
-
-        @SuppressWarnings("deprecation") Class<?> anyType = IExpressionEvaluator.ANY_TYPE;
-
-        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
-        ee.setExpressionType(anyType);
-
-        ee.cook("3");
-        Assert.assertEquals(3, ee.evaluate());
-    }
-
-    @Test public void
-    testAnyType2() throws Exception {
-
-        @SuppressWarnings("deprecation") Class<?> anyType = IExpressionEvaluator.ANY_TYPE;
-
-        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
-        ee.setExpressionType(anyType);
-        ee.cook("\"HELLO\"");
-        Assert.assertEquals("HELLO", ee.evaluate());
-    }
-
-    @Test public void
-    testAnyType3() throws Exception {
-
-        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
-        ee.setExpressionType(Object.class);
-
-        ee.cook("3");
-        Assert.assertEquals(3, ee.evaluate());
-    }
-
-    @Test public void
-    testAnyType4() throws Exception {
-
-        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
-        ee.setExpressionType(Object.class);
-
-        ee.cook("\"HELLO\"");
-        Assert.assertEquals("HELLO", ee.evaluate());
-    }
-
-    @Test public void
-    testMultipleExpressions() throws Exception {
-        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
-    //        ee.setStaticMethod(false);
-            ee.setStaticMethod(new boolean[] { false, false });
-            ee.cook("9*3;7+1".split(";"));
-        }
-
-    @Test public void
-    testSimpleLocalMethod() throws Exception {
-
-        // The JDK implementation does not support "local methods" (see JAVADOC of IScriptEvaluator).
-        if (this.isJdk) return;
-
-        final IScriptEvaluator se = this.compilerFactory.newScriptEvaluator();
-        se.setReturnType(int.class);
-        se.cook((
-            ""
-            + "return meth();\n"
-            + "static int meth() { return 7; }\n"
-        ));
-        Assert.assertEquals(7, se.evaluate(null));
-    }
-
-    @Test public void
-    testOverlappingLocalMethods1() throws Exception {
-
-        // The JDK implementation does not support "local methods" (see JAVADOC of IScriptEvaluator).
-        if (this.isJdk) return;
-
-        final IScriptEvaluator se = this.compilerFactory.newScriptEvaluator();
-        se.cook(new String[] {
-            "void meth1() {}\n",
-            "void meth2() {}\n"
-        });
-    }
-
-    @Test public void
-    testOverlappingLocalMethods2() throws Exception {
-
-        // The JDK implementation does not support "local methods" (see JAVADOC of IScriptEvaluator).
-        if (this.isJdk) return;
-
-        final IScriptEvaluator se = this.compilerFactory.newScriptEvaluator();
-        try {
-            se.cook(new String[] {
-                "void meth() {}\n",
-                "void meth() {}\n"
-            });
-            Assert.fail("Compilation exception expected");
-        } catch (ClassFormatError cfe) {
-            Assert.assertTrue(cfe.getMessage(), cfe.getMessage().contains("Duplicate method"));
-        }
     }
 }

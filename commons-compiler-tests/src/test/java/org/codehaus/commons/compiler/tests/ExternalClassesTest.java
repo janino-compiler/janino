@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -31,8 +32,8 @@ import java.util.Collection;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompilerFactory;
+import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
-import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,7 +67,7 @@ class ExternalClassesTest {
         // Invoke method of a class that is on the CLASSPATH of this JVM, but not on the BOOTCLASSPATH.
         try {
             IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
-            ee.setParentClassLoader(ClassLoaders.BOOTCLASSPATH_CLASS_LOADER);
+            ee.setParentClassLoader(ICookable.BOOT_CLASS_LOADER);
             ee.cook("for_sandbox_tests.ExternalClass.m1()");
             Assert.fail("Should have thrown a CompileException");
         } catch (CompileException ex) {

@@ -31,16 +31,14 @@ import org.codehaus.commons.compiler.util.reflect.Classes;
 
 /**
  * Facade for Java 8's {@code java.util.reflect.Consumer} interface.
- *
- * @param <T>
  */
 public
 interface Consumer<T> {
 
-    Class<?> CLASS = Classes.load("java.util.function.Consumer"); // SUPPRESS CHECKSTYLE Javadoc
+    Class<?> CLASS = Classes.load("java.util.function.Consumer");
 
-    // SUPPRESS CHECKSTYLE ConstantName|Javadoc:1
+    // SUPPRESS CHECKSTYLE ConstantName:1
     Method METHOD_accept__T = Classes.getDeclaredMethod(Consumer.CLASS, "accept", Object.class);
 
-    void accept(T t); // SUPPRESS CHECKSTYLE Javadoc|Alignment
+    void accept(T t);
 }

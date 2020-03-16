@@ -33,8 +33,6 @@ import org.codehaus.commons.compiler.util.reflect.NoException;
 
 /**
  * Pre-Java-9-compatible facade for Java 9's {@code java.util.Optional} class.
- *
- * @param <T>
  */
 public
 class Optional<T> {

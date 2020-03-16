@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -31,18 +32,10 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
-import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
-import org.codehaus.commons.compiler.InternalCompilerException;
-import org.codehaus.commons.compiler.MultiCookable;
-import org.codehaus.commons.compiler.WarningHandler;
-import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -91,13 +84,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  */
 public
-class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator {
-
-    private final ScriptEvaluator se = new ScriptEvaluator();
-    {
-        this.se.setClassName(IExpressionEvaluator.DEFAULT_CLASS_NAME);
-        this.se.setDefaultReturnType(IExpressionEvaluator.DEFAULT_EXPRESSION_TYPE);
-    }
+class ExpressionEvaluator extends ScriptEvaluator implements IExpressionEvaluator {
 
     /**
      * Equivalent to
@@ -132,7 +119,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      *     ee.setExpressionType(expressionType);
      *     ee.setParameters(parameterNames, parameterTypes);
      *     ee.setThrownExceptions(thrownExceptions);
-     *     ee.setParentClassLoader(parentClassLoader);
+     *     ee.setParentClassLoader(optionalParentClassLoader);
      *     ee.cook(expression);
      * </pre>
      *
@@ -150,12 +137,12 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable ClassLoader parentClassLoader
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setParentClassLoader(parentClassLoader);
+        this.setParentClassLoader(optionalParentClassLoader);
         this.cook(expression);
     }
 
@@ -166,9 +153,9 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      *     ee.setExpressionType(expressionType);
      *     ee.setParameters(parameterNames, parameterTypes);
      *     ee.setThrownExceptions(thrownExceptions);
-     *     ee.setExtendedType(extendedType);
+     *     ee.setExtendedType(optionalExtendedType);
      *     ee.setImplementedTypes(implementedTypes);
-     *     ee.setParentClassLoader(parentClassLoader);
+     *     ee.setParentClassLoader(optionalParentClassLoader);
      *     ee.cook(expression);
      * </pre>
      *
@@ -188,137 +175,52 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         String[]              parameterNames,
         Class<?>[]            parameterTypes,
         Class<?>[]            thrownExceptions,
-        @Nullable Class<?>    extendedType,
+        @Nullable Class<?>    optionalExtendedType,
         Class<?>[]            implementedTypes,
-        @Nullable ClassLoader parentClassLoader
+        @Nullable ClassLoader optionalParentClassLoader
     ) throws CompileException {
         this.setExpressionType(expressionType);
         this.setParameters(parameterNames, parameterTypes);
         this.setThrownExceptions(thrownExceptions);
-        this.setExtendedClass(extendedType);
+        this.setExtendedClass(optionalExtendedType);
         this.setImplementedInterfaces(implementedTypes);
-        this.setParentClassLoader(parentClassLoader);
+        this.setParentClassLoader(optionalParentClassLoader);
         this.cook(expression);
     }
 
     public ExpressionEvaluator() {}
 
-    // ============================= CONFIGURATION SETTS AND GETTERS =============================
+    /**
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionType(Class)} instead
+     */
+    @Deprecated @Override public void
+    setReturnType(Class<?> expressionType) { super.setReturnType(expressionType); }
+
+    /**
+     * @deprecated Must not be used on an {@link IExpressionEvaluator}; use {@link #setExpressionTypes(Class[])}
+     *             instead
+     */
+    @Deprecated @Override public void
+    setReturnTypes(Class<?>[] expressionTypes) { super.setReturnTypes(expressionTypes); }
 
     @Override public void
-    setParentClassLoader(@Nullable ClassLoader parentClassLoader) {
-        this.se.setParentClassLoader(parentClassLoader);
+    setExpressionType(Class<?> expressionType) {
+        this.setExpressionTypes(new Class<?>[] { expressionType });
     }
 
     @Override public void
-    setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
-        this.se.setDebuggingInformation(debugSource, debugLines, debugVars);
+    setExpressionTypes(Class<?>[] expressionTypes) {
+        super.setReturnTypes(expressionTypes);
     }
 
-    @Override public void
-    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
-        this.se.setCompileErrorHandler(compileErrorHandler);
-    }
+    /**
+     * The default return type of an expression is {@code Object}{@code .class}.
+     */
+    @Override protected Class<?>
+    getDefaultReturnType() { return Object.class; }
 
     @Override public void
-    setWarningHandler(@Nullable WarningHandler warningHandler) {
-        this.se.setWarningHandler(warningHandler);
-    }
-
-    @Override public void
-    setDefaultImports(String... defaultImports) { this.se.setDefaultImports(defaultImports); }
-
-    @Override public String[]
-    getDefaultImports() { return this.se.getDefaultImports(); }
-
-    @Override public void
-    setDefaultExpressionType(Class<?> defaultExpressionType) { this.se.setDefaultReturnType(defaultExpressionType); }
-
-    @Override public Class<?>
-    getDefaultExpressionType() { return this.se.getDefaultReturnType(); }
-
-    @Override public void
-    setImplementedInterfaces(Class<?>[] implementedTypes) { this.se.setImplementedInterfaces(implementedTypes); }
-
-    @Override public void
-    setReturnType(Class<?> returnType) { this.se.setReturnType(returnType); }
-
-    @Override public void
-    setExpressionType(Class<?> expressionType) { this.se.setReturnType(expressionType); }
-
-    @Override public void
-    setExpressionTypes(Class<?>[] expressionTypes) { this.se.setReturnTypes(expressionTypes); }
-
-    @Override public void
-    setOverrideMethod(boolean overrideMethod) { this.se.setOverrideMethod(overrideMethod); }
-
-    @Override public void
-    setOverrideMethod(boolean[] overrideMethod) { this.se.setOverrideMethod(overrideMethod); }
-
-    @Override public void
-    setParameters(String[] parameterNames, Class<?>[] parameterTypes) {
-        this.se.setParameters(parameterNames, parameterTypes);
-    }
-
-    @Override public void
-    setParameters(String[][] parameterNames, Class<?>[][] parameterTypes) {
-        this.se.setParameters(parameterNames, parameterTypes);
-    }
-
-    @Override public void
-    setClassName(String className) { this.se.setClassName(className); }
-
-    @Override public void
-    setExtendedClass(@Nullable Class<?> extendedType) { this.se.setExtendedClass(extendedType); }
-
-    @Override public void
-    setStaticMethod(boolean staticMethod) { this.se.setStaticMethod(staticMethod); }
-
-    @Override public void
-    setStaticMethod(boolean[] staticMethod) { this.se.setStaticMethod(staticMethod); }
-
-    @Override public void
-    setMethodName(String methodName) { this.se.setMethodName(methodName); }
-
-    @Override public void
-    setMethodNames(String[] methodNames) { this.se.setMethodNames(methodNames); }
-
-    @Override public void
-    setThrownExceptions(Class<?>[] thrownExceptions) { this.se.setThrownExceptions(thrownExceptions); }
-
-    @Override public void
-    setThrownExceptions(Class<?>[][] thrownExceptions) { this.se.setThrownExceptions(thrownExceptions); }
-
-    @Override public void
-    cook(@Nullable String fileName, Reader reader) throws CompileException, IOException {
-
-        this.se.setScriptCount(1);
-
-        if (!reader.markSupported()) reader = new BufferedReader(reader);
-        final String[] imports = ClassBodyEvaluator.parseImportDeclarations(reader);
-
-        StringWriter sw = new StringWriter();
-        PrintWriter  pw = new PrintWriter(sw);
-        try {
-
-            Class<?> returnType = this.se.getReturnType(0);
-            if (returnType != void.class && returnType != Void.class) pw.print("return ");
-
-            Readers.copy(reader, pw);
-            pw.println(";");
-
-            pw.close();
-        } finally {
-            try { pw.close(); } catch (Exception e) {}
-        }
-
-        reader = new StringReader(sw.toString());
-
-        this.se.cook(new String[] { fileName }, new Reader[] { reader }, imports);
-    }
-
-    @Override public void
-    cook(String[] fileNames, Reader[] readers) throws CompileException, IOException {
+    cook(@Nullable String[] optionalFileNames, Reader[] readers) throws CompileException, IOException {
 
         readers = readers.clone(); // Don't modify the argument array.
 
@@ -337,98 +239,17 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
             StringWriter sw = new StringWriter();
             PrintWriter  pw = new PrintWriter(sw);
 
-            returnTypes[i] = this.se.getReturnType(i);
+            returnTypes[i] = this.getReturnType(i);
             if (returnTypes[i] != void.class && returnTypes[i] != Void.class) {
                 pw.print("return ");
             }
-            Readers.copy(readers[i], pw);
+            pw.write(Cookable.readString(readers[i]));
             pw.println(";");
 
             pw.close();
             readers[i] = new StringReader(sw.toString());
         }
-
-        this.se.cook(fileNames, readers, imports);
-    }
-
-    @Override @Nullable public Object
-    evaluate(@Nullable Object... arguments) throws InvocationTargetException { return this.se.evaluate(arguments); }
-
-    @Override @Nullable public Object
-    evaluate(int idx, @Nullable Object... arguments) throws InvocationTargetException {
-        return this.se.evaluate(idx, arguments);
-    }
-
-    @Override public Method
-    getMethod() { return this.se.getMethod(); }
-
-    @Override public Method
-    getMethod(int idx) { return this.se.getMethod(idx); }
-
-    @Override public Class<?>
-    getClazz() { return this.se.getClazz(); }
-
-    @Override public Method[]
-    getResult() { return this.se.getResult(); }
-
-    @Override public Map<String, byte[]>
-    getBytecodes() { return this.se.getBytecodes(); }
-
-    @Override public <T> T
-    createFastEvaluator(String expression, Class<? extends T> interfaceToImplement, String... parameterNames)
-    throws CompileException {
-        try {
-            return this.createFastEvaluator(
-                new StringReader(expression),
-                interfaceToImplement,
-                parameterNames
-            );
-        } catch (IOException ex) {
-            throw new InternalCompilerException("IOException despite StringReader", ex);
-        }
-    }
-
-    @Override public <T> T
-    createFastEvaluator(Reader reader, Class<? extends T> interfaceToImplement, String... parameterNames)
-    throws CompileException, IOException {
-
-        if (!interfaceToImplement.isInterface()) {
-            throw new InternalCompilerException("\"" + interfaceToImplement + "\" is not an interface");
-        }
-
-        Method methodToImplement;
-        {
-            Method[] methods = interfaceToImplement.getDeclaredMethods();
-            if (methods.length != 1) {
-                throw new InternalCompilerException(
-                    "Interface \""
-                    + interfaceToImplement
-                    + "\" must declare exactly one method"
-                );
-            }
-            methodToImplement = methods[0];
-        }
-
-        this.setImplementedInterfaces(new Class[] { interfaceToImplement });
-        this.setOverrideMethod(true);
-        this.setStaticMethod(false);
-        this.setExpressionType(methodToImplement.getReturnType());
-        this.setMethodName(methodToImplement.getName());
-        this.setParameters(parameterNames, methodToImplement.getParameterTypes());
-        this.setThrownExceptions(methodToImplement.getExceptionTypes());
-        this.cook(reader);
-
-        @SuppressWarnings("unchecked") Class<? extends T>
-        actualClass = (Class<? extends T>) this.getMethod().getDeclaringClass();
-
-        try {
-            return actualClass.newInstance();
-        } catch (InstantiationException e) {
-            // SNO - Declared class is always non-abstract.
-            throw new InternalCompilerException(e.toString(), e);
-        } catch (IllegalAccessException e) {
-            // SNO - interface methods are always PUBLIC.
-            throw new InternalCompilerException(e.toString(), e);
-        }
+        super.setReturnTypes(returnTypes);
+        this.cook(optionalFileNames, readers, imports);
     }
 }

@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2016 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -174,10 +175,10 @@ interface TokenStream {
      *   continue parsing, so there is no need to install a custom parse error handler.
      * </p>
      *
-     * @param warningHandler {@code null} to indicate that no warnings be issued
+     * @param optionalWarningHandler {@code null} to indicate that no warnings be issued
      */
     void
-    setWarningHandler(@Nullable WarningHandler warningHandler);
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler);
 
     /**
      * @return The location of the first character of the previously <em>read</em> (not <em>peek</em>ed!) token

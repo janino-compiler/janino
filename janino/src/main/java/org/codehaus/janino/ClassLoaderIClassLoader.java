@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -44,7 +45,7 @@ class ClassLoaderIClassLoader extends IClassLoader {
     public
     ClassLoaderIClassLoader(ClassLoader classLoader) {
         super(
-            null   // parentIClassLoader
+            null   // optionalParentIClassLoader
         );
         this.classLoader = classLoader;
 
@@ -72,21 +73,28 @@ class ClassLoaderIClassLoader extends IClassLoader {
 
         Class<?> clazz;
         try {
-            clazz = this.classLoader.loadClass(Descriptor.toClassName(descriptor));
+
+            //
+            // See also [ 931385 ] Janino 2.0 throwing exception on arrays of java.io.File:
+            //
+            // "ClassLoader.loadClass()" and "Class.forName()" should be identical,
+            // but "ClassLoader.loadClass("[Ljava.lang.Object;")" throws a
+            // ClassNotFoundException under JDK 1.5.0 beta.
+            // Unclear whether this a beta version bug and SUN will fix this in the final
+            // release, but "Class.forName()" seems to work fine in all cases, so we
+            // use that.
+            //
+
+//            clazz = this.classLoader.loadClass(Descriptor.toClassName(descriptor));
+            clazz = Class.forName(Descriptor.toClassName(descriptor), false, this.classLoader);
         } catch (ClassNotFoundException e) {
-
-            // Determine whether the class DOES NOT EXIST, or whether there were problems loading it. That's easier
-            // said than done... the following seems to work:
-            // (See also https://github.com/janino-compiler/janino/issues/104).
+            if (e.getException() == null) {
+                return null;
+            } else
             {
-                Throwable t = e.getCause();
-                while (t instanceof ClassNotFoundException) t = t.getCause();
-                if (t == null) return null;
+                throw e;
             }
-
-            throw e;
         }
-
         ClassLoaderIClassLoader.LOGGER.log(Level.FINE, "clazz={0}", clazz);
 
         IClass result = new ReflectionIClass(clazz, this);

@@ -7,22 +7,17 @@
 >
   <modelVersion>4.0.0</modelVersion>
 
+  <!--
+    Set the following in "Run/Run Configurations.../Maven build/Main/Parameter name":
+        jdk16 = C:\Program Files\Java\jdk1.6.0_43   (or wherever a JDK 1.6 is installed)
+  -->
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <!--
-      JANINO still retains backwards compatibility with JRE 6:
-    -->
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
-
-    <!--
-      If you want to enforce a particular JAVAC executable to be used, set these two properties:
-    -->
-    <!--
-    <maven.compiler.executable>c:\dev\Java\jdk1.6.0_45\bin\javac.exe</maven.compiler.executable>
-    <maven.compiler.fork>false</maven.compiler.fork>
-    -->
+    <jdk16>C:/dev/Java/jdk1.6.0_45</jdk16>
+    <maven.compiler.executable>${jdk16}\bin\javac.exe</maven.compiler.executable>
+    <JAVA_HOME>${jdk16}</JAVA_HOME>
   </properties>
 
   <artifactId>janino-parent</artifactId>
@@ -31,7 +26,7 @@
 
   <groupId>org.codehaus.janino</groupId>
   <packaging>pom</packaging>
-  <version>3.1.2-SNAPSHOT</version>
+  <version>3.0.16-SNAPSHOT</version>
   <dependencyManagement>
   	<dependencies>
   		<dependency>
@@ -178,6 +173,13 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+          <compilerVersion>1.6</compilerVersion>
+          <fork>true</fork>
+          <forceJavacCompilerUse>true</forceJavacCompilerUse>
+        </configuration>
       </plugin>
 
       <plugin>

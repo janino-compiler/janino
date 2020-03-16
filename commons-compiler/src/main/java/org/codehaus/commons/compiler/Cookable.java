@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -45,9 +46,6 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public abstract
 class Cookable implements ICookable {
 
-    @Override public abstract void
-    cook(@Nullable String fileName, Reader reader) throws CompileException, IOException;
-
     @Override public final void
     cook(Reader r) throws CompileException, IOException { this.cook(null, r); }
 
@@ -55,21 +53,21 @@ class Cookable implements ICookable {
     cook(InputStream is) throws CompileException, IOException { this.cook(null, is); }
 
     @Override public final void
-    cook(@Nullable String fileName, InputStream is) throws CompileException, IOException {
-        this.cook(fileName, is, null);
+    cook(@Nullable String optionalFileName, InputStream is) throws CompileException, IOException {
+        this.cook(optionalFileName, is, null);
     }
 
     @Override public final void
-    cook(InputStream is, @Nullable String encoding) throws CompileException, IOException {
-        this.cook(encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding));
+    cook(InputStream is, @Nullable String optionalEncoding) throws CompileException, IOException {
+        this.cook(optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding));
     }
 
     @Override public final void
-    cook(@Nullable String fileName, InputStream is, @Nullable String encoding)
+    cook(@Nullable String optionalFileName, InputStream is, @Nullable String optionalEncoding)
     throws CompileException, IOException {
         this.cook(
-            fileName,
-            encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding)
+            optionalFileName,
+            optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding)
         );
     }
 
@@ -77,9 +75,9 @@ class Cookable implements ICookable {
     cook(String s) throws CompileException { this.cook((String) null, s); }
 
     @Override public final void
-    cook(@Nullable String fileName, String s) throws CompileException {
+    cook(@Nullable String optionalFileName, String s) throws CompileException {
         try {
-            this.cook(fileName, new StringReader(s));
+            this.cook(optionalFileName, new StringReader(s));
         } catch (IOException ioe) {
             ioe.printStackTrace();
             // SUPPRESS CHECKSTYLE AvoidHidingCause
@@ -91,12 +89,12 @@ class Cookable implements ICookable {
     cookFile(File file) throws CompileException, IOException { this.cookFile(file, null); }
 
     @Override public final void
-    cookFile(File file, @Nullable String encoding) throws CompileException, IOException {
+    cookFile(File file, @Nullable String optionalEncoding) throws CompileException, IOException {
         InputStream is = new FileInputStream(file);
         try {
             this.cook(
                 file.getAbsolutePath(),
-                encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding)
+                optionalEncoding == null ? new InputStreamReader(is) : new InputStreamReader(is, optionalEncoding)
             );
             is.close();
             is = null;
@@ -111,7 +109,24 @@ class Cookable implements ICookable {
     }
 
     @Override public final void
-    cookFile(String fileName, @Nullable String encoding) throws CompileException, IOException {
-        this.cookFile(new File(fileName), encoding);
+    cookFile(String fileName, @Nullable String optionalEncoding) throws CompileException, IOException {
+        this.cookFile(new File(fileName), optionalEncoding);
+    }
+
+    /**
+     * Reads all characters from the given {@link Reader} into a {@link String}.
+     */
+    public static String
+    readString(Reader r) throws IOException {
+
+        StringBuilder sb = new StringBuilder();
+        char[]        ca = new char[4096];
+        for (;;) {
+            int count = r.read(ca);
+            if (count == -1) break;
+            sb.append(ca, 0, count);
+        }
+        String s = sb.toString();
+        return s;
     }
 }

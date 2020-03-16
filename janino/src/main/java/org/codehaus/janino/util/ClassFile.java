@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -82,17 +83,15 @@ class ClassFile implements Annotatable {
     public
     ClassFile(short accessFlags, String thisClassFd, @Nullable String superclassFd, String[] interfaceFds) {
 
-        // MUST generate version 50 (Java 6) .class files, because JANINO generates JSR and RET instructions, which
-        // are forbidding in 7+ .class files.
-//        {
-//            String  jcv = System.getProperty("java.class.version");
-//            Matcher m   = Pattern.compile("(\\d+)\\.(\\d+)").matcher(jcv);
-//            if (!m.matches()) throw new AssertionError("Unrecognized JVM class file version \"" + jcv + "\"");
-//            this.majorVersion = Short.parseShort(m.group(1));
-//            this.minorVersion = Short.parseShort(m.group(2));
-//        }
-        this.majorVersion = ClassFile.MAJOR_VERSION_JDK_1_6;
-        this.minorVersion = ClassFile.MINOR_VERSION_JDK_1_6;
+        // Must not set these to "..._1_7", because then the JVM insists on a StackMapTable (JVMS9 4.7.4), which
+        // JANINO currently does not produce:
+        //
+        //    java.lang.VerifyError: Expecting a stackmap frame at branch target 13
+        //
+        // ("jre -noverify" removes that requirement, but we cannot force our users to run their JVMs with that
+        // option.)
+        this.majorVersion  = ClassFile.MAJOR_VERSION_JDK_1_6;
+        this.minorVersion  = ClassFile.MINOR_VERSION_JDK_1_6;
 
         this.constantPool  = new ArrayList<ConstantPoolInfo>();
         this.constantPool.add(null); // Add fake "0" index entry.
@@ -551,13 +550,13 @@ class ClassFile implements Annotatable {
         short            accessFlags,
         String           fieldName,
         String           fieldTypeFd,
-        @Nullable Object constantValue
+        @Nullable Object optionalConstantValue
     ) {
         List<AttributeInfo> attributes = new ArrayList<AttributeInfo>();
-        if (constantValue != null) {
+        if (optionalConstantValue != null) {
             attributes.add(new ConstantValueAttribute(
                 this.addConstantUtf8Info("ConstantValue"),
-                this.addConstantSifldInfo(constantValue)
+                this.addConstantSifldInfo(optionalConstantValue)
             ));
         }
         FieldInfo fi = new FieldInfo(
@@ -603,15 +602,10 @@ class ClassFile implements Annotatable {
     }
 
     /**
-     * @return                    The (read-only) constant pool entry indexed by <var>index</var>
-     * @throws ClassFileException <var>index</var> is invalid
+     * @return The (read-only) constant pool entry indexed by <var>index</var>
      */
     public ConstantPoolInfo
-    getConstantPoolInfo(short index) {
-        final ConstantPoolInfo result = (ConstantPoolInfo) this.constantPool.get(0xffff & index);
-        if (result == null) throw new ClassFileException("Invalid constant pool index " + index);
-        return result;
-    }
+    getConstantPoolInfo(short index) { return (ConstantPoolInfo) this.constantPool.get(0xffff & index); }
 
     /**
      * @return The (read-only) constant class info indexed by <var>index</var>
@@ -965,8 +959,6 @@ class ClassFile implements Annotatable {
     /**
      * The constant pool index of the {@link ConstantClassInfo} that describes the superclass of this class. Zero
      * for class {@link Object}, {@link Object} for interfaces.
-     *
-     * @see "JVMS11 4.1, The ClassFile Structure"
      */
     public final short superclass;
 
@@ -1011,7 +1003,7 @@ class ClassFile implements Annotatable {
         /**
          * @return Whether this CP entry is "wide" in the sense of JVMS7 4.4.5
          */
-        public abstract boolean isWide();
+        protected abstract boolean isWide();
 
         private static ConstantPoolInfo
         loadConstantPoolInfo(DataInputStream dis) throws IOException {
@@ -1109,9 +1101,6 @@ class ClassFile implements Annotatable {
             dos.writeShort(this.nameIndex);
         }
 
-        @Override public String
-        toString() { return "CONSTANT_Class_info(" + this.nameIndex + ")"; }
-
         @Override public boolean
         equals(@Nullable Object o) {
             return o instanceof ConstantClassInfo && ((ConstantClassInfo) o).nameIndex == this.nameIndex;
@@ -1161,9 +1150,6 @@ class ClassFile implements Annotatable {
             dos.writeShort(this.classIndex);
             dos.writeShort(this.nameAndTypeIndex);
         }
-
-        @Override public String
-        toString() { return "CONSTANT_Fieldref_info(" + this.classIndex + ", " + this.nameAndTypeIndex + ")"; }
 
         @Override public boolean
         equals(@Nullable Object o) {
@@ -1217,9 +1203,6 @@ class ClassFile implements Annotatable {
             dos.writeShort(this.nameAndTypeIndex);
         }
 
-        @Override public String
-        toString() { return "CONSTANT_Methodref_info(" + this.classIndex + ", " + this.nameAndTypeIndex + ")"; }
-
         @Override public boolean
         equals(@Nullable Object o) {
             return (
@@ -1271,11 +1254,6 @@ class ClassFile implements Annotatable {
             dos.writeShort(this.nameAndTypeIndex);
         }
 
-        @Override public String
-        toString() {
-            return "CONSTANT_InterfaceMethodref_info(" + this.classIndex + ", " + this.nameAndTypeIndex + ")";
-        }
-
         @Override public boolean
         equals(@Nullable Object o) {
             return (
@@ -1314,9 +1292,6 @@ class ClassFile implements Annotatable {
             dos.writeShort(this.stringIndex);
         }
 
-        @Override public String
-        toString() { return "CONSTANT_String_info(" + this.stringIndex + ")"; }
-
         @Override public boolean
         equals(@Nullable Object o) {
             return o instanceof ConstantStringInfo && ((ConstantStringInfo) o).stringIndex == this.stringIndex;
@@ -1350,9 +1325,6 @@ class ClassFile implements Annotatable {
             dos.writeByte(3);
             dos.writeInt(this.value);
         }
-
-        @Override public String
-        toString() { return "CONSTANT_Integer_info(" + this.value + ")"; }
 
         @Override public boolean
         equals(@Nullable Object o) {
@@ -1388,9 +1360,6 @@ class ClassFile implements Annotatable {
             dos.writeFloat(this.value);
         }
 
-        @Override public String
-        toString() { return "CONSTANT_Float_info(" + this.value + ")"; }
-
         @Override public boolean
         equals(@Nullable Object o) {
             return o instanceof ConstantFloatInfo && ((ConstantFloatInfo) o).value == this.value;
@@ -1425,9 +1394,6 @@ class ClassFile implements Annotatable {
             dos.writeLong(this.value);
         }
 
-        @Override public String
-        toString() { return "CONSTANT_Long_info(" + this.value + ")"; }
-
         @Override public boolean
         equals(@Nullable Object o) {
             return o instanceof ConstantLongInfo && ((ConstantLongInfo) o).value == this.value;
@@ -1459,9 +1425,6 @@ class ClassFile implements Annotatable {
             dos.writeByte(6);
             dos.writeDouble(this.value);
         }
-
-        @Override public String
-        toString() { return "CONSTANT_Double_info(" + this.value + ")"; }
 
         @Override public boolean
         equals(@Nullable Object o) {
@@ -1513,9 +1476,6 @@ class ClassFile implements Annotatable {
             dos.writeShort(this.nameIndex);
             dos.writeShort(this.descriptorIndex);
         }
-
-        @Override public String
-        toString() { return "CONSTANT_NameAndType_info(" + this.nameIndex + ", " + this.descriptorIndex + ")"; }
 
         @Override public boolean
         equals(@Nullable Object o) {
@@ -1570,9 +1530,6 @@ class ClassFile implements Annotatable {
             }
         }
 
-        @Override public String
-        toString() { return "CONSTANT_Utf8_info(\"" + this.s + "\")"; }
-
         @Override public boolean
         equals(@Nullable Object o) {
             return o instanceof ConstantUtf8Info && ((ConstantUtf8Info) o).s.equals(this.s);
@@ -1612,9 +1569,6 @@ class ClassFile implements Annotatable {
             dos.writeShort(this.referenceIndex);
         }
 
-        @Override public String
-        toString() { return "CONSTANT_MethodHandle_info(" + this.referenceKind + ", " + this.referenceIndex + ")"; }
-
         @Override public boolean
         equals(@Nullable Object o) {
             return (
@@ -1653,9 +1607,6 @@ class ClassFile implements Annotatable {
             dos.writeByte(16);
             dos.writeShort(this.descriptorIndex);
         }
-
-        @Override public String
-        toString() { return "CONSTANT_MethodType_info(" + this.descriptorIndex + ")"; }
 
         @Override public boolean
         equals(@Nullable Object o) {
@@ -1697,11 +1648,6 @@ class ClassFile implements Annotatable {
             dos.writeByte(18);
             dos.writeShort(this.bootstrapMethodAttrIndex);
             dos.writeShort(this.nameAndTypeIndex);
-        }
-
-        @Override public String
-        toString() {
-            return "CONSTANT_InvokeDynamic_info(" + this.bootstrapMethodAttrIndex + ", " + this.nameAndTypeIndex + ")";
         }
 
         @Override public boolean
@@ -1992,7 +1938,7 @@ class ClassFile implements Annotatable {
             result = SourceFileAttribute.loadBody(attributeNameIndex, bdis);
         } else
         if ("StackMapTable".equals(attributeName)) {
-            result = StackMapTableAttribute.loadBody(attributeNameIndex, bdis, this);
+            result = StackMapTableAttribute.loadBody(attributeNameIndex, bdis);
         } else
         if ("LineNumberTable".equals(attributeName)) {
             result = LineNumberTableAttribute.loadBody(attributeNameIndex, bdis);
@@ -2574,15 +2520,11 @@ class ClassFile implements Annotatable {
 
         private final StackMapFrame[] entries;
 
-        public
         StackMapTableAttribute(short attributeNameIndex, StackMapFrame[] entries) {
             super(attributeNameIndex);
             this.entries = entries;
         }
 
-        /**
-         * Representation of an entry in the {@link StackMapTableAttribute}.
-         */
         public abstract static
         class StackMapFrame {
 
@@ -2598,9 +2540,6 @@ class ClassFile implements Annotatable {
              */
             public abstract <T> T accept(StackMapFrameVisitor<T> smfv);
 
-            /**
-             * Serializes this record and writes it to the given {@link DataOutputStream}.
-             */
             public abstract void store(DataOutputStream dos) throws IOException;
         }
 
@@ -2634,7 +2573,7 @@ class ClassFile implements Annotatable {
             accept(StackMapFrameVisitor<T> smfv) { return smfv.visitSameFrame(this); }
 
             @Override public String
-            toString() { return "same_frame (offsetDelta=" + this.offsetDelta + ")"; }
+            toString() { return "same_frame"; }
         }
 
         /**
@@ -2642,8 +2581,7 @@ class ClassFile implements Annotatable {
          */
         public static
         class SameLocals1StackItemFrame extends StackMapFrame {
-
-            private final VerificationTypeInfo stack;
+            public final VerificationTypeInfo stack;
 
             public
             SameLocals1StackItemFrame(int offsetDelta, VerificationTypeInfo stack) {
@@ -2662,13 +2600,7 @@ class ClassFile implements Annotatable {
 
             @Override public String
             toString() {
-                return (
-                    "same_locals_1_stack_item_frame(offsetDelta="
-                    + this.offsetDelta
-                    + ", stack=["
-                    + this.stack
-                    + "])"
-                );
+                return "same_locals_1_stack_item_frame(stack=" + this.stack + ")";
             }
         }
 
@@ -2677,8 +2609,7 @@ class ClassFile implements Annotatable {
          */
         public static
         class SameLocals1StackItemFrameExtended extends StackMapFrame {
-
-            private final VerificationTypeInfo stack;
+            public final VerificationTypeInfo stack;
 
             public
             SameLocals1StackItemFrameExtended(int offsetDelta, VerificationTypeInfo stack) {
@@ -2701,9 +2632,9 @@ class ClassFile implements Annotatable {
                 return (
                     "same_locals_1_stack_item_frame_extended(offsetDelta="
                     + this.offsetDelta
-                    + ", stack=["
+                    + ", stack="
                     + this.stack
-                    + "])"
+                    + ")"
                 );
             }
         }
@@ -2713,19 +2644,14 @@ class ClassFile implements Annotatable {
          */
         public static
         class ChopFrame extends StackMapFrame {
-
-            private final int k;
+            public final int k;
 
             public
-            ChopFrame(int offsetDelta, int k) {
-                super(offsetDelta);
-                assert k >= 1 && k <= 3 : k;
-                this.k = k;
-            }
+            ChopFrame(int offsetDelta, int k) { super(offsetDelta); this.k = k; }
 
             @Override public void
             store(DataOutputStream dos) throws IOException {
-                dos.writeByte(251 - this.k); // k = 3, 2, 1 => frame_type = 248, 249, 250
+                dos.writeByte(251 - this.k);
                 dos.writeShort(this.offsetDelta);
             }
 
@@ -2733,7 +2659,7 @@ class ClassFile implements Annotatable {
             accept(StackMapFrameVisitor<T> smfv) { return smfv.visitChopFrame(this); }
 
             @Override public String
-            toString() { return "chop_frame(offsetDelta=" + this.offsetDelta + ", locals-=" + this.k + ", stack=[])"; }
+            toString() { return "chop_frame"; }
         }
 
         /**
@@ -2755,7 +2681,7 @@ class ClassFile implements Annotatable {
             accept(StackMapFrameVisitor<T> smfv) { return smfv.visitSameFrameExtended(this); }
 
             @Override public String
-            toString() { return "same_frame_extended(offsetDelta=" + this.offsetDelta + ", stack=[])"; }
+            toString() { return "same_frame_extended"; }
         }
 
         /**
@@ -2763,14 +2689,11 @@ class ClassFile implements Annotatable {
          */
         public static
         class AppendFrame extends StackMapFrame {
-
-            private final VerificationTypeInfo[] locals;
+            public final VerificationTypeInfo[] locals;
 
             public
             AppendFrame(int offsetDelta, VerificationTypeInfo[] locals) {
                 super(offsetDelta);
-
-                assert locals.length >= 1 && locals.length <= 3;
                 this.locals = locals;
             }
 
@@ -2786,7 +2709,7 @@ class ClassFile implements Annotatable {
 
             @Override public String
             toString() {
-                return "append_frame(locals+=" + Arrays.toString(this.locals) + ", stack=[])";
+                return "append_frame(locals=" + Arrays.toString(this.locals) + ")";
             }
         }
 
@@ -2795,9 +2718,8 @@ class ClassFile implements Annotatable {
          */
         public static
         class FullFrame extends StackMapFrame {
-
-            private final VerificationTypeInfo[] locals;
-            private final VerificationTypeInfo[] stack;
+            public final VerificationTypeInfo[] locals;
+            public final VerificationTypeInfo[] stack;
 
             public
             FullFrame(int offsetDelta, VerificationTypeInfo[] locals, VerificationTypeInfo[] stack) {
@@ -2838,101 +2760,72 @@ class ClassFile implements Annotatable {
          */
         public
         interface VerificationTypeInfo {
-
-            /**
-             * @return The category of the type (1 or 2) (JVMS11 2.11.1)
-             */
-            int category();
-
-            /**
-             * Writes this object to an {@link OutputStream}, in "class file" format.
-             */
             void store(DataOutputStream dos) throws IOException;
         }
 
         /**
          * Representation of the {@code top_variable_info} structure; see JVMS8 4.7.4.
          */
-        public static final VerificationTypeInfo TOP_VARIABLE_INFO = new VerificationTypeInfo() {
+        public static
+        class TopVariableInfo implements VerificationTypeInfo {
 
-            @Override public int     category()                                     { return 1;           }
-            @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(0);   }
-            @Override public String  toString()                                     { return "top";       }
-            @Override public int     hashCode()                                     { return 0;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
-        };
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(0); }
+            @Override public String toString()                                     { return "top";     }
+        }
 
         /**
          * Representation of the {@code integer_variable_info} structure; see JVMS8 4.7.4.
          */
-        public static final VerificationTypeInfo INTEGER_VARIABLE_INFO = new VerificationTypeInfo() {
-
-            @Override public int     category()                                     { return 1;           }
-            @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(1);   }
-            @Override public String  toString()                                     { return "int";       }
-            @Override public int     hashCode()                                     { return 1;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
-        };
+        public static
+        class IntegerVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(1); }
+            @Override public String toString()                                     { return "int";     }
+        }
 
         /**
          * Representation of the {@code float_variable_info} structure; see JVMS8 4.7.4.
          */
-        public static final VerificationTypeInfo FLOAT_VARIABLE_INFO = new VerificationTypeInfo() {
-
-            @Override public int     category()                                     { return 1;           }
-            @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(2);   }
-            @Override public String  toString()                                     { return "float";     }
-            @Override public int     hashCode()                                     { return 2;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
-        };
+        public static
+        class FloatVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(2); }
+            @Override public String toString()                                     { return "float";   }
+        }
 
         /**
          * Representation of the {@code double_variable_info} structure; see JVMS8 4.7.4.
          */
-        public static final VerificationTypeInfo DOUBLE_VARIABLE_INFO = new VerificationTypeInfo() {
-
-            @Override public int     category()                                     { return 2;           }
-            @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(3);   }
-            @Override public String  toString()                                     { return "double";    }
-            @Override public int     hashCode()                                     { return 3;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
-        };
+        public static
+        class DoubleVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(3); }
+            @Override public String toString()                                     { return "double";  }
+        }
 
         /**
          * Representation of the {@code long_variable_info} structure; see JVMS8 4.7.4.
          */
-        public static final VerificationTypeInfo LONG_VARIABLE_INFO = new VerificationTypeInfo() {
-
-            @Override public int     category()                                     { return 2;           }
-            @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(4);   }
-            @Override public String  toString()                                     { return "long";      }
-            @Override public int     hashCode()                                     { return 4;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
-        };
+        public static
+        class LongVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(4); }
+            @Override public String toString()                                     { return "long";    }
+        }
 
         /**
          * Representation of the {@code null_variable_info} structure; see JVMS8 4.7.4.
          */
-        public static final VerificationTypeInfo NULL_VARIABLE_INFO = new VerificationTypeInfo() {
-
-            @Override public int     category()                                     { return 1;           }
-            @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(5);   }
-            @Override public String  toString()                                     { return "null";      }
-            @Override public int     hashCode()                                     { return 5;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
-        };
+        public static
+        class NullVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(5); }
+            @Override public String toString()                                     { return "null";    }
+        }
 
         /**
          * Representation of the {@code uninitialized_this_variable_info} structure; see JVMS8 4.7.4.
          */
-        public static final VerificationTypeInfo UNINITIALIZED_THIS_VARIABLE_INFO = new VerificationTypeInfo() {
-
-            @Override public int     category()                                     { return 1;                   }
-            @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(6);           }
-            @Override public String  toString()                                     { return "uninitializedThis"; }
-            @Override public int     hashCode()                                     { return 6;                   }
-            @Override public boolean equals(Object obj)                             { return obj == this;         }
-        };
+        public static
+        class UninitializedThisVariableInfo implements VerificationTypeInfo {
+            @Override public void   store(DataOutputStream dos) throws IOException { dos.writeByte(6);           }
+            @Override public String toString()                                     { return "uninitializedThis"; }
+        }
 
         /**
          * Representation of the {@code object_variable_info} structure; see JVMS8 4.7.4.
@@ -2940,40 +2833,19 @@ class ClassFile implements Annotatable {
         public static
         class ObjectVariableInfo implements VerificationTypeInfo {
 
-            private final short  constantClassInfoIndex;
-            private final String fieldDescriptor;
+            private final ConstantClassInfo constantClassInfo;
 
             public
-            ObjectVariableInfo(short constantClassInfoIndex, String fieldDescriptor) {
-                this.constantClassInfoIndex = constantClassInfoIndex;
-                this.fieldDescriptor        = fieldDescriptor;
-            }
-
-            public short
-            getConstantClassInfoIndex() { return this.constantClassInfoIndex; }
-
-            @Override public int
-            category() { return 1; }
+            ObjectVariableInfo(ConstantClassInfo constantClassInfo) { this.constantClassInfo = constantClassInfo; }
 
             @Override public void
             store(DataOutputStream dos) throws IOException {
                 dos.writeByte(7);
-                dos.writeShort(this.constantClassInfoIndex);
+                dos.writeShort(this.constantClassInfo.nameIndex);
             }
 
             @Override public String
-            toString() { return "object(" + Descriptor.toString(this.fieldDescriptor) + ")"; }
-
-            @Override public int
-            hashCode() { return 7 ^ this.constantClassInfoIndex; }
-
-            @Override public boolean
-            equals(Object obj) {
-                return (
-                    obj instanceof ObjectVariableInfo
-                    && ((ObjectVariableInfo) obj).constantClassInfoIndex == this.constantClassInfoIndex
-                );
-            }
+            toString() { return this.constantClassInfo.toString(); }
         }
 
         /**
@@ -2982,13 +2854,9 @@ class ClassFile implements Annotatable {
         public static
         class UninitializedVariableInfo implements VerificationTypeInfo {
 
-            /** The code offset where the variable is declared. */
-            public short offset;
+            private final short offset;
 
             public UninitializedVariableInfo(short offset) { this.offset = offset; }
-
-            @Override public int
-            category() { return 1; }
 
             @Override public void
             store(DataOutputStream dos) throws IOException {
@@ -2998,54 +2866,27 @@ class ClassFile implements Annotatable {
 
             @Override public String
             toString() { return "uninitialized(offset=" + this.offset + ")"; }
-
-            @Override public int
-            hashCode() { return 8 ^ this.offset; }
-
-            @Override public boolean
-            equals(Object obj) {
-                return (
-                    obj instanceof UninitializedVariableInfo
-                    && ((UninitializedVariableInfo) obj).offset == this.offset
-                );
-            }
         }
 
         private static AttributeInfo
-        loadBody(short attributeNameIndex, DataInputStream dis, ClassFile classFile) throws IOException {
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
 
             StackMapFrame[] entries = new StackMapFrame[dis.readUnsignedShort()]; // number_of_entries
             for (int i = 0; i < entries.length; ++i) {                            // entries
                 int frameType = dis.readUnsignedByte();
 
                 StackMapFrame e = (
-                    frameType <= 63 ? new SameFrame(
-                        frameType // offsetDelta
-                    ) :
-                    frameType <= 127 ? new SameLocals1StackItemFrame(
-                        frameType - 64,                                                 // offsetDelta
-                        StackMapTableAttribute.loadVerificationTypeInfo(dis, classFile) // stack
-                    ) :
+                    frameType <= 63 ? new SameFrame(frameType) :
+                    frameType <= 127 ? new SameLocals1StackItemFrame(frameType - 64, StackMapTableAttribute.loadVerificationTypeInfo(dis)) : // SUPPRESS CHECKSTYLE LineLength:5
                     frameType <= 246 ? null :
-                    frameType == 247 ? new SameLocals1StackItemFrameExtended(
-                        dis.readUnsignedShort(),                                        // offsetDelta
-                        StackMapTableAttribute.loadVerificationTypeInfo(dis, classFile) // stack
-                    ) :
-                    frameType <= 250 ? new ChopFrame(
-                        dis.readUnsignedShort(), // offsetDelta
-                        251 - frameType          // k
-                    ) :
-                    frameType == 251 ? new SameFrameExtended(
-                        dis.readUnsignedShort() // offsetDelta
-                    ) :
-                    frameType <= 254 ? new AppendFrame(
-                        dis.readUnsignedShort(),                                                          // offsetDelta
-                        StackMapTableAttribute.loadVerificationTypeInfos(dis, frameType - 251, classFile) // locals
-                    ) :
+                    frameType == 247 ? new SameLocals1StackItemFrameExtended(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfo(dis)) :
+                    frameType <= 250 ? new ChopFrame(dis.readUnsignedShort(), 251 - frameType) :
+                    frameType == 251 ? new SameFrameExtended(dis.readUnsignedShort()) :
+                    frameType <= 254 ? new AppendFrame(dis.readUnsignedShort(), StackMapTableAttribute.loadVerificationTypeInfos(dis, frameType - 251)) :
                     frameType == 255 ? new FullFrame(
-                        dis.readUnsignedShort(),                                                                   // offsetDelta SUPPRESS CHECKSTYLE LineLength:2
-                        StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort(), classFile), // locals
-                        StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort(), classFile)  // stack
+                        dis.readUnsignedShort(),                                                        // offsetDelta
+                        StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort()), // locals
+                        StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort())  // stack
                     ) :
                     null
                 );
@@ -3066,39 +2907,29 @@ class ClassFile implements Annotatable {
         }
 
         private static VerificationTypeInfo[]
-        loadVerificationTypeInfos(DataInputStream dis, int number, ClassFile classFile) throws IOException {
+        loadVerificationTypeInfos(DataInputStream dis, int number) throws IOException {
             VerificationTypeInfo[] result = new VerificationTypeInfo[number];
-            for (int i = 0; i < number; i++) result[i] = StackMapTableAttribute.loadVerificationTypeInfo(dis, classFile);
+            for (int i = 0; i < number; i++) result[i] = StackMapTableAttribute.loadVerificationTypeInfo(dis);
             return result;
         }
 
         private static VerificationTypeInfo
-        loadVerificationTypeInfo(DataInputStream dis, ClassFile classFile) throws IOException {
+        loadVerificationTypeInfo(DataInputStream dis) throws IOException {
 
             int tag = 0xff & dis.readByte();
             switch (tag) {
 
-            case 0: return StackMapTableAttribute.TOP_VARIABLE_INFO;
-            case 1: return StackMapTableAttribute.INTEGER_VARIABLE_INFO;
-            case 2: return StackMapTableAttribute.FLOAT_VARIABLE_INFO;
-            case 3: return StackMapTableAttribute.DOUBLE_VARIABLE_INFO;
-            case 4: return StackMapTableAttribute.LONG_VARIABLE_INFO;
-            case 5: return StackMapTableAttribute.NULL_VARIABLE_INFO;
-            case 6: return StackMapTableAttribute.UNINITIALIZED_THIS_VARIABLE_INFO;
-
-            case 7:
-                {
-                    short constantClassInfoIndex = dis.readShort();
-                    return new ObjectVariableInfo(
-                        constantClassInfoIndex,
-                        classFile.getConstantClassInfo(constantClassInfoIndex).getName(classFile)
-                    );
-                }
-
+            case 0: return new TopVariableInfo();
+            case 1: return new IntegerVariableInfo();
+            case 2: return new FloatVariableInfo();
+            case 3: return new DoubleVariableInfo();
+            case 4: return new LongVariableInfo();
+            case 5: return new NullVariableInfo();
+            case 6: return new UninitializedThisVariableInfo();
+            case 7: return new ObjectVariableInfo(new ConstantClassInfo(dis.readShort()));
             case 8: return new UninitializedVariableInfo(dis.readShort());
 
-            default:
-                throw new ClassFileException("Invalid verification_type_info tag " + tag);
+            default: throw new ClassFileException("Invalid verification_type_info tag " + tag);
             }
         }
 
@@ -3428,15 +3259,5 @@ class ClassFile implements Annotatable {
         default:
             throw new ClassFileException("Invalid element-value-pair tag '" + (char) tag + "'");
         }
-    }
-
-    public StackMapTableAttribute.ObjectVariableInfo
-    newObjectVariableInfo(String fieldDescriptor) {
-        return new StackMapTableAttribute.ObjectVariableInfo(this.addConstantClassInfo(fieldDescriptor), fieldDescriptor);
-    }
-
-    public StackMapTableAttribute.UninitializedVariableInfo
-    newUninitializedVariableInfo(short offset) {
-        return new StackMapTableAttribute.UninitializedVariableInfo(offset);
     }
 }

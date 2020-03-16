@@ -2,7 +2,8 @@
 /*
  * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001-2019 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -29,12 +30,9 @@ package org.codehaus.commons.compiler.tests;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.ResourceBundle;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.ICompilerFactory;
-import org.codehaus.commons.compiler.lang.ClassLoaders;
-import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -116,45 +114,6 @@ class JavaSourceClassLoaderTest {
         );
         jscl.setSourcePath(new File[] { new File("src/test/resources/testOverloadedStaticImports/") });
         jscl.loadClass("test.SingleStaticImport");
-    }
-
-    @Test @SuppressWarnings("static-method") public void
-    testBundles1() throws Exception {
-
-        ClassLoader cl = ClassLoaders.getsResourceAsStream(
-            new DirectoryResourceFinder(new File("src/test/resources/testBundles/")),
-            ClassLoader.getSystemClassLoader().getParent()
-        );
-
-        Assert.assertNotNull(cl.getResourceAsStream("path/to/some_resource.txt"));
-    }
-
-    @Test public void
-    testBundles2() throws Exception {
-
-        ClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
-            ClassLoaders.getsResourceAsStream(
-                new DirectoryResourceFinder(new File("src/test/resources/testBundles/")),
-                ClassLoader.getSystemClassLoader().getParent()
-            )
-        );
-
-        Assert.assertNotNull(jscl.getResourceAsStream("path/to/some_resource.txt"));
-    }
-
-    @Test public void
-    testBundles3() throws Exception {
-        AbstractJavaSourceClassLoader jscl = this.compilerFactory.newJavaSourceClassLoader(
-            ClassLoaders.getsResourceAsStream(
-                new DirectoryResourceFinder(new File("src/test/resources/testBundles/")),
-                ClassLoader.getSystemClassLoader().getParent()
-            )
-        );
-        jscl.setSourceFinder(new DirectoryResourceFinder(new File("src/test/resources/testBundles/")));
-
-        ResourceBundle rb = (ResourceBundle) jscl.loadClass("test.GetBundle").getDeclaredMethod("main").invoke(null);
-        Assert.assertNotNull(rb);
-        Assert.assertEquals("b", rb.getString("a"));
     }
 
     private static ClassLoader

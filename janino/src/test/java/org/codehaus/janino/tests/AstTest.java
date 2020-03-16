@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2019 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -111,8 +112,8 @@ class AstTest {
             null,
             new Java.Modifier[] { new Java.AccessModifier("public", AstTest.getLocation()) },
             "HandMade",
-            null,         // typeParameters
-            null,         // extendedType
+            null,         // optionalTypeParameters
+            null,         // optionalExtendedType
             new Type[0]   // implementedTypes
         );
         cu.addPackageMemberTypeDeclaration(clazz);
@@ -135,15 +136,15 @@ class AstTest {
     createMethod(PackageMemberClassDeclaration clazz, List<? extends Java.BlockStatement> statements, Type returnType) {
         MethodDeclarator method = new MethodDeclarator(
             AstTest.getLocation(),                                                            // location
-            null,                                                                             // docComment
+            null,                                                                             // optionalDocComment
             new Java.Modifier[] { new Java.AccessModifier("public", AstTest.getLocation()) }, // modifiers
-            null,                                                                             // typeParameters
+            null,                                                                             // optionalTypeParameters
             returnType,                                                                       // type
             "calculate",                                                                      // name
             new FormalParameters(AstTest.getLocation()),                                      // parameters
             new Type[0],                                                                      // thrownExceptions
             null,                                                                             // defaultValue
-            statements                                                                        // statements
+            statements                                                                        // optionalStatements
         );
         clazz.addDeclaredMethod(method);
     }
@@ -310,7 +311,7 @@ class AstTest {
                         AstTest.getLocation(),       // location
                         new Annotation[0],           // annotations
                         new String[] { "HandMade" }, // identifiers
-                        null                         // typeArguments
+                        null                         // optionalTypeArguments
                     )
                 )
             )
@@ -320,7 +321,7 @@ class AstTest {
             AstTest.getLocation(),                    // location
             new Annotation[0],                        // annotations,
             new String[] { "java", "lang", "Class" }, // identifiers
-            null                                      // typeArguments
+            null                                      // optionalTypeArguments
         ));
 
         SimpleCompiler compiler = new SimpleCompiler();
@@ -396,12 +397,12 @@ class AstTest {
                         vd.getLocation(),
                         vd.name,
                         vd.brackets,
-                        null // initializer <= Do NOT copy the initializer!
+                        null // optionalInitializer <= Do NOT copy the initializer!
                     ));
                 }
                 this.moreFieldDeclarations.add(new FieldDeclaration(
                     Location.NOWHERE,                 // location
-                    null,                             // docComment
+                    null,                             // optionalDocComment
                     lvds.modifiers,                   // modifiers
                     this.copyType(lvds.type),         // type
                     fieldVariableDeclarators.toArray( // variableDeclarators
@@ -415,7 +416,7 @@ class AstTest {
                 List<BlockStatement> assignments = new ArrayList<BlockStatement>();
                 for (VariableDeclarator vd : lvds.variableDeclarators) {
 
-                    Rvalue initializer = (Rvalue) vd.initializer;
+                    Rvalue initializer = (Rvalue) vd.optionalInitializer;
                     if (initializer == null) continue;
 
                     assignments.add(new ExpressionStatement(new Assignment(
@@ -530,8 +531,8 @@ class AstTest {
     }
 
     private static AbstractCompilationUnit
-    parseAbstractCompilationUnit(@Nullable String fileName, Reader in) throws CompileException, IOException {
-        return new Parser(new Scanner(fileName, in)).parseAbstractCompilationUnit();
+    parseAbstractCompilationUnit(@Nullable String optionalFileName, Reader in) throws CompileException, IOException {
+        return new Parser(new Scanner(optionalFileName, in)).parseAbstractCompilationUnit();
     }
 
     /**
@@ -606,7 +607,8 @@ class AstTest {
         // Parse the method and get its body.
         MethodDeclarator md1 = new Parser(new Scanner(null, new StringReader(text1))).parseMethodDeclaration();
 
-        List<? extends BlockStatement> ss = md1.statements;
+        List<? extends BlockStatement> ss = md1.optionalStatements;
+        assert ss != null;
 
         // Now generate a "labeled statement".
         LabeledStatement ls2;

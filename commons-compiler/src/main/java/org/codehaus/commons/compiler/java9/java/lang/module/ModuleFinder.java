@@ -54,7 +54,7 @@ class ModuleFinder {
     public static ModuleFinder
     ofSystem() { return new ModuleFinder(Methods.<Object, NoException>invoke(ModuleFinder.METHOD_ofSystem, null)); }
 
-    public Set<ModuleReference> // SUPPRESS CHECKSTYLE Javadoc
+    public Set<ModuleReference>
     findAll() {
 
         return (Set<ModuleReference>) ModuleFinder.wrapModuleReferences(

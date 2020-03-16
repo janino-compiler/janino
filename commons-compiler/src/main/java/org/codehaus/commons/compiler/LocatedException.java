@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -33,18 +34,18 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class LocatedException extends Exception {
 
-    @Nullable private final Location location;
+    @Nullable private final Location optionalLocation;
 
     public
-    LocatedException(String message, @Nullable Location location) {
+    LocatedException(String message, @Nullable Location optionalLocation) {
         super(message);
-        this.location = location;
+        this.optionalLocation = optionalLocation;
     }
 
     public
-    LocatedException(String message, @Nullable Location location, @Nullable Throwable cause) {
-        super(message, cause);
-        this.location = location;
+    LocatedException(String message, @Nullable Location optionalLocation, @Nullable Throwable optionalCause) {
+        super(message, optionalCause);
+        this.optionalLocation = optionalLocation;
     }
 
     /**
@@ -53,8 +54,8 @@ class LocatedException extends Exception {
     @Override public String
     getMessage() {
         return (
-            this.location != null
-            ? this.location.toString() + ": " + super.getMessage()
+            this.optionalLocation != null
+            ? this.optionalLocation.toString() + ": " + super.getMessage()
             : super.getMessage()
         );
     }
@@ -63,5 +64,5 @@ class LocatedException extends Exception {
      * @return The {@link Location} specified at construction time (may be {@code null})
      */
     @Nullable public Location
-    getLocation() { return this.location; }
+    getLocation() { return this.optionalLocation; }
 }

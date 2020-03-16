@@ -27,9 +27,6 @@ package org.codehaus.commons.compiler.util.reflect;
 
 import java.lang.reflect.Method;
 
-/**
- * Utility methods related to {@link Class}.
- */
 public final
 class Classes {
 
@@ -42,10 +39,6 @@ class Classes {
     public static Class<?>
     load(String className) { return Classes.load(ClassLoader.getSystemClassLoader(), className); }
 
-    /**
-     * A wrapper for {@link ClassLoader#loadClass(String) <var>classLoader</var>.loadClass(<var>className</var>)} that
-     * catches any exception, wraps it in an {@link AssertionError}, and throws that.
-     */
     public static Class<?>
     load(ClassLoader classLoader, String className) {
         try {
@@ -55,11 +48,6 @@ class Classes {
         }
     }
 
-    /**
-     * A wrapper for {@link Class#getDeclaredMethod(String, Class...)
-     * <var>declaringClass</var>.getDeclaredMethod(<var>methodName</var>, <var>parameterTypes</var>)} that catches any
-     * exception, wraps it in an {@link AssertionError}, and throws that.
-     */
     public static Method
     getDeclaredMethod(Class<?> declaringClass, String methodName, Class<?>... parameterTypes) {
         try {

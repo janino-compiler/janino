@@ -31,9 +31,6 @@ import java.util.List;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-/**
- * Utility methods related to {@link String}.
- */
 public final
 class StringUtil {
 

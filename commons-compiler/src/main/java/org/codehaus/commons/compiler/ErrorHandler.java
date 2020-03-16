@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -36,5 +37,5 @@ interface ErrorHandler {
     /**
      * May or may not choose to throw a {@link CompileException}.
      */
-    void handleError(String message, @Nullable Location location) throws CompileException;
+    void handleError(String message, @Nullable Location optionalLocation) throws CompileException;
 }

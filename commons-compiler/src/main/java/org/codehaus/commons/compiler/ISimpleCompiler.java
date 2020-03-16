@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -26,9 +27,7 @@
 package org.codehaus.commons.compiler;
 
 import java.io.Reader;
-
-import org.codehaus.commons.compiler.lang.ClassLoaders;
-import org.codehaus.commons.nullanalysis.Nullable;
+import java.security.Permissions;
 
 /**
  * A simplified Java compiler that can compile only a single compilation unit. (A "compilation unit" is the document
@@ -55,61 +54,6 @@ public
 interface ISimpleCompiler extends ICookable {
 
     /**
-     * The "parent class loader" is used to load referenced classes. Useful values are:
-     * <table border="1"><tr>
-     *   <td>{@code System.getSystemClassLoader()}</td>
-     *   <td>The running JVM's class path</td>
-     * </tr><tr>
-     *   <td>{@code Thread.currentThread().getContextClassLoader()} or {@code null}</td>
-     *   <td>The class loader effective for the invoking thread</td>
-     * </tr><tr>
-     *   <td>{@link ClassLoaders#BOOTCLASSPATH_CLASS_LOADER}</td>
-     *   <td>The running JVM's boot class path</td>
-     * </tr></table>
-     * <p>
-     *   The parent class loader defaults to the current thread's context class loader.
-     * </p>
-     */
-    void setParentClassLoader(@Nullable ClassLoader parentClassLoader);
-
-    /**
-     * Determines what kind of debugging information is included in the generates classes. The default is typically
-     * "{@code -g:none}".
-     */
-    void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars);
-
-    /**
-     * By default, {@link CompileException}s are thrown on compile errors, but an application my install its own
-     * {@link ErrorHandler}.
-     * <p>
-     *   Be aware that a single problem during compilation often causes a bunch of compile errors, so a good {@link
-     *   ErrorHandler} counts errors and throws a {@link CompileException} when a limit is reached.
-     * </p>
-     * <p>
-     *   If the given {@link ErrorHandler} throws {@link CompileException}s, then the compilation is terminated and
-     *   the exception is propagated.
-     * </p>
-     * <p>
-     *   If the given {@link ErrorHandler} does not throw {@link CompileException}s, then the compiler may or may not
-     *   continue compilation, but must eventually throw a {@link CompileException}.
-     * </p>
-     * <p>
-     *   In other words: The {@link ErrorHandler} may throw a {@link CompileException} or not, but the compiler must
-     *   definitely throw a {@link CompileException} if one or more compile errors have occurred.
-     * </p>
-     *
-     * @param compileErrorHandler {@code null} to restore the default behavior (throwing a {@link CompileException}
-     */
-    void setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler);
-
-    /**
-     * By default, warnings are discarded, but an application my install a custom {@link WarningHandler}.
-     *
-     * @param warningHandler {@code null} to indicate that no warnings be issued
-     */
-    void setWarningHandler(@Nullable WarningHandler warningHandler);
-
-    /**
      * Returns a {@link ClassLoader} object through which the previously compiled classes can be accessed. This {@link
      * ClassLoader} can be used for subsequent {@link ISimpleCompiler}s in order to compile compilation units that use
      * types (e.g. declare derived types) declared in the previous one.
@@ -119,4 +63,31 @@ interface ISimpleCompiler extends ICookable {
      * </p>
      */
     ClassLoader getClassLoader();
+
+    /**
+     * Installs a security manager in the running JVM such that all generated code, when executed, will be checked
+     * against the given <var>permissions</var>.
+     * <p>
+     *   By default, generated code is executed with the <em>same</em> permissions as the rest of the running JVM,
+     *   which typically means that any generated code can easily compromise the system, e.g. by reading or deleting
+     *   files on the local file system.
+     * </p>
+     * <p>
+     *   Thus, if you compile and execute <em>any user-written code</em> and cannot be sure that the code is written
+     *   carefully, then you should definitely restrict the permissions for the generated code.
+     * </p>
+     *
+     * @see <a href="https://docs.oracle.com/javase/tutorial/essential/environment/security.html">ORACLE: Java
+     *      Essentials: The Security Manager</a>
+     */
+    void setPermissions(Permissions permissions);
+
+    /**
+     * Installs a security manager in the running JVM such that all generated code, when executed, is not allowed to
+     * execute any checked operations.
+     *
+     * @see <a href="https://docs.oracle.com/javase/tutorial/essential/environment/security.html">ORACLE: Java
+     *      Essentials: The Security Manager</a>
+     */
+    void setNoPermissions();
 }

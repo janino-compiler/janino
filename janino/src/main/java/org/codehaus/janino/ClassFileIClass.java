@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -33,7 +34,6 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.Annotation;
@@ -105,7 +105,7 @@ class ClassFileIClass extends IClass {
 
             // Skip JDK 1.5 synthetic methods (e.g. those generated for
             // covariant return values).
-//            if (Mod.isSynthetic(mi.getAccessFlags())) continue;
+            if (Mod.isSynthetic(mi.getAccessFlags())) continue;
 
             IInvocable ii;
             try {
@@ -199,7 +199,7 @@ class ClassFileIClass extends IClass {
 
     @Override @Nullable protected IClass
     getSuperclass2() throws CompileException {
-        if (this.classFile.superclass == 0 || (this.classFile.accessFlags & Mod.INTERFACE) != 0) return null;
+        if (this.classFile.superclass == 0) return null;
         try {
             return this.resolveClass(this.classFile.superclass);
         } catch (ClassNotFoundException e) {
@@ -372,7 +372,7 @@ class ClassFileIClass extends IClass {
      */
     public void
     resolveAllClasses() throws ClassNotFoundException {
-        for (short i = 1; i < this.classFile.getConstantPoolSize(); ++i) {
+        for (short i = 0; i < this.classFile.getConstantPoolSize(); ++i) {
             ClassFile.ConstantPoolInfo cpi = this.classFile.getConstantPoolInfo(i);
             if (cpi instanceof ClassFile.ConstantClassInfo) {
                 this.resolveClass(i);
@@ -387,8 +387,6 @@ class ClassFileIClass extends IClass {
                     this.resolveClass(descriptor);
                 }
             }
-
-            if (cpi.isWide()) i++;
         }
     }
 
@@ -399,12 +397,8 @@ class ClassFileIClass extends IClass {
     resolveClass(short index) throws ClassNotFoundException {
         ClassFileIClass.LOGGER.entering(null, "resolveClass", index);
 
-        final String cnif = this.classFile.getConstantClassInfo(index).getName(this.classFile);
-        try {
-            return this.resolveClass(Descriptor.fromInternalForm(cnif));
-        } catch (RuntimeException re) {
-            throw new RuntimeException("Resolving class \"" + cnif + "\": " + re.getMessage(), re);
-        }
+        ConstantClassInfo cci = this.classFile.getConstantClassInfo(index);
+        return this.resolveClass(Descriptor.fromInternalForm(cci.getName(this.classFile)));
     }
 
     private IClass
@@ -564,7 +558,7 @@ class ClassFileIClass extends IClass {
             }
         }
 
-        final Object constantValue = (
+        final Object optionalConstantValue = (
             cva == null
             ? IClass.NOT_CONSTANT
             : cva.getConstantValue(this.classFile).getValue(this.classFile)
@@ -580,7 +574,7 @@ class ClassFileIClass extends IClass {
         }
 
         result = new IField() {
-            @Override public Object        getConstantValue() { return constantValue;                            }
+            @Override public Object        getConstantValue() { return optionalConstantValue;                    }
             @Override public String        getName()          { return name;                                     }
             @Override public IClass        getType()          { return type;                                     }
             @Override public boolean       isStatic()         { return Mod.isStatic(fieldInfo.getAccessFlags()); }

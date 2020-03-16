@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -35,16 +36,13 @@ import java.nio.Buffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.Cookable;
-import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
-import org.codehaus.commons.compiler.WarningHandler;
-import org.codehaus.commons.compiler.io.Readers;
+import org.codehaus.commons.io.MultiReader;
+import org.codehaus.commons.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -62,33 +60,33 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * @see IClassBodyEvaluator
  */
 public
-class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
+class ClassBodyEvaluator extends SimpleCompiler implements IClassBodyEvaluator {
 
-    private final SimpleCompiler sc = new SimpleCompiler();
-
-    private String[]           defaultImports = new String[0];
-    private String             className      = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
-    @Nullable private Class<?> extendedType;
+    @Nullable private String[] optionalDefaultImports;
+    private String             className = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
+    @Nullable private Class<?> optionalExtendedType;
     private Class<?>[]         implementedTypes = new Class[0];
-    @Nullable private Class<?> result; // null=uncooked
+
+    /* {@code null} means "not yet cooked".
+    */
+    @Nullable private Class<?> result;
 
     @Override public void
     setClassName(String className) { this.className = className; }
 
     @Override public void
-    setDefaultImports(String... defaultImports) { this.defaultImports = defaultImports.clone(); }
-
-    @Override public String[]
-    getDefaultImports() { return this.defaultImports.clone(); }
+    setDefaultImports(@Nullable String... optionalDefaultImports) {
+        this.optionalDefaultImports = optionalDefaultImports;
+    }
 
     @Override public void
-    setExtendedClass(@Nullable Class<?> extendedType) { this.extendedType = extendedType; }
+    setExtendedClass(@Nullable Class<?> optionalExtendedType) { this.optionalExtendedType = optionalExtendedType; }
 
     /**
      * @deprecated Use {@link #setExtendedClass(Class)} instead
      */
     @Deprecated @Override public void
-    setExtendedType(@Nullable Class<?> extendedClass) { this.setExtendedClass(extendedClass); }
+    setExtendedType(@Nullable Class<?> optionalExtendedClass) { this.setExtendedClass(optionalExtendedClass); }
 
     @Override public void
     setImplementedInterfaces(Class<?>[] implementedTypes) { this.implementedTypes = implementedTypes; }
@@ -99,30 +97,10 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     @Deprecated @Override public void
     setImplementedTypes(Class<?>[] implementedInterfaces) { this.setImplementedInterfaces(implementedInterfaces); }
 
-    // Configuration setters and getters that delegate to the SimpleCompiler
-
     @Override public void
-    setParentClassLoader(@Nullable ClassLoader parentClassLoader) { this.sc.setParentClassLoader(parentClassLoader); }
-
-    @Override public void
-    setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
-        this.sc.setDebuggingInformation(debugSource, debugLines, debugVars);
-    }
-
-    @Override public void
-    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
-        this.sc.setCompileErrorHandler(compileErrorHandler);
-    }
-
-    @Override public void
-    setWarningHandler(@Nullable WarningHandler warningHandler) { this.sc.setWarningHandler(warningHandler); }
-
-    // ================================= END OF CONFIGURATION SETTERS AND GETTERS =================================
-
-    @Override public void
-    cook(@Nullable String fileName, Reader r) throws CompileException, IOException {
+    cook(@Nullable String optionalFileName, Reader r) throws CompileException, IOException {
         if (!r.markSupported()) r = new BufferedReader(r);
-        this.cook(fileName, ClassBodyEvaluator.parseImportDeclarations(r), r);
+        this.cook(optionalFileName, ClassBodyEvaluator.parseImportDeclarations(r), r);
     }
 
     /**
@@ -130,7 +108,7 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
      * @param r The class body to cook, without leading IMPORT declarations
      */
     protected void
-    cook(@Nullable String fileName, String[] imports, Reader r) throws CompileException, IOException {
+    cook(@Nullable String optionalFileName, String[] imports, Reader r) throws CompileException, IOException {
 
         // Wrap the class body in a compilation unit.
         {
@@ -161,10 +139,12 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
                 }
 
                 // Print default imports.
-                for (String defaultImport : this.defaultImports) {
-                    pw.print("import ");
-                    pw.print(defaultImport);
-                    pw.println(";");
+                if (this.optionalDefaultImports != null) {
+                    for (String defaultImport : this.optionalDefaultImports) {
+                        pw.print("import ");
+                        pw.print(defaultImport);
+                        pw.println(";");
+                    }
                 }
 
                 // Print imports as declared in the document.
@@ -180,7 +160,7 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
                 pw.print(simpleClassName);
 
                 {
-                    Class<?> oet = this.extendedType;
+                    Class<?> oet = this.optionalExtendedType;
                     if (oet != null) {
                         pw.print(" extends ");
                         pw.print(oet.getCanonicalName());
@@ -206,27 +186,38 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
                 pw.close();
             }
 
-            r = Readers.concat(
+            r = new MultiReader(new Reader[] {
                 new StringReader(sw1.toString()),
-                this.newFileName(fileName, r),
-                new StringReader(sw2.toString())
-            );
+                this.newFileName(optionalFileName, r),
+                new StringReader(sw2.toString()),
+            });
         }
 
         /**
          * Compiles the generated compilation unit.
          */
-        this.sc.cook(fileName, r);
+        super.cook(optionalFileName, r);
 
         try {
 
             // Load the "main" class through the ClassLoader that was created by
             // "SimpleCompiler.cook()". More classes (e.g. member types will be loaded
             // automatically by the JVM.
-            this.result = this.sc.getClassLoader().loadClass(this.className);
+            this.result = this.getClassLoader().loadClass(this.className);
         } catch (ClassNotFoundException cnfe) {
             throw new IOException(cnfe);
         }
+    }
+
+    /**
+     * Sets the given file name, and the current line number to 1, and the current column number to 1, when the first
+     * {@code char} is read from the <var>reader</var>.
+     */
+    protected Reader
+    newFileName(@Nullable final String optionalFileName, Reader reader) {
+        return Readers.onFirstChar(reader, new Runnable() {
+            @Override public void run() { ClassBodyEvaluator.this.addOffset(optionalFileName); }
+        });
     }
 
     /**
@@ -236,20 +227,6 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     getClazz() {
         assert this.result != null;
         return this.result;
-    }
-
-    @Override public Map<String, byte[]>
-    getBytecodes() { return this.sc.getBytecodes(); }
-
-    /**
-     * Sets the given file name, and the current line number to 1, and the current column number to 1, when the first
-     * {@code char} is read from the <var>reader</var>.
-     */
-    protected Reader
-    newFileName(@Nullable final String fileName, Reader reader) {
-        return Readers.onFirstChar(reader, new Runnable() {
-            @Override public void run() { ClassBodyEvaluator.this.sc.addOffset(fileName); }
-        });
     }
 
     /**

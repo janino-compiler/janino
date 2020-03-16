@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2016 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -26,7 +27,6 @@
 package org.codehaus.commons.nullanalysis;
 
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
-import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
  * @see <a href="http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.jdt.doc.user%2Ftasks%2Ftask-using_null
  *_annotations.htm">ECLIPSE Help - Using null annotations</a>
  */
-@Target({ TYPE, LOCAL_VARIABLE, METHOD, CONSTRUCTOR, PACKAGE }) @Retention(RetentionPolicy.CLASS) public
+@Target({ TYPE, METHOD, CONSTRUCTOR, PACKAGE }) @Retention(RetentionPolicy.CLASS) public
 @interface NotNullByDefault {
     boolean value() default true;
 }

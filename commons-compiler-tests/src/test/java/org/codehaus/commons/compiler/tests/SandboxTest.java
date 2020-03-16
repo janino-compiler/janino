@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2017 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -32,9 +33,7 @@ import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.security.AccessControlException;
 import java.security.AllPermission;
-import java.security.PermissionCollection;
 import java.security.Permissions;
-import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
@@ -42,8 +41,6 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Sandbox;
-import org.codehaus.commons.nullanalysis.NotNullByDefault;
-import org.codehaus.commons.nullanalysis.Nullable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -144,7 +141,7 @@ class SandboxTest extends CommonsCompilerTestSuite {
     @Test(expected = AccessControlException.class) public void
     testDotClassGetDeclaredField() throws Exception {
 
-        String script = "return (String.class.getDeclaredField(\"CASE_INSENSITIVE_ORDER\") != null);";
+        String script = "return (String.class.getDeclaredField(\"value\") != null);";
         this.confinedScriptTest(script, SandboxTest.NO_PERMISSIONS).assertResultTrue();
     }
 
@@ -162,7 +159,7 @@ class SandboxTest extends CommonsCompilerTestSuite {
         // JREs 10, 11, 12, however, are not affected!?
         if (CommonsCompilerTestSuite.JVM_VERSION == 9) return;
 
-        String script = "String.class.getDeclaredField(\"CASE_INSENSITIVE_ORDER\").setAccessible(true); return true;";
+        String script = "String.class.getDeclaredField(\"value\").setAccessible(true); return true;";
         this.confinedScriptTest(script, SandboxTest.ALL_PERMISSIONS).assertResultTrue();
     }
 
@@ -312,28 +309,16 @@ class SandboxTest extends CommonsCompilerTestSuite {
      * <var>permissions</var>.
      */
     private ScriptTest
-    confinedScriptTest(String script, final PermissionCollection permissions) throws Exception {
-
-        final Sandbox sandbox = new Sandbox(permissions);
+    confinedScriptTest(String script, final Permissions permissions) throws Exception {
 
         return new ScriptTest(script) {
 
             @Override protected void
             cook() throws Exception {
                 this.scriptEvaluator.setThrownExceptions(new Class<?>[] { Exception.class });
+                this.scriptEvaluator.setPermissions(permissions);
                 super.cook();
             }
-
-            @Override @Nullable protected Object
-            execute() throws Exception {
-
-                return sandbox.confine(new PrivilegedExceptionAction<Object>() {
-                    @Override public Object run() throws Exception { return execute2(); }
-                });
-            }
-
-            @NotNullByDefault(false) private Object
-            execute2() throws Exception { return super.execute(); }
         };
     }
 
@@ -343,24 +328,17 @@ class SandboxTest extends CommonsCompilerTestSuite {
      */
     private SimpleCompilerTest
     confinedSimpleCompilerTest(
-        String                     compilationUnit,
-        String                     className,
-        final PermissionCollection permissions
+        String            compilationUnit,
+        String            className,
+        final Permissions permissions
     ) throws Exception {
-
-        final Sandbox sandbox = new Sandbox(permissions);
 
         return new SimpleCompilerTest(compilationUnit, className) {
 
-            @NotNullByDefault(false) private Object
-            execute2() throws Exception { return super.execute(); }
-
-            @Override @Nullable protected Object
-            execute() throws Exception {
-
-                return sandbox.confine(new PrivilegedExceptionAction<Object>() {
-                    @Override public Object run() throws Exception { return execute2(); }
-                });
+            @Override protected void
+            cook() throws Exception {
+                this.simpleCompiler.setPermissions(permissions);
+                super.cook();
             }
         };
     }
@@ -370,21 +348,17 @@ class SandboxTest extends CommonsCompilerTestSuite {
      * static void main()} method in a {@link Sandbox} with the given <var>permissions</var>.
      */
     private ClassBodyTest
-    confinedClassBodyTest(String classBody, PermissionCollection permissions) throws Exception {
-
-        final Sandbox sandbox = new Sandbox(permissions);
+    confinedClassBodyTest(
+        String            classBody,
+        final Permissions permissions
+    ) throws Exception {
 
         return new ClassBodyTest(classBody) {
 
-            @NotNullByDefault(false) private Object
-            execute2() throws Exception { return super.execute(); }
-
-            @Override @Nullable protected Object
-            execute() throws Exception {
-
-                return sandbox.confine(new PrivilegedExceptionAction<Object>() {
-                    @Override public Object run() throws Exception { return execute2(); }
-                });
+            @Override protected void
+            cook() throws Exception {
+                this.classBodyEvaluator.setPermissions(permissions);
+                super.cook();
             }
         };
     }
@@ -394,21 +368,17 @@ class SandboxTest extends CommonsCompilerTestSuite {
      * in a {@link Sandbox} with the given <var>permissions</var>.
      */
     private ExpressionTest
-    confinedExpressionTest(String expression, PermissionCollection permissions) throws Exception {
-
-        final Sandbox sandbox = new Sandbox(permissions);
+    confinedExpressionTest(
+        String            expression,
+        final Permissions permissions
+    ) throws Exception {
 
         return new ExpressionTest(expression) {
 
-            @NotNullByDefault(false) private Object
-            execute2() throws Exception { return super.execute(); }
-
-            @Override @Nullable protected Object
-            execute() throws Exception {
-
-                return sandbox.confine(new PrivilegedExceptionAction<Object>() {
-                    @Override public Object run() throws Exception { return execute2(); }
-                });
+            @Override protected void
+            cook() throws Exception {
+                this.expressionEvaluator.setPermissions(permissions);
+                super.cook();
             }
         };
     }

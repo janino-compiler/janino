@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -28,7 +29,6 @@ package org.codehaus.commons.compiler;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -75,7 +75,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  * <p>
  *   The generated class may optionally extend/implement a given type; the returned instance can safely be type-cast
- *   to that {@code baseType}.
+ *   to that {@code optionalBaseType}.
  * </p>
  * <p>
  *   Example:
@@ -97,67 +97,12 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </pre>
  */
 public
-interface IClassBodyEvaluator extends ICookable {
+interface IClassBodyEvaluator extends ISimpleCompiler {
 
     /**
      * Default name for the generated class.
      */
     String DEFAULT_CLASS_NAME = "SC";
-
-    /**
-     * The "parent class loader" is used to load referenced classes. Useful values are:
-     * <table border="1"><tr>
-     *   <td>{@code System.getSystemClassLoader()}</td>
-     *   <td>The running JVM's class path</td>
-     * </tr><tr>
-     *   <td>{@code Thread.currentThread().getContextClassLoader()} or {@code null}</td>
-     *   <td>The class loader effective for the invoking thread</td>
-     * </tr><tr>
-     *   <td>{@link ClassLoaders#BOOTCLASSPATH_CLASS_LOADER}</td>
-     *   <td>The running JVM's boot class path</td>
-     * </tr></table>
-     * <p>
-     *   The parent class loader defaults to the current thread's context class loader.
-     * </p>
-     */
-    void setParentClassLoader(@Nullable ClassLoader parentClassLoader);
-
-    /**
-     * Determines what kind of debugging information is included in the generates classes. The default is typically
-     * "{@code -g:none}".
-     */
-    void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars);
-
-    /**
-     * By default, {@link CompileException}s are thrown on compile errors, but an application my install its own
-     * {@link ErrorHandler}.
-     * <p>
-     *   Be aware that a single problem during compilation often causes a bunch of compile errors, so a good {@link
-     *   ErrorHandler} counts errors and throws a {@link CompileException} when a limit is reached.
-     * </p>
-     * <p>
-     *   If the given {@link ErrorHandler} throws {@link CompileException}s, then the compilation is terminated and
-     *   the exception is propagated.
-     * </p>
-     * <p>
-     *   If the given {@link ErrorHandler} does not throw {@link CompileException}s, then the compiler may or may not
-     *   continue compilation, but must eventually throw a {@link CompileException}.
-     * </p>
-     * <p>
-     *   In other words: The {@link ErrorHandler} may throw a {@link CompileException} or not, but the compiler must
-     *   definitely throw a {@link CompileException} if one or more compile errors have occurred.
-     * </p>
-     *
-     * @param compileErrorHandler {@code null} to restore the default behavior (throwing a {@link CompileException}
-     */
-    void setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler);
-
-    /**
-     * By default, warnings are discarded, but an application my install a custom {@link WarningHandler}.
-     *
-     * @param warningHandler {@code null} to indicate that no warnings be issued
-     */
-    void setWarningHandler(@Nullable WarningHandler warningHandler);
 
     /**
      * "Default imports" add to the system import "java.lang", i.e. the evaluator may refer to classes imported by
@@ -172,13 +117,12 @@ interface IClassBodyEvaluator extends ICookable {
      *         "static java.util.Collections.EMPTY_MAP", // Single static import
      *         "static java.util.Collections.*",         // Static-import-on-demand
      *     );</pre>
+     * <p>
+     *   Passing {@code null} as the argument is equivalent with {@code new String[0]}, i.e. <em>no</em> default
+     *   imports.
+     * </p>
      */
-    void setDefaultImports(String... defaultImports);
-
-    /**
-     * @return The default imports that were previously configured with {@link #setDefaultImports(String...)}
-     */
-    String[] getDefaultImports();
+    void setDefaultImports(@Nullable String... optionalDefaultImports);
 
     /**
      * Sets the name of the generated class. Defaults to {@link #DEFAULT_CLASS_NAME}. In most cases, there is no need
@@ -192,20 +136,20 @@ interface IClassBodyEvaluator extends ICookable {
     void setClassName(String className);
 
     /**
-     * Sets a particular superclass that the generated class will extend. If <var>extendedClass</var> is {@code
+     * Sets a particular superclass that the generated class will extend. If <var>optionalExtendedClass</var> is {@code
      * null}, the generated class will extend {@link Object}.
      * <p>
      *   The usual reason to set a base class for an evaluator is that the generated class can directly access the
      *   superclass's (non-private) members.
      * </p>
      */
-    void setExtendedClass(@Nullable Class<?> extendedClass);
+    void setExtendedClass(@Nullable Class<?> optionalExtendedClass);
 
     /**
      * @deprecated Use {@link #setExtendedClass(Class)} instead
      */
     @Deprecated void
-    setExtendedType(@Nullable Class<?> extendedClass);
+    setExtendedType(@Nullable Class<?> optionalExtendedClass);
 
     /**
      * Sets a particular set of interfaces that the generated class will implement.
@@ -219,8 +163,11 @@ interface IClassBodyEvaluator extends ICookable {
     setImplementedTypes(Class<?>[] implementedInterfaces);
 
     /**
-     * @return                       The generated {@link Class}
-     * @throws IllegalStateException This {@link IClassBodyEvaluator} is not yet cooked
+     * Returns the loaded {@link Class}.
+     * <p>
+     *   This method must only be called after exactly one of the {@link #cook(String, java.io.Reader)} methods was
+     *   called.
+     * </p>
      */
     Class<?> getClazz();
 
@@ -229,7 +176,7 @@ interface IClassBodyEvaluator extends ICookable {
      * and returns an instance of that class.
      *
      * @param reader Source of class body tokens
-     * @return       An object that extends the {@code extendedType} and implements the given
+     * @return       An object that extends the {@code optionalExtendedType} and implements the given
      *               {@code implementedTypes}
      */
     Object createInstance(Reader reader) throws CompileException, IOException;

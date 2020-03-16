@@ -35,8 +35,6 @@ import org.codehaus.commons.compiler.util.reflect.NoException;
 
 /**
  * Pre-Java-8-compatible facade for Java 8's {@code java.util.stream.Stream} class.
- *
- * @param <T>
  */
 public
 class Stream<T> {
@@ -51,7 +49,7 @@ class Stream<T> {
     public
     Stream(/*java.util.stream.Stream<T>*/ Object delegate) { this.delegate = delegate; }
 
-    public void // SUPPRESS CHECKSTYLE Javadoc
+    public void
     forEach(final Consumer<? super T> action) {
         Methods.<Void, NoException>invoke(Stream.METHOD_forEach, this.delegate, Consumers.from(action));
     }

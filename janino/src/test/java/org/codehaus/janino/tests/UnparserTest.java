@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -157,11 +158,11 @@ class UnparserTest {
 
         PackageMemberClassDeclaration pmcd = new PackageMemberClassDeclaration(
             Location.NOWHERE,
-            null,             // docComment
+            null,             // optionalDocComment
             new Modifier[0],  // modifiers
             "SC",             // name
-            null,             // typeParameters
-            null,             // extendedType
+            null,             // optionalTypeParameters
+            null,             // optionalExtendedType
             new Type[0]       // implementedTypes
         );
         while (!p.peek(TokenType.END_OF_INPUT)) p.parseClassBodyDeclaration(pmcd);
@@ -384,7 +385,7 @@ class UnparserTest {
             visitMethodInvocation(MethodInvocation mi) {
                 return new Java.MethodInvocation(
                     mi.getLocation(),
-                    UnparserTest.stripUnnecessaryParenExprsOpt(mi.target),
+                    UnparserTest.stripUnnecessaryParenExprsOpt(mi.optionalTarget),
                     mi.methodName,
                     UnparserTest.stripUnnecessaryParenExprs(mi.arguments)
                 );
@@ -411,7 +412,7 @@ class UnparserTest {
                 assert type != null;
                 return new Java.NewClassInstance(
                     nci.getLocation(),
-                    UnparserTest.stripUnnecessaryParenExprsOpt(nci.qualification),
+                    UnparserTest.stripUnnecessaryParenExprsOpt(nci.optionalQualification),
                     type,
                     UnparserTest.stripUnnecessaryParenExprs(nci.arguments)
                 );
@@ -476,10 +477,10 @@ class UnparserTest {
     testInterfaceHelper(boolean interfaceMod) {
         Java.PackageMemberInterfaceDeclaration decl = new Java.PackageMemberInterfaceDeclaration(
             Location.NOWHERE,                                                            // location
-            "foo",                                                                       // docComment
+            "foo",                                                                       // optionalDocComment
             new Java.Modifier[] { new Java.AccessModifier("public", Location.NOWHERE) }, // modifiers
             "Foo",                                                                       // name
-            null,                                                                        // typeParameters
+            null,                                                                        // optionalTypeParameters
             new Type[0]                                                                  // extendedTypes
         );
         StringWriter sw = new StringWriter();

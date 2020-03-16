@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -40,18 +41,18 @@ class ExpressionDemo extends DemoBase {
     public static void
     main(String[] args) throws Exception {
 
-        Class<?>   expressionType   = null;
-        String[]   parameterNames   = {};
-        Class<?>[] parameterTypes   = {};
-        Class<?>[] thrownExceptions = {};
-        String[]   defaultImports   = new String[0];
+        Class<?>   optionalExpressionType = null;
+        String[]   parameterNames         = {};
+        Class<?>[] parameterTypes         = {};
+        Class<?>[] thrownExceptions       = {};
+        String[]   optionalDefaultImports = null;
 
         int i;
         for (i = 0; i < args.length; ++i) {
             String arg = args[i];
             if (!arg.startsWith("-")) break;
             if ("-et".equals(arg)) {
-                expressionType = DemoBase.stringToType(args[++i]);
+                optionalExpressionType = DemoBase.stringToType(args[++i]);
             } else
             if ("-pn".equals(arg)) {
                 parameterNames = DemoBase.explode(args[++i]);
@@ -63,7 +64,7 @@ class ExpressionDemo extends DemoBase {
                 thrownExceptions = DemoBase.stringToTypes(args[++i]);
             } else
             if ("-di".equals(arg)) {
-                defaultImports = DemoBase.explode(args[++i]);
+                optionalDefaultImports = DemoBase.explode(args[++i]);
             } else
             if ("-help".equals(arg)) {
                 System.err.println("Usage:");
@@ -122,8 +123,8 @@ class ExpressionDemo extends DemoBase {
 
         // Create "ExpressionEvaluator" object.
         IExpressionEvaluator ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
-        if (expressionType != null) ee.setExpressionType(expressionType);
-        ee.setDefaultImports(defaultImports);
+        if (optionalExpressionType != null) ee.setExpressionType(optionalExpressionType);
+        ee.setDefaultImports(optionalDefaultImports);
         ee.setParameters(parameterNames, parameterTypes);
         ee.setThrownExceptions(thrownExceptions);
         ee.cook(expression);

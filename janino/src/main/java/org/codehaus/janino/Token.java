@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2016 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -34,7 +35,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public final
 class Token {
 
-    @Nullable private final String fileName;
+    @Nullable private final String optionalFileName;
     private final int              lineNumber;
     private final int              columnNumber;
 
@@ -60,22 +61,22 @@ class Token {
     public final String value;
 
     public
-    Token(@Nullable String fileName, int lineNumber, int columnNumber, TokenType type, String value) {
-        this.fileName     = fileName;
-        this.lineNumber   = lineNumber;
-        this.columnNumber = columnNumber;
-        this.type         = type;
-        this.value        = value;
+    Token(@Nullable String optionalFileName, int lineNumber, int columnNumber, TokenType type, String value) {
+        this.optionalFileName = optionalFileName;
+        this.lineNumber       = lineNumber;
+        this.columnNumber     = columnNumber;
+        this.type             = type;
+        this.value            = value;
     }
 
     public
     Token(Location location, TokenType type, String value) {
-        this.fileName     = location.getFileName();
-        this.lineNumber   = location.getLineNumber();
-        this.columnNumber = location.getColumnNumber();
-        this.location     = location;
-        this.type         = type;
-        this.value        = value;
+        this.optionalFileName = location.getFileName();
+        this.lineNumber       = location.getLineNumber();
+        this.columnNumber     = location.getColumnNumber();
+        this.location         = location;
+        this.type             = type;
+        this.value            = value;
     }
 
     /**
@@ -86,7 +87,7 @@ class Token {
 
         if (this.location != null) return this.location;
 
-        return (this.location = new Location(this.fileName, this.lineNumber, this.columnNumber));
+        return (this.location = new Location(this.optionalFileName, this.lineNumber, this.columnNumber));
     }
 
     @Override public String

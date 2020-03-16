@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -38,8 +39,8 @@ import java.util.Set;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.util.TeeReader;
 
 /**
  * Splits up a character stream into tokens and returns them as {@link java.lang.String String} objects.
@@ -77,7 +78,7 @@ class Scanner {
     @Deprecated public
     Scanner(String fileName) throws IOException {
         this(
-            fileName,                     // fileName
+            fileName,                     // optionalFileName
             new FileInputStream(fileName) // is
         );
     }
@@ -88,9 +89,9 @@ class Scanner {
     @Deprecated public
     Scanner(String fileName, String encoding) throws IOException {
         this(
-            fileName,                      // fileName
+            fileName,                      // optionalFileName
             new FileInputStream(fileName), // is
-            encoding                       // encoding
+            encoding                       // optionalEncoding
         );
     }
 
@@ -100,9 +101,9 @@ class Scanner {
     @Deprecated public
     Scanner(File file) throws IOException {
         this(
-            file.getAbsolutePath(),    // fileName
+            file.getAbsolutePath(),    // optionalFileName
             new FileInputStream(file), // is
-            null                       // encoding
+            null                       // optionalEncoding
         );
     }
 
@@ -110,11 +111,11 @@ class Scanner {
      * @deprecated This method is deprecated because it leaves the input file open
      */
     @Deprecated public
-    Scanner(File file, @Nullable String encoding) throws IOException {
+    Scanner(File file, @Nullable String optionalEncoding) throws IOException {
         this(
-            file.getAbsolutePath(),    // fileName
+            file.getAbsolutePath(),    // optionalFileName
             new FileInputStream(file), // is
-            encoding                   // encoding
+            optionalEncoding           // optionalEncoding
         );
     }
 
@@ -127,9 +128,9 @@ class Scanner {
      * </p>
      */
     public
-    Scanner(@Nullable String fileName, InputStream is) throws IOException {
+    Scanner(@Nullable String optionalFileName, InputStream is) throws IOException {
         this(
-            fileName,                  // fileName
+            optionalFileName,          // optionalFileName
             new InputStreamReader(is), // in
             1,                         // initialLineNumber
             0                          // initialColumnNumber
@@ -138,9 +139,9 @@ class Scanner {
 
     /**
      * Sets up a scanner that reads tokens from the given {@link InputStream} with the given
-     * <var>encoding</var> ({@code null} means platform default encoding).
+     * <var>optionalEncoding</var> ({@code null} means platform default encoding).
      * <p>
-     *   The <var>fileName</var> is used for reporting errors during compilation and for source level
+     *   The <var>optionalFileName</var> is used for reporting errors during compilation and for source level
      *   debugging, and should name an existing file. If {@code null} is passed, and the system property
      *   {@code org.codehaus.janino.source_debugging.enable} is set to "true", then a temporary file in
      *   {@code org.codehaus.janino.source_debugging.dir} or the system's default temp dir is created in order to
@@ -148,17 +149,17 @@ class Scanner {
      * </p>
      */
     public
-    Scanner(@Nullable String fileName, InputStream is, @Nullable String encoding)
+    Scanner(@Nullable String optionalFileName, InputStream is, @Nullable String optionalEncoding)
     throws IOException {
         this(
-            fileName, // fileName
-            (         // in
-                encoding == null
+            optionalFileName,                  // optionalFileName
+            (                                  // in
+                optionalEncoding == null
                 ? new InputStreamReader(is)
-                : new InputStreamReader(is, encoding)
+                : new InputStreamReader(is, optionalEncoding)
             ),
-            1,        // initialLineNumber
-            0         // initialColumnNumber
+            1,                                 // initialLineNumber
+            0                                  // initialColumnNumber
         );
     }
 
@@ -167,7 +168,7 @@ class Scanner {
     /**
      * Sets up a scanner that reads tokens from the given {@link Reader}.
      * <p>
-     *   The <var>fileName</var> is used for reporting errors during compilation and for source level
+     *   The <var>optionalFileName</var> is used for reporting errors during compilation and for source level
      *   debugging, and should name an existing file. If {@code null} is passed, and the system property {@code
      *   org.codehaus.janino.source_debugging.enable} is set to "true", then a temporary file in {@code
      *   org.codehaus.janino.source_debugging.dir} or the system's default temp dir is created in order to make the
@@ -175,12 +176,12 @@ class Scanner {
      * </p>
      */
     public
-    Scanner(@Nullable String fileName, Reader in) throws IOException {
+    Scanner(@Nullable String optionalFileName, Reader in) throws IOException {
         this(
-            fileName, // fileName
-            in,       // in
-            1,        // initialLineNumber
-            0         // initialColumnNumber
+            optionalFileName, // optionalFileName
+            in,               // in
+            1,                // initialLineNumber
+            0                 // initialColumnNumber
         );
     }
 
@@ -189,7 +190,7 @@ class Scanner {
      */
     public
     Scanner(
-        @Nullable String fileName,
+        @Nullable String optionalFileName,
         Reader           in,
         int              initialLineNumber,        // "1" is a good idea
         int              initialColumnNumber       // "0" is a good idea
@@ -203,7 +204,7 @@ class Scanner {
         //     org.codehaus.janino.source_debugging.dir
         // JANINO is designed to compile in memory to save the overhead of disk I/O, so writing this file is only
         // recommended for source code level debugging purposes.
-        if (fileName == null && Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE)) {
+        if (optionalFileName == null && Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE)) {
 
             String  dirName = System.getProperty(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_DIR);
             boolean keep    = Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_KEEP);
@@ -213,15 +214,15 @@ class Scanner {
 
             if (!keep) temporaryFile.deleteOnExit();
 
-            in = Readers.teeReader(
+            in = new TeeReader(
                 in,                            // in
                 new FileWriter(temporaryFile), // out
-                true                           // closeWriterOnEoi
+                true                           // closeWriterOnEOF
             );
-            fileName = temporaryFile.getAbsolutePath();
+            optionalFileName = temporaryFile.getAbsolutePath();
         }
 
-        this.fileName             = fileName;
+        this.optionalFileName     = optionalFileName;
         this.in                   = new UnicodeUnescapeReader(in);
         this.nextCharLineNumber   = initialLineNumber;
         this.nextCharColumnNumber = initialColumnNumber;
@@ -239,7 +240,7 @@ class Scanner {
      * @return The file name optionally passed to the constructor
      */
     @Nullable public String
-    getFileName() { return this.fileName; }
+    getFileName() { return this.optionalFileName; }
 
     /**
      * Closes the character source (file, {@link InputStream}, {@link Reader}) associated with this object. The results
@@ -255,11 +256,11 @@ class Scanner {
      * @return The {@link Location} of the previously read (or peeked) token.
      */
     public Location
-    location() { return new Location(this.fileName, this.tokenLineNumber, this.tokenColumnNumber); }
+    location() { return new Location(this.optionalFileName, this.tokenLineNumber, this.tokenColumnNumber); }
 
     private Token
     token(TokenType type, String value) {
-        return new Token(this.fileName, this.tokenLineNumber, this.tokenColumnNumber, type, value);
+        return new Token(this.optionalFileName, this.tokenLineNumber, this.tokenColumnNumber, type, value);
     }
 
     /**
@@ -794,7 +795,7 @@ class Scanner {
         return result;
     }
 
-    @Nullable private final String fileName;
+    @Nullable private final String optionalFileName;
     private final Reader           in;
     private boolean                ignoreWhiteSpace;
     private int                    nextChar       = -1;

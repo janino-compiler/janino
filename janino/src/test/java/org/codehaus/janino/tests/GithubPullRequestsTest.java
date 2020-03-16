@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2016 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -28,13 +29,11 @@ package org.codehaus.janino.tests;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Arrays;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.ClassLoaderIClassLoader;
 import org.codehaus.janino.IClassLoader;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
@@ -103,7 +102,7 @@ class GithubPullRequestsTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         classFiles[0].store(baos);
 
-        // The class file disassembles to:
+        // The 200-byte class file disassembles to:
         //
         //     // *** Disassembly of 'C:\workspaces\janino\janino\Foo.class'.
         //
@@ -113,40 +112,19 @@ class GithubPullRequestsTest {
         //
         //         public static String meth() {
         //             iconst_1
-        //             istore_0        [v0]
+        //             istore          [v1]
         //             ldc             "true"
         //             areturn
         //         }
         //
         //         public Foo() {
-        //             aload_0         [this]
+        //             aload           [this]
         //             invokespecial   Object()
         //             return
         //         }
         //     }
         //
         // As you see, the IF statement has been optimized away.
-        GithubPullRequestsTest.assertEqualsOneOf("Class file size", new Object[] { 238, 262, 273 }, baos.size());
-    }
-
-    /**
-     * Asserts that <var>actual</var> equals one of the <var>expected</var>.
-     */
-    public static void
-    assertEqualsOneOf(String message, Object[] expected, Object actual) {
-
-        for (Object e : expected) {
-            if (GithubPullRequestsTest.equals(e, actual)) return;
-        }
-
-        GithubPullRequestsTest.failNotEquals(message, Arrays.toString(expected), actual);
-    }
-
-    private static boolean
-    equals(@Nullable Object o1, @Nullable Object o2) { return o1 == null ? o2 == null : o1.equals(o2); }
-
-    private static void
-    failNotEquals(String message, Object expected, Object actual) {
-        Assert.fail(message + " " + "expected:<" + expected + "> but was:<" + actual + ">");
+        Assert.assertEquals(216, baos.size());
     }
 }

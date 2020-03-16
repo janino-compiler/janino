@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -42,6 +43,6 @@ interface WarningHandler {
      *                          warnings have been reported
      */
     void
-    handleWarning(@Nullable String handle, String message, @Nullable Location location)
+    handleWarning(@Nullable String handle, String message, @Nullable Location optionalLocation)
     throws CompileException;
 }

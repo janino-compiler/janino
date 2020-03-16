@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -27,8 +28,6 @@ package org.codehaus.janino;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -56,7 +55,7 @@ class JavaSourceIClassLoader extends IClassLoader {
     private static final Logger LOGGER = Logger.getLogger(JavaSourceIClassLoader.class.getName());
 
     private ResourceFinder        sourceFinder;
-    private Charset               sourceCharset;
+    @Nullable private String      optionalCharacterEncoding;
     private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
     /**
@@ -64,19 +63,19 @@ class JavaSourceIClassLoader extends IClassLoader {
      */
     private final Set<UnitCompiler>  unitCompilers = new HashSet<UnitCompiler>();
 
-    @Nullable private ErrorHandler   compileErrorHandler;
-    @Nullable private WarningHandler warningHandler;
+    @Nullable private ErrorHandler   optionalCompileErrorHandler;
+    @Nullable private WarningHandler optionalWarningHandler;
 
     public
     JavaSourceIClassLoader(
         ResourceFinder         sourceFinder,
-        @Nullable String       sourceCharsetName,
-        @Nullable IClassLoader parentIClassLoader
+        @Nullable String       optionalCharacterEncoding,
+        @Nullable IClassLoader optionalParentIClassLoader
     ) {
-        super(parentIClassLoader);
+        super(optionalParentIClassLoader);
 
-        this.sourceFinder  = sourceFinder;
-        this.sourceCharset = sourceCharsetName == null ? Charset.defaultCharset() : Charset.forName(sourceCharsetName);
+        this.sourceFinder              = sourceFinder;
+        this.optionalCharacterEncoding = optionalCharacterEncoding;
         super.postConstruct();
     }
 
@@ -90,33 +89,25 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @param sourceFinder The source path
      */
     public void
-    setSourceFinder(ResourceFinder sourceFinder) { this.sourceFinder = sourceFinder; }
-
-    public ResourceFinder
-    getSourceFinder() { return this.sourceFinder; }
-
-    /**
-     * @deprecated Use {@link #setSourceCharset(Charset)} instead
-     */
-    @Deprecated public void
-    setCharacterEncoding(@Nullable String sourceCharsetName) {
-        this.setSourceCharset(
-            sourceCharsetName == null ? Charset.defaultCharset() : Charset.forName(sourceCharsetName)
-        );
+    setSourceFinder(ResourceFinder sourceFinder) {
+        this.sourceFinder = sourceFinder;
     }
 
     /**
-     * @param sourceCharset The charset that is used to read source files
+     * @param optionalCharacterEncoding The name of the charset that is used to read source files, or {@code null} to
+     *                                  use the platform's 'default charset'
      */
     public void
-    setSourceCharset(Charset sourceCharset) { this.sourceCharset = sourceCharset; }
+    setCharacterEncoding(@Nullable String optionalCharacterEncoding) {
+        this.optionalCharacterEncoding = optionalCharacterEncoding;
+    }
 
     /**
      * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
      */
     public void
-    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
-        this.compileErrorHandler = compileErrorHandler;
+    setCompileErrorHandler(@Nullable ErrorHandler optionalCompileErrorHandler) {
+        this.optionalCompileErrorHandler = optionalCompileErrorHandler;
     }
 
     /**
@@ -124,8 +115,8 @@ class JavaSourceIClassLoader extends IClassLoader {
      * @see UnitCompiler#setCompileErrorHandler(ErrorHandler)
      */
     public void
-    setWarningHandler(@Nullable WarningHandler warningHandler) {
-        this.warningHandler = warningHandler;
+    setWarningHandler(@Nullable WarningHandler optionalWarningHandler) {
+        this.optionalWarningHandler = optionalWarningHandler;
     }
 
     /**
@@ -184,8 +175,8 @@ class JavaSourceIClassLoader extends IClassLoader {
             if (acu == null) return null;
 
             UnitCompiler uc = new UnitCompiler(acu, this).options(this.options);
-            uc.setCompileErrorHandler(this.compileErrorHandler);
-            uc.setWarningHandler(this.warningHandler);
+            uc.setCompileErrorHandler(this.optionalCompileErrorHandler);
+            uc.setWarningHandler(this.optionalWarningHandler);
 
             // Remember compilation unit for later compilation.
             this.unitCompilers.add(uc);
@@ -229,11 +220,12 @@ class JavaSourceIClassLoader extends IClassLoader {
 
             Scanner scanner = new Scanner(
                 sourceResource.getFileName(),
-                new InputStreamReader(inputStream, this.sourceCharset)
+                inputStream,
+                this.optionalCharacterEncoding
             );
 
             Parser parser = new Parser(scanner);
-            parser.setWarningHandler(this.warningHandler);
+            parser.setWarningHandler(this.optionalWarningHandler);
 
             return parser.parseAbstractCompilationUnit();
         } finally {

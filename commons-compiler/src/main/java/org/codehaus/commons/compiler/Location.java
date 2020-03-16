@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -41,25 +42,25 @@ class Location implements Serializable {
      */
     public static final Location NOWHERE = new Location("<internally generated location>", -1, -1);
 
-    @Nullable private final String fileName;
+    @Nullable private final String optionalFileName;
     private final int              lineNumber;
     private final int              columnNumber;
 
     /**
-     * @param fileName A human-readable indication where the document related to this {@link Location} can be
+     * @param optionalFileName A human-readable indication where the document related to this {@link Location} can be
      *                         found
      */
     public
-    Location(@Nullable String fileName, int lineNumber, int columnNumber) {
-        this.fileName     = fileName;
-        this.lineNumber   = lineNumber;
-        this.columnNumber = columnNumber;
+    Location(@Nullable String optionalFileName, int lineNumber, int columnNumber) {
+        this.optionalFileName = optionalFileName;
+        this.lineNumber       = lineNumber;
+        this.columnNumber     = columnNumber;
     }
 
     /**
      * @return The "file name" associated with this location, or {@code null}
      */
-    @Nullable public String getFileName() { return this.fileName; }
+    @Nullable public String getFileName() { return this.optionalFileName; }
 
     /**
      * @return The line number associated with this location, or -1
@@ -78,8 +79,8 @@ class Location implements Serializable {
     toString() {
 
         StringBuilder sb = new StringBuilder();
-        if (this.fileName != null) {
-            sb.append("File '").append(this.fileName).append("', ");
+        if (this.optionalFileName != null) {
+            sb.append("File '").append(this.optionalFileName).append("', ");
         }
         sb.append("Line ").append(this.lineNumber).append(", ");
         sb.append("Column ").append(this.columnNumber);

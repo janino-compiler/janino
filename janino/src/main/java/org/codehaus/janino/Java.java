@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -36,9 +37,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.Location;
-import org.codehaus.commons.compiler.util.iterator.ReverseListIterator;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IMethod;
@@ -56,6 +55,7 @@ import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
 import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
 import org.codehaus.janino.util.AbstractTraverser;
+import org.codehaus.janino.util.iterator.ReverseListIterator;
 
 /**
  * This wrapper class defines classes that represent the elements of the Java programming language.
@@ -139,7 +139,7 @@ class Java {
         /**
          * A string that explains the "file" (or similar resource) where this compilation unit was loaded from.
          */
-        @Nullable public final String fileName;
+        @Nullable public final String optionalFileName;
 
         /**
          * The IMPORT declarations in this compilation unit.
@@ -147,8 +147,8 @@ class Java {
         public final ImportDeclaration[] importDeclarations;
 
         public
-        AbstractCompilationUnit(@Nullable String fileName, ImportDeclaration[] importDeclarations) {
-            this.fileName           = fileName;
+        AbstractCompilationUnit(@Nullable String optionalFileName, ImportDeclaration[] importDeclarations) {
+            this.optionalFileName   = optionalFileName;
             this.importDeclarations = importDeclarations;
         }
 
@@ -293,17 +293,13 @@ class Java {
         }
     }
 
-    /**
-     * Representation of an "ordinary compilation unit" as explained in JLS9 7.3 (before Java 9 known as "compilation
-     * unit" and described in JLS8 7.3).
-     */
     public static final
     class CompilationUnit extends AbstractCompilationUnit {
 
         /**
          * The package declaration at the very top of this compilation unit (if any).
          */
-        @Nullable public PackageDeclaration packageDeclaration;
+        @Nullable public PackageDeclaration optionalPackageDeclaration;
 
         /**
          * The top-level declarations in this compilation unit.
@@ -312,13 +308,13 @@ class Java {
         packageMemberTypeDeclarations = new ArrayList<PackageMemberTypeDeclaration>();
 
         public
-        CompilationUnit(@Nullable String fileName) {
-            this(fileName, new ImportDeclaration[0]);
+        CompilationUnit(@Nullable String optionalFileName) {
+            this(optionalFileName, new ImportDeclaration[0]);
         }
 
         public
-        CompilationUnit(@Nullable String fileName, ImportDeclaration[] importDeclarations) {
-            super(fileName, importDeclarations);
+        CompilationUnit(@Nullable String optionalFileName, ImportDeclaration[] importDeclarations) {
+            super(optionalFileName, importDeclarations);
         }
 
         /**
@@ -326,7 +322,7 @@ class Java {
          */
         public void
         setPackageDeclaration(@Nullable PackageDeclaration packageDeclaration) {
-            this.packageDeclaration = packageDeclaration;
+            this.optionalPackageDeclaration = packageDeclaration;
         }
 
         /**
@@ -374,18 +370,15 @@ class Java {
     public static final
     class ModularCompilationUnit extends AbstractCompilationUnit {
 
-        /**
-         * The single and mandatory "module declaration" of this modular compilation unit, see JLS9 7.3 and 7.7.
-         */
         public final ModuleDeclaration moduleDeclaration;
 
         public
         ModularCompilationUnit(
-            @Nullable String    fileName,
+            @Nullable String    optionalFileName,
             ImportDeclaration[] importDeclarations,
             ModuleDeclaration   moduleDeclaration
         ) {
-            super(fileName, importDeclarations);
+            super(optionalFileName, importDeclarations);
             this.moduleDeclaration  = moduleDeclaration;
         }
 
@@ -395,31 +388,12 @@ class Java {
         }
     }
 
-    /**
-     * Representation of a "module declaration", as described in JLS9 7.7.
-     */
     public static final
     class ModuleDeclaration extends Located {
 
-        /**
-         * The modifiers of the module declaration; module declarations must have only annotations, no access
-         * modifiers.
-         */
-        public final Modifier[] modifiers;
-
-        /**
-         * Whether this module is declared with the {@code open} keyword; see JLS9 7.7.
-         */
-        public final boolean isOpen;
-
-        /**
-         * The name of the declared module, see JLS9 7.7.
-         */
-        public final String[] moduleName;
-
-        /**
-         * The directives declared in this module, see JLS9 7.7.
-         */
+        public final Modifier[]        modifiers;
+        public final boolean           isOpen;
+        public final String[]          moduleName;
         public final ModuleDirective[] moduleDirectives;
 
         public
@@ -438,35 +412,18 @@ class Java {
         }
     }
 
-    /**
-     * Representation of a (Java 9+) "module directive", as explained in JLS9 7.7.
-     */
     public
     interface ModuleDirective {
 
-        /**
-         * Invokes the "{@code visit...()}" method of {@link Visitor.ModuleDirectiveVisitor} for the concrete {@link
-         * ModuleDirective} type.
-         */
         @Nullable <R, EX extends Throwable> R
         accept(Visitor.ModuleDirectiveVisitor<R, EX> visitor) throws EX;
     }
 
-    /**
-     * Representation of a (Java 9+) "requires directive", as explained in JLS9 7.7.1.
-     */
     public static final
     class RequiresModuleDirective extends Located implements ModuleDirective {
 
-        /**
-         * The modifiers of the requires directive, see JLS9 7.7.1
-         */
         public final Modifier[] requiresModifiers;
-
-        /**
-         * The name of a module on which this module has a dependence.
-         */
-        public final String[] moduleName;
+        public final String[]   moduleName;
 
         protected
         RequiresModuleDirective(Location location, Modifier[] requiresModifiers, String[] moduleName) {
@@ -479,26 +436,14 @@ class Java {
         accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitRequiresModuleDirective(this); }
     }
 
-    /**
-     * Representation of a (Java 9+) "exports directive", as explained in JLS9 7.7.2.
-     */
     public static final
     class ExportsModuleDirective extends Located implements ModuleDirective {
 
-        /**
-         * The name of a package to be exported by this module, see JLS9 7.7.2.
-         */
-        public final String[] packageName;
-
-        /**
-         * The names of the modules for which the public and protected types in this package, and their public and
-         * protected members, are accessible. Iff {@code null}, then this directive is "unqualified", i.e. it has no
-         * "{@code to}" clause
-         */
-        @Nullable public final String[][] toModuleNames;
+        public final String[]   packageName;
+        public final String[][] toModuleNames;
 
         protected
-        ExportsModuleDirective(Location location, String[] packageName, @Nullable String[][] toModuleNames) {
+        ExportsModuleDirective(Location location, String[] packageName, String[][] toModuleNames) {
             super(location);
             this.packageName   = packageName;
             this.toModuleNames = toModuleNames;
@@ -508,26 +453,14 @@ class Java {
         accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitExportsModuleDirective(this); }
     }
 
-    /**
-     * Representation of a (Java 9+) "opens directive", as explained in JLS9 7.7.2.
-     */
     public static final
     class OpensModuleDirective extends Located implements ModuleDirective {
 
-        /**
-         * The name of a package to be opened by this module, see JLS9 7.7.2.
-         */
-        public final String[] packageName;
-
-        /**
-         * The names of the modules for which the public and protected types in this package, and their public and
-         * protected members, are accessible. Iff {@code null}, then this directive is "unqualified", i.e. it has no
-         * "{@code to}" clause
-         */
-        @Nullable public final String[][] toModuleNames;
+        public final String[]   packageName;
+        public final String[][] toModuleNames;
 
         protected
-        OpensModuleDirective(Location location, String[] packageName, @Nullable String[][] toModuleNames) {
+        OpensModuleDirective(Location location, String[] packageName, String[][] toModuleNames) {
             super(location);
             this.packageName   = packageName;
             this.toModuleNames = toModuleNames;
@@ -537,16 +470,9 @@ class Java {
         accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitOpensModuleDirective(this); }
     }
 
-    /**
-     * Representation of a (Java 9+) "uses directive", as explained in JLS9 7.7.3.
-     */
     public static final
     class UsesModuleDirective extends Located implements ModuleDirective {
 
-        /**
-         * The "service" for which the current module may discover providers via {@link java.util.ServiceLoader}.
-         * See JLS9 7.7.3.
-         */
         public final String[] typeName;
 
         protected
@@ -559,20 +485,10 @@ class Java {
         accept(ModuleDirectiveVisitor<R, EX> visitor) throws EX { return visitor.visitUsesModuleDirective(this); }
     }
 
-    /**
-     * Representation of a (Java 9+) "provides directive", as explained in JLS9 7.7.4.
-     */
     public static final
     class ProvidesModuleDirective extends Located implements ModuleDirective {
 
-        /**
-         * The "service", see JLS9 7.7.4.
-         */
-        public final String[] typeName;
-
-        /**
-         * The "service providers" declared in the "{@code with}" clause of the directive; see JLS9 7.7.4.
-         */
+        public final String[]   typeName;
         public final String[][] withTypeNames;
 
         protected
@@ -987,17 +903,17 @@ class Java {
         /**
          * Sets the {@link AbstractCompilationUnit} in which this top-level type is declared.
          */
-        void setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
+        void
+        setDeclaringCompilationUnit(CompilationUnit declaringCompilationUnit);
 
         /**
          * @return The {@link AbstractCompilationUnit} in which this top-level type is declared.
          */
-        CompilationUnit getDeclaringCompilationUnit();
+        CompilationUnit
+        getDeclaringCompilationUnit();
 
-        /**
-         * @return The accessability declared for this top-level type
-         */
-        Access getAccess();
+        Access
+        getAccess();
     }
 
     /**
@@ -1007,10 +923,8 @@ class Java {
     public
     interface MemberTypeDeclaration extends NamedTypeDeclaration, TypeBodyDeclaration {
 
-        /**
-         * @return The accessability declared for this member type
-         */
-        Access getAccess();
+        Access
+        getAccess();
     }
 
     /**
@@ -1077,7 +991,7 @@ class Java {
     class AbstractTypeDeclaration implements TypeDeclaration {
         private final Location                    location;
         private final Modifier[]                  modifiers;
-        @Nullable private final TypeParameter[]   typeParameters;
+        @Nullable private final TypeParameter[]   optionalTypeParameters;
         private final List<MethodDeclarator>      declaredMethods              = new ArrayList<MethodDeclarator>();
         private final List<MemberTypeDeclaration> declaredClassesAndInterfaces = new ArrayList<MemberTypeDeclaration>();
         @Nullable private Scope                   enclosingScope;
@@ -1091,11 +1005,11 @@ class Java {
         AbstractTypeDeclaration(
             Location                  location,
             Modifier[]                modifiers,
-            @Nullable TypeParameter[] typeParameters
+            @Nullable TypeParameter[] optionalTypeParameters
         ) {
-            this.location       = location;
-            this.modifiers      = modifiers;
-            this.typeParameters = typeParameters;
+            this.location               = location;
+            this.modifiers              = modifiers;
+            this.optionalTypeParameters = optionalTypeParameters;
         }
 
         /**
@@ -1115,10 +1029,10 @@ class Java {
             for (Modifier m : this.modifiers) {
               if (m instanceof Annotation) ((Annotation) m).setEnclosingScope(enclosingScope);
             }
-            if (this.typeParameters != null) {
-                for (TypeParameter tp : this.typeParameters) {
-                    if (tp.bound != null) {
-                        for (ReferenceType boundType : tp.bound) {
+            if (this.optionalTypeParameters != null) {
+                for (TypeParameter tp : this.optionalTypeParameters) {
+                    if (tp.optionalBound != null) {
+                        for (ReferenceType boundType : tp.optionalBound) {
                             boundType.setEnclosingScope(enclosingScope);
                         }
                     }
@@ -1133,7 +1047,7 @@ class Java {
         getAnnotations() { return Java.getAnnotations(this.modifiers); }
 
         @Nullable public TypeParameter[]
-        getOptionalTypeParameters() { return this.typeParameters; }
+        getOptionalTypeParameters() { return this.optionalTypeParameters; }
 
         @Override public Scope
         getEnclosingScope() { assert this.enclosingScope != null; return this.enclosingScope; }
@@ -1256,8 +1170,8 @@ class Java {
         AbstractClassDeclaration(
             Location                  location,
             Modifier[]                modifiers,
-            @Nullable TypeParameter[] typeParameters
-        ) { super(location, modifiers, typeParameters); }
+            @Nullable TypeParameter[] optionalTypeParameters
+        ) { super(location, modifiers, optionalTypeParameters); }
 
         /**
          * Adds one {@link ConstructorDeclarator} to this class.
@@ -1324,12 +1238,12 @@ class Java {
             if (this.constructors.isEmpty()) {
                 ConstructorDeclarator defaultConstructor = new ConstructorDeclarator(
                     this.getLocation(),                                 // location
-                    null,                                               // docComment
+                    null,                                               // optionalDocComment
                     Java.accessModifiers(this.getLocation(), "public"), // modifiers
                     new FormalParameters(this.getLocation()),           // formalParameters
                     new Type[0],                                        // thrownExceptions
-                    null,                                               // explicitConstructorInvocation
-                    Collections.<BlockStatement>emptyList()             // statements
+                    null,                                               // optionalExplicitConstructorInvocation
+                    Collections.<BlockStatement>emptyList()             // optionalStatements
                 );
                 defaultConstructor.setDeclaringType(this);
                 return new ConstructorDeclarator[] { defaultConstructor };
@@ -1365,7 +1279,7 @@ class Java {
             super(
                 location,                                           // location
                 Java.accessModifiers(location, "private", "final"), // modifiers
-                null                                                // typeParameters
+                null                                                // optionalTypeParameters
             );
             (this.baseType = baseType).setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
         }
@@ -1397,7 +1311,7 @@ class Java {
     public abstract static
     class NamedClassDeclaration extends AbstractClassDeclaration implements NamedTypeDeclaration, DocCommentable {
 
-        @Nullable private final String docComment;
+        @Nullable private final String optionalDocComment;
 
         /**
          * The simple name of this class.
@@ -1407,7 +1321,7 @@ class Java {
         /**
          * The type of the extended class.
          */
-        @Nullable public final Type extendedType;
+        @Nullable public final Type optionalExtendedType;
 
         /**
          * The types of the implemented interfaces.
@@ -1417,19 +1331,19 @@ class Java {
         public
         NamedClassDeclaration(
             Location                  location,
-            @Nullable String          docComment,
+            @Nullable String          optionalDocComment,
             Modifier[]                modifiers,
             String                    name,
-            @Nullable TypeParameter[] typeParameters,
-            @Nullable Type            extendedType,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            @Nullable Type            optionalExtendedType,
             Type[]                    implementedTypes
         ) {
-            super(location, modifiers, typeParameters);
-            this.docComment     = docComment;
-            this.name           = name;
-            this.extendedType   = extendedType;
-            if (extendedType != null) {
-                extendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
+            super(location, modifiers, optionalTypeParameters);
+            this.optionalDocComment     = optionalDocComment;
+            this.name                   = name;
+            this.optionalExtendedType   = optionalExtendedType;
+            if (optionalExtendedType != null) {
+                optionalExtendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
             }
             this.implementedTypes     = implementedTypes;
             for (Type implementedType : implementedTypes) {
@@ -1448,11 +1362,11 @@ class Java {
         // Implement DocCommentable.
 
         @Override @Nullable public String
-        getDocComment() { return this.docComment; }
+        getDocComment() { return this.optionalDocComment; }
 
         @Override public boolean
         hasDeprecatedDocTag() {
-            return this.docComment != null && this.docComment.indexOf("@deprecated") != -1;
+            return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
 
         public boolean
@@ -1493,21 +1407,21 @@ class Java {
         public
         MemberClassDeclaration(
             Location                  location,
-            @Nullable String          docComment,
+            @Nullable String          optionalDocComment,
             Modifier[]                modifiers,
             String                    name,
-            @Nullable TypeParameter[] typeParameters,
-            @Nullable Type            extendedType,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            @Nullable Type            optionalExtendedType,
             Type[]                    implementedTypes
         ) {
             super(
-                location,        // location
-                docComment,      // docComment
-                modifiers,       // modifiers
-                name,            // name
-                typeParameters,  // typeParameters
-                extendedType,    // extendedType
-                implementedTypes // implementedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                optionalExtendedType,   // optionalExtendedType
+                implementedTypes        // implementedTypes
             );
         }
 
@@ -1527,15 +1441,9 @@ class Java {
         @Override public String
         getClassName() { return this.getDeclaringType().getClassName() + '$' + this.getName(); }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberClassDeclaration(this);
-        }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberClassDeclaration(this);
-        }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX     { return visitor.visitMemberClassDeclaration(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberClassDeclaration(this); }
 
         public boolean
         isStatic() { return Java.hasAccessModifier(this.getModifiers(), "static"); }
@@ -1553,19 +1461,19 @@ class Java {
         public
         MemberEnumDeclaration(
             Location         location,
-            @Nullable String docComment,
+            @Nullable String optionalDocComment,
             Modifier[]       modifiers,
             String           name,
             Type[]           implementedTypes
         ) {
             super(
-                location,        // location
-                docComment,      // docComment
-                modifiers,       // modifiers
-                name,            // name
-                null,            // typeParameters
-                null,            // extendedType
-                implementedTypes // implementedTypes
+                location,           // location
+                optionalDocComment, // optionalDocComment
+                modifiers,          // modifiers
+                name,               // name
+                null,               // optionalTypeParameters
+                null,               // optionalExtendedType
+                implementedTypes    // implementedTypes
             );
         }
 
@@ -1578,15 +1486,9 @@ class Java {
         @Override public void
         addConstant(EnumConstant ec) { this.constants.add(ec); }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberEnumDeclaration(this);
-        }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberEnumDeclaration(this);
-        }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX>     visitor) throws EX { return visitor.visitMemberEnumDeclaration(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberEnumDeclaration(this); }
     }
 
     /**
@@ -1598,21 +1500,21 @@ class Java {
         public
         LocalClassDeclaration(
             Location                  location,
-            @Nullable String          docComment,
+            @Nullable String          optionalDocComment,
             Modifier[]                modifiers,
             String                    name,
-            @Nullable TypeParameter[] typeParameters,
-            @Nullable Type            extendedType,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            @Nullable Type            optionalExtendedType,
             Type[]                    implementedTypes
         ) {
             super(
-                location,        // location
-                docComment,      // docComment
-                modifiers,       // modifiers
-                name,            // name
-                typeParameters,  // typeParameters
-                extendedType,    // extendedType
-                implementedTypes // implementedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                optionalExtendedType,   // optionalExtendedType
+                implementedTypes        // implementedTypes
             );
         }
 
@@ -1642,21 +1544,21 @@ class Java {
         public
         PackageMemberClassDeclaration(
             Location                  location,
-            @Nullable String          docComment,
+            @Nullable String          optionalDocComment,
             Modifier[]                modifiers,
             String                    name,
-            @Nullable TypeParameter[] typeParameters,
-            @Nullable Type            extendedType,
+            @Nullable TypeParameter[] optionalTypeParameters,
+            @Nullable Type            optionalExtendedType,
             Type[]                    implementedTypes
         ) {
             super(
-                location,        // location
-                docComment,      // docComment
-                modifiers,       // modifiers
-                name,            // name
-                typeParameters,  // typeParameters
-                extendedType,    // extendedType
-                implementedTypes // implementedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                optionalExtendedType,   // optionalExtendedType
+                implementedTypes        // implementedTypes
             );
         }
 
@@ -1681,7 +1583,7 @@ class Java {
 
             CompilationUnit compilationUnit = (CompilationUnit) this.getEnclosingScope();
 
-            PackageDeclaration opd = compilationUnit.packageDeclaration;
+            PackageDeclaration opd = compilationUnit.optionalPackageDeclaration;
             if (opd != null) className = opd.packageName + '.' + className;
 
             return className;
@@ -1702,9 +1604,6 @@ class Java {
     public
     interface EnumDeclaration extends ClassDeclaration, NamedTypeDeclaration, DocCommentable {
 
-        /**
-         * @return The {@link Modifier}s declared for this enum
-         */
         Modifier[] getModifiers();
 
         @Override String getName();
@@ -1735,7 +1634,7 @@ class Java {
          * The optional "doc comment" that appeared in the compilation unit immediately before this enum constant
          * declaration.
          */
-        @Nullable public final String docComment;
+        @Nullable public final String optionalDocComment;
 
         /**
          * The name of the declared enum constant.
@@ -1746,31 +1645,31 @@ class Java {
          * The optional arguments that appear after the enum constant name iff the enum declares constructors with
          * one or more parameters.
          */
-        @Nullable public final Rvalue[] arguments;
+        @Nullable public final Rvalue[] optionalArguments;
 
         public
         EnumConstant(
             Location           location,
-            @Nullable String   docComment,
+            @Nullable String   optionalDocComment,
             Modifier[]         modifiers,
             String             name,
-            @Nullable Rvalue[] arguments
+            @Nullable Rvalue[] optionalArguments
         ) {
             super(location, modifiers, null);
-            this.docComment = docComment;
-            this.name       = name;
-            this.arguments  = arguments;
+            this.optionalDocComment = optionalDocComment;
+            this.name               = name;
+            this.optionalArguments  = optionalArguments;
         }
 
         @Override public String
         getClassName() { return this.name; }
 
         @Override @Nullable public String
-        getDocComment() { return this.docComment; }
+        getDocComment() { return this.optionalDocComment; }
 
         @Override public boolean
         hasDeprecatedDocTag() {
-            return this.docComment != null && this.docComment.indexOf("@deprecated") != -1;
+            return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
 
         @Override @Nullable public <R, EX extends Throwable> R
@@ -1793,18 +1692,18 @@ class Java {
         public
         PackageMemberEnumDeclaration(
             Location         location,
-            @Nullable String docComment,
+            @Nullable String optionalDocComment,
             Modifier[]       modifiers,
             String           name,
             Type[]           implementedTypes
         ) {
             super(
                 location,
-                docComment,
+                optionalDocComment,
                 modifiers,
                 name,
-                null, // typeParameters
-                null, // extendedType
+                null, // optionalTypeParameters
+                null, // optionalExtendedType
                 implementedTypes
             );
         }
@@ -1830,7 +1729,7 @@ class Java {
     public abstract static
     class InterfaceDeclaration extends AbstractTypeDeclaration implements NamedTypeDeclaration, DocCommentable {
 
-        @Nullable private final String docComment;
+        @Nullable private final String optionalDocComment;
 
         /**
          * The simple name of the interface.
@@ -1840,16 +1739,16 @@ class Java {
         protected
         InterfaceDeclaration(
             Location                  location,
-            @Nullable String          docComment,
+            @Nullable String          optionalDocComment,
             Modifier[]                modifiers,
             String                    name,
-            @Nullable TypeParameter[] typeParameters,
+            @Nullable TypeParameter[] optionalTypeParameters,
             Type[]                    extendedTypes
         ) {
-            super(location, modifiers, typeParameters);
-            this.docComment    = docComment;
-            this.name          = name;
-            this.extendedTypes = extendedTypes;
+            super(location, modifiers, optionalTypeParameters);
+            this.optionalDocComment = optionalDocComment;
+            this.name               = name;
+            this.extendedTypes      = extendedTypes;
             for (Type extendedType : extendedTypes) {
                 extendedType.setEnclosingScope(new EnclosingScopeOfTypeDeclaration(this));
             }
@@ -1893,11 +1792,11 @@ class Java {
         // Implement DocCommentable.
 
         @Override @Nullable public String
-        getDocComment() { return this.docComment; }
+        getDocComment() { return this.optionalDocComment; }
 
         @Override public boolean
         hasDeprecatedDocTag() {
-            return this.docComment != null && this.docComment.indexOf("@deprecated") != -1;
+            return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
     }
 
@@ -1913,19 +1812,19 @@ class Java {
         public
         MemberInterfaceDeclaration(
             Location                  location,
-            @Nullable String          docComment,
+            @Nullable String          optionalDocComment,
             Modifier[]                modifiers,
             String                    name,
-            @Nullable TypeParameter[] typeParameters,
+            @Nullable TypeParameter[] optionalTypeParameters,
             Type[]                    extendedTypes
         ) {
             super(
-                location,       // location
-                docComment,     // docComment
-                modifiers,      // modifiers
-                name,           // name
-                typeParameters, // typeParameters
-                extendedTypes   // extendedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                extendedTypes           // extendedTypes
             );
         }
 
@@ -1954,15 +1853,9 @@ class Java {
         @Override public TypeDeclaration
         getDeclaringType() { return (TypeDeclaration) this.getEnclosingScope(); }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberInterfaceDeclaration(this);
-        }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberInterfaceDeclaration(this);
-        }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX> visitor)     throws EX { return visitor.visitMemberInterfaceDeclaration(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberInterfaceDeclaration(this); }
     }
 
     /**
@@ -1974,34 +1867,28 @@ class Java {
         public
         MemberAnnotationTypeDeclaration(
             Location         location,
-            @Nullable String docComment,
+            @Nullable String optionalDocComment,
             Modifier[]       modifiers,
             String           name
         ) {
             super(
                 location,                       // location
-                docComment,                     // docComment
+                optionalDocComment,             // optionalDocComment
                 modifiers,                      // modifiers
                 name,                           // name
-                null,                           // typeParameters
+                null,                           // optionalTypeParameters
                 new Type[] { new ReferenceType( // extendedTypes
                     location,
                     new Annotation[0],
                     new String[] { "java", "lang", "annotation", "Annotation" },
-                    null // typeArguments
+                    null // optionalTypeArguments
                 )}
             );
         }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberAnnotationTypeDeclaration(this);
-        }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitMemberAnnotationTypeDeclaration(this);
-        }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeDeclarationVisitor<R, EX> visitor)     throws EX { return visitor.visitMemberAnnotationTypeDeclaration(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitMemberAnnotationTypeDeclaration(this); }
     }
 
     /**
@@ -2016,19 +1903,19 @@ class Java {
         public
         PackageMemberInterfaceDeclaration(
             Location                  location,
-            @Nullable String          docComment,
+            @Nullable String          optionalDocComment,
             Modifier[]                modifiers,
             String                    name,
-            @Nullable TypeParameter[] typeParameters,
+            @Nullable TypeParameter[] optionalTypeParameters,
             Type[]                    extendedTypes
         ) {
             super(
-                location,       // location
-                docComment,     // docComment
-                modifiers,      // modifiers
-                name,           // name
-                typeParameters, // typeParameters
-                extendedTypes   // extendedTypes
+                location,               // location
+                optionalDocComment,     // optionalDocComment
+                modifiers,              // modifiers
+                name,                   // name
+                optionalTypeParameters, // optionalTypeParameters
+                extendedTypes           // extendedTypes
             );
         }
 
@@ -2060,7 +1947,7 @@ class Java {
 
             CompilationUnit compilationUnit = (CompilationUnit) this.getEnclosingScope();
 
-            PackageDeclaration opd = compilationUnit.packageDeclaration;
+            PackageDeclaration opd = compilationUnit.optionalPackageDeclaration;
             if (opd != null) className = opd.packageName + '.' + className;
 
             return className;
@@ -2083,21 +1970,21 @@ class Java {
         public
         PackageMemberAnnotationTypeDeclaration(
             Location         location,
-            @Nullable String docComment,
+            @Nullable String optionalDocComment,
             Modifier[]       modifiers,
             String           name
         ) {
             super(
                 location,
-                docComment,
+                optionalDocComment,
                 modifiers,                      // modifiers
                 name,                           // name
-                null,                           // typeParameters
+                null,                           // optionalTypeParameters
                 new Type[] { new ReferenceType( // extendedTypes
                     location,                                                    // location
                     new Annotation[0],                                           // annotations
                     new String[] { "java", "lang", "annotation", "Annotation" }, // identifiers
-                    null                                                         // typeArguments
+                    null                                                         // optionalTypeArguments
                 )}
             );
         }
@@ -2114,9 +2001,6 @@ class Java {
     public
     interface AnnotationTypeDeclaration extends NamedTypeDeclaration, DocCommentable {
 
-        /**
-         * @return The {@link Modifier}s declared for this annotation type
-         */
         Modifier[] getModifiers();
     }
 
@@ -2134,20 +2018,20 @@ class Java {
         /**
          * The optional bound of the type parameter.
          */
-        @Nullable public final ReferenceType[] bound;
+        @Nullable public final ReferenceType[] optionalBound;
 
         public
-        TypeParameter(String name, @Nullable ReferenceType[] bound) {
+        TypeParameter(String name, @Nullable ReferenceType[] optionalBound) {
             assert name != null;
-            this.name  = name;
-            this.bound = bound;
+            this.name          = name;
+            this.optionalBound = optionalBound;
         }
 
         @Override public String
         toString() {
             return (
-                this.bound != null
-                ? this.name + " extends " + Java.join(this.bound, " & ")
+                this.optionalBound != null
+                ? this.name + " extends " + Java.join(this.optionalBound, " & ")
                 : this.name
             );
         }
@@ -2175,9 +2059,6 @@ class Java {
          */
         TypeDeclaration getDeclaringType();
 
-        /**
-         * @return The {@link Modifier}s of this declaration
-         */
         Modifier[] getModifiers();
 
         /**
@@ -2196,9 +2077,6 @@ class Java {
 
         @Nullable private TypeDeclaration declaringType;
 
-        /**
-         * The {@link Modifier}s of this declaration.
-         */
         public final Modifier[] modifiers;
 
         protected
@@ -2284,11 +2162,9 @@ class Java {
 
        // Implement BlockStatement.
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitInitializer(this); }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitInitializer(this); }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitInitializer(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX      { return visitor.visitInitializer(this); }
 
         @Override @Nullable public Java.LocalVariable
         findLocalVariable(String name) { return this.block.findLocalVariable(name); }
@@ -2300,7 +2176,7 @@ class Java {
     public abstract static
     class FunctionDeclarator extends AbstractTypeBodyDeclaration implements Annotatable, DocCommentable {
 
-        @Nullable private final String docComment;
+        @Nullable private final String optionalDocComment;
 
         /**
          * The return type of the function (VOID for constructors).
@@ -2325,32 +2201,32 @@ class Java {
         /**
          * The statements that comprise the function; {@code null} for abstract method declarations.
          */
-        @Nullable public final List<? extends BlockStatement> statements;
+        @Nullable public final List<? extends BlockStatement> optionalStatements;
 
         public
         FunctionDeclarator(
             Location                                 location,
-            @Nullable String                         docComment,
+            @Nullable String                         optionalDocComment,
             Modifier[]                               modifiers,
             Type                                     type,
             String                                   name,
             FormalParameters                         formalParameters,
             Type[]                                   thrownExceptions,
-            @Nullable List<? extends BlockStatement> statements
+            @Nullable List<? extends BlockStatement> optionalStatements
         ) {
             super(location, modifiers);
-            this.docComment         = docComment;
+            this.optionalDocComment = optionalDocComment;
             this.type               = type;
             this.name               = name;
             this.formalParameters   = formalParameters;
             this.thrownExceptions   = thrownExceptions;
-            this.statements         = statements;
+            this.optionalStatements = optionalStatements;
 
             this.type.setEnclosingScope(this);
             for (FormalParameter fp : formalParameters.parameters) fp.type.setEnclosingScope(this);
             for (Type te : thrownExceptions) te.setEnclosingScope(this);
-            if (statements != null) {
-                for (Java.BlockStatement bs : statements) {
+            if (optionalStatements != null) {
+                for (Java.BlockStatement bs : optionalStatements) {
 
                     // Field declaration initializers are also BlockStatements - their enclosing scope is already
                     // set (the enclosing type declaration), and must not be re-set here.
@@ -2404,11 +2280,11 @@ class Java {
         // Implement DocCommentable.
 
         @Override @Nullable public String
-        getDocComment() { return this.docComment; }
+        getDocComment() { return this.optionalDocComment; }
 
         @Override public boolean
         hasDeprecatedDocTag() {
-            return this.docComment != null && this.docComment.indexOf("@deprecated") != -1;
+            return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
 
         /**
@@ -2456,9 +2332,6 @@ class Java {
         public static final
         class FormalParameter extends Located {
 
-            /**
-             * The {@link Modifier}s of this parameter declaration.
-             */
             public final Modifier[] modifiers;
 
             /**
@@ -2557,9 +2430,6 @@ class Java {
             return sb.append(" ").append(this.name).toString();
         }
 
-        /**
-         * @param enclosingScope The scope that encloses this catch parameter declaration
-         */
         public void
         setEnclosingScope(Scope enclosingScope) {
             for (Type t : this.types) t.setEnclosingScope(enclosingScope);
@@ -2580,30 +2450,30 @@ class Java {
         /**
          * The {@link AlternateConstructorInvocation} or {@link SuperConstructorInvocation}, if any.
          */
-        @Nullable public final ConstructorInvocation constructorInvocation;
+        @Nullable public final ConstructorInvocation optionalConstructorInvocation;
 
         public
         ConstructorDeclarator(
             Location                        location,
-            @Nullable String                docComment,
+            @Nullable String                optionalDocComment,
             Modifier[]                      modifiers,
             FormalParameters                formalParameters,
             Type[]                          thrownExceptions,
-            @Nullable ConstructorInvocation constructorInvocation,
+            @Nullable ConstructorInvocation optionalConstructorInvocation,
             List<? extends BlockStatement>  statements
         ) {
             super(
                 location,                                    // location
-                docComment,                                  // docComment
+                optionalDocComment,                          // optionalDocComment
                 modifiers,                                   // modifiers
                 new PrimitiveType(location, Primitive.VOID), // type
                 "<init>",                                    // name
                 formalParameters,                            // formalParameters
                 thrownExceptions,                            // thrownExceptions
-                statements                                   // statements
+                statements                                   // optionalStatements
             );
-            this.constructorInvocation = constructorInvocation;
-            if (constructorInvocation != null) constructorInvocation.setEnclosingScope(this);
+            this.optionalConstructorInvocation = optionalConstructorInvocation;
+            if (optionalConstructorInvocation != null) optionalConstructorInvocation.setEnclosingScope(this);
         }
 
         /**
@@ -2665,43 +2535,43 @@ class Java {
         public
         MethodDeclarator(
             Location                                 location,
-            @Nullable String                         docComment,
+            @Nullable String                         optionalDocComment,
             Java.Modifier[]                          modifiers,
-            @Nullable TypeParameter[]                typeParameters,
+            @Nullable TypeParameter[]                optionalTypeParameters,
             Type                                     type,
             String                                   name,
             FormalParameters                         formalParameters,
             Type[]                                   thrownExceptions,
             @Nullable ElementValue                   defaultValue,
-            @Nullable List<? extends BlockStatement> statements
+            @Nullable List<? extends BlockStatement> optionalStatements
         ) {
             super(
-                location,         // location
-                docComment,       // docComment
-                modifiers,        // modifiers
-                type,             // type
-                name,             // name
-                formalParameters, // formalParameters
-                thrownExceptions, // thrownExceptions
-                statements        // statements
+                location,            // location
+                optionalDocComment,  // optionalDocComment
+                modifiers,           // modifiers
+                type,                // type
+                name,                // name
+                formalParameters,    // formalParameters
+                thrownExceptions,    // thrownExceptions
+                optionalStatements   // optionalStatements
             );
-            this.typeParameters = typeParameters;
-            this.defaultValue   = defaultValue;
+            this.optionalTypeParameters = optionalTypeParameters;
+            this.defaultValue           = defaultValue;
         }
 
         /**
          * @return The declared type parameters
          */
         @Nullable TypeParameter[]
-        getOptionalTypeParameters() { return this.typeParameters; }
+        getOptionalTypeParameters() { return this.optionalTypeParameters; }
 
         @Override public void
         setDeclaringType(TypeDeclaration declaringType) {
             super.setDeclaringType(declaringType);
-            if (this.typeParameters != null) {
-                for (TypeParameter tp : this.typeParameters) {
-                    if (tp.bound != null) {
-                        for (ReferenceType boundType : tp.bound) {
+            if (this.optionalTypeParameters != null) {
+                for (TypeParameter tp : this.optionalTypeParameters) {
+                    if (tp.optionalBound != null) {
+                        for (ReferenceType boundType : tp.optionalBound) {
                             boundType.setEnclosingScope(declaringType);
                         }
                     }
@@ -2712,10 +2582,10 @@ class Java {
         @Override public void
         setEnclosingScope(Scope enclosingScope) {
             super.setEnclosingScope(enclosingScope);
-            if (this.typeParameters != null) {
-                for (TypeParameter tp : this.typeParameters) {
-                    if (tp.bound != null) {
-                        for (ReferenceType boundType : tp.bound) {
+            if (this.optionalTypeParameters != null) {
+                for (TypeParameter tp : this.optionalTypeParameters) {
+                    if (tp.optionalBound != null) {
+                        for (ReferenceType boundType : tp.optionalBound) {
                             boundType.setEnclosingScope(enclosingScope);
                         }
                     }
@@ -2743,7 +2613,7 @@ class Java {
         /**
          * The type parameters declared for the method.
          */
-        @Nullable public final TypeParameter[] typeParameters;
+        @Nullable public final TypeParameter[] optionalTypeParameters;
 
         /**
          * The optional "default value" of the declared method (only methods of annotation types can have a default
@@ -2771,7 +2641,7 @@ class Java {
     public static final
     class FieldDeclaration extends Statement implements Annotatable, TypeBodyDeclaration, DocCommentable {
 
-        @Nullable private final String docComment;
+        @Nullable private final String optionalDocComment;
 
         /**
          * The modifiers of this field declaration.
@@ -2791,13 +2661,13 @@ class Java {
         public
         FieldDeclaration(
             Location             location,
-            @Nullable String     docComment,
+            @Nullable String     optionalDocComment,
             Modifier[]           modifiers,
             Type                 type,
             VariableDeclarator[] variableDeclarators
         ) {
             super(location);
-            this.docComment          = docComment;
+            this.optionalDocComment  = optionalDocComment;
             this.modifiers           = modifiers;
             this.type                = type;
             this.variableDeclarators = variableDeclarators;
@@ -2838,22 +2708,18 @@ class Java {
             return sb.toString();
         }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitFieldDeclaration(this);
-        }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitFieldDeclaration(this); }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeBodyDeclarationVisitor<R, EX> visitor) throws EX { return visitor.visitFieldDeclaration(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX      { return visitor.visitFieldDeclaration(this); }
 
         // Implement DocCommentable.
 
         @Override @Nullable public String
-        getDocComment() { return this.docComment; }
+        getDocComment() { return this.optionalDocComment; }
 
         @Override public boolean
         hasDeprecatedDocTag() {
-            return this.docComment != null && this.docComment.indexOf("@deprecated") != -1;
+            return this.optionalDocComment != null && this.optionalDocComment.indexOf("@deprecated") != -1;
         }
 
         public Access
@@ -2889,19 +2755,19 @@ class Java {
         /**
          * The initializer for the variable, if any.
          */
-        @Nullable public final ArrayInitializerOrRvalue initializer;
+        @Nullable public final ArrayInitializerOrRvalue optionalInitializer;
 
         public
         VariableDeclarator(
             Location                           location,
             String                             name,
             int                                brackets,
-            @Nullable ArrayInitializerOrRvalue initializer
+            @Nullable ArrayInitializerOrRvalue optionalInitializer
         ) {
             super(location);
-            this.name        = name;
-            this.brackets    = brackets;
-            this.initializer = initializer;
+            this.name                = name;
+            this.brackets            = brackets;
+            this.optionalInitializer = optionalInitializer;
 
             // Used both by field declarations an local variable declarations, so naming conventions checking (JLS7
             // 6.4.2) cannot be done here.
@@ -2912,14 +2778,14 @@ class Java {
          */
         public void
         setEnclosingScope(Scope s) {
-            if (this.initializer != null) this.initializer.setEnclosingScope(s);
+            if (this.optionalInitializer != null) this.optionalInitializer.setEnclosingScope(s);
         }
 
         @Override public String
         toString() {
             StringBuilder sb = new StringBuilder(this.name);
             for (int i = 0; i < this.brackets; ++i) sb.append("[]");
-            if (this.initializer != null) sb.append(" = ").append(this.initializer);
+            if (this.optionalInitializer != null) sb.append(" = ").append(this.optionalInitializer);
             return sb.toString();
         }
 
@@ -3283,33 +3149,33 @@ class Java {
         /**
          * The optional "init" part of the "basic FOR statement".
          */
-        @Nullable public final BlockStatement init;
+        @Nullable public final BlockStatement optionalInit;
 
         /**
          * The optional "condition" part of the "basic FOR statement".
          */
-        @Nullable public final Rvalue condition;
+        @Nullable public final Rvalue optionalCondition;
 
         /**
          * The optional "update" part of the "basic FOR statement".
          */
-        @Nullable public final Rvalue[] update;
+        @Nullable public final Rvalue[] optionalUpdate;
 
         public
         ForStatement(
             Location                 location,
-            @Nullable BlockStatement init,
-            @Nullable Rvalue         condition,
-            @Nullable Rvalue[]       update,
+            @Nullable BlockStatement optionalInit,
+            @Nullable Rvalue         optionalCondition,
+            @Nullable Rvalue[]       optionalUpdate,
             BlockStatement           body
         ) {
             super(location, body);
-            this.init = init;
-            if (init != null) init.setEnclosingScope(this);
-            this.condition = condition;
-            if (condition != null) condition.setEnclosingScope(this);
-            this.update = update;
-            if (update != null) for (Rvalue rv : update) rv.setEnclosingScope(this);
+            this.optionalInit = optionalInit;
+            if (optionalInit != null) optionalInit.setEnclosingScope(this);
+            this.optionalCondition = optionalCondition;
+            if (optionalCondition != null) optionalCondition.setEnclosingScope(this);
+            this.optionalUpdate = optionalUpdate;
+            if (optionalUpdate != null) for (Rvalue rv : optionalUpdate) rv.setEnclosingScope(this);
         }
 
         @Override public String
@@ -3565,6 +3431,12 @@ class Java {
 
         @Override @Nullable public <R, EX extends Throwable> R
         accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitTryStatement(this); }
+
+        /**
+         * This one's created iff the TRY statement has a FINALLY clause when the compilation of the TRY statement
+         * begins.
+         */
+        @Nullable CodeContext.Offset finallyOffset;
     }
 
     /**
@@ -3721,7 +3593,7 @@ class Java {
             if (x != 0) {
                 CodeContext ca = this.getCodeContext();
                 ca.pushInserter(this);
-                ca.makeSpace(4 - x);
+                ca.makeSpace(-1, 4 - x);
                 ca.popInserter();
             }
         }
@@ -3868,17 +3740,17 @@ class Java {
         /**
          * The optional rvalue that is returned.
          */
-        @Nullable public final Rvalue returnValue;
+        @Nullable public final Rvalue optionalReturnValue;
 
         public
-        ReturnStatement(Location location, @Nullable Rvalue returnValue) {
+        ReturnStatement(Location location, @Nullable Rvalue optionalReturnValue) {
             super(location);
-            this.returnValue = returnValue;
-            if (returnValue != null) returnValue.setEnclosingScope(this);
+            this.optionalReturnValue = optionalReturnValue;
+            if (optionalReturnValue != null) optionalReturnValue.setEnclosingScope(this);
         }
 
         @Override public String
-        toString() { return this.returnValue == null ? "return;" : "return " + this.returnValue + ';'; }
+        toString() { return this.optionalReturnValue == null ? "return;" : "return " + this.optionalReturnValue + ';'; }
 
         // Compile time members:
 
@@ -3921,16 +3793,16 @@ class Java {
         /**
          * The optional label that this BREAK statement refers to.
          */
-        @Nullable public final String label;
+        @Nullable public final String optionalLabel;
 
         public
-        BreakStatement(Location location, @Nullable String label) {
+        BreakStatement(Location location, @Nullable String optionalLabel) {
             super(location);
-            this.label = label;
+            this.optionalLabel = optionalLabel;
         }
 
         @Override public String
-        toString() { return this.label == null ? "break;" : "break " + this.label + ';'; }
+        toString() { return this.optionalLabel == null ? "break;" : "break " + this.optionalLabel + ';'; }
 
         // Compile time members:
 
@@ -3947,16 +3819,16 @@ class Java {
         /**
          * The optional label that this CONTINUE statement refers to.
          */
-        @Nullable public final String label;
+        @Nullable public final String optionalLabel;
 
         public
-        ContinueStatement(Location location, @Nullable String label) {
+        ContinueStatement(Location location, @Nullable String optionalLabel) {
             super(location);
-            this.label = label;
+            this.optionalLabel = optionalLabel;
         }
 
         @Override public String
-        toString() { return this.label == null ? "continue;" : "continue " + this.label + ';'; }
+        toString() { return this.optionalLabel == null ? "continue;" : "continue " + this.optionalLabel + ';'; }
 
         // Compile time members:
 
@@ -3978,24 +3850,24 @@ class Java {
         /**
          * The optional right-hand-side expression of this ASSERT statement.
          */
-        @Nullable public final Rvalue expression2;
+        @Nullable public final Rvalue optionalExpression2;
 
         public
-        AssertStatement(Location location, Rvalue expression1, @Nullable Rvalue expression2) {
+        AssertStatement(Location location, Rvalue expression1, @Nullable Rvalue optionalExpression2) {
             super(location);
-            this.expression1 = expression1;
-            this.expression2 = expression2;
+            this.expression1         = expression1;
+            this.optionalExpression2 = optionalExpression2;
 
             this.expression1.setEnclosingScope(this);
-            if (this.expression2 != null) this.expression2.setEnclosingScope(this);
+            if (this.optionalExpression2 != null) this.optionalExpression2.setEnclosingScope(this);
         }
 
         @Override public String
         toString() {
             return (
-                this.expression2 == null
+                this.optionalExpression2 == null
                 ? "assert " + this.expression1 + ';'
-                : "assert " + this.expression1 + " : " + this.expression2 + ';'
+                : "assert " + this.expression1 + " : " + this.optionalExpression2 + ';'
             );
         }
 
@@ -4163,11 +4035,9 @@ class Java {
         @Override public String
         toString() { return this.iClass.toString(); }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);       }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitSimpleType(this); }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);       }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitSimpleType(this); }
     }
 
     /**
@@ -4190,11 +4060,9 @@ class Java {
         @Override public String
         toString() { return this.primitive.toString(); }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitPrimitiveType(this); }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this); }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitPrimitiveType(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);          }
     }
 
     /**
@@ -4225,9 +4093,6 @@ class Java {
     public static final
     class ReferenceType extends Type implements TypeArgument {
 
-        /**
-         * The "type annotations" of this type, see JLS9, 9.7.4.
-         */
         public final Annotation[] annotations;
 
         /**
@@ -4238,21 +4103,21 @@ class Java {
         /**
          * The optional type arguments of the reference type.
          */
-        @Nullable public final TypeArgument[] typeArguments;
+        @Nullable public final TypeArgument[] optionalTypeArguments;
 
         public
         ReferenceType(
             Location                 location,
             Annotation[]             annotations,
             String[]                 identifiers,
-            @Nullable TypeArgument[] typeArguments
+            @Nullable TypeArgument[] optionalTypeArguments
         ) {
             super(location);
             assert annotations != null;
             this.annotations = annotations;
             assert identifiers != null;
-            this.identifiers   = identifiers;
-            this.typeArguments = typeArguments;
+            this.identifiers           = identifiers;
+            this.optionalTypeArguments = optionalTypeArguments;
         }
 
         @Override public String
@@ -4260,18 +4125,14 @@ class Java {
             String s = Java.join(this.annotations, " ");
             if (this.annotations.length >= 1) s += ' ';
             s += Java.join(this.identifiers, ".");
-            if (this.typeArguments != null) s += '<' + Java.join(this.typeArguments, ", ") + ">";
+            if (this.optionalTypeArguments != null) s += '<' + Java.join(this.optionalTypeArguments, ", ") + ">";
             return s;
         }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this); }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitReferenceType(this); }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(TypeArgumentVisitor<R, EX> visitor) throws EX { return visitor.visitReferenceType(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);          }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitReferenceType(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(TypeArgumentVisitor<R, EX> visitor) throws EX { return visitor.visitReferenceType(this); }
     }
 
     /**
@@ -4318,11 +4179,9 @@ class Java {
         @Override public String
         toString() { return this.identifier; }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this); }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitRvalueMemberType(this); }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);             }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitRvalueMemberType(this); }
     }
 
     /**
@@ -4351,14 +4210,10 @@ class Java {
         @Override public String
         toString() { return this.componentType.toString() + "[]"; }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this); }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitArrayType(this); }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(TypeArgumentVisitor<R, EX> visitor) throws EX { return visitor.visitArrayType(this); }
+        // SUPPRESS CHECKSTYLE LineLength:3
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);      }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.TypeVisitor<R, EX> visitor) throws EX { return visitor.visitArrayType(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(TypeArgumentVisitor<R, EX> visitor) throws EX { return visitor.visitArrayType(this); }
     }
 
     /**
@@ -4504,7 +4359,7 @@ class Java {
      * <p>
      *   This class is special: It does not extend/implement the {@link Atom} subclasses, but overrides {@link Atom}'s
      *   "{@code to...()}" methods.
-     * </p>
+     * </pS
      */
     public static final
     class AmbiguousName extends Lvalue {
@@ -5012,7 +4867,7 @@ class Java {
         /**
          * The optional qualification before "{@code .super.fld}".
          */
-        @Nullable public final Type qualification;
+        @Nullable public final Type optionalQualification;
 
         /**
          * The name of the field to access.
@@ -5020,10 +4875,10 @@ class Java {
         public final String fieldName;
 
         public
-        SuperclassFieldAccessExpression(Location location, @Nullable Type qualification, String fieldName) {
+        SuperclassFieldAccessExpression(Location location, @Nullable Type optionalQualification, String fieldName) {
             super(location);
-            this.qualification = qualification;
-            this.fieldName     = fieldName;
+            this.optionalQualification = optionalQualification;
+            this.fieldName             = fieldName;
         }
 
         // Compile time members.
@@ -5033,8 +4888,8 @@ class Java {
         @Override public String
         toString() {
             return (
-                this.qualification != null
-                ? this.qualification.toString() + ".super."
+                this.optionalQualification != null
+                ? this.optionalQualification.toString() + ".super."
                 : "super."
             ) + this.fieldName;
         }
@@ -5356,15 +5211,9 @@ class Java {
         @Override public String
         toString() { return "this()"; }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.ConstructorInvocationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitAlternateConstructorInvocation(this);
-        }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX {
-            return visitor.visitAlternateConstructorInvocation(this);
-        }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.ConstructorInvocationVisitor<R, EX> visitor) throws EX { return visitor.visitAlternateConstructorInvocation(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor)        throws EX { return visitor.visitAlternateConstructorInvocation(this); }
     }
 
     /**
@@ -5377,13 +5226,13 @@ class Java {
          * The qualification for this "qualified superclass constructor invocation", or {@code null} iff this is an
          * "unqualified superclass constructor invocation".
          */
-        @Nullable public final Rvalue qualification;
+        @Nullable public final Rvalue optionalQualification;
 
         public
-        SuperConstructorInvocation(Location location, @Nullable Rvalue qualification, Rvalue[] arguments) {
+        SuperConstructorInvocation(Location location, @Nullable Rvalue optionalQualification, Rvalue[] arguments) {
             super(location, arguments);
-            this.qualification = qualification;
-            if (qualification != null) qualification.setEnclosingScope(this);
+            this.optionalQualification = optionalQualification;
+            if (optionalQualification != null) optionalQualification.setEnclosingScope(this);
         }
 
         // Implement Atom.
@@ -5391,15 +5240,9 @@ class Java {
         @Override public String
         toString() { return "super()"; }
 
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.ConstructorInvocationVisitor<R, EX> visitor) throws EX {
-            return visitor.visitSuperConstructorInvocation(this);
-        }
-
-        @Override @Nullable public <R, EX extends Throwable> R
-        accept(Visitor.BlockStatementVisitor<R, EX> visitor) throws EX {
-            return visitor.visitSuperConstructorInvocation(this);
-        }
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.ConstructorInvocationVisitor<R, EX> visitor) throws EX { return visitor.visitSuperConstructorInvocation(this); }
+        @Override @Nullable public <R, EX extends Throwable> R accept(Visitor.BlockStatementVisitor<R, EX> visitor)        throws EX { return visitor.visitSuperConstructorInvocation(this); }
     }
 
     /**
@@ -5411,12 +5254,12 @@ class Java {
         /**
          * The optional type or rvalue that qualifies this method invocation.
          */
-        @Nullable public final Atom target;
+        @Nullable public final Atom optionalTarget;
 
         public
-        MethodInvocation(Location location, @Nullable Atom target, String methodName, Rvalue[] arguments) {
+        MethodInvocation(Location location, @Nullable Atom optionalTarget, String methodName, Rvalue[] arguments) {
             super(location, methodName, arguments);
-            this.target = target;
+            this.optionalTarget = optionalTarget;
         }
 
         // Implement "Atom".
@@ -5429,7 +5272,7 @@ class Java {
         @Override public String
         toString() {
             StringBuilder sb = new StringBuilder();
-            if (this.target != null) sb.append(this.target.toString()).append('.');
+            if (this.optionalTarget != null) sb.append(this.optionalTarget.toString()).append('.');
             sb.append(this.methodName).append('(');
             for (int i = 0; i < this.arguments.length; ++i) {
                 if (i > 0) sb.append(", ");
@@ -5496,7 +5339,7 @@ class Java {
         /**
          * The qualification of this "qualified class instance creation expression".
          */
-        @Nullable public final Rvalue qualification;
+        @Nullable public final Rvalue optionalQualification;
 
         /**
          * The type to instantiate.
@@ -5509,11 +5352,11 @@ class Java {
         public final Rvalue[] arguments;
 
         public
-        NewClassInstance(Location location, @Nullable Rvalue qualification, Type type, Rvalue[] arguments) {
+        NewClassInstance(Location location, @Nullable Rvalue optionalQualification, Type type, Rvalue[] arguments) {
             super(location);
-            this.qualification = qualification;
-            this.type          = type;
-            this.arguments     = arguments;
+            this.optionalQualification = optionalQualification;
+            this.type                  = type;
+            this.arguments             = arguments;
         }
 
         // Compile time members.
@@ -5524,12 +5367,12 @@ class Java {
         @Nullable public IClass iClass;
 
         public
-        NewClassInstance(Location location, @Nullable Rvalue qualification, IClass iClass, Rvalue[] arguments) {
+        NewClassInstance(Location location, @Nullable Rvalue optionalQualification, IClass iClass, Rvalue[] arguments) {
             super(location);
-            this.qualification = qualification;
-            this.type          = null;
-            this.arguments     = arguments;
-            this.iClass        = iClass;
+            this.optionalQualification = optionalQualification;
+            this.type                  = null;
+            this.arguments             = arguments;
+            this.iClass                = iClass;
         }
 
         // Implement "Atom".
@@ -5537,7 +5380,7 @@ class Java {
         @Override public String
         toString() {
             StringBuilder sb = new StringBuilder();
-            if (this.qualification != null) sb.append(this.qualification.toString()).append('.');
+            if (this.optionalQualification != null) sb.append(this.optionalQualification.toString()).append('.');
             sb.append("new ");
             if (this.type != null) {
                 sb.append(this.type.toString());
@@ -5569,7 +5412,7 @@ class Java {
         /**
          * The qualification iff this a "qualified anonymous class instance creation expression".
          */
-        @Nullable public final Rvalue qualification;
+        @Nullable public final Rvalue optionalQualification;
 
         /**
          * The declaration of the anonymous class to instantiate.
@@ -5584,12 +5427,12 @@ class Java {
         public
         NewAnonymousClassInstance(
             Location                  location,
-            @Nullable Rvalue          qualification,
+            @Nullable Rvalue          optionalQualification,
             AnonymousClassDeclaration anonymousClassDeclaration,
             Rvalue[]                  arguments
         ) {
             super(location);
-            this.qualification             = qualification;
+            this.optionalQualification     = optionalQualification;
             this.anonymousClassDeclaration = anonymousClassDeclaration;
             this.arguments                 = arguments;
         }
@@ -5599,7 +5442,7 @@ class Java {
         @Override public String
         toString() {
             StringBuilder sb = new StringBuilder();
-            if (this.qualification != null) sb.append(this.qualification.toString()).append('.');
+            if (this.optionalQualification != null) sb.append(this.optionalQualification.toString()).append('.');
             sb.append("new ").append(this.anonymousClassDeclaration.baseType.toString()).append("() { ... }");
             return sb.toString();
         }
@@ -5808,21 +5651,11 @@ class Java {
         toString() { return this.value; }
     }
 
-    /**
-     * Representation of a (Java 8+) "lambda expression", see JLS9 15.27.
-     */
     public static
     class LambdaExpression extends Rvalue {
 
-        /**
-         * The parameters of this lambda expression; see JLS9 15.27.1.
-         */
         public final LambdaParameters parameters;
-
-        /**
-         * The body of this lambda expression; see JLS9 15.27.2.
-         */
-        public final LambdaBody body;
+        public final LambdaBody       body;
 
         public
         LambdaExpression(Location location, LambdaParameters parameters, LambdaBody body) {
@@ -5838,29 +5671,16 @@ class Java {
         toString() { return this.parameters + " -> " + this.body; }
     }
 
-    /**
-     * Base for the various "lambda parameters" styles, see JLS9 15.27.1.
-     */
     public
     interface LambdaParameters {
 
-        /**
-         * Invokes the "{@code visit...()}" method of {@link Visitor.LambdaParametersVisitor} for the concrete
-         * {@link LambdaParameters}.
-         */
         @Nullable <R, EX extends Throwable> R
         accept(LambdaParametersVisitor<R, EX> lpv) throws EX;
     }
 
-    /**
-     * Representation of "lamba parameters" that consist of a single identifier; see JLS9 15.27.1
-     */
     public static
     class IdentifierLambdaParameters implements LambdaParameters {
 
-        /**
-         * The single identifier.
-         */
         public final String identifier;
 
         public
@@ -5870,15 +5690,9 @@ class Java {
         accept(LambdaParametersVisitor<R, EX> lpv) throws EX { return lpv.visitIdentifierLambdaParameters(this); }
     }
 
-    /**
-     * Representation of "lamba parameters" that include a formal parameter list; see JLS9 15.27.1.
-     */
     public static
     class FormalLambdaParameters implements LambdaParameters {
 
-        /**
-         * The formal parameter declarations that pose the list.
-         */
         public final FormalParameters formalParameters;
 
         public
@@ -5891,15 +5705,9 @@ class Java {
         toString() { return this.formalParameters.toString(); }
     }
 
-    /**
-     * Representation of "lamba parameters" that include an inferred formal parameter list; see JLS9 15.27.1.
-     */
     public static
     class InferredLambdaParameters implements LambdaParameters {
 
-        /**
-         * The identifiers that pose the list.
-         */
         public final String[] names;
 
         public
@@ -5909,29 +5717,16 @@ class Java {
         accept(LambdaParametersVisitor<R, EX> lpv) throws EX { return lpv.visitInferredLambdaParameters(this); }
     }
 
-    /**
-     * Representation of a "lambda body", see JLS9 15.27.2.
-     */
     public
     interface LambdaBody {
 
-        /**
-         * Invokes the "{@code visit...()}" method of {@link Visitor.LambdaBodyVisitor} for the concrete
-         * {@link LambdaBody}.
-         */
         @Nullable <R, EX extends Throwable> R
         accept(LambdaBodyVisitor<R, EX> lbv) throws EX;
     }
 
-    /**
-     * Representation of a "lambda body" that is a block; see JLS9 15.27.2.
-     */
     public static
     class BlockLambdaBody implements LambdaBody {
 
-        /**
-         * The block that poses the lambda body.
-         */
         public final Block block;
 
         public
@@ -5941,15 +5736,9 @@ class Java {
         accept(LambdaBodyVisitor<R, EX> lbv) throws EX { return lbv.visitBlockLambdaBody(this); }
     }
 
-    /**
-     * Representation of a "lambda body" that is an expression; see JLS9 15.27.2.
-     */
     public static
     class ExpressionLambdaBody implements LambdaBody {
 
-        /**
-         * The expression that poses the lambda body.
-         */
         public final Rvalue expression;
 
         public
@@ -6119,27 +5908,10 @@ class Java {
         toString() { return "[" + this.value + ']'; }
     }
 
-    /**
-     * Representation of a "method reference expression", as described in JLS9 15.13, with the form "{@code
-     * <var>referenceType</var>::identifier}.
-     * <p>
-     *   The form "{@code ::new}" is represented by {@link ClassInstanceCreationReference}.
-     * </p>
-     *
-     * @see ClassInstanceCreationReference
-     * @see ArrayCreationReference
-     */
     public static final
     class MethodReference extends Rvalue {
 
-        /**
-         * The expression name, primary or reference type that poses the left hand side of the expression.
-         */
-        public final Atom lhs;
-
-        /**
-         * The name of the referenced method.
-         */
+        public final Atom   lhs;
         public final String methodName;
 
         public
@@ -6156,21 +5928,10 @@ class Java {
         toString() { return this.lhs + "::" + this.methodName; }
     }
 
-    /**
-     * Representation of a "method reference expression", as described in JLS9 15.13, with the form "{@code
-     * <var>classType</var>::new}".
-     */
     public static final
     class ClassInstanceCreationReference extends Rvalue {
 
-        /**
-         * The class type that this expression instantiates.
-         */
-        public final Type type;
-
-        /**
-         * The optional type arguments for the {@link #type}.
-         */
+        public final Type                     type;
         @Nullable public final TypeArgument[] typeArguments;
 
         public
@@ -6187,16 +5948,9 @@ class Java {
         toString() { return this.type + "::" + (this.typeArguments != null ? this.typeArguments : "") + "new"; }
     }
 
-    /**
-     * Representation of a "method reference expression", as described in JLS9 15.13, with the form "{@code
-     * <var>arrayType</var>::new}".
-     */
     public static final
     class ArrayCreationReference extends Rvalue {
 
-        /**
-         * The array type that this expression instantiates.
-         */
         public final ArrayType type;
 
         public
@@ -6458,12 +6212,9 @@ class Java {
         return sb.toString();
     }
 
-    /**
-     * @return An array of {@link Modifier}s, parsed from a sequence of access modifier keywords
-     */
-    public static AccessModifier[]
+    public static Modifier[]
     accessModifiers(Location location, String... keywords) {
-        AccessModifier[] result = new AccessModifier[keywords.length];
+        Modifier[] result = new Modifier[keywords.length];
         for (int i = 0; i < keywords.length; i++) {
             result[i] = new AccessModifier(keywords[i], location);
         }

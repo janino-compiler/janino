@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -28,17 +29,13 @@
 package org.codehaus.commons.compiler.tests;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.ICookable;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
@@ -49,10 +46,6 @@ import org.codehaus.commons.compiler.tests.bug172.First;
 import org.codehaus.commons.compiler.tests.bug180.UnaryDoubleFunction;
 import org.codehaus.commons.compiler.tests.bug63.IPred;
 import org.codehaus.commons.compiler.tests.bug63.Pred;
-import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
-import org.codehaus.commons.compiler.util.resource.MapResourceCreator;
-import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
-import org.codehaus.commons.compiler.util.resource.Resource;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -182,7 +175,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    testBug54a() throws Exception {
+    testBug54() throws Exception {
         this.assertScriptReturnsTrue(
             ""
             + "String s = \"\";\n"
@@ -209,10 +202,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "}\n"
             + "return \"set1returnfinally\".equals(s);"
         );
-    }
-
-    @Test public void
-    testBug54b() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "void foo() {\n"
@@ -234,10 +223,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
-    }
-
-    @Test public void
-    testBug54c() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "void baz1() {\n"
@@ -251,10 +236,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
-    }
-
-    @Test public void
-    testBug54d() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "void baz2() {\n"
@@ -268,10 +249,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
-    }
-
-    @Test public void
-    testBug54e() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
@@ -280,10 +257,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
-    }
-
-    @Test public void
-    testBug54f() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
@@ -292,10 +265,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
-    }
-
-    @Test public void
-    testBug54g() throws Exception {
         this.assertClassBodyCookable(
             ""
             + "public void foo() throws Exception {\n"
@@ -318,10 +287,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         );
-    }
-
-    @Test public void
-    testBug54h() throws Exception {
         this.assertScriptExecutable(
             ""
             + "int c = 5;\n"
@@ -736,7 +701,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "import java.util.*;\n"
             + "\n"
             + "class Test2 {\n"
-            + "    final Object fld1 = \"\";\n"
+            + "    final Object fld1 = null;\n"
             + "    public void bind(final Object param2) {\n"
             + "        fld1.hashCode();\n"
             + "        final Object lvar3 = param2;\n"
@@ -1026,9 +991,19 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     testIssue69_IncompatibleClassChangeError_when_evaluating_against_janino9plus() throws Exception {
 
         // Return if STREAMS are not (yet) available, i.e. a pre-1.8 JRE.
-        if (CommonsCompilerTestSuite.JVM_VERSION < 8) return;
+        try {
+            ClassLoader.getSystemClassLoader().loadClass("java.util.stream.Stream");
+        } catch (ClassNotFoundException cnfe) {
+            return;
+        }
+
+        // openjdk-12:
+        //         invokestatic    java.util.stream.Stream.of(Object[]) => java.util.stream.Stream
 
         this.assertExpressionEvaluatable("java.util.stream.Stream.of(1, 2, 3)");
+//        ExpressionEvaluator ee = new ExpressionEvaluator();
+//        ee.cook("java.util.stream.Stream.of(1, 2, 3)");
+//        ee.evaluate(new Object[0]);
     }
 
     /**
@@ -1062,154 +1037,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     testIssue90() throws Exception {
         this.assertExpressionEvaluatesTrue("1 == (false ? null : 1)");
         this.assertScriptExecutable("boolean cond = true; Integer result = cond ? null : 1;");
-    }
-
-    /**
-     * <a href="https://github.com/janino-compiler/janino/issues/102">Issue #102: "$" in class name can't be handled by
-     * janino</a>
-     */
-    @Test public void
-    testIssue102__1() throws Exception {
-        this.assertExpressionEvaluatable("import java.util.Map; Map.class");
-    }
-
-    @Test public void
-    testIssue102__2() throws Exception {
-        this.assertExpressionEvaluatable("import java.util.Map; Map.Entry.class");
-    }
-
-    @Test public void
-    testIssue102__4() throws Exception {
-        this.assertCompilationUnitMainReturnsTrue((
-            ""
-            + "class A$B {}\n"
-            + "public class Main {\n"
-            + "    public static boolean main() {\n"
-            + "        return A$B.class.getName().equals(\"A$B\");\n"
-            + "    }\n"
-            + "}\n"
-        ), "Main");
-    }
-
-    @Test public void
-    testIssue102__5() throws Exception {
-        this.assertCompilationUnitMainReturnsTrue((
-            ""
-            + "class A$$B {}\n"
-            + "public class Main {\n"
-            + "    public static boolean main() {\n"
-            + "        new A$$B();\n"
-            + "        return A$$B.class.getName().equals(\"A$$B\");\n"
-            + "    }\n"
-            + "}\n"
-        ), "Main");
-    }
-
-    @Test public void
-    testIssue102__6() throws Exception {
-        this.assertCompilationUnitMainReturnsTrue((
-            ""
-            + "class A$B { class C$D {} }\n"
-            + "public class Main {\n"
-            + "    public static boolean main() {\n"
-            + "        return A$B.C$D.class.getName().equals(\"A$B$C$D\");\n"
-            + "    }\n"
-            + "}\n"
-        ), "Main");
-    }
-
-    @Test public void
-    testIssue102__7() throws Exception {
-        this.assertCompilationUnitUncookable((
-            ""
-            + "class A$B { class C$D {} }\n"
-            + "public class Main {\n"
-            + "    public static boolean main() {\n"
-            + "        return A$B$C$D.class.getName().equals(\"A$B$C$D\");\n"
-            + "    }\n"
-            + "}\n"
-        ));
-    }
-
-    @Test public void
-    testIssue102__8() throws Exception {
-        CompileUnit unit1 = new CompileUnit("demo.pkg1", "A$$1", (
-            ""
-            + "package demo.pkg1;\n"
-            + "import demo.pkg2.*;\n"
-            + "public class A$$1 {\n"
-            + "    public static String main() { return B$1.hello(); }\n"
-            + "    public static String hello() { return \"HELLO\"; }\n"
-            + "}"
-        ));
-        CompileUnit unit2 = new CompileUnit("demo.pkg2", "B$1", (
-            ""
-            + "package demo.pkg2;\n"
-            + "import demo.pkg1.*;\n"
-            + "public class B$1 {\n"
-            + "    public static String hello() { return \"HELLO\" /*A$$1.hello()*/; }\n"
-            + "}"
-        ));
-
-        ClassLoader
-        classLoader = this.compile(Thread.currentThread().getContextClassLoader(), unit1, unit2);
-
-        Assert.assertEquals(
-            "HELLO",
-            classLoader.loadClass("demo.pkg1.A$$1").getMethod("main").invoke(null)
-        );
-    }
-
-    public ClassLoader
-    compile(ClassLoader parentClassLoader, CompileUnit... compileUnits) {
-
-        MapResourceFinder sourceFinder = new MapResourceFinder();
-        for (CompileUnit unit : compileUnits) {
-            String stubFileName = unit.pkg.replace(".", "/") + "/" + unit.mainClassName + ".java";
-            sourceFinder.addResource(stubFileName, unit.getCode());
-        }
-
-        // Storage for generated bytecode
-        final Map<String, byte[]> classes = new HashMap<String, byte[]>();
-        // Set up the compiler.
-        ICompiler compiler = this.compilerFactory.newCompiler();
-//        compiler.setClassFileFinder(ClassLoaders.getsResourceAsStream(parentClassLoader));
-        compiler.setClassFileCreator(new MapResourceCreator(classes));
-        compiler.setClassFileFinder(new MapResourceFinder(classes));
-
-        // Compile all sources
-        try {
-            compiler.compile(sourceFinder.resources().toArray(new Resource[0]));
-        } catch (CompileException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        // Set up a class loader that finds and defined the generated classes.
-        return new ByteArrayClassLoader(classes, parentClassLoader);
-    }
-
-    interface Supplier<T> { T get(); }
-
-    public
-    class CompileUnit {
-        String               pkg;
-        String               mainClassName;
-        private final String code;
-
-        public
-        CompileUnit(String pkg, String mainClassName, String code) {
-            this.pkg           = pkg;
-            this.mainClassName = mainClassName;
-            this.code          = code;
-        }
-
-        public String
-        getCode() { return this.code; }
-
-        @Override public String
-        toString() { return "CompileUnit{ pkg=" + this.pkg + ", mainClassName='" + this.mainClassName + " }"; }
     }
 
     // SUPPRESS CHECKSTYLE Javadoc:2

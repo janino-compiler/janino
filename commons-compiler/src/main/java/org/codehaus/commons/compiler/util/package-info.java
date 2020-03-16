@@ -23,9 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * Utility functionality for this project.
- */
 @NotNullByDefault
 package org.codehaus.commons.compiler.util;
 

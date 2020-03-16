@@ -3,6 +3,7 @@
  * Janino - An embedded Java[TM] compiler
  *
  * Copyright (c) 2001-2010 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2015-2016 TIBCO Software Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -33,19 +34,13 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class CompileException extends LocatedException {
 
-    /**
-     * An infix {@code "NYI"} in the message string indicates that the compiler has a known limitation here.
-     */
     public
-    CompileException(String message, @Nullable Location location) {
-        super(message, location);
+    CompileException(String message, @Nullable Location optionalLocation) {
+        super(message, optionalLocation);
     }
 
-    /**
-     * An infix {@code "NYI"} in the message string indicates that the compiler has a known limitation here.
-     */
     public
-    CompileException(String message, @Nullable Location location, Throwable cause) {
-        super(message, location, cause);
+    CompileException(String message, @Nullable Location optionalLocation, Throwable cause) {
+        super(message, optionalLocation, cause);
     }
 }
