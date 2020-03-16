@@ -10875,6 +10875,8 @@ class UnitCompiler {
                 }
                 if (this.isWideningReferenceConvertible(boxedType, targetType)) {
                     this.boxingConversion(locatable, sourceType, boxedType);
+                    this.getCodeContext().popOperand(boxedType.getDescriptor());
+                    this.getCodeContext().pushOperand(targetType.getDescriptor());
                     return true;
                 }
             }
