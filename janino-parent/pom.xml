@@ -26,7 +26,7 @@
 
   <groupId>org.codehaus.janino</groupId>
   <packaging>pom</packaging>
-  <version>3.0.16-SNAPSHOT</version>
+  <version>3.0.16</version>
   <dependencyManagement>
   	<dependencies>
   		<dependency>
