@@ -51,9 +51,21 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.1.2-SNAPSHOT (only available as source code)</h4>
+    <h4>Version 3.1.3-SNAPSHOT (only available as source code)</h4>
     <ul>
       <li>...</li>
+    </ul>
+
+    <h4>Version 3.1.2, 2020-03-18</h4>
+    <ul>
+      <li>Fixed Issue #119 -- there was an ASSERT statement with a side effect.</li>
+      <li>Merged PR #117 which successfully fixes issue #116.</li>
+      <li>Reproduced issue #116 with new test "JlsTest.test_15_25__Conditional_operator__2()".</li>
+      <li>Upgraded TXT2HTML version from 0.0.1-SNAPSHOT to 1.0.0.</li>
+      <li>
+        Improved the encoding of stack map frames according to JVMS11 4.7.4: Previously, only "full_frame"s were
+        generated.
+      </li>
     </ul>
 
     <h4>Version 3.1.1, 2020-03-09</h4>
@@ -182,6 +194,13 @@ h5 {
       <li>
         Added a test that illustrates issue #98 "Is there a convenient way to compile multi class form different
         package?".
+      </li>
+    </ul>
+
+    <h4>Version 3.0.16, 2020-03-18 (the 3.0.x line is deprecated)</h4>
+    <ul>
+      <li>
+        Fixed Issue #119 -- there was an ASSERT statement with a side effect.
       </li>
     </ul>
 
