@@ -282,6 +282,12 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     @Override public void
+    setSourceVersion(int version) { this.cbe.setSourceVersion(version); }
+
+    @Override public void
+    setTargetVersion(int version) { this.cbe.setTargetVersion(version); }
+
+    @Override public void
     setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
         this.cbe.setCompileErrorHandler(compileErrorHandler);
     }

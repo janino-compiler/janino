@@ -39,6 +39,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
@@ -71,28 +73,32 @@ class ClassFile implements Annotatable {
 
     /**
      * Constructs a class with no fields and methods.
-     * An application would typically add these through {@link ClassFile#addFieldInfo(short, String, String, Object)}
-     * and {@link ClassFile#addMethodInfo(short, String, MethodDescriptor)} before saving it.
+     * An application would typically add fields and methods before saving it.
+     * <p>
+     *   By default, the .class file major and minor version are that of the currently executing JVM (system property
+     *   {@code "java.class.version"}).
+     * </p>
      *
-     * @param accessFlags as defined by {@link org.codehaus.janino.Mod}
-     * @param thisClassFd the field descriptor for this class
-     * @param superclassFd the field descriptor for the extended class (e.g. "Ljava/lang/Object;")
-     * @param interfaceFds the field descriptors for the implemented interfaces
+     * @param accessFlags  As defined by {@link org.codehaus.janino.Mod}
+     * @param thisClassFd  The field descriptor for this class
+     * @param superclassFd The field descriptor for the extended class (e.g. "Ljava/lang/Object;"); {@code null} for
+     *                     {@link Object}
+     * @param interfaceFds The field descriptors for the implemented interfaces
+     * @see ClassFile#setVersion(short, short)
+     * @see ClassFile#addFieldInfo(short, String, String, Object)
+     * @see ClassFile#addMethodInfo(short, String, MethodDescriptor)
      */
     public
     ClassFile(short accessFlags, String thisClassFd, @Nullable String superclassFd, String[] interfaceFds) {
 
-        // MUST generate version 50 (Java 6) .class files, because JANINO generates JSR and RET instructions, which
-        // are forbidding in 7+ .class files.
-//        {
-//            String  jcv = System.getProperty("java.class.version");
-//            Matcher m   = Pattern.compile("(\\d+)\\.(\\d+)").matcher(jcv);
-//            if (!m.matches()) throw new AssertionError("Unrecognized JVM class file version \"" + jcv + "\"");
-//            this.majorVersion = Short.parseShort(m.group(1));
-//            this.minorVersion = Short.parseShort(m.group(2));
-//        }
-        this.majorVersion = ClassFile.MAJOR_VERSION_JDK_1_6;
-        this.minorVersion = ClassFile.MINOR_VERSION_JDK_1_6;
+        // Compute the .class file major and minor version.
+        {
+            String  jcv = System.getProperty("java.class.version");
+            Matcher m   = Pattern.compile("(\\d+)\\.(\\d+)").matcher(jcv);
+            if (!m.matches()) throw new AssertionError("Unrecognized JVM class file version \"" + jcv + "\"");
+            this.majorVersion = Short.parseShort(m.group(1));
+            this.minorVersion = Short.parseShort(m.group(2));
+        }
 
         this.constantPool  = new ArrayList<ConstantPoolInfo>();
         this.constantPool.add(null); // Add fake "0" index entry.
@@ -310,8 +316,11 @@ class ClassFile implements Annotatable {
     getThisClassName() { return this.getConstantClassInfo(this.thisClass).getName(this).replace('/', '.'); }
 
     /**
-     * Sets the major and minor class file version numbers (JVMS 4.1). The class file version defaults to the JDK 1.1
-     * values (45.3) which execute on virtually every JVM.
+     * Sets the major and minor class file version numbers (JVMS 4.1).
+     * <p>
+     *   {@link ClassFile} declares a set of valid major-minor version number pairs, e.g. {@link
+     *   #MAJOR_VERSION_JDK_1_6} and {@link #MINOR_VERSION_JDK_1_6}.
+     * </p>
      */
     public void
     setVersion(short majorVersion, short minorVersion) {

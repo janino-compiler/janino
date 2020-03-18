@@ -271,6 +271,8 @@ class UnitCompiler {
 
     private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
+    private int targetVersion = -1;
+
     public
     UnitCompiler(AbstractCompilationUnit abstractCompilationUnit, IClassLoader iClassLoader) {
         this.abstractCompilationUnit = abstractCompilationUnit;
@@ -292,6 +294,14 @@ class UnitCompiler {
         this.options = options;
         return this;
     }
+
+    /**
+     * Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's {@code
+     * -target} command line option.
+     * By default, Java 6 .class files are generated.
+     */
+    public void
+    setTargetVersion(int version) { this.targetVersion = version; }
 
     /**
      * @return The {@link AbstractCompilationUnit} that this {@link UnitCompiler} compiles
@@ -483,16 +493,7 @@ class UnitCompiler {
         if (cd instanceof EnumDeclaration) accessFlags |= Mod.ENUM;
 
         // Create "ClassFile" object.
-        ClassFile cf;
-        {
-            IClass superclass = iClass.getSuperclass();
-            cf = new ClassFile(
-                accessFlags,                                            // accessFlags
-                iClass.getDescriptor(),                                 // thisClassFD
-                superclass != null ? superclass.getDescriptor() : null, // superclassFD
-                IClass.getDescriptors(iClass.getInterfaces())           // interfaceFDs
-            );
-        }
+        ClassFile cf = this.newClassFile(accessFlags, iClass, iClass.getSuperclass(), iClass.getInterfaces());
 
         // Add class annotations with retention != SOURCE.
         this.compileAnnotations(cd.getAnnotations(), cf, cf);
@@ -983,26 +984,15 @@ class UnitCompiler {
         final IClass iClass = this.resolve(id);
 
         // Determine extended interfaces.
-        IClass[] is                   = (id.interfaces = new IClass[id.extendedTypes.length]);
-        String[] interfaceDescriptors = new String[is.length];
-        for (int i = 0; i < id.extendedTypes.length; ++i) {
-            is[i]                   = this.getType(id.extendedTypes[i]);
-            interfaceDescriptors[i] = is[i].getDescriptor();
-        }
+        id.interfaces = this.getTypes(id.extendedTypes);
 
         short accessFlags = this.accessFlags(id.getModifiers());
         accessFlags |= Mod.INTERFACE;
         accessFlags |= Mod.ABSTRACT;
-        if (id instanceof AnnotationTypeDeclaration) accessFlags |= Mod.ANNOTATION;
+        if (id instanceof AnnotationTypeDeclaration)  accessFlags |= Mod.ANNOTATION;
         if (id instanceof MemberInterfaceDeclaration) accessFlags |= Mod.STATIC;
 
-        // Create "ClassFile" object.
-        ClassFile cf = new ClassFile(
-            accessFlags,                 // accessFlags
-            iClass.getDescriptor(),      // thisClassFD
-            Descriptor.JAVA_LANG_OBJECT, // superclassFD
-            interfaceDescriptors         // interfaceFDs
-        );
+        ClassFile cf = this.newClassFile(accessFlags, iClass, this.iClassLoader.TYPE_java_lang_Object, id.interfaces);
 
         // Add interface annotations with retention != SOURCE.
         this.compileAnnotations(id.getAnnotations(), cf, cf);
@@ -1041,6 +1031,33 @@ class UnitCompiler {
 
         // Add the generated class file to a thread-local store.
         this.addClassFile(cf);
+    }
+
+    /**
+     * @param superclass {@code null} for {@link Object}, {@link Object} for interfaces
+     */
+    private ClassFile
+    newClassFile(
+        short            accessFlags,
+        IClass           iClass,
+        @Nullable IClass superclass,
+        IClass[]         interfaces
+    ) throws CompileException {
+        ClassFile result = new ClassFile(
+            accessFlags,                                            // accessFlags
+            iClass.getDescriptor(),                                 // thisClassFD
+            superclass != null ? superclass.getDescriptor() : null, // superclassFD
+            IClass.getDescriptors(interfaces)                       // interfaceFDs
+        );
+
+        int v = this.targetVersion;
+        if (v == -1) v = 6;
+
+        if (v < 6) throw new CompileException("Cannot generate version " + v + " .class files", Location.NOWHERE);
+
+        result.setVersion((short) (44 + v), ClassFile.MINOR_VERSION_JDK_1_6);
+
+        return result;
     }
 
     /**
@@ -6389,6 +6406,11 @@ class UnitCompiler {
 
     // ---------------- Atom.getType() ----------------
 
+    /**
+     * @return For a {@link Type}, the resolved {@link IClass}, for an {@link Rvalue}, the resolved {@link IClass} of
+     *         the rvalue's type
+     * @see #resolve(TypeDeclaration)
+     */
     private IClass
     getType(Atom a) throws CompileException {
 
@@ -6398,75 +6420,99 @@ class UnitCompiler {
             visitPackage(Package p) throws CompileException { return UnitCompiler.this.getType2(p); }
 
             @Override @Nullable public IClass
-            visitType(Type t) throws CompileException {
-                return (IClass) t.accept(new Visitor.TypeVisitor<IClass, CompileException>() {
-
-                    // SUPPRESS CHECKSTYLE LineLengthCheck:5
-                    @Override public IClass visitArrayType(ArrayType at)                throws CompileException { return UnitCompiler.this.getType2(at);  }
-                    @Override public IClass visitPrimitiveType(PrimitiveType bt)                                { return UnitCompiler.this.getType2(bt);  }
-                    @Override public IClass visitReferenceType(ReferenceType rt)        throws CompileException { return UnitCompiler.this.getType2(rt);  }
-                    @Override public IClass visitRvalueMemberType(RvalueMemberType rmt) throws CompileException { return UnitCompiler.this.getType2(rmt); }
-                    @Override public IClass visitSimpleType(SimpleType st)                                      { return UnitCompiler.this.getType2(st);  }
-                });
-            }
+            visitType(Type t) throws CompileException { return UnitCompiler.this.getType(t); }
 
             @Override @Nullable public IClass
-            visitRvalue(Rvalue rv) throws CompileException {
-
-                return (IClass) rv.accept(new Visitor.RvalueVisitor<IClass, CompileException>() {
-
-                    @Override @Nullable public IClass
-                    visitLvalue(Lvalue lv) throws CompileException {
-                        return (IClass) lv.accept(new Visitor.LvalueVisitor<IClass, CompileException>() {
-
-                            // SUPPRESS CHECKSTYLE LineLengthCheck:7
-                            @Override public IClass visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.getType2(an);    }
-                            @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.getType2(aae);   }
-                            @Override public IClass visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.getType2(fa);    }
-                            @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.getType2(fae);   }
-                            @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getType2(scfae); }
-                            @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.getType2(lva);   }
-                            @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.getType2(pe);    }
-                        });
-                    }
-
-                    // SUPPRESS CHECKSTYLE LineLengthCheck:29
-                    @Override public IClass visitArrayLength(ArrayLength al)                                                            { return UnitCompiler.this.getType2(al);   }
-                    @Override public IClass visitAssignment(Assignment a)                                       throws CompileException { return UnitCompiler.this.getType2(a);    }
-                    @Override public IClass visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return UnitCompiler.this.getType2(uo);   }
-                    @Override public IClass visitBinaryOperation(BinaryOperation bo)                            throws CompileException { return UnitCompiler.this.getType2(bo);   }
-                    @Override public IClass visitCast(Cast c)                                                   throws CompileException { return UnitCompiler.this.getType2(c);    }
-                    @Override public IClass visitClassLiteral(ClassLiteral cl)                                                          { return UnitCompiler.this.getType2(cl);   }
-                    @Override public IClass visitConditionalExpression(ConditionalExpression ce)                throws CompileException { return UnitCompiler.this.getType2(ce);   }
-                    @Override public IClass visitCrement(Crement c)                                             throws CompileException { return UnitCompiler.this.getType2(c);    }
-                    @Override public IClass visitInstanceof(Instanceof io)                                                              { return UnitCompiler.this.getType2(io);   }
-                    @Override public IClass visitMethodInvocation(MethodInvocation mi)                          throws CompileException { return UnitCompiler.this.getType2(mi);   }
-                    @Override public IClass visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)     throws CompileException { return UnitCompiler.this.getType2(smi);  }
-                    @Override public IClass visitIntegerLiteral(IntegerLiteral il)                                                      { return UnitCompiler.this.getType2(il);   }
-                    @Override public IClass visitFloatingPointLiteral(FloatingPointLiteral fpl)                                         { return UnitCompiler.this.getType2(fpl);  }
-                    @Override public IClass visitBooleanLiteral(BooleanLiteral bl)                                                      { return UnitCompiler.this.getType2(bl);   }
-                    @Override public IClass visitCharacterLiteral(CharacterLiteral cl)                                                  { return UnitCompiler.this.getType2(cl);   }
-                    @Override public IClass visitStringLiteral(StringLiteral sl)                                                        { return UnitCompiler.this.getType2(sl);   }
-                    @Override public IClass visitNullLiteral(NullLiteral nl)                                                            { return UnitCompiler.this.getType2(nl);   }
-                    @Override public IClass visitSimpleConstant(SimpleConstant sl)                                                      { return UnitCompiler.this.getType2(sl);   }
-                    @Override public IClass visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)                              { return UnitCompiler.this.getType2(naci); }
-                    @Override public IClass visitNewArray(NewArray na)                                          throws CompileException { return UnitCompiler.this.getType2(na);   }
-                    @Override public IClass visitNewInitializedArray(NewInitializedArray nia)                   throws CompileException { return UnitCompiler.this.getType2(nia);  }
-                    @Override public IClass visitNewClassInstance(NewClassInstance nci)                         throws CompileException { return UnitCompiler.this.getType2(nci);  }
-                    @Override public IClass visitParameterAccess(ParameterAccess pa)                            throws CompileException { return UnitCompiler.this.getType2(pa);   }
-                    @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr)             throws CompileException { return UnitCompiler.this.getType2(qtr);  }
-                    @Override public IClass visitThisReference(ThisReference tr)                                throws CompileException { return UnitCompiler.this.getType2(tr);   }
-                    @Override public IClass visitLambdaExpression(LambdaExpression le)                          throws CompileException { return UnitCompiler.this.getType2(le);   }
-                    @Override public IClass visitMethodReference(MethodReference mr)                            throws CompileException { return UnitCompiler.this.getType2(mr);   }
-                    @Override public IClass visitInstanceCreationReference(ClassInstanceCreationReference cicr) throws CompileException { return UnitCompiler.this.getType2(cicr); }
-                    @Override public IClass visitArrayCreationReference(ArrayCreationReference acr)             throws CompileException { return UnitCompiler.this.getType2(acr);  }
-                });
-            }
+            visitRvalue(Rvalue rv) throws CompileException { return UnitCompiler.this.getType(rv); }
 
             @Override @Nullable public IClass
             visitConstructorInvocation(ConstructorInvocation ci) throws CompileException {
                 return UnitCompiler.this.getType2(ci);
             }
+        });
+
+        assert result != null;
+        return result;
+    }
+
+    private IClass
+    getType(Type t) throws CompileException {
+        IClass result = (IClass) t.accept(new Visitor.TypeVisitor<IClass, CompileException>() {
+
+            // SUPPRESS CHECKSTYLE LineLengthCheck:5
+            @Override public IClass visitArrayType(ArrayType at)                throws CompileException { return UnitCompiler.this.getType2(at);  }
+            @Override public IClass visitPrimitiveType(PrimitiveType bt)                                { return UnitCompiler.this.getType2(bt);  }
+            @Override public IClass visitReferenceType(ReferenceType rt)        throws CompileException { return UnitCompiler.this.getType2(rt);  }
+            @Override public IClass visitRvalueMemberType(RvalueMemberType rmt) throws CompileException { return UnitCompiler.this.getType2(rmt); }
+            @Override public IClass visitSimpleType(SimpleType st)                                      { return UnitCompiler.this.getType2(st);  }
+        });
+        assert result != null;
+        return result;
+    }
+
+    private IClass[]
+    getTypes(final Type[] types) throws CompileException {
+        IClass[] result = new IClass[types.length];
+        for (int i = 0; i < types.length; ++i) result[i] = this.getType(types[i]);
+        return result;
+    }
+
+    private IClass
+    getType(Rvalue rv) throws CompileException {
+
+        IClass result = (IClass) rv.accept(new Visitor.RvalueVisitor<IClass, CompileException>() {
+
+            @Override @Nullable public IClass
+            visitLvalue(Lvalue lv) throws CompileException { return UnitCompiler.this.getType(lv); }
+
+            // SUPPRESS CHECKSTYLE LineLengthCheck:29
+            @Override public IClass visitArrayLength(ArrayLength al)                                                            { return UnitCompiler.this.getType2(al);   }
+            @Override public IClass visitAssignment(Assignment a)                                       throws CompileException { return UnitCompiler.this.getType2(a);    }
+            @Override public IClass visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return UnitCompiler.this.getType2(uo);   }
+            @Override public IClass visitBinaryOperation(BinaryOperation bo)                            throws CompileException { return UnitCompiler.this.getType2(bo);   }
+            @Override public IClass visitCast(Cast c)                                                   throws CompileException { return UnitCompiler.this.getType2(c);    }
+            @Override public IClass visitClassLiteral(ClassLiteral cl)                                                          { return UnitCompiler.this.getType2(cl);   }
+            @Override public IClass visitConditionalExpression(ConditionalExpression ce)                throws CompileException { return UnitCompiler.this.getType2(ce);   }
+            @Override public IClass visitCrement(Crement c)                                             throws CompileException { return UnitCompiler.this.getType2(c);    }
+            @Override public IClass visitInstanceof(Instanceof io)                                                              { return UnitCompiler.this.getType2(io);   }
+            @Override public IClass visitMethodInvocation(MethodInvocation mi)                          throws CompileException { return UnitCompiler.this.getType2(mi);   }
+            @Override public IClass visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)     throws CompileException { return UnitCompiler.this.getType2(smi);  }
+            @Override public IClass visitIntegerLiteral(IntegerLiteral il)                                                      { return UnitCompiler.this.getType2(il);   }
+            @Override public IClass visitFloatingPointLiteral(FloatingPointLiteral fpl)                                         { return UnitCompiler.this.getType2(fpl);  }
+            @Override public IClass visitBooleanLiteral(BooleanLiteral bl)                                                      { return UnitCompiler.this.getType2(bl);   }
+            @Override public IClass visitCharacterLiteral(CharacterLiteral cl)                                                  { return UnitCompiler.this.getType2(cl);   }
+            @Override public IClass visitStringLiteral(StringLiteral sl)                                                        { return UnitCompiler.this.getType2(sl);   }
+            @Override public IClass visitNullLiteral(NullLiteral nl)                                                            { return UnitCompiler.this.getType2(nl);   }
+            @Override public IClass visitSimpleConstant(SimpleConstant sl)                                                      { return UnitCompiler.this.getType2(sl);   }
+            @Override public IClass visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)                              { return UnitCompiler.this.getType2(naci); }
+            @Override public IClass visitNewArray(NewArray na)                                          throws CompileException { return UnitCompiler.this.getType2(na);   }
+            @Override public IClass visitNewInitializedArray(NewInitializedArray nia)                   throws CompileException { return UnitCompiler.this.getType2(nia);  }
+            @Override public IClass visitNewClassInstance(NewClassInstance nci)                         throws CompileException { return UnitCompiler.this.getType2(nci);  }
+            @Override public IClass visitParameterAccess(ParameterAccess pa)                            throws CompileException { return UnitCompiler.this.getType2(pa);   }
+            @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr)             throws CompileException { return UnitCompiler.this.getType2(qtr);  }
+            @Override public IClass visitThisReference(ThisReference tr)                                throws CompileException { return UnitCompiler.this.getType2(tr);   }
+            @Override public IClass visitLambdaExpression(LambdaExpression le)                          throws CompileException { return UnitCompiler.this.getType2(le);   }
+            @Override public IClass visitMethodReference(MethodReference mr)                            throws CompileException { return UnitCompiler.this.getType2(mr);   }
+            @Override public IClass visitInstanceCreationReference(ClassInstanceCreationReference cicr) throws CompileException { return UnitCompiler.this.getType2(cicr); }
+            @Override public IClass visitArrayCreationReference(ArrayCreationReference acr)             throws CompileException { return UnitCompiler.this.getType2(acr);  }
+        });
+
+        assert result != null;
+        return result;
+    }
+
+    private IClass
+    getType(Lvalue lv) throws CompileException {
+        IClass result = (IClass) lv.accept(new Visitor.LvalueVisitor<IClass, CompileException>() {
+
+            // SUPPRESS CHECKSTYLE LineLengthCheck:7
+            @Override public IClass visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.getType2(an);    }
+            @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.getType2(aae);   }
+            @Override public IClass visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.getType2(fa);    }
+            @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.getType2(fae);   }
+            @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getType2(scfae); }
+            @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.getType2(lva);   }
+            @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.getType2(pe);    }
         });
 
         assert result != null;

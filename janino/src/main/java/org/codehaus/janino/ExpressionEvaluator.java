@@ -274,6 +274,12 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     }
 
     @Override public void
+    setSourceVersion(int version) { this.se.setSourceVersion(version); }
+
+    @Override public void
+    setTargetVersion(int version) { this.se.setTargetVersion(version); }
+
+    @Override public void
     setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
         this.se.setCompileErrorHandler(compileErrorHandler);
     }

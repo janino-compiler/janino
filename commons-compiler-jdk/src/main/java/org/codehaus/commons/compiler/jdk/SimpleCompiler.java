@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -87,6 +88,8 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private boolean                  debugSource;
     private boolean                  debugLines;
     private boolean                  debugVars;
+    private int                      sourceVersion = -1;
+    private int                      targetVersion = -1;
     @Nullable private ErrorHandler   compileErrorHandler;
     @Nullable private WarningHandler warningHandler;
 
@@ -105,6 +108,12 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             );
         }
     });
+
+    @Override public void
+    setSourceVersion(int version) { this.sourceVersion = version; }
+
+    @Override public void
+    setTargetVersion(int version) { this.targetVersion = version; }
 
     @Override public Map<String /*className*/, byte[] /*bytes*/>
     getBytecodes() { return this.assertCooked(); }
@@ -339,22 +348,33 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
         // Run the compiler.
         try {
+            List<String> options = new ArrayList<String>();
+
+            options.add(
+                this.debugSource
+                ? "-g:source" + (this.debugLines ? ",lines" : "") + (this.debugVars ? ",vars" : "")
+                : this.debugLines
+                ? "-g:lines" + (this.debugVars ? ",vars" : "")
+                : this.debugVars
+                ? "-g:vars"
+                : "-g:none"
+            );
+            if (this.sourceVersion != -1) {
+                options.add("-source");
+                options.add(Integer.toString(this.sourceVersion));
+            }
+            if (this.targetVersion != -1) {
+                options.add("-target");
+                options.add(Integer.toString(this.targetVersion));
+            }
 
             if (!compiler.getTask(
-                null,                                      // out
-                fileManager,                               // fileManager
-                dl,                                        // diagnosticListener
-                Collections.singletonList(                 // options
-                    this.debugSource
-                    ? "-g:source" + (this.debugLines ? ",lines" : "") + (this.debugVars ? ",vars" : "")
-                    : this.debugLines
-                    ? "-g:lines" + (this.debugVars ? ",vars" : "")
-                    : this.debugVars
-                    ? "-g:vars"
-                    : "-g:none"
-                ),
-                null,                                      // classes
-                Collections.singleton(compilationUnit)     // compilationUnits
+                null,                                  // out
+                fileManager,                           // fileManager
+                dl,                                    // diagnosticListener
+                options,                               // options
+                null,                                  // classes
+                Collections.singleton(compilationUnit) // compilationUnits
             ).call()) {
                 if (caughtCompileException[0] != null) throw caughtCompileException[0];
                 throw new CompileException("Compilation failed", null);

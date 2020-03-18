@@ -34,7 +34,7 @@ import java.util.Map;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * "Cooking" means processing a sequence of characters (a "document"). For example, if you cook an {@link
+ * An entity that processes a sequence of characters (a "document"). For example, if you cook an {@link
  * IClassBodyEvaluator}, then the tokens are interpreted as a Java class body and compiled into a {@link Class} which
  * is accessible through {@link IClassBodyEvaluator#getClazz()}.
  */
@@ -114,6 +114,25 @@ interface ICookable {
      * Reads, scans, parses and compiles Java tokens from the named file with the given <var>encoding</var>.
      */
     void cookFile(String fileName, @Nullable String encoding) throws CompileException, IOException;
+
+    /**
+     * Specifies the version of source code accepted, in analogy with JAVAC's {@code -source} command line option.
+     * May be ignored by an implementation (e.g. the {@code janino} implementation always accepts the language features
+     * as described on the home page).
+     * Allowed values, and the default value, depend on the implementation.
+     * {@code -1} means to use a default version.
+     */
+    void setSourceVersion(int version);
+
+    /**
+     * Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's {@code
+     * -target} command line option.
+     * Allowed values depend on the implementation.
+     * The default value also depends on the implementation.
+     * The only invariant is that the generated class files are suitable for the currently executing JVM.
+     * {@code -1} means to use a default version.
+     */
+    void setTargetVersion(int version);
 
     /**
      * @return                        The generated Java bytecode; maps class name to bytes

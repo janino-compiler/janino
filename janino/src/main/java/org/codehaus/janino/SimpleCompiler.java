@@ -68,9 +68,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     @Nullable private ErrorHandler   compileErrorHandler;
     @Nullable private WarningHandler warningHandler;
 
-    private boolean debugSource = Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
-    private boolean debugLines  = this.debugSource;
-    private boolean debugVars   = this.debugSource;
+    private boolean debugSource   = Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
+    private boolean debugLines    = this.debugSource;
+    private boolean debugVars     = this.debugSource;
+    private int     targetVersion = -1;
 
     private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
@@ -231,6 +232,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
             // Compile compilation unit to class files.
             UnitCompiler unitCompiler = new UnitCompiler(abstractCompilationUnit, icl).options(this.options);
+            unitCompiler.setTargetVersion(this.targetVersion);
             unitCompiler.setCompileErrorHandler(this.compileErrorHandler);
             unitCompiler.setWarningHandler(this.warningHandler);
 
@@ -245,6 +247,16 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      */
     public ClassFile[]
     getClassFiles() { return this.assertCooked(); }
+
+    /**
+     * JANINO ignores any set "source version", and throws "NYI" {@link CompileException} when a language element is
+     * used which is not supported.
+     */
+    @Override public void
+    setSourceVersion(int version) {}
+
+    @Override public void
+    setTargetVersion(int version) { this.targetVersion = version; }
 
     @Override public Map<String /*className*/, byte[] /*bytecode*/>
     getBytecodes() {

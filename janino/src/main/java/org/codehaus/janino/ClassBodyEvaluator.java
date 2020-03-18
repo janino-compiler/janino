@@ -220,6 +220,12 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     }
 
     @Override public void
+    setSourceVersion(int version) { this.sc.setSourceVersion(version); }
+
+    @Override public void
+    setTargetVersion(int version) { this.sc.setTargetVersion(version); }
+
+    @Override public void
     setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
         this.sc.setCompileErrorHandler(compileErrorHandler);
     }
