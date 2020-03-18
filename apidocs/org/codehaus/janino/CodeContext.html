@@ -755,11 +755,6 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 <h4>write</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;write&#8203;(byte[]&nbsp;b)</pre>
 <div class="block">Inserts a sequence of bytes at the current insertion position. Creates <a href="CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino"><code>CodeContext.LineNumberOffset</code></a>s as necessary.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lineNumber</code> - The line number that corresponds to the byte code, or -1</dd>
-<dd><code>b</code> - </dd>
-</dl>
 </li>
 </ul>
 <a id="write(byte)">
@@ -773,11 +768,6 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
  <p>
    This method is an optimization to avoid allocating small byte[] and ease GC load.
  </p></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lineNumber</code> - The line number that corresponds to the byte code, or -1</dd>
-<dd><code>b1</code> - </dd>
-</dl>
 </li>
 </ul>
 <a id="write(byte,byte)">
@@ -792,10 +782,6 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
  <p>
    This method is an optimization to avoid allocating small byte[] and ease GC load.
  </p></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lineNumber</code> - The line number that corresponds to the byte code, or -1</dd>
-</dl>
 </li>
 </ul>
 <a id="write(byte,byte,byte)">
@@ -811,10 +797,6 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
  <p>
    This method is an optimization to avoid allocating small byte[] and ease GC load.
  </p></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lineNumber</code> - The line number that corresponds to the byte code, or -1</dd>
-</dl>
 </li>
 </ul>
 <a id="write(byte,byte,byte,byte)">
@@ -831,10 +813,6 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
  <p>
    This method is an optimization to avoid allocating small byte[] and ease GC load.
  </p></div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lineNumber</code> - The line number that corresponds to the byte code, or -1</dd>
-</dl>
 </li>
 </ul>
 <a id="addLineNumberOffset(int)">
@@ -861,7 +839,6 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
  </p></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lineNumber</code> - -1 indicates that no particular line in the source code corresponds to this offset</dd>
 <dd><code>size</code> - The number of NUL bytes to inject</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The offset of the first inserted byte</dd>
@@ -888,7 +865,6 @@ protected&nbsp;<a href="util/ClassFile.AttributeInfo.html" title="class in org.c
 <div class="block">Generates a "branch" instruction.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>lineNumber</code> - The line number that corresponds to the byte code, or -1</dd>
 <dd><code>opcode</code> - One of <code>Opcode.GOTO</code>, <code>Opcode.JSR</code> and <code>Opcode.IF*</code></dd>
 <dd><code>dst</code> - Where to branch</dd>
 </dl>
