@@ -53,6 +53,19 @@ class SystemProperties {
     }
 
     /**
+     * @return                       The value of the class property, converted to integer, or, if that class property
+     *                               is not set, <var>defaultValue</var>
+     * @throws NumberFormatException The value of the class property could be parsed as an integer
+     * @see    #getClassProperty(Class, String, String)
+     * @see    Integer#parseInt(String)
+     */
+    public static int
+    getIntegerClassProperty(Class<?> targetClass, String classPropertyName, int defaultValue) {
+        String s = SystemProperties.getClassProperty(targetClass, classPropertyName);
+        return s != null ? Integer.parseInt(s) : defaultValue;
+    }
+
+    /**
      * @return The value of the class property, or, if that class property is not set, {@code null}
      * @see    #getClassProperty(Class, String, String)
      */
