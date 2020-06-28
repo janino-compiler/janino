@@ -39,6 +39,24 @@ import java.security.ProtectionDomain;
 
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
+/**
+ * Executes a {@link PrivilegedAction} or {@link PrivilegedExceptionAction} in a context with restricted permissions.
+ * This is useful for executing "untrusted" code, e.g. user-provided expressions or scripts that were compiled with
+ * <a href="https://janino.unkrig.de/">JANINO</a>.
+ * <p>
+ *   Code example:
+ * </p>
+ * <pre>{@code
+ *     Permissions noPermissions = new Permissions();
+ *     Sandbox sandbox = new Sandbox(noPermissions);
+ *     sandbox.confine(new PrivilegedExceptionAction<Object>() {
+ *         @Override public Object run() throws Exception { new java.io.File("xxx").delete(); return null; }
+ *     });
+ * }</pre>
+ *
+ * @see <a href="https://docs.oracle.com/javase/tutorial/essential/environment/security.html">ORACLE: Java Essentials:
+ *      The Security Manager</a>
+ */
 public final
 class Sandbox {
 

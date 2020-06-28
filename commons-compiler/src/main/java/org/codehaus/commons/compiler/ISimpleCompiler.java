@@ -50,6 +50,11 @@ import org.codehaus.commons.nullanalysis.Nullable;
  *     Call {@link #getClassLoader()} to obtain a {@link ClassLoader} that you can use to access the compiled classes.
  *   </li>
  * </ol>
+ * <h3>Comptibility notice:</h3>
+ * <p>
+ *   The methods {@code setPermissions(Permissions permissions)} and {@code void setNoPermissions()} were removed in
+ *   version 3.1.1 (2020-03-09) and replaced by the {@link Sandbox}.
+ * </p>
  */
 public
 interface ISimpleCompiler extends ICookable {
