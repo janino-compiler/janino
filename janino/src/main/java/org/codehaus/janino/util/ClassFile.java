@@ -1826,6 +1826,15 @@ class ClassFile implements Annotatable {
             dos.writeShort(this.descriptorIndex);            // descriptor_index
             ClassFile.storeAttributes(dos, this.attributes); // attributes_count, attributes[attributes_count]
         }
+
+        @Override public String
+        toString() {
+            try {
+                return ClassFile.this + "." + ClassFile.this.getConstantUtf8(this.nameIndex) + "(...)";
+            } catch (Exception e) {
+                return super.toString();
+            }
+        }
     }
 
     private MethodInfo
@@ -3447,5 +3456,14 @@ class ClassFile implements Annotatable {
     public StackMapTableAttribute.UninitializedVariableInfo
     newUninitializedVariableInfo(short offset) {
         return new StackMapTableAttribute.UninitializedVariableInfo(offset);
+    }
+
+    @Override public String
+    toString() {
+        try {
+            return this.getConstantUtf8(this.getConstantClassInfo(this.thisClass).nameIndex);
+        } catch (Exception e) {
+            return super.toString();
+        }
     }
 }
