@@ -1203,13 +1203,13 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     @Override public String[]
     getDefaultImports() { return this.cbe.getDefaultImports(); }
 
-    @Override public <T> Object
+    @Override public <T> T
     createFastEvaluator(Reader reader, Class<T> interfaceToImplement, String[] parameterNames)
     throws CompileException, IOException {
         return this.createFastEvaluator(new Scanner(null, reader), interfaceToImplement, parameterNames);
     }
 
-    @Override public <T> Object
+    @Override public <T> T
     createFastEvaluator(String script, Class<T> interfaceToImplement, String[] parameterNames) throws CompileException {
         try {
             return this.createFastEvaluator(
@@ -1230,7 +1230,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      * @param scanner Source of tokens to read
      * @see #createFastEvaluator(Reader, Class, String[])
      */
-    public Object
+    public <T> T
     createFastEvaluator(Scanner scanner, Class<?> interfaceToImplement, String[] parameterNames)
     throws CompileException, IOException {
         if (!interfaceToImplement.isInterface()) {
@@ -1260,7 +1260,8 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         this.cook(scanner);
         Class<?> c = this.getMethod().getDeclaringClass();
         try {
-            return c.newInstance();
+            @SuppressWarnings("unchecked") T result = (T) c.newInstance();
+            return result;
         } catch (InstantiationException e) {
             // SNO - Declared class is always non-abstract.
             throw new InternalCompilerException(e.toString(), e);

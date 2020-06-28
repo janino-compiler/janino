@@ -376,7 +376,7 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
      * @param script Contains the sequence of script tokens
      * @see          #createFastEvaluator(Reader, Class, String[])
      */
-    <T> Object
+    <T> T
     createFastEvaluator(
         String   script,
         Class<T> interfaceToImplement,
@@ -429,7 +429,7 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
      * @param parameterNames       The names of the parameters of that method
      * @return                     An object that implements the given interface
      */
-    <T> Object
+    <T> T
     createFastEvaluator(
         Reader   reader,
         Class<T> interfaceToImplement,

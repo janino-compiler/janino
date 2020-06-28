@@ -610,7 +610,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      * @param script Contains the sequence of script tokens
      * @see #createFastEvaluator(String, Class, String[])
      */
-    @Override public <T> Object
+    @Override public <T> T
     createFastEvaluator(
         String   script,
         Class<T> interfaceToImplement,
@@ -623,7 +623,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         }
     }
 
-    @Override public <T> Object
+    @Override public <T> T
     createFastEvaluator(
         Reader   r,
         Class<T> interfaceToImplement,
@@ -656,7 +656,8 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         this.cook(r);
         Class<?> c = this.getMethod().getDeclaringClass();
         try {
-            return c.getConstructor().newInstance();
+            @SuppressWarnings("unchecked") T instance = (T) c.getConstructor().newInstance();
+            return instance;
         } catch (InstantiationException e) {
             throw new RuntimeException("SNO - Declared class is always non-abstract", e);
         } catch (Exception e) {
