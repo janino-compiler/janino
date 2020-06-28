@@ -233,6 +233,7 @@ class UnitCompiler {
 
     // Some debug flags; controlled by system properties.
     private static final boolean disassembleClassFilesToStdout = SystemProperties.getBooleanClassProperty(UnitCompiler.class, "disassembleClassFilesToStdout");
+    private static final int     defaultTargetVersion          = SystemProperties.getIntegerClassProperty(UnitCompiler.class, "defaultTargetVersion", -1);
 
     /**
      * This constant determines the number of operands up to which the
@@ -271,7 +272,7 @@ class UnitCompiler {
 
     private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
-    private int targetVersion = -1;
+    private int              targetVersion        = -1;
 
     public
     UnitCompiler(AbstractCompilationUnit abstractCompilationUnit, IClassLoader iClassLoader) {
@@ -932,7 +933,7 @@ class UnitCompiler {
     compile2(AnonymousClassDeclaration acd) throws CompileException {
 
         // For classes that enclose surrounding scopes, trawl their field initializers looking for synthetic fields.
-        this.fakeCompileVariableDeclaratorsAndInitializers(acd);
+//        this.fakeCompileVariableDeclaratorsAndInitializers(acd);
 
         this.compile2((InnerClassDeclaration) acd);
     }
@@ -1051,7 +1052,12 @@ class UnitCompiler {
         );
 
         int v = this.targetVersion;
-        if (v == -1) v = 6;
+        if (v == -1) {
+            v = UnitCompiler.defaultTargetVersion;
+            if (v == -1) {
+                v = 6;
+            }
+        }
 
         if (v < 6) throw new CompileException("Cannot generate version " + v + " .class files", Location.NOWHERE);
 
@@ -1459,10 +1465,13 @@ class UnitCompiler {
         final CodeContext codeContext      = new CodeContext(mi.getClassFile());
         final CodeContext savedCodeContext = this.replaceCodeContext(codeContext);
         try {
+            codeContext.saveLocalVariables();
 
             // Allocate all our local variables.
-            codeContext.saveLocalVariables();
+
             codeContext.allocateLocalVariable((short) 1, "this", override.getDeclaringIClass());
+            this.updateLocalVariableInCurrentStackMap((short) 0, this.verificationTypeInfo(override.getDeclaringIClass()));
+
             IClass[]            paramTypes = override.getParameterTypes();
             LocalVariableSlot[] locals     = new LocalVariableSlot[paramTypes.length];
             for (int i = 0; i < paramTypes.length; ++i) {
@@ -1471,6 +1480,7 @@ class UnitCompiler {
                     "param" + i,
                     paramTypes[i]
                 );
+                this.updateLocalVariableInCurrentStackMap(locals[i].getSlotIndex(), this.verificationTypeInfo(paramTypes[i]));
             }
 
             this.load(Located.NOWHERE, declaringIClass, 0);
@@ -1590,7 +1600,11 @@ class UnitCompiler {
                 this.compileError("Statement is unreachable", bs.getLocation());
                 break;
             }
-            previousStatementCanCompleteNormally = this.compile(bs);
+            try {
+                previousStatementCanCompleteNormally = this.compile(bs);
+            } catch (AssertionError ae) {
+                throw new InternalCompilerException(bs.getLocation() + ": " + ae, ae);
+            }
         }
         return previousStatementCanCompleteNormally;
     }
@@ -1934,6 +1948,8 @@ class UnitCompiler {
 
         Offset wtb = ls.whereToBreak;
         if (wtb == null) return canCompleteNormally;
+
+        if (!canCompleteNormally) this.getCodeContext().currentInserter().setStackMap(wtb.getStackMap());
 
         wtb.set();
 
@@ -2359,7 +2375,11 @@ class UnitCompiler {
     private boolean
     compile2(ExpressionStatement ee) throws CompileException {
 
-        this.compile(ee.rvalue);
+        try {
+            this.compile(ee.rvalue);
+        } catch (InternalCompilerException ice) {
+            throw new InternalCompilerException(ee.rvalue.getLocation() + ": " + ice, ice);
+        }
 
         return true;
     }
@@ -2375,41 +2395,46 @@ class UnitCompiler {
             // TODO: Compile annotations on fields.
 //            assert fd.modifiers.annotations.length == 0 : fd.getLocation();
 
-            this.addLineNumberOffset(vd);
+            try {
 
-            if (!declaringIClass.isInterface() && !fd.isStatic()) this.load(vd, declaringIClass, 0);
+                this.addLineNumberOffset(vd);
 
-            IClass fieldType = this.getType(fd.type);
-            if (initializer instanceof Rvalue) {
-                Rvalue rvalue          = (Rvalue) initializer;
-                IClass initializerType = this.compileGetValue(rvalue);
-                fieldType = fieldType.getArrayIClass(vd.brackets, this.iClassLoader.TYPE_java_lang_Object);
-                this.assignmentConversion(
-                    fd,                           // locatable
-                    initializerType,              // sourceType
-                    fieldType,                    // targetType
-                    this.getConstantValue(rvalue) // constantValue
-                );
-            } else
-            if (initializer instanceof ArrayInitializer) {
-                this.compileGetValue((ArrayInitializer) initializer, fieldType);
-            } else
-            {
-                throw new InternalCompilerException(
-                    "Unexpected array initializer or rvalue class "
-                    + initializer.getClass().getName()
-                );
+                if (!declaringIClass.isInterface() && !fd.isStatic()) this.load(vd, declaringIClass, 0);
+
+                IClass fieldType = this.getType(fd.type);
+                if (initializer instanceof Rvalue) {
+                    Rvalue rvalue          = (Rvalue) initializer;
+                    IClass initializerType = this.compileGetValue(rvalue);
+                    fieldType = fieldType.getArrayIClass(vd.brackets, this.iClassLoader.TYPE_java_lang_Object);
+                    this.assignmentConversion(
+                        fd,                           // locatable
+                        initializerType,              // sourceType
+                        fieldType,                    // targetType
+                        this.getConstantValue(rvalue) // constantValue
+                    );
+                } else
+                if (initializer instanceof ArrayInitializer) {
+                    this.compileGetValue((ArrayInitializer) initializer, fieldType);
+                } else
+                {
+                    throw new InternalCompilerException(
+                        "Unexpected array initializer or rvalue class "
+                        + initializer.getClass().getName()
+                    );
+                }
+
+                // No need to check accessibility here.
+                ;
+
+                // TODO: Compile annotations on fields.
+//                assert fd.modifiers.annotations.length == 0;
+
+                IField iField = declaringIClass.getDeclaredIField(vd.name);
+                assert iField != null : fd.getDeclaringType() + " has no field " + vd.name;
+                this.putfield(fd, iField);
+            } catch (InternalCompilerException ice) {
+                throw new InternalCompilerException(initializer.getLocation() + ": " + ice, ice);
             }
-
-            // No need to check accessibility here.
-            ;
-
-            // TODO: Compile annotations on fields.
-//            assert fd.modifiers.annotations.length == 0;
-
-            IField iField = declaringIClass.getDeclaredIField(vd.name);
-            assert iField != null : fd.getDeclaringType() + " has no field " + vd.name;
-            this.putfield(fd, iField);
         }
         return true;
     }
@@ -2574,6 +2599,7 @@ class UnitCompiler {
                 lv.setSlot(
                     this.getCodeContext().allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), vd.name, lv.type)
                 );
+                // Do not update the StackMap here; this will only happen on the first assigment.
 
                 ArrayInitializerOrRvalue oi = vd.initializer;
                 if (oi != null) {
@@ -3089,14 +3115,17 @@ class UnitCompiler {
 
         StackMap smBeforeBody = this.getCodeContext().currentInserter().getStackMap();
 
-        boolean tryCatchCcn = compileBody.compile();
+        boolean bodyCcn = compileBody.compile();
 
         CodeContext.Offset afterBody = this.getCodeContext().newOffset();
 
-        if (tryCatchCcn) {
+        StackMap smAfterBody = this.getCodeContext().currentInserter().getStackMap();
+
+        if (bodyCcn) {
             this.gotO(tryStatement, afterStatement);
         }
 
+        boolean catchCcn = false; // "At least one catch clause can complete normally"
         if (beginningOfBody.offset != afterBody.offset) { // Avoid zero-length exception table entries.
             for (int i = 0; i < tryStatement.catchClauses.size(); ++i) {
                 this.getCodeContext().currentInserter().setStackMap(smBeforeBody);
@@ -3145,8 +3174,9 @@ class UnitCompiler {
                     if (this.compile(catchClause.body)) {
 
                         if (tryStatement.finallY == null || this.compile(tryStatement.finallY)) {
-                            tryCatchCcn = true;
+                            catchCcn = true;
                             this.gotO(catchClause, afterStatement);
+                            afterStatement.setStackMap();
                         }
                     }
                 } finally {
@@ -3155,9 +3185,9 @@ class UnitCompiler {
             }
         }
 
-        this.getCodeContext().currentInserter().setStackMap(smBeforeBody);
+        this.getCodeContext().currentInserter().setStackMap(smAfterBody);
 
-        return tryCatchCcn;
+        return bodyCcn | catchCcn;
     }
 
     // ------------ FunctionDeclarator.compile() -------------
@@ -3169,7 +3199,7 @@ class UnitCompiler {
         } catch (ClassFileException cfe) {
             throw new ClassFileException("Compiling \"" + fd + "\": " + cfe.getMessage(), cfe);
         } catch (RuntimeException re) {
-            throw new InternalCompilerException("Compiling \"" + fd + "\": " + re.getMessage(), re);
+            throw new InternalCompilerException(fd.getLocation() + ": Compiling \"" + fd + "\": " + re.getMessage(), re);
         }
     }
 
@@ -3337,7 +3367,6 @@ class UnitCompiler {
                 }
             }
 
-
             if (fd instanceof ConstructorDeclarator) {
 
                 // Define special parameter "this".
@@ -3351,10 +3380,12 @@ class UnitCompiler {
                     // Define special constructor parameters "String $name" and "int $ordinal" for enums.
                     LocalVariable lv1 = new LocalVariable(true, this.iClassLoader.TYPE_java_lang_String);
                     lv1.setSlot(this.getCodeContext().allocateLocalVariable((short) 1, null, null));
+                    this.updateLocalVariableInCurrentStackMap(lv1.getSlotIndex(), this.verificationTypeInfo(this.iClassLoader.TYPE_java_lang_String));
                     constructorDeclarator.syntheticParameters.put("$name", lv1);
 
                     LocalVariable lv2 = new LocalVariable(true, IClass.INT);
                     lv2.setSlot(this.getCodeContext().allocateLocalVariable((short) 1, null, null));
+                    this.updateLocalVariableInCurrentStackMap(lv2.getSlotIndex(), this.verificationTypeInfo(IClass.INT));
                     constructorDeclarator.syntheticParameters.put("$ordinal", lv2);
                 }
 
@@ -3365,6 +3396,7 @@ class UnitCompiler {
                     lv.setSlot(
                         this.getCodeContext().allocateLocalVariable(Descriptor.size(sf.getDescriptor()), null, null)
                     );
+                    this.updateLocalVariableInCurrentStackMap(lv.getSlotIndex(), this.verificationTypeInfo(sf.getType()));
                     constructorDeclarator.syntheticParameters.put(sf.getName(), lv);
                 }
             }
@@ -3539,17 +3571,17 @@ class UnitCompiler {
 
         // Add function parameters.
         for (int i = 0; i < fd.formalParameters.parameters.length; ++i) {
-            FormalParameter fp              = fd.formalParameters.parameters[i];
-            IClass          parameterIClass = this.getType(fp.type);
-            LocalVariable   lv              = this.getLocalVariable(
+            FormalParameter fp = fd.formalParameters.parameters[i];
+            LocalVariable   lv = this.getLocalVariable(
                 fp,
                 i == fd.formalParameters.parameters.length - 1 && fd.formalParameters.variableArity
             );
             lv.setSlot(this.getCodeContext().allocateLocalVariable(
                 Descriptor.size(lv.type.getDescriptor()),
                 fp.name,
-                parameterIClass
+                lv.type
             ));
+            this.updateLocalVariableInCurrentStackMap(lv.getSlotIndex(), this.verificationTypeInfo(lv.type));
 
             if (localVars.put(fp.name, lv) != null) {
                 this.compileError("Redefinition of parameter \"" + fp.name + "\"", fd.getLocation());
@@ -3985,9 +4017,9 @@ class UnitCompiler {
 
         this.load(sci, declaringIClass, 0);
 
-        // Fix up the operand stack entry: The loaded object is still unitializied!
-        this.getCodeContext().popObjectOperand();
-        this.getCodeContext().pushUninitializedThisOperand();
+//        // Fix up the operand stack entry: The loaded object is still unitializied!
+//        this.getCodeContext().popObjectOperand();
+//        this.getCodeContext().pushUninitializedThisOperand();
 
         if (superclass == null) throw new CompileException("Class has no superclass", sci.getLocation());
 
@@ -5395,7 +5427,7 @@ class UnitCompiler {
             acd                      // contextScope
         );
 
-        Location loc                   = naci.getLocation();
+        Location loc           = naci.getLocation();
         Rvalue   qualification = naci.qualification;
 
         // Determine the formal parameters of the anonymous constructor.
@@ -5462,6 +5494,7 @@ class UnitCompiler {
         ));
 
         // Compile the anonymous class.
+        final IClass iClass = this.resolve(naci.anonymousClassDeclaration);
         try {
             this.compile(acd);
 
@@ -5503,12 +5536,14 @@ class UnitCompiler {
                 oei.setEnclosingScope(naci.getEnclosingScope());
             }
             this.invokeConstructor(
-                naci,                                         // locatable
-                naci.getEnclosingScope(),                     // scope
-                oei,                                          // enclosingInstance
-                this.resolve(naci.anonymousClassDeclaration), // targetClass
-                arguments2                                    // arguments
+                naci,                     // locatable
+                naci.getEnclosingScope(), // scope
+                oei,                      // enclosingInstance
+                iClass,                   // targetClass
+                arguments2                // arguments
             );
+            this.getCodeContext().popUninitializedVariableOperand();
+            this.getCodeContext().pushObjectOperand(iClass.getDescriptor());
         } finally {
 
             // Remove the synthetic constructor that was temporarily added. This is necessary because this NACI
@@ -5516,7 +5551,7 @@ class UnitCompiler {
             // we'd end up with TWO synthetic constructors. See JANINO-143.
             acd.constructors.remove(acd.constructors.size() - 1);
         }
-        return this.resolve(naci.anonymousClassDeclaration);
+        return iClass;
     }
     private IClass
     compileGet2(ParameterAccess pa) throws CompileException {
@@ -11700,9 +11735,13 @@ class UnitCompiler {
     arraylength(Locatable locatable) {
         this.addLineNumberOffset(locatable);
 
-        this.getCodeContext().popObjectOperand();
-        this.write(Opcode.ARRAYLENGTH);
-        this.getCodeContext().pushIntOperand();
+        try {
+            this.getCodeContext().popObjectOperand();
+            this.write(Opcode.ARRAYLENGTH);
+            this.getCodeContext().pushIntOperand();
+        } catch (AssertionError ae) {
+            throw new InternalCompilerException(locatable.getLocation() + ": " + ae, ae);
+        }
     }
 
     private void
@@ -12023,13 +12062,17 @@ class UnitCompiler {
 
         this.addLineNumberOffset(locatable);
 
+        // Pop the arguments off the operand stack.
         for (int i = methodDescriptor.parameterFds.length - 1; i >= 0; i--) {
             this.getCodeContext().popOperandAssignableTo(methodDescriptor.parameterFds[i]);
         }
+
+        // Pop the target object off the operand stack.
         if (opcode == Opcode.INVOKEINTERFACE || opcode == Opcode.INVOKESPECIAL || opcode == Opcode.INVOKEVIRTUAL) {
             this.getCodeContext().popObjectOrUninitializedOrUninitializedThisOperand();
         }
 
+        // Generate the instruction.
         this.write(opcode);
         if (useInterfaceMethodRef) {
             this.writeConstantInterfaceMethodrefInfo(declaringIClass, methodName, methodDescriptor);
@@ -12102,7 +12145,8 @@ class UnitCompiler {
             this.writeUnsignedShort(localVariableIndex);
         }
 
-        this.getCodeContext().pushOperand(localVariableType.getDescriptor());
+        VerificationTypeInfo vti = this.getLocalVariableTypeInfo((short) localVariableIndex);
+        this.getCodeContext().pushOperand(vti);
     }
 
     private void
@@ -12187,12 +12231,12 @@ class UnitCompiler {
     }
 
     private void
-        neW(Locatable locatable, IClass iClass) {
-            this.addLineNumberOffset(locatable);
-            this.getCodeContext().pushUninitializedOperand();
-            this.write(Opcode.NEW);
-            this.writeConstantClassInfo(iClass);
-        }
+    neW(Locatable locatable, IClass iClass) {
+        this.addLineNumberOffset(locatable);
+        this.getCodeContext().pushUninitializedOperand();
+        this.write(Opcode.NEW);
+        this.writeConstantClassInfo(iClass);
+    }
 
     private void
     newarray(Locatable locatable, IClass componentType) {
@@ -13069,6 +13113,18 @@ class UnitCompiler {
     private static short
     changeAccessibility(short accessFlags, short newAccessibility) {
         return (short) ((accessFlags & ~(Mod.PUBLIC | Mod.PROTECTED | Mod.PRIVATE)) | newAccessibility);
+    }
+
+    private VerificationTypeInfo
+    getLocalVariableTypeInfo(short lvIndex) {
+
+        int nextLvIndex = 0;
+        for (VerificationTypeInfo vti : this.getCodeContext().currentInserter().getStackMap().locals()) {
+            if (nextLvIndex == lvIndex) return vti;
+            nextLvIndex += vti.category();
+        }
+
+        throw new InternalCompilerException("Invalid local variable index " + lvIndex);
     }
 
     private void

@@ -320,7 +320,7 @@ class CodeContext {
                     if (next != null && frame.offset == next.offset) continue;
                 }
 
-                final int                    offsetDelta               = frame.offset - previousFrame.offset - 1;
+                final int                    offsetDelta               = previousFrame.offset == 0 ? frame.offset : frame.offset - previousFrame.offset - 1;
                 final VerificationTypeInfo[] frameOperands             = frame.getStackMap().operands();
                 final int                    frameOperandsLength       = frameOperands.length;
                 final VerificationTypeInfo[] frameLocals               = frame.getStackMap().locals();
@@ -329,7 +329,7 @@ class CodeContext {
                 final int                    previousFrameLocalsLength = previousFrameLocals.length;
                 int                          k;
 
-                // Encode the stack map entry delat as "frames", see JVMS11 4.7.4
+                // Encode the stack map entry delta as "frames", see JVMS11 4.7.4
                 if (
                     frameOperandsLength == 0
                     && Arrays.equals(frameLocals, previousFrameLocals)
@@ -1232,7 +1232,7 @@ class CodeContext {
     }
 
     @Override public String
-    toString() { return this.classFile.getThisClassName() + "/" + this.currentInserter.offset; }
+    toString() { return this.classFile.getThisClassName() + "/cio=" + this.currentInserter.offset; }
 
     // Convenience methods for "pushOperand(VTI)".
 
@@ -1344,11 +1344,16 @@ class CodeContext {
         Inserter ci = this.currentInserter();
         StackMap sm = ci.getStackMap();
 
-        VerificationTypeInfo result = sm.peekOperand();
+        for (;;) {
+            VerificationTypeInfo result = sm.peekOperand();
 
-        ci.setStackMap(sm.popOperand());
+            sm = sm.popOperand();
 
-        return result;
+            if (result != StackMapTableAttribute.TOP_VARIABLE_INFO) {
+                ci.setStackMap(sm);
+                return result;
+            }
+        }
     }
 
     /**
@@ -1414,7 +1419,7 @@ class CodeContext {
         if (Descriptor.isPrimitive(declaredFd)) {
             this.popOperand(declaredFd);
         } else {
-            this.popObjectOperand();
+            this.popObjectOrUninitializedOrUninitializedThisOperand();
         }
     }
 
