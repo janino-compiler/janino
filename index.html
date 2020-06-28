@@ -1355,16 +1355,16 @@ UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
         </p>
 
         <p>
-          Starting with version 3.0.7, JANINO includes a very eas-to-use security API, which can be used to lock
-          expressions, scripts, class bodies and compilation units into a "sandbox", which is guarded by a Java
-          security manager:
+          JANINO includes a very easy-to-use security API, which can be used to lock expressions, scripts, class bodies
+          and compilation units into a "sandbox", which is guarded by a Java security manager:
         </p>
 
         <div class="highlight highlight-text-xml"><pre class="brush: java">
 import java.security.Permissions;
+import java.security.PrivilegedAction;
 import java.util.PropertyPermission;
 import org.codehaus.janino.ScriptEvaluator;
-import de.unkrig.commons.lang.security.Sandbox;
+import org.codehaus.commons.compiler.Sandbox;
 
 public class SandboxDemo {
 
@@ -1374,28 +1374,26 @@ public class SandboxDemo {
         // Create a JANINO script evaluator. The example, however, will work as fine with
         // ExpressionEvaluators, ClassBodyEvaluators and SimpleCompilers.
         ScriptEvaluator se = new ScriptEvaluator();
+        se.setDebuggingInformation(true, true, false);
 
         // Now create a "Permissions" object which allows to read the system variable
         // "foo", and forbids everything else.
         Permissions permissions = new Permissions();
         permissions.add(new PropertyPermission("foo", "read"));
 
-        // Before we compile the script, we confine the permissions on all classes loaded
-        // through the ScriptEvaluator's class loader. ()Each *Evaluator creates a new
-        // class loader exclusively for loading the classes it generates.
-        se.setPermissions(permissions);
-
         // Compile a simple script which reads two system variables - "foo" and "bar".
-        se.cook(
+        PrivilegedAction<?> pa = se.createFastEvaluator((
             "System.getProperty(\"foo\");\n" +
-            "System.getProperty(\"bar\");\n"
-        );
+            "System.getProperty(\"bar\");\n" +
+            "return null;\n"
+        ), PrivilegedAction.class, new String[0]);
 
-        // Finally we evaluate the script. Getting system property "foo" will succeed,
-        // and getting "bar" will throw an InvocationTargetException caused by
+        // Finally execute the script in the sandbox. Getting system property "foo" will
+        // succeed, and getting "bar" will throw a
         //    java.security.AccessControlException: access denied (java.util.PropertyPermission bar read)
-        // Et voila!
-        se.evaluate(null);
+        // in line 2 of the script. Et voila!
+        Sandbox sandbox = new Sandbox(permissions);
+        sandbox.confine(pa);
     }
 }</pre></div>
 
