@@ -589,7 +589,8 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     @Test public void
     testBug147() throws Exception {
         this.assertCompilationUnitCookable(
-            "public class Foo {\n"
+            ""
+            + "public class Foo {\n"
             + "    public static void main(String[] args) {\n"
             + "        new Object() {\n"
             + "            Object bar = new Object() {\n"
