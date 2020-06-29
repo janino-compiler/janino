@@ -1019,17 +1019,36 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    testIssue73_Operator_Ampersand_not_defined_on_types_java_lang_Integer_int() throws Exception {
-        this.assertExpressionCookable("new Integer(1)&2");
-    }
-
-    @Test public void
     testIssue69_IncompatibleClassChangeError_when_evaluating_against_janino9plus() throws Exception {
 
-        // Return if STREAMS are not (yet) available, i.e. a pre-1.8 JRE.
-        if (CommonsCompilerTestSuite.JVM_VERSION < 8) return;
+        try {
+            IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
 
-        this.assertExpressionEvaluatable("java.util.stream.Stream.of(1, 2, 3)");
+            if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 8) return;
+            ee.setSourceVersion(8);
+            ee.setTargetVersion(8);
+
+            ee.cook("java.util.stream.Stream.of(1, 2, 3).toArray()");
+            Assert.assertArrayEquals(new Object[] { 1, 2, 3 }, (Object[]) ee.evaluate());
+        } catch (CompileException ce) {
+            if (ce.getMessage().contains("only available for target version")) return;
+            throw ce;
+        }
+    }
+
+//    @Test public void
+//    testIssue69() throws Exception {
+//
+//        if (CommonsCompilerTestSuite.JVM_VERSION < 8) return;
+//
+//        IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
+//        ee.cook("java.util.stream.Stream.of(1, 2, 3)");
+//        Assert.assertEquals("xxx", ee.evaluate());
+//    }
+
+    @Test public void
+    testIssue73_Operator_Ampersand_not_defined_on_types_java_lang_Integer_int() throws Exception {
+        this.assertExpressionCookable("new Integer(1)&2");
     }
 
     /**

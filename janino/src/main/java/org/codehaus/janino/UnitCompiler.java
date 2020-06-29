@@ -12713,16 +12713,12 @@ class UnitCompiler {
 
         if (iMethod.isStatic()) {
 
-            // Static class method, or a static interface method (a Java 8 feature).
+            // Static class or interface method.
             final ClassFile cf = this.getCodeContext().getClassFile();
-            if (
-                iMethod.getDeclaringIClass().isInterface()
-                && cf.getMajorVersion() <= ClassFile.MAJOR_VERSION_JDK_1_7
-                && cf.getMinorVersion() <= ClassFile.MINOR_VERSION_JDK_1_7
-            ) {
-                // INVOKESTATIC InterfaceMethodRef only allowed since Java 8 class file format.
+
+            if (iMethod.getDeclaringIClass().isInterface() && this.targetVersion < 8) {
                 this.compileError(
-                    "Invocation of static interface methods NYI",
+                    "Invocation of static interface methods only available for target version 8+",
                     locatable.getLocation()
                 );
             }
