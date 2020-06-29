@@ -67,6 +67,10 @@ class AbstractCompiler implements ICompiler {
     /** Implements the JAVAC {@code -g:vars} option. */
     protected boolean debugVars;
 
+    protected int sourceVersion = -1;
+
+    protected int targetVersion = -1;
+
     // Temporary, for testing:
 //    { this.debugSource = (this.debugLines = (this.debugVars = true)); }
 
@@ -123,6 +127,12 @@ class AbstractCompiler implements ICompiler {
 
     @Override public void
     setDebugSource(boolean value) { this.debugSource = value; }
+
+    @Override public void
+    setSourceVersion(int version) { this.sourceVersion = version; }
+
+    @Override public void
+    setTargetVersion(int version) { this.targetVersion = version; }
 
     @Override public void
     setSourcePath(File[] directoriesAndArchives) {

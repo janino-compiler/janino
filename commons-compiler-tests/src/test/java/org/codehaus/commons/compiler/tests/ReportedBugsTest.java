@@ -1161,6 +1161,37 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         );
     }
 
+    @Test public void
+    testIssue126() throws Exception {
+
+        if (CommonsCompilerTestSuite.JVM_VERSION < 8) return;
+
+        ISimpleCompiler s = this.compilerFactory.newSimpleCompiler();
+        s.setSourceVersion(8);
+        s.setTargetVersion(8);
+        s.cook((
+            ""
+            + "package issue126;\n"
+            + "\n"
+            + "public interface BaseTestable {\n"
+            + "   public void test();\n"
+            + "}\n"
+            + "\n"
+            + "public interface Testable extends BaseTestable {\n"
+            + "   @Override\n"
+            + "   default public void test() {\n"
+            + "      System.out.println(\"test\");\n"
+            + "   }\n"
+            + "}\n"
+            + "\n"
+            + "public class Test implements Testable {\n"
+            + "   //blank implementation\n"
+            + "}\n"
+        ));
+
+        Assert.assertNotNull(s.getClassLoader().loadClass("issue126.Test").getConstructor().newInstance());
+    }
+
     public ClassLoader
     compile(ClassLoader parentClassLoader, CompileUnit... compileUnits) {
 

@@ -103,6 +103,25 @@ interface ICompiler {
     void setDebugSource(boolean value);
 
     /**
+     * Specifies the version of source code accepted, in analogy with JAVAC's {@code -source} command line option.
+     * May be ignored by an implementation (e.g. the {@code janino} implementation always accepts the language features
+     * as described on the home page).
+     * Allowed values, and the default value, depend on the implementation.
+     * {@code -1} means to use a default version.
+     */
+    void setSourceVersion(int version);
+
+    /**
+     * Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's {@code
+     * -target} command line option.
+     * Allowed values depend on the implementation.
+     * The default value also depends on the implementation.
+     * The only invariant is that the generated class files are suitable for the currently executing JVM.
+     * {@code -1} means to use a default version.
+     */
+    void setTargetVersion(int version);
+
+    /**
      * Finds more {@code .java} resources that need to be compiled, i.e. implements JAVAC's {@code -sourcepath} option.
      */
     void setSourceFinder(ResourceFinder sourceFinder);

@@ -788,11 +788,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "}\n"
         );
 
-        if (this.isJanino) {
-            this.assertCompilationUnitUncookable(cu, "Static interface methods not implemented");
-        } else {
-            if (CommonsCompilerTestSuite.JVM_VERSION >= 8) this.assertCompilationUnitMainReturnsTrue(cu, "Main");
-        }
+        this.assertCompilationUnitCookable(cu, "only available for target version 8\\+|compiler\\.err\\.mod\\.not\\.allowed\\.here");
     }
 
     @Test public void
@@ -805,11 +801,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "}\n"
         );
 
-        if (this.isJanino) {
-            this.assertCompilationUnitUncookable(cu, "Default interface methods not implemented");
-        } else {
-            if (CommonsCompilerTestSuite.JVM_VERSION >= 8) this.assertCompilationUnitCookable(cu);
-        }
+        this.assertCompilationUnitCookable(cu, "only available for source version 8\\+|compiler\\.err\\.illegal\\.start\\.of\\.type");
     }
 
     @Test public void
@@ -818,10 +810,10 @@ class JlsTest extends CommonsCompilerTestSuite {
         // Modifiers for interface method: SUPPRESS CHECKSTYLE LineLength:18
         this.assertCompilationUnitCookable("interface Foo { @SuppressWarnings(\"foo\") void meth();   }");
         this.assertCompilationUnitCookable("interface Foo { abstract                   void meth();   }");
-        this.assertCompilationUnitCookable("interface Foo { default                    void meth() {} }", "not implemented|illegal start of type");
+        this.assertCompilationUnitCookable("interface Foo { default                    void meth() {} }", "only available for source version 8\\+|illegal start of type");
         this.assertCompilationUnitCookable("interface Foo { private                    void meth() {} }", "not implemented|modifier private not allowed");
         this.assertCompilationUnitCookable("interface Foo { public                     void meth();   }");
-        this.assertCompilationUnitCookable("interface Foo { static                     void meth() {} }", "not implemented|modifier static not allowed");
+        this.assertCompilationUnitCookable("interface Foo { static                     void meth() {} }", "only available for target version 8\\+|modifier static not allowed");
         this.assertCompilationUnitUncookable("interface Foo { final                      void meth();   }", "final not allowed|illegal combination");
         this.assertCompilationUnitUncookable("interface Foo { native                     void meth();   }", "native not allowed");
         this.assertCompilationUnitUncookable("interface Foo { protected                  void meth();   }", "protected not allowed");

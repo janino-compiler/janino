@@ -231,6 +231,7 @@ class Compiler extends AbstractCompiler {
                     ),
                     iClassLoader
                 );
+                uc.setTargetVersion(this.targetVersion);
                 uc.setCompileErrorHandler(this.compileErrorHandler);
                 uc.setWarningHandler(this.warningHandler);
                 uc.options(this.options);
@@ -250,6 +251,7 @@ class Compiler extends AbstractCompiler {
                     sourceFile = new File(acu.fileName);
                 }
 
+                unitCompiler.setTargetVersion(this.targetVersion);
                 unitCompiler.setCompileErrorHandler(this.compileErrorHandler);
                 unitCompiler.setWarningHandler(this.warningHandler);
 
@@ -301,6 +303,7 @@ class Compiler extends AbstractCompiler {
             Scanner scanner = new Scanner(fileName, new InputStreamReader(inputStream, charset));
 
             Parser parser = new Parser(scanner);
+            parser.setSourceVersion(this.sourceVersion);
             parser.setWarningHandler(this.warningHandler);
 
             this.benchmark.beginReporting("Parsing \"" + fileName + "\"");

@@ -71,6 +71,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private boolean debugSource   = Boolean.getBoolean(Scanner.SYSTEM_PROPERTY_SOURCE_DEBUGGING_ENABLE);
     private boolean debugLines    = this.debugSource;
     private boolean debugVars     = this.debugSource;
+    private int     sourceVersion = -1;
     private int     targetVersion = -1;
 
     private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
@@ -214,7 +215,12 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      */
     public void
     cook(Scanner scanner) throws CompileException, IOException {
-        this.compileToClassLoader(new Parser(scanner).parseAbstractCompilationUnit());
+
+        Parser parser = new Parser(scanner);
+        parser.setSourceVersion(this.sourceVersion);
+        parser.setWarningHandler(this.warningHandler);
+
+        this.compileToClassLoader(parser.parseAbstractCompilationUnit());
     }
 
     /**
@@ -253,7 +259,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * used which is not supported.
      */
     @Override public void
-    setSourceVersion(int version) {}
+    setSourceVersion(int version) { this.sourceVersion = version; }
 
     @Override public void
     setTargetVersion(int version) { this.targetVersion = version; }

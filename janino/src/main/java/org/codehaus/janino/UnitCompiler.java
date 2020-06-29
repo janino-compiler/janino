@@ -3207,8 +3207,8 @@ class UnitCompiler {
     compile2(FunctionDeclarator fd, final ClassFile classFile) throws CompileException {
         ClassFile.MethodInfo mi;
 
-        if (fd instanceof MethodDeclarator && ((MethodDeclarator) fd).isDefault()) {
-            this.compileError("Default interface methods not implemented", fd.getLocation());
+        if (this.targetVersion < 8 && fd instanceof MethodDeclarator && ((MethodDeclarator) fd).isDefault()) {
+            this.compileError("Default interface methods only available for target version 8+", fd.getLocation());
         }
 
         if (fd.getAccess() == Access.PRIVATE) {
@@ -3262,13 +3262,19 @@ class UnitCompiler {
 
             if (fd.getDeclaringType() instanceof InterfaceDeclaration) {
 
-                // Static interface methods would require Java 8 class file format, but JANINO is still tied to Java
-                // 7 class file format.
-                if (Mod.isStatic(accessFlags) && !"<clinit>".equals(fd.name)) {
-                    this.compileError("Static interface methods not implemented", fd.getLocation());
+                accessFlags |= Mod.PUBLIC;
+
+                if (this.targetVersion < 8 && Mod.isStatic(accessFlags) && !"<clinit>".equals(fd.name)) {
+                    this.compileError("Static interface methods only available for target version 8+", fd.getLocation());
                 }
 
-                accessFlags |= Mod.ABSTRACT | Mod.PUBLIC;
+                if (fd instanceof MethodDeclarator && ((MethodDeclarator) fd).isDefault()) {
+                    if (this.targetVersion < 8) {
+                        this.compileError("Default methods only available for target version 8+", fd.getLocation());
+                    }
+                } else {
+                    accessFlags |= Mod.ABSTRACT;
+                }
             }
 
             mi = classFile.addMethodInfo(
@@ -10470,7 +10476,7 @@ class UnitCompiler {
             @Override public boolean
             isAbstract() {
                 return (
-                    (methodDeclarator.getDeclaringType() instanceof InterfaceDeclaration)
+                    (methodDeclarator.getDeclaringType() instanceof InterfaceDeclaration && !methodDeclarator.isDefault())
                     || methodDeclarator.isAbstract()
                 );
             }

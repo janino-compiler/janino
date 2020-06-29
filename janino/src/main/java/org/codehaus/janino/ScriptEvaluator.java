@@ -87,7 +87,9 @@ import org.codehaus.janino.util.AbstractTraverser;
 public
 class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
 
-    private final ClassBodyEvaluator cbe = new ClassBodyEvaluator();
+    private int                      sourceVersion = -1;
+    @Nullable private WarningHandler warningHandler;
+    private final ClassBodyEvaluator cbe           = new ClassBodyEvaluator();
 
     /**
      * Represents one script that this {@link ScriptEvaluator} declares. Typically there exactly <em>one</em> such
@@ -143,7 +145,10 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     @Override public void
-    setSourceVersion(int version) { this.cbe.setSourceVersion(version); }
+    setSourceVersion(int version) {
+        this.cbe.setSourceVersion(version);
+        this.sourceVersion = version;
+    }
 
     @Override public void
     setTargetVersion(int version) { this.cbe.setTargetVersion(version); }
@@ -154,7 +159,10 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     @Override public void
-    setWarningHandler(@Nullable WarningHandler warningHandler) { this.cbe.setWarningHandler(warningHandler); }
+    setWarningHandler(@Nullable WarningHandler warningHandler) {
+        this.cbe.setWarningHandler(warningHandler);
+        this.warningHandler = warningHandler;
+    }
 
     /**
      * @return A reference to the currently effective compilation options; changes to it take
@@ -661,7 +669,11 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         this.setScriptCount(scanners.length);
 
         Parser[] parsers = new Parser[scanners.length];
-        for (int i = 0; i < scanners.length; ++i) parsers[i] = new Parser(scanners[i]);
+        for (int i = 0; i < scanners.length; ++i) {
+            parsers[i] = new Parser(scanners[i]);
+            parsers[i].setSourceVersion(this.sourceVersion);
+            parsers[i].setWarningHandler(this.warningHandler);
+        }
 
         this.cook(parsers);
     }
@@ -1294,7 +1306,12 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      */
     public static String[]
     guessParameterNames(Scanner scanner) throws CompileException, IOException {
+
         Parser parser = new Parser(scanner);
+
+        // Impossible, because this method is STATIC:
+        //parser.setSourceVersion(this.sourceVersion);
+        //parser.setWarningHandler(this.warningHandler);
 
         // Eat optional leading import declarations.
         while (parser.peek("import")) parser.parseImportDeclaration();

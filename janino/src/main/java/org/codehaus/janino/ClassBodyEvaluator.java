@@ -52,13 +52,16 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
 
     private static final Class<?>[] ZERO_CLASSES = new Class[0];
 
-    private final SimpleCompiler sc = new SimpleCompiler();
+    @Nullable private WarningHandler warningHandler;
+    private final SimpleCompiler     sc = new SimpleCompiler();
 
     private String[]           defaultImports = new String[0];
+    private int                sourceVersion  = -1;
     private String             className      = IClassBodyEvaluator.DEFAULT_CLASS_NAME;
     @Nullable private Class<?> extendedType;
     private Class<?>[]         implementedTypes = ClassBodyEvaluator.ZERO_CLASSES;
     @Nullable private Class<?> result; // null=uncooked
+
 
     /**
      * Equivalent to
@@ -220,7 +223,10 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     }
 
     @Override public void
-    setSourceVersion(int version) { this.sc.setSourceVersion(version); }
+    setSourceVersion(int version) {
+        this.sc.setSourceVersion(version);
+        this.sourceVersion = version;
+    }
 
     @Override public void
     setTargetVersion(int version) { this.sc.setTargetVersion(version); }
@@ -231,7 +237,10 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     }
 
     @Override public void
-    setWarningHandler(@Nullable WarningHandler warningHandler) { this.sc.setWarningHandler(warningHandler); }
+    setWarningHandler(@Nullable WarningHandler warningHandler) {
+        this.sc.setWarningHandler(warningHandler);
+        this.warningHandler = warningHandler;
+    }
 
     // JANINO-specific configuration setters and getters
 
@@ -261,9 +270,10 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     public void
     cook(Scanner scanner) throws CompileException, IOException {
 
-        Parser                                           parser             = new Parser(scanner);
-        Java.AbstractCompilationUnit.ImportDeclaration[] importDeclarations = this.makeImportDeclarations(parser);
+        Parser parser = new Parser(scanner);
+        parser.setSourceVersion(this.sourceVersion);
 
+        Java.AbstractCompilationUnit.ImportDeclaration[] importDeclarations = this.makeImportDeclarations(parser);
 
         Java.CompilationUnit compilationUnit = new Java.CompilationUnit(scanner.getFileName(), importDeclarations);
 
@@ -318,7 +328,11 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
 
         // Honor the default imports.
         for (String defaultImport : this.defaultImports) {
+
             final Parser p = new Parser(new Scanner(null, new StringReader(defaultImport)));
+            p.setSourceVersion(this.sourceVersion);
+            p.setWarningHandler(this.warningHandler);
+
             l.add(p.parseImportDeclarationBody());
             p.read(TokenType.END_OF_INPUT);
         }

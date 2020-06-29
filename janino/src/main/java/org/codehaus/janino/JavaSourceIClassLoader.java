@@ -64,6 +64,8 @@ class JavaSourceIClassLoader extends IClassLoader {
      */
     private final Set<UnitCompiler>  unitCompilers = new HashSet<UnitCompiler>();
 
+    private int                      sourceVersion = -1;
+    private int                      targetVersion = -1;
     @Nullable private ErrorHandler   compileErrorHandler;
     @Nullable private WarningHandler warningHandler;
 
@@ -79,6 +81,12 @@ class JavaSourceIClassLoader extends IClassLoader {
         this.sourceCharset = sourceCharsetName == null ? Charset.defaultCharset() : Charset.forName(sourceCharsetName);
         super.postConstruct();
     }
+
+    public void
+    setSourceVersion(int version) { this.sourceVersion = version; }
+
+    public void
+    setTargetVersion(int version) { this.targetVersion = version; }
 
     /**
      * Returns the set of {@link UnitCompiler}s that were created so far.
@@ -184,6 +192,7 @@ class JavaSourceIClassLoader extends IClassLoader {
             if (acu == null) return null;
 
             UnitCompiler uc = new UnitCompiler(acu, this).options(this.options);
+            uc.setTargetVersion(this.targetVersion);
             uc.setCompileErrorHandler(this.compileErrorHandler);
             uc.setWarningHandler(this.warningHandler);
 
@@ -233,6 +242,7 @@ class JavaSourceIClassLoader extends IClassLoader {
             );
 
             Parser parser = new Parser(scanner);
+            parser.setSourceVersion(this.sourceVersion);
             parser.setWarningHandler(this.warningHandler);
 
             return parser.parseAbstractCompilationUnit();

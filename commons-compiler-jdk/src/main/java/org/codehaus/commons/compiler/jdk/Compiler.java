@@ -97,6 +97,8 @@ class Compiler extends AbstractCompiler {
 
         // Compose the effective compiler options.
         List<String> options = new ArrayList<String>(this.compilerOptions);
+
+        // Debug options.
         {
             List<String> l = new ArrayList<String>();
             if (this.debugLines)  l.add("lines");
@@ -109,6 +111,18 @@ class Compiler extends AbstractCompiler {
             while (it.hasNext()) o += "," + it.next();
 
             options.add(o);
+        }
+
+        // Source / target version options.
+        {
+            if (this.sourceVersion != -1) {
+                options.add("-source");
+                options.add(Integer.toString(this.sourceVersion));
+            }
+            if (this.targetVersion != -1) {
+                options.add("-target");
+                options.add(Integer.toString(this.targetVersion));
+            }
         }
 
         JavaFileManager fileManager = this.getJavaFileManager();

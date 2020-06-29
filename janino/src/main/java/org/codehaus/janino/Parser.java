@@ -936,8 +936,9 @@ class Parser {
         // "void" method declaration (without type arguments).
         if (this.peekRead("void")) {
             Location location = this.location();
-            if (docComment == null) this.warning("MDCM", "Method doc comment missing", location);
+
             String name = this.read(TokenType.IDENTIFIER);
+
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                 docComment,                                  // docComment
                 this.methodModifiers(modifiers),             // modifiers
@@ -1019,8 +1020,9 @@ class Parser {
 
         // VOID method declaration?
         if (this.peekRead("void")) {
-            if (docComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
+
             String name = this.read(TokenType.IDENTIFIER);
+
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                 docComment,                                         // docComment
                 this.methodModifiers(modifiers),                    // modifiers
@@ -1039,7 +1041,7 @@ class Parser {
 
         // Method declarator.
         if (this.peek("(")) {
-            if (docComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
+
             classDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                 docComment,                                // docComment
                 this.methodModifiers(modifiers),           // modifiers
@@ -1211,10 +1213,7 @@ class Parser {
 
             // "void" method declaration (without type parameters).
             if (this.peekRead("void")) {
-                if (docComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
-                if (Parser.hasAccessModifier(modifiers, "default")) {
-                    throw this.compileException("Default interface methods not implemented");
-                }
+
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                     docComment,                                         // docComment
                     modifiers,                                          // modifiers
@@ -1313,12 +1312,10 @@ class Parser {
 
             // "void" method declaration?
             if (this.peekRead("void")) {
-                if (docComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
-                if (Parser.hasAccessModifier(modifiers, "default")) {
-                    throw this.compileException("Default interface methods not implemented");
-                }
                 Location location = this.location();
-                String   name     = this.read(TokenType.IDENTIFIER);
+
+                String name = this.read(TokenType.IDENTIFIER);
+
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                     docComment,                                  // docComment
                     modifiers,                                   // modifiers
@@ -1341,7 +1338,7 @@ class Parser {
 
             // Method declarator?
             if (this.peek("(")) {
-                if (docComment == null) this.warning("MDCM", "Method doc comment missing", this.location());
+
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                     docComment,     // docComment
                     modifiers,      // modifiers
@@ -1527,6 +1524,12 @@ class Parser {
         MethodDeclarationContext  context
     ) throws CompileException, IOException {
         Location location = this.location();
+
+        if (docComment == null) this.warning("MDCM", "Method doc comment missing", location);
+
+        if (this.sourceVersion < 8 && Parser.hasAccessModifier(modifiers, "default")) {
+            throw this.compileException("Default interface methods only available for source version 8+");
+        }
 
         this.verifyIdentifierIsConventionalMethodName(name, location);
 
@@ -3876,6 +3879,11 @@ class Parser {
             }
         }
     }
+
+    public void
+    setSourceVersion(int version) { this.sourceVersion = version; }
+
+    private int sourceVersion = -1;
 
     /**
      * By default, warnings are discarded, but an application my install a {@link WarningHandler}.

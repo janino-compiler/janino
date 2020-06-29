@@ -99,6 +99,9 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
 //    private static final Class<?>   DEFAULT_EXPRESSION_TYPE = Object.class;
 //    private static final Class<?>[] ZERO_CLASSES            = new Class<?>[0];
 
+    private int                      sourceVersion = -1;
+    @Nullable private WarningHandler warningHandler;
+
     private final ScriptEvaluator se = new ScriptEvaluator();
     {
         this.se.setClassName(IExpressionEvaluator.DEFAULT_CLASS_NAME);
@@ -274,7 +277,10 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     }
 
     @Override public void
-    setSourceVersion(int version) { this.se.setSourceVersion(version); }
+    setSourceVersion(int version) {
+        this.se.setSourceVersion(version);
+        this.sourceVersion = version;
+      }
 
     @Override public void
     setTargetVersion(int version) { this.se.setTargetVersion(version); }
@@ -287,6 +293,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     @Override public void
     setWarningHandler(@Nullable WarningHandler warningHandler) {
         this.se.setWarningHandler(warningHandler);
+        this.warningHandler = warningHandler;
     }
 
     @Override public void
@@ -456,7 +463,11 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     cook(Scanner... scanners) throws CompileException, IOException {
 
         Parser[] parsers = new Parser[scanners.length];
-        for (int i = 0; i < scanners.length; ++i) parsers[i] = new Parser(scanners[i]);
+        for (int i = 0; i < scanners.length; ++i) {
+            parsers[i] = new Parser(scanners[i]);
+            parsers[i].setSourceVersion(this.sourceVersion);
+            parsers[i].setWarningHandler(this.warningHandler);
+        }
 
         this.cook(parsers);
     }
@@ -716,7 +727,12 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
      */
     public static String[]
     guessParameterNames(Scanner scanner) throws CompileException, IOException {
+
         Parser parser = new Parser(scanner);
+
+        // Impossible, because this method is STATIC:
+        //parser.setSourceVersion(this.sourceVersion);
+        //parser.setWarningHandler(this.warningHandler);
 
         // Eat optional leading import declarations.
         while (parser.peek("import")) parser.parseImportDeclaration();
