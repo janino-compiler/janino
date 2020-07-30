@@ -805,20 +805,29 @@ class UnitCompiler {
         // extras.
         final int declaredMethodCount = cd.getMethodDeclarations().size();
         {
-            int                     syntheticFieldCount = cd.syntheticFields.size();
-            ConstructorDeclarator[] ctords              = cd.getConstructors();
-            for (ConstructorDeclarator ctord : ctords) {
+            ConstructorDeclarator[] ctords = cd.getConstructors();
 
-                this.compile(ctord, cf);
-                if (syntheticFieldCount != cd.syntheticFields.size()) {
-                    throw new InternalCompilerException(
-                        "SNO: Compilation of constructor \""
-                        + ctord
-                        + "\" ("
-                        + ctord.getLocation()
-                        + ") added synthetic fields!?"
-                    );
+            int syntheticFieldCount = cd.syntheticFields.size();
+            int methodInfoCount     = cf.methodInfos.size();
+            for (ConstructorDeclarator ctord : ctords) this.compile(ctord, cf);
+
+            if (syntheticFieldCount != cd.syntheticFields.size()) {
+
+                // New synthetic fields were created while the constructors were compiled -- need to re-compile all
+                // constructors!
+                syntheticFieldCount = cd.syntheticFields.size();
+                while (cf.methodInfos.size() > methodInfoCount) cf.methodInfos.remove(methodInfoCount);
+                for (ConstructorDeclarator ctord : ctords) {
+
+                    // Clear the cached IConstructor -- necessary because the synthetic constructor parameters have
+                    // changed!
+                    ctord.iConstructor = null;
+
+                    this.compile(ctord, cf);
                 }
+
+                // Re-compilation of the constructors cannot possibly create even more synthetic fields!
+                assert syntheticFieldCount == cd.syntheticFields.size();
             }
         }
 
