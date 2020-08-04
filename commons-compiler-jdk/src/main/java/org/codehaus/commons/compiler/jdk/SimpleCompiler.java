@@ -176,7 +176,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             compilationUnit = new SimpleJavaFileObject(uri, Kind.SOURCE) {
 
                 @Override public boolean
-                isNameCompatible(@Nullable String simpleName, @Nullable Kind kind) { return true; }
+                isNameCompatible(@Nullable String simpleName, @Nullable Kind kind) { return !"module-info".equals(simpleName); }
 
                 @Override public Reader
                 openReader(boolean ignoreEncodingErrors) throws IOException { return new StringReader(text); }
