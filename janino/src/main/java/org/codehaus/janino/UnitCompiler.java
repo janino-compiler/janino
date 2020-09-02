@@ -1060,13 +1060,7 @@ class UnitCompiler {
             IClass.getDescriptors(interfaces)                       // interfaceFDs
         );
 
-        int v = this.targetVersion;
-        if (v == -1) {
-            v = UnitCompiler.defaultTargetVersion;
-            if (v == -1) {
-                v = 6;
-            }
-        }
+        int v = this.getTargetVersion();
 
         if (v < 6) throw new CompileException("Cannot generate version " + v + " .class files", Location.NOWHERE);
 
@@ -3216,8 +3210,12 @@ class UnitCompiler {
     compile2(FunctionDeclarator fd, final ClassFile classFile) throws CompileException {
         ClassFile.MethodInfo mi;
 
-        if (this.targetVersion < 8 && fd instanceof MethodDeclarator && ((MethodDeclarator) fd).isDefault()) {
-            this.compileError("Default interface methods only available for target version 8+", fd.getLocation());
+        if (this.getTargetVersion() < 8 && fd instanceof MethodDeclarator && ((MethodDeclarator) fd).isDefault()) {
+            this.compileError((
+                ""
+                + "Default interface methods only available for target version 8+. "
+                + "Either use \"setTargetVersion(8)\", or \"-DdefaultTargetVersion=8\"."
+            ), fd.getLocation());
         }
 
         if (fd.getAccess() == Access.PRIVATE) {
@@ -3273,12 +3271,12 @@ class UnitCompiler {
 
                 accessFlags |= Mod.PUBLIC;
 
-                if (this.targetVersion < 8 && Mod.isStatic(accessFlags) && !"<clinit>".equals(fd.name)) {
+                if (this.getTargetVersion() < 8 && Mod.isStatic(accessFlags) && !"<clinit>".equals(fd.name)) {
                     this.compileError("Static interface methods only available for target version 8+", fd.getLocation());
                 }
 
                 if (fd instanceof MethodDeclarator && ((MethodDeclarator) fd).isDefault()) {
-                    if (this.targetVersion < 8) {
+                    if (this.getTargetVersion() < 8) {
                         this.compileError("Default methods only available for target version 8+", fd.getLocation());
                     }
                 } else {
@@ -3558,6 +3556,33 @@ class UnitCompiler {
                 );
             }
         });
+    }
+
+    private int getTargetVersion() {
+
+        if (this.targetVersion == -1) {
+
+            this.targetVersion = UnitCompiler.defaultTargetVersion;
+            if (this.targetVersion == -1) {
+
+//            // System property               Description                                    Example values
+//            // ------------------------------------------------------------------------------------------------
+//            // java.vm.specification.version Java Virtual Machine specification version     "1.8", "11"
+//            // java.specification.version    Java Runtime Environment specification version "1.8", "11"
+//            // java.version                  Java Runtime Environment version               "1.8.0_45", "11-ea"
+//            // java.class.version            Java class format version number               "52.0", "55.0"
+//            String jsv = System.getProperty("java.specification.version");
+//            jsv = jsv.substring(jsv.indexOf('.') + 1);
+//            this.targetVersion = Integer.parseInt(jsv);
+
+                // Because the generation of the StackMapTable attribute is still experimental, we still produce
+                // only Java 6 .class files by default:
+                this.targetVersion = 6;
+            }
+        }
+
+
+        return this.targetVersion;
     }
 
     /**
@@ -12725,7 +12750,7 @@ class UnitCompiler {
             // Static class or interface method.
             final ClassFile cf = this.getCodeContext().getClassFile();
 
-            if (iMethod.getDeclaringIClass().isInterface() && this.targetVersion < 8) {
+            if (iMethod.getDeclaringIClass().isInterface() && this.getTargetVersion() < 8) {
                 this.compileError(
                     "Invocation of static interface methods only available for target version 8+",
                     locatable.getLocation()
