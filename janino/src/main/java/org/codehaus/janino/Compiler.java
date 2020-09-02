@@ -77,10 +77,9 @@ class Compiler extends AbstractCompiler {
 
     private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
-    private IClassLoader              iClassLoader     = new ClassLoaderIClassLoader();
-    private Benchmark                 benchmark        = new Benchmark(false);
+    @Nullable private IClassLoader iClassLoader;
 
-    { this.updateIClassLoader(); }
+    private Benchmark benchmark = new Benchmark(false);
 
     // Compile time state:
 
@@ -214,7 +213,7 @@ class Compiler extends AbstractCompiler {
         try {
 
             final IClassLoader
-            iClassLoader = new CompilerIClassLoader(this.sourceFinder, this.classFileFinder, this.iClassLoader);
+            iClassLoader = new CompilerIClassLoader(this.sourceFinder, this.classFileFinder, this.getIClassLoader());
 
             // Initialize compile time fields.
             this.parsedCompilationUnits.clear();
@@ -398,8 +397,9 @@ class Compiler extends AbstractCompiler {
     }
 
     /**
-     * Loads "auxiliary classes", typically from BOOTCLASSPATH + EXTDIR + CLASSPATH (but <em>not</em> from the
-     * "destination directory"!).
+     * Explicitly sets the {@link IClassLoader} that will be used to load "auxiliary classes". If this method is used,
+     * then {@link #setBootClassPath(File[])}, {@link #setExtensionDirectories(File[])} and {@link
+     * #setClassPath(File[])} have no more effect.
      */
     public void
     setIClassLoader(IClassLoader iClassLoader) { this.iClassLoader = iClassLoader; }
@@ -407,26 +407,15 @@ class Compiler extends AbstractCompiler {
     @Override public void
     setVerbose(boolean verbose) { this.benchmark = new Benchmark(verbose); }
 
-    @Override public void
-    setBootClassPath(File[] directoriesAndArchives) {
-        super.setBootClassPath(directoriesAndArchives);
-        this.updateIClassLoader();
-    }
+    /**
+     * @return Loads "auxiliary classes", either through the {@link IClassLoader} that was explicitly set with
+     *         {@link #setIClassLoader(IClassLoader)}, or otherwise from {@link #setBootClassPath(File[])}, {@link
+     *         #setExtensionDirectories(File[])} and {@link #setClassPath
+     */
+    private IClassLoader
+    getIClassLoader() {
 
-    @Override public void
-    setExtensionDirectories(File[] directories) {
-        super.setExtensionDirectories(directories);
-        this.updateIClassLoader();
-    }
-
-    @Override public void
-    setClassPath(File[] directoriesAndArchives) {
-        super.setClassPath(directoriesAndArchives);
-        this.updateIClassLoader();
-    }
-
-    private void
-    updateIClassLoader() {
+        if (this.iClassLoader != null) return this.iClassLoader;
 
         ResourceFinder classPathResourceFinder;
 
@@ -501,7 +490,7 @@ class Compiler extends AbstractCompiler {
             ));
         }
 
-        this.setIClassLoader(new ResourceFinderIClassLoader(classPathResourceFinder, null));
+        return (this.iClassLoader = new ResourceFinderIClassLoader(classPathResourceFinder, null));
     }
 
     /**
