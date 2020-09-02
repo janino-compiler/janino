@@ -1527,7 +1527,7 @@ class Parser {
 
         if (docComment == null) this.warning("MDCM", "Method doc comment missing", location);
 
-        if (this.sourceVersion < 8 && Parser.hasAccessModifier(modifiers, "default")) {
+        if (this.getSourceVersion() < 8 && Parser.hasAccessModifier(modifiers, "default")) {
             throw this.compileException("Default interface methods only available for source version 8+");
         }
 
@@ -1582,6 +1582,25 @@ class Parser {
             defaultValue,     // defaultValue
             statements        // statements
         );
+    }
+
+    private int
+    getSourceVersion() {
+
+        if (this.sourceVersion == -1) {
+
+            // System property               Description                                    Example values
+            // ------------------------------------------------------------------------------------------------
+            // java.vm.specification.version Java Virtual Machine specification version     "1.8", "11"
+            // java.specification.version    Java Runtime Environment specification version "1.8", "11"
+            // java.version                  Java Runtime Environment version               "1.8.0_45", "11-ea"
+            // java.class.version            Java class format version number               "52.0", "55.0"
+            String jsv = System.getProperty("java.specification.version");
+            jsv = jsv.substring(jsv.indexOf('.') + 1);
+            this.sourceVersion = Integer.parseInt(jsv);
+        }
+
+        return this.sourceVersion;
     }
 
     /**
