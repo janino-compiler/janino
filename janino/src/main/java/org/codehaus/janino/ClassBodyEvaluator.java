@@ -463,9 +463,9 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
      *     cbe.{@link IClassBodyEvaluator#createInstance(Reader) createInstance}(reader);
      * </pre>
      *
-     * @see #createInstance(Reader)
+     * @deprecated Use {@link #createInstance(Reader)} instead
      */
-    public static Object
+    @Deprecated public static Object
     createFastClassBodyEvaluator(
         Scanner               scanner,
         @Nullable Class<?>    baseType,
