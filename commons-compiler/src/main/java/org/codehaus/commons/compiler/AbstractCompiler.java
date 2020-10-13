@@ -156,7 +156,7 @@ class AbstractCompiler implements ICompiler {
      * This is <em>always</em> non-{@code null} for JVMs that support BOOTCLASSPATH (1.0-1.8), and
      * this is <em>always</em> {@code null} for JVMs that don't (9+).
      */
-    protected @Nullable File[]
+    @Nullable protected File[]
     bootClassPath = StringUtil.parseOptionalPath(System.getProperty("sun.boot.class.path"));
 
     /**

@@ -1132,8 +1132,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     /**
-     * @deprecated Use {@link #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[],
-     *             ClassLoader)} instead
+     * @deprecated Use {@link #createFastEvaluator(Scanner, Class, String[])} instead
      */
     @Deprecated public static Object
     createFastScriptEvaluator(String script, Class<?> interfaceToImplement, String[] parameterNames)
@@ -1143,8 +1142,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     /**
-     * @deprecated Use {@link #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[],
-     *             ClassLoader)} instead
+     * @deprecated Use {@link #createFastEvaluator(Scanner, Class, String[])} instead
      */
     @Deprecated public static Object
     createFastScriptEvaluator(
@@ -1159,8 +1157,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     /**
-     * @deprecated Use {@link #createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[],
-     *             ClassLoader)} instead
+     * @deprecated Use {@link #createFastEvaluator(Scanner, Class, String[])} instead
      */
     @Deprecated public static Object
     createFastScriptEvaluator(

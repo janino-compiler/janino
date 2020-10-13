@@ -801,7 +801,12 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "}\n"
         );
 
-        this.assertCompilationUnitCookable(cu, "only available for source version 8\\+|compiler\\.err\\.illegal\\.start\\.of\\.type");
+        // Default interface methods only available for target version 8+. Either use "setTargetVersion(8)", or "-DdefaultTargetVersion=8"." does not contain a match of "only available for source version 8\+|compiler\.err\.illegal\.start\.of\.type" (implementation=org.codehaus.janino, java.version=11-ea)
+
+        this.assertCompilationUnitCookable(
+            cu,
+            "only available for (?:source|target) version 8\\+|compiler\\.err\\.illegal\\.start\\.of\\.type"
+        );
     }
 
     @Test public void
@@ -810,7 +815,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         // Modifiers for interface method: SUPPRESS CHECKSTYLE LineLength:18
         this.assertCompilationUnitCookable("interface Foo { @SuppressWarnings(\"foo\") void meth();   }");
         this.assertCompilationUnitCookable("interface Foo { abstract                   void meth();   }");
-        this.assertCompilationUnitCookable("interface Foo { default                    void meth() {} }", "only available for source version 8\\+|illegal start of type");
+        this.assertCompilationUnitCookable("interface Foo { default                    void meth() {} }", "only available for (?:source|target) version 8\\+|illegal start of type");
         this.assertCompilationUnitCookable("interface Foo { private                    void meth() {} }", "not implemented|modifier private not allowed");
         this.assertCompilationUnitCookable("interface Foo { public                     void meth();   }");
         this.assertCompilationUnitCookable("interface Foo { static                     void meth() {} }", "only available for target version 8\\+|modifier static not allowed");

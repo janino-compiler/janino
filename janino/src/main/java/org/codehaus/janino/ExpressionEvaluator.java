@@ -59,7 +59,7 @@ import org.codehaus.janino.util.AbstractTraverser;
  * </p>
  * <p>
  *   If the expression type and the parameters' types are known at compile time, then a "fast" expression evaluator
- *   can be instantiated through {@link #createFastExpressionEvaluator(String, Class, String[], ClassLoader)}.
+ *   can be instantiated through {@link #createFastEvaluator(String, Class, String...)}.
  *   Expression evaluation is faster than through {@link #evaluate(Object[])}, because it is not done through
  *   reflection but through direct method invocation.
  * </p>
