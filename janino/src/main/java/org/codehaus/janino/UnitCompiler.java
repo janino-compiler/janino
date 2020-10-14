@@ -1732,6 +1732,8 @@ class UnitCompiler {
             this.getCodeContext().saveLocalVariables();
             try {
 
+                StackMap beforeStatement = this.getCodeContext().currentInserter().getStackMap();
+
                 // Allocate the local variable for the current element.
                 LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
                 elementLv.setSlot(this.getCodeContext().allocateLocalVariable(
@@ -1782,6 +1784,8 @@ class UnitCompiler {
                 this.load(fes, expressionType, expressionLv);
                 this.arraylength(fes);
                 this.if_icmpxx(fes, UnitCompiler.LT, bodyOffset);
+
+                this.getCodeContext().currentInserter().setStackMap(beforeStatement);
             } finally {
                 this.getCodeContext().restoreLocalVariables();
             }
@@ -1794,6 +1798,8 @@ class UnitCompiler {
         if (this.iClassLoader.TYPE_java_lang_Iterable.isAssignableFrom(expressionType)) {
             this.getCodeContext().saveLocalVariables();
             try {
+
+                StackMap beforeStatement = this.getCodeContext().currentInserter().getStackMap();
 
                 // Allocate the local variable for the current element.
                 LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
@@ -1848,6 +1854,8 @@ class UnitCompiler {
                 this.load(fes, iteratorLv);
                 this.invoke(fes.expression, this.iClassLoader.METH_java_util_Iterator__hasNext);
                 this.ifxx(fes, UnitCompiler.NE, bodyOffset);
+
+                this.getCodeContext().currentInserter().setStackMap(beforeStatement);
             } finally {
                 this.getCodeContext().restoreLocalVariables();
             }
@@ -3034,10 +3042,14 @@ class UnitCompiler {
         this.getCodeContext().saveLocalVariables();
         try {
 
+            StackMap smBeforeBody = this.getCodeContext().currentInserter().getStackMap();
+
             final CodeContext.Offset beginningOfBody = this.getCodeContext().newOffset();
             canCompleteNormally = this.compileTryCatch(ts, compileBody, beginningOfBody, afterStatement);
 
-            // Generate the "catch (Throwable) {" clause that invokes the FINALLY subroutine.
+            StackMap smAfterBody = this.getCodeContext().currentInserter().getStackMap();
+
+            // Generate the "catch (any) {" clause that invokes the FINALLY subroutine.
             this.getCodeContext().saveLocalVariables();
             try {
 
@@ -3048,6 +3060,8 @@ class UnitCompiler {
                     here,            // handlerPC
                     null             // catchTypeFD
                 );
+
+                this.getCodeContext().currentInserter().setStackMap(smBeforeBody);
 
                 // Push the exception on the operand stack.
                 this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
@@ -3069,6 +3083,8 @@ class UnitCompiler {
                     );
                     this.athrow(finallY);
                 }
+
+                this.getCodeContext().currentInserter().setStackMap(smAfterBody);
             } finally {
 
                 // The exception object local variable allocated above MUST NOT BE RELEASED until after the FINALLY
