@@ -1531,6 +1531,21 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_14_20_2__Execution_of_try_finally_and_try_catch_finally__2() throws Exception {
+
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
+
+        this.assertScriptExecutable(
+            ""
+            + "try {\n"
+            + "    int a = 7;\n"
+            + "} finally {\n"
+            + "    ;\n"
+            + "}\n"
+        );
+    }
+
+    @Test public void
     test_14_20_3__try_with_resources__1() throws Exception {
 
         if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
@@ -2494,6 +2509,88 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_15_17__Multiplicative_operators() throws Exception {
         this.assertExpressionEvaluatesTrue("new Integer(new Byte((byte) 2) * new Short((short) 3)).intValue() == 6");
+    }
+
+    @Test public void
+    test_15_18_1__String_Concatenation_Operator_plus() throws Exception {
+        this.assertScriptExecutable(
+//            "            final IClassLoader\n" +
+            "            final Object\n" +
+//            "            iClassLoader = new CompilerIClassLoader(this.sourceFinder, this.classFileFinder, this.getIClassLoader());\n" +
+            "            iClassLoader = new Object();\n" +
+            "\n" +
+            "            // Initialize compile time fields.\n" +
+//            "            this.parsedCompilationUnits.clear();\n" +
+            "            Object.class.hashCode();\n" +
+            "\n" +
+            "            // Parse all source files.\n" +
+            "            for (Object sourceResource : new Object[1]) {\n" +
+//            "//            for (int ii = 0; ii < sourceResources.length; ii++) {\n" +
+//            "//                Resource sourceResource = sourceResources[ii];\n" +
+            "\n" +
+//            "                Compiler.LOGGER.log(Level.FINE, \"Compiling \\\"{0}\\\"\", sourceResource);\n" +
+            "                Object.class.hashCode();\n" +
+            "\n" +
+            "                Object uc = new Object();\n" +
+//            "                UnitCompiler uc = new UnitCompiler(\n" +
+//            "                    this.parseAbstractCompilationUnit(\n" +
+//            "                        sourceResource.getFileName(),                   // fileName\n" +
+//            "                        new BufferedInputStream(sourceResource.open()), // inputStream\n" +
+//            "                        this.sourceCharset                              // charset\n" +
+//            "                    ),\n" +
+//            "                    iClassLoader\n" +
+//            "                );\n" +
+//            "                uc.setTargetVersion(this.targetVersion);\n" +
+//            "                uc.setCompileErrorHandler(this.compileErrorHandler);\n" +
+//            "                uc.setWarningHandler(this.warningHandler);\n" +
+//            "                uc.options(this.options);\n" +
+            "                uc.hashCode();\n" +
+//            "\n" +
+//            "                this.parsedCompilationUnits.add(uc);\n" +
+            "            }\n" +
+            "\n" +
+            "            // Compile all parsed compilation units. The vector of parsed CUs may grow while they are being compiled,\n" +
+            "            // but eventually all CUs will be compiled.\n" +
+            "            for (int i = 0; i < 3; ++i) {\n" +
+//            "                UnitCompiler unitCompiler = (UnitCompiler) this.parsedCompilationUnits.get(i);\n" +
+            "                Object unitCompiler = (Object) \"\";\n" +
+//            "\n" +
+//            "                File sourceFile;\n" +
+            "                Object sourceFile;\n" +
+            "                {\n" +
+//            "                    Java.AbstractCompilationUnit acu = unitCompiler.getAbstractCompilationUnit();\n" +
+//            "                    if (acu.fileName == null) throw new InternalCompilerException();\n" +
+//            "                    sourceFile = new File(acu.fileName);\n" +
+            "                    sourceFile = new Object();\n" +
+            "                }\n" +
+//            "\n" +
+//            "                unitCompiler.setTargetVersion(this.targetVersion);\n" +
+//            "                unitCompiler.setCompileErrorHandler(this.compileErrorHandler);\n" +
+//            "                unitCompiler.setWarningHandler(this.warningHandler);\n" +
+//            "\n" +
+//            "                this.benchmark.beginReporting(\"Compiling compilation unit \\\"\" + sourceFile + \"\\\"\");\n" +
+//            "                ClassFile[] classFiles;\n" +
+            "                Object[] classFiles;\n" +
+            "\n" +
+            "                // Compile the compilation unit.\n" +
+//            "                classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);\n" +
+            "                classFiles = new Object[] { \"\" };\n" +
+//            "\n" +
+            "                // Store the compiled classes and interfaces into class files.\n" +
+            "                new String(\n" +
+            "                    \"Storing \"\n" +
+//            "                    + classFiles.length\n" +
+            "                    + 7\n" +
+            "                    + \" class file(s) resulting from compilation unit \\\"\"\n" +
+//            "                    + sourceFile\n" +
+            "                    + new Object()\n" +
+            "//                    + \"\\\"\"\n" +
+            "                );\n" +
+//            "                for (ClassFile classFile : classFiles) this.storeClassFile(classFile, sourceFile);\n" +
+            "                for (Object classFile : new Object[1]) System.out.printf(\"%s%s\", classFile, sourceFile);\n" +
+            "            }\n" +
+            ""
+        );
     }
 
     @Test public void
