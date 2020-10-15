@@ -1941,6 +1941,7 @@ class UnitCompiler {
         {
             for (Rvalue rv : update) this.compile(rv);
             this.gotO(cs, bodyOffset);
+            this.getCodeContext().currentInserter().setStackMap(null);
         }
         cs.whereToContinue = null;
 
@@ -2507,9 +2508,10 @@ class UnitCompiler {
                 this.compileBoolean(is.condition, eso, UnitCompiler.JUMP_IF_FALSE);
                 boolean tsccn = this.compile(is.thenStatement);
                 if (tsccn) this.gotO(is, end);
-                eso.setStackMap(null);
+                this.getCodeContext().currentInserter().setStackMap(null);
                 eso.set();
                 boolean esccn = this.compile(es);
+                if (!esccn) this.getCodeContext().currentInserter().setStackMap(null);
                 end.set();
                 return tsccn || esccn;
             } else {
@@ -7988,7 +7990,10 @@ class UnitCompiler {
         this.neW(locatable, this.iClassLoader.TYPE_java_lang_StringBuilder);
         this.dupx(locatable);
         this.swap(locatable);
+
         this.invoke(locatable, this.iClassLoader.CTOR_java_lang_StringBuilder__java_lang_String);
+        this.getCodeContext().popUninitializedVariableOperand();
+        this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_STRINGBUILDER);
 
         for (Iterator<Rvalue> it = tmp.iterator(); it.hasNext();) {
             Rvalue operand = (Rvalue) it.next();

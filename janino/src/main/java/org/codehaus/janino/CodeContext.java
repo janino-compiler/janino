@@ -223,13 +223,19 @@ class CodeContext {
 
         for (Java.LocalVariableSlot slot : scopeToPop.localVars) {
             if (slot.getName() != null) slot.setEnd(this.newOffset());
+            this.allLocalVars.remove(slot);
         }
 
         this.currentLocalScope = scopeToPop.parent;
 
-        // Do NOT restore the stack map because that would be incorrect, e.g. if the sets a previously unassigned
-        // local variable.
-//        this.currentInserter.setStackMap(scopeToPop.startingStackMap);
+        // Truncate the stack map.
+        if (this.currentLocalScope != null) {
+            StackMap sm = this.currentInserter.getStackMap();
+            if (sm != null) {
+                while (sm.locals().length > this.allLocalVars.size()) sm = sm.popLocal();
+                this.currentInserter.setStackMap(sm);
+            }
+        }
 
         // reuse local variable slots of the popped scope
         this.nextLocalVariableSlot = scopeToPop.startingLocalVariableSlot;
@@ -1016,13 +1022,7 @@ class CodeContext {
         }
 
         public StackMap
-        getStackMap() {
-            final StackMap result = this.stackMap;
-            if (result == null) {
-                throw new InternalCompilerException("Stack map not set");
-            }
-            return result;
-        }
+        getStackMap() { return this.stackMap; }
 
         public void
         setStackMap(StackMap stackMap) { this.stackMap = stackMap; }
