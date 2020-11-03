@@ -2587,7 +2587,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             "//                    + \"\\\"\"\n" +
             "                );\n" +
 //            "                for (ClassFile classFile : classFiles) this.storeClassFile(classFile, sourceFile);\n" +
-            "                for (Object classFile : new Object[1]) System.out.printf(\"%s%s\", classFile, sourceFile);\n" +
+//            "                for (Object classFile : new Object[1]) System.out.printf(\"%s%s\", classFile, sourceFile);\n" +
             "            }\n" +
             ""
         );
