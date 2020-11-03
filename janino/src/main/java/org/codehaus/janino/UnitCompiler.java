@@ -2520,7 +2520,6 @@ class UnitCompiler {
                 CodeContext.Offset end = this.getCodeContext().new Offset();
                 this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_FALSE);
                 this.compile(is.thenStatement);
-                end.setStackMap(null);
                 end.set();
                 return true;
             }
@@ -5710,8 +5709,12 @@ class UnitCompiler {
             return this.getType(rv);
         }
 
-        this.compileContext(rv);
-        return this.compileGet(rv);
+        try {
+            this.compileContext(rv);
+            return this.compileGet(rv);
+        } catch (RuntimeException re) {
+            throw new InternalCompilerException(rv.getLocation() + ": Compiling \"" + rv + "\": " + re.getMessage(), re);
+        }
     }
 
     // -------------------- Rvalue.getConstantValue() -----------------
