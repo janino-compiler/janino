@@ -3315,11 +3315,28 @@ class UnitCompiler {
         {
             if (fd.thrownExceptions.length > 0) {
                 final short eani    = classFile.addConstantUtf8Info("Exceptions");
-                short[]     tecciis = new short[fd.thrownExceptions.length];
+                List<Short> tecciis = new ArrayList<Short>(); // new short[fd.thrownExceptions.length];
                 for (int i = 0; i < fd.thrownExceptions.length; ++i) {
-                    tecciis[i] = classFile.addConstantClassInfo(this.getType(fd.thrownExceptions[i]).getDescriptor());
+                    final Type te = fd.thrownExceptions[i];
+                    if (te instanceof ReferenceType) {
+                        ReferenceType rt = (ReferenceType) te;
+
+                        // Don't include thrown exceptions that are parameterized, e.g.
+                        //      void meth() throws EX {...}
+                        // , because we don't generate "Signature" attributes for methods, and "throws Throwable"
+                        // would cause compilation problems when the class is loaded later, e.g. by ClassFileIClass.
+                        if (
+                            rt.identifiers.length == 1
+                            && UnitCompiler.LOOKS_LIKE_TYPE_PARAMETER.matcher(rt.identifiers[0]).matches()
+                        ) continue;
+                    }
+                    tecciis.add(classFile.addConstantClassInfo(this.getType(te).getDescriptor()));
                 }
-                mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, tecciis));
+
+                short[] sa = new short[tecciis.size()];
+                for (int i = 0; i < tecciis.size(); i++) sa[i] = (Short) tecciis.get(i);
+
+                mi.addAttribute(new ClassFile.ExceptionsAttribute(eani, sa));
             }
         }
 
