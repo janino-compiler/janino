@@ -21,6 +21,21 @@
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+    
+    <style>
+.syntaxHighlighter.xml {
+  padding: 6px 12px 6px 12px;
+  line-height: 1em;
+}
+.syntaxHighlighter.xml .plain {
+  color: #b9bdb6;
+}
+.syntaxHighlighter.xml .spaces {
+}
+.syntaxHighlighter.xml .keyword {
+  color: #5ba1cf;
+}
+    </style>
   </head>
   <body>
     <div class="wrapper">
@@ -444,7 +459,7 @@
         
         <p>
           JANINO is available under the <a
-          href="https://raw.githubusercontent.com/janino-compiler/janino/master/LICENSE">New BSD License</a>.
+          href="https://spdx.org/licenses/BSD-3-Clause.html">New BSD License</a>.
         </p>
 
         <h2>
@@ -465,6 +480,57 @@
     &lt;artifactId&gt;janino&lt;/artifactId&gt;
     &lt;version&gt;<var>***</var>&lt;/version&gt;
 &lt;/dependency&gt;</pre></div>
+
+        <div style="background-color:#000" class="syntaxHighlighter xml lineNumbers">
+<!--
+<dependency>
+    <groupId>org.codehaus.janino</groupId> <!&#45;- BLA -&#45;>
+    <artifactId>janino</artifactId>
+    <version><var>***</var></version>
+</dependency>
+-->
+          <div><code class="plain">&lt;</code><code class="keyword">dependency</code><code class="plain">&gt;</code></div>
+          <div><code class="spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="plain">&lt;</code><code class="keyword">groupId</code><code class="plain">&gt;org.codehaus.janino&lt;/</code><code class="xml keyword">groupId</code><code class="plain">&gt;</code></div>
+          <div><code class="spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="plain">&lt;</code><code class="keyword">artifactId</code><code class="plain">&gt;janino&lt;/</code><code class="keyword">artifactId</code><code class="plain">&gt;</code></div>
+          <div><code class="spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="plain">&lt;</code><code class="keyword">version</code><code class="plain">&gt;&lt;</code><code class="keyword">var</code><code class="plain">&gt;***&lt;/</code><code class="keyword">var</code><code class="plain">&gt;&lt;/</code><code class="keyword">version</code><code class="plain">&gt;</code></div>
+          <div><code class="plain">&lt;/</code><code class="keyword">dependency</code><code class="plain">&gt;</code></div>
+        </div>
+        
+<div class="highlight highlight-text-xml">
+  <div>
+    <div id="highlighter_424568" class="syntaxhighlighter  xml">
+<!-- 
+      <div class="toolbar">
+        <span><a href="#" class="toolbar_item command_help help">?</a></span>
+      </div>
+ -->
+      <table border="0" cellpadding="0" cellspacing="0">
+        <tbody>
+          <tr>
+<!-- 
+            <td class="gutter">
+              <div class="line number1 index0 alt2">1</div>
+              <div class="line number2 index1 alt1">2</div>
+              <div class="line number3 index2 alt2">3</div>
+              <div class="line number4 index3 alt1">4</div>
+              <div class="line number5 index4 alt2">5</div>
+            </td>
+ -->
+            <td class="code">
+              <div class="container">
+                <div class="line number1 index0 alt2"><code class="xml plain">&lt;</code><code class="xml keyword">dependency</code><code class="xml plain">&gt;</code></div>
+                <div class="line number2 index1 alt1"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">groupId</code><code class="xml plain">&gt;org.codehaus.janino&lt;/</code><code class="xml keyword">groupId</code><code class="xml plain">&gt;</code></div>
+                <div class="line number3 index2 alt2"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">artifactId</code><code class="xml plain">&gt;janino&lt;/</code><code class="xml keyword">artifactId</code><code class="xml plain">&gt;</code></div>
+                <div class="line number4 index3 alt1"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">version</code><code class="xml plain">&gt;&lt;</code><code class="xml keyword">var</code><code class="xml plain">&gt;***&lt;/</code><code class="xml keyword">var</code><code class="xml plain">&gt;&lt;/</code><code class="xml keyword">version</code><code class="xml plain">&gt;</code></div>
+                <div class="line number5 index4 alt2"><code class="xml plain">&lt;/</code><code class="xml keyword">dependency</code><code class="xml plain">&gt;</code></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
         <p>(Replace "<var>***</var>" with the latest version of JANINO.)</p>
 
