@@ -958,59 +958,7 @@ class CodeContext {
 
             Inserter ci = CodeContext.this.currentInserter;
 
-            final StackMap ciSm = ((Offset) ci).stackMap;
-            if (ciSm == null) {
-
-                // A very special case: The current inserter has no stack map -- this happens when a GOTO has just been
-                // written.
-                ((Offset) ci).stackMap = this.stackMap;
-            } else {
-                StackMap thisSm = this.stackMap;
-
-                if (thisSm == null) {
-                    this.stackMap = ciSm;
-                } else
-                if (ciSm == thisSm) {
-                    ;
-                } else
-                if (ciSm.equals(thisSm)) {
-                    this.stackMap = ciSm;
-                } else
-                {
-                    if (!Arrays.equals(ciSm.operands(), thisSm.operands())) {
-                        throw new InternalCompilerException("Inconsistent operand stack: " + ciSm + " vs. " + thisSm);
-                    }
-                    VerificationTypeInfo[] ciLocals   = ciSm.locals();
-                    VerificationTypeInfo[] thisLocals = thisSm.locals();
-                    VerificationTypeInfo[] tmp        = new VerificationTypeInfo[Math.min(ciLocals.length, thisLocals.length)];
-
-                    for (int i = 0; i < tmp.length; i++) {
-                        VerificationTypeInfo ciLocal   = ciLocals[i];
-                        VerificationTypeInfo thisLocal = thisLocals[i];
-                        VerificationTypeInfo tmpLocal;
-                        if (ciLocal.equals(thisLocal)) {
-                            tmpLocal = ciLocal;
-                        } else
-                        if (ciLocal == StackMapTableAttribute.TOP_VARIABLE_INFO || thisLocal == StackMapTableAttribute.TOP_VARIABLE_INFO) {
-                            tmpLocal = StackMapTableAttribute.TOP_VARIABLE_INFO;
-                        } else
-                        {
-                            // This check would be wrong, because the different flow paths may have used the slot
-                            // for different locals.
-//                            throw new InternalCompilerException(
-//                                "Inconsistent local variable #" + i + " verification type: " + ciSm + " vs. " + thisSm
-//                            );
-                            tmpLocal = StackMapTableAttribute.TOP_VARIABLE_INFO;
-                        }
-
-                        tmp[i] = tmpLocal;
-                    }
-
-                    StackMap newSm = new StackMap(tmp, ciSm.operands());
-                    ci.setStackMap(newSm);
-                    this.stackMap = newSm;
-                }
-            }
+            ((Offset) ci).stackMap = this.stackMap = CodeContext.mergeStackMaps(((Offset) ci).stackMap, this.stackMap);
         }
 
         public void
@@ -1034,6 +982,51 @@ class CodeContext {
 
         @Override public String
         toString() { return CodeContext.this.classFile.getThisClassName() + ": " + this.offset; }
+    }
+
+
+    @Nullable private static final StackMap
+    mergeStackMaps(@Nullable StackMap sm1, @Nullable StackMap sm2) {
+
+        if (sm1 == null) return sm2;
+
+        if (sm2 == null) return sm1;
+
+        if (sm1 == sm2) return sm1;
+
+        if (sm1.equals(sm2)) return sm1;
+
+        if (!Arrays.equals(sm1.operands(), sm2.operands())) {
+            throw new InternalCompilerException("Inconsistent operand stack: " + sm1 + " vs. " + sm2);
+        }
+
+        VerificationTypeInfo[] locals1 = sm1.locals();
+        VerificationTypeInfo[] locals2 = sm2.locals();
+        VerificationTypeInfo[] tmp     = new VerificationTypeInfo[Math.min(locals1.length, locals2.length)];
+
+        for (int i = 0; i < tmp.length; i++) {
+            VerificationTypeInfo local1 = locals1[i];
+            VerificationTypeInfo local2 = locals2[i];
+            VerificationTypeInfo tmpLocal;
+            if (local1.equals(local2)) {
+                tmpLocal = local1;
+            } else
+            if (local1 == StackMapTableAttribute.TOP_VARIABLE_INFO || local2 == StackMapTableAttribute.TOP_VARIABLE_INFO) {
+                tmpLocal = StackMapTableAttribute.TOP_VARIABLE_INFO;
+            } else
+            {
+                // This check would be wrong, because the different flow paths may have used the slot
+                // for different locals.
+//                throw new InternalCompilerException(
+//                    "Inconsistent local variable #" + i + " verification type: " + sm1 + " vs. " + sm2
+//                );
+                tmpLocal = StackMapTableAttribute.TOP_VARIABLE_INFO;
+            }
+
+            tmp[i] = tmpLocal;
+        }
+
+        return new StackMap(tmp, sm1.operands());
     }
 
     /**
