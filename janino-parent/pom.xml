@@ -116,7 +116,7 @@
             <Bundle-SymbolicName>${project.groupId}.${project.artifactId};singleton:=true</Bundle-SymbolicName>
             <Bundle-Name>${project.artifactId}</Bundle-Name>
             <Bundle-Version>${project.version}</Bundle-Version>
-            <Bundle-License>https://raw.githubusercontent.com/janino-compiler/janino/master/LICENSE</Bundle-License>
+            <Bundle-License>https://spdx.org/licenses/BSD-3-Clause.html</Bundle-License>
             <Bundle-Description>Janino is a super-small, super-fast Java compiler.</Bundle-Description>
           </instructions>
         </configuration>
