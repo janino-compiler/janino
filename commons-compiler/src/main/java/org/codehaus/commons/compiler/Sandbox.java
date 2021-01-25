@@ -46,13 +46,13 @@ import org.codehaus.commons.nullanalysis.NotNullByDefault;
  * <p>
  *   Code example:
  * </p>
- * <pre>{@code
+ * <pre>
  *     Permissions noPermissions = new Permissions();
  *     Sandbox sandbox = new Sandbox(noPermissions);
- *     sandbox.confine(new PrivilegedExceptionAction<Object>() {
- *         @Override public Object run() throws Exception { new java.io.File("xxx").delete(); return null; }
+ *     sandbox.confine(new PrivilegedExceptionAction&lt;Object>() {
+ *         &#64;Override public Object run() throws Exception { new java.io.File("xxx").delete(); return null; }
  *     });
- * }</pre>
+ * </pre>
  *
  * @see <a href="https://docs.oracle.com/javase/tutorial/essential/environment/security.html">ORACLE: Java Essentials:
  *      The Security Manager</a>
