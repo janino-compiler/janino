@@ -51,9 +51,78 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.1.3-SNAPSHOT (only available as source code)</h4>
+    <h4>Version 3.1.4-SNAPSHOT (only available as source code)</h4>
     <ul>
       <li>...</li>
+    </ul>
+
+    <h4>Version 3.1.3 2021-01-25</h4>
+    <ul>
+      <li>
+        Issue #136: New BSD License?
+        <br />
+        janino-parent/pom.xml:
+        <ul>
+          <li>Changed license name from "New BSD License" to "BSD-3-Clause", because https://maven.apache.org/pom.html#Licenses recommends "... Using an SPDX identifier as the license name...".</li>
+          <li>Changed license URL from "https://raw.githubusercontent.com/janino-compiler/janino/master/LICENSE.txt" to "https://spdx.org.licenses/BSD-3-Clause.html", because the latter is probably the most reliable and stable copy. (We are already using the SPDX identifier, see above, so it appears reasonable to link to the SPDX web site.)</li>
+        </ul>
+      </li>
+      <li>
+        Generating MethodInfos:
+        Don't include thrown exceptions that are parameterized, e.g.
+	    "void meth() throws EX {...}",
+        because we don't generate "Signature" attributes for methods, and "throws Throwable"
+        would cause compilation problems when the class is loaded later, e.g. by ClassFileIClass.
+      </li>
+      <li>Fixed one StackMap-related NPE.</li>
+      <li>Issue #135: AssertionError for SimpleCompiler.cook when using DeepCopier</li>
+      <li>More StackMap-related fixes.</li>
+      <li>
+        Fixed issue #129:
+        Script evaluating does not work for java 11 when there is annotation processor (#130)
+      </li>
+      <li>
+        Bump junit from 4.12 to 4.13.1 in /janino-parent (#134)
+        <br />
+        Bump ant from 1.7.1 to 1.9.15 in /janino (#132)
+      </li>
+      <li>
+        Integrated Pull request #130:
+        Fixed issue #129:
+        Script evaluating does not work for java 11 when there is annotation processor
+      </li>
+      <li>Janino's default source version is now 11, and the default target version is 6.</li>
+      <li>
+        Fixed issue #131: Janino 3.1.2 is 10x slower than 3.0.11:
+        The Compiler's IClassLoader was initialized way too eagerly,
+        thus lots of classes were loaded from the class path, which is very slow.
+      </li>
+      <li>
+        The default source version was not processed correctly; now it is derived from the system property
+        "java.specification.version" ("Java Runtime Environment specification version").
+      </li>
+      <li>
+        Fixed "org.codehaus.commons.compiler.tests.EvaluatorTest.testAnonymousFieldInitializedByCapture()"
+        test case.
+      </li>
+      <li>Fixed issue #69: Invocation of static interface method.</li>
+      <li>
+        Stack map computation is now complete, but the generated StackMapTable attributes is still buggy.
+        Thus the default target version is still 6, so that the attribute is *not* written.
+        The test case for issue now succeeds, thanks to this new feature.
+      </li>
+      <li>
+        Stack map generation is now working; however the saved StackMapTable attribute is still buggy.
+      </li>
+      <li>
+        Changed the return type of "IScriptEvaluator.createFastEvaluator()" from "Object" to "T".
+        (This does not break binary compatibility, because "T" eventually compiles to "Object".)
+      </li>
+      <li>Issue #124: Janino Sandbox, JVisualVM cannot connect to the application</li>
+      <li>
+        Added "ICookable.setSourceVersion()" and "ICookable.setTargetVersion()" in order to implement JAVAC's "-source"
+        and "-target" command line options.
+      </li>
     </ul>
 
     <h4>Version 3.1.2, 2020-03-18</h4>
