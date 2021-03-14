@@ -105,14 +105,14 @@ class UnparserTest {
     private static void
     helpTestExpr(String input, String expected, boolean simplify) throws Exception {
         Parser p    = new Parser(new Scanner(null, new StringReader(input)));
-        Atom   expr = p.parseExpression();
+        Rvalue expr = p.parseExpression();
         if (simplify) {
             expr = UnparserTest.stripUnnecessaryParenExprs(expr);
         }
 
         StringWriter sw = new StringWriter();
         Unparser     u  = new Unparser(sw);
-        u.unparseAtom(expr);
+        u.unparseRvalue(expr);
         u.close();
         String s = sw.toString();
         s = UnparserTest.replace(s, "((( ", "(");

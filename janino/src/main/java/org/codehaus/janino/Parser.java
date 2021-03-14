@@ -1419,7 +1419,7 @@ class Parser {
             || this.peekLiteral()
             || this.peek(TokenType.IDENTIFIER)
         ) {
-            Atom a = this.parseExpression();
+            Atom a = this.parseExpressionOrType();
             if (a instanceof ConstructorInvocation) {
                 this.read(";");
                 constructorInvocation = (ConstructorInvocation) a;
@@ -1620,7 +1620,7 @@ class Parser {
             return this.parseArrayInitializer();
         } else
         {
-            return this.parseExpression().toRvalueOrCompileException();
+            return this.parseExpression();
         }
     }
 
@@ -1917,7 +1917,7 @@ class Parser {
         // It's either a non-final local variable declaration or an expression statement. We can
         // only tell after parsing an expression.
 
-        Atom a = this.parseExpression();
+        Atom a = this.parseExpressionOrType();
 
         // Expression ';'
         if (this.peekRead(";")) {
@@ -2079,7 +2079,7 @@ class Parser {
         this.read("if");
         final Location location = this.location();
         this.read("(");
-        final Rvalue condition = this.parseExpression().toRvalueOrCompileException();
+        final Rvalue condition = this.parseExpression();
         this.read(")");
 
         Statement thenStatement = this.parseStatement();
@@ -2132,7 +2132,7 @@ class Parser {
                     final String   name         = this.read(TokenType.IDENTIFIER);
                     final Location nameLocation = this.location();
                     this.read(":");
-                    Rvalue expression = this.parseExpression().toRvalueOrCompileException();
+                    Rvalue expression = this.parseExpression();
                     this.read(")");
                     return new ForEachStatement(
                         forLocation,                                              // location
@@ -2152,7 +2152,7 @@ class Parser {
                 break INIT;
             }
 
-            Atom a = this.parseExpression();
+            Atom a = this.parseExpressionOrType();
 
             if (this.peek(TokenType.IDENTIFIER)) {
                 if (this.peekNextButOne(":")) {
@@ -2161,7 +2161,7 @@ class Parser {
                     final String   name         = this.read(TokenType.IDENTIFIER);
                     final Location nameLocation = this.location();
                     this.read(":");
-                    Rvalue expression = this.parseExpression().toRvalueOrCompileException();
+                    Rvalue expression = this.parseExpression();
                     this.read(")");
                     return new ForEachStatement(
                         forLocation,          // location
@@ -2198,7 +2198,7 @@ class Parser {
                 List<BlockStatement> l = new ArrayList<BlockStatement>();
                 l.add(new ExpressionStatement(a.toRvalueOrCompileException()));
                 do {
-                    l.add(new ExpressionStatement(this.parseExpression().toRvalueOrCompileException()));
+                    l.add(new ExpressionStatement(this.parseExpression()));
                 } while (this.peekRead(","));
 
                 Block b = new Block(a.getLocation());
@@ -2209,8 +2209,7 @@ class Parser {
 
         this.read(";");
 
-        Rvalue condition = null;
-        if (!this.peek(";")) condition = this.parseExpression().toRvalueOrCompileException();
+        Rvalue condition = this.peek(";") ? null : this.parseExpression();
 
         this.read(";");
 
@@ -2239,7 +2238,7 @@ class Parser {
         this.read("while");
 
         this.read("(");
-        Rvalue condition = this.parseExpression().toRvalueOrCompileException();
+        Rvalue condition = this.parseExpression();
         this.read(")");
 
         return new WhileStatement(
@@ -2263,7 +2262,7 @@ class Parser {
 
         this.read("while");
         this.read("(");
-        final Rvalue condition = this.parseExpression().toRvalueOrCompileException();
+        final Rvalue condition = this.parseExpression();
         this.read(")");
         this.read(";");
 
@@ -2357,7 +2356,7 @@ class Parser {
 
         Location   loc       = this.location();
         Modifier[] modifiers = this.parseModifiers();
-        Atom       a         = this.parseExpression();
+        Atom       a         = this.parseExpressionOrType();
 
         if (modifiers.length > 0 || this.peek(TokenType.IDENTIFIER)) {
 
@@ -2400,7 +2399,7 @@ class Parser {
         this.read("switch");
 
         this.read("(");
-        final Rvalue condition = this.parseExpression().toRvalueOrCompileException();
+        final Rvalue condition = this.parseExpression();
         this.read(")");
 
         this.read("{");
@@ -2413,7 +2412,7 @@ class Parser {
             List<Rvalue> caseLabels      = new ArrayList<Rvalue>();
             do {
                 if (this.peekRead("case")) {
-                    caseLabels.add(this.parseExpression().toRvalueOrCompileException());
+                    caseLabels.add(this.parseExpression());
                 } else
                 if (this.peekRead("default")) {
                     if (hasDefaultLabel) throw this.compileException("Duplicate \"default\" label");
@@ -2450,7 +2449,7 @@ class Parser {
         final Location location = this.location();
         this.read("synchronized");
         this.read("(");
-        Rvalue expression = this.parseExpression().toRvalueOrCompileException();
+        Rvalue expression = this.parseExpression();
         this.read(")");
         return new SynchronizedStatement(
             location,         // location
@@ -2468,7 +2467,7 @@ class Parser {
     parseReturnStatement() throws CompileException, IOException {
         final Location location = this.location();
         this.read("return");
-        Rvalue returnValue = this.peek(";") ? null : this.parseExpression().toRvalueOrCompileException();
+        Rvalue returnValue = this.peek(";") ? null : this.parseExpression();
         this.read(";");
         return new ReturnStatement(location, returnValue);
     }
@@ -2482,7 +2481,7 @@ class Parser {
     parseThrowStatement() throws CompileException, IOException {
         final Location location = this.location();
         this.read("throw");
-        final Rvalue expression = this.parseExpression().toRvalueOrCompileException();
+        final Rvalue expression = this.parseExpression();
         this.read(";");
 
         return new ThrowStatement(location, expression);
@@ -2528,8 +2527,8 @@ class Parser {
         this.read("assert");
         Location loc = this.location();
 
-        Rvalue expression1 = this.parseExpression().toRvalueOrCompileException();
-        Rvalue expression2 = this.peekRead(":") ? this.parseExpression().toRvalueOrCompileException() : null;
+        Rvalue expression1 = this.parseExpression();
+        Rvalue expression2 = this.peekRead(":") ? this.parseExpression() : null;
         this.read(";");
 
         return new AssertStatement(loc, expression1, expression2);
@@ -2556,7 +2555,7 @@ class Parser {
     parseExpressionList() throws CompileException, IOException {
         List<Rvalue> l = new ArrayList<Rvalue>();
         do {
-            l.add(this.parseExpression().toRvalueOrCompileException());
+            l.add(this.parseExpression());
         } while (this.peekRead(","));
         return (Rvalue[]) l.toArray(new Rvalue[l.size()]);
     }
@@ -2720,13 +2719,30 @@ class Parser {
      *   Notice that all other kinds of lambda expressions are parsed in {@link #parsePrimary()}.
      * </p>
      */
-    public Atom
-    parseExpression() throws CompileException, IOException  {
+    public Rvalue
+    parseExpression() throws CompileException, IOException {
 
         if (this.peek(TokenType.IDENTIFIER) && this.peekNextButOne("->")) return this.parseLambdaExpression();
 
-        return this.parseAssignmentExpression();
+        return this.parseAssignmentExpression().toRvalueOrCompileException();
     }
+
+    /**
+     * Same as {@link #parseExpression()}, but types like {@code int} or {@code Map<String, Object} are also parsed.
+     */
+    public Atom
+    parseExpressionOrType() throws CompileException, IOException {
+
+        if (this.peek(TokenType.IDENTIFIER) && this.peekNextButOne("->")) return this.parseLambdaExpression();
+
+        this.preferParametrizedTypes = true;
+        try {
+            return this.parseAssignmentExpression();
+        } finally {
+            this.preferParametrizedTypes = false;
+        }
+    }
+    private boolean preferParametrizedTypes;
 
     /**
      * <pre>
@@ -2764,7 +2780,7 @@ class Parser {
         Location location = this.location();
 
         Rvalue lhs = a.toRvalueOrCompileException();
-        Rvalue mhs = this.parseExpression().toRvalueOrCompileException();
+        Rvalue mhs = this.parseExpression();
         this.read(":");
         Rvalue rhs = this.parseConditionalExpression().toRvalueOrCompileException();
         return new ConditionalExpression(location, lhs, mhs, rhs);
@@ -2922,8 +2938,9 @@ class Parser {
             } else
             if (this.peek("<", ">", "<=", ">=") != -1) {
 
-                // ambiguous-name '<' '?' ...
-                if (a instanceof AmbiguousName && this.peek("<") && this.peekNextButOne("?")) {
+                if (this.preferParametrizedTypes && a instanceof AmbiguousName && this.peek("<") && this.peekNextButOne("?")) {
+
+                    // ambiguous-name '<' '?' ...
                     return new ReferenceType(
                         this.location(),
                         new Annotation[0],
@@ -2936,35 +2953,40 @@ class Parser {
 
                 Atom rhs = this.parseShiftExpression();
 
-                if ("<".equals(operator) && a instanceof AmbiguousName) {
+                if (
+                    this.preferParametrizedTypes
+                    && "<".equals(operator)
+                    && this.peek("<", ">", ",") != -1
+                    && a instanceof AmbiguousName
+                    && rhs.toType() != null
+                ) {
+                    final String[] identifiers = ((AmbiguousName) a).identifiers;
 
-                    if (this.peek("<", ">", ",") != -1) {
-                        final String[] identifiers = ((AmbiguousName) a).identifiers;
-
-                        // '<' ShiftExpression [ TypeArguments ] ( '<' | '>' | ',' )
-                        this.parseTypeArgumentsOpt();
+                    // '<' Type [ TypeArguments ] ( '>' | ',' )
+                    this.parseTypeArgumentsOpt();
+                    TypeArgument firstTypeArgument;
+                    {
                         Type t = rhs.toTypeOrCompileException();
 
-                        TypeArgument ta;
-                        if (t instanceof ArrayType)     { ta = (ArrayType)     t; } else
-                        if (t instanceof ReferenceType) { ta = (ReferenceType) t; } else
+                        if (t instanceof ArrayType)     { firstTypeArgument = (ArrayType)     t; } else
+                        if (t instanceof ReferenceType) { firstTypeArgument = (ReferenceType) t; } else
                         {
                             throw this.compileException("'" + t + "' is not a valid type argument");
                         }
-
-                        List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
-                        typeArguments.add(ta);
-                        while (this.read(">", ",") == 1) {
-                            typeArguments.add(this.parseTypeArgument());
-                        }
-
-                        return new ReferenceType(
-                            this.location(),
-                            new Annotation[0],
-                            identifiers,
-                            (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
-                        );
                     }
+
+                    List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
+                    typeArguments.add(firstTypeArgument);
+
+                    // < type-argument { ',' type-argument } '>'
+                    while (this.read(">", ",") == 1) typeArguments.add(this.parseTypeArgument());
+
+                    return new ReferenceType(
+                        this.location(),
+                        new Annotation[0],
+                        identifiers,
+                        (TypeArgument[]) typeArguments.toArray(new TypeArgument[typeArguments.size()])
+                    );
                 }
 
                 a = new BinaryOperation(
@@ -3142,6 +3164,9 @@ class Parser {
      *     'void' '.' 'class' |                    // ClassLiteral 15.8.2
      *     MethodReference                         // MethodReference JLS9 15.13
      *
+     *   Name :=
+     *     Identifier { '.' Identifier }
+     *
      *   CastExpression :=
      *     '(' PrimitiveType { '[]' } ')' UnaryExpression |
      *     '(' Expression ')' UnaryExpression
@@ -3177,7 +3202,7 @@ class Parser {
                 );
             }
 
-            // '(' ')'
+            // '(' ')' '->' LambdaBody
             if (this.peekRead(")")) {
                 LambdaParameters parameters = new FormalLambdaParameters(new FormalParameters(this.location()));
                 Location         loc        = this.location();
@@ -3188,7 +3213,7 @@ class Parser {
             Atom a;
             if (this.peek(TokenType.IDENTIFIER) && (this.peekNextButOne(",") || this.peekNextButOne(")"))) {
 
-                // '(' Identifier { ',' Identifier } ')' ->
+                // '(' Identifier { ',' Identifier } ')' -> LambdaBody
                 String[] names;
                 {
                     List<String> l = new ArrayList<String>();
@@ -3201,6 +3226,7 @@ class Parser {
                 if (this.peek(")") && this.peekNextButOne("->")) {
                     this.read();
                     this.read();
+
                     return new LambdaExpression(
                         loc,
                         new InferredLambdaParameters(names),
@@ -3211,7 +3237,7 @@ class Parser {
                 if (names.length != 1) throw this.compileException("Lambda expected");
                 a = new AmbiguousName(loc, new String[] { names[0] });
             } else {
-                a = this.parseExpression();
+                a = this.parseExpressionOrType();
             }
 
             // '(' FormalParameterList ')'
@@ -3252,8 +3278,10 @@ class Parser {
         }
 
         if (this.peek(TokenType.IDENTIFIER)) {
-            String[] qi       = this.parseQualifiedIdentifier();
+            String[] qi = this.parseQualifiedIdentifier();
+
             if (this.peek("(")) {
+
                 // Name Arguments
                 return new MethodInvocation(
                     this.location(),                           // location
@@ -3267,8 +3295,7 @@ class Parser {
                 );
             }
             if (this.peek("[") && this.peekNextButOne("]")) {
-                // Name '[]' { '[]' }
-                // Name '[]' { '[]' } '.' 'class'
+
                 Type res = new ReferenceType(
                     this.location(),   // location
                     new Annotation[0], // annotations
@@ -3278,14 +3305,19 @@ class Parser {
                 int brackets = this.parseBracketsOpt();
                 for (int i = 0; i < brackets; ++i) res = new ArrayType(res);
                 if (this.peek(".") && this.peekNextButOne("class")) {
+
+                    // Name '[]' { '[]' } '.' 'class'
                     this.read();
                     Location location2 = this.location();
                     this.read();
                     return new ClassLiteral(location2, res);
                 } else {
+
+                    // Name '[]' { '[]' }
                     return res;
                 }
             }
+
             // Name
             return new AmbiguousName(
                 this.location(), // location
@@ -3297,8 +3329,7 @@ class Parser {
             Location location = this.location();
             if (this.peek("(")) {
 
-                // 'this' Arguments
-                // Alternate constructor invocation (JLS7 8.8.7.1).
+                // 'this' Arguments           (JLS7 8.8.7.1 Alternate constructor invocation)
                 return new AlternateConstructorInvocation(
                     location,             // location
                     this.parseArguments() // arguments
@@ -3314,8 +3345,7 @@ class Parser {
         if (this.peekRead("super")) {
             if (this.peek("(")) {
 
-                // 'super' Arguments
-                // Unqualified superclass constructor invocation (JLS7 8.8.7.1).
+                // 'super' Arguments              (JLS7 8.8.7.1 Unqualified superclass constructor invocation)
                 return new SuperConstructorInvocation(
                     this.location(),      // location
                     (Rvalue) null,        // qualification
@@ -3326,7 +3356,7 @@ class Parser {
             String name = this.read(TokenType.IDENTIFIER);
             if (this.peek("(")) {
 
-                // 'super' '.' Identifier Arguments
+                // 'super' '.' Identifier Arguments              Superclass method invocation
                 return new SuperclassMethodInvocation(
                     this.location(),      // location
                     name,                 // methodName
@@ -3334,7 +3364,7 @@ class Parser {
                 );
             } else {
 
-                // 'super' '.' Identifier
+                // 'super' '.' Identifier                        Superclass field access
                 return new SuperclassFieldAccessExpression(
                     this.location(), // location
                     (Type) null,     // qualification
@@ -3392,12 +3422,14 @@ class Parser {
             int  brackets = this.parseBracketsOpt();
             for (int i = 0; i < brackets; ++i) res = new ArrayType(res);
             if (this.peek(".") && this.peekNextButOne("class")) {
+
                 // PrimitiveType { '[]' } '.' 'class'
                 this.read();
                 Location location = this.location();
                 this.read();
                 return new ClassLiteral(location, res);
             }
+
             // PrimitiveType { '[]' }
             return res;
         }
@@ -3405,6 +3437,7 @@ class Parser {
         // 'void'
         if (this.peekRead("void")) {
             if (this.peek(".") && this.peekNextButOne("class")) {
+
                 // 'void' '.' 'class'
                 this.read();
                 Location location = this.location();
@@ -3548,7 +3581,7 @@ class Parser {
         if (this.peekRead("[")) {
             // '[' Expression ']'
             Location location = this.location();
-            Rvalue   index    = this.parseExpression().toRvalueOrCompileException();
+            Rvalue   index    = this.parseExpression();
             this.read("]");
             return new ArrayAccessExpression(
                 location,                          // location
@@ -3582,7 +3615,7 @@ class Parser {
     public Rvalue
     parseDimExpr() throws CompileException, IOException {
         this.read("[");
-        Rvalue res = this.parseExpression().toRvalueOrCompileException();
+        Rvalue res = this.parseExpression();
         this.read("]");
         return res;
     }
@@ -3608,10 +3641,10 @@ class Parser {
      */
     public Rvalue[]
     parseArgumentList() throws CompileException, IOException {
+
         List<Rvalue> l = new ArrayList<Rvalue>();
-        do {
-            l.add(this.parseExpression().toRvalueOrCompileException());
-        } while (this.peekRead(","));
+        do { l.add(this.parseExpression()); } while (this.peekRead(","));
+
         return (Rvalue[]) l.toArray(new Rvalue[l.size()]);
     }
 
@@ -3702,7 +3735,7 @@ class Parser {
         return (
             this.peek("{")
             ? new BlockLambdaBody(this.parseBlock())
-            : new ExpressionLambdaBody(this.parseExpression().toRvalueOrCompileException())
+            : new ExpressionLambdaBody(this.parseExpression())
         );
     }
 
@@ -3713,7 +3746,7 @@ class Parser {
      */
     public Statement
     parseExpressionStatement() throws CompileException, IOException {
-        Rvalue rv = this.parseExpression().toRvalueOrCompileException();
+        Rvalue rv = this.parseExpression();
         this.read(";");
 
         return new ExpressionStatement(rv);

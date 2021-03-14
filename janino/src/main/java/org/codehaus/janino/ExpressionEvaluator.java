@@ -497,7 +497,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
             Parser   parser = parsers[i];
 
             // Parse the expression.
-            Java.Rvalue value = parser.parseExpression().toRvalueOrCompileException();
+            Java.Rvalue value = parser.parseExpression();
 
             Java.BlockStatement statement;
             if (et == void.class) {
@@ -738,7 +738,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         while (parser.peek("import")) parser.parseImportDeclaration();
 
         // Parse the expression.
-        Java.Rvalue rvalue = parser.parseExpression().toRvalueOrCompileException();
+        Java.Rvalue rvalue = parser.parseExpression();
         if (!parser.peek(TokenType.END_OF_INPUT)) {
             throw new CompileException("Unexpected token \"" + parser.peek() + "\"", scanner.location());
         }

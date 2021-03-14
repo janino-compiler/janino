@@ -1035,7 +1035,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         // It's either a non-final local variable declaration or an expression statement, or a non-void method
         // declaration. We can only tell after parsing an expression.
 
-        Atom a = parser.parseExpression();
+        Atom a = parser.parseExpressionOrType();
 
         // Expression ';'
         if (parser.peekRead(";")) {

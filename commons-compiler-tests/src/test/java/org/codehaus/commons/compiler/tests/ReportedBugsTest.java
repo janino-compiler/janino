@@ -1211,6 +1211,15 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         Assert.assertNotNull(s.getClassLoader().loadClass("issue126.Test").getConstructor().newInstance());
     }
 
+    @Test public void
+    testIssue144() throws Exception {
+        this.assertScriptCookable("int a = 7, b = 5; Object o = new Object[] { a,     b     };");
+        this.assertScriptCookable("int a = 7, b = 5; Object o = new Object[] { a < b, b     };");
+        this.assertScriptCookable("int a = 7, b = 5; Object o = new Object[] { a,     b > a };");
+        this.assertScriptCookable("int a = 7, b = 5; Object o = new Object[] { a < b, b > a };");
+        this.assertScriptCookable("import java.util.Map; Map<Long, Long> a;");
+    }
+
     public ClassLoader
     compile(ClassLoader parentClassLoader, CompileUnit... compileUnits) {
 
