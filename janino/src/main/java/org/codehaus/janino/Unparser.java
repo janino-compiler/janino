@@ -700,45 +700,15 @@ class Unparser {
 
         @Override @Nullable public Void
         visitType(Type t) {
-            t.accept(new Visitor.TypeVisitor<Void, RuntimeException>() {
-
-                @Override @Nullable public Void
-                visitArrayType(ArrayType at) {
-                    Unparser.this.unparseType(at.componentType);
-                    Unparser.this.pw.print("[]");
-                    return null;
-                }
-
-                @Override @Nullable public Void
-                visitPrimitiveType(PrimitiveType bt) {
-                    Unparser.this.pw.print(bt.toString());
-                    return null;
-                }
-
-                @Override @Nullable public Void
-                visitReferenceType(ReferenceType rt) {
-                    Unparser.this.unparseAnnotations(rt.annotations);
-                    Unparser.this.pw.print(rt.toString());
-                    return null;
-                }
-
-                @Override @Nullable public Void
-                visitRvalueMemberType(RvalueMemberType rmt) {
-                    Unparser.this.pw.print(rmt.toString());
-                    return null;
-                }
-
-                @Override @Nullable public Void
-                visitSimpleType(SimpleType st) {
-                    Unparser.this.pw.print(st.toString());
-                    return null;
-                }
-            });
+            Unparser.this.unparseType(t);
             return null;
         }
 
         @Override @Nullable public Void
-        visitPackage(Package p) { Unparser.this.pw.print(p.toString()); return null; }
+        visitPackage(Package p) {
+            Unparser.this.pw.print(p.toString());
+            return null;
+        }
 
         @Override @Nullable public Void
         visitRvalue(Rvalue rv) {
@@ -750,6 +720,42 @@ class Unparser {
         visitConstructorInvocation(ConstructorInvocation ci) {
             Unparser.this.unparseBlockStatement(ci);
             Unparser.this.pw.println(';');
+            return null;
+        }
+    };
+
+    private final Visitor.TypeVisitor<Void, RuntimeException>
+    typeUnparser = new Visitor.TypeVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitArrayType(ArrayType at) {
+            Unparser.this.unparseType(at.componentType);
+            Unparser.this.pw.print("[]");
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitPrimitiveType(PrimitiveType bt) {
+            Unparser.this.pw.print(bt.toString());
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitReferenceType(ReferenceType rt) {
+            Unparser.this.unparseAnnotations(rt.annotations);
+            Unparser.this.pw.print(rt.toString());
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitRvalueMemberType(RvalueMemberType rmt) {
+            Unparser.this.pw.print(rmt.toString());
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitSimpleType(SimpleType st) {
+            Unparser.this.pw.print(st.toString());
             return null;
         }
     };
@@ -1157,6 +1163,41 @@ class Unparser {
         }
     };
 
+    private final Visitor.FunctionDeclaratorVisitor<Void, RuntimeException>
+    functionDeclaratorUnparser = new Visitor.FunctionDeclaratorVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitConstructorDeclarator(ConstructorDeclarator cd) {
+            Unparser.this.unparseConstructorDeclarator(cd);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitMethodDeclarator(MethodDeclarator md) {
+            Unparser.this.unparseMethodDeclarator(md);
+            return null;
+        }
+    };
+
+    private final Visitor.TryStatementResourceVisitor<Void, RuntimeException>
+    resourceUnparser = new Visitor.TryStatementResourceVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) {
+            Unparser.this.unparseModifiers(lvdr.modifiers);
+            Unparser.this.unparseType(lvdr.type);
+            Unparser.this.pw.print(' ');
+            Unparser.this.unparseVariableDeclarator(lvdr.variableDeclarator);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitVariableAccessResource(VariableAccessResource var) {
+            Unparser.this.unparseAtom(var.variableAccess);
+            return null;
+        }
+    };
+
     private void
     unparseInitializer(Initializer i) {
         this.unparseModifiers(i.getModifiers());
@@ -1407,7 +1448,7 @@ class Unparser {
     unparseTypeDeclaration(TypeDeclaration td) { td.accept(this.typeDeclarationUnparser); }
 
     public void
-    unparseType(Type t) { t.accept(this.atomUnparser); }
+    unparseType(Type t) { t.accept(this.typeUnparser); }
 
     public void
     unparseAtom(Atom a) { a.accept(this.atomUnparser); }
@@ -1836,39 +1877,12 @@ class Unparser {
 
     private void
     unparseFunctionDeclarator(FunctionDeclarator fd) {
-
-        fd.accept(new Visitor.FunctionDeclaratorVisitor<Void, RuntimeException>() {
-
-            @Override @Nullable public Void
-            visitConstructorDeclarator(ConstructorDeclarator cd) {
-                Unparser.this.unparseConstructorDeclarator(cd); return null;
-            }
-
-            @Override @Nullable public Void
-            visitMethodDeclarator(MethodDeclarator md) { Unparser.this.unparseMethodDeclarator(md); return null; }
-        });
+        fd.accept(this.functionDeclaratorUnparser);
     }
 
     private void
     unparseResource(TryStatement.Resource r) {
-
-        r.accept(new Visitor.TryStatementResourceVisitor<Void, RuntimeException>() {
-
-            @Override @Nullable public Void
-            visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) {
-                Unparser.this.unparseModifiers(lvdr.modifiers);
-                Unparser.this.unparseType(lvdr.type);
-                Unparser.this.pw.print(' ');
-                Unparser.this.unparseVariableDeclarator(lvdr.variableDeclarator);
-                return null;
-            }
-
-            @Override @Nullable public Void
-            visitVariableAccessResource(VariableAccessResource var) {
-                Unparser.this.unparseAtom(var.variableAccess);
-                return null;
-            }
-        });
+        r.accept(this.resourceUnparser);
     }
 
     private void
