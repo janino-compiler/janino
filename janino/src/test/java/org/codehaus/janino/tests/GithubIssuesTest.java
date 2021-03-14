@@ -180,19 +180,19 @@ class GithubIssuesTest {
         )).parseAbstractCompilationUnit();
 
         // Parse the "user expression".
-        final Rvalue userExpression = (
-            new Parser(new Scanner(
-                null,
+        final Rvalue userExpression;
+        {
+            Scanner s = new Scanner(
+                null,             // fileName
                 new StringReader( // Line numbers will appear in stack traces.
                     ""
                     + "\n"
                     + "\n"
                     + "java.nio.charset.Charset.forName(\"kkk\")\n" // <= Causes an UnsupportedCharsetException
                 )
-            ))
-            .parseExpression()
-            .toRvalueOrCompileException()
-        );
+            );
+            userExpression = new Parser(s).parseExpression();
+        }
 
         // Merge the framework code with the user expression.
         cu = new DeepCopier() {
