@@ -45,32 +45,55 @@ class CompilerFactoryFactory {
     @Nullable private static ICompilerFactory defaultCompilerFactory;
 
     /**
-     * Finds the first implementation of {@code org.codehaus.commons.compiler} on the class path, then loads and
-     * instantiates its {@link ICompilerFactory}.
+     * Equivalent with {@code getDefaultCompilerFactory(Thread.currentThread().getContextClassLoader())}.
+     * The context class loader is typically a bad choice, because frameworks use (abuse?) the context class loader
+     * for different purposes, which causes problems in individual contexts.
      *
-     * @return           The {@link ICompilerFactory} of the first implementation on the class path
+     * @deprecated Use {@link #getDefaultCompilerFactory(ClassLoader)} instead
+     * @see        <a href="https://stackoverflow.com/a/36228195">Context class loaders are for cases where you forgot
+     *             to pass an explicit class loader parameter</a>
+     */
+    @Deprecated public static ICompilerFactory
+    getDefaultCompilerFactory() throws Exception {
+        return CompilerFactoryFactory.getDefaultCompilerFactory(Thread.currentThread().getContextClassLoader());
+    }
+
+    /**
+     * Finds the first implementation of {@code org.codehaus.commons.compiler} through the <var>classLoader</var>, then
+     * loads and instantiates the implementation's {@link ICompilerFactory}.
+     * <p>
+     *   If the implementation is on the application class path (which is the case for probably 99% of all
+     *   environments), then the correct class loader to use would be {@link System#getSystemClassLoader()}.
+     * </p>
+     *
+     * @return           The {@link ICompilerFactory} of the first implementation that was loaded
      * @throws Exception Many things can go wrong while finding and initializing the default compiler factory
      */
     public static ICompilerFactory
-    getDefaultCompilerFactory() throws Exception {
+    getDefaultCompilerFactory(ClassLoader classLoader) throws Exception {
+
         if (CompilerFactoryFactory.defaultCompilerFactory != null) {
             return CompilerFactoryFactory.defaultCompilerFactory;
         }
-        Properties  properties = new Properties();
-        InputStream is         = Thread.currentThread().getContextClassLoader().getResourceAsStream(
-            "org.codehaus.commons.compiler.properties"
-        );
-        if (is == null) {
-            throw new ClassNotFoundException(
-                "No implementation of org.codehaus.commons.compiler is on the class path. Typically, you'd have "
-                + "'janino.jar', or 'commons-compiler-jdk.jar', or both on the classpath."
-            );
+
+        Properties properties;
+        {
+            InputStream is = classLoader.getResourceAsStream("org.codehaus.commons.compiler.properties");
+            if (is == null) {
+                throw new ClassNotFoundException(
+                    "No implementation of org.codehaus.commons.compiler could be loaded."
+                    + " Typically, you'd have  \"janino.jar\", or \"commons-compiler-jdk.jar\","
+                    + " or both on the classpath, and use the \"ClassLoader.getSystemClassLoader\" to load them."
+                );
+            }
+            try {
+                properties = new Properties();
+                properties.load(is);
+            } finally {
+                is.close();
+            }
         }
-        try {
-            properties.load(is);
-        } finally {
-            is.close();
-        }
+
         String compilerFactoryClassName = properties.getProperty("compilerFactory");
 
         return (
@@ -80,17 +103,35 @@ class CompilerFactoryFactory {
     }
 
     /**
-     * Finds all implementation of {@code org.codehaus.commons.compiler} on the class path, then loads and
-     * instantiates their {@link ICompilerFactory}s.
+     * Equivalent with {@code getAllCompilerFactories(Thread.currentThread().getContextClassLoader())}.
+     * The context class loader is typically a bad choice, because frameworks use (abuse?) the context class loader
+     * for different purposes, which causes problems in individual contexts.
      *
-     * @return           The {@link ICompilerFactory}s of all implementations on the class path
-     * @throws Exception Many things can go wrong while finding and initializing compiler factories
+     * @deprecated Use {@link #getAllCompilerFactories(ClassLoader)} instead
+     * @see        <a href="https://stackoverflow.com/a/36228195">Context class loaders are for cases where you forgot
+     *             to pass an explicit class loader parameter</a>
+     */
+    @Deprecated public static ICompilerFactory[]
+    getAllCompilerFactories() throws Exception {
+        return CompilerFactoryFactory.getAllCompilerFactories(Thread.currentThread().getContextClassLoader());
+    }
+
+    /**
+     * Finds all implementation of {@code org.codehaus.commons.compiler} through the <var>classLoader</var>, then loads
+     * and instantiates the implementations' {@link ICompilerFactory}s.
+     * <p>
+     *   If the implementations are on the application class path (which is the case for probably 99% of all
+     *   environments), then the correct class loader to use would be {@link System#getSystemClassLoader()}.
+     * </p>
+     *
+     * @return           The {@link ICompilerFactory}s of all implementations that were loaded
+     * @throws Exception Many things can go wrong while finding and initializing the default compiler factory
      */
     public static ICompilerFactory[]
-    getAllCompilerFactories() throws Exception {
-        ClassLoader            cl        = Thread.currentThread().getContextClassLoader();
+    getAllCompilerFactories(ClassLoader classLoader) throws Exception {
+
         List<ICompilerFactory> factories = new ArrayList<ICompilerFactory>();
-        for (Enumeration<URL> en = cl.getResources("org.codehaus.commons.compiler.properties"); en.hasMoreElements();) {
+        for (Enumeration<URL> en = classLoader.getResources("org.codehaus.commons.compiler.properties"); en.hasMoreElements();) {
             URL url = (URL) en.nextElement();
 
             Properties properties;
@@ -115,17 +156,39 @@ class CompilerFactoryFactory {
     }
 
     /**
-     * Loads an {@link ICompilerFactory} by class name.
+     * Equivalent with {@link #getCompilerFactory(String, ClassLoader)
+     * getCompilerFactory(Thread.currentThread().getContextClassLoader())}.
+     * <p>
+     *   If the implementation is on the application class path (which is the case for probably 99% of all
+     *   environments), then the correct class loader to use would be {@link System#getSystemClassLoader()}.
+     * </p>
+     *
+     * @param compilerFactoryClassName Name of a class that implements {@link ICompilerFactory}
+     * @throws Exception               Many things can go wrong while finding and initializing the default compiler
+     *                                 factory
+     */
+    @Deprecated public static ICompilerFactory
+    getCompilerFactory(String compilerFactoryClassName) throws Exception {
+        return CompilerFactoryFactory.getCompilerFactory(
+            compilerFactoryClassName,
+            Thread.currentThread().getContextClassLoader()
+        );
+    }
+
+    /**
+     * Loads an {@link ICompilerFactory} implementation by class name.
+     * <p>
+     *   If the implementation is on the application class path (which is the case for probably 99% of all
+     *   environments), then the correct class loader to use would be {@link System#getSystemClassLoader()}.
+     * </p>
      *
      * @param compilerFactoryClassName Name of a class that implements {@link ICompilerFactory}
      * @throws Exception               Many things can go wrong while loading and initializing the default compiler
      *                                 factory
      */
     public static ICompilerFactory
-    getCompilerFactory(String compilerFactoryClassName) throws Exception {
-        return (ICompilerFactory) Thread.currentThread().getContextClassLoader().loadClass(
-            compilerFactoryClassName
-        ).newInstance();
+    getCompilerFactory(String compilerFactoryClassName, ClassLoader classLoader) throws Exception {
+        return (ICompilerFactory) classLoader.loadClass(compilerFactoryClassName).newInstance();
     }
 
     /**
