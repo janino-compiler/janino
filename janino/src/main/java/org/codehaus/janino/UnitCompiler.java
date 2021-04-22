@@ -11748,7 +11748,7 @@ class UnitCompiler {
      * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
      */
     private void
-    ifNumeric(Locatable locatable, String op, int opIdx, Offset dst) {
+    ifNumeric(Locatable locatable, String origOp, int opIdx, Offset dst) {
         assert opIdx >= UnitCompiler.EQ && opIdx <= UnitCompiler.LE;
 
         VerificationTypeInfo topOperand = this.getCodeContext().peekOperand();
@@ -11761,7 +11761,7 @@ class UnitCompiler {
             || topOperand == StackMapTableAttribute.FLOAT_VARIABLE_INFO
             || topOperand == StackMapTableAttribute.DOUBLE_VARIABLE_INFO
         ) {
-            this.cmp(locatable, op);
+            this.cmp(locatable, origOp);
             this.ifxx(locatable, opIdx, dst);
         } else
         {
@@ -11856,7 +11856,7 @@ class UnitCompiler {
      * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
      */
     private void
-    cmp(Locatable locatable, String op) {
+    cmp(Locatable locatable, String origOp) {
         VerificationTypeInfo operand2 = this.getCodeContext().currentInserter().getStackMap().peekOperand();
         this.getCodeContext().popOperand();
         VerificationTypeInfo operand1 = this.getCodeContext().currentInserter().getStackMap().peekOperand();
@@ -11866,10 +11866,10 @@ class UnitCompiler {
             this.write(Opcode.LCMP);
         } else
         if (operand1 == StackMapTableAttribute.FLOAT_VARIABLE_INFO && operand2 == StackMapTableAttribute.FLOAT_VARIABLE_INFO) {
-            this.write(op == ">" || op == ">=" ? Opcode.FCMPL : Opcode.FCMPG);
+            this.write(origOp == ">" || origOp == ">=" ? Opcode.FCMPL : Opcode.FCMPG);
         } else
         if (operand1 == StackMapTableAttribute.DOUBLE_VARIABLE_INFO && operand2 == StackMapTableAttribute.DOUBLE_VARIABLE_INFO) {
-            this.write(op == ">" || op == ">=" ? Opcode.DCMPL : Opcode.DCMPG);
+            this.write(origOp == ">" || origOp == ">=" ? Opcode.DCMPL : Opcode.DCMPG);
         } else
         {
             throw new AssertionError(operand1 + " and " + operand2);
