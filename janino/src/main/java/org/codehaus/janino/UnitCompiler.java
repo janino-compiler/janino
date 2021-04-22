@@ -4389,7 +4389,7 @@ class UnitCompiler {
                 this.compileGetValue(bo.rhs);
                 this.numericPromotion(bo.rhs, this.convertToPrimitiveNumericType(bo.rhs, rhsType), promotedType);
 
-                this.ifNumeric(bo, bo.operator, opIdx, dst);
+                this.ifNumeric(bo, opIdx, dst);
                 return;
             }
 
@@ -11748,21 +11748,21 @@ class UnitCompiler {
      * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
      */
     private void
-    ifNumeric(Locatable locatable, String origOp, int opIdx, Offset dst) {
+    ifNumeric(BinaryOperation bo, int opIdx, Offset dst) {
         assert opIdx >= UnitCompiler.EQ && opIdx <= UnitCompiler.LE;
 
         VerificationTypeInfo topOperand = this.getCodeContext().peekOperand();
 
         if (topOperand == StackMapTableAttribute.INTEGER_VARIABLE_INFO) {
-            this.if_icmpxx(locatable, opIdx, dst);
+            this.if_icmpxx(bo, opIdx, dst);
         } else
         if (
             topOperand == StackMapTableAttribute.LONG_VARIABLE_INFO
             || topOperand == StackMapTableAttribute.FLOAT_VARIABLE_INFO
             || topOperand == StackMapTableAttribute.DOUBLE_VARIABLE_INFO
         ) {
-            this.cmp(locatable, origOp);
-            this.ifxx(locatable, opIdx, dst);
+            this.cmp(bo, bo.operator);
+            this.ifxx(bo, opIdx, dst);
         } else
         {
             throw new InternalCompilerException("Unexpected computational type \"" + topOperand + "\"");
