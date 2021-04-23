@@ -4308,8 +4308,6 @@ class UnitCompiler {
             );
             if (opIdx == Integer.MIN_VALUE) break COMPARISON;
 
-            if (orientation == UnitCompiler.JUMP_IF_FALSE) opIdx ^= 1;
-
             // Comparison with "null".
             {
                 boolean lhsIsNull = this.getConstantValue(bo.lhs) == null;
@@ -4351,6 +4349,8 @@ class UnitCompiler {
                         this.consT(bo, (Object) null);
                     }
 
+                    if (orientation == UnitCompiler.JUMP_IF_FALSE) opIdx ^= 1;
+
                     switch (opIdx) {
 
                     case EQ:
@@ -4389,7 +4389,7 @@ class UnitCompiler {
                 this.compileGetValue(bo.rhs);
                 this.numericPromotion(bo.rhs, this.convertToPrimitiveNumericType(bo.rhs, rhsType), promotedType);
 
-                this.ifNumeric(bo, opIdx, dst);
+                this.ifNumeric(bo, opIdx, dst, orientation);
                 return;
             }
 
@@ -4418,7 +4418,7 @@ class UnitCompiler {
                     this.unboxingConversion(bo, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
                 }
 
-                this.if_icmpxx(bo, opIdx, dst);
+                this.if_icmpxx(bo, orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx, dst);
                 return;
             }
 
@@ -4435,7 +4435,7 @@ class UnitCompiler {
 
                 this.compileGetValue(bo.rhs);
 
-                this.if_acmpxx(bo, opIdx, dst);
+                this.if_acmpxx(bo, orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx, dst);
                 return;
             }
 
@@ -11748,21 +11748,21 @@ class UnitCompiler {
      * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
      */
     private void
-    ifNumeric(BinaryOperation bo, int opIdx, Offset dst) {
+    ifNumeric(Locatable locatable, int opIdx, Offset dst, boolean orientation) {
         assert opIdx >= UnitCompiler.EQ && opIdx <= UnitCompiler.LE;
 
         VerificationTypeInfo topOperand = this.getCodeContext().peekOperand();
 
         if (topOperand == StackMapTableAttribute.INTEGER_VARIABLE_INFO) {
-            this.if_icmpxx(bo, opIdx, dst);
+            this.if_icmpxx(locatable, orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx, dst);
         } else
         if (
             topOperand == StackMapTableAttribute.LONG_VARIABLE_INFO
             || topOperand == StackMapTableAttribute.FLOAT_VARIABLE_INFO
             || topOperand == StackMapTableAttribute.DOUBLE_VARIABLE_INFO
         ) {
-            this.cmp(bo, bo.operator);
-            this.ifxx(bo, opIdx, dst);
+            this.cmp(locatable, opIdx);
+            this.ifxx(locatable, orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx, dst);
         } else
         {
             throw new InternalCompilerException("Unexpected computational type \"" + topOperand + "\"");
@@ -11856,7 +11856,9 @@ class UnitCompiler {
      * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
      */
     private void
-    cmp(Locatable locatable, String origOp) {
+    cmp(Locatable locatable, int opIdx) {
+        assert opIdx >= UnitCompiler.EQ && opIdx <= UnitCompiler.LE;
+
         VerificationTypeInfo operand2 = this.getCodeContext().currentInserter().getStackMap().peekOperand();
         this.getCodeContext().popOperand();
         VerificationTypeInfo operand1 = this.getCodeContext().currentInserter().getStackMap().peekOperand();
@@ -11866,10 +11868,10 @@ class UnitCompiler {
             this.write(Opcode.LCMP);
         } else
         if (operand1 == StackMapTableAttribute.FLOAT_VARIABLE_INFO && operand2 == StackMapTableAttribute.FLOAT_VARIABLE_INFO) {
-            this.write(origOp == ">" || origOp == ">=" ? Opcode.FCMPL : Opcode.FCMPG);
+            this.write(opIdx == UnitCompiler.GE || opIdx == UnitCompiler.GT ? Opcode.FCMPL : Opcode.FCMPG);
         } else
         if (operand1 == StackMapTableAttribute.DOUBLE_VARIABLE_INFO && operand2 == StackMapTableAttribute.DOUBLE_VARIABLE_INFO) {
-            this.write(origOp == ">" || origOp == ">=" ? Opcode.DCMPL : Opcode.DCMPG);
+            this.write(opIdx == UnitCompiler.GE || opIdx == UnitCompiler.GT ? Opcode.DCMPL : Opcode.DCMPG);
         } else
         {
             throw new AssertionError(operand1 + " and " + operand2);
