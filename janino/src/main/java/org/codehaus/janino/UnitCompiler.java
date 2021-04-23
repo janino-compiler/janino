@@ -11746,6 +11746,7 @@ class UnitCompiler {
 
     /**
      * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
+     * @param orientation {@link #JUMP_IF_TRUE} or {@link #JUMP_IF_FALSE}
      */
     private void
     ifNumeric(Locatable locatable, int opIdx, Offset dst, boolean orientation) {
