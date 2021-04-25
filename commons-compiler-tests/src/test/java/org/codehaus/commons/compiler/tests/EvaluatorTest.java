@@ -368,8 +368,8 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         if (comp == "!=") { return lhs != rhs; }
         if (comp == "<")  { return lhs < rhs; }
         if (comp == "<=") { return lhs <= rhs; }
-        if (comp == ">")  { return lhs < rhs; }
-        if (comp == ">=") { return lhs <= rhs; }
+        if (comp == ">")  { return lhs > rhs; }
+        if (comp == ">=") { return lhs >= rhs; }
         throw new RuntimeException("Unsupported comparison");
     }
     public static boolean
@@ -379,14 +379,14 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
         if (comp == "!=") { return lhs != rhs; }
         if (comp == "<")  { return lhs < rhs; }
         if (comp == "<=") { return lhs <= rhs; }
-        if (comp == ">")  { return lhs < rhs; }
-        if (comp == ">=") { return lhs <= rhs; }
+        if (comp == ">")  { return lhs > rhs; }
+        if (comp == ">=") { return lhs >= rhs; }
         throw new RuntimeException("Unsupported comparison");
     }
 
     @Test public void
     testHandlingNaN() throws Exception {
-        String prog = (
+        String prog1 = (
             ""
             + "package test;\n"
             + "public class Test {\n"
@@ -395,8 +395,8 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             + "        if (comp == \"!=\") { return lhs != rhs; }\n"
             + "        if (comp == \"<\" ) { return lhs < rhs; }\n"
             + "        if (comp == \"<=\") { return lhs <= rhs; }\n"
-            + "        if (comp == \">\" ) { return lhs < rhs; }\n"
-            + "        if (comp == \">=\") { return lhs <= rhs; }\n"
+            + "        if (comp == \">\" ) { return lhs > rhs; }\n"
+            + "        if (comp == \">=\") { return lhs >= rhs; }\n"
             + "        throw new RuntimeException(\"Unsupported comparison\");\n"
             + "    }\n"
             + "    public static boolean compare(float lhs, float rhs, String comp) {\n"
@@ -404,55 +404,84 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             + "        if (comp == \"!=\") { return lhs != rhs; }\n"
             + "        if (comp == \"<\" ) { return lhs < rhs; }\n"
             + "        if (comp == \"<=\") { return lhs <= rhs; }\n"
-            + "        if (comp == \">\" ) { return lhs < rhs; }\n"
-            + "        if (comp == \">=\") { return lhs <= rhs; }\n"
+            + "        if (comp == \">\" ) { return lhs > rhs; }\n"
+            + "        if (comp == \">=\") { return lhs >= rhs; }\n"
             + "        throw new RuntimeException(\"Unsupported comparison\");\n"
             + "    }\n"
             + "}\n"
         );
-        ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
-        sc.cook(prog);
 
-        final Class<?>   c     = sc.getClassLoader().loadClass("test.Test");
-        final Method     dm    = c.getMethod("compare", new Class[] { double.class, double.class, String.class });
-        final Method     fm    = c.getMethod("compare", new Class[] { float.class, float.class, String.class });
-        final Double[][] argss = new Double[][] {
-            { new Double(Double.NaN), new Double(Double.NaN) },
-            { new Double(Double.NaN), new Double(1.0) },
-            { new Double(1.0), new Double(Double.NaN) },
-            { new Double(1.0), new Double(2.0) },
-            { new Double(2.0), new Double(1.0) },
-            { new Double(1.0), new Double(1.0) },
-        };
-        String[] operators = new String[] { "==", "!=", "<", "<=", ">", ">=" };
-        for (String operator : operators) {
-            for (Double[] args : argss) {
-                String msg = "\"" + args[0] + " " + operator + " " + args[1] + "\"";
-                {
-                    boolean exp = EvaluatorTest.compare(
-                        args[0].doubleValue(),
-                        args[1].doubleValue(),
-                        operator
-                    );
-                    Object[] objs   = new Object[] { args[0], args[1], operator };
-                    Object   actual = dm.invoke(null, objs);
-                    Assert.assertEquals(msg, exp, actual);
-                }
+        String prog2 = (
+            ""
+            + "package test;\n"
+            + "public class Test {\n"
+            + "    public static boolean compare(double lhs, double rhs, String comp) {\n"
+            + "        if (comp == \"==\") { if (lhs == rhs) { return true; } else { return false; } }\n"
+            + "        if (comp == \"!=\") { if (lhs != rhs) { return true; } else { return false; } }\n"
+            + "        if (comp == \"<\") { if (lhs < rhs) { return true; } else { return false; } }\n"
+            + "        if (comp == \"<=\") { if (lhs <= rhs) { return true; } else { return false; } }\n"
+            + "        if (comp == \">\") { if (lhs > rhs) { return true; } else { return false; } }\n"
+            + "        if (comp == \">=\") { if (lhs >= rhs) { return true; } else { return false; } }\n"
+            + "        throw new RuntimeException(\"Unsupported comparison\");\n"
+            + "    }\n"
+            + "    public static boolean compare(float lhs, float rhs, String comp) {\n"
+            + "        if (comp == \"==\") { if (lhs == rhs) { return true; } else { return false; } }\n"
+            + "        if (comp == \"!=\") { if (lhs != rhs) { return true; } else { return false; } }\n"
+            + "        if (comp == \"<\") { if (lhs < rhs) { return true; } else { return false; } }\n"
+            + "        if (comp == \"<=\") { if (lhs <= rhs) { return true; } else { return false; } }\n"
+            + "        if (comp == \">\") { if (lhs > rhs) { return true; } else { return false; } }\n"
+            + "        if (comp == \">=\") { if (lhs >= rhs) { return true; } else { return false; } }\n"
+            + "        throw new RuntimeException(\"Unsupported comparison\");\n"
+            + "    }\n"
+            + "}\n"
+        );
 
-                {
-                    msg = "float: " + msg;
-                    boolean exp = EvaluatorTest.compare(
-                        args[0].floatValue(),
-                        args[1].floatValue(),
-                        operator
-                    );
-                    Object[] objs = new Object[] {
-                        new Float(args[0].floatValue()),
-                        new Float(args[1].floatValue()),
-                        operator
-                    };
-                    Object actual = fm.invoke(null, objs);
-                    Assert.assertEquals(msg, exp, actual);
+        String[] progs = new String[] { prog1, prog2 };
+        for (String prog : progs) {
+            ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
+            sc.cook(prog);
+
+            final Class<?>   c     = sc.getClassLoader().loadClass("test.Test");
+            final Method     dm    = c.getMethod("compare", new Class[] { double.class, double.class, String.class });
+            final Method     fm    = c.getMethod("compare", new Class[] { float.class, float.class, String.class });
+            final Double[][] argss = new Double[][] {
+                { new Double(Double.NaN), new Double(Double.NaN) },
+                { new Double(Double.NaN), new Double(1.0) },
+                { new Double(1.0), new Double(Double.NaN) },
+                { new Double(1.0), new Double(2.0) },
+                { new Double(2.0), new Double(1.0) },
+                { new Double(1.0), new Double(1.0) },
+            };
+            String[] operators = new String[] { "==", "!=", "<", "<=", ">", ">=" };
+            for (String operator : operators) {
+                for (Double[] args : argss) {
+                    String msg = "\"" + args[0] + " " + operator + " " + args[1] + "\"";
+                    {
+                        boolean exp = EvaluatorTest.compare(
+                            args[0].doubleValue(),
+                            args[1].doubleValue(),
+                            operator
+                        );
+                        Object[] objs   = new Object[] { args[0], args[1], operator };
+                        Object   actual = dm.invoke(null, objs);
+                        Assert.assertEquals(msg, exp, actual);
+                    }
+
+                    {
+                        msg = "float: " + msg;
+                        boolean exp = EvaluatorTest.compare(
+                            args[0].floatValue(),
+                            args[1].floatValue(),
+                            operator
+                        );
+                        Object[] objs = new Object[] {
+                            new Float(args[0].floatValue()),
+                            new Float(args[1].floatValue()),
+                            operator
+                        };
+                        Object actual = fm.invoke(null, objs);
+                        Assert.assertEquals(msg, exp, actual);
+                    }
                 }
             }
         }

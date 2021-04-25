@@ -4308,8 +4308,6 @@ class UnitCompiler {
             );
             if (opIdx == Integer.MIN_VALUE) break COMPARISON;
 
-            if (orientation == UnitCompiler.JUMP_IF_FALSE) opIdx ^= 1;
-
             // Comparison with "null".
             {
                 boolean lhsIsNull = this.getConstantValue(bo.lhs) == null;
@@ -4351,6 +4349,8 @@ class UnitCompiler {
                         this.consT(bo, (Object) null);
                     }
 
+                    if (orientation == UnitCompiler.JUMP_IF_FALSE) opIdx ^= 1;
+
                     switch (opIdx) {
 
                     case EQ:
@@ -4389,7 +4389,7 @@ class UnitCompiler {
                 this.compileGetValue(bo.rhs);
                 this.numericPromotion(bo.rhs, this.convertToPrimitiveNumericType(bo.rhs, rhsType), promotedType);
 
-                this.ifNumeric(bo, opIdx, dst);
+                this.ifNumeric(bo, opIdx, dst, orientation);
                 return;
             }
 
@@ -4418,7 +4418,7 @@ class UnitCompiler {
                     this.unboxingConversion(bo, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
                 }
 
-                this.if_icmpxx(bo, opIdx, dst);
+                this.if_icmpxx(bo, orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx, dst);
                 return;
             }
 
@@ -4435,7 +4435,7 @@ class UnitCompiler {
 
                 this.compileGetValue(bo.rhs);
 
-                this.if_acmpxx(bo, opIdx, dst);
+                this.if_acmpxx(bo, orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx, dst);
                 return;
             }
 
@@ -11746,15 +11746,16 @@ class UnitCompiler {
 
     /**
      * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
+     * @param orientation {@link #JUMP_IF_TRUE} or {@link #JUMP_IF_FALSE}
      */
     private void
-    ifNumeric(Locatable locatable, int opIdx, Offset dst) {
+    ifNumeric(Locatable locatable, int opIdx, Offset dst, boolean orientation) {
         assert opIdx >= UnitCompiler.EQ && opIdx <= UnitCompiler.LE;
 
         VerificationTypeInfo topOperand = this.getCodeContext().peekOperand();
 
         if (topOperand == StackMapTableAttribute.INTEGER_VARIABLE_INFO) {
-            this.if_icmpxx(locatable, opIdx, dst);
+            this.if_icmpxx(locatable, orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx, dst);
         } else
         if (
             topOperand == StackMapTableAttribute.LONG_VARIABLE_INFO
@@ -11762,7 +11763,7 @@ class UnitCompiler {
             || topOperand == StackMapTableAttribute.DOUBLE_VARIABLE_INFO
         ) {
             this.cmp(locatable, opIdx);
-            this.ifxx(locatable, opIdx, dst);
+            this.ifxx(locatable, orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx, dst);
         } else
         {
             throw new InternalCompilerException("Unexpected computational type \"" + topOperand + "\"");
