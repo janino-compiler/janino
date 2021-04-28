@@ -1221,7 +1221,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    testPullRequestXX() throws Exception {
+    testPullRequest146() throws Exception {
         this.assertCompilationUnitCookable((
             ""
             + "public class JaninoTest {\n"
