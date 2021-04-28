@@ -1220,6 +1220,39 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         this.assertScriptCookable("import java.util.Map; Map<Long, Long> a;");
     }
 
+    @Test public void
+    testPullRequestXX() throws Exception {
+        this.assertCompilationUnitCookable((
+            ""
+            + "public class JaninoTest {\n"
+            + "    public int func(int v) {\n"
+            + "        long local_var0 = 0;\n"
+            + "        switch (v) {\n"
+            + "            case 0:\n"
+            + "                long local_var1 = 1;\n"
+            + "                local_var0 = local_var1;\n"
+            + "                break;\n"
+            + "\n"
+            + "            default:\n"
+            + "                long local_var2 = 2;\n"
+            + "                local_var0 = local_var2;\n"
+            + "                break;\n"
+            + "        }\n"
+            + "\n"
+            + "        long local_var3 = 1;\n"
+            + "        if (v % 4 == 0) {\n"
+            + "            local_var3 += 2;\n"
+            + "        }\n"
+            + "        if ((local_var0 + local_var3) % 2 == 0) {\n"
+            + "            return 0;\n"
+            + "        } else {\n"
+            + "            return 1;\n"
+            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        ));
+    }
+
     public ClassLoader
     compile(ClassLoader parentClassLoader, CompileUnit... compileUnits) {
 
