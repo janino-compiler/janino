@@ -4297,7 +4297,7 @@ class UnitCompiler {
 
         COMPARISON:
         {
-            int opIdx = (
+            final int opIdx = (
                 bo.operator == "==" ? UnitCompiler.EQ : // SUPPRESS CHECKSTYLE StringLiteralEquality
                 bo.operator == "!=" ? UnitCompiler.NE : // SUPPRESS CHECKSTYLE StringLiteralEquality
                 bo.operator == "<"  ? UnitCompiler.LT : // SUPPRESS CHECKSTYLE StringLiteralEquality
@@ -4349,9 +4349,7 @@ class UnitCompiler {
                         this.consT(bo, (Object) null);
                     }
 
-                    if (orientation == UnitCompiler.JUMP_IF_FALSE) opIdx ^= 1;
-
-                    switch (opIdx) {
+                    switch (orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx) {
 
                     case EQ:
                         this.ifnull(bo, dst);
@@ -11745,7 +11743,7 @@ class UnitCompiler {
     }
 
     /**
-     * @param opIdx One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
+     * @param opIdx       One of {@link #EQ}, {@link #NE}, {@link #LT}, {@link #GE}, {@link #GT} or {@link #LE}
      * @param orientation {@link #JUMP_IF_TRUE} or {@link #JUMP_IF_FALSE}
      */
     private void
@@ -11762,7 +11760,11 @@ class UnitCompiler {
             || topOperand == StackMapTableAttribute.FLOAT_VARIABLE_INFO
             || topOperand == StackMapTableAttribute.DOUBLE_VARIABLE_INFO
         ) {
+
+            // Important: The opIdx here must be the *original* opIdx (and not the possibly negated!), because that is
+            // important for floating-point comparison! See PR #145.
             this.cmp(locatable, opIdx);
+
             this.ifxx(locatable, orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx, dst);
         } else
         {
