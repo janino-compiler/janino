@@ -63,7 +63,7 @@ class CompilerFactoryFactory {
      * loads and instantiates the implementation's {@link ICompilerFactory}.
      * <p>
      *   If the implementation is on the application class path (which is the case for probably 99% of all
-     *   environments), then the correct class loader to use would be {@link System#getSystemClassLoader()}.
+     *   environments), then the correct class loader to use would be {@link ClassLoader#getSystemClassLoader()}.
      * </p>
      *
      * @return           The {@link ICompilerFactory} of the first implementation that was loaded
@@ -121,7 +121,7 @@ class CompilerFactoryFactory {
      * and instantiates the implementations' {@link ICompilerFactory}s.
      * <p>
      *   If the implementations are on the application class path (which is the case for probably 99% of all
-     *   environments), then the correct class loader to use would be {@link System#getSystemClassLoader()}.
+     *   environments), then the correct class loader to use would be {@link ClassLoader#getSystemClassLoader()}.
      * </p>
      *
      * @return           The {@link ICompilerFactory}s of all implementations that were loaded
@@ -160,7 +160,7 @@ class CompilerFactoryFactory {
      * getCompilerFactory(Thread.currentThread().getContextClassLoader())}.
      * <p>
      *   If the implementation is on the application class path (which is the case for probably 99% of all
-     *   environments), then the correct class loader to use would be {@link System#getSystemClassLoader()}.
+     *   environments), then the correct class loader to use would be {@link ClassLoader#getSystemClassLoader()}.
      * </p>
      *
      * @param compilerFactoryClassName Name of a class that implements {@link ICompilerFactory}
@@ -179,7 +179,7 @@ class CompilerFactoryFactory {
      * Loads an {@link ICompilerFactory} implementation by class name.
      * <p>
      *   If the implementation is on the application class path (which is the case for probably 99% of all
-     *   environments), then the correct class loader to use would be {@link System#getSystemClassLoader()}.
+     *   environments), then the correct class loader to use would be {@link ClassLoader#getSystemClassLoader()}.
      * </p>
      *
      * @param compilerFactoryClassName Name of a class that implements {@link ICompilerFactory}
