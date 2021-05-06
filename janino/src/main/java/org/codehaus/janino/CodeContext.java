@@ -232,7 +232,15 @@ class CodeContext {
         if (this.currentLocalScope != null) {
             StackMap sm = this.currentInserter.getStackMap();
             if (sm != null) {
-                while (sm.locals().length > this.allLocalVars.size()) sm = sm.popLocal();
+                int numLocalsInStackMap = 0;
+                for (VerificationTypeInfo slot : sm.locals()) {
+                    if (slot != StackMapTableAttribute.TOP_VARIABLE_INFO) {
+                        numLocalsInStackMap++;
+                    }
+                }
+                while (numLocalsInStackMap-- > this.allLocalVars.size()) {
+                    sm = sm.popLocal();
+                }
                 this.currentInserter.setStackMap(sm);
             }
         }
