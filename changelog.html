@@ -51,9 +51,26 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.1.4-SNAPSHOT (only available as source code)</h4>
+    <h4>Version 3.1.5-SNAPSHOT (only available as source code)</h4>
     <ul>
       <li>...</li>
+    </ul>
+
+    <h4>Version 3.1.4 2021-05-06</h4>
+    <ul>
+      <li>Fixed issue #146: Local variables are wrongly trimmed in a stack</li>
+      <li>Fixed issue #145: NaN comparisons are handled incorrectly</li>
+      <li>
+        Fixed issue #144: Can't parse a < b in some case: Made the parser modal: "a < b, c > d" is an expression list
+        in some contexts (array initializer, method invocation), and a variable declaration in others (block
+        statement).
+      </li>
+      <li>
+        Fixed issue #141: Unable to find org.codehaus.commons.compiler.properties in java 11: ICompilerFactories were
+        loaded through the current thread's "context class loader", which is a bad choice in some environments. Thus,
+        the methods "getDefaultCompilerFactory()", "getAllCompilerFactories()" and "getCompilerFactory(className)"
+        were duplicated and augmented with a "classLoader" parameter.
+      </li>      
     </ul>
 
     <h4>Version 3.1.3 2021-01-25</h4>
