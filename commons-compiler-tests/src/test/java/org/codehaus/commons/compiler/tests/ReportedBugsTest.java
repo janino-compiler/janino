@@ -30,6 +30,7 @@ package org.codehaus.commons.compiler.tests;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -1251,6 +1252,59 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}\n"
         ));
+    }
+
+    @Test public void
+    testPullRequestXXX() throws Exception {
+        ISimpleCompiler s = this.compilerFactory.newSimpleCompiler();
+        s.cook((""
+            + "class MyClass {\n"
+            + "    private boolean b1;\n"
+            + "\n"
+            + "    public MyClass(boolean b1) {\n"
+            + "        this.b1 = b1;\n"
+            + "    }\n"
+            + "\n"
+            + "    public Object func(Object i) {\n"
+            + "        final int value_0;\n"
+            + "        // The bug still exist if the if condition is 'true'.\n"
+            + "        // Here we use a variable to make the test more robust,\n"
+            + "        // in case the compiler can eliminate the else branch.\n"
+            + "        if (b1) {\n"
+            + "        } else {\n"
+            + "          int field_0 = 1;\n"
+            + "        }\n"
+            + "        // The second if-else is necessary to trigger the bug.\n"
+            + "        if (b1) {\n"
+            + "        } else {\n"
+            + "          // The bug disappear if it's an int variable.\n"
+            + "          long field_1 = 2;\n"
+            + "        }\n"
+            + "        value_0 = 1;\n"
+            + "\n"
+            + "        // The second final variable is necessary to trigger the bug.\n"
+            + "        final int value_2;\n"
+            + "        if (b1) {\n"
+            + "        } else {\n"
+            + "          int field_2 = 3;\n"
+            + "        }\n"
+            + "        value_2 = 2;\n"
+            + "\n"
+            + "        return null;\n"
+            + "    }\n"
+            + "}\n"
+            + "\n"
+            + "public class JaninoTest {\n"
+            + "    public static Object main() {\n"
+            + "        MyClass c = new MyClass(true);\n"
+            + "        return c.func(null);\n"
+            + "    }\n"
+            + "}\n"
+        ));
+
+        Class clazz = s.getClassLoader().loadClass("JaninoTest");
+        Method m = clazz.getDeclaredMethod("main");
+        Assert.assertNull(m.invoke(null));
     }
 
     public ClassLoader

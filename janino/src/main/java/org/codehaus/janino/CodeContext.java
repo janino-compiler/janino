@@ -228,25 +228,26 @@ class CodeContext {
 
         this.currentLocalScope = scopeToPop.parent;
 
-        // Truncate the stack map.
+        // reuse local variable slots of the popped scope
+        this.nextLocalVariableSlot = scopeToPop.startingLocalVariableSlot;
+
+        // To truncate the stack map, it removes local variables
+        // indicated by the popped scope.
         if (this.currentLocalScope != null) {
             StackMap sm = this.currentInserter.getStackMap();
-            if (sm != null) {
-                int numLocalsInStackMap = 0;
+            if (sm != null && sm.locals().length > 0) {
+                int numActiveSlots = 0;
+                int nextLvIndex = 0;
                 for (VerificationTypeInfo slot : sm.locals()) {
-                    if (slot != StackMapTableAttribute.TOP_VARIABLE_INFO) {
-                        numLocalsInStackMap++;
-                    }
+                    if (nextLvIndex >= this.nextLocalVariableSlot) break;
+                    nextLvIndex += slot.category();
+                    numActiveSlots += 1;
                 }
-                while (numLocalsInStackMap-- > this.allLocalVars.size()) {
-                    sm = sm.popLocal();
-                }
+                int numRemovedSlots = sm.locals().length - numActiveSlots;
+                while (numRemovedSlots-- > 0) sm = sm.popLocal();
                 this.currentInserter.setStackMap(sm);
             }
         }
-
-        // reuse local variable slots of the popped scope
-        this.nextLocalVariableSlot = scopeToPop.startingLocalVariableSlot;
     }
 
     /**
