@@ -1255,7 +1255,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    testPullRequestXXX() throws Exception {
+    testPullRequest148() throws Exception {
         ISimpleCompiler s = this.compilerFactory.newSimpleCompiler();
         s.cook((""
             + "class MyClass {\n"
