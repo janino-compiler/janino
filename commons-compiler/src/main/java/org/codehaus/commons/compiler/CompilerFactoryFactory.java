@@ -45,7 +45,7 @@ class CompilerFactoryFactory {
     @Nullable private static ICompilerFactory defaultCompilerFactory;
 
     /**
-     * Equivalent with {@code getDefaultCompilerFactory(Thread.currentThread().getContextClassLoader())}.
+     * Equivalent with {@code getDefaultCompilerFactory(CompilerFactoryFactory.class.getClassLoader())}.
      * The context class loader is typically a bad choice, because frameworks use (abuse?) the context class loader
      * for different purposes, which causes problems in individual contexts.
      *
@@ -55,7 +55,7 @@ class CompilerFactoryFactory {
      */
     @Deprecated public static ICompilerFactory
     getDefaultCompilerFactory() throws Exception {
-        return CompilerFactoryFactory.getDefaultCompilerFactory(Thread.currentThread().getContextClassLoader());
+        return CompilerFactoryFactory.getDefaultCompilerFactory(CompilerFactoryFactory.class.getClassLoader());
     }
 
     /**
@@ -98,7 +98,7 @@ class CompilerFactoryFactory {
 
         return (
             CompilerFactoryFactory.defaultCompilerFactory
-            = CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName)
+            = CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName, classLoader)
         );
     }
 
@@ -150,14 +150,14 @@ class CompilerFactoryFactory {
                 throw new IllegalStateException(url.toString() + " does not specify the 'compilerFactory' property");
             }
 
-            factories.add(CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName));
+            factories.add(CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName, classLoader));
         }
         return (ICompilerFactory[]) factories.toArray(new ICompilerFactory[factories.size()]);
     }
 
     /**
      * Equivalent with {@link #getCompilerFactory(String, ClassLoader)
-     * getCompilerFactory(Thread.currentThread().getContextClassLoader())}.
+     * getCompilerFactory(CompilerFactoryFactory.class.getClassLoader())}.
      * <p>
      *   If the implementation is on the application class path (which is the case for probably 99% of all
      *   environments), then the correct class loader to use would be {@link ClassLoader#getSystemClassLoader()}.
@@ -171,7 +171,7 @@ class CompilerFactoryFactory {
     getCompilerFactory(String compilerFactoryClassName) throws Exception {
         return CompilerFactoryFactory.getCompilerFactory(
             compilerFactoryClassName,
-            Thread.currentThread().getContextClassLoader()
+            CompilerFactoryFactory.class.getClassLoader()
         );
     }
 
