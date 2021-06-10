@@ -103,7 +103,7 @@ class CompilerFactoryFactory {
     }
 
     /**
-     * Equivalent with {@code getAllCompilerFactories(Thread.currentThread().getContextClassLoader())}.
+     * Equivalent with {@code getAllCompilerFactories(CompilerFactoryFactory.class.getClassLoader())}.
      * The context class loader is typically a bad choice, because frameworks use (abuse?) the context class loader
      * for different purposes, which causes problems in individual contexts.
      *
@@ -113,7 +113,7 @@ class CompilerFactoryFactory {
      */
     @Deprecated public static ICompilerFactory[]
     getAllCompilerFactories() throws Exception {
-        return CompilerFactoryFactory.getAllCompilerFactories(Thread.currentThread().getContextClassLoader());
+        return CompilerFactoryFactory.getAllCompilerFactories(CompilerFactoryFactory.class.getClassLoader());
     }
 
     /**
