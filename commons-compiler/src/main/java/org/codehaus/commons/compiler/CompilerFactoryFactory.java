@@ -98,7 +98,7 @@ class CompilerFactoryFactory {
 
         return (
             CompilerFactoryFactory.defaultCompilerFactory
-            = CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName)
+            = CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName, classLoader)
         );
     }
 
@@ -150,7 +150,7 @@ class CompilerFactoryFactory {
                 throw new IllegalStateException(url.toString() + " does not specify the 'compilerFactory' property");
             }
 
-            factories.add(CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName));
+            factories.add(CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName, classLoader));
         }
         return (ICompilerFactory[]) factories.toArray(new ICompilerFactory[factories.size()]);
     }
