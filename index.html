@@ -263,7 +263,6 @@
                 with the "<code>-ea</code>" command line option)
               </li>
               <li><code>StringBuilder</code> class used for string concatenation</li>
-              <li>Type arguments (e.g. <code>List&lt;String&gt;</code>) are parsed, but otherwise ignored</li>
             </ul>
           </li>
 
@@ -272,7 +271,8 @@
             <ul>
               <li>Declaration of parameterized types</li>
               <li>
-                Type arguments: Are parsed, but otherwise ignored. The most significant restriction that follows is
+                Type arguments (e.g. <code>List&lt;String&gt;</code>):
+                Are parsed, but otherwise ignored. The most significant restriction that follows is
                 that you must cast return values from method invocations, e.g. "<code>(String) myMap.get(key)</code>"
               </li>
               <li>Enhanced <code>for</code> statement</li>
