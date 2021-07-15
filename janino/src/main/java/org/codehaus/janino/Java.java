@@ -6226,6 +6226,9 @@ class Java {
         @Nullable private final IClass type;
         @Nullable private Offset       start, end;
 
+        /**
+         * @param slotNumber (two slots for LONG and DOUBLE local variables)
+         */
         public
         LocalVariableSlot(@Nullable String name, short slotNumber, @Nullable IClass type) {
             this.name      = name;
@@ -6252,7 +6255,8 @@ class Java {
         }
 
         /**
-         * @return The "local variable index" associated with this local variable
+         * @return The "local variable index" associated with this local variable (two slots for LONG and DOUBLE local
+         *         variables)
          */
         public short getSlotIndex() { return this.slotIndex; }
 
@@ -6347,7 +6351,7 @@ class Java {
         public void setSlot(LocalVariableSlot slot) { this.slot = slot; }
 
         /**
-         * @return The slot reserved for this local variable
+         * @return The slot reserved for this local variable (two slots for LONG and DOUBLE local variables)
          */
         public short
         getSlotIndex() {
