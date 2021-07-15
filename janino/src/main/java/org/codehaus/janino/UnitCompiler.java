@@ -12399,7 +12399,7 @@ class UnitCompiler {
     }
 
     /**
-     * Assigns top stack top value to the given local variable.
+     * Assigns the top operand to the given local variable.
      */
     private void
     store(Locatable locatable, LocalVariable localVariable) {
@@ -12409,6 +12409,10 @@ class UnitCompiler {
             localVariable.getSlotIndex() // lvIndex
         );
     }
+
+    /**
+     * @param lvIndex (two slots for LONG and DOUBLE local variables)
+     */
     private void
     store(Locatable locatable, IClass lvType, short lvIndex) {
         this.addLineNumberOffset(locatable);
@@ -13195,6 +13199,9 @@ class UnitCompiler {
         return (short) ((accessFlags & ~(Mod.PUBLIC | Mod.PROTECTED | Mod.PRIVATE)) | newAccessibility);
     }
 
+    /**
+     * @param lvIndex (two slots for LONG and DOUBLE local variables)
+     */
     private VerificationTypeInfo
     getLocalVariableTypeInfo(short lvIndex) {
 
@@ -13210,25 +13217,51 @@ class UnitCompiler {
     private void
     updateLocalVariableInCurrentStackMap(short lvIndex, VerificationTypeInfo vti) {
 
-        final Inserter ci = this.getCodeContext().currentInserter();
+        final Inserter         ci     = this.getCodeContext().currentInserter();
+        VerificationTypeInfo[] locals = ci.getStackMap().locals();
 
         int nextLvIndex = 0;
-        final VerificationTypeInfo[] locals = ci.getStackMap().locals();
         for (int i = 0; i < locals.length; i++) {
             VerificationTypeInfo vti2 = locals[i];
+
             if (nextLvIndex == lvIndex) {
-                if (vti.equals(vti2)) return;
-                locals[i] = vti;
+
+                if (vti.equals(vti2)) { // Replace VTI with equal VTI?
+                    return;
+                }
+
+                if (vti2.category() == vti.category()) { // Replace VTI with VTI of same category?
+                    locals[i] = vti;
+                } else
+                if (vti2.category() == 1 && vti.category() == 2) { // Replace two category 1 VTIs with one category 2 VTI?
+                    assert locals[i + 1].category() == 1;
+                    locals[i] = vti;
+                    System.arraycopy(locals, i + 2, locals, i + 1, locals.length - i - 2);
+                    locals = (VerificationTypeInfo[]) Arrays.copyOf(locals, locals.length - 1);
+                } else
+                if (vti2.category() == 2 && vti.category() == 1) { // Replace one category 2 VTI with two category 1 VTIs?
+                    locals = (VerificationTypeInfo[]) Arrays.copyOf(locals, locals.length + 1);
+                    System.arraycopy(locals, i + 1, locals, i + 2, locals.length - i - 2);
+                    locals[i] = vti;
+                    locals[i + 1] = StackMapTableAttribute.TOP_VARIABLE_INFO;
+                } else
+                {
+                    throw new AssertionError(vti2.category() + " vs. " + vti.category());
+                }
+
                 ci.setStackMap(new StackMap(locals, ci.getStackMap().operands()));
                 return;
             }
             nextLvIndex += vti2.category();
         }
+
         assert nextLvIndex <= lvIndex;
+
         while (nextLvIndex < lvIndex) {
             ci.setStackMap(ci.getStackMap().pushLocal(StackMapTableAttribute.TOP_VARIABLE_INFO));
             nextLvIndex++;
         }
+
         ci.setStackMap(ci.getStackMap().pushLocal(vti));
     }
 
