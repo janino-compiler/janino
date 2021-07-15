@@ -1398,7 +1398,7 @@ class CodeContext {
             assert expectedFd.equals(Descriptor.VOID) : expectedFd;
         } else
         if (vti instanceof StackMapTableAttribute.ObjectVariableInfo) {
-            assert Descriptor.isReference(expectedFd) : expectedFd;
+            assert Descriptor.isReference(expectedFd) : expectedFd + " vs. " + vti;
 
             final ObjectVariableInfo ovi = (StackMapTableAttribute.ObjectVariableInfo) vti;
             final ConstantClassInfo  cci = this.classFile.getConstantClassInfo(ovi.getConstantClassInfoIndex());
