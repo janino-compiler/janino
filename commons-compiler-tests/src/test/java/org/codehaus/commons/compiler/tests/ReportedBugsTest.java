@@ -1261,8 +1261,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             "double  a;\n" +       // <= Must be LONG or DOUBLE, and must not be initialized.
             "boolean b;\n" +       // <= Must be declared *after* "a".
             "b = true; a = 1;\n" + // <= In *that* order.
-            "if (b) {\n" +
-            "}\n"
+            "System.out.println(b);//if (b) {}\n"
         ));
     }
 
