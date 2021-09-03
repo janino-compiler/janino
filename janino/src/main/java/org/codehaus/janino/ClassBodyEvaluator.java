@@ -324,7 +324,7 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     makeImportDeclarations(@Nullable Parser parser) throws CompileException, IOException {
 
         List<Java.AbstractCompilationUnit.ImportDeclaration>
-        l = new ArrayList<Java.AbstractCompilationUnit.ImportDeclaration>();
+        l = new ArrayList<>();
 
         // Honor the default imports.
         for (String defaultImport : this.defaultImports) {

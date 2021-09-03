@@ -464,7 +464,7 @@ class Descriptor {
 
     private static final Map<String, String> DESCRIPTOR_TO_CLASSNAME;
     static {
-        Map<String, String> m = new HashMap<String, String>();
+        Map<String, String> m = new HashMap<>();
 
         m.put(Descriptor.VOID, "void");
 
@@ -512,7 +512,7 @@ class Descriptor {
     private static final Map<String, String> CLASS_NAME_TO_DESCRIPTOR;
 
     static {
-        Map<String, String> m = new HashMap<String, String>();
+        Map<String, String> m = new HashMap<>();
         for (Map.Entry<String, String> e : Descriptor.DESCRIPTOR_TO_CLASSNAME.entrySet()) {
             m.put(e.getValue(), e.getKey());
         }

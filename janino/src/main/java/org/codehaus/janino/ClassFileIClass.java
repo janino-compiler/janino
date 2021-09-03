@@ -63,7 +63,7 @@ class ClassFileIClass extends IClass {
     private final IClassLoader iClassLoader;
     private final short        accessFlags;
 
-    private final Map<ClassFile.FieldInfo, IField> resolvedFields = new HashMap<ClassFile.FieldInfo, IField>();
+    private final Map<ClassFile.FieldInfo, IField> resolvedFields = new HashMap<>();
 
     /**
      * @param classFile Source of data
@@ -82,7 +82,7 @@ class ClassFileIClass extends IClass {
 
     @Override protected IConstructor[]
     getDeclaredIConstructors2() {
-        List<IInvocable> iConstructors = new ArrayList<IInvocable>();
+        List<IInvocable> iConstructors = new ArrayList<>();
 
         for (ClassFile.MethodInfo mi : this.classFile.methodInfos) {
             IInvocable ii;
@@ -99,7 +99,7 @@ class ClassFileIClass extends IClass {
 
     @Override protected IMethod[]
     getDeclaredIMethods2() {
-        List<IMethod> iMethods = new ArrayList<IMethod>();
+        List<IMethod> iMethods = new ArrayList<>();
 
         for (ClassFile.MethodInfo mi : this.classFile.methodInfos) {
 
@@ -137,7 +137,7 @@ class ClassFileIClass extends IClass {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return new IClass[0];
 
-        List<IClass> res = new ArrayList<IClass>();
+        List<IClass> res = new ArrayList<>();
         for (ClassFile.InnerClassesAttribute.Entry e : ica.getEntries()) {
             if (e.outerClassInfoIndex == this.classFile.thisClass) {
                 try {
@@ -257,7 +257,7 @@ class ClassFileIClass extends IClass {
     private IAnnotation
     toIAnnotation(final ClassFile.Annotation annotation) throws CompileException {
 
-        final Map<String, Object> evps2 = new HashMap<String, Object>();
+        final Map<String, Object> evps2 = new HashMap<>();
         for (Entry<Short, ClassFile.ElementValue> e : annotation.elementValuePairs.entrySet()) {
             Short                  elementNameIndex = (Short) e.getKey();
             ClassFile.ElementValue elementValue     = (ClassFile.ElementValue) e.getValue();
@@ -420,7 +420,7 @@ class ClassFileIClass extends IClass {
         this.resolvedClasses.put(descriptor, result);
         return result;
     }
-    private final Map<String /*descriptor*/, IClass> resolvedClasses = new HashMap<String, IClass>();
+    private final Map<String /*descriptor*/, IClass> resolvedClasses = new HashMap<>();
 
     private IClass[]
     resolveClasses(short[] ifs) throws CompileException {
@@ -538,7 +538,7 @@ class ClassFileIClass extends IClass {
     }
 
     private final Map<ClassFile.MethodInfo, IInvocable>
-    resolvedMethods = new HashMap<ClassFile.MethodInfo, IInvocable>();
+    resolvedMethods = new HashMap<>();
 
     private IField
     resolveField(final ClassFile.FieldInfo fieldInfo) throws ClassNotFoundException {

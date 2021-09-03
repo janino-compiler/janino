@@ -324,7 +324,7 @@ class UnitCompiler {
         if (this.generatedClassFiles != null) {
             throw new IllegalStateException("\"UnitCompiler.compileUnit()\" is not reentrant");
         }
-        final List<ClassFile> gcfs = (this.generatedClassFiles = new ArrayList<ClassFile>());
+        final List<ClassFile> gcfs = (this.generatedClassFiles = new ArrayList<>());
         try {
 
             this.abstractCompilationUnit.accept(new AbstractCompilationUnitVisitor<Void, CompileException>() {
@@ -555,7 +555,7 @@ class UnitCompiler {
             cf.addDeprecatedAttribute();
         }
 
-        List<BlockStatement> classInitializationStatements = new ArrayList<BlockStatement>();
+        List<BlockStatement> classInitializationStatements = new ArrayList<>();
 
         if (cd instanceof EnumDeclaration) {
             EnumDeclaration ed = (EnumDeclaration) cd;
@@ -1026,7 +1026,7 @@ class UnitCompiler {
 
         // Interface initialization method.
         if (!id.constantDeclarations.isEmpty()) {
-            List<BlockStatement> statements = new ArrayList<BlockStatement>();
+            List<BlockStatement> statements = new ArrayList<>();
             statements.addAll(id.constantDeclarations);
 
             this.maybeCreateInitMethod(id, cf, statements);
@@ -1075,7 +1075,7 @@ class UnitCompiler {
     private void
     compileAnnotations(Annotation[] annotations, Annotatable target, final ClassFile cf) throws CompileException {
 
-        final Set<IClass> seenAnnotations = new HashSet<IClass>();
+        final Set<IClass> seenAnnotations = new HashSet<>();
         ANNOTATIONS: for (final Annotation a : annotations) {
             Type          annotationType        = a.getType();
             IClass        annotationIClass      = this.getType(annotationType);
@@ -1113,7 +1113,7 @@ class UnitCompiler {
             }
 
             // Compile the annotation's element-value-pairs.
-            final Map<Short, ClassFile.ElementValue> evps = new HashMap<Short, ClassFile.ElementValue>();
+            final Map<Short, ClassFile.ElementValue> evps = new HashMap<>();
             a.accept(new Visitor.AnnotationVisitor<Void, CompileException>() {
 
                 @Override @Nullable public Void
@@ -1235,7 +1235,7 @@ class UnitCompiler {
                     );
 
                     final Map<Short, ClassFile.ElementValue>
-                    evps = new HashMap<Short, ClassFile.ElementValue>();
+                    evps = new HashMap<>();
                     a.accept(new AnnotationVisitor<Void, CompileException>() {
 
                         @Override @Nullable public Void
@@ -2012,7 +2012,7 @@ class UnitCompiler {
         }
 
         // Prepare the map of case labels to code offsets.
-        TreeMap<Integer, CodeContext.Offset> caseLabelMap       = new TreeMap<Integer, CodeContext.Offset>();
+        TreeMap<Integer, CodeContext.Offset> caseLabelMap       = new TreeMap<>();
         CodeContext.Offset                   defaultLabelOffset = null;
         CodeContext.Offset[]                 sbsgOffsets        = new CodeContext.Offset[ss.sbsgs.size()];
         for (int i = 0; i < ss.sbsgs.size(); ++i) {
@@ -2168,7 +2168,7 @@ class UnitCompiler {
 
                 offset.set();
 
-                Set<String> caseLabelValues = new HashSet<String>();
+                Set<String> caseLabelValues = new HashSet<>();
                 for (int i = 0; i < ss.sbsgs.size(); i++) {
                     SwitchBlockStatementGroup sbsg = (SwitchBlockStatementGroup) ss.sbsgs.get(i);
 
@@ -3315,7 +3315,7 @@ class UnitCompiler {
         {
             if (fd.thrownExceptions.length > 0) {
                 final short eani    = classFile.addConstantUtf8Info("Exceptions");
-                List<Short> tecciis = new ArrayList<Short>(); // new short[fd.thrownExceptions.length];
+                List<Short> tecciis = new ArrayList<>(); // new short[fd.thrownExceptions.length];
                 for (int i = 0; i < fd.thrownExceptions.length; ++i) {
                     final Type te = fd.thrownExceptions[i];
                     if (te instanceof ReferenceType) {
@@ -3641,7 +3641,7 @@ class UnitCompiler {
 
     private void
     buildLocalVariableMap(FunctionDeclarator fd) throws CompileException {
-        Map<String, LocalVariable> localVars = new HashMap<String, LocalVariable>();
+        Map<String, LocalVariable> localVars = new HashMap<>();
 
         // Add function parameters.
         for (int i = 0; i < fd.formalParameters.parameters.length; ++i) {
@@ -3761,7 +3761,7 @@ class UnitCompiler {
     private void
     buildLocalVariableMap(ForEachStatement fes, final Map<String, LocalVariable> localVars)
     throws CompileException {
-        Map<String, LocalVariable> vars = new HashMap<String, LocalVariable>();
+        Map<String, LocalVariable> vars = new HashMap<>();
         vars.putAll(localVars);
         LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
         vars.put(fes.currentElement.name, elementLv);
@@ -3828,7 +3828,7 @@ class UnitCompiler {
     private Map<String, LocalVariable>
     buildLocalVariableMap(LocalVariableDeclarationStatement lvds, final Map<String, LocalVariable> localVars)
     throws CompileException {
-        Map<String, LocalVariable> newVars = new HashMap<String, LocalVariable>();
+        Map<String, LocalVariable> newVars = new HashMap<>();
         newVars.putAll(localVars);
         for (VariableDeclarator vd : lvds.variableDeclarators) {
             LocalVariable      lv = this.getLocalVariable(lvds, vd);
@@ -3845,7 +3845,7 @@ class UnitCompiler {
      */
     protected void
     buildLocalVariableMap(CatchClause catchClause, Map<String, LocalVariable> localVars) throws CompileException {
-        Map<String, LocalVariable> vars = new HashMap<String, LocalVariable>();
+        Map<String, LocalVariable> vars = new HashMap<>();
         vars.putAll(localVars);
         LocalVariable lv = this.getLocalVariable(catchClause.catchParameter);
         vars.put(catchClause.catchParameter.name, lv);
@@ -5506,7 +5506,7 @@ class UnitCompiler {
         IClass[]         scpts = superclassIConstructor.getParameterTypes();
         FormalParameters parameters;
         {
-            List<FormalParameter> l = new ArrayList<FormalParameter>();
+            List<FormalParameter> l = new ArrayList<>();
 
             // Pass the enclosing instance of the base class as parameter #1.
             if (qualification != null) l.add(new FormalParameter(
@@ -5915,7 +5915,7 @@ class UnitCompiler {
         ) {
 
             // Unroll the constant operands.
-            List<Object> cvs = new ArrayList<Object>();
+            List<Object> cvs = new ArrayList<>();
             for (Iterator<Rvalue> it = bo.unrollLeftAssociation(); it.hasNext();) {
                 Object cv = this.getConstantValue((Rvalue) it.next());
                 if (cv == UnitCompiler.NOT_CONSTANT) return UnitCompiler.NOT_CONSTANT;
@@ -6923,7 +6923,7 @@ class UnitCompiler {
     private List<Object>
     importStaticOnDemand(String simpleName) throws CompileException {
 
-        List<Object> result = new ArrayList<Object>();
+        List<Object> result = new ArrayList<>();
         for (StaticImportOnDemandDeclaration siodd : Iterables.filterByClass(
             this.abstractCompilationUnit.importDeclarations,
             StaticImportOnDemandDeclaration.class
@@ -7948,7 +7948,7 @@ class UnitCompiler {
         this.stringConversion(locatable, type);
 
         // Compute list of operands and merge consecutive constant operands.
-        List<Rvalue> tmp = new ArrayList<Rvalue>();
+        List<Rvalue> tmp = new ArrayList<>();
         for (Rvalue nextOperand = secondOperand; nextOperand != null;) {
             Object cv = this.getConstantValue(nextOperand);
             if (cv == UnitCompiler.NOT_CONSTANT) {
@@ -8479,7 +8479,7 @@ class UnitCompiler {
                 private IAnnotation
                 toIAnnotation(final Type type, ElementValuePair[] elementValuePairs) throws CompileException {
 
-                    final Map<String, Object> m = new HashMap<String, Object>();
+                    final Map<String, Object> m = new HashMap<>();
                     for (ElementValuePair evp : elementValuePairs) {
                         m.put(evp.identifier, this.toObject(evp.elementValue));
                     }
@@ -8968,7 +8968,7 @@ class UnitCompiler {
     private List<Object>
     importSingleStatic(String simpleName) throws CompileException {
 
-        List<Object> result = new ArrayList<Object>();
+        List<Object> result = new ArrayList<>();
         for (SingleStaticImportDeclaration ssid : Iterables.filterByClass(
             this.abstractCompilationUnit.importDeclarations,
             SingleStaticImportDeclaration.class
@@ -9233,7 +9233,7 @@ class UnitCompiler {
     findIMethod(IClass targetType, Invocation invocation) throws CompileException {
 
         // Get all methods.
-        List<IClass.IMethod> ms = new ArrayList<IClass.IMethod>();
+        List<IClass.IMethod> ms = new ArrayList<>();
         this.getIMethods(targetType, invocation.methodName, ms);
 
         // Interfaces inherit the methods declared in 'Object'.
@@ -9440,8 +9440,8 @@ class UnitCompiler {
         }
 
         // Select applicable methods (15.12.2.1).
-        List<IClass.IInvocable> applicableIInvocables = new ArrayList<IClass.IInvocable>();
-        List<IClass.IInvocable> varargApplicables     = new ArrayList<IClass.IInvocable>();
+        List<IClass.IInvocable> applicableIInvocables = new ArrayList<>();
+        List<IClass.IInvocable> varargApplicables     = new ArrayList<>();
 
         NEXT_METHOD:
         for (IClass.IInvocable ii : iInvocables) {
@@ -9545,7 +9545,7 @@ class UnitCompiler {
         if (applicableIInvocables.size() == 0) return null;
 
         // 15.12.2.5. Determine the "maximally specific invocables".
-        List<IClass.IInvocable> maximallySpecificIInvocables = new ArrayList<IClass.IInvocable>();
+        List<IClass.IInvocable> maximallySpecificIInvocables = new ArrayList<>();
         for (IClass.IInvocable applicableIInvocable : applicableIInvocables) {
             int moreSpecific = 0, lessSpecific = 0;
             for (IClass.IInvocable mostSpecificIInvocable : maximallySpecificIInvocables) {
@@ -9640,7 +9640,7 @@ class UnitCompiler {
 
             // JLS7 15.12.2.2.BL2.B1.B2
             // Check "that exception [te1] is declared in the THROWS clause of each of the maximally specific methods".
-            Set<IClass> s = new HashSet<IClass>();
+            Set<IClass> s = new HashSet<>();
             {
                 IClass[][]                  tes = new IClass[maximallySpecificIInvocables.size()][];
                 Iterator<IClass.IInvocable> it  = maximallySpecificIInvocables.iterator();
@@ -9910,7 +9910,7 @@ class UnitCompiler {
 
             @Override protected IClass.IMethod[]
             getDeclaredIMethods2() {
-                List<IClass.IMethod> res = new ArrayList<IClass.IMethod>(atd.getMethodDeclarations().size());
+                List<IClass.IMethod> res = new ArrayList<>(atd.getMethodDeclarations().size());
                 for (MethodDeclarator md : atd.getMethodDeclarations()) {
                     res.add(UnitCompiler.this.toIMethod(md));
                 }
@@ -10023,7 +10023,7 @@ class UnitCompiler {
             getDeclaredIFields2() {
                 if (atd instanceof AbstractClassDeclaration) {
                     AbstractClassDeclaration cd = (AbstractClassDeclaration) atd;
-                    List<IClass.IField>      l  = new ArrayList<IClass.IField>();
+                    List<IClass.IField>      l  = new ArrayList<>();
 
                     // Determine variable declarators of type declaration.
                     for (FieldDeclaration fd : Iterables.filterByClass(
@@ -10053,7 +10053,7 @@ class UnitCompiler {
                 } else
                 if (atd instanceof InterfaceDeclaration) {
                     InterfaceDeclaration id = (InterfaceDeclaration) atd;
-                    List<IClass.IField>  l  = new ArrayList<IClass.IField>();
+                    List<IClass.IField>  l  = new ArrayList<>();
 
                     // Determine static fields.
                     for (FieldDeclaration fd : Iterables.filterByClass(
@@ -10261,7 +10261,7 @@ class UnitCompiler {
      */
     private static List<TypeDeclaration>
     getOuterClasses(TypeDeclaration inner) {
-        List<TypeDeclaration> path = new ArrayList<TypeDeclaration>();
+        List<TypeDeclaration> path = new ArrayList<>();
         for (TypeDeclaration ic = inner; ic != null; ic = UnitCompiler.getOuterClass(ic)) path.add(ic);
         return path;
     }
@@ -10389,7 +10389,7 @@ class UnitCompiler {
                     return super.getDescriptor2();
                 }
 
-                List<String> parameterFds = new ArrayList<String>();
+                List<String> parameterFds = new ArrayList<>();
 
                 // Convert enclosing instance reference into prepended constructor parameters.
                 IClass outerClass = UnitCompiler.this.resolve(
@@ -10520,7 +10520,7 @@ class UnitCompiler {
             @Override public IClass[]
             getThrownExceptions2() throws CompileException {
 
-                List<IClass> result = new ArrayList<IClass>();
+                List<IClass> result = new ArrayList<>();
                 for (Type ti : methodDeclarator.thrownExceptions) {
 
                     // KLUDGE: Iff the exception type in the THROWS clause sounds like a type parameter, then
@@ -10608,7 +10608,7 @@ class UnitCompiler {
         if (stis == null) {
 
             // Collect all single type import declarations.
-            final List<SingleTypeImportDeclaration> stids = new ArrayList<SingleTypeImportDeclaration>();
+            final List<SingleTypeImportDeclaration> stids = new ArrayList<>();
             for (ImportDeclaration id : this.abstractCompilationUnit.importDeclarations) {
                 id.accept(new ImportVisitor<Void, RuntimeException>() {
 
@@ -10620,7 +10620,7 @@ class UnitCompiler {
             }
 
             // Resolve all single type imports.
-            stis = new HashMap<String, String[]>();
+            stis = new HashMap<>();
             for (SingleTypeImportDeclaration stid : stids) {
 
                 String[] ids        = stid.identifiers;
@@ -10672,7 +10672,7 @@ class UnitCompiler {
 
         return importedClass;
     }
-    private final Map<String /*simpleTypeName*/, IClass> onDemandImportableTypes = new HashMap<String, IClass>();
+    private final Map<String /*simpleTypeName*/, IClass> onDemandImportableTypes = new HashMap<>();
 
     /**
      * @return {@code null} if the given <var>simpleTypeName</var> cannot be resolved through any of the
@@ -10705,7 +10705,7 @@ class UnitCompiler {
     private Collection<TypeImportOnDemandDeclaration>
     getTypeImportOnDemandImportDeclarations() {
 
-        Collection<TypeImportOnDemandDeclaration> result = new ArrayList<TypeImportOnDemandDeclaration>();
+        Collection<TypeImportOnDemandDeclaration> result = new ArrayList<>();
         for (TypeImportOnDemandDeclaration tiodd : Iterables.filterByClass(
             this.abstractCompilationUnit.importDeclarations,
             TypeImportOnDemandDeclaration.class
@@ -10817,7 +10817,7 @@ class UnitCompiler {
 
         int          sLength = s.length(), utfLength = 0;
         int          from    = 0;
-        List<String> l       = new ArrayList<String>();
+        List<String> l       = new ArrayList<>();
         for (int i = 0;; i++) {
             if (i == sLength) {
                 l.add(s.substring(from));
@@ -11346,7 +11346,7 @@ class UnitCompiler {
     }
 
     private static final Map<String /*descriptor*/, int[] /*opcodes*/>
-    PRIMITIVE_WIDENING_CONVERSIONS = new HashMap<String, int[]>();
+    PRIMITIVE_WIDENING_CONVERSIONS = new HashMap<>();
 
     static { UnitCompiler.fillConversionMap(new Object[] {
 
@@ -11438,7 +11438,7 @@ class UnitCompiler {
     }
 
     private static final Map<String /*descriptor*/, int[] /*opcodes*/>
-    PRIMITIVE_NARROWING_CONVERSIONS = new HashMap<String, int[]>();
+    PRIMITIVE_NARROWING_CONVERSIONS = new HashMap<>();
 
     static { UnitCompiler.fillConversionMap(new Object[] {
 

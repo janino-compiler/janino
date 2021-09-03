@@ -744,7 +744,7 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
         }
 
         // Traverse the expression for ambiguous names and guess which of them are parameter names.
-        final Set<String> parameterNames = new HashSet<String>();
+        final Set<String> parameterNames = new HashSet<>();
         new AbstractTraverser<RuntimeException>() {
 
             @Override public void

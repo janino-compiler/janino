@@ -309,7 +309,7 @@ class Java {
          * The top-level declarations in this compilation unit.
          */
         public final List<PackageMemberTypeDeclaration>
-        packageMemberTypeDeclarations = new ArrayList<PackageMemberTypeDeclaration>();
+        packageMemberTypeDeclarations = new ArrayList<>();
 
         public
         CompilationUnit(@Nullable String fileName) {
@@ -1078,8 +1078,8 @@ class Java {
         private final Location                    location;
         private final Modifier[]                  modifiers;
         @Nullable private final TypeParameter[]   typeParameters;
-        private final List<MethodDeclarator>      declaredMethods              = new ArrayList<MethodDeclarator>();
-        private final List<MemberTypeDeclaration> declaredClassesAndInterfaces = new ArrayList<MemberTypeDeclaration>();
+        private final List<MethodDeclarator>      declaredMethods              = new ArrayList<>();
+        private final List<MemberTypeDeclaration> declaredClassesAndInterfaces = new ArrayList<>();
         @Nullable private Scope                   enclosingScope;
 
         /**
@@ -1244,13 +1244,13 @@ class Java {
         /**
          * List of {@link ConstructorDeclarator}s of this class.
          */
-        public final List<ConstructorDeclarator> constructors = new ArrayList<ConstructorDeclarator>();
+        public final List<ConstructorDeclarator> constructors = new ArrayList<>();
 
         /**
          * List of {@link TypeBodyDeclaration}s of this class: Field declarations (both static and non-static),
          * (static and non-static) initializers (a.k.a. "class initializers" and "instance initializers").
          */
-        public final List<BlockStatement> variableDeclaratorsAndInitializers = new ArrayList<BlockStatement>();
+        public final List<BlockStatement> variableDeclaratorsAndInitializers = new ArrayList<>();
 
         public
         AbstractClassDeclaration(
@@ -1346,7 +1346,7 @@ class Java {
         /**
          * All field names start with "this$" or "val$".
          */
-        final SortedMap<String, IClass.IField> syntheticFields = new TreeMap<String, IClass.IField>();
+        final SortedMap<String, IClass.IField> syntheticFields = new TreeMap<>();
     }
 
     /**
@@ -1548,7 +1548,7 @@ class Java {
     public static final
     class MemberEnumDeclaration extends MemberClassDeclaration implements EnumDeclaration {
 
-        private final List<EnumConstant> constants = new ArrayList<Java.EnumConstant>();
+        private final List<EnumConstant> constants = new ArrayList<>();
 
         public
         MemberEnumDeclaration(
@@ -1788,7 +1788,7 @@ class Java {
     public static final
     class PackageMemberEnumDeclaration extends PackageMemberClassDeclaration implements EnumDeclaration {
 
-        private final List<EnumConstant> constants = new ArrayList<EnumConstant>();
+        private final List<EnumConstant> constants = new ArrayList<>();
 
         public
         PackageMemberEnumDeclaration(
@@ -1878,7 +1878,7 @@ class Java {
         /**
          * The constants that this interface declares.
          */
-        public final List<FieldDeclaration> constantDeclarations = new ArrayList<FieldDeclaration>();
+        public final List<FieldDeclaration> constantDeclarations = new ArrayList<>();
 
         /**
          * Set during "compile()".
@@ -2617,7 +2617,7 @@ class Java {
         /**
          * Synthetic parameter name to {@link Java.LocalVariable} mapping.
          */
-        final Map<String, LocalVariable> syntheticParameters = new HashMap<String, LocalVariable>();
+        final Map<String, LocalVariable> syntheticParameters = new HashMap<>();
 
         // Implement "FunctionDeclarator":
 
@@ -3067,7 +3067,7 @@ class Java {
         /**
          * The list of statements that comprise the body of the block.
          */
-        public final List<BlockStatement> statements = new ArrayList<BlockStatement>();
+        public final List<BlockStatement> statements = new ArrayList<>();
 
         public
         Block(Location location) { super(location); }
@@ -5203,7 +5203,7 @@ class Java {
          */
         public Iterator<Rvalue>
         unrollLeftAssociation() {
-            List<Rvalue>    operands = new ArrayList<Rvalue>();
+            List<Rvalue>    operands = new ArrayList<>();
             BinaryOperation bo       = this;
             for (;;) {
                 operands.add(bo.rhs);
@@ -5215,7 +5215,7 @@ class Java {
                     break;
                 }
             }
-            return new ReverseListIterator<Rvalue>(operands.listIterator(operands.size()));
+            return new ReverseListIterator<>(operands.listIterator(operands.size()));
         }
 
         @Override @Nullable public <R, EX extends Throwable> R

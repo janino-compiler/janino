@@ -83,7 +83,7 @@ class Compiler extends AbstractCompiler {
 
     // Compile time state:
 
-    private final List<UnitCompiler> parsedCompilationUnits = new ArrayList<UnitCompiler>();
+    private final List<UnitCompiler> parsedCompilationUnits = new ArrayList<>();
 
     /**
      * Initializes a new compiler.

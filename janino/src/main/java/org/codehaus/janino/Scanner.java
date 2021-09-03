@@ -814,7 +814,7 @@ class Scanner {
      */
     private int tokenColumnNumber;
 
-    private static final Set<String> JAVA_KEYWORDS = new HashSet<String>(Arrays.asList(
+    private static final Set<String> JAVA_KEYWORDS = new HashSet<>(Arrays.asList(
 
         // SUPPRESS CHECKSTYLE WrapMethod:16
 
@@ -836,7 +836,7 @@ class Scanner {
         "while"
     ));
 
-    private static final Set<String> JAVA_OPERATORS = new HashSet<String>(Arrays.asList(
+    private static final Set<String> JAVA_OPERATORS = new HashSet<>(Arrays.asList(
 
         // SUPPRESS CHECKSTYLE WrapMethod:9
 

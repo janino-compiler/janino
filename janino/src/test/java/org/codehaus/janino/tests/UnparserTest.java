@@ -756,7 +756,7 @@ class UnparserTest {
 
     public static Collection<File>
     findJaninoJavaFiles() {
-        final Collection<File> result = new ArrayList<File>();
+        final Collection<File> result = new ArrayList<>();
 
         // Process all "*.java" files in the JANINO source tree.
         // Must use the "janino" project directory, because that is pre-Java 5.
@@ -783,7 +783,7 @@ class UnparserTest {
     private static Locatable[]
     listSyntaxElements(AbstractCompilationUnit cu) {
 
-        final List<Locatable> locatables = new ArrayList<Locatable>();
+        final List<Locatable> locatables = new ArrayList<>();
         new AbstractTraverser<RuntimeException>() {
 
             // Two implementations of "Locatable": "Located" and "AbstractTypeDeclaration".

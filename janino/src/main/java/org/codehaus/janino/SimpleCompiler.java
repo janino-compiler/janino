@@ -274,7 +274,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     private Map<String /*className*/, byte[] /*bytecode*/>
     getBytecodes2() {
 
-        Map<String /*className*/, byte[] /*bytecode*/> result = new HashMap<String, byte[]>();
+        Map<String /*className*/, byte[] /*bytecode*/> result = new HashMap<>();
         for (ClassFile cf : this.getClassFiles()) {
             result.put(cf.getThisClassName(), cf.toByteArray());
         }

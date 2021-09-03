@@ -100,9 +100,9 @@ class ClassFile implements Annotatable {
             this.minorVersion = Short.parseShort(m.group(2));
         }
 
-        this.constantPool  = new ArrayList<ConstantPoolInfo>();
+        this.constantPool  = new ArrayList<>();
         this.constantPool.add(null); // Add fake "0" index entry.
-        this.constantPoolMap = new HashMap<ConstantPoolInfo, Short>();
+        this.constantPoolMap = new HashMap<>();
 
         // Some sanity checks on the access flags, according to JVMS8 4.1.
         if ((accessFlags & Mod.INTERFACE) != 0) {
@@ -126,9 +126,9 @@ class ClassFile implements Annotatable {
             this.interfaces[i] = this.addConstantClassInfo(interfaceFds[i]);
         }
 
-        this.fieldInfos    = new ArrayList<FieldInfo>();
-        this.methodInfos   = new ArrayList<MethodInfo>();
-        this.attributes    = new ArrayList<AttributeInfo>();
+        this.fieldInfos    = new ArrayList<>();
+        this.methodInfos   = new ArrayList<>();
+        this.attributes    = new ArrayList<>();
     }
 
     /**
@@ -295,8 +295,8 @@ class ClassFile implements Annotatable {
 //            );
 //        }
 
-        this.constantPool    = new ArrayList<ConstantPoolInfo>();
-        this.constantPoolMap = new HashMap<ConstantPoolInfo, Short>();
+        this.constantPool    = new ArrayList<>();
+        this.constantPoolMap = new HashMap<>();
         this.loadConstantPool(dis);                                                // constant_pool_count, constant_pool
 
         this.accessFlags  = dis.readShort();                                       // access_flags
@@ -562,7 +562,7 @@ class ClassFile implements Annotatable {
         String           fieldTypeFd,
         @Nullable Object constantValue
     ) {
-        List<AttributeInfo> attributes = new ArrayList<AttributeInfo>();
+        List<AttributeInfo> attributes = new ArrayList<>();
         if (constantValue != null) {
             attributes.add(new ConstantValueAttribute(
                 this.addConstantUtf8Info("ConstantValue"),
@@ -746,7 +746,7 @@ class ClassFile implements Annotatable {
     private List<FieldInfo>
     loadFields(DataInputStream dis) throws IOException {
 
-        List<FieldInfo> result = new ArrayList<FieldInfo>();
+        List<FieldInfo> result = new ArrayList<>();
 
         for (int i = dis.readUnsignedShort(); i > 0; i--) { // fields_count
             result.add(new FieldInfo(                       // fields[field_count]
@@ -766,7 +766,7 @@ class ClassFile implements Annotatable {
     private List<MethodInfo>
     loadMethods(DataInputStream dis) throws IOException {
         int              methodsCount = dis.readUnsignedShort();
-        List<MethodInfo> methods      = new ArrayList<MethodInfo>(methodsCount);
+        List<MethodInfo> methods      = new ArrayList<>(methodsCount);
         for (int i = 0; i < methodsCount; ++i) methods.add(this.loadMethodInfo(dis));
         return methods;
     }
@@ -777,7 +777,7 @@ class ClassFile implements Annotatable {
     private List<AttributeInfo>
     loadAttributes(DataInputStream dis) throws IOException {
         int                 attributesCount = dis.readUnsignedShort();
-        List<AttributeInfo> attributes      = new ArrayList<AttributeInfo>(attributesCount);
+        List<AttributeInfo> attributes      = new ArrayList<>(attributesCount);
         for (int i = 0; i < attributesCount; ++i) attributes.add(this.loadAttribute(dis));
         return attributes;
     }
@@ -2131,11 +2131,11 @@ class ClassFile implements Annotatable {
 
         InnerClassesAttribute(short attributeNameIndex) {
             super(attributeNameIndex);
-            this.entries = new ArrayList<Entry>();
+            this.entries = new ArrayList<>();
         }
         InnerClassesAttribute(short attributeNameIndex, Entry[] entries) {
             super(attributeNameIndex);
-            this.entries = new ArrayList<Entry>(Arrays.asList(entries));
+            this.entries = new ArrayList<>(Arrays.asList(entries));
         }
 
         /**
@@ -2208,11 +2208,11 @@ class ClassFile implements Annotatable {
 
         AnnotationsAttribute(short attributeNameIndex) {
             super(attributeNameIndex);
-            this.annotations = new ArrayList<Annotation>();
+            this.annotations = new ArrayList<>();
         }
         AnnotationsAttribute(short attributeNameIndex, Annotation[] annotations) {
             super(attributeNameIndex);
-            this.annotations = new ArrayList<Annotation>(Arrays.asList(annotations));
+            this.annotations = new ArrayList<>(Arrays.asList(annotations));
         }
 
         /**
@@ -2246,7 +2246,7 @@ class ClassFile implements Annotatable {
             int numElementaluePairs = dis.readUnsignedShort(); // nul_element_value_pairs
             if (numElementaluePairs == 0) return Collections.emptyMap();
 
-            Map<Short, ClassFile.ElementValue> result = new HashMap<Short, ClassFile.ElementValue>();
+            Map<Short, ClassFile.ElementValue> result = new HashMap<>();
             for (int i = 0; i < numElementaluePairs; i++) {
                 result.put(
                     dis.readShort(),                // element_name_index

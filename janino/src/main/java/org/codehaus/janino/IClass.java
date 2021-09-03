@@ -188,7 +188,7 @@ class IClass {
             IMethod[] dims = this.getDeclaredIMethods();
 
             // Fill the map with "IMethod"s and "List<IMethod>"s.
-            dimc = new HashMap<String, Object>();
+            dimc = new HashMap<>();
             for (IMethod dim : dims) {
                 String  mn  = dim.getName();
                 Object  o   = dimc.get(mn);
@@ -196,7 +196,7 @@ class IClass {
                     dimc.put(mn, dim);
                 } else
                 if (o instanceof IMethod) {
-                    List<IMethod> l = new ArrayList<IMethod>();
+                    List<IMethod> l = new ArrayList<>();
                     l.add((IMethod) o);
                     l.add(dim);
                     dimc.put(mn, l);
@@ -234,7 +234,7 @@ class IClass {
 
         if (this.iMethodCache != null) return this.iMethodCache;
 
-        List<IMethod> iMethods = new ArrayList<IMethod>();
+        List<IMethod> iMethods = new ArrayList<>();
         this.getIMethods(iMethods);
         return (this.iMethodCache = (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]));
     }
@@ -345,7 +345,7 @@ class IClass {
 
         IField[] fields = this.getDeclaredIFields2();
 
-        Map<String /*fieldName*/, IField> m = new LinkedHashMap<String, IClass.IField>();
+        Map<String /*fieldName*/, IField> m = new LinkedHashMap<>();
         for (IField f : fields) m.put(f.getName(), f);
         return (this.declaredIFieldsCache = m);
     }
@@ -660,7 +660,7 @@ class IClass {
         return false;
     }
 
-    private static final Set<String> PRIMITIVE_WIDENING_CONVERSIONS = new HashSet<String>();
+    private static final Set<String> PRIMITIVE_WIDENING_CONVERSIONS = new HashSet<>();
     static {
         String[] pwcs = {
             Descriptor.BYTE  + Descriptor.SHORT,
@@ -821,7 +821,7 @@ class IClass {
 
             // Notice: A type may be added multiply to the result set because we are in its scope
             // multiply. E.g. the type is a member of a superclass AND a member of an enclosing type.
-            Set<IClass> s = new HashSet<IClass>();
+            Set<IClass> s = new HashSet<>();
             this.findMemberType(name, s);
             res = s.isEmpty() ? IClass.ZERO_ICLASSES : (IClass[]) s.toArray(new IClass[s.size()]);
 
@@ -830,7 +830,7 @@ class IClass {
 
         return res;
     }
-    private final Map<String /*name*/, IClass[]> memberTypeCache = new HashMap<String, IClass[]>();
+    private final Map<String /*name*/, IClass[]> memberTypeCache = new HashMap<>();
     private static final IClass[]                ZERO_ICLASSES   = new IClass[0];
     private void
     findMemberType(@Nullable String name, Collection<IClass> result) throws CompileException {

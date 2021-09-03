@@ -1571,15 +1571,15 @@ class Unparser {
         return ((Integer) Unparser.OPERATOR_PRECEDENCE.get(operator)).intValue();
     }
 
-    private static final Set<String> LEFT_ASSOCIATIVE_OPERATORS  = new HashSet<String>();
-    private static final Set<String> RIGHT_ASSOCIATIVE_OPERATORS = new HashSet<String>();
-    private static final Set<String> UNARY_OPERATORS             = new HashSet<String>();
+    private static final Set<String> LEFT_ASSOCIATIVE_OPERATORS  = new HashSet<>();
+    private static final Set<String> RIGHT_ASSOCIATIVE_OPERATORS = new HashSet<>();
+    private static final Set<String> UNARY_OPERATORS             = new HashSet<>();
 
     /**
      * Maps (pseudo-)operators like {@code "?:"} and {@code "x++"} to precedences (higher value
      * means higher precedence).
      */
-    private static final Map<String, Integer> OPERATOR_PRECEDENCE = new HashMap<String, Integer>();
+    private static final Map<String, Integer> OPERATOR_PRECEDENCE = new HashMap<>();
 
     static {
         Object[] operators = {

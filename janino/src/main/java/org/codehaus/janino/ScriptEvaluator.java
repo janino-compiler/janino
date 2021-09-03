@@ -701,8 +701,8 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         for (int i = 0; i < count; ++i) {
 
             // Create the statements of the method.
-            List<Java.BlockStatement>   statements   = new ArrayList<BlockStatement>();
-            List<Java.MethodDeclarator> localMethods = new ArrayList<MethodDeclarator>();
+            List<Java.BlockStatement>   statements   = new ArrayList<>();
+            List<Java.MethodDeclarator> localMethods = new ArrayList<>();
 
             this.makeStatements(i, parsers[i], statements, localMethods);
 
@@ -727,7 +727,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     ) throws CompileException {
         int count = statementss.length;
 
-        Collection<Java.MethodDeclarator> methodDeclarators = new ArrayList<Java.MethodDeclarator>();
+        Collection<Java.MethodDeclarator> methodDeclarators = new ArrayList<>();
 
         for (int i = 0; i < count; i++) {
             Script                  es           = this.getScript(i);
@@ -809,7 +809,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         // the thousands). So let's use "Class.getDeclaredMethods()" instead.
 
         // Create a (temporary) mapping of method key to method index.
-        Map<Object /*methodKey*/, Integer /*methodIndex*/> dms = new HashMap<Object, Integer>(2 * count);
+        Map<Object /*methodKey*/, Integer /*methodIndex*/> dms = new HashMap<>(2 * count);
         for (int i = 0; i < count; ++i) {
             Script  es   = this.getScript(i);
             Integer prev = (Integer) dms.put(ScriptEvaluator.methodKey(es.methodName, es.parameterTypes), i);
@@ -1109,7 +1109,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
 
         Modifier[] modifiers;
         {
-            List<Java.Modifier> l = new ArrayList<Java.Modifier>();
+            List<Java.Modifier> l = new ArrayList<>();
             l.addAll(Arrays.asList(annotations));
             l.add(new Java.AccessModifier("public", location));
             if (staticMethod) l.add(new Java.AccessModifier("static", location));
@@ -1318,8 +1318,8 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         while (!parser.peek(TokenType.END_OF_INPUT)) block.addStatement(parser.parseBlockStatement());
 
         // Traverse the block for ambiguous names and guess which of them are parameter names.
-        final Set<String> localVariableNames = new HashSet<String>();
-        final Set<String> parameterNames     = new HashSet<String>();
+        final Set<String> localVariableNames = new HashSet<>();
+        final Set<String> parameterNames     = new HashSet<>();
         new AbstractTraverser<RuntimeException>() {
 
             @Override public void

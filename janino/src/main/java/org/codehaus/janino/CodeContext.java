@@ -80,7 +80,7 @@ class CodeContext {
     /**
      * All the local variables that are allocated in any block in this {@link CodeContext}.
      */
-    private final List<Java.LocalVariableSlot> allLocalVars = new ArrayList<Java.LocalVariableSlot>();
+    private final List<Java.LocalVariableSlot> allLocalVars = new ArrayList<>();
 
     /**
      * Each List of Java.LocalVariableSlot is the local variables allocated for a block. They are pushed and popped
@@ -93,7 +93,7 @@ class CodeContext {
 
         @Nullable final LocalScope         parent;
         final short                        startingLocalVariableSlot;
-        final List<Java.LocalVariableSlot> localVars = new ArrayList<Java.LocalVariableSlot>();
+        final List<Java.LocalVariableSlot> localVars = new ArrayList<>();
         final StackMap                     startingStackMap;
 
         LocalScope(@Nullable LocalScope parent, short startingLocalSlot, StackMap startingStackMap) {
@@ -104,7 +104,7 @@ class CodeContext {
     }
 
     private short                   nextLocalVariableSlot;
-    private final List<Relocatable> relocatables = new ArrayList<Relocatable>();
+    private final List<Relocatable> relocatables = new ArrayList<>();
 
     /**
      * Creates an empty "Code" attribute.
@@ -116,7 +116,7 @@ class CodeContext {
         this.maxStack               = 0;
         this.maxLocals              = 0;
         this.code                   = new byte[CodeContext.INITIAL_SIZE];
-        this.exceptionTableEntries  = new ArrayList<ExceptionTableEntry>();
+        this.exceptionTableEntries  = new ArrayList<>();
 
         this.beginning              = new Offset();
         this.beginning.offset       = 0;
@@ -271,11 +271,11 @@ class CodeContext {
             dos.writeShort(exceptionTableEntry.catchType);
         }
 
-        List<ClassFile.AttributeInfo> attributes = new ArrayList<AttributeInfo>();
+        List<ClassFile.AttributeInfo> attributes = new ArrayList<>();
 
         // Add "LineNumberTable" attribute.
         if (lineNumberTableAttributeNameIndex != 0) {
-            List<ClassFile.LineNumberTableAttribute.Entry> lnt = new ArrayList<Entry>();
+            List<ClassFile.LineNumberTableAttribute.Entry> lnt = new ArrayList<>();
             for (Offset o = this.beginning; o != null; o = o.next) {
                 if (o instanceof LineNumberOffset) {
 
@@ -318,7 +318,7 @@ class CodeContext {
             }
             assert previousFrame != null;
 
-            List<StackMapFrame> smfs = new ArrayList<ClassFile.StackMapTableAttribute.StackMapFrame>();
+            List<StackMapFrame> smfs = new ArrayList<>();
             for (; frame != null && frame.offset != this.end.offset; frame = frame.next) {
 
                 // "Padder" is used to insert the padding bytes of the LOOKUPSWITCH instruction; skip it, because
@@ -431,7 +431,7 @@ class CodeContext {
         ClassFile cf = this.getClassFile();
 
         final List<ClassFile.LocalVariableTableAttribute.Entry>
-        entryList = new ArrayList<org.codehaus.janino.util.ClassFile.LocalVariableTableAttribute.Entry>();
+        entryList = new ArrayList<>();
 
         for (Java.LocalVariableSlot slot : this.getAllLocalVars()) {
 
@@ -788,7 +788,7 @@ class CodeContext {
     BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion();
     private static Map<Integer, Integer>
     createBranchOpcodeInversion() {
-        Map<Integer, Integer> m = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> m = new HashMap<>();
         m.put(Opcode.IF_ACMPEQ, Opcode.IF_ACMPNE);
         m.put(Opcode.IF_ACMPNE, Opcode.IF_ACMPEQ);
         m.put(Opcode.IF_ICMPEQ, Opcode.IF_ICMPNE);
@@ -1149,7 +1149,7 @@ class CodeContext {
 
         // Invalidate all offsets between "from" and "to".
         // Remove all relocatables that originate between "from" and "to".
-        Set<Offset> invalidOffsets = new HashSet<Offset>();
+        Set<Offset> invalidOffsets = new HashSet<>();
         {
             Offset o = from.next;
             assert o != null;

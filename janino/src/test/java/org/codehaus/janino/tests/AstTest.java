@@ -190,7 +190,7 @@ class AstTest {
 
         final PackageMemberClassDeclaration clazz = AstTest.createClass(cu);
 
-        List<Java.Statement> body = new ArrayList<Statement>();
+        List<Java.Statement> body = new ArrayList<>();
 
         Block sub = new Block(AstTest.getLocation());
         sub.addStatement(AstTest.createVarDecl("x", "2.0"));
@@ -225,7 +225,7 @@ class AstTest {
         PackageMemberClassDeclaration clazz = AstTest.createClass(cu);
 
         final Byte           exp  = Byte.valueOf((byte) 1);
-        List<Java.Statement> body = new ArrayList<Statement>();
+        List<Java.Statement> body = new ArrayList<>();
         body.add(
             new ReturnStatement(
                 AstTest.getLocation(),
@@ -252,7 +252,7 @@ class AstTest {
 
         final PackageMemberClassDeclaration clazz = AstTest.createClass(cu);
 
-        List<Java.Statement> body = new ArrayList<Statement>();
+        List<Java.Statement> body = new ArrayList<>();
         body.add(AstTest.createVarDecl("x", "2.0"));
         body.add(
             new ReturnStatement(
@@ -279,7 +279,7 @@ class AstTest {
 
         PackageMemberClassDeclaration clazz = AstTest.createClass(cu);
 
-        List<Java.Statement> body = new ArrayList<Statement>();
+        List<Java.Statement> body = new ArrayList<>();
         body.add(
             new ReturnStatement(
                 AstTest.getLocation(),
@@ -299,7 +299,7 @@ class AstTest {
 
         PackageMemberClassDeclaration clazz = AstTest.createClass(cu);
 
-        List<Java.Statement> body = new ArrayList<Statement>();
+        List<Java.Statement> body = new ArrayList<>();
 
         body.add(
             new ReturnStatement(
@@ -382,7 +382,7 @@ class AstTest {
         // Now copy the input CU and modify it on-the-fly.
         cu = new DeepCopier() {
 
-            private final List<FieldDeclaration> moreFieldDeclarations = new ArrayList<FieldDeclaration>();
+            private final List<FieldDeclaration> moreFieldDeclarations = new ArrayList<>();
 
             @Override public BlockStatement
             copyLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) throws CompileException {
@@ -390,7 +390,7 @@ class AstTest {
                 /**
                  * Generate synthetic fields for each local variable.
                  */
-                List<VariableDeclarator> fieldVariableDeclarators = new ArrayList<VariableDeclarator>();
+                List<VariableDeclarator> fieldVariableDeclarators = new ArrayList<>();
                 for (VariableDeclarator vd : lvds.variableDeclarators) {
                     fieldVariableDeclarators.add(new VariableDeclarator(
                         vd.getLocation(),
@@ -412,7 +412,7 @@ class AstTest {
                 /**
                  * Replace each local variable declaration with an assignment expression statement.
                  */
-                List<BlockStatement> assignments = new ArrayList<BlockStatement>();
+                List<BlockStatement> assignments = new ArrayList<>();
                 for (VariableDeclarator vd : lvds.variableDeclarators) {
 
                     Rvalue initializer = (Rvalue) vd.initializer;
@@ -483,7 +483,7 @@ class AstTest {
 
         PackageMemberClassDeclaration clazz = AstTest.createClass(cu);
 
-        List<Java.Statement> body = new ArrayList<Statement>();
+        List<Java.Statement> body = new ArrayList<>();
         body.add(new Java.ReturnStatement(
             AstTest.getLocation(),
             new Java.FieldAccessExpression(
