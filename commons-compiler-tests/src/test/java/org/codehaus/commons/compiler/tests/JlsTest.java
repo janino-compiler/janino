@@ -1862,12 +1862,23 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_9_3__Choosing_the_Constructor_and_its_Arguments() throws Exception {
+    test_15_9_3a__Choosing_the_Constructor_and_its_Arguments() throws Exception {
 
         this.assertExpressionEvaluatable("new Integer(3)");
         this.assertExpressionEvaluatable("new Integer(new Integer(3))");
         this.assertExpressionEvaluatable("new Integer(new Byte((byte) 3))");
         this.assertExpressionUncookable("new Integer(new Object())");
+    }
+
+    @Test public void
+    test_15_9_3b__Choosing_the_Constructor_and_its_Arguments() throws Exception {
+
+        // "Diamond operator".
+        this.assertScriptExecutable(
+            ""
+            + "import java.util.*;\n"
+            + "List<String> l = new ArrayList<>();\n"
+        );
     }
 
     @Test public void
