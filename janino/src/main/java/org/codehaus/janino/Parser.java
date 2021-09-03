@@ -2728,7 +2728,7 @@ class Parser {
     }
 
     /**
-     * Same as {@link #parseExpression()}, but types like {@code int} or {@code Map<String, Object} are also parsed.
+     * Same as {@link #parseExpression()}, but types like {@code int} or {@code Map<String, Object>} are also parsed.
      */
     public Atom
     parseExpressionOrType() throws CompileException, IOException {
