@@ -43,7 +43,7 @@ class MapResourceCreator implements ResourceCreator {
      * Auto-create the delegate {@link Map}.
      */
     public
-    MapResourceCreator() { this.map = new HashMap<String, byte[]>(); }
+    MapResourceCreator() { this.map = new HashMap<>(); }
 
     /**
      * @param map String fileName =&gt; byte[] data

@@ -97,7 +97,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     // See "addOffset(String)".
     private final LineAndColumnTracker tracker = LineAndColumnTracker.create();
-    private final SortedSet<Location>  offsets = new TreeSet<Location>(new Comparator<Location>() {
+    private final SortedSet<Location>  offsets = new TreeSet<>(new Comparator<Location>() {
 
         @Override @NotNullByDefault(false) public int
         compare(Location l1, Location l2) {
@@ -260,7 +260,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
         // Set up a JavaFileManager that reads .class files through the this.parentClassLoader, and stores .class
         // files in byte arrays
-        final Map<String /*className*/, JavaFileObject> classFiles = new HashMap<String, JavaFileObject>();
+        final Map<String /*className*/, JavaFileObject> classFiles = new HashMap<>();
         final JavaFileManager
         fileManager = new ForwardingJavaFileManager<JavaFileManager>(
             ToolProvider
@@ -284,7 +284,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                     recurse
                 );
 
-                Collection<JavaFileObject> result = new ArrayList<JavaFileObject>(allSubresources.size());
+                Collection<JavaFileObject> result = new ArrayList<>(allSubresources.size());
                 for (Entry<String, URL> e : allSubresources.entrySet()) {
                     final String name = e.getKey();
                     final URL    url  = e.getValue();
@@ -350,7 +350,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
         // Run the compiler.
         try {
-            List<String> options = new ArrayList<String>();
+            List<String> options = new ArrayList<>();
 
             options.add(
                 this.debugSource
@@ -398,7 +398,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         }
 
         // Fill "this.bytecodes" from the JavaFileManager.
-        Map<String /*className*/, byte[] /*bytes*/> bytecodes = new HashMap<String /*className*/, byte[] /*bytes*/>();
+        Map<String /*className*/, byte[] /*bytes*/> bytecodes = new HashMap<>();
         for (Entry<String, JavaFileObject> e : classFiles.entrySet()) {
             String         className = e.getKey();
             JavaFileObject jfo       = e.getValue();

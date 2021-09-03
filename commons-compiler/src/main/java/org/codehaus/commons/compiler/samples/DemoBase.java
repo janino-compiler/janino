@@ -76,7 +76,7 @@ class DemoBase {
     public static String[]
     explode(String s) {
         StringTokenizer st = new StringTokenizer(s, ",");
-        List<String>    l  = new ArrayList<String>();
+        List<String>    l  = new ArrayList<>();
         while (st.hasMoreTokens()) l.add(st.nextToken());
         return (String[]) l.toArray(new String[l.size()]);
     }
@@ -133,7 +133,7 @@ class DemoBase {
     stringToTypes(String s) {
 
         StringTokenizer st = new StringTokenizer(s, ",");
-        List<Class<?>>  l  = new ArrayList<Class<?>>();
+        List<Class<?>>  l  = new ArrayList<>();
         while (st.hasMoreTokens()) l.add(DemoBase.stringToType(st.nextToken()));
         Class<?>[] res = new Class[l.size()];
         l.toArray(res);

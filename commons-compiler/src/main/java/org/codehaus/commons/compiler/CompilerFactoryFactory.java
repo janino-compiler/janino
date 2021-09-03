@@ -130,7 +130,7 @@ class CompilerFactoryFactory {
     public static ICompilerFactory[]
     getAllCompilerFactories(ClassLoader classLoader) throws Exception {
 
-        List<ICompilerFactory> factories = new ArrayList<ICompilerFactory>();
+        List<ICompilerFactory> factories = new ArrayList<>();
         for (Enumeration<URL> en = classLoader.getResources("org.codehaus.commons.compiler.properties"); en.hasMoreElements();) {
             URL url = (URL) en.nextElement();
 

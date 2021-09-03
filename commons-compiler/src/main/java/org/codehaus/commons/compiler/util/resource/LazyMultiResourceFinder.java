@@ -43,6 +43,6 @@ class LazyMultiResourceFinder extends MultiResourceFinder {
      */
     public
     LazyMultiResourceFinder(Iterator<ResourceFinder> resourceFinders) {
-        super(new IteratorCollection<ResourceFinder>(resourceFinders));
+        super(new IteratorCollection<>(resourceFinders));
     }
 }

@@ -96,7 +96,7 @@ class ClassLoaders {
         if (classLoader == null) classLoader = ClassLoader.getSystemClassLoader();
         assert classLoader != null;
 
-        HashMap<String, URL> result = new HashMap<String, URL>();
+        HashMap<String, URL> result = new HashMap<>();
 
         // See if there is a "directory resource" with the given name. This will work for
         //  * file-based classpath entries (e.g. "file:./target/classes/"),
@@ -177,7 +177,7 @@ class ClassLoaders {
                 @Override public Map<? extends String, ? extends URL>
                 get(final String name, boolean includeDirectories, final boolean recurse) throws IOException {
 
-                    final Map<String, URL> result = new HashMap<String, URL>();
+                    final Map<String, URL> result = new HashMap<>();
 
                     for (final ModuleReference mr : mrs) {
                         final URI moduleContentLocation = mr.location().get();
@@ -293,7 +293,7 @@ class ClassLoaders {
     private static Map<String, URL>
     getSubresources(URL jarFileUrl, JarFile jarFile, String namePrefix, boolean includeDirectories, boolean recurse) {
 
-        Map<String, URL> result = new HashMap<String, URL>();
+        Map<String, URL> result = new HashMap<>();
 
         for (Enumeration<JarEntry> en = jarFile.entries(); en.hasMoreElements();) {
             JarEntry je = en.nextElement();
@@ -327,7 +327,7 @@ class ClassLoaders {
         if (file.isDirectory()) {
             if (!namePrefix.isEmpty() && !namePrefix.endsWith("/")) namePrefix += '/';
 
-            Map<String, URL> result = new HashMap<String, URL>();
+            Map<String, URL> result = new HashMap<>();
 
             if (includeDirectories) result.put(namePrefix, fileUrl);
 

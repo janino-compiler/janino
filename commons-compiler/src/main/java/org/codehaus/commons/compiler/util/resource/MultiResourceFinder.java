@@ -68,7 +68,7 @@ class MultiResourceFinder extends ListableResourceFinder {
 
     @Override @Nullable public Iterable<Resource>
     list(String resourceNamePrefix, boolean recurse) {
-        List<Resource> result = new ArrayList<Resource>();
+        List<Resource> result = new ArrayList<>();
         for (ResourceFinder rf : this.resourceFinders) {
             Iterable<Resource> resources = ((ListableResourceFinder) rf).list(resourceNamePrefix, recurse);
             if (resources != null) {

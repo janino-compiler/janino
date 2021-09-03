@@ -99,7 +99,7 @@ class ApiLog  {
 
     private static Class<?>[]
     getAllInterfaces(final Class<?> c) {
-        Set<Class<?>> result = new HashSet<Class<?>>();
+        Set<Class<?>> result = new HashSet<>();
         ApiLog.getAllInterfaces(c, result);
         return result.toArray(new Class<?>[result.size()]);
     }

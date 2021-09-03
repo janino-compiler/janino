@@ -88,7 +88,7 @@ class MultiDimensionalIterator<T> implements Iterator<T> {
                     this.nest[++i] = ((Collection<?>) o).iterator();
                 } else
                 if (o instanceof Enumeration) {
-                    this.nest[++i] = new EnumerationIterator<Object>((Enumeration<?>) o);
+                    this.nest[++i] = new EnumerationIterator<>((Enumeration<?>) o);
                 } else
                 {
                     throw new UniterableElementException();

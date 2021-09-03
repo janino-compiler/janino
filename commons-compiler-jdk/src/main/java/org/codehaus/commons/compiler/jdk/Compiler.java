@@ -61,7 +61,7 @@ class Compiler extends AbstractCompiler {
 
     private static final JavaCompiler SYSTEM_JAVA_COMPILER = Compiler.getSystemJavaCompiler();
 
-    private Collection<String> compilerOptions = new ArrayList<String>();
+    private Collection<String> compilerOptions = new ArrayList<>();
 
     @Override public void
     setVerbose(boolean verbose) {}
@@ -81,7 +81,7 @@ class Compiler extends AbstractCompiler {
     @Override public void
     compile(final Resource[] sourceResources) throws CompileException, IOException {
 
-        Collection<JavaFileObject> sourceFileObjects = new ArrayList<JavaFileObject>();
+        Collection<JavaFileObject> sourceFileObjects = new ArrayList<>();
         for (int i = 0; i < sourceResources.length; i++) {
             Resource sourceResource = sourceResources[i];
 
@@ -96,11 +96,11 @@ class Compiler extends AbstractCompiler {
         }
 
         // Compose the effective compiler options.
-        List<String> options = new ArrayList<String>(this.compilerOptions);
+        List<String> options = new ArrayList<>(this.compilerOptions);
 
         // Debug options.
         {
-            List<String> l = new ArrayList<String>();
+            List<String> l = new ArrayList<>();
             if (this.debugLines)  l.add("lines");
             if (this.debugSource) l.add("source");
             if (this.debugVars)   l.add("vars");

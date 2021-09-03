@@ -66,7 +66,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  */
 public
 class Benchmark {
-    private final Stack<Long> beginTimes = new Stack<Long>();
+    private final Stack<Long> beginTimes = new Stack<>();
 
     /**
      * @see Benchmark

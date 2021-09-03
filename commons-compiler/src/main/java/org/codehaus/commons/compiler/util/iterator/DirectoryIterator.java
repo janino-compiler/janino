@@ -87,8 +87,8 @@ class DirectoryIterator extends ProducerIterator<File> {
                     if (entries == null) {
                         throw new DirectoryNotListableException(dir.getPath());
                     }
-                    List<File> directoryList = new ArrayList<File>();
-                    List<File> fileList      = new ArrayList<File>();
+                    List<File> directoryList = new ArrayList<>();
+                    List<File> fileList      = new ArrayList<>();
                     for (File entry : entries) {
                         if (entry.isDirectory()) {
                             if (directoryNameFilter.accept(dir, entry.getName())) directoryList.add(entry);
@@ -118,16 +118,16 @@ class DirectoryIterator extends ProducerIterator<File> {
         FilenameFilter directoryNameFilter,
         FilenameFilter fileNameFilter
     ) {
-        List<Iterator<File>> result = new ArrayList<Iterator<File>>();
+        List<Iterator<File>> result = new ArrayList<>();
         for (File rootDirectory : rootDirectories) {
             result.add(new DirectoryIterator(rootDirectory, directoryNameFilter, fileNameFilter));
         }
-        return new MultiDimensionalIterator<File>(result.iterator(), 2);
+        return new MultiDimensionalIterator<>(result.iterator(), 2);
     }
 
     private static <T> ArrayList<T>
     newArrayList(T initialElement) {
-        ArrayList<T> result = new ArrayList<T>();
+        ArrayList<T> result = new ArrayList<>();
         result.add(initialElement);
         return result;
     }

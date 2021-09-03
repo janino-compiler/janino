@@ -117,7 +117,7 @@ class JavaFileManagers {
 
                     Iterable<Resource> resources = lrf.list(packageName.replace('.', '/'), recurse);
                     if (resources != null) {
-                        List<JavaFileObject> result = new ArrayList<JavaFileObject>();
+                        List<JavaFileObject> result = new ArrayList<>();
                         for (Resource r : resources) {
 
                             String className = r.getFileName();
@@ -218,7 +218,7 @@ class JavaFileManagers {
         return new ForwardingJavaFileManager<M>(delegate) {
 
             private final Map<Location, Map<Kind, Map<String /*className*/, JavaFileObject>>>
-            javaFiles = new HashMap<Location, Map<Kind, Map<String, JavaFileObject>>>();
+            javaFiles = new HashMap<>();
 
             @Override @NotNullByDefault(false) public FileObject
             getFileForInput(Location location, String packageName, String relativeName) {
@@ -257,12 +257,12 @@ class JavaFileManagers {
 
                 Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
                 if (locationJavaFiles == null) {
-                    locationJavaFiles = new HashMap<Kind, Map<String, JavaFileObject>>();
+                    locationJavaFiles = new HashMap<>();
                     this.javaFiles.put(location, locationJavaFiles);
                 }
                 Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
                 if (kindJavaFiles == null) {
-                    kindJavaFiles = new HashMap<String, JavaFileObject>();
+                    kindJavaFiles = new HashMap<>();
                     locationJavaFiles.put(kind, kindJavaFiles);
                 }
 
@@ -286,7 +286,7 @@ class JavaFileManagers {
 
                 String               prefix = packageName.isEmpty() ? "" : packageName + ".";
                 int                  pl     = prefix.length();
-                List<JavaFileObject> result = new ArrayList<JavaFileObject>();
+                List<JavaFileObject> result = new ArrayList<>();
                 for (Kind kind : kinds) {
                     Map<String, JavaFileObject> kindFiles = locationFiles.get(kind);
                     if (kindFiles == null) continue;
