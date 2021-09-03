@@ -272,7 +272,10 @@ class UnitCompiler {
 
     private EnumSet<JaninoOption> options = EnumSet.noneOf(JaninoOption.class);
 
-    private int              targetVersion        = -1;
+    /**
+     * Java version to compile for.
+     */
+    private int targetVersion = -1;
 
     public
     UnitCompiler(AbstractCompilationUnit abstractCompilationUnit, IClassLoader iClassLoader) {
@@ -1149,8 +1152,7 @@ class UnitCompiler {
     }
 
     private ClassFile.ElementValue
-    compileElementValue(ElementValue elementValue, final ClassFile cf)
-    throws CompileException {
+    compileElementValue(ElementValue elementValue, final ClassFile cf) throws CompileException {
 
         ClassFile.ElementValue
         result = (ClassFile.ElementValue) elementValue.accept(
@@ -1488,7 +1490,7 @@ class UnitCompiler {
 
             this.load(Located.NOWHERE, declaringIClass, 0);
             for (LocalVariableSlot l : locals) this.load(Located.NOWHERE, l.getType(), l.getSlotIndex());
-            this.invoke(Located.NOWHERE, override);
+            this.invokeMethod(Located.NOWHERE, override);
             this.xreturn(Located.NOWHERE, base.getReturnType());
 
         } finally {
@@ -1811,7 +1813,7 @@ class UnitCompiler {
 
                 // Compile initializer.
                 this.compileGetValue(fes.expression);
-                this.invoke(fes.expression, this.iClassLoader.METH_java_lang_Iterable__iterator);
+                this.invokeMethod(fes.expression, this.iClassLoader.METH_java_lang_Iterable__iterator);
                 LocalVariable iteratorLv = new LocalVariable(false, this.iClassLoader.TYPE_java_util_Iterator);
                 iteratorLv.setSlot(this.getCodeContext().allocateLocalVariable((short) 1, null, iteratorLv.type));
                 this.store(fes, iteratorLv);
@@ -1824,7 +1826,7 @@ class UnitCompiler {
                 final CodeContext.Offset bodyOffset = this.getCodeContext().newOffset();
 
                 this.load(fes, iteratorLv);
-                this.invoke(fes.expression, this.iClassLoader.METH_java_util_Iterator__next);
+                this.invokeMethod(fes.expression, this.iClassLoader.METH_java_util_Iterator__next);
                 if (
                     !this.tryAssignmentConversion(
                         fes.currentElement,
@@ -1852,7 +1854,7 @@ class UnitCompiler {
                 // Compile condition.
                 toCondition.set();
                 this.load(fes, iteratorLv);
-                this.invoke(fes.expression, this.iClassLoader.METH_java_util_Iterator__hasNext);
+                this.invokeMethod(fes.expression, this.iClassLoader.METH_java_util_Iterator__hasNext);
                 this.ifxx(fes, UnitCompiler.NE, bodyOffset);
 
                 this.getCodeContext().currentInserter().setStackMap(beforeStatement);
@@ -1995,11 +1997,11 @@ class UnitCompiler {
                 ssvLvIndex                               // lvIndex
             );
 
-            this.invoke(ss, this.iClassLoader.METH_java_lang_String__hashCode);
+            this.invokeMethod(ss, this.iClassLoader.METH_java_lang_String__hashCode);
         } else
         if (this.iClassLoader.TYPE_java_lang_Enum.isAssignableFrom(switchExpressionType)) {
             kind = SwitchKind.ENUM;
-            this.invoke(ss, this.iClassLoader.METH_java_lang_Enum__ordinal);
+            this.invokeMethod(ss, this.iClassLoader.METH_java_lang_Enum__ordinal);
         } else
         {
             kind = SwitchKind.INT;
@@ -2188,7 +2190,7 @@ class UnitCompiler {
 
                         this.load(sbsg, this.iClassLoader.TYPE_java_lang_String, ssvLvIndex);
                         this.consT(caseLabel, cv);
-                        this.invoke(caseLabel, this.iClassLoader.METH_java_lang_String__equals__java_lang_Object);
+                        this.invokeMethod(caseLabel, this.iClassLoader.METH_java_lang_String__equals__java_lang_Object);
                         this.ifxx(sbsg, UnitCompiler.NE, sbsgOffsets[i]);
                     }
                 }
@@ -3288,15 +3290,17 @@ class UnitCompiler {
 
                 accessFlags |= Mod.PUBLIC;
 
-                if (this.getTargetVersion() < 8 && Mod.isStatic(accessFlags) && !"<clinit>".equals(fd.name)) {
-                    this.compileError("Static interface methods only available for target version 8+", fd.getLocation());
-                }
-
+                if (Mod.isStatic(accessFlags) && !"<clinit>".equals(fd.name)) {
+                    if (this.getTargetVersion() < 8) {
+                        this.compileError("Static interface methods only available for target version 8+", fd.getLocation());
+                    }
+                } else
                 if (fd instanceof MethodDeclarator && ((MethodDeclarator) fd).isDefault()) {
                     if (this.getTargetVersion() < 8) {
                         this.compileError("Default methods only available for target version 8+", fd.getLocation());
                     }
-                } else {
+                } else
+                {
                     accessFlags |= Mod.ABSTRACT;
                 }
             }
@@ -5230,7 +5234,7 @@ class UnitCompiler {
             //  + It is made static
             //  + A parameter of type "declaring class" is prepended to the signature
             // Hence, the invocation of such a method must be modified accordingly.
-            this.invokeMethod(
+            this.invoke(
                 mi,                                           // locatable
                 Opcode.INVOKESTATIC,                          // opcode
                 iMethod.getDeclaringIClass(),                 // declaringIClass
@@ -5242,7 +5246,7 @@ class UnitCompiler {
             );
         } else
         {
-            this.invoke(mi, iMethod);
+            this.invokeMethod(mi, iMethod);
         }
         return iMethod.getReturnType();
     }
@@ -5369,7 +5373,7 @@ class UnitCompiler {
         }
 
         // Invoke!
-        this.invokeMethod(
+        this.invoke(
             scmi,                         // locatable
             Opcode.INVOKESPECIAL,         // opcode
             iMethod.getDeclaringIClass(), // declaringIClass
@@ -7999,7 +8003,7 @@ class UnitCompiler {
 
                 // "s.concat(String.valueOf(operand))"
                 UnitCompiler.this.stringConversion(operand, UnitCompiler.this.compileGetValue(operand));
-                this.invoke(locatable, this.iClassLoader.METH_java_lang_String__concat__java_lang_String);
+                this.invokeMethod(locatable, this.iClassLoader.METH_java_lang_String__concat__java_lang_String);
             }
             return this.iClassLoader.TYPE_java_lang_String;
         }
@@ -8009,7 +8013,7 @@ class UnitCompiler {
         this.dupx(locatable);
         this.swap(locatable);
 
-        this.invoke(locatable, this.iClassLoader.CTOR_java_lang_StringBuilder__java_lang_String);
+        this.invokeConstructor(locatable, this.iClassLoader.CTOR_java_lang_StringBuilder__java_lang_String);
         this.getCodeContext().popUninitializedVariableOperand();
         this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_STRINGBUILDER);
 
@@ -8018,7 +8022,7 @@ class UnitCompiler {
 
             // "sb.append(operand)"
             IClass t = UnitCompiler.this.compileGetValue(operand);
-            this.invoke(locatable, (
+            this.invokeMethod(locatable, (
                 t == IClass.BYTE    ? this.iClassLoader.METH_java_lang_StringBuilder__append__int     :
                 t == IClass.SHORT   ? this.iClassLoader.METH_java_lang_StringBuilder__append__int     :
                 t == IClass.INT     ? this.iClassLoader.METH_java_lang_StringBuilder__append__int     :
@@ -8032,7 +8036,7 @@ class UnitCompiler {
         }
 
         // "StringBuilder.toString()":
-        this.invoke(locatable, this.iClassLoader.METH_java_lang_StringBuilder__toString);
+        this.invokeMethod(locatable, this.iClassLoader.METH_java_lang_StringBuilder__toString);
 
         return this.iClassLoader.TYPE_java_lang_String;
     }
@@ -8047,7 +8051,7 @@ class UnitCompiler {
      */
     private void
     stringConversion(Locatable locatable, IClass sourceType) throws CompileException {
-        this.invoke(locatable, (
+        this.invokeMethod(locatable, (
             sourceType == IClass.BYTE    ? this.iClassLoader.METH_java_lang_String__valueOf__int :
             sourceType == IClass.SHORT   ? this.iClassLoader.METH_java_lang_String__valueOf__int :
             sourceType == IClass.INT     ? this.iClassLoader.METH_java_lang_String__valueOf__int :
@@ -8302,7 +8306,7 @@ class UnitCompiler {
 
         // Invoke!
         // Notice that the method descriptor is "iConstructor.getDescriptor()", prepended with the synthetic parameters.
-        this.invoke(locatable, iConstructor);
+        this.invokeConstructor(locatable, iConstructor);
     }
 
     /**
@@ -10787,7 +10791,7 @@ class UnitCompiler {
             this.consT(locatable, ss[0]);
             for (int i = 1; i < ss.length; ++i) {
                 this.consT(locatable, ss[i]);
-                this.invoke(locatable, this.iClassLoader.METH_java_lang_String__concat__java_lang_String);
+                this.invokeMethod(locatable, this.iClassLoader.METH_java_lang_String__concat__java_lang_String);
             }
             return this.iClassLoader.TYPE_java_lang_String;
         }
@@ -11659,7 +11663,7 @@ class UnitCompiler {
     private void
     boxingConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
 
-        this.invokeMethod(
+        this.invoke(
             locatable,            // locatable
             Opcode.INVOKESTATIC,  // opcode
             targetType,           // declaringIClass
@@ -11708,7 +11712,7 @@ class UnitCompiler {
     unboxingConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
 
         // "source.intValue()"
-        this.invokeMethod(
+        this.invoke(
             locatable,                                                       // locatable
             Opcode.INVOKEVIRTUAL,                                            // opcode
             sourceType,                                                      // declaringIClass
@@ -12132,10 +12136,9 @@ class UnitCompiler {
 
     /**
      * Expects the target object and the arguments on the operand stack.
-     * @throws CompileException
      */
     private void
-    invokeMethod(
+    invoke(
         Locatable        locatable,
         int              opcode,
         IClass           declaringIClass,
@@ -12791,53 +12794,31 @@ class UnitCompiler {
      * number and types of arguments are on the operand stack.
      */
     private void
-    invoke(Locatable locatable, IMethod iMethod) throws CompileException {
+    invokeMethod(Locatable locatable, IMethod iMethod) throws CompileException {
 
-        if (iMethod.isStatic()) {
-
-            // Static class or interface method.
-            final ClassFile cf = this.getCodeContext().getClassFile();
-
-            if (iMethod.getDeclaringIClass().isInterface() && this.getTargetVersion() < 8) {
-                this.compileError(
-                    "Invocation of static interface methods only available for target version 8+",
-                    locatable.getLocation()
-                );
-            }
-
-            this.invokeMethod(
-                locatable,                    // locatable
-                Opcode.INVOKESTATIC,          // opcode
-                iMethod.getDeclaringIClass(), // declaringIClass
-                iMethod.getName(),            // methodName
-                iMethod.getDescriptor(),      // methodMd
-                false                         // useInterfaceMethodref
-            );
-        } else
-        if (iMethod.getDeclaringIClass().isInterface()) {
-
-            // A non-static interface method.
-            this.invokeMethod(
-                locatable,                    // locatable
-                Opcode.INVOKEINTERFACE,       // opcode
-                iMethod.getDeclaringIClass(), // declaringIClass
-                iMethod.getName(),            // methodName
-                iMethod.getDescriptor(),      // methodMD
-                true                          // useInterfaceMethodref
-            );
-        } else
-        {
-
-            // A non-static class mathod.
-            this.invokeMethod(
-                locatable,                    // locatable
-                Opcode.INVOKEVIRTUAL,         // opcode
-                iMethod.getDeclaringIClass(), // declaringIClass
-                iMethod.getName(),            // methodName
-                iMethod.getDescriptor(),      // methodMd
-                false                         // useInterfaceMethodref
+        if (this.getTargetVersion() < 8 && iMethod.isStatic() && iMethod.getDeclaringIClass().isInterface()) {
+            this.compileError(
+                "Invocation of static interface methods only available for target version 8+",
+                locatable.getLocation()
             );
         }
+
+        int opcode = (
+            iMethod.isStatic()                         ? Opcode.INVOKESTATIC :
+            iMethod.getDeclaringIClass().isInterface() ? Opcode.INVOKEINTERFACE :
+            Opcode.INVOKEVIRTUAL
+        );
+
+        boolean useInterfaceMethodref = iMethod.getDeclaringIClass().isInterface();
+
+        this.invoke(
+            locatable,                    // locatable
+            opcode,                       // opcode
+            iMethod.getDeclaringIClass(), // declaringIClass
+            iMethod.getName(),            // methodName
+            iMethod.getDescriptor(),      // methodMd
+            useInterfaceMethodref         // useInterfaceMethodref
+        );
     }
 
     /**
@@ -12845,8 +12826,8 @@ class UnitCompiler {
      * on the operand stack.
      */
     private void
-    invoke(Locatable locatable, IConstructor iConstructor) throws CompileException {
-        this.invokeMethod(
+    invokeConstructor(Locatable locatable, IConstructor iConstructor) throws CompileException {
+        this.invoke(
             locatable,                         // locatable
             Opcode.INVOKESPECIAL,              // opcode
             iConstructor.getDeclaringIClass(), // declaringIClass

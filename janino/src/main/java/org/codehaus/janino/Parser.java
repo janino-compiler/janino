@@ -1339,6 +1339,10 @@ class Parser {
             // Method declarator?
             if (this.peek("(")) {
 
+                if (this.getSourceVersion() < 8 && Parser.hasAccessModifier(modifiers, "static")) {
+                    throw this.compileException("Static interface methods only available for source version 8+");
+                }
+
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                     docComment,     // docComment
                     modifiers,      // modifiers

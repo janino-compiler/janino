@@ -143,6 +143,9 @@ class CommonsCompilerTestSuite {
             this.expressionEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newExpressionEvaluator();
         }
 
+        @Override public void setSourceVersion(int sourceVersion) { this.expressionEvaluator.setSourceVersion(sourceVersion); }
+        @Override public void setTargetVersion(int targetVersion) { this.expressionEvaluator.setTargetVersion(targetVersion); }
+
         @Override protected void
         cook() throws Exception {
             this.expressionEvaluator.cook(this.expression);
@@ -245,6 +248,9 @@ class CommonsCompilerTestSuite {
             this.scriptEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newScriptEvaluator();
         }
 
+        @Override public void setSourceVersion(int sourceVersion) { this.scriptEvaluator.setSourceVersion(sourceVersion); }
+        @Override public void setTargetVersion(int targetVersion) { this.scriptEvaluator.setTargetVersion(targetVersion); }
+
         @Override public void
         assertResultTrue() throws Exception {
             this.scriptEvaluator.setReturnType(boolean.class);
@@ -342,6 +348,9 @@ class CommonsCompilerTestSuite {
             this.classBodyEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newClassBodyEvaluator();
         }
 
+        @Override public void setSourceVersion(int sourceVersion) { this.classBodyEvaluator.setSourceVersion(sourceVersion); }
+        @Override public void setTargetVersion(int targetVersion) { this.classBodyEvaluator.setTargetVersion(targetVersion); }
+
         @Override protected void
         cook() throws Exception {
             this.classBodyEvaluator.cook(this.classBody);
@@ -428,6 +437,16 @@ class CommonsCompilerTestSuite {
         new SimpleCompilerTest(compilationUnit, className).assertResultTrue();
     }
 
+    /**
+     * Asserts that the given <var>compilationUnit</var> can be cooked by the {@link ISimpleCompiler} and its {@code
+     * public static boolean }<em>className</em>{@code .main()} method returns TRUE, <em>or</em> issues an error that matches
+     * the <var>messageRegex</var>.
+     */
+    protected void
+    assertCompilationUnitMainReturnsTrue(String compilationUnit, String className, String messageRegex) throws Exception {
+        new SimpleCompilerTest(compilationUnit, className).assertResultTrue(messageRegex);
+    }
+
     public
     class SimpleCompilerTest extends CompileAndExecuteTest {
 
@@ -441,6 +460,9 @@ class CommonsCompilerTestSuite {
             this.className       = className;
             this.simpleCompiler  = CommonsCompilerTestSuite.this.compilerFactory.newSimpleCompiler();
         }
+
+        @Override public void setSourceVersion(int sourceVersion) { this.simpleCompiler.setSourceVersion(sourceVersion); }
+        @Override public void setTargetVersion(int targetVersion) { this.simpleCompiler.setTargetVersion(targetVersion); }
 
         @Override protected void
         cook() throws Exception {
@@ -488,6 +510,9 @@ class CommonsCompilerTestSuite {
     private abstract
     class CompileAndExecuteTest {
 
+        public abstract void setSourceVersion(int sourceVersion);
+        public abstract void setTargetVersion(int targetVersion);
+
         /**
          * @see CompileAndExecuteTest
          */
@@ -504,7 +529,7 @@ class CommonsCompilerTestSuite {
          *
          * @return The thrown {@link CompileException}
          */
-        protected CompileException
+        public CompileException
         assertUncookable() throws Exception {
 
             try {
@@ -530,7 +555,7 @@ class CommonsCompilerTestSuite {
          * Asserts that cooking issues an error, and that the error message contains the
          * <var>messageInfix</var>.
          */
-        protected void
+        public void
         assertUncookable(@Nullable String messageRegex) throws Exception {
 
             CompileException ce           = this.assertUncookable();
@@ -574,7 +599,7 @@ class CommonsCompilerTestSuite {
         /**
          * Asserts that cooking completes without errors.
          */
-        protected void
+        public void
         assertCookable() throws Exception {
             try {
                 this.cook();
@@ -644,6 +669,37 @@ class CommonsCompilerTestSuite {
         public void
         assertResultTrue() throws Exception {
             this.cook();
+            Object result = this.execute();
+            Assert.assertNotNull("Test result not NULL", result);
+            Assert.assertSame(String.valueOf(result), Boolean.class, result.getClass());
+            Assert.assertTrue("Test result is FALSE", (Boolean) result);
+        }
+
+        /**
+         * Asserts that cooking completes normally and executing returns {@link Boolean#TRUE}, <em>or</em> issues an error that
+         * matches the <var>messageRegex</var>.
+         *
+         * @param messageRegex {@code null} means "any error message is acceptable"
+         */
+        public void
+        assertResultTrue(@Nullable String messageRegex) throws Exception {
+            try {
+                this.cook();
+            } catch (CompileException ce) {
+                String errorMessage = ce.getMessage();
+
+                if (messageRegex != null && !Pattern.compile(messageRegex).matcher(errorMessage).find()) {
+                    CommonsCompilerTestSuite.this.fail((
+                        "Compilation error message \""
+                        + errorMessage
+                        + "\" does not contain a match of \""
+                        + messageRegex
+                        + "\""
+                    ), ce);
+                }
+                return;
+            }
+
             Object result = this.execute();
             Assert.assertNotNull("Test result not NULL", result);
             Assert.assertSame(String.valueOf(result), Boolean.class, result.getClass());
