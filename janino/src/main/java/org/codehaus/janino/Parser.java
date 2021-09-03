@@ -2962,7 +2962,7 @@ class Parser {
                 ) {
                     final String[] identifiers = ((AmbiguousName) a).identifiers;
 
-                    // '<' Type [ TypeArguments ] ( '>' | ',' )
+                    // ambiguous-name '<' Type [ TypeArguments ] ( '>' | ',' )
                     this.parseTypeArgumentsOpt();
                     TypeArgument firstTypeArgument;
                     {
@@ -2981,6 +2981,7 @@ class Parser {
                     // < type-argument { ',' type-argument } '>'
                     while (this.read(">", ",") == 1) typeArguments.add(this.parseTypeArgument());
 
+                    // ambiguous-name '<' Type [ TypeArguments ] { ',' TypeArgument } '>'
                     return new ReferenceType(
                         this.location(),
                         new Annotation[0],
