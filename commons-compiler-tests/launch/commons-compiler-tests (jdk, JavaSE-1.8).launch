@@ -10,7 +10,7 @@
 <listEntry value="org.eclipse.debug.ui.launchGroup.debug"/>
 <listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value="=commons-compiler-tests/src\/test\/java=/optional=/true=/=/maven.pomderived=/true=/=/test=/true=/"/>
+<stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value="=commons-compiler-tests/src\/test\/java=/test=/true=/=/optional=/true=/=/maven.pomderived=/true=/"/>
 <booleanAttribute key="org.eclipse.jdt.junit.KEEPRUNNING_ATTR" value="false"/>
 <stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
 <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>

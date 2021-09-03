@@ -6,7 +6,7 @@
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="2"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value="=janino/src\/test\/java=/optional=/true=/=/maven.pomderived=/true=/=/test=/true=/"/>
+<stringAttribute key="org.eclipse.jdt.junit.CONTAINER" value="=janino/src\/test\/java=/test=/true=/=/optional=/true=/=/maven.pomderived=/true=/"/>
 <booleanAttribute key="org.eclipse.jdt.junit.KEEPRUNNING_ATTR" value="false"/>
 <stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
 <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
