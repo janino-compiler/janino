@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
 
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
@@ -53,6 +54,8 @@ import org.codehaus.commons.compiler.jdk.util.JavaFileManagers;
 import org.codehaus.commons.compiler.jdk.util.JavaFileObjects;
 import org.codehaus.commons.compiler.util.reflect.ApiLog;
 import org.codehaus.commons.compiler.util.resource.Resource;
+import org.codehaus.commons.compiler.util.resource.ResourceCreator;
+import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -102,66 +105,6 @@ class Compiler extends AbstractCompiler {
     @Override public void
     compile(final Resource[] sourceResources) throws CompileException, IOException {
 
-        Collection<JavaFileObject> sourceFileObjects = new ArrayList<>();
-        for (int i = 0; i < sourceResources.length; i++) {
-            Resource sourceResource = sourceResources[i];
-
-            String fn        = sourceResource.getFileName();
-            String className = fn.substring(fn.lastIndexOf(File.separatorChar) + 1, fn.length() - 5).replace('/', '.');
-            sourceFileObjects.add(JavaFileObjects.fromResource(
-                sourceResource,
-                className,           // className
-                Kind.SOURCE,
-                this.sourceCharset
-            ));
-        }
-
-        final int[] compileErrorCount = new int[1];
-        final DiagnosticListener<JavaFileObject> dl = new DiagnosticListener<JavaFileObject>() {
-
-            @Override public void
-            report(@Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
-                assert diagnostic != null;
-
-            	JavaFileObject source = diagnostic.getSource();
-				Location loc = new Location(
-        			source != null ? source.toUri().getPath() : null, // fileName
-        			(short) diagnostic.getLineNumber(),
-        			(short) diagnostic.getColumnNumber()
-    			);
-
-                String message = diagnostic.getMessage(null) + " (" + diagnostic.getCode() + ")";
-
-            	try {
-                    switch (diagnostic.getKind()) {
-
-                    case ERROR:
-                    	compileErrorCount[0]++;
-
-                    	ErrorHandler eh = Compiler.this.compileErrorHandler;
-
-                    	if (eh == null) throw new CompileException(message, loc);
-
-                    	eh.handleError(diagnostic.toString(), loc);
-                        break;
-
-                    case MANDATORY_WARNING:
-                    case WARNING:
-                        WarningHandler wh = Compiler.this.warningHandler;
-                        if (wh != null) wh.handleWarning(null, message, loc);
-                        break;
-
-                    case NOTE:
-                    case OTHER:
-                    default:
-                        break;
-                    }
-                } catch (CompileException ce) {
-                    throw new RuntimeException(ce);
-                }
-            }
-        };
-
         // Compose the effective compiler options.
         List<String> options = new ArrayList<>(this.compilerOptions);
 
@@ -192,67 +135,116 @@ class Compiler extends AbstractCompiler {
             }
         }
 
-        JavaFileManager fileManager = this.getJavaFileManager();
+        {
+        	File[] bcp = this.bootClassPath;
+        	if (bcp != null) {
+		        options.add("-bootclasspath");
+				options.add(Compiler.filesToPath(bcp));
+        	}
+        }
+
+    	options.add("-classpath");
+		options.add(Compiler.filesToPath(this.classPath));
+
+//        JavaFileManager fileManager = Compiler.getJavaFileManager(
+//    		this.compiler,
+//    		this.sourceFinder,
+//    		this.sourceCharset,
+//    		this.classFileFinder,
+//		);
+//        try {
+	        Compiler.compile(
+        		this.compiler,
+        		options,
+        		this.sourceFinder,
+        		this.sourceCharset,
+        		this.classFileFinder,
+        		this.classFileCreator,
+        		sourceResources,
+        		this.compileErrorHandler,
+        		this.warningHandler,
+        		null // offsets
+    		);
+//        } finally {
+//            fileManager.close();
+//        }
+    }
+
+	static void
+	compile(
+		JavaCompiler                  compiler,
+		List<String>                  options,
+		ResourceFinder                sourceFinder,
+		Charset                       sourceFileCharset,
+		ResourceFinder                classFileFinder,
+		ResourceCreator               classFileCreator,
+		Resource[]                    sourceFiles,
+		@Nullable ErrorHandler        compileErrorHandler,
+		@Nullable WarningHandler      warningHandler,
+		@Nullable SortedSet<Location> offsets
+	) throws CompileException, IOException {
+
+    	// Wrap the source files in JavaFileObjects.
+        Collection<JavaFileObject> sourceFileObjects = new ArrayList<>();
+        for (int i = 0; i < sourceFiles.length; i++) {
+            Resource sourceResource = sourceFiles[i];
+
+            String fn        = sourceResource.getFileName();
+            String className = fn.substring(fn.lastIndexOf(File.separatorChar) + 1).replace('/', '.');
+            if (className.endsWith(".java")) className = className.substring(0, className.length() - 5);
+            sourceFileObjects.add(JavaFileObjects.fromResource(
+                sourceResource,
+                className,
+                Kind.SOURCE,
+                sourceFileCharset
+            ));
+        }
+
+		final JavaFileManager fileManager = Compiler.getJavaFileManager(
+			compiler,
+			sourceFinder,
+			sourceFileCharset,
+			classFileFinder,
+			classFileCreator
+		);
         try {
-
-	        fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
-
-	        // Run the compiler.
-	        try {
-	            if (!this.compiler.getTask(
-	                null,             // out
-	                fileManager,      // fileManager
-	                dl,               // diagnosticListener
-	                options,          // options
-	                null,             // classes
-	                sourceFileObjects // compilationUnits
-	            ).call() || compileErrorCount[0] > 0) {
-	                throw new CompileException("Compilation failed with " + compileErrorCount[0] + " errors", null);
-	            }
-	        } catch (RuntimeException rte) {
-
-	            // Unwrap the compilation exception and throw it.
-	            for (Throwable t = rte.getCause(); t != null; t = t.getCause()) {
-	                if (t instanceof CompileException) {
-	                    throw (CompileException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
-	                }
-	                if (t instanceof IOException) {
-	                    throw (IOException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
-	                }
-	            }
-	            throw rte;
-	        }
+			Compiler.compile(
+        		compiler,
+        		options,
+        		sourceFileObjects,
+        		fileManager,
+        		compileErrorHandler,
+        		warningHandler,
+        		offsets
+    		);
         } finally {
             fileManager.close();
         }
-    }
+	}
 
     /**
      * Creates the underlying {@link JavaFileManager} lazily, because {@link #setSourcePath(File[])} and consorts are
      * called <em>after</em> initialization.
      */
-    private JavaFileManager
-    getJavaFileManager() {
-
-        if (this.fileManagerEnn != null) return this.fileManagerEnn;
-
-        return (this.fileManagerEnn = this.getJavaFileManager2());
-    }
-    @Nullable private JavaFileManager fileManagerEnn;
-
-    private JavaFileManager
-    getJavaFileManager2() {
+    private static JavaFileManager
+    getJavaFileManager(
+		JavaCompiler    compiler,
+		ResourceFinder  sourceFileFinder,
+		Charset         sourceFileCharset,
+		ResourceFinder  classFileFinder,
+		ResourceCreator classFileCreator
+	) {
 
         // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
         // CLASSPATH.
-        JavaFileManager jfm = this.compiler.getStandardFileManager(null, null, null);
+        JavaFileManager jfm = compiler.getStandardFileManager(null, null, null);
 
         // Store .class file via the classFileCreator.
         jfm = JavaFileManagers.fromResourceCreator(
             jfm,
             StandardLocation.CLASS_OUTPUT,
             Kind.CLASS,
-            this.classFileCreator,
+            classFileCreator,
             Charset.defaultCharset()
         );
 
@@ -261,7 +253,7 @@ class Compiler extends AbstractCompiler {
             jfm,
             StandardLocation.CLASS_PATH,
             Kind.CLASS,
-            this.classFileFinder,
+            classFileFinder,
             Charset.defaultCharset() // irrelevant
         );
 
@@ -270,10 +262,119 @@ class Compiler extends AbstractCompiler {
             jfm,
             StandardLocation.SOURCE_PATH,
             Kind.SOURCE,
-            this.sourceFinder,
-            this.sourceCharset
+            sourceFileFinder,
+            sourceFileCharset
         );
 
-        return (this.fileManagerEnn = jfm);
+        return jfm;
     }
+
+	static void
+	compile(
+		JavaCompiler                        compiler,
+		List<String>                        options,
+		Collection<JavaFileObject>          sourceFileObjects,
+		JavaFileManager                     fileManager,
+		@Nullable final ErrorHandler        compileErrorHandler,
+		@Nullable final WarningHandler      warningHandler,
+		@Nullable final SortedSet<Location> offsets
+	) throws CompileException, IOException {
+		fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
+
+		final int[] compileErrorCount = new int[1];
+		final DiagnosticListener<JavaFileObject> dl = new DiagnosticListener<JavaFileObject>() {
+
+		    @Override public void
+		    report(@Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
+		        assert diagnostic != null;
+
+		    	JavaFileObject source = diagnostic.getSource();
+				Location loc = new Location(
+					source != null ? source.getName() : null, // fileName
+					(short) diagnostic.getLineNumber(),
+					(short) diagnostic.getColumnNumber()
+				);
+
+                // Manipulate the diagnostic location to accomodate for the "offsets" (see "addOffset(String)"):
+				if (offsets != null) {
+	                SortedSet<Location> hs = offsets.headSet(loc);
+	                if (!hs.isEmpty()) {
+	                    Location co = hs.last();
+	                    loc = new Location(
+	                        co.getFileName(),
+	                        loc.getLineNumber() - co.getLineNumber() + 1,
+	                        (
+	                            loc.getLineNumber() == co.getLineNumber()
+	                            ? loc.getColumnNumber() - co.getColumnNumber() + 1
+	                            : loc.getColumnNumber()
+	                        )
+	                    );
+	                }
+				}
+
+		        String message = diagnostic.getMessage(null) + " (" + diagnostic.getCode() + ")";
+
+		    	try {
+		            switch (diagnostic.getKind()) {
+
+		            case ERROR:
+		            	compileErrorCount[0]++;
+
+		            	if (compileErrorHandler == null) throw new CompileException(message, loc);
+
+		            	compileErrorHandler.handleError(diagnostic.toString(), loc);
+		                break;
+
+		            case MANDATORY_WARNING:
+		            case WARNING:
+		                if (warningHandler != null) warningHandler.handleWarning(null, message, loc);
+		                break;
+
+		            case NOTE:
+		            case OTHER:
+		            default:
+		                break;
+		            }
+		        } catch (CompileException ce) {
+		            throw new RuntimeException(ce);
+		        }
+		    }
+		};
+
+		// Run the compiler.
+		try {
+		    if (!compiler.getTask(
+		        null,             // out
+		        fileManager,      // fileManager
+		        dl,               // diagnosticListener
+		        options,          // options
+		        null,             // classes
+		        sourceFileObjects // compilationUnits
+		    ).call() || compileErrorCount[0] > 0) {
+		        throw new CompileException("Compilation failed with " + compileErrorCount[0] + " errors", null);
+		    }
+		} catch (RuntimeException rte) {
+
+		    // Unwrap the compilation exception and throw it.
+		    for (Throwable t = rte.getCause(); t != null; t = t.getCause()) {
+		        if (t instanceof CompileException) {
+		            throw (CompileException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
+		        }
+		        if (t instanceof IOException) {
+		            throw (IOException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
+		        }
+		    }
+		    throw rte;
+		}
+	}
+
+	private static String
+	filesToPath(File[] files) {
+		StringBuilder sb = new StringBuilder();
+		for (File cpe : files) {
+			if (sb.length() > 0) sb.append(File.pathSeparatorChar);
+			sb.append(cpe.getPath());
+		}
+		return sb.toString();
+	}
 }

@@ -53,7 +53,7 @@ class ResourceFinderTest {
         URLClassLoader cl = new URLClassLoader(new URL[] { zipFileUrl });
         Assert.assertNotNull(cl.getResource("foo.txt"));
 
-        Resource r = ResourceFinders.getsResourceAsStream(cl).findResource("foo.txt");
+        Resource r = ResourceFinders.fromClassLoader(cl).findResource("foo.txt");
         Assert.assertNotNull(r);
 
         Assert.assertTrue(r instanceof LocatableResource);

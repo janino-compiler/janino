@@ -939,7 +939,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     @Test public void
     testIssue65() throws Exception {
         ReportedBugsTest.assertUncookableLocation(
-            "File 'FILENAME', Line 5, Column 9",
+            "File '/FILENAME.java', Line 5, Column 9",
             this.compilerFactory.newSimpleCompiler(),
             (
                 ""
@@ -961,7 +961,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     @Test public void
     testIssue65_tabWidth() throws Exception {
         ReportedBugsTest.assertUncookableLocation(
-            "File 'FILENAME', Line 5, Column 25",
+            "File '/FILENAME.java', Line 5, Column 25",
             this.compilerFactory.newSimpleCompiler(),
             (
                 ""

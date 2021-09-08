@@ -25,6 +25,8 @@
 
 package org.codehaus.commons.compiler.util.resource;
 
+import java.io.IOException;
+
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -34,8 +36,10 @@ public abstract
 class ListableResourceFinder extends ResourceFinder {
 
     /**
-     * @return All resources who's name starts with the given prefix
+     * @param resourceNamePrefix E.g. {@code ""} or {@code "java/lang"}
+     * @return                   All resources who's name starts with the given prefix; {@code null} iff
+     *                           a location designated by the <var>resourceNamePrefix</var> does not exist
      */
     @Nullable public abstract Iterable<Resource>
-    list(String resourceNamePrefix, boolean recurse);
+    list(String resourceNamePrefix, boolean recurse) throws IOException;
 }

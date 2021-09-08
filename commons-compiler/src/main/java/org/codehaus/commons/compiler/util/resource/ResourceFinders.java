@@ -28,7 +28,12 @@ package org.codehaus.commons.compiler.util.resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import org.codehaus.commons.compiler.lang.ClassLoaders;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
@@ -43,10 +48,10 @@ class ResourceFinders {
      * @return Finds resources via <var>classLoader</var>{@code .getResource()}; all found resources are {@link
      *         LocatableResource}s
      */
-    public static ResourceFinder
-    getsResourceAsStream(final ClassLoader classLoader) {
+    public static ListableResourceFinder
+    fromClassLoader(final ClassLoader classLoader) {
 
-        return new ResourceFinder() {
+        return new ListableResourceFinder() {
 
             @Override @Nullable public Resource
             findResource(String resourceName) {
@@ -58,21 +63,49 @@ class ResourceFinders {
                 if (url == null) return null;
 
                 final String finalResourceName = resourceName;
-                return new LocatableResource() {
-
-                    @Override public URL
-                    getLocation() throws IOException { return url; }
-
-                    @Override public InputStream
-                    open() throws IOException { return url.openStream(); }
-
-                    @Override public String
-                    getFileName() { return finalResourceName; }
-
-                    @Override public long
-                    lastModified() { return 0; }
-                };
+                return ResourceFinders.resourceFromUrl(url, finalResourceName);
             }
+
+            @Override @Nullable public Iterable<Resource>
+            list(String resourceNamePrefix, boolean recurse) throws IOException {
+
+                Map<String, URL> allSubresources = ClassLoaders.getSubresources(
+                    classLoader,
+                    resourceNamePrefix,
+                    false, // includeDirectories
+                    recurse
+                );
+
+                Collection<Resource> result = new ArrayList<>(allSubresources.size());
+                for (Entry<String, URL> e : allSubresources.entrySet()) {
+                    final String name = e.getKey();
+                    final URL    url  = e.getValue();
+
+                    if (!name.endsWith(".class")) continue;
+
+                    result.add(ResourceFinders.resourceFromUrl(url, name));
+                }
+
+                return result;
+            }
+        };
+    }
+
+    private static LocatableResource
+    resourceFromUrl(final URL url, final String resourceName) {
+        return new LocatableResource() {
+
+            @Override public URL
+            getLocation() throws IOException { return url; }
+
+            @Override public InputStream
+            open() throws IOException { return url.openStream(); }
+
+            @Override public String
+            getFileName() { return resourceName; }
+
+            @Override public long
+            lastModified() { return 0; }
         };
     }
 }

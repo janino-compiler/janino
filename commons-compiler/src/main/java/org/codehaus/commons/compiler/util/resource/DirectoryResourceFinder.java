@@ -82,7 +82,7 @@ class DirectoryResourceFinder extends FileResourceFinder {
         Set<File> files = (Set<File>) this.subdirectoryNameToFiles.get(subdirectoryName);
         if (files == null && !this.subdirectoryNameToFiles.containsKey(subdirectoryName)) {
             File subDirectory = (
-                subdirectoryName == null
+                subdirectoryName == null || subdirectoryName.isEmpty()
                 ? this.directory
                 : new File(this.directory, subdirectoryName)
             );

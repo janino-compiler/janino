@@ -85,7 +85,7 @@ class JavaFileManagers {
                     return result;
                 }
 
-                // A [Java]FileObject's "name" looks like this: "/orc/codehaus/commons/compiler/Foo.java".
+                // A [Java]FileObject's "name" looks like this: "/org/codehaus/commons/compiler/Foo.java".
                 // A [Java]FileObject's "binary name" looks like "java.lang.annotation.Retention".
 
                 String bn = jfo.getName();
@@ -109,6 +109,8 @@ class JavaFileManagers {
             // Must implement "list()", otherwise we'd get "package xyz does not exist" compile errors
             @Override @NotNullByDefault(false) public Iterable<JavaFileObject>
             list(Location location2, String packageName, Set<Kind> kinds, boolean recurse) throws IOException {
+
+                Iterable<JavaFileObject> delegatesJfos = super.list(location2, packageName, kinds, recurse);
 
                 if (location2 == location && kinds.contains(kind)) {
 
@@ -140,11 +142,14 @@ class JavaFileManagers {
                                 result.add(jfo);
                             }
                         }
+
+                        // Add JFOs of delegate file manager.
+                        for (JavaFileObject jfo : delegatesJfos) result.add(jfo);
                         return result;
                     }
                 }
 
-                return super.list(location2, packageName, kinds, recurse);
+                return delegatesJfos;
             }
 
             @Override @NotNullByDefault(false) public JavaFileObject
@@ -171,6 +176,16 @@ class JavaFileManagers {
 
                 return super.getJavaFileForInput(location2, className, kind2);
             }
+
+			@Override @NotNullByDefault(false) public boolean
+			isSameFile(FileObject a, FileObject b) {
+
+				if (a instanceof ResourceJavaFileObject && b instanceof ResourceJavaFileObject) {
+					return a.getName().contentEquals(b.getName());
+				}
+
+				return super.isSameFile(a, b);
+			}
         }
 
         return new ResourceFinderInputJavaFileManager();
