@@ -46,6 +46,7 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.TypeVisitor;
 import org.codehaus.janino.util.ClassFile;
@@ -220,7 +221,15 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         parser.setSourceVersion(this.sourceVersion);
         parser.setWarningHandler(this.warningHandler);
 
-        this.compileToClassLoader(parser.parseAbstractCompilationUnit());
+        AbstractCompilationUnit acu;
+        try {
+            acu = parser.parseAbstractCompilationUnit();
+        } catch (CompileException ce) {
+            this.classFiles = new ClassFile[0]; // Mark this SimpleCompiler as "cooked".
+            throw ce;
+        }
+
+        this.compileToClassLoader(acu);
     }
 
     /**
@@ -243,6 +252,9 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             unitCompiler.setWarningHandler(this.warningHandler);
 
             this.classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
+        } catch (CompileException ce) {
+            this.classFiles = new ClassFile[0]; // Mark this SimpleCompiler as "cooked".
+            throw ce;
         } finally {
             this.classLoaderIClassLoader = null;
         }
