@@ -127,10 +127,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         this.compiler = c;
     }
 
+    /**
+     * Initializes with a <em>different</em>, {@code javax.tools.JavaCompiler}-compatible Java compiler.
+     */
     public
-    SimpleCompiler(JavaCompiler compiler) {
-    	this.compiler = compiler;
-    }
+    SimpleCompiler(JavaCompiler compiler) { this.compiler = compiler; }
 
     @Override public void
     setSourceVersion(int version) { this.sourceVersion = version; }

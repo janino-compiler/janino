@@ -78,10 +78,11 @@ class Compiler extends AbstractCompiler {
         this.compiler = c;
     }
 
+    /**
+     * Initializes with a <em>different</em>, {@code javax.tools.JavaCompiler}-compatible Java compiler.
+     */
     public
-    Compiler(JavaCompiler compiler) {
-    	this.compiler = compiler;
-    }
+    Compiler(JavaCompiler compiler) { this.compiler = compiler; }
 
     @Override public void
     setVerbose(boolean verbose) {}
