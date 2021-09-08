@@ -34,12 +34,14 @@ import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.junit.Assert;
 
@@ -143,8 +145,10 @@ class CommonsCompilerTestSuite {
             this.expressionEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newExpressionEvaluator();
         }
 
-        @Override public void setSourceVersion(int sourceVersion) { this.expressionEvaluator.setSourceVersion(sourceVersion); }
-        @Override public void setTargetVersion(int targetVersion) { this.expressionEvaluator.setTargetVersion(targetVersion); }
+        @Override public void setSourceVersion(int sourceVersion)               { this.expressionEvaluator.setSourceVersion(sourceVersion);      }
+        @Override public void setTargetVersion(int targetVersion)               { this.expressionEvaluator.setTargetVersion(targetVersion);      }
+        @Override public void setCompileErrorHandler(ErrorHandler errorHandler) { this.expressionEvaluator.setCompileErrorHandler(errorHandler); }
+        @Override public void setWarningHandler(WarningHandler warningHandler)  { this.expressionEvaluator.setWarningHandler(warningHandler);    }
 
         @Override protected void
         cook() throws Exception {
@@ -248,8 +252,10 @@ class CommonsCompilerTestSuite {
             this.scriptEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newScriptEvaluator();
         }
 
-        @Override public void setSourceVersion(int sourceVersion) { this.scriptEvaluator.setSourceVersion(sourceVersion); }
-        @Override public void setTargetVersion(int targetVersion) { this.scriptEvaluator.setTargetVersion(targetVersion); }
+        @Override public void setSourceVersion(int sourceVersion)               { this.scriptEvaluator.setSourceVersion(sourceVersion);      }
+        @Override public void setTargetVersion(int targetVersion)               { this.scriptEvaluator.setTargetVersion(targetVersion);      }
+        @Override public void setCompileErrorHandler(ErrorHandler errorHandler) { this.scriptEvaluator.setCompileErrorHandler(errorHandler); }
+        @Override public void setWarningHandler(WarningHandler warningHandler)  { this.scriptEvaluator.setWarningHandler(warningHandler);    }
 
         @Override public void
         assertResultTrue() throws Exception {
@@ -348,8 +354,10 @@ class CommonsCompilerTestSuite {
             this.classBodyEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newClassBodyEvaluator();
         }
 
-        @Override public void setSourceVersion(int sourceVersion) { this.classBodyEvaluator.setSourceVersion(sourceVersion); }
-        @Override public void setTargetVersion(int targetVersion) { this.classBodyEvaluator.setTargetVersion(targetVersion); }
+        @Override public void setSourceVersion(int sourceVersion)               { this.classBodyEvaluator.setSourceVersion(sourceVersion);      }
+        @Override public void setTargetVersion(int targetVersion)               { this.classBodyEvaluator.setTargetVersion(targetVersion);      }
+        @Override public void setCompileErrorHandler(ErrorHandler errorHandler) { this.classBodyEvaluator.setCompileErrorHandler(errorHandler); }
+        @Override public void setWarningHandler(WarningHandler warningHandler)  { this.classBodyEvaluator.setWarningHandler(warningHandler);    }
 
         @Override protected void
         cook() throws Exception {
@@ -461,8 +469,10 @@ class CommonsCompilerTestSuite {
             this.simpleCompiler  = CommonsCompilerTestSuite.this.compilerFactory.newSimpleCompiler();
         }
 
-        @Override public void setSourceVersion(int sourceVersion) { this.simpleCompiler.setSourceVersion(sourceVersion); }
-        @Override public void setTargetVersion(int targetVersion) { this.simpleCompiler.setTargetVersion(targetVersion); }
+        @Override public void setSourceVersion(int sourceVersion)               { this.simpleCompiler.setSourceVersion(sourceVersion);      }
+        @Override public void setTargetVersion(int targetVersion)               { this.simpleCompiler.setTargetVersion(targetVersion);      }
+        @Override public void setCompileErrorHandler(ErrorHandler errorHandler) { this.simpleCompiler.setCompileErrorHandler(errorHandler); }
+        @Override public void setWarningHandler(WarningHandler warningHandler)  { this.simpleCompiler.setWarningHandler(warningHandler);    }
 
         @Override protected void
         cook() throws Exception {
@@ -512,6 +522,8 @@ class CommonsCompilerTestSuite {
 
         public abstract void setSourceVersion(int sourceVersion);
         public abstract void setTargetVersion(int targetVersion);
+        public abstract void setCompileErrorHandler(ErrorHandler errorHandler);
+        public abstract void setWarningHandler(WarningHandler warningHandler);
 
         /**
          * @see CompileAndExecuteTest
@@ -561,7 +573,7 @@ class CommonsCompilerTestSuite {
             CompileException ce           = this.assertUncookable();
             String           errorMessage = ce.getMessage();
 
-            if (messageRegex != null && !Pattern.compile(messageRegex).matcher(errorMessage).find()) {
+            if (messageRegex != null && !Pattern.compile("(?s)" + messageRegex).matcher(errorMessage).find()) {
                 CommonsCompilerTestSuite.this.fail((
                     "Error message '"
                     + errorMessage

@@ -84,13 +84,17 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
-    private ClassLoader              parentClassLoader = Thread.currentThread().getContextClassLoader();
-    private boolean                  debugSource;
-    private boolean                  debugLines;
-    private boolean                  debugVars;
-    private int                      sourceVersion = -1;
-    private int                      targetVersion = -1;
-    @Nullable private ErrorHandler   compileErrorHandler;
+    private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
+    private boolean     debugSource;
+    private boolean     debugLines;
+    private boolean     debugVars;
+    private int         sourceVersion = -1;
+    private int         targetVersion = -1;
+
+    private final JavaCompiler compiler;
+
+    @Nullable private ErrorHandler compileErrorHandler;
+
     @Nullable private WarningHandler warningHandler;
 
     @Nullable Map<String, byte[]> bytecodes;
@@ -108,6 +112,25 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             );
         }
     });
+
+    public
+    SimpleCompiler() {
+
+        JavaCompiler c = ToolProvider.getSystemJavaCompiler();
+        if (c == null) {
+            throw new RuntimeException(
+                "JDK Java compiler not available - probably you're running a JRE, not a JDK",
+                null
+            );
+        }
+
+        this.compiler = c;
+    }
+
+    public
+    SimpleCompiler(JavaCompiler compiler) {
+    	this.compiler = compiler;
+    }
 
     @Override public void
     setSourceVersion(int version) { this.sourceVersion = version; }
@@ -164,7 +187,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         {
             URI uri;
             try {
-                uri = new URI("simplecompiler");
+                uri = new URI(fileName == null ? "simplecompiler" : fileName);
             } catch (URISyntaxException use) {
                 throw new RuntimeException(use);
             }
@@ -191,32 +214,23 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             };
         }
 
-        // Find the JDK Java compiler.
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        if (compiler == null) {
-            throw new CompileException(
-                "JDK Java compiler not available - probably you're running a JRE, not a JDK",
-                null
-            );
-        }
-
-        final CompileException[] caughtCompileException = new CompileException[1];
-
-        final DiagnosticListener<JavaFileObject>
-        dl = new DiagnosticListener<JavaFileObject>() {
+        final int[] compileErrorCount = new int[1];
+        final DiagnosticListener<JavaFileObject> dl = new DiagnosticListener<JavaFileObject>() {
 
             @Override public void
             report(@Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
                 assert diagnostic != null;
 
-                Location loc = new Location(
-                    fileName,
+                JavaFileObject source = diagnostic.getSource();
+				Location loc = new Location(
+            		source != null ? source.toUri().getPath() : null, // fileName
                     (short) diagnostic.getLineNumber(),
                     (short) diagnostic.getColumnNumber()
                 );
 
                 // Manipulate the diagnostic location to accomodate for the "offsets" (see "addOffset(String)"):
-                SortedSet<Location> hs = SimpleCompiler.this.offsets.headSet(loc);
+                SortedSet<Location> os = SimpleCompiler.this.offsets;
+				SortedSet<Location> hs = os.headSet(loc);
                 if (!hs.isEmpty()) {
                     Location co = hs.last();
                     loc = new Location(
@@ -236,15 +250,19 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                     switch (diagnostic.getKind()) {
 
                     case ERROR:
-                        ErrorHandler oceh = SimpleCompiler.this.compileErrorHandler;
-                        if (oceh == null) throw new CompileException(message, loc);
-                        oceh.handleError(message, loc);
+                    	compileErrorCount[0]++;
+
+                    	ErrorHandler eh = SimpleCompiler.this.compileErrorHandler;
+
+                    	if (eh == null) throw new CompileException(message, loc);
+
+                    	eh.handleError(message, loc);
                         break;
 
                     case MANDATORY_WARNING:
                     case WARNING:
-                        WarningHandler owh = SimpleCompiler.this.warningHandler;
-                        if (owh != null) owh.handleWarning(null, message, loc);
+                        WarningHandler wh = SimpleCompiler.this.warningHandler;
+                        if (wh != null) wh.handleWarning(null, message, loc);
                         break;
 
                     case NOTE:
@@ -253,19 +271,148 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                         break;
                     }
                 } catch (CompileException ce) {
-                    if (caughtCompileException[0] == null) caughtCompileException[0] = ce;
+                    throw new RuntimeException(ce);
                 }
             }
         };
 
-        // Set up a JavaFileManager that reads .class files through the this.parentClassLoader, and stores .class
-        // files in byte arrays
+        // Compose the effective compiler options.
+        List<String> options = new ArrayList<>();
+
+        // Debug options.
+        options.add(
+            this.debugSource
+            ? "-g:source" + (this.debugLines ? ",lines" : "") + (this.debugVars ? ",vars" : "")
+            : this.debugLines
+            ? "-g:lines" + (this.debugVars ? ",vars" : "")
+            : this.debugVars
+            ? "-g:vars"
+            : "-g:none"
+        );
+
+        // Source / target version options.
+        if (this.sourceVersion != -1) {
+            options.add("-source");
+            options.add(Integer.toString(this.sourceVersion));
+        }
+        if (this.targetVersion != -1) {
+            options.add("-target");
+            options.add(Integer.toString(this.targetVersion));
+        }
+
+        Set<JavaFileObject> sourceFileObjects = Collections.singleton(compilationUnit);
+
         final Map<String /*className*/, JavaFileObject> classFiles = new HashMap<>();
-        final JavaFileManager
-        fileManager = new ForwardingJavaFileManager<JavaFileManager>(
-            ToolProvider
-            .getSystemJavaCompiler()
-            .getStandardFileManager(dl, Locale.US, Charset.forName("UTF-8"))
+        final JavaFileManager fileManager = this.getJavaFileManager(dl, classFiles);
+        try {
+
+	        // Run the compiler.
+	        try {
+				if (!this.compiler.getTask(
+	                null,             // out
+	                fileManager,      // fileManager
+	                dl,               // diagnosticListener
+	                options,          // options
+	                null,             // classes
+	                sourceFileObjects // compilationUnits
+	            ).call() || compileErrorCount[0] > 0) {
+	                throw new CompileException("Compilation failed with " + compileErrorCount[0] + " errors", null);
+	            }
+	        } catch (RuntimeException rte) {
+
+	            // Unwrap the compilation exception and throw it.
+	            for (Throwable t = rte.getCause(); t != null; t = t.getCause()) {
+	                if (t instanceof CompileException) {
+	                    throw (CompileException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
+	                }
+	                if (t instanceof IOException) {
+	                    throw (IOException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
+	                }
+	            }
+	            throw rte;
+	        }
+        } finally {
+            fileManager.close();
+        }
+
+        // Fill "this.bytecodes" from the JavaFileManager.
+        Map<String /*className*/, byte[] /*bytes*/> bytecodes = new HashMap<>();
+        for (Entry<String, JavaFileObject> e : classFiles.entrySet()) {
+            String         className = e.getKey();
+            JavaFileObject jfo       = e.getValue();
+
+            byte[] bytes;
+
+            final InputStream is = jfo.openInputStream();
+            try {
+                bytes = InputStreams.readAll(is);
+            } finally {
+                try { is.close(); } catch (Exception ex) {}
+            }
+
+            bytecodes.put(className, bytes);
+        }
+
+        this.bytecodes = bytecodes;
+    }
+
+    @Override public void
+    setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
+        this.debugSource = debugSource;
+        this.debugLines  = debugLines;
+        this.debugVars   = debugVars;
+    }
+
+    @Override public void
+    setParentClassLoader(@Nullable ClassLoader parentClassLoader) {
+        this.parentClassLoader = (
+            parentClassLoader != null
+            ? parentClassLoader
+            : Thread.currentThread().getContextClassLoader()
+        );
+    }
+
+    /**
+     * @deprecated Auxiliary classes never really worked... don't use them.
+     */
+    @Deprecated public void
+    setParentClassLoader(@Nullable ClassLoader parentClassLoader, Class<?>[] auxiliaryClasses) {
+        this.setParentClassLoader(parentClassLoader);
+    }
+
+    @Override public void
+    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
+        this.compileErrorHandler = compileErrorHandler;
+    }
+
+    @Override public void
+    setWarningHandler(@Nullable WarningHandler warningHandler) {
+        this.warningHandler = warningHandler;
+    }
+
+    /**
+     * Derived classes call this method to "reset" the current line and column number at the currently read input
+     * character, and also changes the "file name" (see {@link #cook(String, Reader)}).
+     */
+    protected void
+    addOffset(@Nullable String fileName) {
+
+        LineAndColumnTracker t = this.tracker;
+        assert t != null;
+
+        this.offsets.add(new Location(fileName, t.getLineNumber(), t.getColumnNumber()));
+    }
+
+    /**
+     * Creates and returns a {@link JavaFileManager} which stores .class files in a map
+     *
+     * @param classFiles Where .class files are stored
+     */
+	private JavaFileManager
+	getJavaFileManager(DiagnosticListener<JavaFileObject> dl, final Map<String, JavaFileObject> classFiles) {
+
+		return new ForwardingJavaFileManager<JavaFileManager>(
+            this.compiler.getStandardFileManager(dl, Locale.US, Charset.forName("UTF-8"))
         ) {
 
             @NotNullByDefault(false) @Override public Iterable<JavaFileObject>
@@ -347,121 +494,5 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
                 return fileObject;
             }
         };
-
-        // Run the compiler.
-        try {
-            List<String> options = new ArrayList<>();
-
-            options.add(
-                this.debugSource
-                ? "-g:source" + (this.debugLines ? ",lines" : "") + (this.debugVars ? ",vars" : "")
-                : this.debugLines
-                ? "-g:lines" + (this.debugVars ? ",vars" : "")
-                : this.debugVars
-                ? "-g:vars"
-                : "-g:none"
-            );
-            if (this.sourceVersion != -1) {
-                options.add("-source");
-                options.add(Integer.toString(this.sourceVersion));
-            }
-            if (this.targetVersion != -1) {
-                options.add("-target");
-                options.add(Integer.toString(this.targetVersion));
-            }
-
-            if (!compiler.getTask(
-                null,                                  // out
-                fileManager,                           // fileManager
-                dl,                                    // diagnosticListener
-                options,                               // options
-                null,                                  // classes
-                Collections.singleton(compilationUnit) // compilationUnits
-            ).call()) {
-                if (caughtCompileException[0] != null) throw caughtCompileException[0];
-                throw new CompileException("Compilation failed", null);
-            }
-        } catch (RuntimeException rte) {
-
-            // Unwrap the compilation exception and throw it.
-            for (Throwable t = rte.getCause(); t != null; t = t.getCause()) {
-                if (t instanceof CompileException) {
-                    throw (CompileException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
-                }
-                if (t instanceof IOException) {
-                    throw (IOException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
-                }
-            }
-            throw rte;
-        } finally {
-            fileManager.close();
-        }
-
-        // Fill "this.bytecodes" from the JavaFileManager.
-        Map<String /*className*/, byte[] /*bytes*/> bytecodes = new HashMap<>();
-        for (Entry<String, JavaFileObject> e : classFiles.entrySet()) {
-            String         className = e.getKey();
-            JavaFileObject jfo       = e.getValue();
-
-            byte[] bytes;
-
-            final InputStream is = jfo.openInputStream();
-            try {
-                bytes = InputStreams.readAll(is);
-            } finally {
-                try { is.close(); } catch (Exception ex) {}
-            }
-
-            bytecodes.put(className, bytes);
-        }
-
-        this.bytecodes = bytecodes;
-    }
-
-    @Override public void
-    setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
-        this.debugSource = debugSource;
-        this.debugLines  = debugLines;
-        this.debugVars   = debugVars;
-    }
-
-    @Override public void
-    setParentClassLoader(@Nullable ClassLoader parentClassLoader) {
-        this.parentClassLoader = (
-            parentClassLoader != null
-            ? parentClassLoader
-            : Thread.currentThread().getContextClassLoader()
-        );
-    }
-
-    /**
-     * @deprecated Auxiliary classes never really worked... don't use them.
-     */
-    @Deprecated public void
-    setParentClassLoader(@Nullable ClassLoader parentClassLoader, Class<?>[] auxiliaryClasses) {
-        this.setParentClassLoader(parentClassLoader);
-    }
-
-    @Override public void
-    setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
-        this.compileErrorHandler = compileErrorHandler;
-    }
-
-    @Override public void
-    setWarningHandler(@Nullable WarningHandler warningHandler) {
-        this.warningHandler = warningHandler;
-    }
-
-    /**
-     * Derived classes call this method to "reset" the current line and column number at the currently read input
-     * character, and also changes the "file name" (see {@link #cook(String, Reader)}).
-     */
-    protected void
-    addOffset(@Nullable String fileName) {
-
-        LineAndColumnTracker t = this.tracker;
-        assert t != null;
-
-        this.offsets.add(new Location(fileName, t.getLineNumber(), t.getColumnNumber()));
-    }
+	}
 }

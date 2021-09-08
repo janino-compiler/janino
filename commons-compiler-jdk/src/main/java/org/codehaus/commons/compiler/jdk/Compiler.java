@@ -45,8 +45,10 @@ import javax.tools.ToolProvider;
 
 import org.codehaus.commons.compiler.AbstractCompiler;
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.ICompiler;
-import org.codehaus.commons.compiler.jdk.JavaSourceClassLoader.DiagnosticException;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.jdk.util.JavaFileManagers;
 import org.codehaus.commons.compiler.jdk.util.JavaFileObjects;
 import org.codehaus.commons.compiler.util.reflect.ApiLog;
@@ -59,9 +61,27 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class Compiler extends AbstractCompiler {
 
-    private static final JavaCompiler SYSTEM_JAVA_COMPILER = Compiler.getSystemJavaCompiler();
-
     private Collection<String> compilerOptions = new ArrayList<>();
+
+    private final JavaCompiler compiler;
+
+    public
+    Compiler() {
+    	JavaCompiler c = ToolProvider.getSystemJavaCompiler();
+        if (c == null) {
+            throw new RuntimeException(
+                "JDK Java compiler not available - probably you're running a JRE, not a JDK",
+                null
+            );
+        }
+
+        this.compiler = c;
+    }
+
+    public
+    Compiler(JavaCompiler compiler) {
+    	this.compiler = compiler;
+    }
 
     @Override public void
     setVerbose(boolean verbose) {}
@@ -95,6 +115,52 @@ class Compiler extends AbstractCompiler {
             ));
         }
 
+        final int[] compileErrorCount = new int[1];
+        final DiagnosticListener<JavaFileObject> dl = new DiagnosticListener<JavaFileObject>() {
+
+            @Override public void
+            report(@Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
+                assert diagnostic != null;
+
+            	JavaFileObject source = diagnostic.getSource();
+				Location loc = new Location(
+        			source != null ? source.toUri().getPath() : null, // fileName
+        			(short) diagnostic.getLineNumber(),
+        			(short) diagnostic.getColumnNumber()
+    			);
+
+                String message = diagnostic.getMessage(null) + " (" + diagnostic.getCode() + ")";
+
+            	try {
+                    switch (diagnostic.getKind()) {
+
+                    case ERROR:
+                    	compileErrorCount[0]++;
+
+                    	ErrorHandler eh = Compiler.this.compileErrorHandler;
+
+                    	if (eh == null) throw new CompileException(message, loc);
+
+                    	eh.handleError(diagnostic.toString(), loc);
+                        break;
+
+                    case MANDATORY_WARNING:
+                    case WARNING:
+                        WarningHandler wh = Compiler.this.warningHandler;
+                        if (wh != null) wh.handleWarning(null, message, loc);
+                        break;
+
+                    case NOTE:
+                    case OTHER:
+                    default:
+                        break;
+                    }
+                } catch (CompileException ce) {
+                    throw new RuntimeException(ce);
+                }
+            }
+        };
+
         // Compose the effective compiler options.
         List<String> options = new ArrayList<>(this.compilerOptions);
 
@@ -126,49 +192,38 @@ class Compiler extends AbstractCompiler {
         }
 
         JavaFileManager fileManager = this.getJavaFileManager();
-
-        fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
-
-        // Run the compiler.
         try {
-            if (!Compiler.SYSTEM_JAVA_COMPILER.getTask(
-                null,                                      // out
-                fileManager,                               // fileManager
-                new DiagnosticListener<JavaFileObject>() { // diagnosticListener
 
-                    @Override public void
-                    report(@Nullable final Diagnostic<? extends JavaFileObject> diagnostic) {
-                        assert diagnostic != null;
+	        fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
 
-                        if (diagnostic.getKind() == Diagnostic.Kind.ERROR) {
-                            throw new DiagnosticException(diagnostic);
-                        }
-                    }
-                },
-                options,                                   // options
-                null,                                      // classes
-                sourceFileObjects                          // compilationUnits
-            ).call()) throw new CompileException("Compilation failed", null);
-        } catch (RuntimeException re) {
-            Throwable cause = re.getCause();
-            if (cause instanceof DiagnosticException) {
-                final CompileException ce = new CompileException(((DiagnosticException) cause).getMessage(), null);
-                ce.initCause(re);
-                throw ce;
-            }
-            throw re;
+	        // Run the compiler.
+	        try {
+	            if (!this.compiler.getTask(
+	                null,             // out
+	                fileManager,      // fileManager
+	                dl,               // diagnosticListener
+	                options,          // options
+	                null,             // classes
+	                sourceFileObjects // compilationUnits
+	            ).call() || compileErrorCount[0] > 0) {
+	                throw new CompileException("Compilation failed with " + compileErrorCount[0] + " errors", null);
+	            }
+	        } catch (RuntimeException rte) {
+
+	            // Unwrap the compilation exception and throw it.
+	            for (Throwable t = rte.getCause(); t != null; t = t.getCause()) {
+	                if (t instanceof CompileException) {
+	                    throw (CompileException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
+	                }
+	                if (t instanceof IOException) {
+	                    throw (IOException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
+	                }
+	            }
+	            throw rte;
+	        }
+        } finally {
+            fileManager.close();
         }
-    }
-
-    private static JavaCompiler
-    getSystemJavaCompiler() {
-        JavaCompiler c = ToolProvider.getSystemJavaCompiler();
-        if (c == null) {
-            throw new UnsupportedOperationException(
-                "JDK Java compiler not available - probably you're running a JRE, not a JDK"
-            );
-        }
-        return c;
     }
 
     /**
@@ -189,7 +244,7 @@ class Compiler extends AbstractCompiler {
 
         // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
         // CLASSPATH.
-        JavaFileManager jfm = Compiler.SYSTEM_JAVA_COMPILER.getStandardFileManager(null, null, null);
+        JavaFileManager jfm = this.compiler.getStandardFileManager(null, null, null);
 
         // Store .class file via the classFileCreator.
         jfm = JavaFileManagers.fromResourceCreator(

@@ -796,22 +796,28 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // Default interface methods - a Java 8 feature.
 
-    	SimpleCompilerTest sct = new SimpleCompilerTest((
-            ""
+    	String cu = (
+    	    ""
             + "public interface A { default boolean isTrue() { return true; } }\n"
             + "public class B implements A {}\n"
             + "public class Foo { public static boolean main() { return new B().isTrue(); } }\n"
-        ), "Foo");
+        );
 
-        sct.setSourceVersion(7);
-        sct.assertUncookable("Default interface methods only available for source version 8+|default methods are not supported in -source (1\\.)?7");
+    	{
+    	    SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(7);
+            sct.assertUncookable("Default interface methods only available for source version 8+|default methods are not supported in -source (1\\.)?7");
+    	}
 
-        sct.setSourceVersion(8);
-        sct.setTargetVersion(8);
-        if (CommonsCompilerTestSuite.JVM_VERSION < 8) {
-            sct.assertCookable();
-        } else {
-            sct.assertResultTrue();
+    	{
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(8);
+            sct.setTargetVersion(8);
+            if (CommonsCompilerTestSuite.JVM_VERSION < 8) {
+                sct.assertCookable();
+            } else {
+                sct.assertResultTrue();
+            }
         }
     }
 
@@ -844,21 +850,27 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // Static interface methods (a Java 8 feature).
 
-        SimpleCompilerTest sct = new SimpleCompilerTest((
+        String cu = (
             ""
             + "public interface MyInterface { static boolean isTrue() { return true; } }\n"
             + "public class Foo { public static boolean main() { return MyInterface.isTrue(); } }\n"
-        ), "Foo");
+        );
 
-        sct.setSourceVersion(7);
-        sct.assertUncookable("Static interface methods only available for source version 8+|static interface methods are not supported in -source (1\\.)?7");
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(7);
+            sct.assertUncookable("Static interface methods only available for source version 8+|static interface methods are not supported in -source (1\\.)?7");
+        }
 
-        sct.setSourceVersion(8);
-        sct.setTargetVersion(8);
-        if (CommonsCompilerTestSuite.JVM_VERSION < 8) {
-            sct.assertCookable();
-        } else {
-            sct.assertResultTrue();
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(8);
+            sct.setTargetVersion(8);
+            if (CommonsCompilerTestSuite.JVM_VERSION < 8) {
+                sct.assertCookable();
+            } else {
+                sct.assertResultTrue();
+            }
         }
     }
 
