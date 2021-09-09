@@ -376,35 +376,6 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     @Override public void
     setThrownExceptions(Class<?>[][] thrownExceptions) { this.se.setThrownExceptions(thrownExceptions); }
 
-//    /**
-//     * @throws IllegalArgumentException <var>count</var> is different from previous invocations of
-//     *                                  this method
-//     */
-//    public void
-//    setExpressionCount(int count) {
-//
-//        Expression[] ss = this.expressions;
-//
-//        if (ss == null) {
-//            this.expressions = (ss = new Expression[count]);
-//            for (int i = 0; i < count; i++) {
-//                ss[i] = new Expression(ScriptEvaluator.DEFAULT_METHOD_NAME.replace("*", Integer.toString(i)));
-//            }
-//        } else {
-//            if (count != ss.length) {
-//                throw new IllegalArgumentException(
-//                    "Inconsistent script count; previously " + ss.length + ", now " + count
-//                );
-//            }
-//        }
-//    }
-
-//    private Expression
-//    getExpression(int index) {
-//        if (this.expressions != null) return this.expressions[index];
-//        throw new IllegalStateException("\"getScript()\" invoked befor \"setScriptCount()\"");
-//    }
-
     @Override public Method
     getMethod() { return this.se.getMethod(); }
 
