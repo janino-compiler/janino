@@ -146,28 +146,18 @@ class Compiler extends AbstractCompiler {
     	options.add("-classpath");
 		options.add(Compiler.filesToPath(this.classPath));
 
-//        JavaFileManager fileManager = Compiler.getJavaFileManager(
-//    		this.compiler,
-//    		this.sourceFinder,
-//    		this.sourceCharset,
-//    		this.classFileFinder,
-//		);
-//        try {
-	        Compiler.compile(
-        		this.compiler,
-        		options,
-        		this.sourceFinder,
-        		this.sourceCharset,
-        		this.classFileFinder,
-        		this.classFileCreator,
-        		sourceResources,
-        		this.compileErrorHandler,
-        		this.warningHandler,
-        		null // offsets
-    		);
-//        } finally {
-//            fileManager.close();
-//        }
+        Compiler.compile(
+    		this.compiler,
+    		options,
+    		this.sourceFinder,
+    		this.sourceCharset,
+    		this.classFileFinder,
+    		this.classFileCreator,
+    		sourceResources,
+    		this.compileErrorHandler,
+    		this.warningHandler,
+    		null // offsets
+		);
     }
 
 	static void
