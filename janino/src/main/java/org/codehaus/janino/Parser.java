@@ -3941,6 +3941,10 @@ class Parser {
         }
     }
 
+    /*
+     * Controls the language elements that are accepted. E.g. static interface methods and default methods are only accepted
+     * for source versions 8+. The default is to accept <em>any</var> known language element.
+     */
     public void
     setSourceVersion(int version) { this.sourceVersion = version; }
 
