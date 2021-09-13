@@ -266,10 +266,6 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     public ClassFile[]
     getClassFiles() { return this.assertCooked(); }
 
-    /**
-     * JANINO ignores any set "source version", and throws "NYI" {@link CompileException} when a language element is
-     * used which is not supported.
-     */
     @Override public void
     setSourceVersion(int version) { this.sourceVersion = version; }
 
