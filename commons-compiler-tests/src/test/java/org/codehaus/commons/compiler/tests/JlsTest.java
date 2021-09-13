@@ -827,8 +827,6 @@ class JlsTest extends CommonsCompilerTestSuite {
         // Modifiers for interface method: SUPPRESS CHECKSTYLE LineLength:18
         this.assertCompilationUnitCookable("interface Foo { @SuppressWarnings(\"foo\") void meth();   }");
         this.assertCompilationUnitCookable("interface Foo { abstract                   void meth();   }");
-        this.assertCompilationUnitCookable("interface Foo { default                    void meth() {} }", "only available for (?:source|target) version 8\\+|illegal start of type");
-        this.assertCompilationUnitCookable("interface Foo { private                    void meth() {} }", "not implemented|modifier private not allowed");
         this.assertCompilationUnitCookable("interface Foo { public                     void meth();   }");
         this.assertCompilationUnitCookable("interface Foo { static                     void meth() {} }", "only available for target version 8\\+|modifier static not allowed");
         this.assertCompilationUnitUncookable("interface Foo { final                      void meth();   }", "final not allowed|illegal combination");
@@ -846,7 +844,35 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_9_4__Method_Declarations__6() throws Exception {
+    test_9_4__Method_Declarations__Default_methods() throws Exception {
+
+        // Default methods (a Java 8 feature).
+        String cu = (
+            ""
+            + "public interface MyInterface { default boolean isTrue() { return true; } }\n"
+            + "public class Foo { public static boolean main() { return new MyInterface() {}.isTrue(); } }\n"
+        );
+
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(7);
+            sct.assertUncookable("Default interface methods only available for source version 8+|default methods are not supported in -source (1\\.)?7");
+        }
+
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(8);
+            sct.setTargetVersion(8);
+            if (CommonsCompilerTestSuite.JVM_VERSION < 8) {
+                sct.assertCookable();
+            } else {
+                sct.assertResultTrue();
+            }
+        }
+    }
+
+    @Test public void
+    test_9_4__Method_Declarations__Static_interface_methods() throws Exception {
 
         // Static interface methods (a Java 8 feature).
 
@@ -867,6 +893,38 @@ class JlsTest extends CommonsCompilerTestSuite {
             sct.setSourceVersion(8);
             sct.setTargetVersion(8);
             if (CommonsCompilerTestSuite.JVM_VERSION < 8) {
+                sct.assertCookable();
+            } else {
+                sct.assertResultTrue();
+            }
+        }
+    }
+
+    @Test public void
+    test_9_4__Method_Declarations__Private_interface_methods() throws Exception {
+
+        // Static interface methods (a Java 8 feature).
+
+        String cu = (
+            ""
+                + "public interface MyInterface {\n"
+                + "    private boolean isTrue2() { return true; }\n"
+                + "    default boolean isTrue() { return isTrue2(); }\n"
+                + "}\n"
+                + "public class Foo { public static boolean main() { return new MyInterface() {}.isTrue(); } }\n"
+            );
+
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(8);
+            sct.assertUncookable("Private interface methods only available for target version 9\\+|private interface methods are not supported in -source 8");
+        }
+
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(9);
+            sct.setTargetVersion(9);
+            if (CommonsCompilerTestSuite.JVM_VERSION < 9) {
                 sct.assertCookable();
             } else {
                 sct.assertResultTrue();

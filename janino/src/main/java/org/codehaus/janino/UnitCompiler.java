@@ -3238,7 +3238,11 @@ class UnitCompiler {
         }
 
         if (fd.getAccess() == Access.PRIVATE) {
-            if (fd instanceof MethodDeclarator && !((MethodDeclarator) fd).isStatic()) {
+            if (
+        		fd instanceof MethodDeclarator
+        		&& !((MethodDeclarator) fd).isStatic()
+        		&& !(fd.getDeclaringType() instanceof InterfaceDeclaration)
+    		) {
 
                 // To make the non-static private method invocable for enclosing types, enclosed types and types
                 // enclosed by the same type, it is modified as follows:
@@ -3264,12 +3268,15 @@ class UnitCompiler {
                 // TODO: Compile annotations on functions.
 //                assert fd.modifiers.annotations.length == 0 : "NYI";
 
-                // To make the static private method or private constructor invocable for enclosing types, enclosed
-                // types and types enclosed by the same type, it is modified as follows:
-                //  + Access is changed from PRIVATE to PACKAGE
-
                 short accessFlags = this.accessFlags(fd.getModifiers());
-                accessFlags = UnitCompiler.changeAccessibility(accessFlags, Mod.PACKAGE);
+
+                // To make the static private class method or private constructor invocable for enclosing types,
+                // enclosed types and types enclosed by the same type, it is modified as follows:
+                //  + Access is changed from PRIVATE to PACKAGE
+                if (!(fd.getDeclaringType() instanceof InterfaceDeclaration)) {
+                    accessFlags = UnitCompiler.changeAccessibility(accessFlags, Mod.PACKAGE);
+                }
+
                 if (fd.formalParameters.variableArity) accessFlags |= Mod.VARARGS;
 
                 mi = classFile.addMethodInfo(
@@ -3364,10 +3371,12 @@ class UnitCompiler {
 
         if (fd.getDeclaringType() instanceof InterfaceDeclaration) {
             MethodDeclarator md = (MethodDeclarator) fd;
-            if (md.getAccess() == Access.PRIVATE) {
-                this.compileError("Private interface methods not implemented", fd.getLocation());
+
+            if (md.getAccess() == Access.PRIVATE && this.getTargetVersion() < 9) {
+                this.compileError("Private interface methods only available for target version 9+", fd.getLocation());
                 return;
             }
+
             if (md.isStrictfp() && !md.isDefault() && !md.isStatic()) {
                 this.compileError(
                     "Modifier strictfp only allowed for interface default methods and static interface methods",
@@ -3381,6 +3390,7 @@ class UnitCompiler {
             (
                 fd.getDeclaringType() instanceof InterfaceDeclaration
                 && !((MethodDeclarator) fd).isStatic()
+                && ((MethodDeclarator) fd).getAccess() != Access.PRIVATE
             )
             || (fd instanceof MethodDeclarator && ((MethodDeclarator) fd).isAbstract())
             || (fd instanceof MethodDeclarator && ((MethodDeclarator) fd).isNative())
@@ -5097,8 +5107,8 @@ class UnitCompiler {
         if (ot == null) {
 
             // JLS7 6.5.7.1, 15.12.4.1.1.1
-            TypeBodyDeclaration      scopeTbd;
-            AbstractClassDeclaration scopeClassDeclaration;
+            TypeBodyDeclaration     scopeTbd;
+            AbstractTypeDeclaration scopeTypeDeclaration;
             {
                 Scope s;
                 for (
@@ -5107,8 +5117,8 @@ class UnitCompiler {
                     s = s.getEnclosingScope()
                 );
                 scopeTbd = (TypeBodyDeclaration) s;
-                if (!(s instanceof AbstractClassDeclaration)) s = s.getEnclosingScope();
-                scopeClassDeclaration = (AbstractClassDeclaration) s;
+                if (!(s instanceof AbstractTypeDeclaration)) s = s.getEnclosingScope();
+                scopeTypeDeclaration = (AbstractTypeDeclaration) s;
             }
             if (iMethod.isStatic()) {
                 this.warning(
@@ -5135,7 +5145,7 @@ class UnitCompiler {
 
                 this.referenceThis(
                     mi,                          // locatable
-                    scopeClassDeclaration,       // declaringClass
+                    scopeTypeDeclaration,        // declaringType
                     scopeTbd,                    // declaringTypeBodyDeclaration
                     iMethod.getDeclaringIClass() // targetIClass
                 );
@@ -5225,7 +5235,7 @@ class UnitCompiler {
         }
         // Invoke!
         this.checkAccessible(iMethod, mi.getEnclosingScope(), mi.getLocation());
-        if (/*!iMethod.getDeclaringIClass().isInterface() &&*/ !iMethod.isStatic() && iMethod.getAccess() == Access.PRIVATE) {
+        if (!iMethod.getDeclaringIClass().isInterface() && !iMethod.isStatic() && iMethod.getAccess() == Access.PRIVATE) {
 
             // In order to make a non-static private method invocable for enclosing types, enclosed types and types
             // enclosed by the same type, "compile(FunctionDeclarator)" modifies it on-the-fly as follows:
@@ -10188,12 +10198,12 @@ class UnitCompiler {
 
     private void
     referenceThis(
-        Locatable                locatable,
-        AbstractClassDeclaration declaringClass,
-        TypeBodyDeclaration      declaringTypeBodyDeclaration,
-        IClass                   targetIClass
+        Locatable               locatable,
+        AbstractTypeDeclaration declaringType,
+        TypeBodyDeclaration     declaringTypeBodyDeclaration,
+        IClass                  targetIClass
     ) throws CompileException {
-        List<TypeDeclaration> path = UnitCompiler.getOuterClasses(declaringClass);
+        List<TypeDeclaration> path = UnitCompiler.getOuterClasses(declaringType);
 
         if (UnitCompiler.isStaticContext(declaringTypeBodyDeclaration)) {
             this.compileError("No current instance available in static context", locatable.getLocation());
@@ -10218,7 +10228,7 @@ class UnitCompiler {
                 }
             }
             this.compileError(
-                "\"" + declaringClass + "\" is not enclosed by \"" + targetIClass + "\"",
+                "\"" + declaringType + "\" is not enclosed by \"" + targetIClass + "\"",
                 locatable.getLocation()
             );
         }
@@ -10226,7 +10236,7 @@ class UnitCompiler {
         int i;
         if (declaringTypeBodyDeclaration instanceof ConstructorDeclarator) {
             if (j == 0) {
-                this.load(locatable, this.resolve(declaringClass), 0);
+                this.load(locatable, this.resolve(declaringType), 0);
                 return;
             }
 
@@ -10241,7 +10251,7 @@ class UnitCompiler {
             this.load(locatable, syntheticParameter);
             i = 1;
         } else {
-            this.load(locatable, this.resolve(declaringClass), 0);
+            this.load(locatable, this.resolve(declaringType), 0);
             i = 0;
         }
         for (; i < j; ++i) {
@@ -10482,7 +10492,7 @@ class UnitCompiler {
             @Override public Access
             getAccess() {
                 return (
-                    methodDeclarator.getDeclaringType() instanceof InterfaceDeclaration
+                    methodDeclarator.getDeclaringType() instanceof InterfaceDeclaration && methodDeclarator.getAccess() == Access.DEFAULT
                     ? Access.PUBLIC
                     : methodDeclarator.getAccess()
                 );
@@ -10553,7 +10563,11 @@ class UnitCompiler {
             @Override public boolean
             isAbstract() {
                 return (
-                    (methodDeclarator.getDeclaringType() instanceof InterfaceDeclaration && !methodDeclarator.isDefault())
+                    (
+                        methodDeclarator.getDeclaringType() instanceof InterfaceDeclaration
+                        && !methodDeclarator.isDefault()
+                        && methodDeclarator.getAccess() != Access.PRIVATE
+                    )
                     || methodDeclarator.isAbstract()
                 );
             }
