@@ -59,7 +59,7 @@ import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * JDK-base implementation of the {@link ICompiler}.
+ * {@code javax.tools}-based implementation of the {@link ICompiler}.
  */
 public
 class Compiler extends AbstractCompiler {
@@ -104,6 +104,11 @@ class Compiler extends AbstractCompiler {
 
     @Override public void
     compile(final Resource[] sourceResources) throws CompileException, IOException {
+    	this.compile(sourceResources, null);
+    }
+
+    public void
+    compile(final Resource[] sourceResources, @Nullable SortedSet<Location> offsets) throws CompileException, IOException {
 
         // Compose the effective compiler options.
         List<String> options = new ArrayList<>(this.compilerOptions);
@@ -135,6 +140,7 @@ class Compiler extends AbstractCompiler {
             }
         }
 
+        // Bootclasspath.
         {
         	File[] bcp = this.bootClassPath;
         	if (bcp != null) {
@@ -143,6 +149,7 @@ class Compiler extends AbstractCompiler {
         	}
         }
 
+        // Classpath.
     	options.add("-classpath");
 		options.add(Compiler.filesToPath(this.classPath));
 
@@ -156,7 +163,7 @@ class Compiler extends AbstractCompiler {
     		sourceResources,
     		this.compileErrorHandler,
     		this.warningHandler,
-    		null // offsets
+    		offsets
 		);
     }
 
@@ -213,8 +220,8 @@ class Compiler extends AbstractCompiler {
 	}
 
     /**
-     * Creates the underlying {@link JavaFileManager} lazily, because {@link #setSourcePath(File[])} and consorts are
-     * called <em>after</em> initialization.
+     * Creates a {@link JavaFileManager} that implements the given <var>sourceFileFinder</var>, <var>sourceFileCharset</var>,
+     * <var>classFileFinder</var> and <var>classFileCreator</var>.
      */
     private static JavaFileManager
     getJavaFileManager(
@@ -259,6 +266,9 @@ class Compiler extends AbstractCompiler {
         return jfm;
     }
 
+    /**
+     * Compiles on the {@link JavaFileManager} / {@link JavaFileObject} level.
+     */
 	static void
 	compile(
 		JavaCompiler                        compiler,
@@ -269,6 +279,7 @@ class Compiler extends AbstractCompiler {
 		@Nullable final WarningHandler      warningHandler,
 		@Nullable final SortedSet<Location> offsets
 	) throws CompileException, IOException {
+
 		fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
 
 		final int[] compileErrorCount = new int[1];

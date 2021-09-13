@@ -25,21 +25,18 @@
 
 package org.codehaus.commons.compiler.jdk;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.Cookable;
@@ -54,31 +51,23 @@ import org.codehaus.commons.compiler.util.resource.MapResourceCreator;
 import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
 import org.codehaus.commons.compiler.util.resource.MultiResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
-import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.compiler.util.resource.ResourceFinders;
 import org.codehaus.commons.compiler.util.resource.StringResource;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * The JDK-based implementation of {@link ISimpleCompiler}.
+ * {@code javax.tools}-based implementation of {@link ISimpleCompiler}.
  */
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
-    private ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
-    private boolean     debugSource;
-    private boolean     debugLines;
-    private boolean     debugVars;
-    private int         sourceVersion = -1;
-    private int         targetVersion = -1;
+    private ClassLoader    parentClassLoader = Thread.currentThread().getContextClassLoader();
+    private final Compiler compiler;
 
-    private final JavaCompiler compiler;
-
-    @Nullable private ErrorHandler compileErrorHandler;
-
-    @Nullable private WarningHandler warningHandler;
-
+    /**
+     * Is {@code null} iff this {@link SimpleCompiler} is not yet cooked.
+     */
     @Nullable private Map<String, byte[]> bytecodes;
 
     // See "addOffset(String)".
@@ -96,30 +85,19 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     });
 
     public
-    SimpleCompiler() {
-
-        JavaCompiler c = ToolProvider.getSystemJavaCompiler();
-        if (c == null) {
-            throw new RuntimeException(
-                "JDK Java compiler not available - probably you're running a JRE, not a JDK",
-                null
-            );
-        }
-
-        this.compiler = c;
-    }
+    SimpleCompiler() { this.compiler = new Compiler(); }
 
     /**
      * Initializes with a <em>different</em>, {@code javax.tools.JavaCompiler}-compatible Java compiler.
      */
     public
-    SimpleCompiler(JavaCompiler compiler) { this.compiler = compiler; }
+    SimpleCompiler(JavaCompiler javaCompiler) { this.compiler = new Compiler(javaCompiler); }
 
     @Override public void
-    setSourceVersion(int version) { this.sourceVersion = version; }
+    setSourceVersion(int version) { this.compiler.setSourceVersion(version); }
 
     @Override public void
-    setTargetVersion(int version) { this.targetVersion = version; }
+    setTargetVersion(int version) { this.compiler.setTargetVersion(version); }
 
     @Override public Map<String /*className*/, byte[] /*bytecode*/>
     getBytecodes() { return this.assertCooked(); }
@@ -169,57 +147,25 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         final String text = Readers.readAll(r);
         Resource compilationUnit = new StringResource(fileName == null ? "simplecompiler" : fileName, text);
 
-        // Compose the effective compiler options.
-        List<String> options = new ArrayList<>();
-
-        // Debug options.
-        options.add(
-            this.debugSource
-            ? "-g:source" + (this.debugLines ? ",lines" : "") + (this.debugVars ? ",vars" : "")
-            : this.debugLines
-            ? "-g:lines" + (this.debugVars ? ",vars" : "")
-            : this.debugVars
-            ? "-g:vars"
-            : "-g:none"
-        );
-
-        // Source / target version options.
-        if (this.sourceVersion != -1) {
-            options.add("-source");
-            options.add(Integer.toString(this.sourceVersion));
-        }
-        if (this.targetVersion != -1) {
-            options.add("-target");
-            options.add(Integer.toString(this.targetVersion));
-        }
-
         // The default classpath of JAVAC is "." - we don't want that.
-        options.add("-classpath");
-        options.add("lgdlkgjd");
+        this.compiler.setClassPath(new File[0]);
 
+        // Create and find class files in a HashMap.
         Map<String, byte[]> bcs = (this.bytecodes = new HashMap<>());
-		Compiler.compile(
-			this.compiler,                        // compiler
-			options,                              // options
-			ResourceFinder.EMPTY_RESOURCE_FINDER, // sourceFileFinder
-			Charset.defaultCharset(),             // sourceFileCharset
-			new MultiResourceFinder(              // classFileFinder
-				ResourceFinders.fromClassLoader(SimpleCompiler.this.parentClassLoader),
-				new MapResourceFinder(bcs)
-			),
-			new MapResourceCreator(bcs),          // classFileCreator
-			new Resource[] { compilationUnit },   // sourceFiles
-			this.compileErrorHandler,             // compileErrorHandler
-			this.warningHandler,                  // warningHandler
-			this.offsets                          // offsets
-		);
+        this.compiler.setClassFileFinder(new MultiResourceFinder(
+            ResourceFinders.fromClassLoader(SimpleCompiler.this.parentClassLoader),
+            new MapResourceFinder(bcs)
+        ));
+        this.compiler.setClassFileCreator(new MapResourceCreator(bcs));
+
+        this.compiler.compile(new Resource[] { compilationUnit }, this.offsets);
     }
 
     @Override public void
     setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars) {
-        this.debugSource = debugSource;
-        this.debugLines  = debugLines;
-        this.debugVars   = debugVars;
+        this.compiler.setDebugSource(debugSource);
+        this.compiler.setDebugLines(debugLines);
+        this.compiler.setDebugVars(debugVars);
     }
 
     @Override public void
@@ -241,13 +187,11 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
 
     @Override public void
     setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler) {
-        this.compileErrorHandler = compileErrorHandler;
+        this.compiler.setCompileErrorHandler(compileErrorHandler);
     }
 
     @Override public void
-    setWarningHandler(@Nullable WarningHandler warningHandler) {
-        this.warningHandler = warningHandler;
-    }
+    setWarningHandler(@Nullable WarningHandler warningHandler) { this.compiler.setWarningHandler(warningHandler); }
 
     /**
      * Derived classes call this method to "reset" the current line and column number at the currently read input
