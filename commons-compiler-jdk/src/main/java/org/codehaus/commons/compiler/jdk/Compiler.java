@@ -52,6 +52,7 @@ import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
 import org.codehaus.commons.compiler.jdk.util.JavaFileManagers;
 import org.codehaus.commons.compiler.jdk.util.JavaFileObjects;
+import org.codehaus.commons.compiler.jdk.util.JavaFileObjects.ResourceJavaFileObject;
 import org.codehaus.commons.compiler.util.reflect.ApiLog;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
@@ -291,7 +292,11 @@ class Compiler extends AbstractCompiler {
 
 		    	JavaFileObject source = diagnostic.getSource();
 				Location loc = new Location(
-					source != null ? source.getName() : null, // fileName
+					(                                     // fileName
+						source == null                           ? null :
+						source instanceof ResourceJavaFileObject ? ((ResourceJavaFileObject) source).getResourceFileName() :
+						source.getName()
+					),
 					(short) diagnostic.getLineNumber(),
 					(short) diagnostic.getColumnNumber()
 				);

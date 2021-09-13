@@ -110,6 +110,9 @@ class JavaFileObjects {
 
         @Override public long
         getLastModified() { return this.resource.lastModified(); }
+
+		public String
+		getResourceFileName() { return this.resource.getFileName(); }
     }
 
     /**
