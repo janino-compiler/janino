@@ -4255,6 +4255,14 @@ class Java {
             this.typeArguments = typeArguments;
         }
 
+        @Override public void
+        setEnclosingScope(Scope enclosingScope) {
+            super.setEnclosingScope(enclosingScope);
+            if (this.typeArguments!= null) {
+                for (TypeArgument ta : this.typeArguments) ta.setEnclosingScope(enclosingScope);
+            }
+        }
+
         @Override public String
         toString() {
             String s = Java.join(this.annotations, " ");
@@ -4279,6 +4287,12 @@ class Java {
      */
     public
     interface TypeArgument {
+
+        /**
+         * Sets the enclosing scope for this type argument.
+         */
+        void
+        setEnclosingScope(Scope enclosingScope);
 
         /**
          * Invokes the "{@code visit...()}" method of {@link Visitor.TypeArgumentVisitor} for the concrete {@link
@@ -6410,6 +6424,11 @@ class Java {
                 this.bounds        = bounds;
                 this.referenceType = referenceType;
             }
+        }
+
+        @Override public void
+        setEnclosingScope(Scope enclosingScope) {
+        	if (this.referenceType != null) this.referenceType.setEnclosingScope(enclosingScope);
         }
 
         @Override @Nullable public final <R, EX extends Throwable> R

@@ -49,6 +49,7 @@ import org.codehaus.janino.util.ClassFile.FloatElementValue;
 import org.codehaus.janino.util.ClassFile.IntElementValue;
 import org.codehaus.janino.util.ClassFile.LongElementValue;
 import org.codehaus.janino.util.ClassFile.ShortElementValue;
+import org.codehaus.janino.util.ClassFile.SignatureAttribute;
 import org.codehaus.janino.util.ClassFile.StringElementValue;
 
 /**
@@ -79,6 +80,31 @@ class ClassFileIClass extends IClass {
     }
 
     // Implement IClass.
+
+    @Override
+    @Nullable
+    protected ITypeVariable[] getITypeVariables2() {
+        SignatureAttribute sa = this.classFile.getSignatureAttribute();
+
+        // Example 1:
+        //   interface Map<K, V>
+        // has signature
+        //   <K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/lang/Object;
+        //   [this-class]<K extends Object, V extends Object> extends Object
+
+        // Example 2:
+        //   class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, Serializable
+        // has signature
+        //   <K:Ljava/lang/Object;V:Ljava/lang/Object;>\
+        //     Ljava/util/AbstractMap<TK;TV;>;\
+        //     Ljava/util/Map<TK;TV;>;\
+        //     Ljava/lang/Cloneable;\
+        //     Ljava/io/Serializable;
+        //   [this-class]<K extends Object, V extends Object> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, java.io.Serializable
+
+        // TODO
+        return null;
+    }
 
     @Override protected IConstructor[]
     getDeclaredIConstructors2() {

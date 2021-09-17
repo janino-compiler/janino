@@ -6672,11 +6672,27 @@ class UnitCompiler {
     getType2(ReferenceType rt) throws CompileException {
         String[] identifiers = rt.identifiers;
 
+        IClass[] tas;
+        {
+            TypeArgument[] tas2 = rt.typeArguments;
+            if (tas2 == null) {
+                tas = null;
+            } else {
+                tas = new IClass[tas2.length];
+                for (int i = 0; i < tas.length; i++) {
+                    TypeArgument ta = tas2[i];
+                    assert ta instanceof ReferenceType;
+                    tas[i] = this.getType((ReferenceType) ta);
+                }
+            }
+        }
+
         IClass result = this.getReferenceType(
             rt.getLocation(),
             rt.getEnclosingScope(),
             identifiers,
-            identifiers.length
+            identifiers.length,
+            tas
         );
         if (result == null) {
             this.compileError("Reference type \"" + rt + "\" not found", rt.getLocation());
@@ -6690,10 +6706,10 @@ class UnitCompiler {
      * @return The resolved {@link IClass}, or {@code null}
      */
     @Nullable private IClass
-    getReferenceType(Location location, Scope scope, String[] identifiers, int n) throws CompileException {
+    getReferenceType(Location location, Scope scope, String[] identifiers, int n, @Nullable IClass[] typeArguments) throws CompileException {
 
         if (n == 1) {
-            return this.getReferenceType(location, identifiers[0], scope);
+            return this.getReferenceType(location, identifiers[0], typeArguments, scope);
         }
 
         // JLS7 6.5.5.1   Unnamed package member type name (one identifier).
@@ -6706,7 +6722,7 @@ class UnitCompiler {
 
         // JLS7 6.5.5.2.2 referenceType '.' memberTypeName
         if (n >= 2) {
-            IClass enclosingType = this.getReferenceType(location, scope, identifiers, n - 1);
+            IClass enclosingType = this.getReferenceType(location, scope, identifiers, n - 1, null);
             if (enclosingType != null) {
                 String memberTypeName = identifiers[n - 1];
                 IClass memberType     = this.findMemberType(enclosingType, memberTypeName, location);
@@ -6730,7 +6746,7 @@ class UnitCompiler {
      * @return The resolved {@link IClass}
      */
     private IClass
-    getReferenceType(Location location, String simpleTypeName, Scope scope) throws CompileException {
+    getReferenceType(Location location, String simpleTypeName, @Nullable IClass[] typeArguments, Scope scope) throws CompileException {
 
         if ("var".equals(simpleTypeName)) {
             this.compileError("Local variable type inference NYI", location);
@@ -9916,11 +9932,38 @@ class UnitCompiler {
 
         return (atd.resolvedType = new IClass() {
 
-//            final TypeParameter[] typeParameters = (
-//                atd instanceof NamedTypeDeclaration
-//                ? ((NamedTypeDeclaration) atd).getOptionalTypeParameters()
-//                : null
-//            );
+            @Override @Nullable protected ITypeVariable[]
+            getITypeVariables2() throws CompileException {
+
+                if (!(atd instanceof NamedTypeDeclaration)) return null;
+                NamedTypeDeclaration ntd = (NamedTypeDeclaration) atd;
+
+                final Java.TypeParameter[] typeParameters = ntd.getOptionalTypeParameters();
+                ITypeVariable[] result = new ITypeVariable[typeParameters.length];
+                for (int i = 0; i < result.length; i++) {
+                    final TypeParameter tp = typeParameters[i];
+
+                    final ITypeVariableOrIClass[] bounds;
+                    if (tp.bound == null) {
+                        bounds = null;
+                    } else {
+                        bounds = new ITypeVariableOrIClass[tp.bound.length];
+                        for (int j = 0; j < bounds.length; j++) {
+                            bounds[j] = UnitCompiler.this.getType(tp.bound[j]);
+                        }
+                    }
+
+                    result[i] = new ITypeVariable() {
+
+                        @Override public String
+                        getName() { return tp.name; }
+
+                        @Override public ITypeVariableOrIClass[]
+                        getBounds() { return bounds; }
+                    };
+                }
+                return result;
+            }
 
             @Override protected IClass.IMethod[]
             getDeclaredIMethods2() {

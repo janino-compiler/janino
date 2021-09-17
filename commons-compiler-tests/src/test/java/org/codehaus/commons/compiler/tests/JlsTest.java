@@ -319,6 +319,11 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_4_5__Parameterized_Types() throws Exception {
+        this.assertScriptReturnsTrue("import java.util.*; Map<String, String> s = Collections.emptyMap(); String x = s.get(\"foo\"); return x ==null;");
+    }
+
+    @Test public void
     test_4_5_1__Type_arguments_and_wildcards() throws Exception {
         this.assertScriptReturnsTrue(
             ""

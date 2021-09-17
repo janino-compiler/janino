@@ -28,8 +28,14 @@ package org.codehaus.janino;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
+import java.util.Arrays;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.InternalCompilerException;
@@ -49,7 +55,67 @@ class ReflectionIClass extends IClass {
      */
     ReflectionIClass(Class<?> clazz, IClassLoader iClassLoader) {
         this.clazz        = clazz;
+        clazz.getTypeParameters();
         this.iClassLoader = iClassLoader;
+    }
+
+    @Override @Nullable public ITypeVariable[]
+    getITypeVariables2() {
+
+        final TypeVariable<?>[] tps = this.clazz.getTypeParameters();
+        if (tps == null) return null;
+
+        ITypeVariable[] result = new ITypeVariable[tps.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = this.typeVariableToITypeVariable(tps[i]);
+        }
+
+        return result;
+    }
+
+    private ITypeVariable
+    typeVariableToITypeVariable(final TypeVariable tv) {
+
+        return new ITypeVariable() {
+
+            @Override public String
+            getName() { return tv.getName(); }
+
+            @Override public ITypeVariableOrIClass[]
+            getBounds() {
+                IType[] tmp = ReflectionIClass.this.typesToITypes(tv.getBounds());
+                return Arrays.copyOf(tmp, tmp.length, ITypeVariableOrIClass[].class);
+            }
+        };
+    }
+
+    private IType[]
+    typesToITypes(Type[] types) {
+        IType[] result = new IType[types.length];
+        for (int i = 0; i < result.length; i++) result[i] = this.typeToIType(types[i]);
+        return result;
+    }
+
+    private IType
+    typeToIType(Type type) {
+        if (type instanceof Class) {
+            return new ReflectionIClass((Class) type, this.iClassLoader);
+        } else
+        if (type instanceof GenericArrayType) {
+            throw new AssertionError("NYI");
+        } else
+        if (type instanceof ParameterizedType) {
+            throw new AssertionError("NYI");
+        } else
+        if (type instanceof TypeVariable) {
+            throw new AssertionError("NYI");
+        } else
+        if (type instanceof WildcardType) {
+            throw new AssertionError("NYI");
+        } else
+        {
+            throw new AssertionError(type.getClass());
+        }
     }
 
     @Override protected IConstructor[]

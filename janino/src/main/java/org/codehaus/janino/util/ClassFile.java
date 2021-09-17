@@ -162,6 +162,11 @@ class ClassFile implements Annotatable {
         return (InnerClassesAttribute) this.findAttribute(this.attributes, "InnerClasses");
     }
 
+    @Nullable public SignatureAttribute
+    getSignatureAttribute() {
+        return (SignatureAttribute) this.findAttribute(this.attributes, "Signature");
+    }
+
     /**
      * Finds the named attribute in the <var>attributes</var>.
      *
@@ -2006,6 +2011,9 @@ class ClassFile implements Annotatable {
         if ("Synthetic".equals(attributeName)) {
             result = SyntheticAttribute.loadBody(attributeNameIndex, bdis);
         } else
+        if ("Signature".equals(attributeName)) {
+            result = SignatureAttribute.loadBody(attributeNameIndex, bdis);
+        } else
         if ("SourceFile".equals(attributeName)) {
             result = SourceFileAttribute.loadBody(attributeNameIndex, bdis);
         } else
@@ -2286,6 +2294,33 @@ class ClassFile implements Annotatable {
         storeBody(DataOutputStream dos) {
             ;
         }
+    }
+
+    /**
+     * Representation of a {@code Signature} attribute (see JVMS 4.7.9).
+     */
+    public static
+    class SignatureAttribute extends AttributeInfo {
+
+        private final short signatureIndex;
+
+        public
+        SignatureAttribute(short attributeNameIndex, short signatureIndex) {
+            super(attributeNameIndex);
+            this.signatureIndex = signatureIndex;
+        }
+
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+            return new SignatureAttribute(
+                attributeNameIndex, // attributeNameIndex
+                dis.readShort()     // signatureNameIndex
+            );
+        }
+
+        // Implement "AttributeInfo".
+        @Override protected void
+        storeBody(DataOutputStream dos) throws IOException { dos.writeShort(this.signatureIndex); }
     }
 
     /**

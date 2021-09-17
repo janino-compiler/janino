@@ -49,7 +49,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  */
 public abstract
-class IClass {
+class IClass implements ITypeVariableOrIClass {
 
     private static final Logger LOGGER = Logger.getLogger(IClass.class.getName());
 
@@ -112,27 +112,43 @@ class IClass {
 
         PrimitiveIClass(String fieldDescriptor) { this.fieldDescriptor = fieldDescriptor; }
 
-        @Override @Nullable protected IClass getComponentType2()         { return null;                 }
-        @Override protected IClass[]         getDeclaredIClasses2()      { return new IClass[0];        }
-        @Override protected IConstructor[]   getDeclaredIConstructors2() { return new IConstructor[0];  }
-        @Override protected IField[]         getDeclaredIFields2()       { return new IField[0];        }
-        @Override protected IMethod[]        getDeclaredIMethods2()      { return new IMethod[0];       }
-        @Override @Nullable protected IClass getDeclaringIClass2()       { return null;                 }
-        @Override protected String           getDescriptor2()            { return this.fieldDescriptor; }
-        @Override protected IClass[]         getInterfaces2()            { return new IClass[0];        }
-        @Override @Nullable protected IClass getOuterIClass2()           { return null;                 }
-        @Override @Nullable protected IClass getSuperclass2()            { return null;                 }
-        @Override public boolean             isAbstract()                { return false;                }
-        @Override public boolean             isArray()                   { return false;                }
-        @Override public boolean             isFinal()                   { return true;                 }
-        @Override public boolean             isEnum()                    { return false;                }
-        @Override public boolean             isInterface()               { return false;                }
-        @Override public boolean             isPrimitive()               { return true;                 }
-        @Override public Access              getAccess()                 { return Access.PUBLIC;        }
+        @Override @Nullable protected ITypeVariable[] getITypeVariables2()        { return null;                 }
+        @Override @Nullable protected IClass          getComponentType2()         { return null;                 }
+        @Override protected IClass[]                  getDeclaredIClasses2()      { return new IClass[0];        }
+        @Override protected IConstructor[]            getDeclaredIConstructors2() { return new IConstructor[0];  }
+        @Override protected IField[]                  getDeclaredIFields2()       { return new IField[0];        }
+        @Override protected IMethod[]                 getDeclaredIMethods2()      { return new IMethod[0];       }
+        @Override @Nullable protected IClass          getDeclaringIClass2()       { return null;                 }
+        @Override protected String                    getDescriptor2()            { return this.fieldDescriptor; }
+        @Override protected IClass[]                  getInterfaces2()            { return new IClass[0];        }
+        @Override @Nullable protected IClass          getOuterIClass2()           { return null;                 }
+        @Override @Nullable protected IClass          getSuperclass2()            { return null;                 }
+        @Override public boolean                      isAbstract()                { return false;                }
+        @Override public boolean                      isArray()                   { return false;                }
+        @Override public boolean                      isFinal()                   { return true;                 }
+        @Override public boolean                      isEnum()                    { return false;                }
+        @Override public boolean                      isInterface()               { return false;                }
+        @Override public boolean                      isPrimitive()               { return true;                 }
+        @Override public Access                       getAccess()                 { return Access.PUBLIC;        }
 
         @Override public boolean
         isPrimitiveNumeric() { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); }
     }
+
+    @Nullable public final ITypeVariable[]
+    getITypeVariables() throws CompileException {
+        if (this.iTypeVariablesCached) return this.iTypeVariablesCache;
+
+        this.iTypeVariablesCached = true;
+        return (this.iTypeVariablesCache = this.getITypeVariables2());
+    }
+    private boolean                   iTypeVariablesCached;
+    @Nullable private ITypeVariable[] iTypeVariablesCache;
+
+    /**
+     * The uncached version of {@link #getDeclaredIConstructors()} which must be implemented by derived classes.
+     */
+    @Nullable protected abstract ITypeVariable[] getITypeVariables2() throws CompileException;
 
     /**
      * Returns all the constructors declared by the class represented by the type. If the class has a default
@@ -758,7 +774,8 @@ class IClass {
 
         return new IClass() {
 
-            @Override public IClass.IConstructor[] getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
+            @Override @Nullable protected ITypeVariable[] getITypeVariables2()        { return null;                       }
+            @Override public IClass.IConstructor[]        getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
 
             // Special trickery #17: Arrays override "Object.clone()", but without "throws
             // CloneNotSupportedException"!
