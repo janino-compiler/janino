@@ -25,17 +25,17 @@
 
 package org.codehaus.janino;
 
-import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.nullanalysis.Nullable;
 
-/**
- * Type bounds can either be a class or interface type, or a type variable. Example: {@code MySet<K extends Comparable & T>}
- */
-public interface ITypeVariable extends ITypeVariableOrIClass {
-
-    String getName();
+public interface IWildcardType extends IType {
 
     /**
-     * @return A zero-length array if this type variable has no bounds
+     * @return The type of the {@code extends} clause, or {@code Object.class}
      */
-    ITypeVariableOrIClass[] getBounds() throws CompileException;
+    IType getUpperBound();
+
+    /**
+     * @return The type of the {@code super} clause, or {@code null}
+     */
+    @Nullable IType getLowerBound();
 }

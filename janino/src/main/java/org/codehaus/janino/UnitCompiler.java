@@ -207,6 +207,7 @@ import org.codehaus.janino.Java.TypeParameter;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
+import org.codehaus.janino.Java.Wildcard;
 import org.codehaus.janino.Visitor.AbstractCompilationUnitVisitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.AtomVisitor;
@@ -863,10 +864,10 @@ class UnitCompiler {
         // Synthetic fields.
         for (IField f : cd.getSyntheticFields().values()) {
             cf.addFieldInfo(
-                Mod.PACKAGE,                 // accessFlags
-                f.getName(),                 // fieldName
-                f.getType().getDescriptor(), // fieldTypeFD
-                null                         // constantValue
+                Mod.PACKAGE,                                         // accessFlags
+                f.getName(),                                         // fieldName
+                UnitCompiler.rawTypeOf(f.getType()).getDescriptor(), // fieldTypeFD
+                null                                                 // constantValue
             );
         }
 
@@ -914,7 +915,7 @@ class UnitCompiler {
                 fi = cf.addFieldInfo(
                     accessFlags,                                  // accessFlags
                     vd.name,                                      // fieldName
-                    this.getType(type).getDescriptor(),           // fieldTypeFD
+                    this.getRawType(type).getDescriptor(),        // fieldTypeFD
                     ocv == UnitCompiler.NOT_CONSTANT ? null : ocv // constantValue
                 );
             } else
@@ -926,7 +927,7 @@ class UnitCompiler {
                         : accessFlags
                     ),
                     vd.name,                                      // fieldName
-                    this.getType(type).getDescriptor(),           // fieldTypeFD
+                    this.getRawType(type).getDescriptor(),        // fieldTypeFD
                     ocv == UnitCompiler.NOT_CONSTANT ? null : ocv // constantValue
                 );
             }
@@ -997,7 +998,7 @@ class UnitCompiler {
         final IClass iClass = this.resolve(id);
 
         // Determine extended interfaces.
-        id.interfaces = this.getTypes(id.extendedTypes);
+        IClass[] rawInterfaces = UnitCompiler.rawTypesOf((id.interfaces = this.getTypes(id.extendedTypes)));
 
         short accessFlags = this.accessFlags(id.getModifiers());
         accessFlags |= Mod.INTERFACE;
@@ -1005,7 +1006,12 @@ class UnitCompiler {
         if (id instanceof AnnotationTypeDeclaration)  accessFlags |= Mod.ANNOTATION;
         if (id instanceof MemberInterfaceDeclaration) accessFlags |= Mod.STATIC;
 
-        ClassFile cf = this.newClassFile(accessFlags, iClass, this.iClassLoader.TYPE_java_lang_Object, id.interfaces);
+        ClassFile cf = this.newClassFile(
+            accessFlags,
+            iClass,
+            this.iClassLoader.TYPE_java_lang_Object,
+            rawInterfaces
+        );
 
         // Add interface annotations with retention != SOURCE.
         this.compileAnnotations(id.getAnnotations(), cf, cf);
@@ -1081,7 +1087,7 @@ class UnitCompiler {
         final Set<IClass> seenAnnotations = new HashSet<>();
         ANNOTATIONS: for (final Annotation a : annotations) {
             Type          annotationType        = a.getType();
-            IClass        annotationIClass      = this.getType(annotationType);
+            IClass        annotationIClass      = this.getRawType(annotationType);
             IAnnotation[] annotationAnnotations = annotationIClass.getIAnnotations();
 
             // Check for duplicate annotations.
@@ -1194,7 +1200,7 @@ class UnitCompiler {
                     // Class literal?
                     if (rv instanceof ClassLiteral) {
                         return new ClassFile.ClassElementValue(cf.addConstantUtf8Info(
-                            UnitCompiler.this.getType(((ClassLiteral) rv).type).getDescriptor()
+                            UnitCompiler.this.getRawType(((ClassLiteral) rv).type).getDescriptor()
                         ));
                     }
 
@@ -1233,7 +1239,7 @@ class UnitCompiler {
                 visitAnnotation(Annotation a) throws CompileException {
 
                     short annotationTypeIndex = (
-                        cf.addConstantClassInfo(UnitCompiler.this.getType(a.getType()).getDescriptor())
+                        cf.addConstantClassInfo(UnitCompiler.this.getRawType(a.getType()).getDescriptor())
                     );
 
                     final Map<Short, ClassFile.ElementValue>
@@ -1728,9 +1734,9 @@ class UnitCompiler {
 
     private boolean
     compile2(ForEachStatement fes) throws CompileException {
-        IClass expressionType = this.getType(fes.expression);
+        IType expressionType = this.getType(fes.expression);
 
-        if (expressionType.isArray()) {
+        if (UnitCompiler.isArray(expressionType)) {
             this.getCodeContext().saveLocalVariables();
             try {
 
@@ -1739,7 +1745,7 @@ class UnitCompiler {
                 // Allocate the local variable for the current element.
                 LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
                 elementLv.setSlot(this.getCodeContext().allocateLocalVariable(
-                    Descriptor.size(elementLv.type.getDescriptor()),
+                    Descriptor.size(UnitCompiler.rawTypeOf(elementLv.type).getDescriptor()),
                     fes.currentElement.name,
                     elementLv.type
                 ));
@@ -1763,7 +1769,7 @@ class UnitCompiler {
 
                 this.load(fes, expressionType, expressionLv);
                 this.load(fes, indexLv);
-                IClass componentType = expressionType.getComponentType();
+                IType componentType = UnitCompiler.getComponentType(expressionType);
                 assert componentType != null;
                 this.xaload(fes.currentElement, componentType);
                 this.assignmentConversion(fes.currentElement, componentType, elementLv.type, null);
@@ -1797,7 +1803,7 @@ class UnitCompiler {
                 fes.whereToBreak = null;
             }
         } else
-        if (this.iClassLoader.TYPE_java_lang_Iterable.isAssignableFrom(expressionType)) {
+        if (UnitCompiler.isAssignableFrom(this.iClassLoader.TYPE_java_lang_Iterable, expressionType)) {
             this.getCodeContext().saveLocalVariables();
             try {
 
@@ -1981,7 +1987,7 @@ class UnitCompiler {
         short      ssvLvIndex = -1; // Only relevant if kind == STRING.
 
         // Compute condition.
-        IClass switchExpressionType = this.compileGetValue(ss.condition);
+        IType switchExpressionType = this.compileGetValue(ss.condition);
         if (this.iClassLoader.TYPE_java_lang_String == switchExpressionType) {
 
             kind = SwitchKind.STRING;
@@ -1999,7 +2005,7 @@ class UnitCompiler {
 
             this.invokeMethod(ss, this.iClassLoader.METH_java_lang_String__hashCode);
         } else
-        if (this.iClassLoader.TYPE_java_lang_Enum.isAssignableFrom(switchExpressionType)) {
+        if (UnitCompiler.isAssignableFrom(this.iClassLoader.TYPE_java_lang_Enum, switchExpressionType)) {
             kind = SwitchKind.ENUM;
             this.invokeMethod(ss, this.iClassLoader.METH_java_lang_Enum__ordinal);
         } else
@@ -2042,7 +2048,7 @@ class UnitCompiler {
                         String constantName = identifiers[0];
 
                         int ordinal = 0;
-                        for (IField f : switchExpressionType.getDeclaredIFields()) {
+                        for (IField f : UnitCompiler.rawTypeOf(switchExpressionType).getDeclaredIFields()) {
                             if (f.getAccess() != Access.PUBLIC || !f.isStatic()) continue;
                             if (f.getName().equals(constantName)) {
                                 civ = ordinal;
@@ -2415,10 +2421,10 @@ class UnitCompiler {
 
                 if (!declaringIClass.isInterface() && !fd.isStatic()) this.load(vd, declaringIClass, 0);
 
-                IClass fieldType = this.getType(fd.type);
+                IClass fieldType = this.getRawType(fd.type);
                 if (initializer instanceof Rvalue) {
                     Rvalue rvalue          = (Rvalue) initializer;
-                    IClass initializerType = this.compileGetValue(rvalue);
+                    IType  initializerType = this.compileGetValue(rvalue);
                     fieldType = fieldType.getArrayIClass(vd.brackets, this.iClassLoader.TYPE_java_lang_Object);
                     this.assignmentConversion(
                         fd,                           // locatable
@@ -2538,7 +2544,7 @@ class UnitCompiler {
             } else {
 
                 // if (expression) ; else ;
-                IClass conditionType = this.compileGetValue(is.condition);
+                IType conditionType = this.compileGetValue(is.condition);
                 if (conditionType != IClass.BOOLEAN) this.compileError("Not a boolean expression", is.getLocation());
                 this.pop(is, conditionType);
                 return true;
@@ -2611,7 +2617,11 @@ class UnitCompiler {
             try {
                 LocalVariable lv = this.getLocalVariable(lvds, vd);
                 lv.setSlot(
-                    this.getCodeContext().allocateLocalVariable(Descriptor.size(lv.type.getDescriptor()), vd.name, lv.type)
+                    this.getCodeContext().allocateLocalVariable(
+                        Descriptor.size(UnitCompiler.rawTypeOf(lv.type).getDescriptor()),
+                        vd.name,
+                        lv.type
+                    )
                 );
                 // Do not update the StackMap here; this will only happen on the first assigment.
 
@@ -2645,11 +2655,11 @@ class UnitCompiler {
     }
 
     private VerificationTypeInfo
-    verificationTypeInfo(@Nullable IClass type) {
+    verificationTypeInfo(@Nullable IType type) {
 
         if (type == null) return ClassFile.StackMapTableAttribute.NULL_VARIABLE_INFO; // TODO Is that the right thing to do?
 
-        String fd = type.getDescriptor();
+        String fd = UnitCompiler.rawTypeOf(type).getDescriptor();
         if (
             Descriptor.BOOLEAN.equals(fd)
             || Descriptor.BYTE.equals(fd)
@@ -2701,7 +2711,7 @@ class UnitCompiler {
 
         Rvalue orv = rs.returnValue;
 
-        IClass returnType = this.getReturnType(enclosingFunction);
+        IType returnType = this.getReturnType(enclosingFunction);
         if (returnType == IClass.VOID) {
             if (orv != null) this.compileError("Method must not return a value", rs.getLocation());
             this.leaveStatements(
@@ -2717,7 +2727,7 @@ class UnitCompiler {
             this.compileError("Method must return a value", rs.getLocation());
             return false;
         }
-        IClass type = this.compileGetValue(orv);
+        IType type = this.compileGetValue(orv);
         this.assignmentConversion(
             rs,                        // locatable
             type,                      // sourceType
@@ -2737,7 +2747,7 @@ class UnitCompiler {
     compile2(SynchronizedStatement ss) throws CompileException {
 
         // Evaluate monitor object expression.
-        if (!this.iClassLoader.TYPE_java_lang_Object.isAssignableFrom(this.compileGetValue(ss.expression))) {
+        if (!UnitCompiler.isAssignableFrom(this.iClassLoader.TYPE_java_lang_Object, this.compileGetValue(ss.expression))) {
             this.compileError(
                 "Monitor object of \"synchronized\" statement is not a subclass of \"Object\"",
                 ss.getLocation()
@@ -2792,7 +2802,7 @@ class UnitCompiler {
 
     private boolean
     compile2(ThrowStatement ts) throws CompileException {
-        IClass expressionType = this.compileGetValue(ts.expression);
+        IType expressionType = this.compileGetValue(ts.expression);
         this.checkThrownException(
             ts,                    // locatable
             expressionType,        // type
@@ -2858,13 +2868,13 @@ class UnitCompiler {
                     visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws CompileException {
 
                         // final {VariableModifierNoFinal} R Identifier = Expression
-                        IClass        lvType = UnitCompiler.this.getType(lvdr.type);
+                        IType         lvType = UnitCompiler.this.getType(lvdr.type);
                         LocalVariable result = new LocalVariable(true, lvType);
                         result.setSlot(
                             UnitCompiler.this.getCodeContext().allocateLocalVariable(
-                                Descriptor.size(lvType.getDescriptor()), // size
-                                null,                                    // name
-                                lvType                                   // type
+                                Descriptor.size(UnitCompiler.rawTypeOf(lvType).getDescriptor()), // size
+                                null,                                                            // name
+                                lvType                                                           // type
                             )
                         );
                         ArrayInitializerOrRvalue oi = lvdr.variableDeclarator.initializer;
@@ -2872,7 +2882,8 @@ class UnitCompiler {
                             UnitCompiler.this.compileGetValue((Rvalue) oi);
                         } else
                         if (oi instanceof ArrayInitializer) {
-                            UnitCompiler.this.compileGetValue((ArrayInitializer) oi, lvType);
+                            assert lvType instanceof IClass;
+                            UnitCompiler.this.compileGetValue((ArrayInitializer) oi, (IClass) lvType);
                         } else
                         {
                             throw new InternalCompilerException(String.valueOf(oi));
@@ -2898,13 +2909,13 @@ class UnitCompiler {
                                 var.getLocation()
                             );
                         }
-                        IClass        lvType = UnitCompiler.this.compileGetValue(var.variableAccess);
+                        IType         lvType = UnitCompiler.this.compileGetValue(var.variableAccess);
                         LocalVariable result = new LocalVariable(true, lvType);
                         result.setSlot(
                             UnitCompiler.this.getCodeContext().allocateLocalVariable(
-                                Descriptor.size(lvType.getDescriptor()), // size
-                                null,                                    // name
-                                lvType                                   // type
+                                Descriptor.size(UnitCompiler.rawTypeOf(lvType).getDescriptor()), // size
+                                null,                                                            // name
+                                lvType                                                           // type
                             )
                         );
                         UnitCompiler.this.store(ts, result);
@@ -3123,14 +3134,14 @@ class UnitCompiler {
         for (CatchClause catchClause : tryStatement.catchClauses) {
             catchClause.reachable = false;
             for (Type t : catchClause.catchParameter.types) {
-                IClass caughtExceptionType = this.getType(t);
+                IType caughtExceptionType = this.getType(t);
                 catchClause.reachable |= (
                     // Superclass or subclass of "java.lang.Error"?
-                    this.iClassLoader.TYPE_java_lang_Error.isAssignableFrom(caughtExceptionType)
-                    || caughtExceptionType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_Error)
+                    UnitCompiler.isAssignableFrom(this.iClassLoader.TYPE_java_lang_Error, caughtExceptionType)
+                    || UnitCompiler.isAssignableFrom(caughtExceptionType, this.iClassLoader.TYPE_java_lang_Error)
                     // Superclass or subclass of "java.lang.RuntimeException"?
-                    || this.iClassLoader.TYPE_java_lang_RuntimeException.isAssignableFrom(caughtExceptionType)
-                    || caughtExceptionType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_RuntimeException)
+                    || UnitCompiler.isAssignableFrom(this.iClassLoader.TYPE_java_lang_RuntimeException, caughtExceptionType)
+                    || UnitCompiler.isAssignableFrom(caughtExceptionType, this.iClassLoader.TYPE_java_lang_RuntimeException)
                 );
             }
         }
@@ -3160,7 +3171,7 @@ class UnitCompiler {
                     if (catchClause.catchParameter.types.length != 1) {
                         throw UnitCompiler.compileException(catchClause, "Multi-type CATCH parameter NYI");
                     }
-                    IClass caughtExceptionType = this.getType(catchClause.catchParameter.types[0]);
+                    IClass caughtExceptionType = this.getRawType(catchClause.catchParameter.types[0]);
 
                     // Verify that the CATCH clause is reachable.
                     if (!catchClause.reachable) {
@@ -3341,7 +3352,7 @@ class UnitCompiler {
                             && UnitCompiler.LOOKS_LIKE_TYPE_PARAMETER.matcher(rt.identifiers[0]).matches()
                         ) continue;
                     }
-                    tecciis.add(classFile.addConstantClassInfo(this.getType(te).getDescriptor()));
+                    tecciis.add(classFile.addConstantClassInfo(this.getRawType(te).getDescriptor()));
                 }
 
                 short[] sa = new short[tecciis.size()];
@@ -3645,7 +3656,7 @@ class UnitCompiler {
 
             String localVariableName = slot.getName();
             if (localVariableName != null) {
-                String typeName = slot.getType().getDescriptor();
+                String typeName = UnitCompiler.rawTypeOf(slot.getType()).getDescriptor();
 
                 cf.addConstantUtf8Info(typeName);
                 cf.addConstantUtf8Info(localVariableName);
@@ -3665,7 +3676,7 @@ class UnitCompiler {
                 i == fd.formalParameters.parameters.length - 1 && fd.formalParameters.variableArity
             );
             lv.setSlot(this.getCodeContext().allocateLocalVariable(
-                Descriptor.size(lv.type.getDescriptor()),
+                Descriptor.size(UnitCompiler.rawTypeOf(lv.type).getDescriptor()),
                 fp.name,
                 lv.type
             ));
@@ -3885,9 +3896,9 @@ class UnitCompiler {
         if (parameter.localVariable != null) return parameter.localVariable;
 
         assert parameter.type != null;
-        IClass parameterType = this.getType(parameter.type);
+        IType parameterType = this.getType(parameter.type);
         if (isVariableArityParameter) {
-            parameterType = parameterType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+            parameterType = UnitCompiler.rawTypeOf(parameterType).getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
         }
 
         return (parameter.localVariable = new LocalVariable(parameter.isFinal(), parameterType));
@@ -3904,7 +3915,7 @@ class UnitCompiler {
         if (parameter.types.length != 1) {
             throw UnitCompiler.compileException(parameter, "Multi-type CATCH parameters NYI");
         }
-        IClass parameterType = this.getType(parameter.types[0]);
+        IType parameterType = this.getType(parameter.types[0]);
 
         return (parameter.localVariable = new LocalVariable(parameter.finaL, parameterType));
     }
@@ -4014,8 +4025,8 @@ class UnitCompiler {
         // Duplicate the LHS context.
         this.dupn(a.lhs, lhsCs);
         // Convert RHS value to LHS type (JLS7 15.26.2).
-        IClass lhsType    = this.compileGet(a.lhs);
-        IClass resultType = this.compileArithmeticBinaryOperation(
+        IType lhsType    = this.compileGet(a.lhs);
+        IType resultType = this.compileArithmeticBinaryOperation(
             a,                    // locatable
             lhsType,              // lhsType
             a.operator.substring( // operator
@@ -4051,7 +4062,7 @@ class UnitCompiler {
         // DUP operand context.
         this.dupn(c, operandCs);
         // Get operand value.
-        IClass type = this.compileGet(c.operand);
+        IType type = this.compileGet(c.operand);
 
         {
 
@@ -4212,7 +4223,7 @@ class UnitCompiler {
      */
     private void
     compileBoolean2(Rvalue rv, CodeContext.Offset dst, boolean orientation) throws CompileException {
-        IClass       type = this.compileGetValue(rv);
+        IType        type = this.compileGetValue(rv);
         IClassLoader icl  = this.iClassLoader;
         if (type == icl.TYPE_java_lang_Boolean) {
             this.unboxingConversion(rv, icl.TYPE_java_lang_Boolean, IClass.BOOLEAN);
@@ -4338,8 +4349,8 @@ class UnitCompiler {
                     if (!lhsIsNull) {
 
                         // x == null
-                        IClass lhsType = this.compileGetValue(bo.lhs);
-                        if (lhsType.isPrimitive()) {
+                        IType lhsType = this.compileGetValue(bo.lhs);
+                        if (UnitCompiler.rawTypeOf(lhsType).isPrimitive()) {
                             this.compileError(
                                 "Cannot compare primitive type \"" + lhsType.toString() + "\" with \"null\"",
                                 bo.getLocation()
@@ -4349,8 +4360,8 @@ class UnitCompiler {
                     if (!rhsIsNull) {
 
                         // null == x
-                        IClass rhsType = this.compileGetValue(bo.rhs);
-                        if (rhsType.isPrimitive()) {
+                        IType rhsType = this.compileGetValue(bo.rhs);
+                        if (UnitCompiler.rawTypeOf(rhsType).isPrimitive()) {
                             this.compileError(
                                 "Cannot compare \"null\" with primitive type \"" + rhsType.toString() + "\"",
                                 bo.getLocation()
@@ -4380,17 +4391,17 @@ class UnitCompiler {
                 }
             }
 
-            IClass lhsType = this.compileGetValue(bo.lhs);
-            IClass rhsType = this.getType(bo.rhs);
+            IType lhsType = this.compileGetValue(bo.lhs);
+            IType rhsType = this.getType(bo.rhs);
 
             // 15.20.1 Numerical comparison.
             if (
-                this.getUnboxedType(lhsType).isPrimitiveNumeric()
-                && this.getUnboxedType(rhsType).isPrimitiveNumeric()
+                UnitCompiler.rawTypeOf(this.getUnboxedType(lhsType)).isPrimitiveNumeric()
+                && UnitCompiler.rawTypeOf(this.getUnboxedType(rhsType)).isPrimitiveNumeric()
                 && !(
                     (bo.operator == "==" || bo.operator == "!=") // SUPPRESS CHECKSTYLE StringLiteralEquality
-                    && !lhsType.isPrimitive()
-                    && !rhsType.isPrimitive()
+                    && !UnitCompiler.rawTypeOf(lhsType).isPrimitive()
+                    && !UnitCompiler.rawTypeOf(rhsType).isPrimitive()
                 )
             ) {
 
@@ -4436,7 +4447,7 @@ class UnitCompiler {
 
             // Reference comparison.
             // Note: Comparison with "null" is already handled above.
-            if (!lhsType.isPrimitive() && !rhsType.isPrimitive()) {
+            if (!UnitCompiler.rawTypeOf(lhsType).isPrimitive() && !UnitCompiler.rawTypeOf(rhsType).isPrimitive()) {
                 if (bo.operator != "==" && bo.operator != "!=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
                     this.compileError("Operator \"" + bo.operator + "\" not allowed on reference operands", bo.getLocation()); // SUPPRESS CHECKSTYLE LineLength
                 }
@@ -4559,7 +4570,7 @@ class UnitCompiler {
 
     private int
     compileContext2(ArrayLength al) throws CompileException {
-        if (!this.compileGetValue(al.lhs).isArray()) {
+        if (!UnitCompiler.rawTypeOf(this.compileGetValue(al.lhs)).isArray()) {
             this.compileError("Cannot determine length of non-array type", al.getLocation());
         }
         return 1;
@@ -4571,15 +4582,15 @@ class UnitCompiler {
     private int
     compileContext2(ArrayAccessExpression aae) throws CompileException {
 
-        IClass lhsType = this.compileGetValue(aae.lhs);
-        if (!lhsType.isArray()) {
+        IType lhsType = this.compileGetValue(aae.lhs);
+        if (!UnitCompiler.rawTypeOf(lhsType).isArray()) {
             this.compileError(
                 "Subscript not allowed on non-array type \"" + lhsType.toString() + "\"",
                 aae.getLocation()
             );
         }
 
-        IClass indexType = this.compileGetValue(aae.index);
+        IType indexType = this.compileGetValue(aae.index);
         if (this.unaryNumericPromotion(aae.index, indexType) != IClass.INT) {
             this.compileError(
                 "Index expression of type \"" + indexType + "\" cannot be promoted to \"int\"",
@@ -4612,56 +4623,56 @@ class UnitCompiler {
      *
      * @return The type of the {@link Rvalue}
      */
-    private IClass
+    private IType
     compileGet(Rvalue rv) throws CompileException {
 
-        IClass result = (IClass) rv.accept(new RvalueVisitor<IClass, CompileException>() {
+        IType result = (IType) rv.accept(new RvalueVisitor<IType, CompileException>() {
 
-            @Override @Nullable public IClass
+            @Override @Nullable public IType
             visitLvalue(Lvalue lv) throws CompileException {
-                return (IClass) lv.accept(new Visitor.LvalueVisitor<IClass, CompileException>() {
+                return (IType) lv.accept(new Visitor.LvalueVisitor<IType, CompileException>() {
 
                     // SUPPRESS CHECKSTYLE LineLength:7
-                    @Override public IClass visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.compileGet2(an);    }
-                    @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.compileGet2(aae);   }
-                    @Override public IClass visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.compileGet2(fa);    }
-                    @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.compileGet2(fae);   }
-                    @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.compileGet2(scfae); }
-                    @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.compileGet2(lva);   }
-                    @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.compileGet2(pe);    }
+                    @Override public IType visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.compileGet2(an);    }
+                    @Override public IType visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.compileGet2(aae);   }
+                    @Override public IType visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.compileGet2(fa);    }
+                    @Override public IType visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.compileGet2(fae);   }
+                    @Override public IType visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.compileGet2(scfae); }
+                    @Override public IType visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.compileGet2(lva);   }
+                    @Override public IType visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.compileGet2(pe);    }
                 });
             }
 
             // SUPPRESS CHECKSTYLE LineLength:29
-            @Override public IClass visitArrayLength(ArrayLength al)                                                            { return UnitCompiler.this.compileGet2(al);   }
-            @Override public IClass visitAssignment(Assignment a)                                       throws CompileException { return UnitCompiler.this.compileGet2(a);    }
-            @Override public IClass visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return UnitCompiler.this.compileGet2(uo);   }
-            @Override public IClass visitBinaryOperation(BinaryOperation bo)                            throws CompileException { return UnitCompiler.this.compileGet2(bo);   }
-            @Override public IClass visitCast(Cast c)                                                   throws CompileException { return UnitCompiler.this.compileGet2(c);    }
-            @Override public IClass visitClassLiteral(ClassLiteral cl)                                  throws CompileException { return UnitCompiler.this.compileGet2(cl);   }
-            @Override public IClass visitConditionalExpression(ConditionalExpression ce)                throws CompileException { return UnitCompiler.this.compileGet2(ce);   }
-            @Override public IClass visitCrement(Crement c)                                             throws CompileException { return UnitCompiler.this.compileGet2(c);    }
-            @Override public IClass visitInstanceof(Instanceof io)                                      throws CompileException { return UnitCompiler.this.compileGet2(io);   }
-            @Override public IClass visitMethodInvocation(MethodInvocation mi)                          throws CompileException { return UnitCompiler.this.compileGet2(mi);   }
-            @Override public IClass visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)     throws CompileException { return UnitCompiler.this.compileGet2(smi);  }
-            @Override public IClass visitIntegerLiteral(IntegerLiteral il)                              throws CompileException { return UnitCompiler.this.compileGet2(il);   }
-            @Override public IClass visitFloatingPointLiteral(FloatingPointLiteral fpl)                 throws CompileException { return UnitCompiler.this.compileGet2(fpl);  }
-            @Override public IClass visitBooleanLiteral(BooleanLiteral bl)                              throws CompileException { return UnitCompiler.this.compileGet2(bl);   }
-            @Override public IClass visitCharacterLiteral(CharacterLiteral cl)                          throws CompileException { return UnitCompiler.this.compileGet2(cl);   }
-            @Override public IClass visitStringLiteral(StringLiteral sl)                                throws CompileException { return UnitCompiler.this.compileGet2(sl);   }
-            @Override public IClass visitNullLiteral(NullLiteral nl)                                    throws CompileException { return UnitCompiler.this.compileGet2(nl);   }
-            @Override public IClass visitSimpleConstant(SimpleConstant sl)                              throws CompileException { return UnitCompiler.this.compileGet2(sl);   }
-            @Override public IClass visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      throws CompileException { return UnitCompiler.this.compileGet2(naci); }
-            @Override public IClass visitNewArray(NewArray na)                                          throws CompileException { return UnitCompiler.this.compileGet2(na);   }
-            @Override public IClass visitNewInitializedArray(NewInitializedArray nia)                   throws CompileException { return UnitCompiler.this.compileGet2(nia);  }
-            @Override public IClass visitNewClassInstance(NewClassInstance nci)                         throws CompileException { return UnitCompiler.this.compileGet2(nci);  }
-            @Override public IClass visitParameterAccess(ParameterAccess pa)                            throws CompileException { return UnitCompiler.this.compileGet2(pa);   }
-            @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr)             throws CompileException { return UnitCompiler.this.compileGet2(qtr);  }
-            @Override public IClass visitThisReference(ThisReference tr)                                throws CompileException { return UnitCompiler.this.compileGet2(tr);   }
-            @Override public IClass visitLambdaExpression(LambdaExpression le)                          throws CompileException { return UnitCompiler.this.compileGet2(le);   }
-            @Override public IClass visitMethodReference(MethodReference mr)                            throws CompileException { return UnitCompiler.this.compileGet2(mr);   }
-            @Override public IClass visitInstanceCreationReference(ClassInstanceCreationReference cicr) throws CompileException { return UnitCompiler.this.compileGet2(cicr); }
-            @Override public IClass visitArrayCreationReference(ArrayCreationReference acr)             throws CompileException { return UnitCompiler.this.compileGet2(acr);  }
+            @Override public IType visitArrayLength(ArrayLength al)                                                            { return UnitCompiler.this.compileGet2(al);   }
+            @Override public IType visitAssignment(Assignment a)                                       throws CompileException { return UnitCompiler.this.compileGet2(a);    }
+            @Override public IType visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return UnitCompiler.this.compileGet2(uo);   }
+            @Override public IType visitBinaryOperation(BinaryOperation bo)                            throws CompileException { return UnitCompiler.this.compileGet2(bo);   }
+            @Override public IType visitCast(Cast c)                                                   throws CompileException { return UnitCompiler.this.compileGet2(c);    }
+            @Override public IType visitClassLiteral(ClassLiteral cl)                                  throws CompileException { return UnitCompiler.this.compileGet2(cl);   }
+            @Override public IType visitConditionalExpression(ConditionalExpression ce)                throws CompileException { return UnitCompiler.this.compileGet2(ce);   }
+            @Override public IType visitCrement(Crement c)                                             throws CompileException { return UnitCompiler.this.compileGet2(c);    }
+            @Override public IType visitInstanceof(Instanceof io)                                      throws CompileException { return UnitCompiler.this.compileGet2(io);   }
+            @Override public IType visitMethodInvocation(MethodInvocation mi)                          throws CompileException { return UnitCompiler.this.compileGet2(mi);   }
+            @Override public IType visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)     throws CompileException { return UnitCompiler.this.compileGet2(smi);  }
+            @Override public IType visitIntegerLiteral(IntegerLiteral il)                              throws CompileException { return UnitCompiler.this.compileGet2(il);   }
+            @Override public IType visitFloatingPointLiteral(FloatingPointLiteral fpl)                 throws CompileException { return UnitCompiler.this.compileGet2(fpl);  }
+            @Override public IType visitBooleanLiteral(BooleanLiteral bl)                              throws CompileException { return UnitCompiler.this.compileGet2(bl);   }
+            @Override public IType visitCharacterLiteral(CharacterLiteral cl)                          throws CompileException { return UnitCompiler.this.compileGet2(cl);   }
+            @Override public IType visitStringLiteral(StringLiteral sl)                                throws CompileException { return UnitCompiler.this.compileGet2(sl);   }
+            @Override public IType visitNullLiteral(NullLiteral nl)                                    throws CompileException { return UnitCompiler.this.compileGet2(nl);   }
+            @Override public IType visitSimpleConstant(SimpleConstant sl)                              throws CompileException { return UnitCompiler.this.compileGet2(sl);   }
+            @Override public IType visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      throws CompileException { return UnitCompiler.this.compileGet2(naci); }
+            @Override public IType visitNewArray(NewArray na)                                          throws CompileException { return UnitCompiler.this.compileGet2(na);   }
+            @Override public IType visitNewInitializedArray(NewInitializedArray nia)                   throws CompileException { return UnitCompiler.this.compileGet2(nia);  }
+            @Override public IType visitNewClassInstance(NewClassInstance nci)                         throws CompileException { return UnitCompiler.this.compileGet2(nci);  }
+            @Override public IType visitParameterAccess(ParameterAccess pa)                            throws CompileException { return UnitCompiler.this.compileGet2(pa);   }
+            @Override public IType visitQualifiedThisReference(QualifiedThisReference qtr)             throws CompileException { return UnitCompiler.this.compileGet2(qtr);  }
+            @Override public IType visitThisReference(ThisReference tr)                                throws CompileException { return UnitCompiler.this.compileGet2(tr);   }
+            @Override public IType visitLambdaExpression(LambdaExpression le)                          throws CompileException { return UnitCompiler.this.compileGet2(le);   }
+            @Override public IType visitMethodReference(MethodReference mr)                            throws CompileException { return UnitCompiler.this.compileGet2(mr);   }
+            @Override public IType visitInstanceCreationReference(ClassInstanceCreationReference cicr) throws CompileException { return UnitCompiler.this.compileGet2(cicr); }
+            @Override public IType visitArrayCreationReference(ArrayCreationReference acr)             throws CompileException { return UnitCompiler.this.compileGet2(acr);  }
         });
 
         assert result != null;
@@ -4684,15 +4695,15 @@ class UnitCompiler {
         return IClass.BOOLEAN;
     }
 
-    private IClass
+    private IType
     compileGet2(AmbiguousName an) throws CompileException {
         return this.compileGet(this.toRvalueOrCompileException(this.reclassify(an)));
     }
 
-    private IClass
+    private IType
     compileGet2(LocalVariableAccess lva) { return this.load(lva, lva.localVariable); }
 
-    private IClass
+    private IType
     compileGet2(FieldAccess fa) throws CompileException {
         this.checkAccessible(fa.field, fa.getEnclosingScope(), fa.getLocation());
         this.getfield(fa, fa.field);
@@ -4732,21 +4743,27 @@ class UnitCompiler {
         throw UnitCompiler.compileException(acr, "Compilation of array creation reference NYI");
     }
 
-    private IClass
+    private IType
     compileGet2(QualifiedThisReference qtr) throws CompileException {
         this.referenceThis(
             qtr,                                       // locatable
             this.getDeclaringClass(qtr),               // declaringClass
             this.getDeclaringTypeBodyDeclaration(qtr), // declaringTypeBodyDeclaration
-            this.getTargetIClass(qtr)                  // targetIClass
+            this.getTargetIType(qtr)                   // targetIClass
         );
-        return this.getTargetIClass(qtr);
+        return this.getTargetIType(qtr);
     }
 
     private IClass
     compileGet2(ClassLiteral cl) throws CompileException {
 
-        IClass iClass = this.getType(cl.type);
+        IType type = this.getType(cl.type);
+        if (type instanceof IParameterizedType) {
+            this.compileError("LHS of class literal must not be a parameterized type", cl.getLocation());
+        }
+        assert type instanceof IClass;
+        IClass iClass = (IClass) type;
+
         if (iClass.isPrimitive()) {
 
             // Primitive class literal.
@@ -4775,7 +4792,7 @@ class UnitCompiler {
         return this.iClassLoader.TYPE_java_lang_Class;
     }
 
-    private IClass
+    private IType
     compileGet2(Assignment a) throws CompileException {
 
         if (a.operator == "=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
@@ -4783,8 +4800,8 @@ class UnitCompiler {
             // Compile LHS context.
             int lhsCs = this.compileContext(a.lhs);
             // Convert RHS value to LHS type.
-            IClass lhsType = this.getType(a.lhs);
-            IClass rhsType = this.compileGetValue(a.rhs);
+            IType lhsType = this.getType(a.lhs);
+            IType rhsType = this.compileGetValue(a.rhs);
             this.assignmentConversion(a, rhsType, lhsType, this.getConstantValue(a.rhs));
             // Duplicate RHS value below LHS context.
             this.dupxx(a, lhsCs);
@@ -4797,8 +4814,8 @@ class UnitCompiler {
         // Implement "|= ^= &= *= /= %= += -= <<= >>= >>>=".
         int lhsCs = this.compileContext(a.lhs);
         this.dupn(a, lhsCs);
-        IClass lhsType    = this.compileGet(a.lhs);
-        IClass resultType = this.compileArithmeticBinaryOperation(
+        IType lhsType    = this.compileGet(a.lhs);
+        IType resultType = this.compileArithmeticBinaryOperation(
             a,                    // locatable
             lhsType,              // lhsType
             a.operator.substring( // operator
@@ -4818,12 +4835,12 @@ class UnitCompiler {
         return lhsType;
     }
 
-    private IClass
+    private IType
     compileGet2(ConditionalExpression ce) throws CompileException {
 
-        IClass expressionType = this.getType2(ce);
-        IClass mhsType        = this.getType(ce.mhs);
-        IClass rhsType        = this.getType(ce.rhs);
+        IType expressionType = this.getType2(ce);
+        IType mhsType        = this.getType(ce.mhs);
+        IType rhsType        = this.getType(ce.rhs);
 
         {
             Object lhsCv = this.getConstantValue(ce.lhs);
@@ -4865,29 +4882,29 @@ class UnitCompiler {
         return expressionType;
     }
 
-    private IClass
-    commonSupertype(IClass t1, IClass t2) throws CompileException {
+    private IType
+    commonSupertype(IType t1, IType t2) throws CompileException {
 
-        if (t2.isAssignableFrom(t1)) return t2;
+        if (UnitCompiler.isAssignableFrom(t2, t1)) return t2;
 
         return this.commonSupertype2(t1, t2);
     }
 
-    private IClass
-    commonSupertype2(IClass t1, IClass t2) throws CompileException {
+    private IType
+    commonSupertype2(IType t1, IType t2) throws CompileException {
 
-        if (t1.isAssignableFrom(t2)) return t1;
+        if (UnitCompiler.isAssignableFrom(t1, t2)) return t1;
 
         {
-            IClass sc = t1.getSuperclass();
+            IClass sc = UnitCompiler.rawTypeOf(t1).getSuperclass();
             if (sc != null) {
-                IClass result = this.commonSupertype2(sc, t2);
+                IType result = this.commonSupertype2(sc, t2);
                 if (result != this.iClassLoader.TYPE_java_lang_Object) return result;
             }
         }
 
-        for (IClass i : t1.getInterfaces()) {
-            IClass result = this.commonSupertype2(i, t2);
+        for (IType i : UnitCompiler.getInterfaces(t1)) {
+            IType result = this.commonSupertype2(i, t2);
             if (result != this.iClassLoader.TYPE_java_lang_Object) return result;
         }
 
@@ -4903,7 +4920,7 @@ class UnitCompiler {
         return null;
     }
 
-    private IClass
+    private IType
     compileGet2(Crement c) throws CompileException {
 
         // Optimized crement of "int" local variable.
@@ -4912,7 +4929,7 @@ class UnitCompiler {
             if (!c.pre) this.load(c, lv);
             this.iinc(c, lv, c.operator);
             if (c.pre) this.load(c, lv);
-            return lv.type;
+            return IClass.INT;
         }
 
         // Compile operand context.
@@ -4920,7 +4937,7 @@ class UnitCompiler {
         // DUP operand context.
         this.dupn(c, operandCs);
         // Get operand value.
-        IClass type = this.compileGet(c.operand);
+        IType type = this.compileGet(c.operand);
         // If postincrement: DUPX the operand value.
         if (!c.pre) this.dupxx(c, operandCs);
 
@@ -4949,19 +4966,19 @@ class UnitCompiler {
         return type;
     }
 
-    private IClass
+    private IType
     compileGet2(ArrayAccessExpression aae) throws CompileException {
-        IClass lhsComponentType = this.getType(aae);
+        IType lhsComponentType = this.getType(aae);
         this.xaload(aae, lhsComponentType);
         return lhsComponentType;
     }
 
-    private IClass
+    private IType
     compileGet2(FieldAccessExpression fae) throws CompileException {
         return this.compileGet(this.determineValue(fae));
     }
 
-    private IClass
+    private IType
     compileGet2(SuperclassFieldAccessExpression scfae) throws CompileException {
         return this.compileGet(this.determineValue(scfae));
     }
@@ -4998,7 +5015,7 @@ class UnitCompiler {
         }
 
         if (uo.operator == "~") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-            IClass operandType = this.compileGetValue(uo.operand);
+            IType operandType = this.compileGetValue(uo.operand);
 
             IClass promotedType = this.unaryNumericPromotion(uo, operandType);
             if (promotedType == IClass.INT) {
@@ -5020,14 +5037,20 @@ class UnitCompiler {
 
     private IClass
     compileGet2(Instanceof io) throws CompileException {
-        IClass lhsType = this.compileGetValue(io.lhs);
-        IClass rhsType = this.getType(io.rhs);
+        IType lhsType = this.compileGetValue(io.lhs);
+        IType rhsType = this.getType(io.rhs);
+
+        if (rhsType instanceof IParameterizedType) {
+            this.compileError("Cannot check against parameterized type", io.getLocation());
+            return IClass.BOOLEAN;
+        }
+
         if (
-            lhsType.isInterface() || rhsType.isInterface()
+            UnitCompiler.isInterface(lhsType) || UnitCompiler.isInterface(rhsType)
             // We cannot precompute the result from type information as the value might be null, but we should detect
             // when the instanceof is statically impossible.
-            || lhsType.isAssignableFrom(rhsType)
-            || rhsType.isAssignableFrom(lhsType)
+            || UnitCompiler.isAssignableFrom(lhsType, rhsType)
+            || UnitCompiler.isAssignableFrom(rhsType, lhsType)
         ) {
             this.instanceoF(io, rhsType);
         } else {
@@ -5036,7 +5059,35 @@ class UnitCompiler {
         return IClass.BOOLEAN;
     }
 
-    private IClass
+    @Nullable private static IType
+    getComponentType(IType expressionType) { return UnitCompiler.rawTypeOf(expressionType).getComponentType(); }
+
+    private static boolean
+    isPrimitive(IType type) { return UnitCompiler.rawTypeOf(type).isPrimitive(); }
+
+    @Nullable private static IType
+    getSuperclass(IType type) throws CompileException { return UnitCompiler.rawTypeOf(type).getSuperclass(); }
+
+    private static boolean
+    isInterface(IType type) { return UnitCompiler.rawTypeOf(type).isInterface(); }
+
+    private static IType[]
+    getInterfaces(IType t1) throws CompileException {
+        IClass[] rawInterfaces = UnitCompiler.rawTypeOf(t1).getInterfaces();
+        IType[] result = new IType[rawInterfaces.length];
+        for (int i = 0; i < result.length; i++) result[i] = rawInterfaces[i];
+        return result;
+    }
+
+    private static boolean
+    isArray(IType type) { return UnitCompiler.rawTypeOf(type).isArray(); }
+
+    private static boolean
+    isAssignableFrom(IType targetType, IType sourceType) throws CompileException {
+        return UnitCompiler.rawTypeOf(targetType).isAssignableFrom(UnitCompiler.rawTypeOf(sourceType));
+    }
+
+    private IType
     compileGet2(BinaryOperation bo) throws CompileException {
         if (
             bo.operator == "||"    // SUPPRESS CHECKSTYLE StringLiteralEquality
@@ -5061,12 +5112,12 @@ class UnitCompiler {
         );
     }
 
-    private IClass
+    private IType
     compileGet2(Cast c) throws CompileException {
 
         // JLS7 5.5 Casting Conversion.
-        IClass tt = this.getType(c.targetType);
-        IClass vt = this.compileGetValue(c.value);
+        IType tt = this.getType(c.targetType);
+        IType vt = this.compileGetValue(c.value);
 
         if (this.tryCastConversion(c, vt, tt, this.getConstantValue2(c.value))) return tt;
 
@@ -5093,7 +5144,7 @@ class UnitCompiler {
         return tt;
     }
 
-    private IClass
+    private IType
     compileGet2(ParenthesizedExpression pe) throws CompileException {
         return this.compileGet(pe.value);
     }
@@ -5395,26 +5446,31 @@ class UnitCompiler {
         return iMethod.getReturnType();
     }
 
-    private IClass
+    private IType
     compileGet2(NewClassInstance nci) throws CompileException {
-        IClass iClass;
-        if (nci.iClass != null) {
-            iClass = nci.iClass;
+
+        IType iType;
+        if (nci.iType != null) {
+            iType = nci.iType;
         } else {
             assert nci.type != null;
-            iClass = (nci.iClass = this.getType(nci.type));
+            iType = (nci.iType = this.getType(nci.type));
         }
 
-        if (iClass.isInterface()) this.compileError("Cannot instantiate \"" + iClass + "\"", nci.getLocation());
-        this.checkAccessible(iClass, nci.getEnclosingScope(), nci.getLocation());
-        if (iClass.isAbstract()) {
-            this.compileError("Cannot instantiate abstract \"" + iClass + "\"", nci.getLocation());
+        IClass rawType = UnitCompiler.rawTypeOf(iType);
+
+        if (rawType.isInterface()) {
+            this.compileError("Cannot instantiate \"" + iType + "\"", nci.getLocation());
+        }
+        this.checkAccessible(rawType, nci.getEnclosingScope(), nci.getLocation());
+        if (rawType.isAbstract()) {
+            this.compileError("Cannot instantiate abstract \"" + iType + "\"", nci.getLocation());
         }
 
         // Determine the enclosing instance for the new object.
         Rvalue enclosingInstance;
         if (nci.qualification != null) {
-            if (iClass.getOuterIClass() == null) {
+            if (rawType.getOuterIClass() == null) {
                 this.compileError("Static member class cannot be instantiated with qualified NEW");
             }
 
@@ -5444,10 +5500,10 @@ class UnitCompiler {
                 //  + interface method declaration or
                 //  + static type body declaration (here: method or initializer or field declarator)
                 // context (JLS7 15.9.2.BL1.B3.B1.B1).
-                if (iClass.getOuterIClass() != null) {
+                if (rawType.getOuterIClass() != null) {
                     this.compileError((
                         "Instantiation of \""
-                        + (nci.type != null ? nci.type.toString() : String.valueOf(nci.iClass))
+                        + (nci.type != null ? nci.type.toString() : String.valueOf(nci.iType))
                         + "\" requires an enclosing instance"
                     ), nci.getLocation());
                 }
@@ -5456,7 +5512,7 @@ class UnitCompiler {
             {
 
                 // Determine the type of the enclosing instance for the new object.
-                IClass outerIClass = iClass.getDeclaringIClass();
+                IClass outerIClass = rawType.getDeclaringIClass();
                 if (outerIClass == null) {
 
                     // No enclosing instance needed for a top-level class object.
@@ -5477,19 +5533,19 @@ class UnitCompiler {
             }
         }
 
-        this.neW(nci, iClass);
+        this.neW(nci, iType);
         this.dup(nci);
         this.invokeConstructor(
             nci,                     // l
             nci.getEnclosingScope(), // scope
             enclosingInstance,       // enclosingInstance
-            iClass,                  // targetClass
+            iType,                   // targetClass
             nci.arguments            // arguments
         );
         this.getCodeContext().popUninitializedVariableOperand();
-        this.getCodeContext().pushObjectOperand(iClass.getDescriptor());
+        this.getCodeContext().pushObjectOperand(rawType.getDescriptor());
 
-        return iClass;
+        return iType;
     }
 
     private IClass
@@ -5524,10 +5580,10 @@ class UnitCompiler {
 
             // Pass the enclosing instance of the base class as parameter #1.
             if (qualification != null) l.add(new FormalParameter(
-                loc,                                                      // location
-                UnitCompiler.accessModifiers(loc, "final"),               // modifiers
+                loc,                                              // location
+                UnitCompiler.accessModifiers(loc, "final"),       // modifiers
                 new SimpleType(loc, this.getType(qualification)), // type
-                "this$base"                                               // name
+                "this$base"                                       // name
             ));
             for (int i = 0; i < scpts.length; ++i) l.add(new FormalParameter(
                 loc,                                        // location
@@ -5639,7 +5695,7 @@ class UnitCompiler {
         }
         return iClass;
     }
-    private IClass
+    private IType
     compileGet2(ParameterAccess pa) throws CompileException {
         LocalVariable lv = this.getLocalVariable(pa.formalParameter);
         this.load(pa, lv);
@@ -5648,7 +5704,7 @@ class UnitCompiler {
     private IClass
     compileGet2(NewArray na) throws CompileException {
         for (Rvalue dimExpr : na.dimExprs) {
-            IClass dimType = this.compileGetValue(dimExpr);
+            IType dimType = this.compileGetValue(dimExpr);
             if (dimType != IClass.INT && this.unaryNumericPromotion(
                 na,     // locatable
                 dimType // type
@@ -5662,23 +5718,23 @@ class UnitCompiler {
             this.getType(na.type) // componentType
         );
     }
-    private IClass
+    private IType
     compileGet2(NewInitializedArray nia) throws CompileException {
 
-        IClass at = this.getType2(nia);
+        IType at = this.getType2(nia);
 
         this.compileGetValue(nia.arrayInitializer, at);
 
         return at;
     }
     private void
-    compileGetValue(ArrayInitializer ai, IClass arrayType) throws CompileException {
+    compileGetValue(ArrayInitializer ai, IType arrayType) throws CompileException {
 
-        if (!arrayType.isArray()) {
+        if (!(arrayType instanceof IClass) || !((IClass) arrayType).isArray()) {
             this.compileError("Array initializer not allowed for non-array type \"" + arrayType.toString() + "\"");
         }
 
-        IClass ct = arrayType.getComponentType();
+        IClass ct = ((IClass) arrayType).getComponentType();
         assert ct != null;
 
         this.consT(ai, new Integer(ai.values.length));
@@ -5729,7 +5785,7 @@ class UnitCompiler {
      *
      * @return The type of the Rvalue
      */
-    private IClass
+    private IType
     compileGetValue(Rvalue rv) throws CompileException {
         Object cv = this.getConstantValue(rv);
         if (cv != UnitCompiler.NOT_CONSTANT) {
@@ -5897,9 +5953,9 @@ class UnitCompiler {
         Object lhsCv = this.getConstantValue(ce.lhs);
         if (!(lhsCv instanceof Boolean)) return UnitCompiler.NOT_CONSTANT;
 
-        IClass ceType = this.getType2(ce);
+        IType ceType = this.getType2(ce);
 
-        if (!ceType.isPrimitive() && ceType != this.iClassLoader.TYPE_java_lang_String) return UnitCompiler.NOT_CONSTANT;
+        if (!UnitCompiler.isPrimitive(ceType) && ceType != this.iClassLoader.TYPE_java_lang_String) return UnitCompiler.NOT_CONSTANT;
 
         if (((Boolean) lhsCv).booleanValue()) {
             this.fakeCompile(ce.rhs);
@@ -6083,7 +6139,7 @@ class UnitCompiler {
         if (cv == UnitCompiler.NOT_CONSTANT) return UnitCompiler.NOT_CONSTANT;
 
         if (cv instanceof Number) {
-            IClass tt = this.getType(c.targetType);
+            IType tt = this.getType(c.targetType);
             if (tt == IClass.BYTE)   return new Byte(((Number) cv).byteValue());
             if (tt == IClass.SHORT)  return new Short(((Number) cv).shortValue());
             if (tt == IClass.INT)    return new Integer(((Number) cv).intValue());
@@ -6536,21 +6592,21 @@ class UnitCompiler {
      *         the rvalue's type
      * @see #resolve(TypeDeclaration)
      */
-    private IClass
+    private IType
     getType(Atom a) throws CompileException {
 
-        IClass result = (IClass) a.accept(new AtomVisitor<IClass, CompileException>() {
+        IType result = (IType) a.accept(new AtomVisitor<IType, CompileException>() {
 
-            @Override public IClass
+            @Override public IType
             visitPackage(Package p) throws CompileException { return UnitCompiler.this.getType2(p); }
 
-            @Override @Nullable public IClass
+            @Override @Nullable public IType
             visitType(Type t) throws CompileException { return UnitCompiler.this.getType(t); }
 
-            @Override @Nullable public IClass
+            @Override @Nullable public IType
             visitRvalue(Rvalue rv) throws CompileException { return UnitCompiler.this.getType(rv); }
 
-            @Override @Nullable public IClass
+            @Override @Nullable public IType
             visitConstructorInvocation(ConstructorInvocation ci) throws CompileException {
                 return UnitCompiler.this.getType2(ci);
             }
@@ -6560,84 +6616,101 @@ class UnitCompiler {
         return result;
     }
 
+    private static IClass
+    rawTypeOf(IType iType) {
+        while (iType instanceof IParameterizedType) iType = ((IParameterizedType) iType).getRawType();
+        assert iType instanceof IClass;
+        return (IClass) iType;
+    }
+
+    private static IClass[]
+    rawTypesOf(IType[] iTypes) {
+        IClass[] result = new IClass[iTypes.length];
+        for (int i = 0; i < result.length; i++) result[i] = UnitCompiler.rawTypeOf(iTypes[i]);
+        return result;
+    }
+
     private IClass
+    getRawType(Type t) throws CompileException { return UnitCompiler.rawTypeOf(this.getType(t)); }
+
+    private IType
     getType(Type t) throws CompileException {
-        IClass result = (IClass) t.accept(new Visitor.TypeVisitor<IClass, CompileException>() {
+        IType result = (IType) t.accept(new Visitor.TypeVisitor<IType, CompileException>() {
 
             // SUPPRESS CHECKSTYLE LineLengthCheck:5
-            @Override public IClass visitArrayType(ArrayType at)                throws CompileException { return UnitCompiler.this.getType2(at);  }
-            @Override public IClass visitPrimitiveType(PrimitiveType bt)                                { return UnitCompiler.this.getType2(bt);  }
-            @Override public IClass visitReferenceType(ReferenceType rt)        throws CompileException { return UnitCompiler.this.getType2(rt);  }
-            @Override public IClass visitRvalueMemberType(RvalueMemberType rmt) throws CompileException { return UnitCompiler.this.getType2(rmt); }
-            @Override public IClass visitSimpleType(SimpleType st)                                      { return UnitCompiler.this.getType2(st);  }
+            @Override public IType visitArrayType(ArrayType at)                throws CompileException { return UnitCompiler.this.getType2(at);  }
+            @Override public IType visitPrimitiveType(PrimitiveType bt)                                { return UnitCompiler.this.getType2(bt);  }
+            @Override public IType visitReferenceType(ReferenceType rt)        throws CompileException { return UnitCompiler.this.getType2(rt);  }
+            @Override public IType visitRvalueMemberType(RvalueMemberType rmt) throws CompileException { return UnitCompiler.this.getType2(rmt); }
+            @Override public IType visitSimpleType(SimpleType st)                                      { return UnitCompiler.this.getType2(st);  }
         });
         assert result != null;
         return result;
     }
 
-    private IClass[]
+    private IType[]
     getTypes(final Type[] types) throws CompileException {
-        IClass[] result = new IClass[types.length];
+        IType[] result = new IType[types.length];
         for (int i = 0; i < types.length; ++i) result[i] = this.getType(types[i]);
         return result;
     }
 
-    private IClass
+    private IType
     getType(Rvalue rv) throws CompileException {
 
-        IClass result = (IClass) rv.accept(new Visitor.RvalueVisitor<IClass, CompileException>() {
+        IType result = (IType) rv.accept(new Visitor.RvalueVisitor<IType, CompileException>() {
 
-            @Override @Nullable public IClass
+            @Override @Nullable public IType
             visitLvalue(Lvalue lv) throws CompileException { return UnitCompiler.this.getType(lv); }
 
             // SUPPRESS CHECKSTYLE LineLengthCheck:29
-            @Override public IClass visitArrayLength(ArrayLength al)                                                            { return UnitCompiler.this.getType2(al);   }
-            @Override public IClass visitAssignment(Assignment a)                                       throws CompileException { return UnitCompiler.this.getType2(a);    }
-            @Override public IClass visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return UnitCompiler.this.getType2(uo);   }
-            @Override public IClass visitBinaryOperation(BinaryOperation bo)                            throws CompileException { return UnitCompiler.this.getType2(bo);   }
-            @Override public IClass visitCast(Cast c)                                                   throws CompileException { return UnitCompiler.this.getType2(c);    }
-            @Override public IClass visitClassLiteral(ClassLiteral cl)                                                          { return UnitCompiler.this.getType2(cl);   }
-            @Override public IClass visitConditionalExpression(ConditionalExpression ce)                throws CompileException { return UnitCompiler.this.getType2(ce);   }
-            @Override public IClass visitCrement(Crement c)                                             throws CompileException { return UnitCompiler.this.getType2(c);    }
-            @Override public IClass visitInstanceof(Instanceof io)                                                              { return UnitCompiler.this.getType2(io);   }
-            @Override public IClass visitMethodInvocation(MethodInvocation mi)                          throws CompileException { return UnitCompiler.this.getType2(mi);   }
-            @Override public IClass visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)     throws CompileException { return UnitCompiler.this.getType2(smi);  }
-            @Override public IClass visitIntegerLiteral(IntegerLiteral il)                                                      { return UnitCompiler.this.getType2(il);   }
-            @Override public IClass visitFloatingPointLiteral(FloatingPointLiteral fpl)                                         { return UnitCompiler.this.getType2(fpl);  }
-            @Override public IClass visitBooleanLiteral(BooleanLiteral bl)                                                      { return UnitCompiler.this.getType2(bl);   }
-            @Override public IClass visitCharacterLiteral(CharacterLiteral cl)                                                  { return UnitCompiler.this.getType2(cl);   }
-            @Override public IClass visitStringLiteral(StringLiteral sl)                                                        { return UnitCompiler.this.getType2(sl);   }
-            @Override public IClass visitNullLiteral(NullLiteral nl)                                                            { return UnitCompiler.this.getType2(nl);   }
-            @Override public IClass visitSimpleConstant(SimpleConstant sl)                                                      { return UnitCompiler.this.getType2(sl);   }
-            @Override public IClass visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)                              { return UnitCompiler.this.getType2(naci); }
-            @Override public IClass visitNewArray(NewArray na)                                          throws CompileException { return UnitCompiler.this.getType2(na);   }
-            @Override public IClass visitNewInitializedArray(NewInitializedArray nia)                   throws CompileException { return UnitCompiler.this.getType2(nia);  }
-            @Override public IClass visitNewClassInstance(NewClassInstance nci)                         throws CompileException { return UnitCompiler.this.getType2(nci);  }
-            @Override public IClass visitParameterAccess(ParameterAccess pa)                            throws CompileException { return UnitCompiler.this.getType2(pa);   }
-            @Override public IClass visitQualifiedThisReference(QualifiedThisReference qtr)             throws CompileException { return UnitCompiler.this.getType2(qtr);  }
-            @Override public IClass visitThisReference(ThisReference tr)                                throws CompileException { return UnitCompiler.this.getType2(tr);   }
-            @Override public IClass visitLambdaExpression(LambdaExpression le)                          throws CompileException { return UnitCompiler.this.getType2(le);   }
-            @Override public IClass visitMethodReference(MethodReference mr)                            throws CompileException { return UnitCompiler.this.getType2(mr);   }
-            @Override public IClass visitInstanceCreationReference(ClassInstanceCreationReference cicr) throws CompileException { return UnitCompiler.this.getType2(cicr); }
-            @Override public IClass visitArrayCreationReference(ArrayCreationReference acr)             throws CompileException { return UnitCompiler.this.getType2(acr);  }
+            @Override public IType visitArrayLength(ArrayLength al)                                                            { return UnitCompiler.this.getType2(al);   }
+            @Override public IType visitAssignment(Assignment a)                                       throws CompileException { return UnitCompiler.this.getType2(a);    }
+            @Override public IType visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return UnitCompiler.this.getType2(uo);   }
+            @Override public IType visitBinaryOperation(BinaryOperation bo)                            throws CompileException { return UnitCompiler.this.getType2(bo);   }
+            @Override public IType visitCast(Cast c)                                                   throws CompileException { return UnitCompiler.this.getType2(c);    }
+            @Override public IType visitClassLiteral(ClassLiteral cl)                                                          { return UnitCompiler.this.getType2(cl);   }
+            @Override public IType visitConditionalExpression(ConditionalExpression ce)                throws CompileException { return UnitCompiler.this.getType2(ce);   }
+            @Override public IType visitCrement(Crement c)                                             throws CompileException { return UnitCompiler.this.getType2(c);    }
+            @Override public IType visitInstanceof(Instanceof io)                                                              { return UnitCompiler.this.getType2(io);   }
+            @Override public IType visitMethodInvocation(MethodInvocation mi)                          throws CompileException { return UnitCompiler.this.getType2(mi);   }
+            @Override public IType visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)     throws CompileException { return UnitCompiler.this.getType2(smi);  }
+            @Override public IType visitIntegerLiteral(IntegerLiteral il)                                                      { return UnitCompiler.this.getType2(il);   }
+            @Override public IType visitFloatingPointLiteral(FloatingPointLiteral fpl)                                         { return UnitCompiler.this.getType2(fpl);  }
+            @Override public IType visitBooleanLiteral(BooleanLiteral bl)                                                      { return UnitCompiler.this.getType2(bl);   }
+            @Override public IType visitCharacterLiteral(CharacterLiteral cl)                                                  { return UnitCompiler.this.getType2(cl);   }
+            @Override public IType visitStringLiteral(StringLiteral sl)                                                        { return UnitCompiler.this.getType2(sl);   }
+            @Override public IType visitNullLiteral(NullLiteral nl)                                                            { return UnitCompiler.this.getType2(nl);   }
+            @Override public IType visitSimpleConstant(SimpleConstant sl)                                                      { return UnitCompiler.this.getType2(sl);   }
+            @Override public IType visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)                              { return UnitCompiler.this.getType2(naci); }
+            @Override public IType visitNewArray(NewArray na)                                          throws CompileException { return UnitCompiler.this.getType2(na);   }
+            @Override public IType visitNewInitializedArray(NewInitializedArray nia)                   throws CompileException { return UnitCompiler.this.getType2(nia);  }
+            @Override public IType visitNewClassInstance(NewClassInstance nci)                         throws CompileException { return UnitCompiler.this.getType2(nci);  }
+            @Override public IType visitParameterAccess(ParameterAccess pa)                            throws CompileException { return UnitCompiler.this.getType2(pa);   }
+            @Override public IType visitQualifiedThisReference(QualifiedThisReference qtr)             throws CompileException { return UnitCompiler.this.getType2(qtr);  }
+            @Override public IType visitThisReference(ThisReference tr)                                throws CompileException { return UnitCompiler.this.getType2(tr);   }
+            @Override public IType visitLambdaExpression(LambdaExpression le)                          throws CompileException { return UnitCompiler.this.getType2(le);   }
+            @Override public IType visitMethodReference(MethodReference mr)                            throws CompileException { return UnitCompiler.this.getType2(mr);   }
+            @Override public IType visitInstanceCreationReference(ClassInstanceCreationReference cicr) throws CompileException { return UnitCompiler.this.getType2(cicr); }
+            @Override public IType visitArrayCreationReference(ArrayCreationReference acr)             throws CompileException { return UnitCompiler.this.getType2(acr);  }
         });
 
         assert result != null;
         return result;
     }
 
-    private IClass
+    private IType
     getType(Lvalue lv) throws CompileException {
-        IClass result = (IClass) lv.accept(new Visitor.LvalueVisitor<IClass, CompileException>() {
+        IType result = (IType) lv.accept(new Visitor.LvalueVisitor<IType, CompileException>() {
 
             // SUPPRESS CHECKSTYLE LineLengthCheck:7
-            @Override public IClass visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.getType2(an);    }
-            @Override public IClass visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.getType2(aae);   }
-            @Override public IClass visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.getType2(fa);    }
-            @Override public IClass visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.getType2(fae);   }
-            @Override public IClass visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getType2(scfae); }
-            @Override public IClass visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.getType2(lva);   }
-            @Override public IClass visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.getType2(pe);    }
+            @Override public IType visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.getType2(an);    }
+            @Override public IType visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.getType2(aae);   }
+            @Override public IType visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.getType2(fa);    }
+            @Override public IType visitFieldAccessExpression(FieldAccessExpression fae)                       throws CompileException { return UnitCompiler.this.getType2(fae);   }
+            @Override public IType visitSuperclassFieldAccessExpression(SuperclassFieldAccessExpression scfae) throws CompileException { return UnitCompiler.this.getType2(scfae); }
+            @Override public IType visitLocalVariableAccess(LocalVariableAccess lva)                                                   { return UnitCompiler.this.getType2(lva);   }
+            @Override public IType visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return UnitCompiler.this.getType2(pe);    }
         });
 
         assert result != null;
@@ -6650,8 +6723,8 @@ class UnitCompiler {
         return this.iClassLoader.TYPE_java_lang_Object;
     }
 
-    @SuppressWarnings("static-method") private IClass
-    getType2(SimpleType st) { return st.iClass; }
+    @SuppressWarnings("static-method") private IType
+    getType2(SimpleType st) { return st.iType; }
 
     @SuppressWarnings("static-method") private IClass
     getType2(PrimitiveType bt) {
@@ -6668,31 +6741,16 @@ class UnitCompiler {
         default:      throw new InternalCompilerException("Invalid primitive " + bt.primitive);
         }
     }
-    private IClass
+    private IType
     getType2(ReferenceType rt) throws CompileException {
         String[] identifiers = rt.identifiers;
 
-        IClass[] tas;
-        {
-            TypeArgument[] tas2 = rt.typeArguments;
-            if (tas2 == null) {
-                tas = null;
-            } else {
-                tas = new IClass[tas2.length];
-                for (int i = 0; i < tas.length; i++) {
-                    TypeArgument ta = tas2[i];
-                    assert ta instanceof ReferenceType;
-                    tas[i] = this.getType((ReferenceType) ta);
-                }
-            }
-        }
-
-        IClass result = this.getReferenceType(
+        IType result = this.getReferenceType(
             rt.getLocation(),
             rt.getEnclosingScope(),
             identifiers,
             identifiers.length,
-            tas
+            rt.typeArguments
         );
         if (result == null) {
             this.compileError("Reference type \"" + rt + "\" not found", rt.getLocation());
@@ -6703,10 +6761,17 @@ class UnitCompiler {
     }
 
     /**
-     * @return The resolved {@link IClass}, or {@code null}
+     * @param typeArguments Zero-length array if type has no type variables
+     * @return              The resolved {@link IClass}, or {@link IParameterizedType}, or {@code null}
      */
-    @Nullable private IClass
-    getReferenceType(Location location, Scope scope, String[] identifiers, int n, @Nullable IClass[] typeArguments) throws CompileException {
+    @Nullable private IType
+    getReferenceType(
+        Location                 location,
+        Scope                    scope,
+        String[]                 identifiers,
+        int                      n,
+        @Nullable TypeArgument[] typeArguments
+    ) throws CompileException {
 
         if (n == 1) {
             return this.getReferenceType(location, identifiers[0], typeArguments, scope);
@@ -6722,10 +6787,10 @@ class UnitCompiler {
 
         // JLS7 6.5.5.2.2 referenceType '.' memberTypeName
         if (n >= 2) {
-            IClass enclosingType = this.getReferenceType(location, scope, identifiers, n - 1, null);
+            IType enclosingType = this.getReferenceType(location, scope, identifiers, n - 1, new TypeArgument[0]);
             if (enclosingType != null) {
                 String memberTypeName = identifiers[n - 1];
-                IClass memberType     = this.findMemberType(enclosingType, memberTypeName, location);
+                IClass memberType     = this.findMemberType(enclosingType, memberTypeName, typeArguments, location);
                 if (memberType == null) {
                     this.compileError(
                         "\"" + enclosingType + "\" declares no member type \"" + memberTypeName + "\"",
@@ -6743,10 +6808,16 @@ class UnitCompiler {
     /**
      * JLS7 6.5.5.1 Simple type name (single identifier)
      *
-     * @return The resolved {@link IClass}
+     * @param typeArguments Zero-length array if type is not parameterized
+     * @return              The resolved {@link IClass} or {@link IParameterizedType}
      */
-    private IClass
-    getReferenceType(Location location, String simpleTypeName, @Nullable IClass[] typeArguments, Scope scope) throws CompileException {
+    private IType
+    getReferenceType(
+        Location                 location,
+        String                   simpleTypeName,
+        @Nullable TypeArgument[] typeArguments,
+        Scope                    scope
+    ) throws CompileException {
 
         if ("var".equals(simpleTypeName)) {
             this.compileError("Local variable type inference NYI", location);
@@ -6762,12 +6833,12 @@ class UnitCompiler {
             if (typeParameters != null) {
                 for (TypeParameter tp : typeParameters) {
                     if (tp.name.equals(simpleTypeName)) {
-                        IClass[]        boundTypes;
+                        IType[]         boundTypes;
                         ReferenceType[] ob = tp.bound;
                         if (ob == null) {
-                            boundTypes = new IClass[] { this.iClassLoader.TYPE_java_lang_Object };
+                            boundTypes = new IType[] { this.iClassLoader.TYPE_java_lang_Object };
                         } else {
-                            boundTypes = new IClass[ob.length];
+                            boundTypes = new IType[ob.length];
                             for (int i = 0; i < boundTypes.length; i++) {
                                 boundTypes[i] = this.getType(ob[i]);
                             }
@@ -6791,7 +6862,7 @@ class UnitCompiler {
             if (typeParameters != null) {
                 for (TypeParameter tp : typeParameters) {
                     if (tp.name.equals(simpleTypeName)) {
-                        IClass[]        boundTypes;
+                        IType[]         boundTypes;
                         ReferenceType[] ob = tp.bound;
                         if (ob == null) {
                             boundTypes = new IClass[] { this.iClassLoader.TYPE_java_lang_Object };
@@ -6807,6 +6878,62 @@ class UnitCompiler {
             }
         }
 
+//        // Determine type arguments.
+//        IType[] tas;
+//        {
+//            if (typeArguments == null) {
+//                tas = new IType[0];
+//            } else {
+//                tas = new IType[typeArguments.length];
+//                for (int i = 0; i < tas.length; i++) {
+//                    final TypeArgument ta = typeArguments[i];
+//                    tas[i] = this.typeArgumentToIType(ta);
+//                }
+//            }
+//        }
+
+        try {
+            return this.getRawReferenceType(location, simpleTypeName, scope)/*.parameterize(tas)*/;
+        } catch (CompileException ce) {
+            throw new CompileException(ce.getMessage(), location, ce);
+        }
+    }
+
+    private IType
+    typeArgumentToIType(TypeArgument ta) throws CompileException {
+
+        if (ta instanceof ReferenceType) {
+            return this.getType((ReferenceType) ta);
+        } else
+        if (ta instanceof Wildcard) {
+            Wildcard w = (Wildcard) ta;
+            final IType ub = w.bounds == Wildcard.BOUNDS_EXTENDS ? this.getType(w.referenceType) : UnitCompiler.this.iClassLoader.TYPE_java_lang_Object;
+            final IType lb = w.bounds == Wildcard.BOUNDS_SUPER   ? this.getType(w.referenceType) : null;
+            return new IWildcardType() {
+                @Override public IType           getUpperBound() { return ub; }
+                @Override @Nullable public IType getLowerBound() { return lb; }
+
+                @Override public String
+                toString() {
+                    String s = "?";
+                    if (ub != UnitCompiler.this.iClassLoader.TYPE_java_lang_Object) s += " extends " + ub;
+                    if (lb != null) s += " super " + lb;
+                    return s;
+                }
+            };
+        } else
+        if (ta instanceof ArrayType) {
+            // TODO
+            return UnitCompiler.this.iClassLoader.TYPE_java_lang_Object;
+        } else
+        {
+            throw new AssertionError(ta.getClass() + ": " + ta);
+        }
+    }
+
+    private IClass
+    getRawReferenceType(Location location, String simpleTypeName, Scope scope) throws CompileException {
+
         // 6.5.5.1.1 Local class.
         {
             LocalClassDeclaration lcd = UnitCompiler.findLocalClassDeclaration(
@@ -6817,15 +6944,12 @@ class UnitCompiler {
         }
 
         // 6.5.5.1.2 Member type.
-        for (
-            Scope s = scope;
-            !(s instanceof CompilationUnit);
-            s = s.getEnclosingScope()
-        ) {
+        for (Scope s = scope; !(s instanceof CompilationUnit); s = s.getEnclosingScope()) {
             if (s instanceof TypeDeclaration) {
                 IClass mt = this.findMemberType(
                     this.resolve((AbstractTypeDeclaration) s),
                     simpleTypeName,
+                    null,                                      // typeArguments
                     location
                 );
                 if (mt != null) return mt;
@@ -6973,8 +7097,8 @@ class UnitCompiler {
 
     private IClass
     getType2(RvalueMemberType rvmt) throws CompileException {
-        IClass rvt        = this.getType(rvmt.rvalue);
-        IClass memberType = this.findMemberType(rvt, rvmt.identifier, rvmt.getLocation());
+        IType rvt         = this.getType(rvmt.rvalue);
+        IClass memberType = this.findMemberType(rvt, rvmt.identifier, null, rvmt.getLocation());
         if (memberType == null) {
             this.compileError("\"" + rvt + "\" has no member type \"" + rvmt.identifier + "\"", rvmt.getLocation());
             return this.iClassLoader.TYPE_java_lang_Object;
@@ -6984,10 +7108,10 @@ class UnitCompiler {
 
     private IClass
     getType2(ArrayType at) throws CompileException {
-        return this.getType(at.componentType).getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+        return this.getRawType(at.componentType).getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
     }
 
-    private IClass
+    private IType
     getType2(AmbiguousName an) throws CompileException {
         return this.getType(this.reclassify(an));
     }
@@ -6998,20 +7122,17 @@ class UnitCompiler {
         return this.iClassLoader.TYPE_java_lang_Object;
     }
 
-    @SuppressWarnings("static-method")
-    private IClass
+    @SuppressWarnings("static-method") private IType
     getType2(LocalVariableAccess lva) {
         return lva.localVariable.type;
     }
 
-    @SuppressWarnings("static-method")
-    private IClass
+    @SuppressWarnings("static-method") private IType
     getType2(FieldAccess fa) throws CompileException {
         return fa.field.getType();
     }
 
-    @SuppressWarnings("static-method")
-    private IClass
+    @SuppressWarnings("static-method") private IClass
     getType2(ArrayLength al) {
         return IClass.INT;
     }
@@ -7041,25 +7162,19 @@ class UnitCompiler {
         throw UnitCompiler.compileException(acr, "Compilation of array creation reference NYI");
     }
 
-    private IClass
-    getType2(QualifiedThisReference qtr) throws CompileException {
-        return this.getTargetIClass(qtr);
-    }
+    private IType
+    getType2(QualifiedThisReference qtr) throws CompileException { return this.getTargetIType(qtr); }
 
     private IClass
-    getType2(ClassLiteral cl) {
-        return this.iClassLoader.TYPE_java_lang_Class;
-    }
+    getType2(ClassLiteral cl) { return this.iClassLoader.TYPE_java_lang_Class; }
 
-    private IClass
-    getType2(Assignment a) throws CompileException {
-        return this.getType(a.lhs);
-    }
+    private IType
+    getType2(Assignment a) throws CompileException { return this.getType(a.lhs); }
 
-    private IClass
+    private IType
     getType2(ConditionalExpression ce) throws CompileException {
-        IClass mhsType = this.getType(ce.mhs);
-        IClass rhsType = this.getType(ce.rhs);
+        IType mhsType = this.getType(ce.mhs);
+        IType rhsType = this.getType(ce.rhs);
 
         if (mhsType == rhsType) {
 
@@ -7076,7 +7191,7 @@ class UnitCompiler {
             // JLS7 15.25, list 1, bullet 2: "b ? int : Integer => int"
             return mhsType;
         } else
-        if (this.getConstantValue(ce.mhs) == null && !rhsType.isPrimitive()) {
+        if (this.getConstantValue(ce.mhs) == null && !UnitCompiler.isPrimitive(rhsType)) {
 
             // JLS7 15.25, list 1, bullet 3: "b ? null : String => String"
             return rhsType;
@@ -7088,7 +7203,7 @@ class UnitCompiler {
             assert result != null;
             return result;
         } else
-        if (!mhsType.isPrimitive() && this.getConstantValue(ce.rhs) == null) {
+        if (!UnitCompiler.isPrimitive(mhsType) && this.getConstantValue(ce.rhs) == null) {
 
             // JLS7 15.25, list 1, bullet 3: "b ? String : null => String"
             return mhsType;
@@ -7156,7 +7271,7 @@ class UnitCompiler {
             );
         }
 
-        if (!mhsType.isPrimitive() || !rhsType.isPrimitive()) {
+        if (!UnitCompiler.isPrimitive(mhsType) || !UnitCompiler.isPrimitive(rhsType)) {
 
             // JLS7 15.25, list 1, bullet 5: "b ? Base : Derived => Base"
 //            mhsType = (IClass) Objects.or(this.isBoxingConvertible(mhsType), mhsType);
@@ -7172,25 +7287,23 @@ class UnitCompiler {
         }
     }
 
-    private IClass
-    getType2(Crement c) throws CompileException {
-        return this.getType(c.operand);
-    }
+    private IType
+    getType2(Crement c) throws CompileException { return this.getType(c.operand); }
 
-    private IClass
+    private IType
     getType2(ArrayAccessExpression aae) throws CompileException {
-        IClass componentType = this.getType(aae.lhs).getComponentType();
+        IType componentType = UnitCompiler.getComponentType(this.getType(aae.lhs));
         assert componentType != null : "null component type for " + aae;
         return componentType;
     }
 
-    private IClass
+    private IType
     getType2(FieldAccessExpression fae) throws CompileException {
         this.determineValue(fae);
         return this.getType(this.determineValue(fae));
     }
 
-    private IClass
+    private IType
     getType2(SuperclassFieldAccessExpression scfae) throws CompileException {
         this.determineValue(scfae);
         return this.getType(this.determineValue(scfae));
@@ -7213,7 +7326,7 @@ class UnitCompiler {
     private IClass
     getType2(Instanceof io) { return IClass.BOOLEAN; }
 
-    private IClass
+    private IType
     getType2(BinaryOperation bo) throws CompileException {
         if (
             // SUPPRESS CHECKSTYLE StringLiteralEquality:8
@@ -7228,7 +7341,7 @@ class UnitCompiler {
         ) return IClass.BOOLEAN;
 
         if (bo.operator == "|" || bo.operator == "^" || bo.operator == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
-            IClass lhsType = this.getType(bo.lhs);
+            IType lhsType = this.getType(bo.lhs);
             return (
                 lhsType == IClass.BOOLEAN || lhsType == this.iClassLoader.TYPE_java_lang_Boolean
                 ? IClass.BOOLEAN
@@ -7242,7 +7355,7 @@ class UnitCompiler {
             // Unroll the operands of this binary operation.
             Iterator<Rvalue> ops = bo.unrollLeftAssociation();
 
-            IClass lhsType = this.getType((Rvalue) ops.next());
+            IType lhsType = this.getType((Rvalue) ops.next());
 
             // Check the far left operand type.
             if (bo.operator == "+" && lhsType == icl.TYPE_java_lang_String) { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
@@ -7252,7 +7365,7 @@ class UnitCompiler {
             // Determine the expression type.
             lhsType = this.getUnboxedType(lhsType);
             do {
-                IClass rhsType = this.getUnboxedType(this.getType((Rvalue) ops.next()));
+                IType rhsType = this.getUnboxedType(this.getType((Rvalue) ops.next()));
                 if (bo.operator == "+" && rhsType == icl.TYPE_java_lang_String) { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
                     return icl.TYPE_java_lang_String;
                 }
@@ -7263,7 +7376,7 @@ class UnitCompiler {
         }
 
         if (bo.operator == "<<"  || bo.operator == ">>"  || bo.operator == ">>>") { // SUPPRESS CHECKSTYLE StringLiteralEquality|LineLength
-            IClass lhsType = this.getType(bo.lhs);
+            IType lhsType = this.getType(bo.lhs);
             return this.unaryNumericPromotionType(bo, lhsType);
         }
 
@@ -7274,18 +7387,18 @@ class UnitCompiler {
     /**
      * @return The <var>type</var>, or, iff <var>type</var> is a primitive wrapper type, the unwrapped <var>type</var>
      */
-    private IClass
-    getUnboxedType(IClass type) {
+    private IType
+    getUnboxedType(IType type) {
         IClass c = this.isUnboxingConvertible(type);
         return c != null ? c : type;
     }
 
-    private IClass
+    private IType
     getType2(Cast c) throws CompileException {
         return this.getType(c.targetType);
     }
 
-    private IClass
+    private IType
     getType2(ParenthesizedExpression pe) throws CompileException {
         return this.getType(pe.value);
     }
@@ -7302,12 +7415,12 @@ class UnitCompiler {
         return this.findIMethod(scmi).getReturnType();
     }
 
-    private IClass
+    private IType
     getType2(NewClassInstance nci) throws CompileException {
-        if (nci.iClass != null) return nci.iClass;
+        if (nci.iType != null) return nci.iType;
 
         assert nci.type != null;
-        return (nci.iClass = this.getType(nci.type));
+        return (nci.iType = this.getType(nci.type));
     }
 
     private IClass
@@ -7315,20 +7428,22 @@ class UnitCompiler {
         return this.resolve(naci.anonymousClassDeclaration);
     }
 
-    private IClass
+    private IType
     getType2(ParameterAccess pa) throws CompileException {
         return this.getLocalVariable(pa.formalParameter).type;
     }
 
     private IClass
     getType2(NewArray na) throws CompileException {
-        IClass res = this.getType(na.type);
-        return res.getArrayIClass(na.dimExprs.length + na.dims, this.iClassLoader.TYPE_java_lang_Object);
+        return UnitCompiler.rawTypeOf(this.getType(na.type)).getArrayIClass(
+            na.dimExprs.length + na.dims,
+            this.iClassLoader.TYPE_java_lang_Object
+        );
     }
 
-    private IClass
+    private IType
     getType2(NewInitializedArray nia) throws CompileException {
-        IClass at = nia.arrayType != null ? this.getType(nia.arrayType) : nia.arrayIClass;
+        IType at = nia.arrayType != null ? this.getType(nia.arrayType) : nia.arrayIClass;
         assert at != null;
         return at;
     }
@@ -7807,10 +7922,10 @@ class UnitCompiler {
      *   The following operators are supported: {@code | ^ & * / % + - << >> >>>}
      * </p>
      */
-    private IClass
+    private IType
     compileArithmeticBinaryOperation(
         Locatable locatable,
-        IClass    lhsType,
+        IType     lhsType,
         String    operator,
         Rvalue    rhs
     ) throws CompileException {
@@ -7829,10 +7944,10 @@ class UnitCompiler {
      *   The following operators are supported: {@code | ^ & * / % + - << >> >>>}
      * </p>
      */
-    private IClass
+    private IType
     compileArithmeticOperation(
         final Locatable  locatable,
-        @Nullable IClass firstOperandType,
+        @Nullable IType  firstOperandType,
         Iterator<Rvalue> operands,
         String           operator
     ) throws CompileException {
@@ -7843,7 +7958,7 @@ class UnitCompiler {
             return this.compileStringConcatenation(locatable, firstOperandType, (Rvalue) operands.next(), operands);
         }
 
-        IClass type = firstOperandType == null ? this.compileGetValue((Rvalue) operands.next()) : firstOperandType;
+        IType type = firstOperandType == null ? this.compileGetValue((Rvalue) operands.next()) : firstOperandType;
 
         // Operator which is allowed for BYTE, SHORT, INT, LONG and BOOLEAN operands?
         if (operator == "|" || operator == "^" || operator == "&") { // SUPPRESS CHECKSTYLE StringLiteralEquality:5
@@ -7851,7 +7966,7 @@ class UnitCompiler {
             while (operands.hasNext()) {
                 Rvalue operand = (Rvalue) operands.next();
 
-                IClass rhsType = this.getType(operand);
+                IType rhsType = this.getType(operand);
 
                 if (this.isConvertibleToPrimitiveNumeric(type) && this.isConvertibleToPrimitiveNumeric(rhsType)) {
                     IClass promotedType = this.binaryNumericPromotionType(
@@ -7911,7 +8026,7 @@ class UnitCompiler {
                 )) return this.compileStringConcatenation(locatable, type, operand, operands);
 
                 // It's a numeric arithmetic operation.
-                IClass rhsType      = this.getType(operand);
+                IType  rhsType      = this.getType(operand);
                 IClass promotedType = this.binaryNumericPromotionType(
                     operand,
                     this.getUnboxedType(type),
@@ -7937,7 +8052,7 @@ class UnitCompiler {
 
                 type = this.unaryNumericPromotion(operand, type);
 
-                IClass rhsType         = this.compileGetValue(operand);
+                IType  rhsType         = this.compileGetValue(operand);
                 IClass promotedRhsType = this.unaryNumericPromotion(operand, rhsType);
                 if (promotedRhsType == IClass.INT) {
                     ;
@@ -7969,7 +8084,7 @@ class UnitCompiler {
     private IClass
     compileStringConcatenation(
         final Locatable  locatable,
-        IClass           type,
+        IType            type,
         final Rvalue     secondOperand,
         Iterator<Rvalue> operands
     ) throws CompileException {
@@ -8047,7 +8162,7 @@ class UnitCompiler {
             Rvalue operand = (Rvalue) it.next();
 
             // "sb.append(operand)"
-            IClass t = UnitCompiler.this.compileGetValue(operand);
+            IType t = UnitCompiler.this.compileGetValue(operand);
             this.invokeMethod(locatable, (
                 t == IClass.BYTE    ? this.iClassLoader.METH_java_lang_StringBuilder__append__int     :
                 t == IClass.SHORT   ? this.iClassLoader.METH_java_lang_StringBuilder__append__int     :
@@ -8076,16 +8191,19 @@ class UnitCompiler {
      * Converts object of type "sourceType" to type "String" (JLS7 15.18.1.1).
      */
     private void
-    stringConversion(Locatable locatable, IClass sourceType) throws CompileException {
+    stringConversion(Locatable locatable, IType sourceType) throws CompileException {
+
+        IClass sourceClass = UnitCompiler.rawTypeOf(sourceType);
+
         this.invokeMethod(locatable, (
-            sourceType == IClass.BYTE    ? this.iClassLoader.METH_java_lang_String__valueOf__int :
-            sourceType == IClass.SHORT   ? this.iClassLoader.METH_java_lang_String__valueOf__int :
-            sourceType == IClass.INT     ? this.iClassLoader.METH_java_lang_String__valueOf__int :
-            sourceType == IClass.LONG    ? this.iClassLoader.METH_java_lang_String__valueOf__long :
-            sourceType == IClass.FLOAT   ? this.iClassLoader.METH_java_lang_String__valueOf__float :
-            sourceType == IClass.DOUBLE  ? this.iClassLoader.METH_java_lang_String__valueOf__double :
-            sourceType == IClass.CHAR    ? this.iClassLoader.METH_java_lang_String__valueOf__char :
-            sourceType == IClass.BOOLEAN ? this.iClassLoader.METH_java_lang_String__valueOf__boolean :
+            sourceClass == IClass.BYTE    ? this.iClassLoader.METH_java_lang_String__valueOf__int :
+            sourceClass == IClass.SHORT   ? this.iClassLoader.METH_java_lang_String__valueOf__int :
+            sourceClass == IClass.INT     ? this.iClassLoader.METH_java_lang_String__valueOf__int :
+            sourceClass == IClass.LONG    ? this.iClassLoader.METH_java_lang_String__valueOf__long :
+            sourceClass == IClass.FLOAT   ? this.iClassLoader.METH_java_lang_String__valueOf__float :
+            sourceClass == IClass.DOUBLE  ? this.iClassLoader.METH_java_lang_String__valueOf__double :
+            sourceClass == IClass.CHAR    ? this.iClassLoader.METH_java_lang_String__valueOf__char :
+            sourceClass == IClass.BOOLEAN ? this.iClassLoader.METH_java_lang_String__valueOf__boolean :
             this.iClassLoader.METH_java_lang_String__valueOf__java_lang_Object
         ));
     }
@@ -8104,14 +8222,17 @@ class UnitCompiler {
         Locatable        locatable,
         Scope            scope,
         @Nullable Rvalue enclosingInstance,
-        IClass           targetClass,
+        IType            targetType,
         Rvalue[]         arguments
     ) throws CompileException {
+
+        IClass rawTargetType = UnitCompiler.rawTypeOf(targetType);
+
         // Find constructors.
-        IClass.IConstructor[] iConstructors = targetClass.getDeclaredIConstructors();
+        IClass.IConstructor[] iConstructors = rawTargetType.getDeclaredIConstructors();
         if (iConstructors.length == 0) {
             throw new InternalCompilerException(
-                "SNO: Target class \"" + targetClass.getDescriptor() + "\" has no constructors"
+                "SNO: Target class \"" + rawTargetType.getDescriptor() + "\" has no constructors"
             );
         }
 
@@ -8157,10 +8278,10 @@ class UnitCompiler {
 
         // Pass enclosing instance as a synthetic parameter.
         if (enclosingInstance != null) {
-            IClass outerIClass = targetClass.getOuterIClass();
+            IClass outerIClass = rawTargetType.getOuterIClass();
             if (outerIClass != null) {
-                IClass eiic = this.compileGetValue(enclosingInstance);
-                if (!outerIClass.isAssignableFrom(eiic)) {
+                IType eiic = this.compileGetValue(enclosingInstance);
+                if (!UnitCompiler.isAssignableFrom(outerIClass, eiic)) {
                     this.compileError(
                         "Type of enclosing instance (\"" + eiic + "\") is not assignable to \"" + outerIClass + "\"",
                         locatable.getLocation()
@@ -8171,7 +8292,7 @@ class UnitCompiler {
 
         // Pass local variables to constructor as synthetic parameters.
         {
-            IClass.IField[] syntheticFields = targetClass.getSyntheticIFields();
+            IClass.IField[] syntheticFields = rawTargetType.getSyntheticIFields();
 
             // Determine enclosing function declarator and type declaration.
             TypeBodyDeclaration scopeTbd;
@@ -8415,7 +8536,7 @@ class UnitCompiler {
 
             @Override public IClass
             getType() throws CompileException {
-                return UnitCompiler.this.getType(type).getArrayIClass(
+                return UnitCompiler.this.getRawType(type).getArrayIClass(
                     brackets,
                     UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
                 );
@@ -8519,10 +8640,8 @@ class UnitCompiler {
                         @Override public Object
                         getElementValue(String name) { return m.get(name); }
 
-                        @Override public IClass
-                        getAnnotationType() throws CompileException {
-                            return UnitCompiler.this.getType(type);
-                        }
+                        @Override public IType
+                        getAnnotationType() throws CompileException { return UnitCompiler.this.getType(type); }
                     };
                 }
 
@@ -8628,7 +8747,7 @@ class UnitCompiler {
         }
 
         // 6.5.2.2.3.2 EXPRESSION.length
-        if ("length".equals(rhs) && this.getType(lhs).isArray()) {
+        if ("length".equals(rhs) && UnitCompiler.isArray(this.getType(lhs))) {
             ArrayLength al = new ArrayLength(location, this.toRvalueOrCompileException(lhs));
             if (!(scope instanceof BlockStatement)) {
                 this.compileError("\".length\" only allowed in expression context");
@@ -8638,13 +8757,13 @@ class UnitCompiler {
             return al;
         }
 
-        IClass lhsType = this.getType(lhs);
+        IType lhsType = this.getType(lhs);
 
         // Notice: Don't need to check for 6.5.2.2.2.1 TYPE.METHOD and 6.5.2.2.3.1 EXPRESSION.METHOD here because that
         // has been done before.
 
         {
-            IClass.IField field = this.findIField(lhsType, rhs, location);
+            IClass.IField field = this.findIField(UnitCompiler.rawTypeOf(lhsType), rhs, location);
             if (field != null) {
                 // 6.5.2.2.2.2 TYPE.FIELD
                 // 6.5.2.2.3.2 EXPRESSION.FIELD
@@ -8658,7 +8777,7 @@ class UnitCompiler {
             }
         }
 
-        IClass[] classes = lhsType.getDeclaredIClasses();
+        IClass[] classes = UnitCompiler.rawTypeOf(lhsType).getDeclaredIClasses();
         for (final IClass memberType : classes) {
             String name = Descriptor.toClassName(memberType.getDescriptor());
             name = name.substring(name.lastIndexOf('$') + 1);
@@ -8776,11 +8895,11 @@ class UnitCompiler {
                                 + "\" from inner class"
                             );
                         }
-                        final IClass  lvType = lv.type;
+                        final IType   lvType = lv.type;
                         IClass.IField iField = new SimpleIField(
                             this.resolve(icd),
                             "val$" + identifier,
-                            lvType
+                            UnitCompiler.rawTypeOf(lvType)
                         );
                         icd.defineSyntheticField(iField);
                         FieldAccess fa = new FieldAccess(
@@ -8935,6 +9054,7 @@ class UnitCompiler {
             IClass memberType = this.findMemberType(
                 this.resolve(scopeTypeDeclaration),
                 identifier,
+                null,                               // typeArguments
                 location
             );
             if (memberType != null) return new SimpleType(location, memberType);
@@ -9069,16 +9189,16 @@ class UnitCompiler {
     determineValue(FieldAccessExpression fae) throws CompileException {
         if (fae.value != null) return fae.value;
 
-        IClass lhsType = this.getType(fae.lhs);
+        IType lhsType = this.getType(fae.lhs);
 
         Rvalue value;
-        if (fae.fieldName.equals("length") && lhsType.isArray()) {
+        if (fae.fieldName.equals("length") && UnitCompiler.isArray(lhsType)) {
             value = new ArrayLength(
                 fae.getLocation(),
                 this.toRvalueOrCompileException(fae.lhs)
             );
         } else {
-            IClass.IField iField = this.findIField(lhsType, fae.fieldName, fae.getLocation());
+            IClass.IField iField = this.findIField(UnitCompiler.rawTypeOf(lhsType), fae.fieldName, fae.getLocation());
             if (iField == null) {
                 this.compileError(
                     "\"" + this.getType(fae.lhs).toString() + "\" has no field \"" + fae.fieldName + "\"",
@@ -9117,7 +9237,7 @@ class UnitCompiler {
         {
             ThisReference tr = new ThisReference(scfae.getLocation());
             tr.setEnclosingScope(scfae.getEnclosingScope());
-            IClass type;
+            IType type;
             if (scfae.qualification != null) {
                 type = this.getType(scfae.qualification);
             } else
@@ -9125,7 +9245,7 @@ class UnitCompiler {
                 type = this.getType(tr);
             }
 
-            IClass superclass = type.getSuperclass();
+            IType superclass = UnitCompiler.getSuperclass(type);
             if (superclass == null) {
                 throw new CompileException("Cannot use \"super\" on \"" + type + "\"", scfae.getLocation());
             }
@@ -9135,7 +9255,7 @@ class UnitCompiler {
 
         Rvalue value;
 
-        IClass.IField iField = this.findIField(this.getType(lhs), scfae.fieldName, scfae.getLocation());
+        IClass.IField iField = this.findIField(UnitCompiler.rawTypeOf(this.getType(lhs)), scfae.fieldName, scfae.getLocation());
         if (iField == null) {
             this.compileError("Class has no field \"" + scfae.fieldName + "\"", scfae.getLocation());
             value = new Rvalue(scfae.getLocation()) {
@@ -9260,14 +9380,16 @@ class UnitCompiler {
      * @return {@code null} if no appropriate method could be found
      */
     @Nullable private IClass.IMethod
-    findIMethod(IClass targetType, Invocation invocation) throws CompileException {
+    findIMethod(IType targetType, Invocation invocation) throws CompileException {
+
+        IClass rawTargetType = UnitCompiler.rawTypeOf(targetType);
 
         // Get all methods.
         List<IClass.IMethod> ms = new ArrayList<>();
-        this.getIMethods(targetType, invocation.methodName, ms);
+        this.getIMethods(rawTargetType, invocation.methodName, ms);
 
         // Interfaces inherit the methods declared in 'Object'.
-        if (targetType.isInterface()) {
+        if (rawTargetType.isInterface()) {
             IClass.IMethod[] oms = this.iClassLoader.TYPE_java_lang_Object.getDeclaredIMethods(invocation.methodName);
             for (IMethod om : oms) {
                 if (!om.isStatic() && om.getAccess() == Access.PUBLIC) ms.add(om);
@@ -9287,8 +9409,10 @@ class UnitCompiler {
 
     private IMethod
     fakeIMethod(IClass targetType, final String name, Rvalue[] arguments) throws CompileException {
+
         final IClass[] pts = new IClass[arguments.length];
-        for (int i = 0; i < arguments.length; ++i) pts[i] = this.getType(arguments[i]);
+        for (int i = 0; i < arguments.length; ++i) pts[i] = UnitCompiler.rawTypeOf(this.getType(arguments[i]));
+
         return targetType.new IMethod() {
             @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0]; }
             @Override public Access        getAccess()            { return Access.PUBLIC;      }
@@ -9390,9 +9514,7 @@ class UnitCompiler {
 
         // Determine arguments' types.
         final IClass[] argumentTypes = new IClass[arguments.length];
-        for (int i = 0; i < arguments.length; ++i) {
-            argumentTypes[i] = this.getType(arguments[i]);
-        }
+        for (int i = 0; i < arguments.length; ++i) argumentTypes[i] = UnitCompiler.rawTypeOf(this.getType(arguments[i]));
 
         // Determine most specific invocable WITHOUT boxing.
         IInvocable ii = this.findMostSpecificIInvocable(locatable, iInvocables, argumentTypes, false, contextScope);
@@ -9818,20 +9940,22 @@ class UnitCompiler {
      *                          <var>scope</var>
      */
     private void
-    checkThrownException(Locatable locatable, IClass type, Scope scope) throws CompileException {
+    checkThrownException(Locatable locatable, IType type, Scope scope) throws CompileException {
 
         // Thrown object must be assignable to "Throwable".
-        if (!this.iClassLoader.TYPE_java_lang_Throwable.isAssignableFrom(type)) {
+        if (!(type instanceof IClass) || !this.iClassLoader.TYPE_java_lang_Throwable.isAssignableFrom((IClass) type)) {
             this.compileError(
                 "Thrown object of type \"" + type + "\" is not assignable to \"Throwable\"",
                 locatable.getLocation()
             );
         }
 
+        IClass rawType = (IClass) type;
+
         // "RuntimeException" and "Error" are never checked.
         if (
-            this.iClassLoader.TYPE_java_lang_RuntimeException.isAssignableFrom(type)
-            || this.iClassLoader.TYPE_java_lang_Error.isAssignableFrom(type)
+            this.iClassLoader.TYPE_java_lang_RuntimeException.isAssignableFrom(rawType)
+            || this.iClassLoader.TYPE_java_lang_Error.isAssignableFrom(rawType)
         ) return;
 
         for (;; scope = scope.getEnclosingScope()) {
@@ -9842,9 +9966,9 @@ class UnitCompiler {
                 for (int i = 0; i < ts.catchClauses.size(); ++i) {
                     CatchClause cc         = (CatchClause) ts.catchClauses.get(i);
                     for (Type ct : cc.catchParameter.types) {
-                        IClass caughtType = this.getType(ct);
+                        IClass caughtType = this.getRawType(ct);
 
-                        if (caughtType.isAssignableFrom(type)) {
+                        if (caughtType.isAssignableFrom(rawType)) {
 
                             // This catch clause definitely catches the exception.
                             cc.reachable = true;
@@ -9852,12 +9976,12 @@ class UnitCompiler {
                         }
 
                         CATCH_SUBTYPE:
-                        if (type.isAssignableFrom(caughtType)) {
+                        if (rawType.isAssignableFrom(caughtType)) {
 
                             // This catch clause catches only a subtype of the exception type.
                             for (int j = 0; j < i; ++j) {
                                 for (Type ct2 : ((CatchClause) ts.catchClauses.get(j)).catchParameter.types) {
-                                    if (this.getType(ct2).isAssignableFrom(caughtType)) {
+                                    if (this.getRawType(ct2).isAssignableFrom(caughtType)) {
 
                                         // A preceding catch clause is more general than this catch clause.
                                         break CATCH_SUBTYPE;
@@ -9876,7 +10000,7 @@ class UnitCompiler {
             if (scope instanceof FunctionDeclarator) {
                 FunctionDeclarator fd = (FunctionDeclarator) scope;
                 for (Type thrownException : fd.thrownExceptions) {
-                    if (this.getType(thrownException).isAssignableFrom(type)) return;
+                    if (this.getRawType(thrownException).isAssignableFrom(rawType)) return;
                 }
                 break;
             } else
@@ -9894,13 +10018,13 @@ class UnitCompiler {
         ), locatable.getLocation());
     }
 
-    private IClass
-    getTargetIClass(QualifiedThisReference qtr) throws CompileException {
+    private IType
+    getTargetIType(QualifiedThisReference qtr) throws CompileException {
 
-        if (qtr.targetIClass != null) return qtr.targetIClass;
+        if (qtr.targetIType != null) return qtr.targetIType;
 
         // Determine target type.
-        return (qtr.targetIClass = this.getType(qtr.qualification));
+        return (qtr.targetIType = this.getType(qtr.qualification));
     }
 
     /**
@@ -9932,25 +10056,24 @@ class UnitCompiler {
 
         return (atd.resolvedType = new IClass() {
 
-            @Override @Nullable protected ITypeVariable[]
+            @Override protected ITypeVariable[]
             getITypeVariables2() throws CompileException {
 
-                if (!(atd instanceof NamedTypeDeclaration)) return null;
+                if (!(atd instanceof NamedTypeDeclaration)) return new ITypeVariable[0];
                 NamedTypeDeclaration ntd = (NamedTypeDeclaration) atd;
 
                 final Java.TypeParameter[] typeParameters = ntd.getOptionalTypeParameters();
-                ITypeVariable[] result = new ITypeVariable[typeParameters.length];
+                ITypeVariable[] result = new ITypeVariable[typeParameters == null ? 0 : typeParameters.length];
                 for (int i = 0; i < result.length; i++) {
                     final TypeParameter tp = typeParameters[i];
 
-                    final ITypeVariableOrIClass[] bounds;
-                    if (tp.bound == null) {
-                        bounds = null;
-                    } else {
-                        bounds = new ITypeVariableOrIClass[tp.bound.length];
-                        for (int j = 0; j < bounds.length; j++) {
-                            bounds[j] = UnitCompiler.this.getType(tp.bound[j]);
-                        }
+                    final ITypeVariableOrIClass[]
+                    bounds = new ITypeVariableOrIClass[tp.bound == null ? 0 : tp.bound.length];
+                    for (int j = 0; j < bounds.length; j++) {
+                        IType b = UnitCompiler.this.getType(tp.bound[j]);
+
+                        assert b instanceof ITypeVariableOrIClass;
+                        bounds[j] = (ITypeVariableOrIClass) b;
                     }
 
                     result[i] = new ITypeVariable() {
@@ -10141,15 +10264,15 @@ class UnitCompiler {
                 if (atd instanceof EnumDeclaration) return UnitCompiler.this.iClassLoader.TYPE_java_lang_Enum;
 
                 if (atd instanceof AnonymousClassDeclaration) {
-                    IClass bt = UnitCompiler.this.getType(((AnonymousClassDeclaration) atd).baseType);
-                    return bt.isInterface() ? UnitCompiler.this.iClassLoader.TYPE_java_lang_Object : bt;
+                    IClass bt = UnitCompiler.this.getRawType(((AnonymousClassDeclaration) atd).baseType);
+                    return UnitCompiler.isInterface(bt) ? UnitCompiler.this.iClassLoader.TYPE_java_lang_Object : bt;
                 }
 
                 if (atd instanceof NamedClassDeclaration) {
                     NamedClassDeclaration ncd = (NamedClassDeclaration) atd;
                     Type                  oet = ncd.extendedType;
                     if (oet == null) return UnitCompiler.this.iClassLoader.TYPE_java_lang_Object;
-                    IClass superclass = UnitCompiler.this.getType(oet);
+                    IClass superclass = UnitCompiler.this.getRawType(oet);
                     if (superclass.isInterface()) {
                         UnitCompiler.this.compileError(
                             "\"" + superclass.toString() + "\" is an interface; classes can only extend a class",
@@ -10181,14 +10304,14 @@ class UnitCompiler {
             @Override protected IClass[]
             getInterfaces2() throws CompileException {
                 if (atd instanceof AnonymousClassDeclaration) {
-                    IClass bt = UnitCompiler.this.getType(((AnonymousClassDeclaration) atd).baseType);
+                    IClass bt = UnitCompiler.this.getRawType(((AnonymousClassDeclaration) atd).baseType);
                     return bt.isInterface() ? new IClass[] { bt } : new IClass[0];
                 } else
                 if (atd instanceof NamedClassDeclaration) {
                     NamedClassDeclaration ncd = (NamedClassDeclaration) atd;
                     IClass[]              res = new IClass[ncd.implementedTypes.length];
                     for (int i = 0; i < res.length; ++i) {
-                        res[i] = UnitCompiler.this.getType(ncd.implementedTypes[i]);
+                        res[i] = UnitCompiler.this.getRawType(ncd.implementedTypes[i]);
                         if (!res[i].isInterface()) {
                             UnitCompiler.this.compileError((
                                 "\""
@@ -10203,7 +10326,7 @@ class UnitCompiler {
                     InterfaceDeclaration id  = (InterfaceDeclaration) atd;
                     IClass[]             res = new IClass[id.extendedTypes.length];
                     for (int i = 0; i < res.length; ++i) {
-                        res[i] = UnitCompiler.this.getType(id.extendedTypes[i]);
+                        res[i] = UnitCompiler.this.getRawType(id.extendedTypes[i]);
                         if (!res[i].isInterface()) {
                             UnitCompiler.this.compileError((
                                 "\""
@@ -10244,7 +10367,7 @@ class UnitCompiler {
         Locatable               locatable,
         AbstractTypeDeclaration declaringType,
         TypeBodyDeclaration     declaringTypeBodyDeclaration,
-        IClass                  targetIClass
+        IType                   targetIType
     ) throws CompileException {
         List<TypeDeclaration> path = UnitCompiler.getOuterClasses(declaringType);
 
@@ -10266,12 +10389,12 @@ class UnitCompiler {
                 //
                 // However, this strategy bears the risk of ambiguities, because "O" may be assignable from more than
                 // one enclosing class.
-                if (targetIClass.isAssignableFrom(this.resolve((TypeDeclaration) path.get(j)))) {
+                if (UnitCompiler.isAssignableFrom(targetIType, this.resolve((TypeDeclaration) path.get(j)))) {
                     break TARGET_FOUND;
                 }
             }
             this.compileError(
-                "\"" + declaringType + "\" is not enclosed by \"" + targetIClass + "\"",
+                "\"" + declaringType + "\" is not enclosed by \"" + targetIType + "\"",
                 locatable.getLocation()
             );
         }
@@ -10398,7 +10521,7 @@ class UnitCompiler {
         return (tr.iClass = this.resolve((AbstractClassDeclaration) s));
     }
 
-    private IClass
+    private IType
     getReturnType(FunctionDeclarator fd) throws CompileException {
 
         if (fd.returnType != null) return fd.returnType;
@@ -10478,9 +10601,9 @@ class UnitCompiler {
                 IClass[]          res        = new IClass[parameters.length];
 
                 for (int i = 0; i < parameters.length; ++i) {
-                    IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
+                    IClass parameterType = UnitCompiler.this.getRawType(parameters[i].type);
                     if (i == parameters.length - 1 && constructorDeclarator.formalParameters.variableArity) {
-                        parameterType = parameterType.getArrayIClass(
+                        parameterType = UnitCompiler.rawTypeOf(parameterType).getArrayIClass(
                             UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
                         );
                     }
@@ -10494,7 +10617,7 @@ class UnitCompiler {
             getThrownExceptions2() throws CompileException {
                 IClass[] res = new IClass[constructorDeclarator.thrownExceptions.length];
                 for (int i = 0; i < res.length; ++i) {
-                    res[i] = UnitCompiler.this.getType(constructorDeclarator.thrownExceptions[i]);
+                    res[i] = UnitCompiler.this.getRawType(constructorDeclarator.thrownExceptions[i]);
                 }
                 return res;
             }
@@ -10563,7 +10686,7 @@ class UnitCompiler {
                 FormalParameter[] parameters = methodDeclarator.formalParameters.parameters;
                 IClass[]          res        = new IClass[parameters.length];
                 for (int i = 0; i < parameters.length; ++i) {
-                    IClass parameterType = UnitCompiler.this.getType(parameters[i].type);
+                    IClass parameterType = UnitCompiler.this.getRawType(parameters[i].type);
                     if (i == parameters.length - 1 && methodDeclarator.formalParameters.variableArity) {
                         parameterType = parameterType.getArrayIClass(
                             UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
@@ -10592,7 +10715,7 @@ class UnitCompiler {
                         ) continue;
                     }
 
-                    result.add(UnitCompiler.this.getType(ti));
+                    result.add(UnitCompiler.this.getRawType(ti));
                 }
 
                 return (IClass[]) result.toArray(new IClass[result.size()]);
@@ -10616,7 +10739,9 @@ class UnitCompiler {
             }
 
             @Override public IClass
-            getReturnType() throws CompileException { return UnitCompiler.this.getReturnType(methodDeclarator); }
+            getReturnType() throws CompileException {
+                return UnitCompiler.rawTypeOf(UnitCompiler.this.getReturnType(methodDeclarator));
+            }
 
             @Override public String
             getName() { return methodDeclarator.name; }
@@ -11016,8 +11141,8 @@ class UnitCompiler {
     private void
     castConversion(
         Locatable        locatable,
-        IClass           sourceType,
-        IClass           targetType,
+        IType            sourceType,
+        IType            targetType,
         @Nullable Object constantValue
     ) throws CompileException {
         if (!this.tryCastConversion(locatable, sourceType, targetType, constantValue)) {
@@ -11031,8 +11156,8 @@ class UnitCompiler {
     private boolean
     tryCastConversion(
         Locatable        locatable,
-        IClass           sourceType,
-        IClass           targetType,
+        IType            sourceType,
+        IType            targetType,
         @Nullable Object constantValue
     ) throws CompileException {
         return (
@@ -11048,8 +11173,8 @@ class UnitCompiler {
     private void
     assignmentConversion(
         Locatable        locatable,
-        IClass           sourceType,
-        IClass           targetType,
+        IType            sourceType,
+        IType            targetType,
         @Nullable Object constantValue
     ) throws CompileException {
         if (!this.tryAssignmentConversion(locatable, sourceType, targetType, constantValue)) {
@@ -11063,8 +11188,8 @@ class UnitCompiler {
     private boolean
     tryAssignmentConversion(
         Locatable        locatable,
-        IClass           sourceType,
-        IClass           targetType,
+        IType            sourceType,
+        IType            targetType,
         @Nullable Object constantValue
     ) throws CompileException {
         UnitCompiler.LOGGER.entering(
@@ -11081,8 +11206,8 @@ class UnitCompiler {
 
         // JLS7 5.1.4 Widening reference conversion.
         if (this.isWideningReferenceConvertible(sourceType, targetType)) {
-            this.getCodeContext().popOperand(sourceType.getDescriptor());
-            this.getCodeContext().pushOperand(targetType.getDescriptor());
+            this.getCodeContext().popOperand(UnitCompiler.rawTypeOf(sourceType).getDescriptor());
+            this.getCodeContext().pushOperand(UnitCompiler.rawTypeOf(targetType).getDescriptor());
             return true;
         }
 
@@ -11097,7 +11222,7 @@ class UnitCompiler {
                 if (this.isWideningReferenceConvertible(boxedType, targetType)) {
                     this.boxingConversion(locatable, sourceType, boxedType);
                     this.getCodeContext().popOperand(boxedType.getDescriptor());
-                    this.getCodeContext().pushOperand(targetType.getDescriptor());
+                    this.getCodeContext().pushOperand(UnitCompiler.rawTypeOf(targetType).getDescriptor());
                     return true;
                 }
             }
@@ -11124,7 +11249,7 @@ class UnitCompiler {
             if (this.tryConstantAssignmentConversion(
                 locatable,
                 constantValue, // constantValue
-                targetType             // targetType
+                targetType     // targetType
             )) return true;
         }
 
@@ -11140,7 +11265,7 @@ class UnitCompiler {
      *              {@link Long}, {@link Float}, {@link Double} or {@code null}
      */
     @Nullable private Object
-    assignmentConversion(Locatable locatable, @Nullable Object value, IClass targetType) throws CompileException {
+    assignmentConversion(Locatable locatable, @Nullable Object value, IType targetType) throws CompileException {
         if (targetType == IClass.BOOLEAN) {
             if (value instanceof Boolean) return value;
         } else
@@ -11241,10 +11366,10 @@ class UnitCompiler {
                 return new Double(((Character) value).charValue());
             }
         } else
-        if (value == null && !targetType.isPrimitive()) {
+        if (value == null && !UnitCompiler.isPrimitive(targetType)) {
             return null;
         } else
-        if (value instanceof String && targetType.isAssignableFrom(this.iClassLoader.TYPE_java_lang_String)) {
+        if (value instanceof String && UnitCompiler.isAssignableFrom(targetType, this.iClassLoader.TYPE_java_lang_String)) {
             return value;
         }
 
@@ -11272,7 +11397,7 @@ class UnitCompiler {
      * @return The promoted type
      */
     private IClass
-    unaryNumericPromotion(Locatable locatable, IClass type) throws CompileException {
+    unaryNumericPromotion(Locatable locatable, IType type) throws CompileException {
         type = this.convertToPrimitiveNumericType(locatable, type);
 
         IClass promotedType = this.unaryNumericPromotionType(locatable, type);
@@ -11282,9 +11407,9 @@ class UnitCompiler {
     }
 
     private void
-    reverseUnaryNumericPromotion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
+    reverseUnaryNumericPromotion(Locatable locatable, IClass sourceType, IType targetType) throws CompileException {
         IClass unboxedType = this.isUnboxingConvertible(targetType);
-        IClass pt          = unboxedType != null ? unboxedType : targetType;
+        IType  pt          = unboxedType != null ? unboxedType : targetType;
         if (
             !this.tryIdentityConversion(sourceType, pt)
             && !this.tryNarrowingPrimitiveConversion(
@@ -11301,9 +11426,9 @@ class UnitCompiler {
      * the operand on top of the operand stack and return the primitive type. Otherwise, issue a compile error.
      */
     private IClass
-    convertToPrimitiveNumericType(Locatable locatable, IClass type) throws CompileException {
+    convertToPrimitiveNumericType(Locatable locatable, IType type) throws CompileException {
 
-        if (type.isPrimitiveNumeric()) return type;
+        if ((type instanceof IClass) && ((IClass) type).isPrimitiveNumeric()) return (IClass) type;
 
         IClass unboxedType = this.isUnboxingConvertible(type);
         if (unboxedType != null) {
@@ -11314,11 +11439,11 @@ class UnitCompiler {
             "Object of type \"" + type.toString() + "\" cannot be converted to a numeric type",
             locatable.getLocation()
         );
-        return type;
+        return IClass.INT;
     }
 
     private void
-    numericPromotion(Locatable locatable, IClass sourceType, IClass targetType) {
+    numericPromotion(Locatable locatable, IType sourceType, IClass targetType) {
         if (
             !this.tryIdentityConversion(sourceType, targetType)
             && !this.tryWideningPrimitiveConversion(
@@ -11330,8 +11455,9 @@ class UnitCompiler {
     }
 
     private IClass
-    unaryNumericPromotionType(Locatable locatable, IClass type) throws CompileException {
-        if (!type.isPrimitiveNumeric()) {
+    unaryNumericPromotionType(Locatable locatable, IType type) throws CompileException {
+
+        if (!(type instanceof IClass) || !((IClass) type).isPrimitiveNumeric()) {
             this.compileError(
                 "Unary numeric promotion not possible on non-numeric-primitive type \"" + type + "\"",
                 locatable.getLocation()
@@ -11347,8 +11473,13 @@ class UnitCompiler {
     }
 
     private IClass
-    binaryNumericPromotionType(Locatable locatable, IClass type1, IClass type2) throws CompileException {
-        if (!type1.isPrimitiveNumeric() || !type2.isPrimitiveNumeric()) {
+    binaryNumericPromotionType(Locatable locatable, IType type1, IType type2) throws CompileException {
+        if (
+            !(type1 instanceof IClass)
+            || !((IClass) type1).isPrimitiveNumeric()
+            || !(type2 instanceof IClass)
+            || !((IClass) type2).isPrimitiveNumeric()
+        ) {
             this.compileError(
                 "Binary numeric promotion not possible on types \"" + type1 + "\" and \"" + type2 + "\"",
                 locatable.getLocation()
@@ -11369,7 +11500,7 @@ class UnitCompiler {
      * @return Whether the conversion is possible
      */
     @SuppressWarnings("static-method") private boolean
-    isIdentityConvertible(IClass sourceType, IClass targetType) { return sourceType == targetType; }
+    isIdentityConvertible(IType sourceType, IType targetType) { return sourceType == targetType; }
 
     /**
      * Implements "identity conversion" (5.1.1).
@@ -11377,12 +11508,12 @@ class UnitCompiler {
      * @return Whether the conversion was possible
      */
     @SuppressWarnings("static-method") private boolean
-    tryIdentityConversion(IClass sourceType, IClass targetType) { return sourceType == targetType; }
+    tryIdentityConversion(IType sourceType, IType targetType) { return sourceType == targetType; }
 
     @SuppressWarnings("static-method") private boolean
-    isWideningPrimitiveConvertible(IClass sourceType, IClass targetType) {
+    isWideningPrimitiveConvertible(IClass sourceType, IType targetType) {
         return UnitCompiler.PRIMITIVE_WIDENING_CONVERSIONS.get(
-            sourceType.getDescriptor() + targetType.getDescriptor()
+            sourceType.getDescriptor() + UnitCompiler.rawTypeOf(targetType).getDescriptor()
         ) != null;
     }
 
@@ -11392,15 +11523,21 @@ class UnitCompiler {
      * @return Whether the conversion succeeded
      */
     private boolean
-    tryWideningPrimitiveConversion(Locatable locatable, IClass sourceType, IClass targetType) {
+    tryWideningPrimitiveConversion(Locatable locatable, IType sourceType, IType targetType) {
+
+        if (sourceType instanceof IParameterizedType) return false;
+
+        if (targetType instanceof IParameterizedType) return false;
+        IClass targetClass = (IClass) targetType;
+
         int[] opcodes = (int[]) UnitCompiler.PRIMITIVE_WIDENING_CONVERSIONS.get(
-            sourceType.getDescriptor() + targetType.getDescriptor()
+            UnitCompiler.rawTypeOf(sourceType).getDescriptor() + targetClass.getDescriptor()
         );
         if (opcodes != null) {
             this.addLineNumberOffset(locatable);
             for (int opcode : opcodes) this.write(opcode);
             this.getCodeContext().popOperand();
-            this.getCodeContext().pushOperand(targetType.getDescriptor());
+            this.getCodeContext().pushOperand(targetClass.getDescriptor());
             return true;
         }
         return false;
@@ -11462,19 +11599,23 @@ class UnitCompiler {
      * @return Whether the conversion is possible
      */
     @SuppressWarnings("static-method") private boolean
-    isWideningReferenceConvertible(IClass sourceType, IClass targetType) throws CompileException {
-        if (targetType.isPrimitive() || sourceType == targetType) return false;
+    isWideningReferenceConvertible(IType sourceType, IType targetType) throws CompileException {
 
-        return targetType.isAssignableFrom(sourceType);
+        IClass sourceClass = UnitCompiler.rawTypeOf(sourceType);
+        IClass targetClass = UnitCompiler.rawTypeOf(targetType);
+
+        if (targetClass.isPrimitive() || sourceType == targetType) return false;
+
+        return targetClass.isAssignableFrom(sourceClass);
     }
 
     /**
      * Checks whether "narrowing primitive conversion" (JLS7 5.1.3) is possible.
      */
     @SuppressWarnings("static-method") private boolean
-    isNarrowingPrimitiveConvertible(IClass sourceType, IClass targetType) {
+    isNarrowingPrimitiveConvertible(IType sourceType, IType targetType) {
         return UnitCompiler.PRIMITIVE_NARROWING_CONVERSIONS.containsKey(
-            sourceType.getDescriptor() + targetType.getDescriptor()
+            UnitCompiler.rawTypeOf(sourceType).getDescriptor() + UnitCompiler.rawTypeOf(targetType).getDescriptor()
         );
     }
 
@@ -11484,15 +11625,21 @@ class UnitCompiler {
      * @return Whether the conversion succeeded
      */
     private boolean
-    tryNarrowingPrimitiveConversion(Locatable locatable, IClass sourceType, IClass targetType) {
+    tryNarrowingPrimitiveConversion(Locatable locatable, IType sourceType, IType targetType) {
+
+        if (!(sourceType instanceof IClass) || !(targetType instanceof IClass)) return false;
+
+        IClass sourceClass = (IClass) sourceType;
+        IClass targetClass = (IClass) targetType;
+
         int[] opcodes = (int[]) UnitCompiler.PRIMITIVE_NARROWING_CONVERSIONS.get(
-            sourceType.getDescriptor() + targetType.getDescriptor()
+            sourceClass.getDescriptor() + targetClass.getDescriptor()
         );
         if (opcodes != null) {
             this.addLineNumberOffset(locatable);
             for (int opcode : opcodes) this.write(opcode);
             this.getCodeContext().popOperand();
-            this.getCodeContext().pushOperand(targetType.getDescriptor());
+            this.getCodeContext().pushOperand(targetClass.getDescriptor());
             return true;
         }
         return false;
@@ -11566,7 +11713,7 @@ class UnitCompiler {
      * @param targetType    The type to convert to
      */
     private boolean
-    tryConstantAssignmentConversion(Locatable locatable, @Nullable Object constantValue, IClass targetType)
+    tryConstantAssignmentConversion(Locatable locatable, @Nullable Object constantValue, IType targetType)
     throws CompileException {
         UnitCompiler.LOGGER.entering(
             null,
@@ -11616,41 +11763,44 @@ class UnitCompiler {
      * Checks whether "narrowing reference conversion" (JLS7 5.1.5) is possible.
      */
     private boolean
-    isNarrowingReferenceConvertible(IClass sourceType, IClass targetType) throws CompileException {
-        if (sourceType.isPrimitive()) return false;
+    isNarrowingReferenceConvertible(IType sourceType, IType targetType) throws CompileException {
+        if (UnitCompiler.rawTypeOf(sourceType).isPrimitive()) return false;
         if (sourceType == targetType) return false;
 
+        IClass rawSourceType = UnitCompiler.rawTypeOf(sourceType);
+        IClass rawTargetType = UnitCompiler.rawTypeOf(targetType);
+
         // 5.1.5.1
-        if (sourceType.isAssignableFrom(targetType)) return true;
+        if (rawSourceType.isAssignableFrom(rawTargetType)) return true;
 
         // 5.1.5.2
-        if (targetType.isInterface() && !sourceType.isFinal() && !targetType.isAssignableFrom(sourceType)) return true;
+        if (rawTargetType.isInterface() && !rawSourceType.isFinal() && !rawTargetType.isAssignableFrom(rawSourceType)) return true;
 
         // 5.1.5.3
-        if (sourceType == this.iClassLoader.TYPE_java_lang_Object && targetType.isArray()) return true;
+        if (sourceType == this.iClassLoader.TYPE_java_lang_Object && rawTargetType.isArray()) return true;
 
         // 5.1.5.4
-        if (sourceType == this.iClassLoader.TYPE_java_lang_Object && targetType.isInterface()) return true;
+        if (sourceType == this.iClassLoader.TYPE_java_lang_Object && rawTargetType.isInterface()) return true;
 
         // 5.1.5.5
-        if (sourceType.isInterface() && !targetType.isFinal()) return true;
+        if (rawSourceType.isInterface() && !rawTargetType.isFinal()) return true;
 
         // 5.1.5.6
-        if (sourceType.isInterface() && targetType.isFinal() && sourceType.isAssignableFrom(targetType)) return true;
+        if (rawSourceType.isInterface() && rawTargetType.isFinal() && rawSourceType.isAssignableFrom(rawTargetType)) return true;
 
         // 5.1.5.7
         // TODO: Check for redefinition of methods with same signature but different return type.
-        if (sourceType.isInterface() && targetType.isInterface() && !targetType.isAssignableFrom(sourceType)) {
+        if (rawSourceType.isInterface() && rawTargetType.isInterface() && !rawTargetType.isAssignableFrom(rawSourceType)) {
             return true;
         }
 
         // 5.1.5.8
-        if (sourceType.isArray() && targetType.isArray()) {
+        if (rawSourceType.isArray() && rawTargetType.isArray()) {
 
-            IClass st = sourceType.getComponentType();
+            IType st = rawSourceType.getComponentType();
             assert st != null;
 
-            IClass tt = targetType.getComponentType();
+            IType tt = rawTargetType.getComponentType();
             assert tt != null;
 
             if (this.isNarrowingPrimitiveConvertible(st, tt) || this.isNarrowingReferenceConvertible(st, tt)) {
@@ -11667,7 +11817,7 @@ class UnitCompiler {
      * @return Whether the conversion succeeded
      */
     private boolean
-    tryNarrowingReferenceConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
+    tryNarrowingReferenceConversion(Locatable locatable, IType sourceType, IType targetType) throws CompileException {
 
         if (!this.isNarrowingReferenceConvertible(sourceType, targetType)) return false;
 
@@ -11679,7 +11829,7 @@ class UnitCompiler {
      * JLS7 5.5
      */
     private boolean
-    isCastReferenceConvertible(IClass sourceType, IClass targetType) throws CompileException {
+    isCastReferenceConvertible(IType sourceType, IType targetType) throws CompileException {
         return (
             this.isIdentityConvertible(sourceType, targetType)
             || this.isWideningReferenceConvertible(sourceType, targetType)
@@ -11691,7 +11841,7 @@ class UnitCompiler {
      * @return The boxed type or {@code null}
      */
     @Nullable private IClass
-    isBoxingConvertible(IClass sourceType) {
+    isBoxingConvertible(IType sourceType) {
         IClassLoader icl = this.iClassLoader;
         if (sourceType == IClass.BOOLEAN) return icl.TYPE_java_lang_Boolean;
         if (sourceType == IClass.BYTE)    return icl.TYPE_java_lang_Byte;
@@ -11705,7 +11855,7 @@ class UnitCompiler {
     }
 
     private boolean
-    tryBoxingConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
+    tryBoxingConversion(Locatable locatable, IType sourceType, IType targetType) throws CompileException {
         if (this.isBoxingConvertible(sourceType) == targetType) {
             this.boxingConversion(locatable, sourceType, targetType);
             return true;
@@ -11718,16 +11868,22 @@ class UnitCompiler {
      * @param targetType the corresponding wrapper type
      */
     private void
-    boxingConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
+    boxingConversion(Locatable locatable, IType sourceType, IType targetType) throws CompileException {
+
+        assert targetType instanceof IClass;
+        IClass targetClass = (IClass) targetType;
+
+        assert sourceType instanceof IClass;
+        IClass sourceClass = (IClass) sourceType;
 
         this.invoke(
             locatable,            // locatable
             Opcode.INVOKESTATIC,  // opcode
-            targetType,           // declaringIClass
+            targetClass,          // declaringIClass
             "valueOf",            // methodName
             new MethodDescriptor( // methodFD
-                targetType.getDescriptor(), // returnFd
-                sourceType.getDescriptor()  // parameterFds...
+                targetClass.getDescriptor(), // returnFd
+                sourceClass.getDescriptor()  // parameterFds...
             ),
             false                 // useInterfaceMethodref
         );
@@ -11737,7 +11893,8 @@ class UnitCompiler {
      * @return Iff <var>sourceType</var> is a primitive wrapper type, the unboxed type, otherwise {@code null}
      */
     @Nullable private IClass
-    isUnboxingConvertible(IClass sourceType) {
+    isUnboxingConvertible(IType sourceType) {
+
         IClassLoader icl = this.iClassLoader;
         if (sourceType == icl.TYPE_java_lang_Boolean)   return IClass.BOOLEAN;
         if (sourceType == icl.TYPE_java_lang_Byte)      return IClass.BYTE;
@@ -11755,8 +11912,10 @@ class UnitCompiler {
      *         type
      */
     private boolean
-    isConvertibleToPrimitiveNumeric(IClass sourceType) {
-        if (sourceType.isPrimitiveNumeric()) return true;
+    isConvertibleToPrimitiveNumeric(IType sourceType) {
+
+        if (sourceType instanceof IClass && ((IClass) sourceType).isPrimitiveNumeric()) return true;
+
         IClass unboxedType = this.isUnboxingConvertible(sourceType);
         return unboxedType != null && unboxedType.isPrimitiveNumeric();
     }
@@ -11766,13 +11925,15 @@ class UnitCompiler {
      * @param sourceType the corresponding wrapper type
      */
     private void
-    unboxingConversion(Locatable locatable, IClass sourceType, IClass targetType) throws CompileException {
+    unboxingConversion(Locatable locatable, IType sourceType, IClass targetType) throws CompileException {
+
+        assert sourceType instanceof IClass;
 
         // "source.intValue()"
         this.invoke(
             locatable,                                                       // locatable
             Opcode.INVOKEVIRTUAL,                                            // opcode
-            sourceType,                                                      // declaringIClass
+            (IClass) sourceType,                                             // declaringIClass
             targetType.toString() + "Value",                                 // methodName
             new MethodDescriptor(targetType.getDescriptor(), new String[0]), // methodMd
             false                                                            // useInterfaceMethodref
@@ -11890,13 +12051,13 @@ class UnitCompiler {
     }
 
     private void
-    arraystore(Locatable locatable, IClass lhsComponentType) {
+    arraystore(Locatable locatable, IType lhsComponentType) {
         this.addLineNumberOffset(locatable);
 
         this.getCodeContext().popOperand();
         this.getCodeContext().popOperand();
         this.getCodeContext().popOperand();
-        this.write(Opcode.IASTORE + UnitCompiler.ilfdabcs(lhsComponentType));
+        this.write(Opcode.IASTORE + UnitCompiler.ilfdabcs(UnitCompiler.rawTypeOf(lhsComponentType)));
     }
 
     private void
@@ -11907,13 +12068,15 @@ class UnitCompiler {
     }
 
     private void
-    checkcast(Locatable locatable, IClass targetType) {
+    checkcast(Locatable locatable, IType targetType) {
+
+        IClass rawTargetType = UnitCompiler.rawTypeOf(targetType);
 
         this.addLineNumberOffset(locatable);
         this.write(Opcode.CHECKCAST);
-        this.writeConstantClassInfo(targetType);
+        this.writeConstantClassInfo(rawTargetType);
         this.getCodeContext().popOperand();
-        this.getCodeContext().pushObjectOperand(targetType.getDescriptor());
+        this.getCodeContext().pushObjectOperand(rawTargetType.getDescriptor());
     }
 
     /**
@@ -12182,12 +12345,12 @@ class UnitCompiler {
     }
 
     private void
-    instanceoF(Locatable locatable, IClass rhsType) {
+    instanceoF(Locatable locatable, IType rhsType) {
         this.addLineNumberOffset(locatable);
 
         this.getCodeContext().popReferenceOperand();
         this.write(Opcode.INSTANCEOF);
-        this.writeConstantClassInfo(rhsType);
+        this.writeConstantClassInfo(UnitCompiler.rawTypeOf(rhsType));
         this.getCodeContext().pushIntOperand();
     }
 
@@ -12264,28 +12427,30 @@ class UnitCompiler {
     }
 
     // Load the value of a local variable onto the stack and return its type.
-    private IClass
+    private IType
     load(Locatable locatable, LocalVariable localVariable) {
         this.load(locatable, localVariable.type, localVariable.getSlotIndex());
         return localVariable.type;
     }
 
     private void
-    load(Locatable locatable, IClass localVariableType, int localVariableIndex) {
+    load(Locatable locatable, IType localVariableType, int localVariableIndex) {
         assert localVariableIndex >= 0 && localVariableIndex <= 65535;
 
         this.addLineNumberOffset(locatable);
 
+        IClass rawClass = UnitCompiler.rawTypeOf(localVariableType);
+
         if (localVariableIndex <= 3) {
-            this.write(Opcode.ILOAD_0 + 4 * UnitCompiler.ilfda(localVariableType) + localVariableIndex);
+            this.write(Opcode.ILOAD_0 + 4 * UnitCompiler.ilfda(rawClass) + localVariableIndex);
         } else
         if (localVariableIndex <= 255) {
-            this.write(Opcode.ILOAD + UnitCompiler.ilfda(localVariableType));
+            this.write(Opcode.ILOAD + UnitCompiler.ilfda(rawClass));
             this.write(localVariableIndex);
         } else
         {
             this.write(Opcode.WIDE);
-            this.write(Opcode.ILOAD + UnitCompiler.ilfda(localVariableType));
+            this.write(Opcode.ILOAD + UnitCompiler.ilfda(rawClass));
             this.writeUnsignedShort(localVariableIndex);
         }
 
@@ -12354,8 +12519,9 @@ class UnitCompiler {
     }
 
     private void
-    multianewarray(Locatable locatable, int dimExprCount, int dims, IClass componentType) {
-        IClass arrayType = componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
+    multianewarray(Locatable locatable, int dimExprCount, int dims, IType componentType) {
+
+        IClass arrayType = UnitCompiler.rawTypeOf(componentType).getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
 
         this.addLineNumberOffset(locatable);
         for (int i = 0; i < dimExprCount; i++) this.getCodeContext().popIntOperand();
@@ -12375,16 +12541,16 @@ class UnitCompiler {
     }
 
     private void
-    neW(Locatable locatable, IClass iClass) {
+    neW(Locatable locatable, IType iType) {
         this.addLineNumberOffset(locatable);
         this.getCodeContext().pushUninitializedOperand();
         this.write(Opcode.NEW);
-        this.writeConstantClassInfo(iClass);
+        this.writeConstantClassInfo(UnitCompiler.rawTypeOf(iType));
     }
 
     private void
-    newarray(Locatable locatable, IClass componentType) {
-        IClass arrayType = componentType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+    newarray(Locatable locatable, IType componentType) {
+        IClass arrayType = UnitCompiler.rawTypeOf(componentType).getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().popIntOperand();
@@ -12403,13 +12569,13 @@ class UnitCompiler {
     }
 
     private void
-    pop(Locatable locatable, IClass type) {
+    pop(Locatable locatable, IType type) {
 
         if (type == IClass.VOID) return;
 
         this.addLineNumberOffset(locatable);
         this.write(type == IClass.LONG || type == IClass.DOUBLE ? Opcode.POP2 : Opcode.POP);
-        this.getCodeContext().popOperand(type.getDescriptor());
+        this.getCodeContext().popOperand(UnitCompiler.rawTypeOf(type).getDescriptor());
     }
 
     private void
@@ -12474,7 +12640,7 @@ class UnitCompiler {
      * @param lvIndex (two slots for LONG and DOUBLE local variables)
      */
     private void
-    store(Locatable locatable, IClass lvType, short lvIndex) {
+    store(Locatable locatable, IType lvType, short lvIndex) {
         this.addLineNumberOffset(locatable);
 
         if (lvIndex <= 3) {
@@ -12544,13 +12710,15 @@ class UnitCompiler {
     }
 
     private void
-    xaload(Locatable locatable, IClass componentType) {
+    xaload(Locatable locatable, IType componentType) {
         this.addLineNumberOffset(locatable);
+
+        IClass rawComponentType = UnitCompiler.rawTypeOf(componentType);
 
         this.getCodeContext().popIntOperand();
         this.getCodeContext().popReferenceOperand();
-        this.write(Opcode.IALOAD + UnitCompiler.ilfdabcs(componentType));
-        this.getCodeContext().pushOperand(componentType.getDescriptor());
+        this.write(Opcode.IALOAD + UnitCompiler.ilfdabcs(rawComponentType));
+        this.getCodeContext().pushOperand(rawComponentType.getDescriptor());
     }
 
     private void
@@ -12562,19 +12730,19 @@ class UnitCompiler {
     }
 
     private void
-    xreturn(Locatable locatable, IClass returnType) {
+    xreturn(Locatable locatable, IType returnType) {
         this.addLineNumberOffset(locatable);
 
         this.write(Opcode.IRETURN + UnitCompiler.ilfda(returnType));
 
-        this.getCodeContext().popOperandAssignableTo(returnType.getDescriptor());
+        this.getCodeContext().popOperandAssignableTo(UnitCompiler.rawTypeOf(returnType).getDescriptor());
     }
 
     /**
      * @param t One of BYTE, CHAR, INT, SHORT, LONG, BOOLEAN, LONG, FLOAT, DOUBLE
      */
     private static int
-    ilfd(final IClass t) {
+    ilfd(final IType t) {
         if (t == IClass.BYTE || t == IClass.CHAR || t == IClass.INT || t == IClass.SHORT || t == IClass.BOOLEAN) {
             return 0;
         }
@@ -12594,7 +12762,7 @@ class UnitCompiler {
     }
 
     private static int
-    ilfda(IClass t) { return !t.isPrimitive() ? 4 : UnitCompiler.ilfd(t); }
+    ilfda(IType t) { return !UnitCompiler.isPrimitive(t) ? 4 : UnitCompiler.ilfd(t); }
 
     private static int
     il(VerificationTypeInfo vti) {
@@ -12660,13 +12828,16 @@ class UnitCompiler {
     }
 
     /**
-     * Finds a named type in the given {@link IClass}. Honors superclasses, interfaces and enclosing type declarations.
+     * Finds a named type in the given {@link IClass} or {@link IParameterizedType}. Honors superclasses, interfaces
+     * and enclosing type declarations.
      *
      * @return {@code null} if no type with the given name is found
      */
     @Nullable private IClass
-    findMemberType(IClass iClass, String name, Location location) throws CompileException {
-        IClass[] types = iClass.findMemberType(name);
+    findMemberType(IType iType, String name, @Nullable TypeArgument[] typeArguments, Location location)
+    throws CompileException {
+
+        IClass[] types = UnitCompiler.rawTypeOf(iType).findMemberType(name);
         if (types.length == 0) return null;
         if (types.length == 1) return types[0];
 
@@ -13034,9 +13205,11 @@ class UnitCompiler {
      * @return The type of the created array
      */
     private IClass
-    newArray(Locatable locatable, int dimExprCount, int dims, IClass componentType) {
+    newArray(Locatable locatable, int dimExprCount, int dims, IType componentType) {
 
-        if (dimExprCount == 1 && dims == 0 && componentType.isPrimitive()) {
+        IClass rawComponentType = UnitCompiler.rawTypeOf(componentType);
+
+        if (dimExprCount == 1 && dims == 0 && rawComponentType.isPrimitive()) {
 
             // "new <primitive>[<size>]"
             this.newarray(locatable, componentType);
@@ -13045,7 +13218,7 @@ class UnitCompiler {
 
             // "new <class-or-interface> [<size>]"
             // "new <anything> [<size>] []{dims}"
-            this.anewarray(locatable, componentType.getArrayIClass(dims, this.iClassLoader.TYPE_java_lang_Object));
+            this.anewarray(locatable, rawComponentType.getArrayIClass(dims, this.iClassLoader.TYPE_java_lang_Object));
         } else
         {
 
@@ -13055,7 +13228,7 @@ class UnitCompiler {
             this.multianewarray(locatable, dimExprCount, dims, componentType);
         }
 
-        return componentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
+        return rawComponentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
     }
 
     /**
@@ -13064,6 +13237,7 @@ class UnitCompiler {
      */
     public static
     class SimpleIField extends IClass.IField {
+
         private final String name;
         private final IClass type;
 

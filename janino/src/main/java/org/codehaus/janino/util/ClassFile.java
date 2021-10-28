@@ -2310,6 +2310,9 @@ class ClassFile implements Annotatable {
             this.signatureIndex = signatureIndex;
         }
 
+        public String
+        getSignature(ClassFile classFile) { return classFile.getConstantUtf8(this.signatureIndex); }
+
         private static AttributeInfo
         loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
             return new SignatureAttribute(

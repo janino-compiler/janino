@@ -41,9 +41,7 @@ import java.util.Set;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.ClassFile.AttributeInfo;
 import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
-import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.AppendFrame;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.ChopFrame;
@@ -167,7 +165,7 @@ class CodeContext {
      *             LocalVariableTable
      */
     public Java.LocalVariableSlot
-    allocateLocalVariable(short size, @Nullable String name, @Nullable IClass type) {
+    allocateLocalVariable(short size, @Nullable String name, @Nullable IType type) {
 
         LocalScope currentScope = this.currentLocalScope;
         assert currentScope != null : "saveLocalVariables must be called first";
@@ -422,6 +420,13 @@ class CodeContext {
         }
     }
 
+    private static IClass
+    rawTypeOf(IType iType) {
+        while (iType instanceof IParameterizedType) iType = ((IParameterizedType) iType).getRawType();
+        assert iType instanceof IClass;
+        return (IClass) iType;
+    }
+
     /**
      * @return A {@link org.codehaus.janino.util.ClassFile.LocalVariableTableAttribute} for this {@link CodeContext}
      */
@@ -438,7 +443,7 @@ class CodeContext {
             String localVariableName = slot.getName();
             if (localVariableName != null) {
 
-                String      typeName    = slot.getType().getDescriptor();
+                String      typeName    = CodeContext.rawTypeOf(slot.getType()).getDescriptor();
                 final short classSlot   = cf.addConstantUtf8Info(typeName);
                 final short varNameSlot = cf.addConstantUtf8Info(localVariableName);
 

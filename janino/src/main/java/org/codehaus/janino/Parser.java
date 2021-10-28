@@ -2469,8 +2469,8 @@ class Parser {
      */
     public Statement
     parseReturnStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("return");
+        final Location location = this.location();
         Rvalue returnValue = this.peek(";") ? null : this.parseExpression();
         this.read(";");
         return new ReturnStatement(location, returnValue);
@@ -2483,8 +2483,8 @@ class Parser {
      */
     public Statement
     parseThrowStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("throw");
+        final Location location = this.location();
         final Rvalue expression = this.parseExpression();
         this.read(";");
 
@@ -2498,8 +2498,8 @@ class Parser {
      */
     public Statement
     parseBreakStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("break");
+        final Location location = this.location();
         String label = null;
         if (this.peek(TokenType.IDENTIFIER)) label = this.read(TokenType.IDENTIFIER);
         this.read(";");
@@ -2513,8 +2513,8 @@ class Parser {
      */
     public Statement
     parseContinueStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("continue");
+        final Location location = this.location();
         String label = null;
         if (this.peek(TokenType.IDENTIFIER)) label = this.read(TokenType.IDENTIFIER);
         this.read(";");
@@ -2545,8 +2545,8 @@ class Parser {
      */
     public Statement
     parseEmptyStatement() throws CompileException, IOException {
-        Location location = this.location();
         this.read(";");
+        Location location = this.location();
         return new EmptyStatement(location);
     }
 

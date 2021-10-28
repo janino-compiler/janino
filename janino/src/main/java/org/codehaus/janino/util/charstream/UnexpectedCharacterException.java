@@ -1,8 +1,9 @@
 
 /*
- * Janino - An embedded Java[TM] compiler
+ * JDISASM - A Java[TM] class file disassembler
  *
- * Copyright (c) 2021 Arno Unkrig. All rights reserved.
+ * Copyright (c) 2001, Arno Unkrig
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:
@@ -23,19 +24,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.codehaus.janino;
+package org.codehaus.janino.util.charstream;
 
-import org.codehaus.commons.compiler.CompileException;
+import java.io.IOException;
 
 /**
- * Type bounds can either be a class or interface type, or a type variable. Example: {@code MySet<K extends Comparable & T>}
+ * Indicates that {@link CharStream#read} did not find the character(s) it expected.
  */
-public interface ITypeVariable extends ITypeVariableOrIClass {
+public // SUPPRESS CHECKSTYLE CauseParameterInExceptionCheck
+class UnexpectedCharacterException extends IOException {
 
-    String getName();
+    private static final long serialVersionUID = 1L;
 
-    /**
-     * @return A zero-length array if this type variable has no bounds
-     */
-    ITypeVariableOrIClass[] getBounds() throws CompileException;
+    public
+    UnexpectedCharacterException() {
+    }
+
+    public
+    UnexpectedCharacterException(String message) {
+        super(message);
+    }
 }

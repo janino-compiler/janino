@@ -1883,7 +1883,7 @@ class Java {
         /**
          * Set during "compile()".
          */
-        @Nullable IClass[] interfaces;
+        @Nullable IType[] interfaces;
 
         // Implement NamedTypeDeclaration.
 
@@ -2399,7 +2399,7 @@ class Java {
         /**
          * Set by "compile()".
          */
-        @Nullable IClass returnType;
+        @Nullable IType returnType;
 
         // Implement DocCommentable.
 
@@ -2721,6 +2721,7 @@ class Java {
                     }
                 }
             }
+            for (FormalParameter fp : this.formalParameters.parameters) fp.type.setEnclosingScope(enclosingScope);
         }
 
         @Override public String
@@ -4150,18 +4151,24 @@ class Java {
     class SimpleType extends Type {
 
         /**
-         * The {@link IClass} represented by this {@link Type}.
+         * The {@link IType} represented by this {@link Type}.
          */
-        public final IClass iClass;
+        public final IType iType;
 
         public
-        SimpleType(Location location, IClass iClass) {
+        SimpleType(Location location, IType iType) {
             super(location);
-            this.iClass = iClass;
+            this.iType = iType;
         }
 
+        @Override public void
+        setEnclosingScope(Scope enclosingScope) {}
+
+        @Override public Scope
+        getEnclosingScope() { throw new AssertionError(); }
+
         @Override public String
-        toString() { return this.iClass.toString(); }
+        toString() { return this.iType.toString(); }
 
         @Override @Nullable public <R, EX extends Throwable> R
         accept(Visitor.AtomVisitor<R, EX> visitor) throws EX { return visitor.visitType(this);       }
@@ -4258,7 +4265,7 @@ class Java {
         @Override public void
         setEnclosingScope(Scope enclosingScope) {
             super.setEnclosingScope(enclosingScope);
-            if (this.typeArguments!= null) {
+            if (this.typeArguments != null) {
                 for (TypeArgument ta : this.typeArguments) ta.setEnclosingScope(enclosingScope);
             }
         }
@@ -4419,7 +4426,10 @@ class Java {
                 }
                 @Override public void
                 traverseType(Java.Type t) {
-                    if (t.enclosingScope != null && enclosingScope != t.enclosingScope) {
+                    if (t.enclosingScope == null) {
+                        t.setEnclosingScope(enclosingScope);
+                    } else
+                    if (enclosingScope != t.enclosingScope) {
                         throw new InternalCompilerException(
                             "Enclosing scope already set for type \""
                             + t.toString()
@@ -4427,8 +4437,6 @@ class Java {
                             + t.getLocation()
                         );
                     }
-                    t.enclosingScope = enclosingScope;
-//                    t.setEnclosingScope(enclosingScope);
                     super.traverseType(t);
                 }
             }.visitAtom(this);
@@ -4768,7 +4776,7 @@ class Java {
         /**
          * The resolved {@link #qualification}.
          */
-        @Nullable IClass targetIClass;
+        @Nullable IType targetIType;
 
         // Implement "Atom".
 
@@ -5535,15 +5543,15 @@ class Java {
         /**
          * The resolved {@link #type}.
          */
-        @Nullable public IClass iClass;
+        @Nullable public IType iType;
 
         public
-        NewClassInstance(Location location, @Nullable Rvalue qualification, IClass iClass, Rvalue[] arguments) {
+        NewClassInstance(Location location, @Nullable Rvalue qualification, IType iType, Rvalue[] arguments) {
             super(location);
             this.qualification = qualification;
             this.type          = null;
             this.arguments     = arguments;
-            this.iClass        = iClass;
+            this.iType         = iType;
         }
 
         // Implement "Atom".
@@ -5556,8 +5564,8 @@ class Java {
             if (this.type != null) {
                 sb.append(this.type.toString());
             } else
-            if (this.iClass != null) {
-                sb.append(this.iClass.toString());
+            if (this.iType != null) {
+                sb.append(this.iType.toString());
             } else {
                 sb.append("???");
             }
@@ -6235,16 +6243,16 @@ class Java {
     public static
     class LocalVariableSlot {
 
-        private short                  slotIndex = -1;
-        @Nullable private String       name;
-        @Nullable private final IClass type;
-        @Nullable private Offset       start, end;
+        private short                 slotIndex = -1;
+        @Nullable private String      name;
+        @Nullable private final IType type;
+        @Nullable private Offset      start, end;
 
         /**
          * @param slotNumber (two slots for LONG and DOUBLE local variables)
          */
         public
-        LocalVariableSlot(@Nullable String name, short slotNumber, @Nullable IClass type) {
+        LocalVariableSlot(@Nullable String name, short slotNumber, @Nullable IType type) {
             this.name      = name;
             this.slotIndex = slotNumber;
             this.type      = type;
@@ -6314,7 +6322,7 @@ class Java {
         /**
          * @return the resolved type of this local variable
          */
-        public IClass getType() { assert this.type != null; return this.type; }
+        public IType getType() { assert this.type != null; return this.type; }
     }
 
     /**
@@ -6331,7 +6339,7 @@ class Java {
         /**
          * The type of this local variable.
          */
-        public final IClass type;
+        public final IType type;
 
         /**
          * The slot reserved for this local variable.
@@ -6339,7 +6347,7 @@ class Java {
         @Nullable public LocalVariableSlot slot;
 
         public
-        LocalVariable(boolean finaL, IClass type) {
+        LocalVariable(boolean finaL, IType type) {
             this.finaL = finaL;
             this.type  = type;
         }

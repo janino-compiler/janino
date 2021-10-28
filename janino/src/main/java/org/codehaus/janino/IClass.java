@@ -112,43 +112,43 @@ class IClass implements ITypeVariableOrIClass {
 
         PrimitiveIClass(String fieldDescriptor) { this.fieldDescriptor = fieldDescriptor; }
 
-        @Override @Nullable protected ITypeVariable[] getITypeVariables2()        { return null;                 }
-        @Override @Nullable protected IClass          getComponentType2()         { return null;                 }
-        @Override protected IClass[]                  getDeclaredIClasses2()      { return new IClass[0];        }
-        @Override protected IConstructor[]            getDeclaredIConstructors2() { return new IConstructor[0];  }
-        @Override protected IField[]                  getDeclaredIFields2()       { return new IField[0];        }
-        @Override protected IMethod[]                 getDeclaredIMethods2()      { return new IMethod[0];       }
-        @Override @Nullable protected IClass          getDeclaringIClass2()       { return null;                 }
-        @Override protected String                    getDescriptor2()            { return this.fieldDescriptor; }
-        @Override protected IClass[]                  getInterfaces2()            { return new IClass[0];        }
-        @Override @Nullable protected IClass          getOuterIClass2()           { return null;                 }
-        @Override @Nullable protected IClass          getSuperclass2()            { return null;                 }
-        @Override public boolean                      isAbstract()                { return false;                }
-        @Override public boolean                      isArray()                   { return false;                }
-        @Override public boolean                      isFinal()                   { return true;                 }
-        @Override public boolean                      isEnum()                    { return false;                }
-        @Override public boolean                      isInterface()               { return false;                }
-        @Override public boolean                      isPrimitive()               { return true;                 }
-        @Override public Access                       getAccess()                 { return Access.PUBLIC;        }
+        @Override protected ITypeVariable[]  getITypeVariables2()        { return new ITypeVariable[0]; }
+        @Override @Nullable protected IClass getComponentType2()         { return null;                 }
+        @Override protected IClass[]         getDeclaredIClasses2()      { return new IClass[0];        }
+        @Override protected IConstructor[]   getDeclaredIConstructors2() { return new IConstructor[0];  }
+        @Override protected IField[]         getDeclaredIFields2()       { return new IField[0];        }
+        @Override protected IMethod[]        getDeclaredIMethods2()      { return new IMethod[0];       }
+        @Override @Nullable protected IClass getDeclaringIClass2()       { return null;                 }
+        @Override protected String           getDescriptor2()            { return this.fieldDescriptor; }
+        @Override protected IClass[]         getInterfaces2()            { return new IClass[0];        }
+        @Override @Nullable protected IClass getOuterIClass2()           { return null;                 }
+        @Override @Nullable protected IClass getSuperclass2()            { return null;                 }
+        @Override public boolean             isAbstract()                { return false;                }
+        @Override public boolean             isArray()                   { return false;                }
+        @Override public boolean             isFinal()                   { return true;                 }
+        @Override public boolean             isEnum()                    { return false;                }
+        @Override public boolean             isInterface()               { return false;                }
+        @Override public boolean             isPrimitive()               { return true;                 }
+        @Override public Access              getAccess()                 { return Access.PUBLIC;        }
 
         @Override public boolean
         isPrimitiveNumeric() { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); }
     }
 
-    @Nullable public final ITypeVariable[]
+    /**
+     * @return Zero-length array if this {@link IClass} declares no type variables
+     */
+    public final ITypeVariable[]
     getITypeVariables() throws CompileException {
-        if (this.iTypeVariablesCached) return this.iTypeVariablesCache;
-
-        this.iTypeVariablesCached = true;
+        if (this.iTypeVariablesCache != null) return this.iTypeVariablesCache;
         return (this.iTypeVariablesCache = this.getITypeVariables2());
     }
-    private boolean                   iTypeVariablesCached;
     @Nullable private ITypeVariable[] iTypeVariablesCache;
 
     /**
      * The uncached version of {@link #getDeclaredIConstructors()} which must be implemented by derived classes.
      */
-    @Nullable protected abstract ITypeVariable[] getITypeVariables2() throws CompileException;
+    protected abstract ITypeVariable[] getITypeVariables2() throws CompileException;
 
     /**
      * Returns all the constructors declared by the class represented by the type. If the class has a default
@@ -470,7 +470,7 @@ class IClass implements ITypeVariableOrIClass {
         if (this.superclassIsCached) return this.superclassCache;
 
         IClass sc = this.getSuperclass2();
-        if (sc != null && sc.isSubclassOf(this)) {
+        if (sc != null && IClass.rawTypeOf(sc).isSubclassOf(this)) {
             throw new CompileException(
                 "Class circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"",
                 null
@@ -774,7 +774,7 @@ class IClass implements ITypeVariableOrIClass {
 
         return new IClass() {
 
-            @Override @Nullable protected ITypeVariable[] getITypeVariables2()        { return null;                       }
+            @Override @Nullable protected ITypeVariable[] getITypeVariables2()        { return new ITypeVariable[0];       }
             @Override public IClass.IConstructor[]        getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
 
             // Special trickery #17: Arrays override "Object.clone()", but without "throws
@@ -1311,7 +1311,9 @@ class IClass implements ITypeVariableOrIClass {
         /**
          * @return The descriptor of this field
          */
-        public String getDescriptor() throws CompileException { return this.getType().getDescriptor(); }
+        public String getDescriptor() throws CompileException {
+            return IClass.rawTypeOf(this.getType()).getDescriptor();
+        }
 
         /**
          * Returns the value of the field if it is a compile-time constant value, i.e. the field is FINAL and its
@@ -1332,7 +1334,7 @@ class IClass implements ITypeVariableOrIClass {
         /**
          * @return The type of the annotation
          */
-        IClass getAnnotationType() throws CompileException;
+        IType getAnnotationType() throws CompileException;
 
         /**
          * Returns the value of the <var>name</var>d element:
@@ -1384,4 +1386,105 @@ class IClass implements ITypeVariableOrIClass {
         this.declaredIMethodsCache = null;
         this.declaredIMethodCache  = null;
     }
+
+    public static IClass
+    rawTypeOf(IType type) {
+        while (type instanceof IParameterizedType) type = ((IParameterizedType) type).getRawType();
+        assert type instanceof IClass;
+        return (IClass) type;
+    }
+
+//    /**
+//     * @param typeArguments Zero-length array if this {@link IClass} is not parameterized
+//     */
+//    public IType
+//    parameterize(final IType[] typeArguments) throws CompileException {
+//
+//        ITypeVariable[] iTypeVariables = this.getITypeVariables();
+//
+//        if (typeArguments.length == 0 && iTypeVariables.length == 0) return this;
+//
+//        if (iTypeVariables.length == 0) {
+//            throw new CompileException("Class \"" + this.toString() + "\" cannot be parameterized", null);
+//        }
+//
+//        if (typeArguments.length == 0) {
+//            // throw new CompileException("Class \"" + this.toString() + "\" must be parameterized", null);
+//            return this;
+//        }
+//
+//        List<IType> key = Arrays.asList(typeArguments);
+//
+//        Map<List<IType> /*typeArguments*/, IParameterizedType> m = this.parameterizations;
+//        if (m == null) this.parameterizations = (m = new HashMap<List<IType>, IParameterizedType>());
+//
+//        {
+//            IType result = m.get(key);
+//            if (result != null) return result;
+//        }
+//
+//        if (iTypeVariables.length != typeArguments.length) {
+//            throw new CompileException((
+//                "Number of type arguments ("
+//                + typeArguments.length
+//                + ") does not match number of type variables ("
+//                + iTypeVariables.length
+//                + ") of class \""
+//                + this.toString()
+//                + "\""
+//            ), null);
+//        }
+//
+//        for (int i = 0; i < iTypeVariables.length; i++) {
+//            ITypeVariable tv = iTypeVariables[i];
+//            IType         ta = typeArguments[i];
+//
+//            for (ITypeVariableOrIClass b : tv.getBounds()) {
+//                assert b instanceof IClass;
+//
+//                if (ta instanceof IClass) {
+//                    IClass taic = (IClass) ta;
+//                    if (!(ta == b || taic.isInterface() || taic.isSubclassOf((IClass) b))) {
+//                        throw new CompileException("Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of bound " + b, null);
+//                    }
+//                } else
+//                if (ta instanceof IWildcardType) {
+//                    IWildcardType tawt = (IWildcardType) ta;
+//                    IClass ub = (IClass) tawt.getUpperBound();
+//                    if (!(ub == b || ub.isSubclassOf((IClass) b))) {
+//                        throw new CompileException("Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of " + b, null);
+//                    }
+//                    IClass lb = (IClass) tawt.getLowerBound();
+//                    if (lb != null && !"Ljava/lang/Object;".equals(((IClass) b).getDescriptor())) {
+//                        throw new CompileException("Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of " + b, null);
+//                    }
+//                } else
+//                if (ta instanceof ITypeVariable) {
+//                    throw new AssertionError(ta.getClass() + ": " + ta);
+//                } else
+//                if (ta instanceof IParameterizedType) {
+//                    throw new AssertionError(ta.getClass() + ": " + ta);
+//                } else
+//                {
+//                    throw new AssertionError(ta.getClass() + ": " + ta);
+//                }
+//            }
+//        }
+//
+//        IParameterizedType result = new IParameterizedType() {
+//
+//            @Override public IType[] getActualTypeArguments() { return typeArguments; }
+//            @Override public IType getRawType() { return IClass.this; }
+//
+//            @Override public String
+//            toString() {
+//                return IClass.this + "<" + Arrays.toString(typeArguments) + ">";
+//            }
+//        };
+//
+//        m.put(key, result);
+//
+//        return result;
+//    }
+//    @Nullable Map<List<IType> /*typeArguments*/, IParameterizedType> parameterizations;
 }

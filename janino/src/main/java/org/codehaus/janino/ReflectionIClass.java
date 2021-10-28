@@ -59,16 +59,13 @@ class ReflectionIClass extends IClass {
         this.iClassLoader = iClassLoader;
     }
 
-    @Override @Nullable public ITypeVariable[]
+    @Override public ITypeVariable[]
     getITypeVariables2() {
 
         final TypeVariable<?>[] tps = this.clazz.getTypeParameters();
-        if (tps == null) return null;
 
         ITypeVariable[] result = new ITypeVariable[tps.length];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = this.typeVariableToITypeVariable(tps[i]);
-        }
+        for (int i = 0; i < result.length; i++) result[i] = this.typeVariableToITypeVariable(tps[i]);
 
         return result;
     }
@@ -82,24 +79,31 @@ class ReflectionIClass extends IClass {
             getName() { return tv.getName(); }
 
             @Override public ITypeVariableOrIClass[]
-            getBounds() {
+            getBounds() throws CompileException {
                 IType[] tmp = ReflectionIClass.this.typesToITypes(tv.getBounds());
-                return Arrays.copyOf(tmp, tmp.length, ITypeVariableOrIClass[].class);
+                return (ITypeVariableOrIClass[]) Arrays.copyOf(tmp, tmp.length, ITypeVariableOrIClass[].class);
             }
         };
     }
 
     private IType[]
-    typesToITypes(Type[] types) {
+    typesToITypes(Type[] types) throws CompileException {
         IType[] result = new IType[types.length];
         for (int i = 0; i < result.length; i++) result[i] = this.typeToIType(types[i]);
         return result;
     }
 
     private IType
-    typeToIType(Type type) {
+    typeToIType(Type type) throws CompileException {
         if (type instanceof Class) {
-            return new ReflectionIClass((Class) type, this.iClassLoader);
+            IClass iClass;
+            try {
+                iClass = this.iClassLoader.loadIClass(Descriptor.fromClassName(((Class<?>) type).getName()));
+            } catch (ClassNotFoundException cnfe) {
+                throw new CompileException("Loading \"" + type + "\"", null, cnfe);
+            }
+            if (iClass == null) throw new CompileException("Could not load \"" + type + "\"", null);
+            return iClass;
         } else
         if (type instanceof GenericArrayType) {
             throw new AssertionError("NYI");

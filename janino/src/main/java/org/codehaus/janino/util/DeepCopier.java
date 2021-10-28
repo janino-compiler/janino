@@ -1084,7 +1084,7 @@ class DeepCopier {
             : new NewClassInstance(
                 subject.getLocation(),
                 this.copyOptionalRvalue(subject.qualification),
-                DeepCopier.assertNotNull(subject.iClass),
+                DeepCopier.assertNotNull(subject.iType),
                 this.copyRvalues(subject.arguments)
             )
         );
@@ -1153,7 +1153,7 @@ class DeepCopier {
     }
 
     public Type
-    copySimpleType(SimpleType st) throws CompileException { return new SimpleType(st.getLocation(), st.iClass); }
+    copySimpleType(SimpleType st) throws CompileException { return new SimpleType(st.getLocation(), st.iType); }
 
     public ConstructorInvocation
     copyAlternateConstructorInvocation(AlternateConstructorInvocation subject) throws CompileException {
