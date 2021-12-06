@@ -126,7 +126,7 @@ class GithubPullRequestsTest {
         //     }
         //
         // As you see, the IF statement has been optimized away.
-        GithubPullRequestsTest.assertEqualsOneOf("Class file size", new Object[] { 238, 262, 273 }, baos.size());
+        GithubPullRequestsTest.assertEqualsOneOf("Class file size", new Object[] { 238, 258, 262, 273 }, baos.size());
     }
 
     /**
