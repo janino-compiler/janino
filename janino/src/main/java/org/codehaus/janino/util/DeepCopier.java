@@ -715,15 +715,13 @@ class DeepCopier {
 
     public FieldDeclaration
     copyFieldDeclaration(FieldDeclaration subject) throws CompileException {
-        FieldDeclaration result = new FieldDeclaration(
+        return new FieldDeclaration(
             subject.getLocation(),
             subject.getDocComment(),
             this.copyModifiers(subject.modifiers),
             this.copyType(subject.type),
             this.copyVariableDeclarators(subject.variableDeclarators)
         );
-        result.setEnclosingScope(subject.getEnclosingScope());
-        return result;
     }
 
     public VariableDeclarator
