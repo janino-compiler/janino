@@ -1833,19 +1833,33 @@ class UnitCompiler {
 
                 this.load(fes, iteratorLv);
                 this.invokeMethod(fes.expression, this.iClassLoader.METH_java_util_Iterator__next);
-                if (
-                    !this.tryAssignmentConversion(
-                        fes.currentElement,
-                        this.iClassLoader.TYPE_java_lang_Object,
-                        elementLv.type,
-                        null
-                    )
-                    && !this.tryNarrowingReferenceConversion(
-                        fes.currentElement,
-                        this.iClassLoader.TYPE_java_lang_Object,
-                        elementLv.type
-                    )
-                ) throw new AssertionError();
+
+                IClass boxedType = this.isBoxingConvertible(elementLv.type);
+                if (boxedType != null) {
+
+                    // Fix for Issue #155.
+                    this.checkcast(fes.currentElement, boxedType);
+                    this.unboxingConversion(fes.currentElement, boxedType, (IClass) elementLv.type);
+                } else
+                if (this.tryAssignmentConversion(
+                    fes.currentElement,
+                    this.iClassLoader.TYPE_java_lang_Object,
+                    elementLv.type,
+                    null
+                )) {
+                    ;
+                } else
+                if (this.tryNarrowingReferenceConversion(
+                    fes.currentElement,
+                    this.iClassLoader.TYPE_java_lang_Object,
+                    elementLv.type
+                )) {
+                    ;
+                } else
+                {
+                    throw new InternalCompilerException("Don't know how to convert to " + elementLv.type);
+                }
+
                 this.store(fes, elementLv);
 
                 boolean bodyCcn = this.compile(fes.body);
