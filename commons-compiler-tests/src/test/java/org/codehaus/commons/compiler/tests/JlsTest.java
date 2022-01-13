@@ -320,7 +320,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     test_4_5__Parameterized_Types() throws Exception {
-        this.assertScriptReturnsTrue("import java.util.*; Map<String, String> s = Collections.emptyMap(); String x = s.get(\"foo\"); return x ==null;");
+        this.assertScriptReturnsTrue("import java.util.*; Map<String, String> s = /*Collections.emptyMap()*/null; String x = s.get(\"foo\"); return x ==null;");
     }
 
     @Test public void
@@ -1400,8 +1400,19 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "for (var y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y.length();\n"
             + "return x.equals(\"A11\");"
         );
-        if (this.isJanino)                   this.assertScriptUncookable(script, "NYI");
+        if (this.isJanino)                                            this.assertScriptUncookable(script, "NYI");
         if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 10) this.assertScriptReturnsTrue(script);
+
+        this.assertScriptReturnsTrue(
+            "java.util.List<Integer> l = new java.util.ArrayList<Integer>();\n"
+            + "l.add(1);\n"
+            + "l.add(2);\n"
+            + "l.add(3);\n"
+            + "for (int i : l) {\n"
+            + "    if (i != 1 && i != 2 && i != 3) return false;\n"
+            + "}\n"
+            + "return true;\n"
+        );
     }
 
     @Test public void
