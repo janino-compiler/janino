@@ -80,6 +80,7 @@ import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
 import org.codehaus.janino.Java.FieldDeclaration;
+import org.codehaus.janino.Java.FieldDeclarationOrInitializer;
 import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.ForEachStatement;
 import org.codehaus.janino.Java.ForStatement;
@@ -156,12 +157,23 @@ import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Java.Wildcard;
 import org.codehaus.janino.Visitor;
+import org.codehaus.janino.Visitor.AbstractCompilationUnitVisitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
+import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
+import org.codehaus.janino.Visitor.ConstructorInvocationVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
+import org.codehaus.janino.Visitor.FieldDeclarationOrInitializerVisitor;
+import org.codehaus.janino.Visitor.FunctionDeclaratorVisitor;
+import org.codehaus.janino.Visitor.ImportVisitor;
+import org.codehaus.janino.Visitor.LvalueVisitor;
 import org.codehaus.janino.Visitor.ModifierVisitor;
+import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeArgumentVisitor;
+import org.codehaus.janino.Visitor.TypeBodyDeclarationVisitor;
+import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
+import org.codehaus.janino.Visitor.TypeVisitor;
 
 /**
  * Creates deep copies of AST elements.
@@ -178,9 +190,9 @@ class DeepCopier {
 
     // ------------------------- Visitors that implement the copying of abstract AST elements
 
-    private final Visitor.AbstractCompilationUnitVisitor<AbstractCompilationUnit, CompileException>
+    private final AbstractCompilationUnitVisitor<AbstractCompilationUnit, CompileException>
     abstractCompilationUnitCopier = (
-        new Visitor.AbstractCompilationUnitVisitor<AbstractCompilationUnit, CompileException>() {
+        new AbstractCompilationUnitVisitor<AbstractCompilationUnit, CompileException>() {
 
             // SUPPRESS CHECKSTYLE LineLength:2
             @Override @Nullable public AbstractCompilationUnit visitCompilationUnit(CompilationUnit cu)                throws CompileException { return DeepCopier.this.copyCompilationUnit(cu);         }
@@ -188,8 +200,8 @@ class DeepCopier {
         }
     );
 
-    private final Visitor.ImportVisitor<ImportDeclaration, CompileException>
-    importCopier = new Visitor.ImportVisitor<ImportDeclaration, CompileException>() {
+    private final ImportVisitor<ImportDeclaration, CompileException>
+    importCopier = new ImportVisitor<ImportDeclaration, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:4
         @Override @Nullable public ImportDeclaration visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          throws CompileException { return DeepCopier.this.copySingleTypeImportDeclaration(stid);      }
@@ -198,8 +210,8 @@ class DeepCopier {
         @Override @Nullable public ImportDeclaration visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) throws CompileException { return DeepCopier.this.copyStaticImportOnDemandDeclaration(siodd); }
     };
 
-    private final Visitor.TypeDeclarationVisitor<TypeDeclaration, CompileException>
-    typeDeclarationCopier = new Visitor.TypeDeclarationVisitor<TypeDeclaration, CompileException>() {
+    private final TypeDeclarationVisitor<TypeDeclaration, CompileException>
+    typeDeclarationCopier = new TypeDeclarationVisitor<TypeDeclaration, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:11
         @Override @Nullable public TypeDeclaration visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                             throws CompileException { return DeepCopier.this.copyAnonymousClassDeclaration(acd);                 }
@@ -215,8 +227,8 @@ class DeepCopier {
         @Override @Nullable public TypeDeclaration visitMemberClassDeclaration(MemberClassDeclaration mcd)                                   throws CompileException { return DeepCopier.this.copyMemberClassDeclaration(mcd);                    }
     };
 
-    private final Visitor.RvalueVisitor<Rvalue, CompileException>
-    rvalueCopier = new Visitor.RvalueVisitor<Rvalue, CompileException>() {
+    private final RvalueVisitor<Rvalue, CompileException>
+    rvalueCopier = new RvalueVisitor<Rvalue, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:30
         @Override public Rvalue visitLvalue(Lvalue lv)                                              throws CompileException { return DeepCopier.this.copyLvalue(lv);                              }
@@ -251,8 +263,8 @@ class DeepCopier {
         @Override public Rvalue visitArrayCreationReference(ArrayCreationReference acr)             throws CompileException { return DeepCopier.this.copyArrayCreationReference(acr);             }
     };
 
-    private final Visitor.LvalueVisitor<Lvalue, CompileException>
-    lvalueCopier = new Visitor.LvalueVisitor<Lvalue, CompileException>() {
+    private final LvalueVisitor<Lvalue, CompileException>
+    lvalueCopier = new LvalueVisitor<Lvalue, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:7
         @Override @Nullable public Lvalue visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return DeepCopier.this.copyAmbiguousName(an);                       }
@@ -264,8 +276,8 @@ class DeepCopier {
         @Override @Nullable public Lvalue visitParenthesizedExpression(ParenthesizedExpression pe)                    throws CompileException { return DeepCopier.this.copyParenthesizedExpression(pe);             }
     };
 
-    private final Visitor.TypeBodyDeclarationVisitor<TypeBodyDeclaration, CompileException>
-    typeBodyDeclarationCopier = new Visitor.TypeBodyDeclarationVisitor<TypeBodyDeclaration, CompileException>() {
+    private final TypeBodyDeclarationVisitor<TypeBodyDeclaration, CompileException>
+    typeBodyDeclarationCopier = new TypeBodyDeclarationVisitor<TypeBodyDeclaration, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:7
         @Override public TypeBodyDeclaration visitFunctionDeclarator(FunctionDeclarator fd)                             throws CompileException { return DeepCopier.this.copyFunctionDeclarator(fd);                }
@@ -277,15 +289,15 @@ class DeepCopier {
         @Override public TypeBodyDeclaration visitFieldDeclaration(FieldDeclaration fd)                                 throws CompileException { return DeepCopier.this.copyFieldDeclaration(fd);                  }
     };
 
-    private final Visitor.FunctionDeclaratorVisitor<FunctionDeclarator, CompileException>
-    functionDeclaratorCopier = new Visitor.FunctionDeclaratorVisitor<FunctionDeclarator, CompileException>() {
+    private final FunctionDeclaratorVisitor<FunctionDeclarator, CompileException>
+    functionDeclaratorCopier = new FunctionDeclaratorVisitor<FunctionDeclarator, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:2
         @Override public FunctionDeclarator visitConstructorDeclarator(ConstructorDeclarator cd) throws CompileException { return DeepCopier.this.copyConstructorDeclarator(cd);  }
         @Override public FunctionDeclarator visitMethodDeclarator(MethodDeclarator md)           throws CompileException { return DeepCopier.this.copyMethodDeclarator(md);       }
     };
 
-    private final Visitor.BlockStatementVisitor<BlockStatement, CompileException>
+    private final BlockStatementVisitor<BlockStatement, CompileException>
     blockStatementCopier = new BlockStatementVisitor<BlockStatement, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:23
@@ -314,8 +326,16 @@ class DeepCopier {
         @Override public BlockStatement visitSuperConstructorInvocation(SuperConstructorInvocation sci)                throws CompileException { return DeepCopier.this.copySuperConstructorInvocation(sci);         }
     };
 
-    private final Visitor.TypeVisitor<Type, CompileException>
-    typeCopier = new Visitor.TypeVisitor<Type, CompileException>() {
+    private final FieldDeclarationOrInitializerVisitor<FieldDeclarationOrInitializer, CompileException>
+    fieldDeclarationOrInitializerCopier = new FieldDeclarationOrInitializerVisitor<FieldDeclarationOrInitializer, CompileException>() {
+
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override public FieldDeclarationOrInitializer visitInitializer(Initializer i)            throws CompileException { return DeepCopier.this.copyInitializer(i);       }
+        @Override public FieldDeclarationOrInitializer visitFieldDeclaration(FieldDeclaration fd) throws CompileException { return DeepCopier.this.copyFieldDeclaration(fd); }
+    };
+
+    private final TypeVisitor<Type, CompileException>
+    typeCopier = new TypeVisitor<Type, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:5
         @Override public Type visitArrayType(ArrayType at)                throws CompileException { return DeepCopier.this.copyArrayType(at);         }
@@ -325,8 +345,8 @@ class DeepCopier {
         @Override public Type visitSimpleType(SimpleType st)              throws CompileException { return DeepCopier.this.copySimpleType(st);        }
     };
 
-    private final Visitor.AtomVisitor<Atom, CompileException>
-    atomCopier = new Visitor.AtomVisitor<Atom, CompileException>() {
+    private final AtomVisitor<Atom, CompileException>
+    atomCopier = new AtomVisitor<Atom, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLengthCheck:4
         @Override public Atom visitRvalue(Rvalue rv)                               throws CompileException { return DeepCopier.this.copyRvalue(rv);                }
@@ -335,8 +355,8 @@ class DeepCopier {
         @Override public Atom visitConstructorInvocation(ConstructorInvocation ci) throws CompileException { return DeepCopier.this.copyConstructorInvocation(ci); }
     };
 
-    private final Visitor.ConstructorInvocationVisitor<ConstructorInvocation, CompileException>
-    constructorInvocationCopier = new Visitor.ConstructorInvocationVisitor<ConstructorInvocation, CompileException>() {
+    private final ConstructorInvocationVisitor<ConstructorInvocation, CompileException>
+    constructorInvocationCopier = new ConstructorInvocationVisitor<ConstructorInvocation, CompileException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:2
         @Override public ConstructorInvocation visitAlternateConstructorInvocation(AlternateConstructorInvocation aci) throws CompileException { return DeepCopier.this.copyAlternateConstructorInvocation(aci); }
@@ -390,21 +410,22 @@ class DeepCopier {
     // ------------------------------ "copy*()" methods on abstract types
 
     // SUPPRESS CHECKSTYLE LineLengthCheck:15
-    public AbstractCompilationUnit copyAbstractCompilationUnit(AbstractCompilationUnit subject) throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.abstractCompilationUnitCopier)); }
-    public ImportDeclaration       copyImportDeclaration(ImportDeclaration subject)             throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.importCopier));                  }
-    public TypeDeclaration         copyTypeDeclaration(TypeDeclaration subject)                 throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeDeclarationCopier));         }
-    public TypeBodyDeclaration     copyTypeBodyDeclaration(TypeBodyDeclaration subject)         throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeBodyDeclarationCopier));     }
-    public FunctionDeclarator      copyFunctionDeclarator(FunctionDeclarator subject)           throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.functionDeclaratorCopier));      }
-    public BlockStatement          copyBlockStatement(BlockStatement subject)                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.blockStatementCopier));          }
-    public Resource                copyResource(Resource subject)                               throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.resourceCopier));                }
-    public TypeArgument            copyTypeArgument(TypeArgument subject)                       throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeArgumentCopier));            }
-    public ConstructorInvocation   copyConstructorInvocation(ConstructorInvocation subject)     throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.constructorInvocationCopier));   }
-    public ElementValue            copyElementValue(ElementValue subject)                       throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.elementValueCopier));            }
-    public Annotation              copyAnnotation(Annotation subject)                           throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.annotationCopier));              }
-    public Rvalue                  copyRvalue(Rvalue subject)                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.rvalueCopier));                  }
-    public Lvalue                  copyLvalue(Lvalue subject)                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.lvalueCopier));                  }
-    public Type                    copyType(Type subject)                                       throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeCopier));                    }
-    public Atom                    copyAtom(Atom subject)                                       throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.atomCopier));                    }
+    public AbstractCompilationUnit       copyAbstractCompilationUnit(AbstractCompilationUnit subject)             throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.abstractCompilationUnitCopier));       }
+    public ImportDeclaration             copyImportDeclaration(ImportDeclaration subject)                         throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.importCopier));                        }
+    public TypeDeclaration               copyTypeDeclaration(TypeDeclaration subject)                             throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeDeclarationCopier));               }
+    public TypeBodyDeclaration           copyTypeBodyDeclaration(TypeBodyDeclaration subject)                     throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeBodyDeclarationCopier));           }
+    public FunctionDeclarator            copyFunctionDeclarator(FunctionDeclarator subject)                       throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.functionDeclaratorCopier));            }
+    public BlockStatement                copyBlockStatement(BlockStatement subject)                               throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.blockStatementCopier));                }
+    public FieldDeclarationOrInitializer copyFieldDeclarationOrInitializer(FieldDeclarationOrInitializer subject) throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.fieldDeclarationOrInitializerCopier)); }
+    public Resource                      copyResource(Resource subject)                                           throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.resourceCopier));                      }
+    public TypeArgument                  copyTypeArgument(TypeArgument subject)                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeArgumentCopier));                  }
+    public ConstructorInvocation         copyConstructorInvocation(ConstructorInvocation subject)                 throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.constructorInvocationCopier));         }
+    public ElementValue                  copyElementValue(ElementValue subject)                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.elementValueCopier));                  }
+    public Annotation                    copyAnnotation(Annotation subject)                                       throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.annotationCopier));                    }
+    public Rvalue                        copyRvalue(Rvalue subject)                                               throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.rvalueCopier));                        }
+    public Lvalue                        copyLvalue(Lvalue subject)                                               throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.lvalueCopier));                        }
+    public Type                          copyType(Type subject)                                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeCopier));                          }
+    public Atom                          copyAtom(Atom subject)                                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.atomCopier));                          }
 
     // SUPPRESS CHECKSTYLE LineLengthCheck:3
     public PackageMemberTypeDeclaration copyPackageMemberTypeDeclaration(PackageMemberTypeDeclaration subject) throws CompileException { return (PackageMemberTypeDeclaration) this.copyTypeDeclaration(subject); }
@@ -527,8 +548,8 @@ class DeepCopier {
         AnonymousClassDeclaration
         result = new AnonymousClassDeclaration(subject.getLocation(), this.copyType(subject.baseType));
 
-        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
-            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        for (FieldDeclarationOrInitializer fdoi : subject.fieldDeclarationsAndInitializers) {
+            result.addFieldDeclarationOrInitializer(this.copyFieldDeclarationOrInitializer(fdoi));
         }
         for (ConstructorDeclarator cd : subject.constructors) {
             result.addConstructor(this.copyConstructorDeclarator(cd));
@@ -556,8 +577,8 @@ class DeepCopier {
             this.copyTypes(subject.implementedTypes)
         );
 
-        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
-            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        for (FieldDeclarationOrInitializer fdoi : subject.fieldDeclarationsAndInitializers) {
+            result.addFieldDeclarationOrInitializer(this.copyFieldDeclarationOrInitializer(fdoi));
         }
         for (ConstructorDeclarator cd : subject.constructors) {
             result.addConstructor(this.copyConstructorDeclarator(cd));
@@ -583,8 +604,8 @@ class DeepCopier {
             this.copyOptionalType(subject.extendedType),
             this.copyTypes(subject.implementedTypes)
         );
-        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
-            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        for (FieldDeclarationOrInitializer fdoi : subject.fieldDeclarationsAndInitializers) {
+            result.addFieldDeclarationOrInitializer(this.copyFieldDeclarationOrInitializer(fdoi));
         }
         for (ConstructorDeclarator cd : subject.constructors) {
             result.addConstructor(this.copyConstructorDeclarator(cd));
@@ -658,8 +679,8 @@ class DeepCopier {
             this.copyTypes(subject.implementedTypes)
         );
 
-        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
-            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        for (FieldDeclarationOrInitializer fdoi : subject.fieldDeclarationsAndInitializers) {
+            result.addFieldDeclarationOrInitializer(this.copyFieldDeclarationOrInitializer(fdoi));
         }
         for (ConstructorDeclarator cd : subject.constructors) {
             result.addConstructor(this.copyConstructorDeclarator(cd));
@@ -1277,8 +1298,8 @@ class DeepCopier {
             this.copyOptionalRvalues(subject.arguments)
         );
 
-        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
-            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        for (FieldDeclarationOrInitializer fdoi : subject.fieldDeclarationsAndInitializers) {
+            result.addFieldDeclarationOrInitializer(this.copyFieldDeclarationOrInitializer(fdoi));
         }
 
         return result;
@@ -1307,8 +1328,8 @@ class DeepCopier {
         for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
             result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
         }
-        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
-            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        for (FieldDeclarationOrInitializer fdoi : subject.fieldDeclarationsAndInitializers) {
+            result.addFieldDeclarationOrInitializer(this.copyFieldDeclarationOrInitializer(fdoi));
         }
 
         return result;
@@ -1337,8 +1358,8 @@ class DeepCopier {
         for (MemberTypeDeclaration mtd : subject.getMemberTypeDeclarations()) {
             result.addMemberTypeDeclaration(this.copyMemberTypeDeclaration(mtd));
         }
-        for (BlockStatement vdoi : subject.variableDeclaratorsAndInitializers) {
-            result.variableDeclaratorsAndInitializers.add(this.copyBlockStatement(vdoi));
+        for (FieldDeclarationOrInitializer fdoi : subject.fieldDeclarationsAndInitializers) {
+            result.addFieldDeclarationOrInitializer(this.copyFieldDeclarationOrInitializer(fdoi));
         }
 
         return result;

@@ -1676,9 +1676,9 @@ class Unparser {
             this.pw.println();
         }
         this.unparseTypeDeclarationBody(cd);
-        for (BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
+        for (BlockStatement fdoi : cd.fieldDeclarationsAndInitializers) {
             this.pw.println();
-            vdoi.accept(this.blockStatementUnparser);
+            fdoi.accept(this.blockStatementUnparser);
             this.pw.println();
         }
     }
@@ -1693,7 +1693,7 @@ class Unparser {
             cd.constructors.isEmpty()
             && cd.getMethodDeclarations().isEmpty()
             && cd.getMemberTypeDeclarations().isEmpty()
-            && cd.variableDeclaratorsAndInitializers.isEmpty()
+            && cd.fieldDeclarationsAndInitializers.isEmpty()
         );
     }
     private void

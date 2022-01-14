@@ -1002,9 +1002,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     @Override public void
     traverseClassDeclaration(AbstractClassDeclaration cd) throws EX {
         for (ConstructorDeclarator ctord : cd.constructors) ctord.accept(this.typeBodyDeclarationTraverser);
-        for (BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
-            vdoi.accept(this.blockStatementTraverser);
-        }
+        for (BlockStatement fdoi : cd.fieldDeclarationsAndInitializers) fdoi.accept(this.blockStatementTraverser);
         this.traverseAbstractTypeDeclaration(cd);
     }
 

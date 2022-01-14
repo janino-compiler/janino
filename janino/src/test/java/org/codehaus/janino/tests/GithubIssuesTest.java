@@ -28,6 +28,7 @@ package org.codehaus.janino.tests;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
@@ -55,6 +56,7 @@ import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnitCompiler;
+import org.codehaus.janino.Unparser;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.DeepCopier;
 import org.junit.Assert;
@@ -311,6 +313,30 @@ class GithubIssuesTest {
             sb.append("a = " + i + ";\n");
         }
         return sb.toString();
+    }
+
+    @Test public void
+    testIssue135() throws Exception {
+
+    	Java.AbstractCompilationUnit cu = new Parser(new Scanner("Test", new StringReader(
+            ""
+            + "public class Test {"
+            + "   int blup;"
+            + "}"
+        ))).parseAbstractCompilationUnit();
+
+        cu = new DeepCopier().copyAbstractCompilationUnit(cu);
+
+        SimpleCompiler sc = new SimpleCompiler();
+        boolean works = false;
+        if (works) {
+            StringWriter sw = new StringWriter();
+            Unparser.unparse(cu, sw);
+            sc.cook(sw.toString());
+        } else {
+            sc.cook(cu);
+        }
+        Assert.assertNotNull(sc.getClassLoader().loadClass("Test").getDeclaredConstructor().newInstance());
     }
 
     public ClassLoader

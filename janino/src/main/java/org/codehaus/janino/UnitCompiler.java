@@ -121,6 +121,7 @@ import org.codehaus.janino.Java.ExpressionStatement;
 import org.codehaus.janino.Java.FieldAccess;
 import org.codehaus.janino.Java.FieldAccessExpression;
 import org.codehaus.janino.Java.FieldDeclaration;
+import org.codehaus.janino.Java.FieldDeclarationOrInitializer;
 import org.codehaus.janino.Java.FloatingPointLiteral;
 import org.codehaus.janino.Java.ForEachStatement;
 import org.codehaus.janino.Java.ForStatement;
@@ -213,10 +214,13 @@ import org.codehaus.janino.Visitor.AnnotationVisitor;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
+import org.codehaus.janino.Visitor.FunctionDeclaratorVisitor;
 import org.codehaus.janino.Visitor.ImportVisitor;
 import org.codehaus.janino.Visitor.LvalueVisitor;
 import org.codehaus.janino.Visitor.RvalueVisitor;
+import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
 import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
+import org.codehaus.janino.Visitor.TypeVisitor;
 import org.codehaus.janino.util.Annotatable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.ClassFileException;
@@ -624,11 +628,11 @@ class UnitCompiler {
         }
 
         // Process static initializers (a.k.a. class initializers).
-        for (BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
+        for (BlockStatement fdoi : cd.fieldDeclarationsAndInitializers) {
             if (
-                (vdoi instanceof FieldDeclaration && ((FieldDeclaration) vdoi).isStatic())
-                || (vdoi instanceof Initializer && ((Initializer) vdoi).isStatic())
-            ) classInitializationStatements.add(vdoi);
+                (fdoi instanceof FieldDeclaration && ((FieldDeclaration) fdoi).isStatic())
+                || (fdoi instanceof Initializer && ((Initializer) fdoi).isStatic())
+            ) classInitializationStatements.add(fdoi);
         }
 
         if (cd instanceof EnumDeclaration) {
@@ -985,10 +989,10 @@ class UnitCompiler {
     fakeCompileVariableDeclaratorsAndInitializers(AbstractClassDeclaration cd) throws CompileException {
 
         // Compilation of field declarations can create synthetic variables, so we must not use an iterator.
-        List<BlockStatement> vdais = cd.variableDeclaratorsAndInitializers;
-        for (int i = 0; i < vdais.size(); i++) {
-            BlockStatement vdoi = (BlockStatement) vdais.get(i);
-            this.fakeCompile(vdoi);
+        List<FieldDeclarationOrInitializer> fdais = cd.fieldDeclarationsAndInitializers;
+        for (int i = 0; i < fdais.size(); i++) {
+            BlockStatement fdoi = (BlockStatement) fdais.get(i);
+            this.fakeCompile(fdoi);
         }
     }
 
@@ -1123,7 +1127,7 @@ class UnitCompiler {
 
             // Compile the annotation's element-value-pairs.
             final Map<Short, ClassFile.ElementValue> evps = new HashMap<>();
-            a.accept(new Visitor.AnnotationVisitor<Void, CompileException>() {
+            a.accept(new AnnotationVisitor<Void, CompileException>() {
 
                 @Override @Nullable public Void
                 visitSingleElementAnnotation(SingleElementAnnotation sea) throws CompileException {
@@ -2876,7 +2880,7 @@ class UnitCompiler {
 
             LocalVariable
             identifier = (LocalVariable) firstResource.accept(
-                new Visitor.TryStatementResourceVisitor<LocalVariable, CompileException>() {
+                new TryStatementResourceVisitor<LocalVariable, CompileException>() {
 
                     @Override @Nullable public LocalVariable
                     visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws CompileException {
@@ -3964,7 +3968,7 @@ class UnitCompiler {
 
             @Override @Nullable public Void
             visitLvalue(Lvalue lv) throws CompileException {
-                lv.accept(new Visitor.LvalueVisitor<Void, CompileException>() {
+                lv.accept(new LvalueVisitor<Void, CompileException>() {
 
                     // SUPPRESS CHECKSTYLE LineLength:7
                     @Override @Nullable public Void visitAmbiguousName(AmbiguousName an)                                        throws CompileException { UnitCompiler.this.compile2(an);    return null; }
@@ -4184,7 +4188,7 @@ class UnitCompiler {
 
             @Override @Nullable public Void
             visitLvalue(Lvalue lv) throws CompileException {
-                lv.accept(new Visitor.LvalueVisitor<Void, CompileException>() {
+                lv.accept(new LvalueVisitor<Void, CompileException>() {
 
                     // SUPPRESS CHECKSTYLE LineLength:7
                     @Override @Nullable public Void visitAmbiguousName(AmbiguousName an)                                        throws CompileException { UnitCompiler.this.compileBoolean2(an,    dst, orientation); return null; }
@@ -4505,7 +4509,7 @@ class UnitCompiler {
 
             @Override @Nullable public Integer
             visitLvalue(Lvalue lv) throws CompileException {
-                return (Integer) lv.accept(new Visitor.LvalueVisitor<Integer, CompileException>() {
+                return (Integer) lv.accept(new LvalueVisitor<Integer, CompileException>() {
 
                     // SUPPRESS CHECKSTYLE LineLength:7
                     @Override public Integer visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.compileContext2(an);    }
@@ -4644,7 +4648,7 @@ class UnitCompiler {
 
             @Override @Nullable public IType
             visitLvalue(Lvalue lv) throws CompileException {
-                return (IType) lv.accept(new Visitor.LvalueVisitor<IType, CompileException>() {
+                return (IType) lv.accept(new LvalueVisitor<IType, CompileException>() {
 
                     // SUPPRESS CHECKSTYLE LineLength:7
                     @Override public IType visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.compileGet2(an);    }
@@ -5348,11 +5352,11 @@ class UnitCompiler {
         return false;
     }
 
-    /*@SuppressWarnings("null")*/ private static final Visitor.RvalueVisitor<Boolean, RuntimeException>
-    MAY_HAVE_SIDE_EFFECTS_VISITOR = new Visitor.RvalueVisitor<Boolean, RuntimeException>() {
+    /*@SuppressWarnings("null")*/ private static final RvalueVisitor<Boolean, RuntimeException>
+    MAY_HAVE_SIDE_EFFECTS_VISITOR = new RvalueVisitor<Boolean, RuntimeException>() {
 
-        final Visitor.LvalueVisitor<Boolean, RuntimeException>
-        lvalueVisitor = new Visitor.LvalueVisitor<Boolean, RuntimeException>() {
+        final LvalueVisitor<Boolean, RuntimeException>
+        lvalueVisitor = new LvalueVisitor<Boolean, RuntimeException>() {
 
             // SUPPRESS CHECKSTYLE LineLengthCheck:7
             @Override @Nullable public Boolean visitAmbiguousName(AmbiguousName an)                                        { return false;                                               }
@@ -5844,7 +5848,7 @@ class UnitCompiler {
 
             @Override @Nullable public Object
             visitLvalue(Lvalue lv) throws CompileException {
-                return lv.accept(new Visitor.LvalueVisitor<Object, CompileException>() {
+                return lv.accept(new LvalueVisitor<Object, CompileException>() {
 
                     // SUPPRESS CHECKSTYLE LineLengthCheck:7
                     @Override @Nullable public Object visitAmbiguousName(AmbiguousName an)                     throws CompileException { return UnitCompiler.this.getConstantValue2(an);    }
@@ -6649,7 +6653,7 @@ class UnitCompiler {
 
     private IType
     getType(Type t) throws CompileException {
-        IType result = (IType) t.accept(new Visitor.TypeVisitor<IType, CompileException>() {
+        IType result = (IType) t.accept(new TypeVisitor<IType, CompileException>() {
 
             // SUPPRESS CHECKSTYLE LineLengthCheck:5
             @Override public IType visitArrayType(ArrayType at)                throws CompileException { return UnitCompiler.this.getType2(at);  }
@@ -6672,7 +6676,7 @@ class UnitCompiler {
     private IType
     getType(Rvalue rv) throws CompileException {
 
-        IType result = (IType) rv.accept(new Visitor.RvalueVisitor<IType, CompileException>() {
+        IType result = (IType) rv.accept(new RvalueVisitor<IType, CompileException>() {
 
             @Override @Nullable public IType
             visitLvalue(Lvalue lv) throws CompileException { return UnitCompiler.this.getType(lv); }
@@ -6715,7 +6719,7 @@ class UnitCompiler {
 
     private IType
     getType(Lvalue lv) throws CompileException {
-        IType result = (IType) lv.accept(new Visitor.LvalueVisitor<IType, CompileException>() {
+        IType result = (IType) lv.accept(new LvalueVisitor<IType, CompileException>() {
 
             // SUPPRESS CHECKSTYLE LineLengthCheck:7
             @Override public IType visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.getType2(an);    }
@@ -7524,7 +7528,7 @@ class UnitCompiler {
             @Override @Nullable public Boolean
             visitType(Type t) {
 
-                return (Boolean) t.accept(new Visitor.TypeVisitor<Boolean, RuntimeException>() {
+                return (Boolean) t.accept(new TypeVisitor<Boolean, RuntimeException>() {
 
                     // SUPPRESS CHECKSTYLE LineLengthCheck:5
                     @Override public Boolean visitArrayType(ArrayType at)                { return UnitCompiler.this.isType2(at);  }
@@ -7538,12 +7542,12 @@ class UnitCompiler {
             @Override @Nullable public Boolean
             visitRvalue(Rvalue rv) throws CompileException {
 
-                return (Boolean) rv.accept(new Visitor.RvalueVisitor<Boolean, CompileException>() {
+                return (Boolean) rv.accept(new RvalueVisitor<Boolean, CompileException>() {
 
                     @Override @Nullable public Boolean
                     visitLvalue(Lvalue lv) throws CompileException {
 
-                        return (Boolean) lv.accept(new Visitor.LvalueVisitor<Boolean, CompileException>() {
+                        return (Boolean) lv.accept(new LvalueVisitor<Boolean, CompileException>() {
 
                             // SUPPRESS CHECKSTYLE LineLengthCheck:7
                             @Override public Boolean visitAmbiguousName(AmbiguousName an)                throws CompileException { return UnitCompiler.this.isType2(an);    }
@@ -7846,7 +7850,7 @@ class UnitCompiler {
             return new Lvalue(a.getLocation()) {
 
                 @Override @Nullable public <R, EX extends Throwable> R
-                accept(Visitor.LvalueVisitor<R, EX> visitor) { return null; }
+                accept(LvalueVisitor<R, EX> visitor) { return null; }
 
                 @Override public String
                 toString() { return a.toString(); }
@@ -7895,9 +7899,9 @@ class UnitCompiler {
     initializeInstanceVariablesAndInvokeInstanceInitializers(ConstructorDeclarator cd) throws CompileException {
 
         // Compilation of block statements can create synthetic variables, so we must not use an iterator.
-        List<BlockStatement> vdai = cd.getDeclaringClass().variableDeclaratorsAndInitializers;
-        for (int i = 0; i < vdai.size(); i++) {
-            BlockStatement bs = (BlockStatement) vdai.get(i);
+        List<FieldDeclarationOrInitializer> vdais = cd.getDeclaringClass().fieldDeclarationsAndInitializers;
+        for (int i = 0; i < vdais.size(); i++) {
+            BlockStatement bs = (BlockStatement) vdais.get(i);
 
             if (bs instanceof Initializer      && ((Initializer)      bs).isStatic()) continue;
             if (bs instanceof FieldDeclaration && ((FieldDeclaration) bs).isStatic()) continue;
@@ -10221,7 +10225,7 @@ class UnitCompiler {
 
                     // Determine variable declarators of type declaration.
                     for (FieldDeclaration fd : Iterables.filterByClass(
-                        cd.variableDeclaratorsAndInitializers,
+                        cd.fieldDeclarationsAndInitializers,
                         FieldDeclaration.class
                     )) l.addAll(Arrays.asList(UnitCompiler.this.compileFields(fd)));
 
@@ -10766,7 +10770,7 @@ class UnitCompiler {
     private IClass.IInvocable
     toIInvocable(final FunctionDeclarator fd) {
         IClass.IInvocable result = (IClass.IInvocable) fd.accept(
-            new Visitor.FunctionDeclaratorVisitor<IInvocable, RuntimeException>() {
+            new FunctionDeclaratorVisitor<IInvocable, RuntimeException>() {
 
                 // SUPPRESS CHECKSTYLE LineLength:2
                 @Override public IInvocable visitMethodDeclarator(MethodDeclarator md)           { return UnitCompiler.this.toIMethod((MethodDeclarator) fd);           }
