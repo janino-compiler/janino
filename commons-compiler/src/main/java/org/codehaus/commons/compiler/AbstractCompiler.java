@@ -171,11 +171,6 @@ class AbstractCompiler implements ICompiler {
 
     @Override public void
     setBootClassPath(File[] directoriesAndArchives) {
-
-        if (this.bootClassPath == null) {
-            throw new IllegalArgumentException("This JVM doese not support BOOTCLASSPATH; probably because it is 9+");
-        }
-
         this.bootClassPath = directoriesAndArchives;
     }
 

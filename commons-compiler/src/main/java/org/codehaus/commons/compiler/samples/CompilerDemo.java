@@ -50,7 +50,7 @@ class CompilerDemo {
         File[]          sourcePath            = new File[0];
         File[]          classPath             = { new File(".") };
         File[]          extDirs               = new File[0];
-        File[]          bootClassPath         = new File[0];
+        File[]          bootClassPath         = null;
         Charset         encoding              = Charset.defaultCharset();
         boolean         verbose               = false;
         boolean         debugSource           = true;
@@ -121,7 +121,7 @@ class CompilerDemo {
         compiler.setSourcePath(sourcePath);
         compiler.setClassPath(classPath);
         compiler.setExtensionDirectories(extDirs);
-        compiler.setBootClassPath(bootClassPath);
+        if (bootClassPath != null) compiler.setBootClassPath(bootClassPath);
         compiler.setDestinationDirectory(destinationDirectory, rebuild);
         compiler.setEncoding(encoding);
         compiler.setVerbose(verbose);
