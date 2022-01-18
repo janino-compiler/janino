@@ -2104,16 +2104,16 @@ class UnitCompiler {
                             civ = (Integer) cv;
                         } else
                         if (cv instanceof Number) {
-                            civ = new Integer(((Number) cv).intValue());
+                            civ = Integer.valueOf(((Number) cv).intValue());
                         } else
                         if (cv instanceof Character) {
-                            civ = new Integer(((Character) cv).charValue());
+                            civ = Integer.valueOf(((Character) cv).charValue());
                         } else {
                             this.compileError(
                                 "Value of case label must be a char, byte, short or int constant",
                                 caseLabel.getLocation()
                             );
-                            civ = new Integer(99);
+                            civ = Integer.valueOf(99);
                         }
                     }
 
@@ -5755,7 +5755,7 @@ class UnitCompiler {
         IClass ct = ((IClass) arrayType).getComponentType();
         assert ct != null;
 
-        this.consT(ai, new Integer(ai.values.length));
+        this.consT(ai, Integer.valueOf(ai.values.length));
         this.newArray(
             ai, // locatable
             1,  // dimExprCount
@@ -5920,8 +5920,8 @@ class UnitCompiler {
             if (uo.operand instanceof IntegerLiteral) {
                 String v = ((Literal) uo.operand).value;
 
-                if (UnitCompiler.TWO_E_31_INTEGER.matcher(v).matches()) return new Integer(Integer.MIN_VALUE);
-                if (UnitCompiler.TWO_E_63_LONG.matcher(v).matches())    return new Long(Long.MIN_VALUE);
+                if (UnitCompiler.TWO_E_31_INTEGER.matcher(v).matches()) return Integer.valueOf(Integer.MIN_VALUE);
+                if (UnitCompiler.TWO_E_63_LONG.matcher(v).matches())    return Long.valueOf(Long.MIN_VALUE);
             }
 
             Object cv = this.getConstantValue(uo.operand);
@@ -6033,11 +6033,11 @@ class UnitCompiler {
                             double rhsD = ((Number) rhs).doubleValue();
                             lhs = (
                                 // SUPPRESS CHECKSTYLE StringLiteralEquality:7
-                                bo.operator == "*" ? new Double(lhsD * rhsD) :
-                                bo.operator == "/" ? new Double(lhsD / rhsD) :
-                                bo.operator == "%" ? new Double(lhsD % rhsD) :
-                                bo.operator == "+" ? new Double(lhsD + rhsD) :
-                                bo.operator == "-" ? new Double(lhsD - rhsD) :
+                                bo.operator == "*" ? Double.valueOf(lhsD * rhsD) :
+                                bo.operator == "/" ? Double.valueOf(lhsD / rhsD) :
+                                bo.operator == "%" ? Double.valueOf(lhsD % rhsD) :
+                                bo.operator == "+" ? Double.valueOf(lhsD + rhsD) :
+                                bo.operator == "-" ? Double.valueOf(lhsD - rhsD) :
                                 bo.operator == "==" ? Boolean.valueOf(lhsD == rhsD) :
                                 bo.operator == "!=" ? Boolean.valueOf(lhsD != rhsD) :
                                 UnitCompiler.NOT_CONSTANT
@@ -6049,11 +6049,11 @@ class UnitCompiler {
                             float rhsF = ((Number) rhs).floatValue();
                             lhs = (
                                 // SUPPRESS CHECKSTYLE StringLiteralEquality:7
-                                bo.operator == "*" ? new Float(lhsF * rhsF) :
-                                bo.operator == "/" ? new Float(lhsF / rhsF) :
-                                bo.operator == "%" ? new Float(lhsF % rhsF) :
-                                bo.operator == "+" ? new Float(lhsF + rhsF) :
-                                bo.operator == "-" ? new Float(lhsF - rhsF) :
+                                bo.operator == "*" ? Float.valueOf(lhsF * rhsF) :
+                                bo.operator == "/" ? Float.valueOf(lhsF / rhsF) :
+                                bo.operator == "%" ? Float.valueOf(lhsF % rhsF) :
+                                bo.operator == "+" ? Float.valueOf(lhsF + rhsF) :
+                                bo.operator == "-" ? Float.valueOf(lhsF - rhsF) :
                                 bo.operator == "==" ? Boolean.valueOf(lhsF == rhsF) :
                                 bo.operator == "!=" ? Boolean.valueOf(lhsF != rhsF) :
                                 UnitCompiler.NOT_CONSTANT
@@ -6065,14 +6065,14 @@ class UnitCompiler {
                             long rhsL = ((Number) rhs).longValue();
                             lhs = (
                                 // SUPPRESS CHECKSTYLE StringLiteralEquality:10
-                                bo.operator == "|" ? new Long(lhsL | rhsL) :
-                                bo.operator == "^" ? new Long(lhsL ^ rhsL) :
-                                bo.operator == "&" ? new Long(lhsL & rhsL) :
-                                bo.operator == "*" ? new Long(lhsL * rhsL) :
-                                bo.operator == "/" ? new Long(lhsL / rhsL) :
-                                bo.operator == "%" ? new Long(lhsL % rhsL) :
-                                bo.operator == "+" ? new Long(lhsL + rhsL) :
-                                bo.operator == "-" ? new Long(lhsL - rhsL) :
+                                bo.operator == "|" ? Long.valueOf(lhsL | rhsL) :
+                                bo.operator == "^" ? Long.valueOf(lhsL ^ rhsL) :
+                                bo.operator == "&" ? Long.valueOf(lhsL & rhsL) :
+                                bo.operator == "*" ? Long.valueOf(lhsL * rhsL) :
+                                bo.operator == "/" ? Long.valueOf(lhsL / rhsL) :
+                                bo.operator == "%" ? Long.valueOf(lhsL % rhsL) :
+                                bo.operator == "+" ? Long.valueOf(lhsL + rhsL) :
+                                bo.operator == "-" ? Long.valueOf(lhsL - rhsL) :
                                 bo.operator == "==" ? Boolean.valueOf(lhsL == rhsL) :
                                 bo.operator == "!=" ? Boolean.valueOf(lhsL != rhsL) :
                                 UnitCompiler.NOT_CONSTANT
@@ -6087,14 +6087,14 @@ class UnitCompiler {
                             int rhsI = ((Number) rhs).intValue();
                             lhs = (
                                 // SUPPRESS CHECKSTYLE StringLiteralEquality:10
-                                bo.operator == "|" ? new Integer(lhsI | rhsI) :
-                                bo.operator == "^" ? new Integer(lhsI ^ rhsI) :
-                                bo.operator == "&" ? new Integer(lhsI & rhsI) :
-                                bo.operator == "*" ? new Integer(lhsI * rhsI) :
-                                bo.operator == "/" ? new Integer(lhsI / rhsI) :
-                                bo.operator == "%" ? new Integer(lhsI % rhsI) :
-                                bo.operator == "+" ? new Integer(lhsI + rhsI) :
-                                bo.operator == "-" ? new Integer(lhsI - rhsI) :
+                                bo.operator == "|" ? Integer.valueOf(lhsI | rhsI) :
+                                bo.operator == "^" ? Integer.valueOf(lhsI ^ rhsI) :
+                                bo.operator == "&" ? Integer.valueOf(lhsI & rhsI) :
+                                bo.operator == "*" ? Integer.valueOf(lhsI * rhsI) :
+                                bo.operator == "/" ? Integer.valueOf(lhsI / rhsI) :
+                                bo.operator == "%" ? Integer.valueOf(lhsI % rhsI) :
+                                bo.operator == "+" ? Integer.valueOf(lhsI + rhsI) :
+                                bo.operator == "-" ? Integer.valueOf(lhsI - rhsI) :
                                 bo.operator == "==" ? Boolean.valueOf(lhsI == rhsI) :
                                 bo.operator == "!=" ? Boolean.valueOf(lhsI != rhsI) :
                                 UnitCompiler.NOT_CONSTANT
@@ -6158,12 +6158,12 @@ class UnitCompiler {
 
         if (cv instanceof Number) {
             IType tt = this.getType(c.targetType);
-            if (tt == IClass.BYTE)   return new Byte(((Number) cv).byteValue());
-            if (tt == IClass.SHORT)  return new Short(((Number) cv).shortValue());
-            if (tt == IClass.INT)    return new Integer(((Number) cv).intValue());
-            if (tt == IClass.LONG)   return new Long(((Number) cv).longValue());
-            if (tt == IClass.FLOAT)  return new Float(((Number) cv).floatValue());
-            if (tt == IClass.DOUBLE) return new Double(((Number) cv).doubleValue());
+            if (tt == IClass.BYTE)   return Byte.valueOf(((Number) cv).byteValue());
+            if (tt == IClass.SHORT)  return Short.valueOf(((Number) cv).shortValue());
+            if (tt == IClass.INT)    return Integer.valueOf(((Number) cv).intValue());
+            if (tt == IClass.LONG)   return Long.valueOf(((Number) cv).longValue());
+            if (tt == IClass.FLOAT)  return Float.valueOf(((Number) cv).floatValue());
+            if (tt == IClass.DOUBLE) return Double.valueOf(((Number) cv).doubleValue());
         }
 
         return UnitCompiler.NOT_CONSTANT;
@@ -6331,7 +6331,7 @@ class UnitCompiler {
                 }
             }
 
-            return new Float(fv);
+            return Float.valueOf(fv);
         }
 
         if (lastChar == 'd' || lastChar == 'D') v = v.substring(0, v.length() - 1);
@@ -6363,7 +6363,7 @@ class UnitCompiler {
             }
         }
 
-        return new Double(dv);
+        return Double.valueOf(dv);
     }
 
     @SuppressWarnings("static-method") private boolean
@@ -11297,27 +11297,27 @@ class UnitCompiler {
             if (value instanceof Short || value instanceof Integer) {
                 assert value != null;
                 int x = ((Number) value).intValue();
-                if (x >= Byte.MIN_VALUE && x <= Byte.MAX_VALUE) return new Byte((byte) x);
+                if (x >= Byte.MIN_VALUE && x <= Byte.MAX_VALUE) return Byte.valueOf((byte) x);
             } else
             if (value instanceof Character) {
                 int x = ((Character) value).charValue();
-                if (x >= Byte.MIN_VALUE && x <= Byte.MAX_VALUE) return new Byte((byte) x);
+                if (x >= Byte.MIN_VALUE && x <= Byte.MAX_VALUE) return Byte.valueOf((byte) x);
             }
         } else
         if (targetType == IClass.SHORT) {
             if (value instanceof Byte) {
-                return new Short(((Number) value).shortValue());
+                return Short.valueOf(((Number) value).shortValue());
             } else
             if (value instanceof Short) {
                 return value;
             } else
             if (value instanceof Character) {
                 int x = ((Character) value).charValue();
-                if (x >= Short.MIN_VALUE && x <= Short.MAX_VALUE) return new Short((short) x);
+                if (x >= Short.MIN_VALUE && x <= Short.MAX_VALUE) return Short.valueOf((short) x);
             } else
             if (value instanceof Integer) {
                 int x = ((Integer) value).intValue();
-                if (x >= Short.MIN_VALUE && x <= Short.MAX_VALUE) return new Short((short) x);
+                if (x >= Short.MIN_VALUE && x <= Short.MAX_VALUE) return Short.valueOf((short) x);
             }
         } else
         if (targetType == IClass.CHAR) {
@@ -11327,7 +11327,7 @@ class UnitCompiler {
             if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
                 assert value != null;
                 int x = ((Number) value).intValue();
-                if (x >= Character.MIN_VALUE && x <= Character.MAX_VALUE) return new Character((char) x);
+                if (x >= Character.MIN_VALUE && x <= Character.MAX_VALUE) return Character.valueOf((char) x);
             }
         } else
         if (targetType == IClass.INT) {
@@ -11336,10 +11336,10 @@ class UnitCompiler {
             } else
             if (value instanceof Byte || value instanceof Short) {
                 assert value != null;
-                return new Integer(((Number) value).intValue());
+                return Integer.valueOf(((Number) value).intValue());
             } else
             if (value instanceof Character) {
-                return new Integer(((Character) value).charValue());
+                return Integer.valueOf(((Character) value).charValue());
             }
         } else
         if (targetType == IClass.LONG) {
@@ -11348,10 +11348,10 @@ class UnitCompiler {
             } else
             if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
                 assert value != null;
-                return new Long(((Number) value).longValue());
+                return Long.valueOf(((Number) value).longValue());
             } else
             if (value instanceof Character) {
-                return new Long(((Character) value).charValue());
+                return Long.valueOf(((Character) value).charValue());
             }
         } else
         if (targetType == IClass.FLOAT) {
@@ -11360,10 +11360,10 @@ class UnitCompiler {
             } else
             if (value instanceof Byte || value instanceof Short || value instanceof Integer || value instanceof Long) {
                 assert value != null;
-                return new Float(((Number) value).floatValue());
+                return Float.valueOf(((Number) value).floatValue());
             } else
             if (value instanceof Character) {
-                return new Float(((Character) value).charValue());
+                return Float.valueOf(((Character) value).charValue());
             }
         } else
         if (targetType == IClass.DOUBLE) {
@@ -11378,10 +11378,10 @@ class UnitCompiler {
                 || value instanceof Float
             ) {
                 assert value != null;
-                return new Double(((Number) value).doubleValue());
+                return Double.valueOf(((Number) value).doubleValue());
             } else
             if (value instanceof Character) {
-                return new Double(((Character) value).charValue());
+                return Double.valueOf(((Character) value).charValue());
             }
         } else
         if (value == null && !UnitCompiler.isPrimitive(targetType)) {

@@ -1352,7 +1352,7 @@ class ClassFile implements Annotatable {
 
         // Implement ConstantValuePoolInfo.
         @Override public Object
-        getValue(ClassFile classFile) { return new Integer(this.value); }
+        getValue(ClassFile classFile) { return Integer.valueOf(this.value); }
 
         // Implement ConstantPoolInfo.
 
@@ -1389,7 +1389,7 @@ class ClassFile implements Annotatable {
 
         // Implement ConstantValuePoolInfo.
         @Override public Object
-        getValue(ClassFile classFile) { return new Float(this.value); }
+        getValue(ClassFile classFile) { return Float.valueOf(this.value); }
 
         // Implement ConstantPoolInfo.
 
@@ -1461,7 +1461,7 @@ class ClassFile implements Annotatable {
         ConstantDoubleInfo(double value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
-        @Override public Object getValue(ClassFile classFile) { return new Double(this.value); }
+        @Override public Object getValue(ClassFile classFile) { return Double.valueOf(this.value); }
 
         // Implement ConstantPoolInfo.
 

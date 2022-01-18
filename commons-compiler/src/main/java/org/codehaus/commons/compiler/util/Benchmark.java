@@ -72,7 +72,7 @@ class Benchmark {
      * @see Benchmark
      */
     public void
-    begin() { this.beginTimes.push(new Long(System.currentTimeMillis())); }
+    begin() { this.beginTimes.push(Long.valueOf(System.currentTimeMillis())); }
 
     /**
      * @see Benchmark

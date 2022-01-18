@@ -213,11 +213,11 @@ class AutoIndentWriter extends FilterWriter {
                     int tabOffset = i - previousTab;
                     previousTab = i;
                     if (tabCount >= tabulatorOffsets.size()) {
-                        tabulatorOffsets.add(new Integer(tabOffset));
+                        tabulatorOffsets.add(Integer.valueOf(tabOffset));
                     } else
                     {
                         if (tabOffset > ((Integer) tabulatorOffsets.get(tabCount)).intValue()) {
-                            tabulatorOffsets.set(tabCount, new Integer(tabOffset));
+                            tabulatorOffsets.set(tabCount, Integer.valueOf(tabOffset));
                         }
                     }
                     ++tabCount;
