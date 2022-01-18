@@ -1376,13 +1376,6 @@ UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
           implementations must basically implement the interface <code>ICompilerFactory</code>.
           One such alternative implementation is based on the <code>javax.tools</code> API, and is shipped as part
           of the JANINO distribution: commons-compiler-jdk.jar.
-          That implementation was (successfully) tested with all JDKs from version 1.6 to 12.
-        </p>
-        <p>
-          The performance of the generated code is the same as with the JANINO implementation; the <em>compilation</em>,
-          however, is slower by a factor of 12 (measured with the <code>JlsTest</code> unit test case). The suspected
-          reason is that the <code>javax.tools</code> compiler loads the required JRE classes through the classpath,
-          when JANINO uses classes that are already loaded into the running JVM.
         </p>
 
         <p>Basically there are two ways to switch implementations:</p>
@@ -1402,6 +1395,23 @@ UnparseVisitor.unparse(cu, new OutputStreamWriter(System.out));</pre></div>
             find it at runtime.
           </li>
         </ul>
+
+        <p>
+          The performance of the code <em>generated</em> by the JDK-based implementation is the same as with the JANINO
+          implementation; the <em>compilation</em>, however, is slower by a factor of 22 (measured by compiling the expression
+          <code>"a + b"</code>; two <code>int</code>s, see below).
+          The main reason is that the <code>javax.tools</code> compiler loads the required JRE classes through the classpath,
+          when JANINO uses classes that are already loaded into the running JVM. Thus, <code>CompilerDemo</code> (the drop-in
+          replacement for JAVAC) is not faster than JAVAC (measured by compiling the Janino source code, see below).
+        </p>
+        <table>
+        	<tr><th>Activity</th><th>Janino</th><th>JDK</th></tr>
+        	<tr><td>Compile expression <code>"a + b"</code></td><td>0.44 ms</td><td>9.84 ms</td></tr>
+        	<tr><td>Compile Janino source code</td><td>6.417 s</td><td>5.864 s</td></tr>
+        </table>
+        <p>
+          (Measured with JDK 17 and JRE 17.)
+        </p>
 
         <h3>
           <a id="security" class="anchor" href="#security" aria-hidden="true"><span aria-hidden="true"
