@@ -173,10 +173,23 @@ import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.UsesModuleDirective;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
+import org.codehaus.janino.Visitor.AbstractCompilationUnitVisitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
+import org.codehaus.janino.Visitor.AtomVisitor;
+import org.codehaus.janino.Visitor.BlockStatementVisitor;
+import org.codehaus.janino.Visitor.ElementValueVisitor;
+import org.codehaus.janino.Visitor.FunctionDeclaratorVisitor;
+import org.codehaus.janino.Visitor.ImportVisitor;
 import org.codehaus.janino.Visitor.LambdaBodyVisitor;
 import org.codehaus.janino.Visitor.LambdaParametersVisitor;
+import org.codehaus.janino.Visitor.LvalueVisitor;
 import org.codehaus.janino.Visitor.ModifierVisitor;
+import org.codehaus.janino.Visitor.ModuleDirectiveVisitor;
+import org.codehaus.janino.Visitor.RvalueVisitor;
+import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
+import org.codehaus.janino.Visitor.TypeBodyDeclarationVisitor;
+import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
+import org.codehaus.janino.Visitor.TypeVisitor;
 import org.codehaus.janino.util.AutoIndentWriter;
 
 /**
@@ -185,8 +198,8 @@ import org.codehaus.janino.util.AutoIndentWriter;
 public
 class Unparser {
 
-    private final Visitor.AbstractCompilationUnitVisitor<Void, RuntimeException>
-    compilationUnitUnparser = new Visitor.AbstractCompilationUnitVisitor<Void, RuntimeException>() {
+    private final AbstractCompilationUnitVisitor<Void, RuntimeException>
+    compilationUnitUnparser = new AbstractCompilationUnitVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitCompilationUnit(CompilationUnit cu) {
@@ -250,8 +263,8 @@ class Unparser {
         }
     };
 
-    private final Visitor.ModuleDirectiveVisitor<Void, RuntimeException>
-    moduleDirectiveUnparser = new Visitor.ModuleDirectiveVisitor<Void, RuntimeException>() {
+    private final ModuleDirectiveVisitor<Void, RuntimeException>
+    moduleDirectiveUnparser = new ModuleDirectiveVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitRequiresModuleDirective(RequiresModuleDirective rmd) {
@@ -301,8 +314,8 @@ class Unparser {
 
     };
 
-    private final Visitor.ImportVisitor<Void, RuntimeException>
-    importUnparser = new Visitor.ImportVisitor<Void, RuntimeException>() {
+    private final ImportVisitor<Void, RuntimeException>
+    importUnparser = new ImportVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitSingleTypeImportDeclaration(AbstractCompilationUnit.SingleTypeImportDeclaration stid) {
@@ -329,8 +342,8 @@ class Unparser {
         }
     };
 
-    private final Visitor.TypeDeclarationVisitor<Void, RuntimeException>
-    typeDeclarationUnparser = new Visitor.TypeDeclarationVisitor<Void, RuntimeException>() {
+    private final TypeDeclarationVisitor<Void, RuntimeException>
+    typeDeclarationUnparser = new TypeDeclarationVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitLocalClassDeclaration(LocalClassDeclaration lcd) {
@@ -418,8 +431,8 @@ class Unparser {
         }
     };
 
-    private final Visitor.TypeBodyDeclarationVisitor<Void, RuntimeException>
-    typeBodyDeclarationUnparser = new Visitor.TypeBodyDeclarationVisitor<Void, RuntimeException>() {
+    private final TypeBodyDeclarationVisitor<Void, RuntimeException>
+    typeBodyDeclarationUnparser = new TypeBodyDeclarationVisitor<Void, RuntimeException>() {
 
         // SUPPRESS CHECKSTYLE LineLength:7
         @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med)                      { Unparser.this.unparseEnumDeclaration(med);            return null; }
@@ -431,8 +444,8 @@ class Unparser {
         @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) { Unparser.this.unparseAnnotationTypeDeclaration(matd); return null; }
     };
 
-    private final Visitor.BlockStatementVisitor<Void, RuntimeException>
-    blockStatementUnparser = new Visitor.BlockStatementVisitor<Void, RuntimeException>() {
+    private final BlockStatementVisitor<Void, RuntimeException>
+    blockStatementUnparser = new BlockStatementVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitFieldDeclaration(FieldDeclaration fd) { Unparser.this.unparseFieldDeclaration(fd); return null; }
@@ -695,8 +708,8 @@ class Unparser {
         }
     };
 
-    private final Visitor.AtomVisitor<Void, RuntimeException>
-    atomUnparser = new Visitor.AtomVisitor<Void, RuntimeException>() {
+    private final AtomVisitor<Void, RuntimeException>
+    atomUnparser = new AtomVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitType(Type t) {
@@ -724,8 +737,8 @@ class Unparser {
         }
     };
 
-    private final Visitor.TypeVisitor<Void, RuntimeException>
-    typeUnparser = new Visitor.TypeVisitor<Void, RuntimeException>() {
+    private final TypeVisitor<Void, RuntimeException>
+    typeUnparser = new TypeVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitArrayType(ArrayType at) {
@@ -760,8 +773,8 @@ class Unparser {
         }
     };
 
-    private final Visitor.RvalueVisitor<Void, RuntimeException>
-    rvalueUnparser = new Visitor.RvalueVisitor<Void, RuntimeException>() {
+    private final RvalueVisitor<Void, RuntimeException>
+    rvalueUnparser = new RvalueVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitLvalue(Lvalue lv) {
@@ -977,8 +990,8 @@ class Unparser {
         }
     };
 
-    private final Visitor.LvalueVisitor<Void, RuntimeException>
-    lvalueUnparser = new Visitor.LvalueVisitor<Void, RuntimeException>() {
+    private final LvalueVisitor<Void, RuntimeException>
+    lvalueUnparser = new LvalueVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitAmbiguousName(AmbiguousName an) {
@@ -1036,8 +1049,8 @@ class Unparser {
         }
     };
 
-    private final Visitor.ElementValueVisitor<Void, RuntimeException>
-    elementValueUnparser = new Visitor.ElementValueVisitor<Void, RuntimeException>() {
+    private final ElementValueVisitor<Void, RuntimeException>
+    elementValueUnparser = new ElementValueVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitRvalue(Rvalue rv) throws RuntimeException {
@@ -1163,8 +1176,8 @@ class Unparser {
         }
     };
 
-    private final Visitor.FunctionDeclaratorVisitor<Void, RuntimeException>
-    functionDeclaratorUnparser = new Visitor.FunctionDeclaratorVisitor<Void, RuntimeException>() {
+    private final FunctionDeclaratorVisitor<Void, RuntimeException>
+    functionDeclaratorUnparser = new FunctionDeclaratorVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitConstructorDeclarator(ConstructorDeclarator cd) {
@@ -1179,8 +1192,8 @@ class Unparser {
         }
     };
 
-    private final Visitor.TryStatementResourceVisitor<Void, RuntimeException>
-    resourceUnparser = new Visitor.TryStatementResourceVisitor<Void, RuntimeException>() {
+    private final TryStatementResourceVisitor<Void, RuntimeException>
+    resourceUnparser = new TryStatementResourceVisitor<Void, RuntimeException>() {
 
         @Override @Nullable public Void
         visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) {

@@ -89,7 +89,8 @@ import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
 import org.codehaus.janino.TokenType;
 import org.codehaus.janino.Unparser;
-import org.codehaus.janino.Visitor;
+import org.codehaus.janino.Visitor.LvalueVisitor;
+import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.util.AbstractTraverser;
 import org.junit.Assert;
 import org.junit.Test;
@@ -244,11 +245,11 @@ class UnparserTest {
     private static Java.Rvalue
     stripUnnecessaryParenExprs(Java.Rvalue rvalue) {
 
-        Java.Rvalue result = rvalue.accept(new Visitor.RvalueVisitor<Rvalue, RuntimeException>() {
+        Java.Rvalue result = rvalue.accept(new RvalueVisitor<Rvalue, RuntimeException>() {
 
             @Override @Nullable public Rvalue
             visitLvalue(Lvalue lv) {
-                return lv.accept(new Visitor.LvalueVisitor<Rvalue, RuntimeException>() {
+                return lv.accept(new LvalueVisitor<Rvalue, RuntimeException>() {
 
                     @Override public Rvalue
                     visitAmbiguousName(AmbiguousName an) { return an; }
