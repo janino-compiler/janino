@@ -142,11 +142,11 @@ class AutoIndentWriter extends FilterWriter {
                 ++idx;
             }
             if (line.charAt(idx) == AutoIndentWriter.UNINDENT) {
-                AutoIndentWriter.resolveTabs(lineGroups.remove(lineGroups.size() - 1));
+                AutoIndentWriter.resolveTabs((List<StringBuilder>) lineGroups.remove(lineGroups.size() - 1));
                 ++idx;
             }
             if (line.charAt(idx) == AutoIndentWriter.CLEAR_TABULATORS) {
-                List<StringBuilder> lg = lineGroups.get(lineGroups.size() - 1);
+                List<StringBuilder> lg = (List<StringBuilder>) lineGroups.get(lineGroups.size() - 1);
                 AutoIndentWriter.resolveTabs(lg);
                 lg.clear();
                 line.deleteCharAt(idx);

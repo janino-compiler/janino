@@ -1127,14 +1127,14 @@ class Unparser {
 
         @Override @Nullable public Void
         visitSingleElementAnnotation(SingleElementAnnotation sea) {
-            return sea.accept(Unparser.this.annotationUnparser);
+            return (Void) sea.accept(Unparser.this.annotationUnparser);
         }
 
         @Override @Nullable public Void
-        visitNormalAnnotation(NormalAnnotation na) { return na.accept(Unparser.this.annotationUnparser);  }
+        visitNormalAnnotation(NormalAnnotation na) { return (Void) na.accept(Unparser.this.annotationUnparser);  }
 
         @Override @Nullable public Void
-        visitMarkerAnnotation(MarkerAnnotation ma) { return ma.accept(Unparser.this.annotationUnparser);  }
+        visitMarkerAnnotation(MarkerAnnotation ma) { return (Void) ma.accept(Unparser.this.annotationUnparser);  }
     };
 
     private final LambdaParametersVisitor<Void, RuntimeException>
@@ -1863,7 +1863,7 @@ class Unparser {
         Iterator<EnumConstant> it = ed.getConstants().iterator();
         if (it.hasNext()) {
             for (;;) {
-                this.typeDeclarationUnparser.visitEnumConstant(it.next());
+                this.typeDeclarationUnparser.visitEnumConstant((EnumConstant) it.next());
 
                 if (!it.hasNext()) break;
                 this.pw.print(", ");
