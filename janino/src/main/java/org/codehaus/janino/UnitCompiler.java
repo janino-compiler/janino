@@ -498,7 +498,7 @@ class UnitCompiler {
         }
 
         short accessFlags = this.accessFlags(cd.getModifiers());
-        accessFlags |= Mod.SUPER;
+        if (cd instanceof PackageMemberTypeDeclaration) accessFlags |= Mod.SUPER;
         if (cd instanceof EnumDeclaration) accessFlags |= Mod.ENUM;
 
         // Create "ClassFile" object.
