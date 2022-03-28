@@ -73,6 +73,20 @@ class ClassLoaderIClassLoader extends IClassLoader {
         Class<?> clazz;
         try {
             clazz = this.classLoader.loadClass(Descriptor.toClassName(descriptor));
+        } catch (NoClassDefFoundError ncdfe) {
+
+            // Handle a very special case here -- see issue #165:
+            // Iff a class and a subpackage with the same name (less capitalization) exist in the same
+            // package, then class may be loaded accidentially; and "ClassLoader.defaineClass()" throws, e.g.
+            //   java.lang.NoClassDefFoundError: com/company/User (wrong name: com/company/user)
+            // This case must be handled like "class not found".
+            // Tested with
+            //    adopt_openjdk-8.0.292.10-hotspot
+            //    adopt_openjdk-11.0.11.9-hotspot
+            //    jdk-17.0.1+12
+            if (ncdfe.getMessage().contains("wrong name")) return null;
+
+            throw ncdfe;
         } catch (ClassNotFoundException e) {
 
             // Determine whether the class DOES NOT EXIST, or whether there were problems loading it. That's easier
