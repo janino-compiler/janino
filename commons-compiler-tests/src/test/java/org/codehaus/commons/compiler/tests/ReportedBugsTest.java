@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.AbstractJavaSourceClassLoader;
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.ICookable;
@@ -1347,5 +1348,21 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             Location loc = ce.getLocation();
             Assert.assertEquals(expected, String.valueOf(loc));
         }
+    }
+
+    @Test public void
+    testIssue165() throws Exception {
+        String toCook = (
+            ""
+//            + "public class Test {\n"
+            + "  public static int test() {\n"
+            + "    return com.company.user.Country.get();\n"
+            + "  }\n"
+//            + "}\n"
+        );
+
+        IClassBodyEvaluator eval = this.compilerFactory.newClassBodyEvaluator();
+        eval.cook("generated.java", toCook);
+        Assert.assertEquals(99, eval.getClazz().getMethod("test").invoke(null));
     }
 }
