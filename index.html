@@ -66,7 +66,7 @@
           <a href="#janino-as-a-class-body-evaluator">a class body</a>,
           <a href="#janino-as-a-simple-compiler">one .java file</a> or
           <a href="#janino-as-a compiler">a set of .java files</a>
-          in memory, load the bytecode and execute it directly in the same JVM.
+          in memory, load the bytecode and execute it directly in the running JVM.
         </p>
 
         <p>JANINO is integrated with Apache Commons JCI ("Java Compiler Interface") and JBoss Rules / Drools.</p>
@@ -88,9 +88,10 @@
           <li>
             <a href="#download">Download</a>
             <ul>
-              <li><a href="#packages"    >Packages</a></li>
-              <li><a href="#installation">Installation</a></li>
-              <li><a href="#examples"    >Examples</a></li>
+              <li><a href="#packages"          >Packages</a></li>
+              <li><a href="#security_integrity">Security / integrity</a></li>
+              <li><a href="#installation"      >Installation</a></li>
+              <li><a href="#examples"          >Examples</a></li>
             </ul>
           </li>
           <li>
@@ -543,6 +544,19 @@
           </li>
           <li>Put the two JAR files on your classpath.</li>
         </ul>
+
+        <h3>
+          <a id="security_integrity" class="anchor" href="#security_integrity" aria-hidden="true"><span aria-hidden="true"
+          class="octicon octicon-link"></span></a>Security / integrity
+        </h3>
+
+        <p>
+          All packages are signed with one of these PGP keys. Make sure to check the package signatures to avoid supply chain
+          attacks:
+          <br>
+          <a href="pgp_key1.txt">Key #1</a>
+          <a href="pgp_key2.txt">Key #2</a>
+        </p>
 
         <h3>
           <a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true"
