@@ -2536,10 +2536,11 @@ class ClassFile implements Annotatable {
 
         private final short                 maxStack;
         private final short                 maxLocals;
-        private final byte[]                code;
+        public final byte[]                 code;
         private final ExceptionTableEntry[] exceptionTableEntries;
         private final AttributeInfo[]       attributes;
 
+        public
         CodeAttribute(
             short                 attributeNameIndex,
             short                 maxStack,
@@ -2608,11 +2609,12 @@ class ClassFile implements Annotatable {
         /**
          * Representation of an entry in the "exception_table" of a "Code" attribute (see JVMS 4.7.3).
          */
-        private static
+        public static
         class ExceptionTableEntry {
 
             final short startPc, endPc, handlerPc, catchType;
 
+            public
             ExceptionTableEntry(short startPc, short endPc, short handlerPc, short catchType) {
                 this.startPc   = startPc;
                 this.endPc     = endPc;
@@ -2915,7 +2917,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(0);   }
             @Override public String  toString()                                     { return "top";       }
             @Override public int     hashCode()                                     { return 0;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2927,7 +2929,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(1);   }
             @Override public String  toString()                                     { return "int";       }
             @Override public int     hashCode()                                     { return 1;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2939,7 +2941,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(2);   }
             @Override public String  toString()                                     { return "float";     }
             @Override public int     hashCode()                                     { return 2;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2951,7 +2953,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(3);   }
             @Override public String  toString()                                     { return "double";    }
             @Override public int     hashCode()                                     { return 3;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2963,7 +2965,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(4);   }
             @Override public String  toString()                                     { return "long";      }
             @Override public int     hashCode()                                     { return 4;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2975,7 +2977,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(5);   }
             @Override public String  toString()                                     { return "null";      }
             @Override public int     hashCode()                                     { return 5;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2987,7 +2989,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(6);           }
             @Override public String  toString()                                     { return "uninitializedThis"; }
             @Override public int     hashCode()                                     { return 6;                   }
-            @Override public boolean equals(Object obj)                             { return obj == this;         }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this;         }
         };
 
         /**
@@ -3024,7 +3026,7 @@ class ClassFile implements Annotatable {
             hashCode() { return 7 ^ this.constantClassInfoIndex; }
 
             @Override public boolean
-            equals(Object obj) {
+            equals(@Nullable Object obj) {
                 return (
                     obj instanceof ObjectVariableInfo
                     && ((ObjectVariableInfo) obj).constantClassInfoIndex == this.constantClassInfoIndex
@@ -3059,7 +3061,7 @@ class ClassFile implements Annotatable {
             hashCode() { return 8 ^ this.offset; }
 
             @Override public boolean
-            equals(Object obj) {
+            equals(@Nullable Object obj) {
                 return (
                     obj instanceof UninitializedVariableInfo
                     && ((UninitializedVariableInfo) obj).offset == this.offset

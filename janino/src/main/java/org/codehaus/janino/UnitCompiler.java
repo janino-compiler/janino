@@ -26,9 +26,7 @@
 
 package org.codehaus.janino;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1507,23 +1505,11 @@ class UnitCompiler {
             this.replaceCodeContext(savedCodeContext);
         }
 
-//        codeContext.flowAnalysis(override.getName());
-
-        final short smtani = cf.addConstantUtf8Info("StackMapTable");
-
-        // Add the code context as a code attribute to the MethodInfo.
-        mi.addAttribute(new ClassFile.AttributeInfo(cf.addConstantUtf8Info("Code")) {
-
-            @Override protected void
-            storeBody(DataOutputStream dos) throws IOException {
-                codeContext.storeCodeAttributeBody(
-                    dos,
-                    (short) 0, // lineNumberTableAttributeNameIndex    - optional
-                    (short) 0, // localVariableTableAttributeNameIndex - optional
-                    smtani     // stackMapTableAttributeNameIndex      - mandatory
-                );
-            }
-        });
+        // Generate Code attribute and add to the MethodInfo.
+        mi.addAttribute(codeContext.newCodeAttribute(
+            false, // debugLines
+            false  // debugVars
+        ));
     }
 
     /**
@@ -3587,52 +3573,12 @@ class UnitCompiler {
 
         // Fix up and reallocate as needed.
         codeContext.fixUpAndRelocate();
-
-//        // Do flow analysis.
-//        try {
-//            codeContext.flowAnalysis(fd.toString());
-//        } catch (RuntimeException re) {
-//            UnitCompiler.LOGGER.log(Level.FINE, "*** FLOW ANALYSIS", re);
-//
-//            if (UnitCompiler.keepClassFilesWithFlowAnalysisErrors) {
-//
-//                // Continue, so that the .class file is generated and can be examined.
-//                ;
-//            } else {
-//                throw new InternalCompilerException("Compiling \"" + fd + "\"; " + re.getMessage(), re);
-//            }
-//        }
-
-        final short lntani;
-        if (this.debugLines) {
-            lntani = classFile.addConstantUtf8Info("LineNumberTable");
-        } else {
-            lntani = 0;
-        }
-
-        final short lvtani;
         if (this.debugVars) {
             UnitCompiler.makeLocalVariableNames(codeContext, mi);
-            lvtani = classFile.addConstantUtf8Info("LocalVariableTable");
-        } else {
-            lvtani = 0;
         }
 
-        final short smtani = classFile.addConstantUtf8Info("StackMapTable");
-
         // Add the code context as a code attribute to the MethodInfo.
-        mi.addAttribute(new ClassFile.AttributeInfo(classFile.addConstantUtf8Info("Code")) {
-
-            @Override protected void
-            storeBody(DataOutputStream dos) throws IOException {
-                codeContext.storeCodeAttributeBody(
-                    dos,
-                    lntani, // lineNumberTableAttributeNameIndex    - optional
-                    lvtani, // localVariableTableAttributeNameIndex - optional
-                    smtani  // stackMapTableAttributeNameIndex      - mandatory
-                );
-            }
-        });
+        mi.addAttribute(codeContext.newCodeAttribute(this.debugLines, this.debugVars));
     }
 
     private int getTargetVersion() {

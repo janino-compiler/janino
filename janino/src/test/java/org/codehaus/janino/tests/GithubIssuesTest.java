@@ -58,6 +58,9 @@ import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.Unparser;
 import org.codehaus.janino.util.ClassFile;
+import org.codehaus.janino.util.ClassFile.AttributeInfo;
+import org.codehaus.janino.util.ClassFile.CodeAttribute;
+import org.codehaus.janino.util.ClassFile.MethodInfo;
 import org.codehaus.janino.util.DeepCopier;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -337,6 +340,47 @@ class GithubIssuesTest {
             sc.cook(cu);
         }
         Assert.assertNotNull(sc.getClassLoader().loadClass("Test").getDeclaredConstructor().newInstance());
+    }
+
+    @Test public void
+    testIssue166() throws Exception {
+        String s = (
+            ""
+            + "package foo;\n"
+            + "public\n"
+            + "class Main {\n"
+            + "    public static void\n"
+            + "    main() {\n"
+            + "       System.out.println(\"HELLO WORLD!\");\n"
+            + "    }\n"
+            + "}\n"
+        );
+
+        AbstractCompilationUnit
+        acu = new Parser(new Scanner("fileName", new StringReader(s))).parseAbstractCompilationUnit();
+
+        IClassLoader icl = new ClassLoaderIClassLoader();
+
+        ClassFile[] classFiles = new UnitCompiler(acu, icl).compileUnit(false, false, false);
+
+        int bcs = -1;
+        for (ClassFile cf : classFiles) {
+            if ("foo.Main".equals(cf.getThisClassName())) {
+                for (MethodInfo mi : cf.methodInfos) {
+                    if ("main".equals(mi.getName())) {
+                        for (AttributeInfo ai : mi.getAttributes()) {
+                            if (ai instanceof CodeAttribute) {
+                                CodeAttribute ca = (CodeAttribute) ai;
+
+                                Assert.assertEquals(-1, bcs);
+                                bcs = ca.code.length;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Assert.assertEquals(9, bcs);
     }
 
     public ClassLoader
