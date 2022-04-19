@@ -38,6 +38,7 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -318,7 +319,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertScriptReturnsTrue("int a = -11; a >>>= 2; return a == 1073741821;");
     }
 
-    @Test public void
+    @Ignore @Test public void
     test_4_5__Parameterized_Types() throws Exception {
         this.assertScriptReturnsTrue("import java.util.*; Map<String, String> s = /*Collections.emptyMap()*/null; String x = s.get(\"foo\"); return x ==null;");
     }
@@ -811,8 +812,17 @@ class JlsTest extends CommonsCompilerTestSuite {
     	{
     	    SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
             sct.setSourceVersion(7);
-            sct.assertUncookable("Default interface methods only available for source version 8+|default methods are not supported in -source (1\\.)?7");
+            sct.assertUncookable((
+                ""
+                + "Default interface methods only available for source version 8+"
+                + "|"
+                + "default methods are not supported in -source (1\\.)?7"
+                + "|"
+                + "compiler\\.err\\.illegal\\.start\\.of\\.type"
+            ));
     	}
+
+    	if (CommonsCompilerTestSuite.JVM_VERSION <= 7 && this.isJdk) return;
 
     	{
             SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
@@ -861,8 +871,10 @@ class JlsTest extends CommonsCompilerTestSuite {
         {
             SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
             sct.setSourceVersion(7);
-            sct.assertUncookable("Default interface methods only available for source version 8+|default methods are not supported in -source (1\\.)?7");
+            sct.assertUncookable("Default interface methods only available for source version 8+|default methods are not supported in -source (1\\.)?7|compiler\\.err\\.illegal\\.start\\.of\\.type");
         }
+
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 8) return;
 
         {
             SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
@@ -890,8 +902,17 @@ class JlsTest extends CommonsCompilerTestSuite {
         {
             SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
             sct.setSourceVersion(7);
-            sct.assertUncookable("Static interface methods only available for source version 8+|static interface methods are not supported in -source (1\\.)?7");
+            sct.assertUncookable(
+                ""
+                + "Static interface methods only available for source version 8+"
+                + "|"
+                + "static interface methods are not supported in -source (1\\.)?7"
+                + "|"
+                + "modifier static not allowed here"
+            );
         }
+
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 8) return;
 
         {
             SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
@@ -910,7 +931,9 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // Static interface methods (a Java 8 feature).
 
-        String cu = (
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 8) return;
+
+            String cu = (
             ""
                 + "public interface MyInterface {\n"
                 + "    private boolean isTrue2() { return true; }\n"

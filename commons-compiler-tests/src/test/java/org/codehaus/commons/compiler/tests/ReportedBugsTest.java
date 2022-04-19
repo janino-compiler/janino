@@ -1022,10 +1022,11 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     @Test public void
     testIssue69_IncompatibleClassChangeError_when_evaluating_against_janino9plus() throws Exception {
 
+        if (CommonsCompilerTestSuite.JVM_VERSION < 8) return;
+
         try {
             IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
 
-            if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 8) return;
             ee.setSourceVersion(8);
             ee.setTargetVersion(8);
 

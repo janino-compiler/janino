@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ErrorHandler;
@@ -455,12 +456,7 @@ class CompilerTest {
             + "}\n"
         ));
 
-        try {
-            this.compile(sourceFinder);
-            Assert.fail("CompileException expected");
-        } catch (CompileException ex) {
-            CompilerTest.assertMatches("(?si).*cannot.*\\bE\\b.*", ex.getMessage());
-        }
+        this.assertUncompilable("cannot.*\\bE\\b", sourceFinder);
     }
 
     @Test public void
@@ -478,16 +474,19 @@ class CompilerTest {
         ));
 
         // Default error handling.
-        {
-            ICompiler compiler = this.compilerFactory.newCompiler();
-
-            try {
-                CompilerTest.compile(compiler, sourceFinder);
-                Assert.fail("CompileException expected");
-            } catch (CompileException ex) {
-                CompilerTest.assertMatches(".*(Method must not return a value|unexpected return value).*", ex.getMessage());
-            }
-        }
+        this.assertUncompilable(
+            (
+                ""
+                + "Method must not return a value"
+                + "|"
+                + "unexpected return value"
+                + "|"
+                + "compiler\\.err\\.cant\\.ret\\.val\\.from\\.meth\\.decl\\.void"
+                + "|"
+                + "cannot return a value from method whose result type is void"
+            ),
+            sourceFinder
+        );
 
         // Error handler that throws a CompileException.
         {
@@ -501,13 +500,19 @@ class CompilerTest {
                 }
             });
 
-            try {
-                CompilerTest.compile(compiler, sourceFinder);
-                Assert.fail("CompileException expected");
-            } catch (CompileException ex) {
-                Assert.assertEquals(1, count[0]);
-                CompilerTest.assertMatches(".*(Method must not return a value|unexpected return value).*", ex.getMessage());
-            }
+            CompilerTest.assertUncompilable(
+                (
+                    ""
+                    + "Method must not return a value"
+                    + "|"
+                    + "unexpected return value"
+                    + "|"
+                    + "cannot return a value from method whose result type is void"
+                ),
+                compiler,
+                sourceFinder
+            );
+            Assert.assertEquals(1, count[0]);
         }
 
         // Error handler that does *not* throw a CompileException.
@@ -519,13 +524,8 @@ class CompilerTest {
                 @Override public void handleError(String message, @Nullable Location location) { count[0]++; }
             });
 
-            try {
-                CompilerTest.compile(compiler, sourceFinder);
-                Assert.fail("CompileException expected");
-            } catch (CompileException ex) {
-                Assert.assertEquals(1, count[0]);
-                CompilerTest.assertMatches(".*(Compilation failed with 1 errors|error.*while compiling).*", ex.getMessage());
-            }
+            CompilerTest.assertUncompilable("Compilation failed with 1 errors|error.*while compiling", compiler, sourceFinder);
+            Assert.assertEquals(1, count[0]);
         }
     }
 
@@ -671,10 +671,30 @@ class CompilerTest {
     }
 
     private static void
-    assertMatches(final String regex, final String actual) {
+    assertFind(final String regex, final String actual) {
         Assert.assertTrue(
-            "Expected that \"" + actual + "\" would match regex \"" + regex + "\"",
-            actual.matches("(?s)" + regex)
+            "Expected that \"" + actual + "\" contain match of regex \"" + regex + "\"",
+            Pattern.compile(regex, Pattern.DOTALL | Pattern.CASE_INSENSITIVE).matcher(actual).find()
         );
+    }
+
+    private void
+    assertUncompilable(String messageRegex, MapResourceFinder sourceFinder) throws IOException {
+        try {
+            this.compile(sourceFinder);
+            Assert.fail("CompileException expected");
+        } catch (CompileException ex) {
+            CompilerTest.assertFind(messageRegex, ex.getMessage());
+        }
+    }
+
+    private static void
+    assertUncompilable(String messageRegex, ICompiler compiler, MapResourceFinder sourceFinder) throws IOException {
+        try {
+            CompilerTest.compile(compiler, sourceFinder);
+            Assert.fail("CompileException expected");
+        } catch (CompileException ex) {
+            CompilerTest.assertFind(messageRegex, ex.getMessage());
+        }
     }
 }
