@@ -12329,7 +12329,7 @@ class UnitCompiler {
         String           methodName,
         MethodDescriptor methodDescriptor,
         boolean          useInterfaceMethodRef
-    ) throws CompileException {
+    ) {
 
         this.addLineNumberOffset(locatable);
 
