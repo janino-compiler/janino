@@ -13,8 +13,8 @@
     <!--
       JANINO still retains backwards compatibility with JRE 6:
     -->
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
 
     <!--
       If you want to enforce a particular JAVAC executable to be used, set these two properties:
@@ -31,7 +31,7 @@
 
   <groupId>org.codehaus.janino</groupId>
   <packaging>pom</packaging>
-  <version>3.1.7-SNAPSHOT</version>
+  <version>3.1.7</version>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -82,8 +82,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.19.1</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
         </configuration>
       </plugin>
 
@@ -148,6 +148,7 @@
         <version>2.10.4</version>
         <configuration>
           <quiet>true</quiet>
+          <javadocExecutable>C:/dev/Java/adopt_openjdk-8.0.292.10-hotspot/bin/javadoc.exe </javadocExecutable>
           <additionalparam>-Xdoclint:none</additionalparam>
         </configuration>
         <executions>
