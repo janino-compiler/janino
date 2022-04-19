@@ -112,7 +112,7 @@ class AutoIndentWriter extends FilterWriter {
             if (line.charAt(0) == AutoIndentWriter.INDENT)   { ++this.indentation; line = line.substring(1); }
             if (line.charAt(0) == AutoIndentWriter.UNINDENT) { --this.indentation; line = line.substring(1); }
 
-            this.tabulatorBuffer = new ArrayList<StringBuilder>();
+            this.tabulatorBuffer = new ArrayList<>();
             this.tabulatorBuffer.add(new StringBuilder(line.length()).append(line));
             this.tabulatorIndentation = this.indentation;
         } else
@@ -129,7 +129,7 @@ class AutoIndentWriter extends FilterWriter {
 
     private void
     flushTabulatorBuffer() throws IOException {
-        List<List<StringBuilder>> lineGroups = new ArrayList<List<StringBuilder>>();
+        List<List<StringBuilder>> lineGroups = new ArrayList<>();
         lineGroups.add(new ArrayList<StringBuilder>());
 
         List<StringBuilder> tb = this.tabulatorBuffer;
@@ -142,11 +142,11 @@ class AutoIndentWriter extends FilterWriter {
                 ++idx;
             }
             if (line.charAt(idx) == AutoIndentWriter.UNINDENT) {
-                AutoIndentWriter.resolveTabs(lineGroups.remove(lineGroups.size() - 1));
+                AutoIndentWriter.resolveTabs((List<StringBuilder>) lineGroups.remove(lineGroups.size() - 1));
                 ++idx;
             }
             if (line.charAt(idx) == AutoIndentWriter.CLEAR_TABULATORS) {
-                List<StringBuilder> lg = lineGroups.get(lineGroups.size() - 1);
+                List<StringBuilder> lg = (List<StringBuilder>) lineGroups.get(lineGroups.size() - 1);
                 AutoIndentWriter.resolveTabs(lg);
                 lg.clear();
                 line.deleteCharAt(idx);
@@ -202,7 +202,7 @@ class AutoIndentWriter extends FilterWriter {
     resolveTabs(List<StringBuilder> lineGroup) {
 
         // Determine the tabulator offsets for this line group.
-        List<Integer> tabulatorOffsets = new ArrayList<Integer>(); // 4, 4
+        List<Integer> tabulatorOffsets = new ArrayList<>(); // 4, 4
         for (StringBuilder line : lineGroup) {
             int previousTab = 0;
             if (line.charAt(previousTab) == AutoIndentWriter.INDENT) ++previousTab;
@@ -213,11 +213,11 @@ class AutoIndentWriter extends FilterWriter {
                     int tabOffset = i - previousTab;
                     previousTab = i;
                     if (tabCount >= tabulatorOffsets.size()) {
-                        tabulatorOffsets.add(new Integer(tabOffset));
+                        tabulatorOffsets.add(Integer.valueOf(tabOffset));
                     } else
                     {
                         if (tabOffset > ((Integer) tabulatorOffsets.get(tabCount)).intValue()) {
-                            tabulatorOffsets.set(tabCount, new Integer(tabOffset));
+                            tabulatorOffsets.set(tabCount, Integer.valueOf(tabOffset));
                         }
                     }
                     ++tabCount;

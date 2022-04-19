@@ -460,7 +460,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         int count = readers.length;
 
         // Create compilation unit.
-        List<Reader> classBody = new ArrayList<Reader>();
+        List<Reader> classBody = new ArrayList<>();
 
         // Create methods with one block each.
         for (int idx = 0; idx < count; ++idx) {
@@ -567,7 +567,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
                 hashCode() { return this.name.hashCode() ^ Arrays.hashCode(this.parameterTypes); }
             }
             Method[]                   ma  = c.getDeclaredMethods();
-            Map<MethodWrapper, Method> dms = new HashMap<MethodWrapper, Method>(2 * count);
+            Map<MethodWrapper, Method> dms = new HashMap<>(2 * count);
             for (Method m : ma) {
                 dms.put(new MethodWrapper(m.getName(), m.getParameterTypes()), m);
             }

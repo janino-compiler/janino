@@ -161,7 +161,7 @@ class CompilerTest {
         SortedMap<String, byte[]> classFileMap1;
         {
             b.beginReporting("Compile " + this.compilerFactoryId + " from scratch");
-            classFileMap1 = new TreeMap<String, byte[]>(
+            classFileMap1 = new TreeMap<>(
                 CompilerTest.compileJanino(sourceFiles, this.compilerFactory.newCompiler(), null)
             );
             b.endReporting("Generated " + classFileMap1.size() + " class files.");
@@ -176,7 +176,7 @@ class CompilerTest {
                 "Compile " + this.compilerFactoryId + " again, but with the class files created during the first "
                 + "compilation being available, i.e. only the explicitly given source files should be recompiled"
             );
-            SortedMap<String, byte[]> classFileMap2 = new TreeMap<String, byte[]>(
+            SortedMap<String, byte[]> classFileMap2 = new TreeMap<>(
                 CompilerTest.compileJanino(sourceFiles, this.compilerFactory.newCompiler(), classFileMap1)
             );
             b.endReporting("Generated " + classFileMap2.size() + " class files.");
@@ -207,7 +207,7 @@ class CompilerTest {
                 this.compilerFactory.getId() + ".Compiler"
             ).getDeclaredConstructor().newInstance();
 
-            SortedMap<String, byte[]> classFileMap3 = new TreeMap<String, byte[]>(CompilerTest.compileJanino(
+            SortedMap<String, byte[]> classFileMap3 = new TreeMap<>(CompilerTest.compileJanino(
                 sourceFiles,
                 iCompiler,
                 null // precompiledClasses
@@ -247,7 +247,6 @@ class CompilerTest {
         final ClassLoader cl = compiler.getClass().getClassLoader();
 
         final Class<?> DirectoryResourceFinder_class = cl.loadClass("org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder"); // SUPPRESS CHECKSTYLE LocalFinalVariableName|LineLength:6
-        final Class<?> ICompiler_class               = cl.loadClass("org.codehaus.commons.compiler.ICompiler");
         final Class<?> MapResourceCreator_class      = cl.loadClass("org.codehaus.commons.compiler.util.resource.MapResourceCreator");
         final Class<?> MapResourceFinder_class       = cl.loadClass("org.codehaus.commons.compiler.util.resource.MapResourceFinder");
         final Class<?> MultiResourceFinder_class     = cl.loadClass("org.codehaus.commons.compiler.util.resource.MultiResourceFinder");
@@ -281,7 +280,7 @@ class CompilerTest {
 //        compiler.setClassPath(new File[0]);
         CompilerTest.invoke1(compiler, "setClassPath", new File[0].getClass(), new File[0]);
 
-        final Map<String, byte[]> result = new HashMap<String, byte[]>();
+        final Map<String, byte[]> result = new HashMap<>();
 
 //        compiler.setClassFileCreator(new MapResourceCreator(result));
         CompilerTest.invoke1(
@@ -465,6 +464,72 @@ class CompilerTest {
     }
 
     @Test public void
+    testErrorHandler() throws Exception {
+        MapResourceFinder sourceFinder = new MapResourceFinder();
+
+        sourceFinder.addResource("pkg/A.java", (
+            ""
+            + "package pkg;\n"
+            + "public class A {\n"
+            + "    void meth() {\n"
+            + "        return 1;\n"
+            + "    }\n"
+            + "}\n"
+        ));
+
+        // Default error handling.
+        {
+            ICompiler compiler = this.compilerFactory.newCompiler();
+
+            try {
+                CompilerTest.compile(compiler, sourceFinder);
+                Assert.fail("CompileException expected");
+            } catch (CompileException ex) {
+                CompilerTest.assertMatches(".*(Method must not return a value|unexpected return value).*", ex.getMessage());
+            }
+        }
+
+        // Error handler that throws a CompileException.
+        {
+            ICompiler compiler = this.compilerFactory.newCompiler();
+
+            final int[] count = new int[1];
+            compiler.setCompileErrorHandler(new ErrorHandler() {
+                @Override public void handleError(String message, @Nullable Location location) throws CompileException {
+                    count[0]++;
+                    throw new CompileException(message, location);
+                }
+            });
+
+            try {
+                CompilerTest.compile(compiler, sourceFinder);
+                Assert.fail("CompileException expected");
+            } catch (CompileException ex) {
+                Assert.assertEquals(1, count[0]);
+                CompilerTest.assertMatches(".*(Method must not return a value|unexpected return value).*", ex.getMessage());
+            }
+        }
+
+        // Error handler that does *not* throw a CompileException.
+        {
+            ICompiler compiler = this.compilerFactory.newCompiler();
+
+            final int[] count = new int[1];
+            compiler.setCompileErrorHandler(new ErrorHandler() {
+                @Override public void handleError(String message, @Nullable Location location) { count[0]++; }
+            });
+
+            try {
+                CompilerTest.compile(compiler, sourceFinder);
+                Assert.fail("CompileException expected");
+            } catch (CompileException ex) {
+                Assert.assertEquals(1, count[0]);
+                CompilerTest.assertMatches(".*(Compilation failed with 1 errors|error.*while compiling).*", ex.getMessage());
+            }
+        }
+    }
+
+    @Test public void
     testInMemoryCompilation() throws Exception {
 
         // Set of compilation units.
@@ -506,13 +571,18 @@ class CompilerTest {
     private Map<String, byte[]>
     compile(MapResourceFinder sourceFinder) throws CompileException, IOException {
 
-        // Storage for generated bytecode.
-        final Map<String, byte[]> classes = new HashMap<String, byte[]>();
-
         // Set up the compiler.
         ICompiler compiler = this.compilerFactory.newCompiler();
         compiler.setSourceFinder(sourceFinder);
+        return CompilerTest.compile(compiler, sourceFinder);
+    }
+
+    private static Map<String, byte[]>
+    compile(ICompiler compiler, MapResourceFinder sourceFinder) throws CompileException, IOException {
 //        compiler.setIClassLoader(new ClassLoaderIClassLoader(CompilerTest.class.getClassLoader()));
+
+        // Storage for generated bytecode.
+        final Map<String, byte[]> classes = new HashMap<>();
         compiler.setClassFileFinder(new MapResourceFinder(classes));
         compiler.setClassFileCreator(new MapResourceCreator(classes));
 //        compiler.setDebugLines(true);
@@ -565,7 +635,7 @@ class CompilerTest {
 
         // Here's the magic: Configure a custom "resource creator", so the .class files are stored in a Map, and no
         // files are created.
-        Map<String, byte[]> classes = new HashMap<String, byte[]>();
+        Map<String, byte[]> classes = new HashMap<>();
         compiler.setClassFileCreator(new MapResourceCreator(classes));
 
         // Now compile two units with different package declarations.
@@ -604,7 +674,7 @@ class CompilerTest {
     assertMatches(final String regex, final String actual) {
         Assert.assertTrue(
             "Expected that \"" + actual + "\" would match regex \"" + regex + "\"",
-            actual.matches(regex)
+            actual.matches("(?s)" + regex)
         );
     }
 }

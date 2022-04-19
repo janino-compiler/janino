@@ -49,7 +49,17 @@ import org.codehaus.janino.util.ClassFile.FloatElementValue;
 import org.codehaus.janino.util.ClassFile.IntElementValue;
 import org.codehaus.janino.util.ClassFile.LongElementValue;
 import org.codehaus.janino.util.ClassFile.ShortElementValue;
+import org.codehaus.janino.util.ClassFile.SignatureAttribute;
 import org.codehaus.janino.util.ClassFile.StringElementValue;
+import org.codehaus.janino.util.signature.SignatureParser;
+import org.codehaus.janino.util.signature.SignatureParser.ArrayTypeSignature;
+import org.codehaus.janino.util.signature.SignatureParser.ClassSignature;
+import org.codehaus.janino.util.signature.SignatureParser.ClassTypeSignature;
+import org.codehaus.janino.util.signature.SignatureParser.FieldTypeSignature;
+import org.codehaus.janino.util.signature.SignatureParser.FieldTypeSignatureVisitor;
+import org.codehaus.janino.util.signature.SignatureParser.FormalTypeParameter;
+import org.codehaus.janino.util.signature.SignatureParser.SignatureException;
+import org.codehaus.janino.util.signature.SignatureParser.TypeVariableSignature;
 
 /**
  * A wrapper object that turns a {@link ClassFile} object into an {@link IClass}.
@@ -59,11 +69,12 @@ class ClassFileIClass extends IClass {
 
     private static final Logger LOGGER = Logger.getLogger(ClassFileIClass.class.getName());
 
-    private final ClassFile    classFile;
-    private final IClassLoader iClassLoader;
-    private final short        accessFlags;
+    private final ClassFile                classFile;
+    private final IClassLoader             iClassLoader;
+    private final short                    accessFlags;
+    @Nullable final private ClassSignature classSignature;
 
-    private final Map<ClassFile.FieldInfo, IField> resolvedFields = new HashMap<ClassFile.FieldInfo, IField>();
+    private final Map<ClassFile.FieldInfo, IField> resolvedFields = new HashMap<>();
 
     /**
      * @param classFile Source of data
@@ -76,13 +87,111 @@ class ClassFileIClass extends IClass {
 
         // Determine class access flags.
         this.accessFlags = classFile.accessFlags;
+
+        SignatureAttribute sa = classFile.getSignatureAttribute();
+        try {
+            this.classSignature = sa == null ? null : new SignatureParser().decodeClassSignature(sa.getSignature(classFile));
+        } catch (SignatureException e) {
+            throw new InternalCompilerException("Decoding signature of \"" + this + "\"", e);
+        }
+
+        // Example 1:
+        //   interface Map<K, V>
+        // has signature
+        //   <K:Ljava/lang/Object;V:Ljava/lang/Object;>Ljava/lang/Object;
+        //   [this-class]<K extends Object, V extends Object> extends Object
+
+        // Example 2:
+        //   class HashMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, Serializable
+        // has signature
+        //   <K:Ljava/lang/Object;V:Ljava/lang/Object;>\
+        //     Ljava/util/AbstractMap<TK;TV;>;\
+        //     Ljava/util/Map<TK;TV;>;\
+        //     Ljava/lang/Cloneable;\
+        //     Ljava/io/Serializable;
+        //   [this-class]<K extends Object, V extends Object> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, java.io.Serializable
     }
 
     // Implement IClass.
 
+    @Override protected ITypeVariable[]
+    getITypeVariables2() throws CompileException {
+
+        ClassSignature cs = this.classSignature;
+        if (cs == null) return new ITypeVariable[0];
+
+        ITypeVariable[] result = new ITypeVariable[cs.formalTypeParameters.size()];
+        for (int i = 0; i < result.length; i++) {
+            final FormalTypeParameter ftp = (FormalTypeParameter) cs.formalTypeParameters.get(i);
+            final ITypeVariableOrIClass[] bounds = ClassFileIClass.this.getBounds(ftp);
+            result[i] = new ITypeVariable() {
+
+                @Override public String
+                getName() { return ftp.identifier; }
+
+                @Override public ITypeVariableOrIClass[]
+                getBounds() { return bounds; }
+
+                @Override public String
+                toString() {
+                    ITypeVariableOrIClass[] bs = this.getBounds();
+                    String s = this.getName() + " extends " + bs[0];
+                    for (int i = 1; i < bs.length; i++) s += " & " + bs[i];
+                    return s;
+                }
+            };
+        }
+
+        return result;
+    }
+
+    private ITypeVariableOrIClass[]
+    getBounds(SignatureParser.FormalTypeParameter ftp) throws CompileException {
+        List<ITypeVariableOrIClass> result = new ArrayList<ITypeVariableOrIClass>();
+        if (ftp.classBound != null) {
+            result.add(this.fieldTypeSignatureToITypeVariableOrIClass(ftp.classBound));
+        }
+        return (ITypeVariableOrIClass[]) result.toArray(new ITypeVariableOrIClass[result.size()]);
+    }
+
+    private ITypeVariableOrIClass
+    fieldTypeSignatureToITypeVariableOrIClass(FieldTypeSignature fts) throws CompileException {
+
+        return (ITypeVariableOrIClass) fts.accept(new FieldTypeSignatureVisitor<ITypeVariableOrIClass, CompileException>() {
+
+            @Override public ITypeVariableOrIClass
+            visitArrayTypeSignature(ArrayTypeSignature ats) { throw new AssertionError(ats); }
+
+            @Override public ITypeVariableOrIClass
+            visitClassTypeSignature(ClassTypeSignature cts) throws CompileException {
+                String fd = Descriptor.fromClassName(cts.packageSpecifier + cts.simpleClassName);
+                IClass result;
+                try {
+                    result = ClassFileIClass.this.iClassLoader.loadIClass(fd);
+                } catch (ClassNotFoundException cnfe) {
+                    throw new CompileException("Loading \"" + Descriptor.toClassName(fd) + "\"", null, cnfe);
+                }
+                if (result == null) throw new CompileException("Cannot load \"" + Descriptor.toClassName(fd) + "\"", null);
+                return result;
+            }
+
+            @Override public ITypeVariableOrIClass
+            visitTypeVariableSignature(final TypeVariableSignature tvs) {
+                return new ITypeVariable() {
+
+                    @Override public String
+                    getName() { return tvs.identifier; }
+
+                    @Override public ITypeVariableOrIClass[]
+                    getBounds() { throw new AssertionError(this); }
+                };
+            }
+        });
+    }
+
     @Override protected IConstructor[]
     getDeclaredIConstructors2() {
-        List<IInvocable> iConstructors = new ArrayList<IInvocable>();
+        List<IInvocable> iConstructors = new ArrayList<>();
 
         for (ClassFile.MethodInfo mi : this.classFile.methodInfos) {
             IInvocable ii;
@@ -99,7 +208,7 @@ class ClassFileIClass extends IClass {
 
     @Override protected IMethod[]
     getDeclaredIMethods2() {
-        List<IMethod> iMethods = new ArrayList<IMethod>();
+        List<IMethod> iMethods = new ArrayList<>();
 
         for (ClassFile.MethodInfo mi : this.classFile.methodInfos) {
 
@@ -137,7 +246,7 @@ class ClassFileIClass extends IClass {
         ClassFile.InnerClassesAttribute ica = this.classFile.getInnerClassesAttribute();
         if (ica == null) return new IClass[0];
 
-        List<IClass> res = new ArrayList<IClass>();
+        List<IClass> res = new ArrayList<>();
         for (ClassFile.InnerClassesAttribute.Entry e : ica.getEntries()) {
             if (e.outerClassInfoIndex == this.classFile.thisClass) {
                 try {
@@ -257,7 +366,7 @@ class ClassFileIClass extends IClass {
     private IAnnotation
     toIAnnotation(final ClassFile.Annotation annotation) throws CompileException {
 
-        final Map<String, Object> evps2 = new HashMap<String, Object>();
+        final Map<String, Object> evps2 = new HashMap<>();
         for (Entry<Short, ClassFile.ElementValue> e : annotation.elementValuePairs.entrySet()) {
             Short                  elementNameIndex = (Short) e.getKey();
             ClassFile.ElementValue elementValue     = (ClassFile.ElementValue) e.getValue();
@@ -420,7 +529,7 @@ class ClassFileIClass extends IClass {
         this.resolvedClasses.put(descriptor, result);
         return result;
     }
-    private final Map<String /*descriptor*/, IClass> resolvedClasses = new HashMap<String, IClass>();
+    private final Map<String /*descriptor*/, IClass> resolvedClasses = new HashMap<>();
 
     private IClass[]
     resolveClasses(short[] ifs) throws CompileException {
@@ -538,7 +647,7 @@ class ClassFileIClass extends IClass {
     }
 
     private final Map<ClassFile.MethodInfo, IInvocable>
-    resolvedMethods = new HashMap<ClassFile.MethodInfo, IInvocable>();
+    resolvedMethods = new HashMap<>();
 
     private IField
     resolveField(final ClassFile.FieldInfo fieldInfo) throws ClassNotFoundException {

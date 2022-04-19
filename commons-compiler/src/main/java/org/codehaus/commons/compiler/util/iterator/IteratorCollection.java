@@ -52,7 +52,7 @@ class IteratorCollection<T> extends AbstractCollection<T> {
     /**
      * Lazily-filled collection of the elements delivered by the delegate.
      */
-    private final List<T> elements = new ArrayList<T>();
+    private final List<T> elements = new ArrayList<>();
 
     public
     IteratorCollection(Iterator<T> iterator) { this.iterator = iterator; }

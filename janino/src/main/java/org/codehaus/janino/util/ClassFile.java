@@ -100,9 +100,9 @@ class ClassFile implements Annotatable {
             this.minorVersion = Short.parseShort(m.group(2));
         }
 
-        this.constantPool  = new ArrayList<ConstantPoolInfo>();
+        this.constantPool  = new ArrayList<>();
         this.constantPool.add(null); // Add fake "0" index entry.
-        this.constantPoolMap = new HashMap<ConstantPoolInfo, Short>();
+        this.constantPoolMap = new HashMap<>();
 
         // Some sanity checks on the access flags, according to JVMS8 4.1.
         if ((accessFlags & Mod.INTERFACE) != 0) {
@@ -126,9 +126,9 @@ class ClassFile implements Annotatable {
             this.interfaces[i] = this.addConstantClassInfo(interfaceFds[i]);
         }
 
-        this.fieldInfos    = new ArrayList<FieldInfo>();
-        this.methodInfos   = new ArrayList<MethodInfo>();
-        this.attributes    = new ArrayList<AttributeInfo>();
+        this.fieldInfos    = new ArrayList<>();
+        this.methodInfos   = new ArrayList<>();
+        this.attributes    = new ArrayList<>();
     }
 
     /**
@@ -160,6 +160,11 @@ class ClassFile implements Annotatable {
     @Nullable public InnerClassesAttribute
     getInnerClassesAttribute() {
         return (InnerClassesAttribute) this.findAttribute(this.attributes, "InnerClasses");
+    }
+
+    @Nullable public SignatureAttribute
+    getSignatureAttribute() {
+        return (SignatureAttribute) this.findAttribute(this.attributes, "Signature");
     }
 
     /**
@@ -295,8 +300,8 @@ class ClassFile implements Annotatable {
 //            );
 //        }
 
-        this.constantPool    = new ArrayList<ConstantPoolInfo>();
-        this.constantPoolMap = new HashMap<ConstantPoolInfo, Short>();
+        this.constantPool    = new ArrayList<>();
+        this.constantPoolMap = new HashMap<>();
         this.loadConstantPool(dis);                                                // constant_pool_count, constant_pool
 
         this.accessFlags  = dis.readShort();                                       // access_flags
@@ -562,7 +567,7 @@ class ClassFile implements Annotatable {
         String           fieldTypeFd,
         @Nullable Object constantValue
     ) {
-        List<AttributeInfo> attributes = new ArrayList<AttributeInfo>();
+        List<AttributeInfo> attributes = new ArrayList<>();
         if (constantValue != null) {
             attributes.add(new ConstantValueAttribute(
                 this.addConstantUtf8Info("ConstantValue"),
@@ -746,7 +751,7 @@ class ClassFile implements Annotatable {
     private List<FieldInfo>
     loadFields(DataInputStream dis) throws IOException {
 
-        List<FieldInfo> result = new ArrayList<FieldInfo>();
+        List<FieldInfo> result = new ArrayList<>();
 
         for (int i = dis.readUnsignedShort(); i > 0; i--) { // fields_count
             result.add(new FieldInfo(                       // fields[field_count]
@@ -766,7 +771,7 @@ class ClassFile implements Annotatable {
     private List<MethodInfo>
     loadMethods(DataInputStream dis) throws IOException {
         int              methodsCount = dis.readUnsignedShort();
-        List<MethodInfo> methods      = new ArrayList<MethodInfo>(methodsCount);
+        List<MethodInfo> methods      = new ArrayList<>(methodsCount);
         for (int i = 0; i < methodsCount; ++i) methods.add(this.loadMethodInfo(dis));
         return methods;
     }
@@ -777,7 +782,7 @@ class ClassFile implements Annotatable {
     private List<AttributeInfo>
     loadAttributes(DataInputStream dis) throws IOException {
         int                 attributesCount = dis.readUnsignedShort();
-        List<AttributeInfo> attributes      = new ArrayList<AttributeInfo>(attributesCount);
+        List<AttributeInfo> attributes      = new ArrayList<>(attributesCount);
         for (int i = 0; i < attributesCount; ++i) attributes.add(this.loadAttribute(dis));
         return attributes;
     }
@@ -1347,7 +1352,7 @@ class ClassFile implements Annotatable {
 
         // Implement ConstantValuePoolInfo.
         @Override public Object
-        getValue(ClassFile classFile) { return new Integer(this.value); }
+        getValue(ClassFile classFile) { return Integer.valueOf(this.value); }
 
         // Implement ConstantPoolInfo.
 
@@ -1384,7 +1389,7 @@ class ClassFile implements Annotatable {
 
         // Implement ConstantValuePoolInfo.
         @Override public Object
-        getValue(ClassFile classFile) { return new Float(this.value); }
+        getValue(ClassFile classFile) { return Float.valueOf(this.value); }
 
         // Implement ConstantPoolInfo.
 
@@ -1456,7 +1461,7 @@ class ClassFile implements Annotatable {
         ConstantDoubleInfo(double value) { this.value = value; }
 
         // Implement ConstantValuePoolInfo.
-        @Override public Object getValue(ClassFile classFile) { return new Double(this.value); }
+        @Override public Object getValue(ClassFile classFile) { return Double.valueOf(this.value); }
 
         // Implement ConstantPoolInfo.
 
@@ -2006,6 +2011,9 @@ class ClassFile implements Annotatable {
         if ("Synthetic".equals(attributeName)) {
             result = SyntheticAttribute.loadBody(attributeNameIndex, bdis);
         } else
+        if ("Signature".equals(attributeName)) {
+            result = SignatureAttribute.loadBody(attributeNameIndex, bdis);
+        } else
         if ("SourceFile".equals(attributeName)) {
             result = SourceFileAttribute.loadBody(attributeNameIndex, bdis);
         } else
@@ -2131,11 +2139,11 @@ class ClassFile implements Annotatable {
 
         InnerClassesAttribute(short attributeNameIndex) {
             super(attributeNameIndex);
-            this.entries = new ArrayList<Entry>();
+            this.entries = new ArrayList<>();
         }
         InnerClassesAttribute(short attributeNameIndex, Entry[] entries) {
             super(attributeNameIndex);
-            this.entries = new ArrayList<Entry>(Arrays.asList(entries));
+            this.entries = new ArrayList<>(Arrays.asList(entries));
         }
 
         /**
@@ -2208,11 +2216,11 @@ class ClassFile implements Annotatable {
 
         AnnotationsAttribute(short attributeNameIndex) {
             super(attributeNameIndex);
-            this.annotations = new ArrayList<Annotation>();
+            this.annotations = new ArrayList<>();
         }
         AnnotationsAttribute(short attributeNameIndex, Annotation[] annotations) {
             super(attributeNameIndex);
-            this.annotations = new ArrayList<Annotation>(Arrays.asList(annotations));
+            this.annotations = new ArrayList<>(Arrays.asList(annotations));
         }
 
         /**
@@ -2246,7 +2254,7 @@ class ClassFile implements Annotatable {
             int numElementaluePairs = dis.readUnsignedShort(); // nul_element_value_pairs
             if (numElementaluePairs == 0) return Collections.emptyMap();
 
-            Map<Short, ClassFile.ElementValue> result = new HashMap<Short, ClassFile.ElementValue>();
+            Map<Short, ClassFile.ElementValue> result = new HashMap<>();
             for (int i = 0; i < numElementaluePairs; i++) {
                 result.put(
                     dis.readShort(),                // element_name_index
@@ -2286,6 +2294,36 @@ class ClassFile implements Annotatable {
         storeBody(DataOutputStream dos) {
             ;
         }
+    }
+
+    /**
+     * Representation of a {@code Signature} attribute (see JVMS 4.7.9).
+     */
+    public static
+    class SignatureAttribute extends AttributeInfo {
+
+        private final short signatureIndex;
+
+        public
+        SignatureAttribute(short attributeNameIndex, short signatureIndex) {
+            super(attributeNameIndex);
+            this.signatureIndex = signatureIndex;
+        }
+
+        public String
+        getSignature(ClassFile classFile) { return classFile.getConstantUtf8(this.signatureIndex); }
+
+        private static AttributeInfo
+        loadBody(short attributeNameIndex, DataInputStream dis) throws IOException {
+            return new SignatureAttribute(
+                attributeNameIndex, // attributeNameIndex
+                dis.readShort()     // signatureNameIndex
+            );
+        }
+
+        // Implement "AttributeInfo".
+        @Override protected void
+        storeBody(DataOutputStream dos) throws IOException { dos.writeShort(this.signatureIndex); }
     }
 
     /**
@@ -2498,10 +2536,11 @@ class ClassFile implements Annotatable {
 
         private final short                 maxStack;
         private final short                 maxLocals;
-        private final byte[]                code;
+        public final byte[]                 code;
         private final ExceptionTableEntry[] exceptionTableEntries;
         private final AttributeInfo[]       attributes;
 
+        public
         CodeAttribute(
             short                 attributeNameIndex,
             short                 maxStack,
@@ -2570,11 +2609,12 @@ class ClassFile implements Annotatable {
         /**
          * Representation of an entry in the "exception_table" of a "Code" attribute (see JVMS 4.7.3).
          */
-        private static
+        public static
         class ExceptionTableEntry {
 
             final short startPc, endPc, handlerPc, catchType;
 
+            public
             ExceptionTableEntry(short startPc, short endPc, short handlerPc, short catchType) {
                 this.startPc   = startPc;
                 this.endPc     = endPc;
@@ -2877,7 +2917,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(0);   }
             @Override public String  toString()                                     { return "top";       }
             @Override public int     hashCode()                                     { return 0;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2889,7 +2929,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(1);   }
             @Override public String  toString()                                     { return "int";       }
             @Override public int     hashCode()                                     { return 1;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2901,7 +2941,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(2);   }
             @Override public String  toString()                                     { return "float";     }
             @Override public int     hashCode()                                     { return 2;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2913,7 +2953,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(3);   }
             @Override public String  toString()                                     { return "double";    }
             @Override public int     hashCode()                                     { return 3;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2925,7 +2965,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(4);   }
             @Override public String  toString()                                     { return "long";      }
             @Override public int     hashCode()                                     { return 4;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2937,7 +2977,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(5);   }
             @Override public String  toString()                                     { return "null";      }
             @Override public int     hashCode()                                     { return 5;           }
-            @Override public boolean equals(Object obj)                             { return obj == this; }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
 
         /**
@@ -2949,7 +2989,7 @@ class ClassFile implements Annotatable {
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(6);           }
             @Override public String  toString()                                     { return "uninitializedThis"; }
             @Override public int     hashCode()                                     { return 6;                   }
-            @Override public boolean equals(Object obj)                             { return obj == this;         }
+            @Override public boolean equals(@Nullable Object obj)                   { return obj == this;         }
         };
 
         /**
@@ -2986,7 +3026,7 @@ class ClassFile implements Annotatable {
             hashCode() { return 7 ^ this.constantClassInfoIndex; }
 
             @Override public boolean
-            equals(Object obj) {
+            equals(@Nullable Object obj) {
                 return (
                     obj instanceof ObjectVariableInfo
                     && ((ObjectVariableInfo) obj).constantClassInfoIndex == this.constantClassInfoIndex
@@ -3021,7 +3061,7 @@ class ClassFile implements Annotatable {
             hashCode() { return 8 ^ this.offset; }
 
             @Override public boolean
-            equals(Object obj) {
+            equals(@Nullable Object obj) {
                 return (
                     obj instanceof UninitializedVariableInfo
                     && ((UninitializedVariableInfo) obj).offset == this.offset

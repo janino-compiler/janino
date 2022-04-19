@@ -26,6 +26,7 @@
 package org.codehaus.commons.nullanalysis;
 
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
+import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PACKAGE;
@@ -46,7 +47,7 @@ import java.lang.annotation.Target;
  * @see <a href="http://help.eclipse.org/juno/index.jsp?topic=%2Forg.eclipse.jdt.doc.user%2Ftasks%2Ftask-using_null
  *_annotations.htm">ECLIPSE Help - Using null annotations</a>
  */
-@Target({ TYPE, LOCAL_VARIABLE, METHOD, CONSTRUCTOR, PACKAGE }) @Retention(RetentionPolicy.CLASS) public
+@Target({ TYPE, LOCAL_VARIABLE, METHOD, CONSTRUCTOR, FIELD, PACKAGE }) @Retention(RetentionPolicy.CLASS) public
 @interface NotNullByDefault {
     boolean value() default true;
 }

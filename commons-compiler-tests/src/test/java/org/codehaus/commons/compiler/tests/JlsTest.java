@@ -319,6 +319,11 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_4_5__Parameterized_Types() throws Exception {
+        this.assertScriptReturnsTrue("import java.util.*; Map<String, String> s = /*Collections.emptyMap()*/null; String x = s.get(\"foo\"); return x ==null;");
+    }
+
+    @Test public void
     test_4_5_1__Type_arguments_and_wildcards() throws Exception {
         this.assertScriptReturnsTrue(
             ""
@@ -794,19 +799,31 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_9_4__Method_Declarations__4() throws Exception {
 
-        String cu = (
-            ""
-            + "public interface A {\n"
-            + "    default A meth1() { return null; }\n"
-            + "}\n"
+        // Default interface methods - a Java 8 feature.
+
+    	String cu = (
+    	    ""
+            + "public interface A { default boolean isTrue() { return true; } }\n"
+            + "public class B implements A {}\n"
+            + "public class Foo { public static boolean main() { return new B().isTrue(); } }\n"
         );
 
-        // Default interface methods only available for target version 8+. Either use "setTargetVersion(8)", or "-DdefaultTargetVersion=8"." does not contain a match of "only available for source version 8\+|compiler\.err\.illegal\.start\.of\.type" (implementation=org.codehaus.janino, java.version=11-ea)
+    	{
+    	    SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(7);
+            sct.assertUncookable("Default interface methods only available for source version 8+|default methods are not supported in -source (1\\.)?7");
+    	}
 
-        this.assertCompilationUnitCookable(
-            cu,
-            "only available for (?:source|target) version 8\\+|compiler\\.err\\.illegal\\.start\\.of\\.type"
-        );
+    	{
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(8);
+            sct.setTargetVersion(8);
+            if (CommonsCompilerTestSuite.JVM_VERSION < 8) {
+                sct.assertCookable();
+            } else {
+                sct.assertResultTrue();
+            }
+        }
     }
 
     @Test public void
@@ -815,8 +832,6 @@ class JlsTest extends CommonsCompilerTestSuite {
         // Modifiers for interface method: SUPPRESS CHECKSTYLE LineLength:18
         this.assertCompilationUnitCookable("interface Foo { @SuppressWarnings(\"foo\") void meth();   }");
         this.assertCompilationUnitCookable("interface Foo { abstract                   void meth();   }");
-        this.assertCompilationUnitCookable("interface Foo { default                    void meth() {} }", "only available for (?:source|target) version 8\\+|illegal start of type");
-        this.assertCompilationUnitCookable("interface Foo { private                    void meth() {} }", "not implemented|modifier private not allowed");
         this.assertCompilationUnitCookable("interface Foo { public                     void meth();   }");
         this.assertCompilationUnitCookable("interface Foo { static                     void meth() {} }", "only available for target version 8\\+|modifier static not allowed");
         this.assertCompilationUnitUncookable("interface Foo { final                      void meth();   }", "final not allowed|illegal combination");
@@ -831,6 +846,95 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertCompilationUnitUncookable("interface Foo { protected private          void meth();   }", "allowed");
         this.assertCompilationUnitUncookable("interface Foo { private public             void meth();   }", "allowed|(?i)illegal\\.combination");
         this.assertCompilationUnitUncookable("interface Foo { abstract final             void meth();   }", "Only one of abstract final is allowed|illegal combination|not allowed");
+    }
+
+    @Test public void
+    test_9_4__Method_Declarations__Default_methods() throws Exception {
+
+        // Default methods (a Java 8 feature).
+        String cu = (
+            ""
+            + "public interface MyInterface { default boolean isTrue() { return true; } }\n"
+            + "public class Foo { public static boolean main() { return new MyInterface() {}.isTrue(); } }\n"
+        );
+
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(7);
+            sct.assertUncookable("Default interface methods only available for source version 8+|default methods are not supported in -source (1\\.)?7");
+        }
+
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(8);
+            sct.setTargetVersion(8);
+            if (CommonsCompilerTestSuite.JVM_VERSION < 8) {
+                sct.assertCookable();
+            } else {
+                sct.assertResultTrue();
+            }
+        }
+    }
+
+    @Test public void
+    test_9_4__Method_Declarations__Static_interface_methods() throws Exception {
+
+        // Static interface methods (a Java 8 feature).
+
+        String cu = (
+            ""
+            + "public interface MyInterface { static boolean isTrue() { return true; } }\n"
+            + "public class Foo { public static boolean main() { return MyInterface.isTrue(); } }\n"
+        );
+
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(7);
+            sct.assertUncookable("Static interface methods only available for source version 8+|static interface methods are not supported in -source (1\\.)?7");
+        }
+
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(8);
+            sct.setTargetVersion(8);
+            if (CommonsCompilerTestSuite.JVM_VERSION < 8) {
+                sct.assertCookable();
+            } else {
+                sct.assertResultTrue();
+            }
+        }
+    }
+
+    @Test public void
+    test_9_4__Method_Declarations__Private_interface_methods() throws Exception {
+
+        // Static interface methods (a Java 8 feature).
+
+        String cu = (
+            ""
+                + "public interface MyInterface {\n"
+                + "    private boolean isTrue2() { return true; }\n"
+                + "    default boolean isTrue() { return isTrue2(); }\n"
+                + "}\n"
+                + "public class Foo { public static boolean main() { return new MyInterface() {}.isTrue(); } }\n"
+            );
+
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(8);
+            sct.assertUncookable("Private interface methods only available for target version 9\\+|private interface methods are not supported in -source 8");
+        }
+
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+            sct.setSourceVersion(9);
+            sct.setTargetVersion(9);
+            if (CommonsCompilerTestSuite.JVM_VERSION < 9) {
+                sct.assertCookable();
+            } else {
+                sct.assertResultTrue();
+            }
+        }
     }
 
     @Test public void
@@ -1296,8 +1400,19 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "for (var y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y.length();\n"
             + "return x.equals(\"A11\");"
         );
-        if (this.isJanino)                   this.assertScriptUncookable(script, "NYI");
+        if (this.isJanino)                                            this.assertScriptUncookable(script, "NYI");
         if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 10) this.assertScriptReturnsTrue(script);
+
+        this.assertScriptReturnsTrue(
+            "java.util.List<Integer> l = new java.util.ArrayList<Integer>();\n"
+            + "l.add(1);\n"
+            + "l.add(2);\n"
+            + "l.add(3);\n"
+            + "for (int i : l) {\n"
+            + "    if (i != 1 && i != 2 && i != 3) return false;\n"
+            + "}\n"
+            + "return true;\n"
+        );
     }
 
     @Test public void
@@ -1649,19 +1764,18 @@ class JlsTest extends CommonsCompilerTestSuite {
             ""
             + "import java.io.Closeable;\n"
             + "import java.io.IOException;\n"
-            + "import org.junit.Assert;\n"
             + "try {\n"
             + "    final int[] x = new int[1];\n"
             + "    Closeable lv = new Closeable() {\n"
-            + "        public void close() { Assert.assertEquals(2, ++x[0]); }\n"
+            + "        public void close() { if (++x[0] != 2) throw new AssertionError(); }\n"
             + "    };\n"
             + "    \n"
             + "    try (lv) {\n"
-            + "        Assert.assertEquals(1, ++x[0]);\n"
+            + "        if (++x[0] != 1) throw new AssertionError();\n"
             + "    }\n"
-            + "    Assert.assertEquals(3, ++x[0]);\n"
+            + "    if (++x[0] != 3) throw new AssertionError();\n"
             + "} catch (IOException ioe) {\n"
-            + "    Assert.fail(ioe.toString());\n"
+            + "    throw new AssertionError(ioe);\n"
             + "}\n"
         );
     }
@@ -1679,10 +1793,9 @@ class JlsTest extends CommonsCompilerTestSuite {
             ""
             + "import java.io.Closeable;\n"
             + "import java.io.IOException;\n"
-            + "import org.junit.Assert;\n"
             + "\n"
             + "public static final Closeable sf = new Closeable() {\n"
-            + "    public void close() { Assert.assertEquals(2, ++x[0]); }\n"
+            + "    public void close() { if (++x[0] != 2) throw new AssertionError(); }\n"
             + "};\n"
             + "public static final int[] x = new int[1];\n"
             + "\n"
@@ -1690,11 +1803,11 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "    try {\n"
             + "        \n"
             + "        try (SC.sf) {\n"
-            + "            Assert.assertEquals(1, ++x[0]);\n"
+            + "            if (++x[0] != 1) throw new AssertionError();\n"
             + "        }\n"
-            + "        Assert.assertEquals(3, ++x[0]);\n"
+            + "        if (++x[0] != 3) throw new AssertionError();\n"
             + "    } catch (IOException ioe) {\n"
-            + "        Assert.fail(ioe.toString());\n"
+            + "        throw new AssertionError(ioe.toString());\n"
             + "    }\n"
             + "}\n"
         );
@@ -1713,10 +1826,9 @@ class JlsTest extends CommonsCompilerTestSuite {
             ""
             + "import java.io.Closeable;\n"
             + "import java.io.IOException;\n"
-            + "import org.junit.Assert;\n"
             + "\n"
             + "public final Closeable sf = new Closeable() {\n"
-            + "    public void close() { Assert.assertEquals(2, ++SC.this.x[0]); }\n"
+            + "    public void close() { if (++SC.this.x[0] != 2) throw new AssertionError(); }\n"
             + "};\n"
             + "public final int[] x = new int[1];\n"
             + "\n"
@@ -1724,11 +1836,11 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "    try {\n"
             + "        \n"
             + "        try (this.sf) {\n"
-            + "            Assert.assertEquals(1, ++this.x[0]);\n"
+            + "            if (++this.x[0] != 1) throw new AssertionError();\n"
             + "        }\n"
-            + "        Assert.assertEquals(3, ++this.x[0]);\n"
+            + "        if (++this.x[0] != 3) throw new AssertionError();\n"
             + "    } catch (IOException ioe) {\n"
-            + "        Assert.fail(ioe.toString());\n"
+            + "        throw new AssertionError(ioe.toString());\n"
             + "    }\n"
             + "}\n"
         );
@@ -1862,12 +1974,23 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_15_9_3__Choosing_the_Constructor_and_its_Arguments() throws Exception {
+    test_15_9_3a__Choosing_the_Constructor_and_its_Arguments() throws Exception {
 
         this.assertExpressionEvaluatable("new Integer(3)");
         this.assertExpressionEvaluatable("new Integer(new Integer(3))");
         this.assertExpressionEvaluatable("new Integer(new Byte((byte) 3))");
         this.assertExpressionUncookable("new Integer(new Object())");
+    }
+
+    @Test public void
+    test_15_9_3b__Choosing_the_Constructor_and_its_Arguments() throws Exception {
+
+        // "Diamond operator".
+        this.assertScriptExecutable(
+            ""
+            + "import java.util.*;\n"
+            + "List<String> l = new ArrayList<>();\n"
+        );
     }
 
     @Test public void

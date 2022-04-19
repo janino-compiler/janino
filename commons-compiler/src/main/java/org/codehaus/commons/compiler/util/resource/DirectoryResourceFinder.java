@@ -43,7 +43,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class DirectoryResourceFinder extends FileResourceFinder {
     private final File                                     directory;
-    private final Map<String /*directoryName*/, Set<File>> subdirectoryNameToFiles = new HashMap<String, Set<File>>();
+    private final Map<String /*directoryName*/, Set<File>> subdirectoryNameToFiles = new HashMap<>();
 
     /**
      * @param directory the directory to use as the search base
@@ -82,13 +82,13 @@ class DirectoryResourceFinder extends FileResourceFinder {
         Set<File> files = (Set<File>) this.subdirectoryNameToFiles.get(subdirectoryName);
         if (files == null && !this.subdirectoryNameToFiles.containsKey(subdirectoryName)) {
             File subDirectory = (
-                subdirectoryName == null
+                subdirectoryName == null || subdirectoryName.isEmpty()
                 ? this.directory
                 : new File(this.directory, subdirectoryName)
             );
             File[] fa = subDirectory.listFiles();
             if (fa != null) {
-                files = new HashSet<File>();
+                files = new HashSet<>();
                 for (File file : fa) {
                     if (file.isFile()) files.add(file);
                 }
@@ -105,7 +105,7 @@ class DirectoryResourceFinder extends FileResourceFinder {
         Set<File> files = this.listFiles(resourceNamePrefix.replace('/', File.separatorChar));
         if (files == null) return null;
 
-        List<Resource> result = new ArrayList<Resource>();
+        List<Resource> result = new ArrayList<>();
         for (File f : files) result.add(new FileResource(f));
 
         return result;

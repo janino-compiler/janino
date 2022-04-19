@@ -46,16 +46,16 @@ class ExpressionEvaluatorTest {
 
     @Test public void
     testGuessParameterNames() throws Exception {
-        Set<String> parameterNames = new HashSet<String>(
+        Set<String> parameterNames = new HashSet<>(
             Arrays.asList(ExpressionEvaluator.guessParameterNames(new Scanner(null, new StringReader(
                 ""
                 + "import o.p;\n"
                 + "a + b.c + d.e() + f() + g.h.I.j() + k.l.M"
             ))))
         );
-        Assert.assertEquals(new HashSet<String>(Arrays.asList("a", "b", "d")), parameterNames);
+        Assert.assertEquals(new HashSet<>(Arrays.asList("a", "b", "d")), parameterNames);
 
-        parameterNames = new HashSet<String>(
+        parameterNames = new HashSet<>(
             Arrays.asList(ScriptEvaluator.guessParameterNames(new Scanner(null, new StringReader(
                 ""
                 + "import o.p;\n"
@@ -63,6 +63,6 @@ class ExpressionEvaluatorTest {
                 + "return a + b.c + d.e() + f() + g.h.I.j() + k.l.M;"
             ))))
         );
-        Assert.assertEquals(new HashSet<String>(Arrays.asList("b", "d")), parameterNames);
+        Assert.assertEquals(new HashSet<>(Arrays.asList("b", "d")), parameterNames);
     }
 }

@@ -49,7 +49,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
  * </p>
  */
 public abstract
-class IClass {
+class IClass implements ITypeVariableOrIClass {
 
     private static final Logger LOGGER = Logger.getLogger(IClass.class.getName());
 
@@ -112,6 +112,7 @@ class IClass {
 
         PrimitiveIClass(String fieldDescriptor) { this.fieldDescriptor = fieldDescriptor; }
 
+        @Override protected ITypeVariable[]  getITypeVariables2()        { return new ITypeVariable[0]; }
         @Override @Nullable protected IClass getComponentType2()         { return null;                 }
         @Override protected IClass[]         getDeclaredIClasses2()      { return new IClass[0];        }
         @Override protected IConstructor[]   getDeclaredIConstructors2() { return new IConstructor[0];  }
@@ -133,6 +134,21 @@ class IClass {
         @Override public boolean
         isPrimitiveNumeric() { return Descriptor.isPrimitiveNumeric(this.fieldDescriptor); }
     }
+
+    /**
+     * @return Zero-length array if this {@link IClass} declares no type variables
+     */
+    public final ITypeVariable[]
+    getITypeVariables() throws CompileException {
+        if (this.iTypeVariablesCache != null) return this.iTypeVariablesCache;
+        return (this.iTypeVariablesCache = this.getITypeVariables2());
+    }
+    @Nullable private ITypeVariable[] iTypeVariablesCache;
+
+    /**
+     * The uncached version of {@link #getDeclaredIConstructors()} which must be implemented by derived classes.
+     */
+    protected abstract ITypeVariable[] getITypeVariables2() throws CompileException;
 
     /**
      * Returns all the constructors declared by the class represented by the type. If the class has a default
@@ -188,7 +204,7 @@ class IClass {
             IMethod[] dims = this.getDeclaredIMethods();
 
             // Fill the map with "IMethod"s and "List<IMethod>"s.
-            dimc = new HashMap<String, Object>();
+            dimc = new HashMap<>();
             for (IMethod dim : dims) {
                 String  mn  = dim.getName();
                 Object  o   = dimc.get(mn);
@@ -196,7 +212,7 @@ class IClass {
                     dimc.put(mn, dim);
                 } else
                 if (o instanceof IMethod) {
-                    List<IMethod> l = new ArrayList<IMethod>();
+                    List<IMethod> l = new ArrayList<>();
                     l.add((IMethod) o);
                     l.add(dim);
                     dimc.put(mn, l);
@@ -234,7 +250,7 @@ class IClass {
 
         if (this.iMethodCache != null) return this.iMethodCache;
 
-        List<IMethod> iMethods = new ArrayList<IMethod>();
+        List<IMethod> iMethods = new ArrayList<>();
         this.getIMethods(iMethods);
         return (this.iMethodCache = (IMethod[]) iMethods.toArray(new IMethod[iMethods.size()]));
     }
@@ -345,7 +361,7 @@ class IClass {
 
         IField[] fields = this.getDeclaredIFields2();
 
-        Map<String /*fieldName*/, IField> m = new LinkedHashMap<String, IClass.IField>();
+        Map<String /*fieldName*/, IField> m = new LinkedHashMap<>();
         for (IField f : fields) m.put(f.getName(), f);
         return (this.declaredIFieldsCache = m);
     }
@@ -454,7 +470,7 @@ class IClass {
         if (this.superclassIsCached) return this.superclassCache;
 
         IClass sc = this.getSuperclass2();
-        if (sc != null && sc.isSubclassOf(this)) {
+        if (sc != null && IClass.rawTypeOf(sc).isSubclassOf(this)) {
             throw new CompileException(
                 "Class circularity detected for \"" + Descriptor.toClassName(this.getDescriptor()) + "\"",
                 null
@@ -660,7 +676,7 @@ class IClass {
         return false;
     }
 
-    private static final Set<String> PRIMITIVE_WIDENING_CONVERSIONS = new HashSet<String>();
+    private static final Set<String> PRIMITIVE_WIDENING_CONVERSIONS = new HashSet<>();
     static {
         String[] pwcs = {
             Descriptor.BYTE  + Descriptor.SHORT,
@@ -758,7 +774,8 @@ class IClass {
 
         return new IClass() {
 
-            @Override public IClass.IConstructor[] getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
+            @Override @Nullable protected ITypeVariable[] getITypeVariables2()        { return new ITypeVariable[0];       }
+            @Override public IClass.IConstructor[]        getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
 
             // Special trickery #17: Arrays override "Object.clone()", but without "throws
             // CloneNotSupportedException"!
@@ -821,7 +838,7 @@ class IClass {
 
             // Notice: A type may be added multiply to the result set because we are in its scope
             // multiply. E.g. the type is a member of a superclass AND a member of an enclosing type.
-            Set<IClass> s = new HashSet<IClass>();
+            Set<IClass> s = new HashSet<>();
             this.findMemberType(name, s);
             res = s.isEmpty() ? IClass.ZERO_ICLASSES : (IClass[]) s.toArray(new IClass[s.size()]);
 
@@ -830,7 +847,7 @@ class IClass {
 
         return res;
     }
-    private final Map<String /*name*/, IClass[]> memberTypeCache = new HashMap<String, IClass[]>();
+    private final Map<String /*name*/, IClass[]> memberTypeCache = new HashMap<>();
     private static final IClass[]                ZERO_ICLASSES   = new IClass[0];
     private void
     findMemberType(@Nullable String name, Collection<IClass> result) throws CompileException {
@@ -1294,7 +1311,9 @@ class IClass {
         /**
          * @return The descriptor of this field
          */
-        public String getDescriptor() throws CompileException { return this.getType().getDescriptor(); }
+        public String getDescriptor() throws CompileException {
+            return IClass.rawTypeOf(this.getType()).getDescriptor();
+        }
 
         /**
          * Returns the value of the field if it is a compile-time constant value, i.e. the field is FINAL and its
@@ -1315,7 +1334,7 @@ class IClass {
         /**
          * @return The type of the annotation
          */
-        IClass getAnnotationType() throws CompileException;
+        IType getAnnotationType() throws CompileException;
 
         /**
          * Returns the value of the <var>name</var>d element:
@@ -1367,4 +1386,105 @@ class IClass {
         this.declaredIMethodsCache = null;
         this.declaredIMethodCache  = null;
     }
+
+    public static IClass
+    rawTypeOf(IType type) {
+        while (type instanceof IParameterizedType) type = ((IParameterizedType) type).getRawType();
+        assert type instanceof IClass;
+        return (IClass) type;
+    }
+
+//    /**
+//     * @param typeArguments Zero-length array if this {@link IClass} is not parameterized
+//     */
+//    public IType
+//    parameterize(final IType[] typeArguments) throws CompileException {
+//
+//        ITypeVariable[] iTypeVariables = this.getITypeVariables();
+//
+//        if (typeArguments.length == 0 && iTypeVariables.length == 0) return this;
+//
+//        if (iTypeVariables.length == 0) {
+//            throw new CompileException("Class \"" + this.toString() + "\" cannot be parameterized", null);
+//        }
+//
+//        if (typeArguments.length == 0) {
+//            // throw new CompileException("Class \"" + this.toString() + "\" must be parameterized", null);
+//            return this;
+//        }
+//
+//        List<IType> key = Arrays.asList(typeArguments);
+//
+//        Map<List<IType> /*typeArguments*/, IParameterizedType> m = this.parameterizations;
+//        if (m == null) this.parameterizations = (m = new HashMap<List<IType>, IParameterizedType>());
+//
+//        {
+//            IType result = m.get(key);
+//            if (result != null) return result;
+//        }
+//
+//        if (iTypeVariables.length != typeArguments.length) {
+//            throw new CompileException((
+//                "Number of type arguments ("
+//                + typeArguments.length
+//                + ") does not match number of type variables ("
+//                + iTypeVariables.length
+//                + ") of class \""
+//                + this.toString()
+//                + "\""
+//            ), null);
+//        }
+//
+//        for (int i = 0; i < iTypeVariables.length; i++) {
+//            ITypeVariable tv = iTypeVariables[i];
+//            IType         ta = typeArguments[i];
+//
+//            for (ITypeVariableOrIClass b : tv.getBounds()) {
+//                assert b instanceof IClass;
+//
+//                if (ta instanceof IClass) {
+//                    IClass taic = (IClass) ta;
+//                    if (!(ta == b || taic.isInterface() || taic.isSubclassOf((IClass) b))) {
+//                        throw new CompileException("Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of bound " + b, null);
+//                    }
+//                } else
+//                if (ta instanceof IWildcardType) {
+//                    IWildcardType tawt = (IWildcardType) ta;
+//                    IClass ub = (IClass) tawt.getUpperBound();
+//                    if (!(ub == b || ub.isSubclassOf((IClass) b))) {
+//                        throw new CompileException("Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of " + b, null);
+//                    }
+//                    IClass lb = (IClass) tawt.getLowerBound();
+//                    if (lb != null && !"Ljava/lang/Object;".equals(((IClass) b).getDescriptor())) {
+//                        throw new CompileException("Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of " + b, null);
+//                    }
+//                } else
+//                if (ta instanceof ITypeVariable) {
+//                    throw new AssertionError(ta.getClass() + ": " + ta);
+//                } else
+//                if (ta instanceof IParameterizedType) {
+//                    throw new AssertionError(ta.getClass() + ": " + ta);
+//                } else
+//                {
+//                    throw new AssertionError(ta.getClass() + ": " + ta);
+//                }
+//            }
+//        }
+//
+//        IParameterizedType result = new IParameterizedType() {
+//
+//            @Override public IType[] getActualTypeArguments() { return typeArguments; }
+//            @Override public IType getRawType() { return IClass.this; }
+//
+//            @Override public String
+//            toString() {
+//                return IClass.this + "<" + Arrays.toString(typeArguments) + ">";
+//            }
+//        };
+//
+//        m.put(key, result);
+//
+//        return result;
+//    }
+//    @Nullable Map<List<IType> /*typeArguments*/, IParameterizedType> parameterizations;
 }

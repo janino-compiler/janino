@@ -40,6 +40,7 @@ import org.codehaus.janino.IClassLoader;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
+import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.util.ClassFile;
 import org.junit.Assert;
@@ -126,7 +127,54 @@ class GithubPullRequestsTest {
         //     }
         //
         // As you see, the IF statement has been optimized away.
-        GithubPullRequestsTest.assertEqualsOneOf("Class file size", new Object[] { 238, 262, 273 }, baos.size());
+        GithubPullRequestsTest.assertEqualsOneOf("Class file size", new Object[] { 238, 258, 262, 273 }, baos.size());
+    }
+
+    @Test public void
+    testPullRequest148() throws Exception {
+        String cu = (
+            ""
+            + "public class MyClass {\n"
+            + "  private boolean b1;\n"
+            + "\n"
+            + "  public MyClass(boolean b1) {\n"
+            + "    this.b1 = b1;\n"
+            + "  }\n"
+            + "\n"
+            + "  public Object apply(Object i) {\n"
+            + "    final int value_0;\n"
+            + "    // The bug still exist if the if condition is 'true'. Here we use a variable\n"
+            + "    // to make the test more robust, in case the compiler can eliminate the else branch.\n"
+            + "    if (b1) {\n"
+            + "    } else {\n"
+            + "      int field_0 = 1;\n"
+            + "    }\n"
+            + "    // The second if-else is necessary to trigger the bug.\n"
+            + "    if (b1) {\n"
+            + "    } else {\n"
+            + "      // The bug disappear if it's an int variable.\n"
+            + "      long field_1 = 2;\n"
+            + "    }\n"
+            + "    value_0 = 1;\n"
+            + "\n"
+            + "    // The second final variable is necessary to trigger the bug.\n"
+            + "    final int value_2;\n"
+            + "    if (b1) {\n"
+            + "    } else {\n"
+            + "      int field_2 = 3;\n"
+            + "    }\n"
+            + "    value_2 = 2;\n"
+            + "\n"
+            + "    return null;\n"
+            + "  }\n"
+            + "}\n"
+        );
+
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook(cu);
+        Class<?> c = sc.getClassLoader().loadClass("MyClass");
+        Object o = c.getConstructor(boolean.class).newInstance(true);
+        Assert.assertEquals(null, c.getDeclaredMethod("apply", Object.class).invoke(o, new Object()));
     }
 
     /**

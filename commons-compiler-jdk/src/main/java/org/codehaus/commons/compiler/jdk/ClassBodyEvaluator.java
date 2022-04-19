@@ -281,7 +281,7 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
         // Cast to "Buffer" is the workaround:
         ((Buffer) cb).rewind();
 
-        List<String> imports         = new ArrayList<String>();
+        List<String> imports         = new ArrayList<>();
         int          afterLastImport = 0;
         for (Matcher matcher = ClassBodyEvaluator.IMPORT_STATEMENT_PATTERN.matcher(cb); matcher.find();) {
             imports.add(matcher.group(1));

@@ -77,7 +77,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     private boolean            debuggingInfoLines;
     private boolean            debuggingInfoVars;
     private boolean            debuggingInfoSource;
-    private Collection<String> compilerOptions = new ArrayList<String>();
+    private Collection<String> compilerOptions = new ArrayList<>();
 
     @Nullable private JavaFileManager fileManager;
 
@@ -256,9 +256,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         }
 
         // Compose the effective compiler options.
-        List<String> options = new ArrayList<String>(this.compilerOptions);
+        List<String> options = new ArrayList<>(this.compilerOptions);
         {
-            List<String> l = new ArrayList<String>();
+            List<String> l = new ArrayList<>();
             if (this.debuggingInfoLines)  l.add("lines");
             if (this.debuggingInfoSource) l.add("source");
             if (this.debuggingInfoVars)   l.add("vars");

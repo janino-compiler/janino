@@ -454,6 +454,6 @@ class IClassLoader {
     }
 
     private final IClassLoader                       parentIClassLoader;
-    private final Map<String /*descriptor*/, IClass> loadedIClasses     = new HashMap<String, IClass>();
-    private final Set<String /*descriptor*/>         unloadableIClasses = new HashSet<String>();
+    private final Map<String /*descriptor*/, IClass> loadedIClasses     = new HashMap<>();
+    private final Set<String /*descriptor*/>         unloadableIClasses = new HashSet<>();
 }

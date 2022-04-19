@@ -324,7 +324,7 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
     makeImportDeclarations(@Nullable Parser parser) throws CompileException, IOException {
 
         List<Java.AbstractCompilationUnit.ImportDeclaration>
-        l = new ArrayList<Java.AbstractCompilationUnit.ImportDeclaration>();
+        l = new ArrayList<>();
 
         // Honor the default imports.
         for (String defaultImport : this.defaultImports) {
@@ -390,30 +390,6 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
 
     public Java.Type[]
     classesToTypes(Location location, Class<?>[] classes) { return this.sc.classesToTypes(location, classes); }
-
-//    /**
-//     * Compiles the given compilation unit, load all generated classes, and return the class with the given name.
-//     *
-//     * @param compilationUnit
-//     * @return The loaded class
-//     */
-//    protected final Class<?>
-//    compileToClass(Java.CompilationUnit compilationUnit) throws CompileException {
-//
-//        // Compile and load the compilation unit.
-//        ClassLoader cl = this.compileToClassLoader(compilationUnit);
-//
-//        // Find the generated class by name.
-//        try {
-//            return cl.loadClass(this.className);
-//        } catch (ClassNotFoundException ex) {
-//            throw new InternalCompilerException((
-//                "SNO: Generated compilation unit does not declare class '"
-//                + this.className
-//                + "'"
-//            ), ex);
-//        }
-//    }
 
     private Class<?>
     assertCooked() {

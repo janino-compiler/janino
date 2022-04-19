@@ -158,7 +158,7 @@ class CachingJavaSourceClassLoader extends JavaSourceClassLoader {
                     } catch (IOException ex) {
                         throw new ClassNotFoundException("Reading class file from \"" + classFileResource + "\"", ex);
                     }
-                    Map<String /*name*/, byte[] /*bytecode*/> m = new HashMap<String, byte[]>();
+                    Map<String /*name*/, byte[] /*bytecode*/> m = new HashMap<>();
                     m.put(className, bytecode);
                     return m;
                 }

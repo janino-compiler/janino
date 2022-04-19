@@ -42,11 +42,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.codehaus.commons.compiler.CompileException;
+import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.IClassBodyEvaluator;
 import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.Location;
+import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
+import org.codehaus.commons.nullanalysis.Nullable;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -238,6 +242,52 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
 
         ee.cook(expressions);
         Assert.assertEquals(165, ee.evaluate(3 * EvaluatorTest.COUNT / 4, new Object[] { 77, 88 }));
+    }
+
+    @Test public void
+    testErrorHandler() throws Exception {
+        MapResourceFinder sourceFinder = new MapResourceFinder();
+
+        sourceFinder.addResource("pkg/A.java", (
+            ""
+            + "package pkg;\n"
+            + "public class A {\n"
+            + "    void meth() {\n"
+            + "        return 1;\n"
+            + "    }\n"
+            + "}\n"
+        ));
+
+        // Default error handling.
+        new ExpressionTest("a").assertUncookable("\"a\" is not an rvalue|cannot find symbol.*a");
+
+        // Error handler that throws a CompileException.
+        {
+            ExpressionTest et = new ExpressionTest("a");
+
+            final int[] count = new int[1];
+            et.setCompileErrorHandler(new ErrorHandler() {
+                @Override public void handleError(String message, @Nullable Location location) throws CompileException {
+                    count[0]++;
+                    throw new CompileException(message, location);
+                }
+            });
+            et.assertUncookable("\"a\" is not an rvalue|cannot find symbol.*a");
+            Assert.assertEquals(1, count[0]);
+        }
+
+        // Error handler that does *not* throw a CompileException.
+        {
+            ExpressionTest et = new ExpressionTest("a");
+
+            final int[] count = new int[1];
+            et.setCompileErrorHandler(new ErrorHandler() {
+                @Override public void handleError(String message, @Nullable Location location) { count[0]++; }
+            });
+
+            et.assertUncookable("failed with 1 errors|error.*while compiling");
+            Assert.assertTrue(count[0] > 0);
+        }
     }
 
     @Test public void

@@ -85,7 +85,7 @@ class JavaFileManagers {
                     return result;
                 }
 
-                // A [Java]FileObject's "name" looks like this: "/orc/codehaus/commons/compiler/Foo.java".
+                // A [Java]FileObject's "name" looks like this: "/org/codehaus/commons/compiler/Foo.java".
                 // A [Java]FileObject's "binary name" looks like "java.lang.annotation.Retention".
 
                 String bn = jfo.getName();
@@ -110,6 +110,8 @@ class JavaFileManagers {
             @Override @NotNullByDefault(false) public Iterable<JavaFileObject>
             list(Location location2, String packageName, Set<Kind> kinds, boolean recurse) throws IOException {
 
+                Iterable<JavaFileObject> delegatesJfos = super.list(location2, packageName, kinds, recurse);
+
                 if (location2 == location && kinds.contains(kind)) {
 
                     assert resourceFinder instanceof ListableResourceFinder : resourceFinder;
@@ -117,7 +119,7 @@ class JavaFileManagers {
 
                     Iterable<Resource> resources = lrf.list(packageName.replace('.', '/'), recurse);
                     if (resources != null) {
-                        List<JavaFileObject> result = new ArrayList<JavaFileObject>();
+                        List<JavaFileObject> result = new ArrayList<>();
                         for (Resource r : resources) {
 
                             String className = r.getFileName();
@@ -140,11 +142,14 @@ class JavaFileManagers {
                                 result.add(jfo);
                             }
                         }
+
+                        // Add JFOs of delegate file manager.
+                        for (JavaFileObject jfo : delegatesJfos) result.add(jfo);
                         return result;
                     }
                 }
 
-                return super.list(location2, packageName, kinds, recurse);
+                return delegatesJfos;
             }
 
             @Override @NotNullByDefault(false) public JavaFileObject
@@ -171,6 +176,16 @@ class JavaFileManagers {
 
                 return super.getJavaFileForInput(location2, className, kind2);
             }
+
+			@Override @NotNullByDefault(false) public boolean
+			isSameFile(FileObject a, FileObject b) {
+
+				if (a instanceof ResourceJavaFileObject && b instanceof ResourceJavaFileObject) {
+					return a.getName().contentEquals(b.getName());
+				}
+
+				return super.isSameFile(a, b);
+			}
         }
 
         return new ResourceFinderInputJavaFileManager();
@@ -218,7 +233,7 @@ class JavaFileManagers {
         return new ForwardingJavaFileManager<M>(delegate) {
 
             private final Map<Location, Map<Kind, Map<String /*className*/, JavaFileObject>>>
-            javaFiles = new HashMap<Location, Map<Kind, Map<String, JavaFileObject>>>();
+            javaFiles = new HashMap<>();
 
             @Override @NotNullByDefault(false) public FileObject
             getFileForInput(Location location, String packageName, String relativeName) {
@@ -257,12 +272,12 @@ class JavaFileManagers {
 
                 Map<Kind, Map<String, JavaFileObject>> locationJavaFiles = this.javaFiles.get(location);
                 if (locationJavaFiles == null) {
-                    locationJavaFiles = new HashMap<Kind, Map<String, JavaFileObject>>();
+                    locationJavaFiles = new HashMap<>();
                     this.javaFiles.put(location, locationJavaFiles);
                 }
                 Map<String, JavaFileObject> kindJavaFiles = locationJavaFiles.get(kind);
                 if (kindJavaFiles == null) {
-                    kindJavaFiles = new HashMap<String, JavaFileObject>();
+                    kindJavaFiles = new HashMap<>();
                     locationJavaFiles.put(kind, kindJavaFiles);
                 }
 
@@ -286,7 +301,7 @@ class JavaFileManagers {
 
                 String               prefix = packageName.isEmpty() ? "" : packageName + ".";
                 int                  pl     = prefix.length();
-                List<JavaFileObject> result = new ArrayList<JavaFileObject>();
+                List<JavaFileObject> result = new ArrayList<>();
                 for (Kind kind : kinds) {
                     Map<String, JavaFileObject> kindFiles = locationFiles.get(kind);
                     if (kindFiles == null) continue;

@@ -83,7 +83,7 @@ class Compiler extends AbstractCompiler {
 
     // Compile time state:
 
-    private final List<UnitCompiler> parsedCompilationUnits = new ArrayList<UnitCompiler>();
+    private final List<UnitCompiler> parsedCompilationUnits = new ArrayList<>();
 
     /**
      * Initializes a new compiler.
@@ -171,12 +171,12 @@ class Compiler extends AbstractCompiler {
         this.benchmark.report("Boot class path",         bootClassPath);
         this.benchmark.report("Destination directory",   destinationDirectory);
         this.benchmark.report("Character encoding",      characterEncoding);
-        this.benchmark.report("Verbose",                 new Boolean(verbose));
-        this.benchmark.report("Debug source",            new Boolean(debugSource));
-        this.benchmark.report("Debug lines",             new Boolean(debugSource));
-        this.benchmark.report("Debug vars",              new Boolean(debugSource));
+        this.benchmark.report("Verbose",                 Boolean.valueOf(verbose));
+        this.benchmark.report("Debug source",            Boolean.valueOf(debugSource));
+        this.benchmark.report("Debug lines",             Boolean.valueOf(debugSource));
+        this.benchmark.report("Debug vars",              Boolean.valueOf(debugSource));
         this.benchmark.report("Warning handle patterns", warningHandlePatterns);
-        this.benchmark.report("Rebuild",                 new Boolean(rebuild));
+        this.benchmark.report("Rebuild",                 Boolean.valueOf(rebuild));
     }
 
     @SuppressWarnings("unchecked") private static <T> T[]

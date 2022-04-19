@@ -347,17 +347,7 @@ class Visitor {
      * @param <EX> The exception that the {@code visit*()} methods may throw
      */
     public
-    interface BlockStatementVisitor<R, EX extends Throwable> {
-
-        /**
-         * Invoked by {@link Java.Initializer#accept(Visitor.BlockStatementVisitor)}
-         */
-        @Nullable R visitInitializer(Initializer i) throws EX;
-
-        /**
-         * Invoked by {@link Java.FieldDeclaration#accept(Visitor.BlockStatementVisitor)}
-         */
-        @Nullable R visitFieldDeclaration(FieldDeclaration fd) throws EX;
+    interface BlockStatementVisitor<R, EX extends Throwable> extends FieldDeclarationOrInitializerVisitor<R, EX> {
 
         /**
          * Invoked by {@link Java.LabeledStatement#accept(Visitor.BlockStatementVisitor)}
@@ -463,6 +453,26 @@ class Visitor {
          * Invoked by {@link Java.SuperConstructorInvocation#accept(Visitor.BlockStatementVisitor)}
          */
         @Nullable R visitSuperConstructorInvocation(SuperConstructorInvocation sci) throws EX;
+    }
+
+    /**
+     * The visitor for all kinds of {@link Java.BlockStatement}s (statements that may appear with a block).
+     *
+     * @param <R>  The type of the object returned by the {@code visit*()} methods
+     * @param <EX> The exception that the {@code visit*()} methods may throw
+     */
+    public
+    interface FieldDeclarationOrInitializerVisitor<R, EX extends Throwable> {
+
+        /**
+         * Invoked by {@link Java.Initializer#accept(Visitor.BlockStatementVisitor)}
+         */
+        @Nullable R visitInitializer(Initializer i) throws EX;
+
+        /**
+         * Invoked by {@link Java.FieldDeclaration#accept(Visitor.BlockStatementVisitor)}
+         */
+        @Nullable R visitFieldDeclaration(FieldDeclaration fd) throws EX;
     }
 
     /**

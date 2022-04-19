@@ -232,7 +232,7 @@ class Parser {
 
         ImportDeclaration[] importDeclarations;
         {
-            List<ImportDeclaration> l = new ArrayList<ImportDeclaration>();
+            List<ImportDeclaration> l = new ArrayList<>();
             while (this.peek("import")) {
                 if (modifiers.length > 0) {
                     this.warning("import.modifiers", "No modifiers allowed on import declarations");
@@ -294,7 +294,7 @@ class Parser {
 
         this.read("(");
 
-        List<ModuleDirective> moduleDirectives = new ArrayList<ModuleDirective>();
+        List<ModuleDirective> moduleDirectives = new ArrayList<>();
         while (!this.peekRead(")")) {
             ModuleDirective md;
             switch (this.read("requires", "exports", "opens", "uses", "provides")) {
@@ -311,7 +311,7 @@ class Parser {
 
                     String[][] toModuleNames;
                     if (this.peekRead("to")) {
-                        List<String[]> l = new ArrayList<String[]>();
+                        List<String[]> l = new ArrayList<>();
                         l.add(this.parseQualifiedIdentifier());
                         while (this.peekRead(",")) l.add(this.parseQualifiedIdentifier());
                         toModuleNames = (String[][]) l.toArray(new String[l.size()][]);
@@ -327,7 +327,7 @@ class Parser {
 
                     String[][] toModuleNames;
                     if (this.peekRead("to")) {
-                        List<String[]> l = new ArrayList<String[]>();
+                        List<String[]> l = new ArrayList<>();
                         l.add(this.parseQualifiedIdentifier());
                         while (this.peekRead(",")) l.add(this.parseQualifiedIdentifier());
                         toModuleNames = (String[][]) l.toArray(new String[l.size()][]);
@@ -343,7 +343,7 @@ class Parser {
             case 4: // provides
                 final String[] typeName = this.parseQualifiedIdentifier();
                 this.read("with");
-                List<String[]> withTypeNames = new ArrayList<String[]>();
+                List<String[]> withTypeNames = new ArrayList<>();
                 withTypeNames.add(this.parseQualifiedIdentifier());
                 while (this.peekRead(",")) withTypeNames.add(this.parseQualifiedIdentifier());
                 md = new ProvidesModuleDirective(
@@ -421,7 +421,7 @@ class Parser {
 
         boolean isStatic = this.peekRead("static");
 
-        List<String> l = new ArrayList<String>();
+        List<String> l = new ArrayList<>();
         l.add(this.read(TokenType.IDENTIFIER));
         for (;;) {
             if (!this.peek(".")) {
@@ -452,7 +452,7 @@ class Parser {
      */
     public String[]
     parseQualifiedIdentifier() throws CompileException, IOException {
-        List<String> l = new ArrayList<String>();
+        List<String> l = new ArrayList<>();
         l.add(this.read(TokenType.IDENTIFIER));
         while (this.peek(".") && this.peekNextButOne().type == TokenType.IDENTIFIER) {
             this.read();
@@ -537,7 +537,7 @@ class Parser {
      */
     public Modifier[]
     parseModifiers() throws CompileException, IOException {
-        List<Modifier> result = new ArrayList<Modifier>();
+        List<Modifier> result = new ArrayList<>();
         for (;;) {
             Modifier m = this.parseOptionalModifier();
             if (m == null) break;
@@ -619,7 +619,7 @@ class Parser {
         if (this.peekRead(")")) {
             elementValuePairs = new ElementValuePair[0];
         } else {
-            List<ElementValuePair> evps = new ArrayList<ElementValuePair>();
+            List<ElementValuePair> evps = new ArrayList<>();
             do {
                 evps.add(this.parseElementValuePair());
             } while (this.read(",", ")") == 0);
@@ -665,7 +665,7 @@ class Parser {
     parseElementValueArrayInitializer() throws CompileException, IOException {
         this.read("{");
         Location           loc = this.location();
-        List<ElementValue> evs = new ArrayList<ElementValue>();
+        List<ElementValue> evs = new ArrayList<>();
         while (!this.peekRead("}")) {
             if (this.peekRead(",")) continue;
             evs.add(this.parseElementValue());
@@ -1339,6 +1339,10 @@ class Parser {
             // Method declarator?
             if (this.peek("(")) {
 
+                if (this.getSourceVersion() < 8 && Parser.hasAccessModifier(modifiers, "static")) {
+                    throw this.compileException("Static interface methods only available for source version 8+");
+                }
+
                 interfaceDeclaration.addDeclaredMethod(this.parseMethodDeclarationRest(
                     docComment,     // docComment
                     modifiers,      // modifiers
@@ -1410,7 +1414,7 @@ class Parser {
         // expression statement, and if it could be a "ConstructorInvocation", then parse the
         // expression and check if it IS a ConstructorInvocation.
         ConstructorInvocation constructorInvocation = null;
-        List<BlockStatement>  statements            = new ArrayList<BlockStatement>();
+        List<BlockStatement>  statements            = new ArrayList<>();
         if (
             this.peek(
                 "this", "super", "new", "void", // SUPPRESS CHECKSTYLE Wrap:1
@@ -1634,7 +1638,7 @@ class Parser {
     parseArrayInitializer() throws CompileException, IOException {
         final Location location = this.location();
         this.read("{");
-        List<ArrayInitializerOrRvalue> l = new ArrayList<ArrayInitializerOrRvalue>();
+        List<ArrayInitializerOrRvalue> l = new ArrayList<>();
         while (!this.peekRead("}")) {
             l.add(this.parseVariableInitializer());
             if (this.peekRead("}")) break;
@@ -1673,7 +1677,7 @@ class Parser {
     public FormalParameters
     parseFormalParameterList() throws CompileException, IOException {
 
-        List<FormalParameter> l           = new ArrayList<FormalParameter>();
+        List<FormalParameter> l           = new ArrayList<>();
         final boolean[]       hasEllipsis = new boolean[1];
         do {
             if (hasEllipsis[0]) throw this.compileException("Only the last parameter may have an ellipsis");
@@ -1694,7 +1698,7 @@ class Parser {
     public FormalParameters
     parseFormalParameterListRest(Type firstParameterType) throws CompileException, IOException {
 
-        List<FormalParameter> l           = new ArrayList<FormalParameter>();
+        List<FormalParameter> l           = new ArrayList<>();
         final boolean[]       hasEllipsis = new boolean[1];
 
         l.add(this.parseFormalParameterRest(new Modifier[0], firstParameterType, hasEllipsis));
@@ -1781,7 +1785,7 @@ class Parser {
         Modifier[] modifiers = this.parseModifiers();
         this.variableModifiers(modifiers);
 
-        List<ReferenceType> catchTypes = new ArrayList<ReferenceType>();
+        List<ReferenceType> catchTypes = new ArrayList<>();
         catchTypes.add(this.parseReferenceType());
         while (this.peekRead("|")) catchTypes.add(this.parseReferenceType());
 
@@ -1843,7 +1847,7 @@ class Parser {
     public List<BlockStatement>
     parseBlockStatements() throws CompileException, IOException {
 
-        List<BlockStatement> l = new ArrayList<BlockStatement>();
+        List<BlockStatement> l = new ArrayList<>();
         while (
             !this.peek("}")
             && !this.peek("case")
@@ -1944,7 +1948,7 @@ class Parser {
      */
     public VariableDeclarator[]
     parseVariableDeclarators() throws CompileException, IOException {
-        List<VariableDeclarator> l = new ArrayList<VariableDeclarator>();
+        List<VariableDeclarator> l = new ArrayList<>();
         do {
             VariableDeclarator vd = this.parseVariableDeclarator();
             this.verifyIdentifierIsConventionalLocalVariableOrParameterName(vd.name, vd.getLocation());
@@ -1962,7 +1966,7 @@ class Parser {
      */
     public VariableDeclarator[]
     parseFieldDeclarationRest(String name) throws CompileException, IOException {
-        List<VariableDeclarator> l = new ArrayList<VariableDeclarator>();
+        List<VariableDeclarator> l = new ArrayList<>();
 
         VariableDeclarator vd = this.parseVariableDeclaratorRest(name);
         this.verifyIdentifierIsConventionalFieldName(vd.name, vd.getLocation());
@@ -2195,7 +2199,7 @@ class Parser {
 
             // 'for' '(' Expression { ',' Expression }
             {
-                List<BlockStatement> l = new ArrayList<BlockStatement>();
+                List<BlockStatement> l = new ArrayList<>();
                 l.add(new ExpressionStatement(a.toRvalueOrCompileException()));
                 do {
                     l.add(new ExpressionStatement(this.parseExpression()));
@@ -2293,7 +2297,7 @@ class Parser {
         final Location location = this.location();
 
         // '(' Resource { ';' Resource } [ ';' ] ')'
-        List<TryStatement.Resource> resources = new ArrayList<TryStatement.Resource>();
+        List<TryStatement.Resource> resources = new ArrayList<>();
         if (this.peekRead("(")) {
             resources.add(this.parseResource());
             RESOURCES: for (;;) {
@@ -2313,7 +2317,7 @@ class Parser {
         final Block body = this.parseBlock();
 
         // { CatchClause }
-        List<CatchClause> ccs = new ArrayList<CatchClause>();
+        List<CatchClause> ccs = new ArrayList<>();
         while (this.peekRead("catch")) {
             final Location loc = this.location();
             this.read("(");
@@ -2405,11 +2409,11 @@ class Parser {
         this.read("{");
 
         List<SwitchStatement.SwitchBlockStatementGroup>
-        sbsgs = new ArrayList<SwitchStatement.SwitchBlockStatementGroup>();
+        sbsgs = new ArrayList<>();
         while (!this.peekRead("}")) {
             Location     location2       = this.location();
             boolean      hasDefaultLabel = false;
-            List<Rvalue> caseLabels      = new ArrayList<Rvalue>();
+            List<Rvalue> caseLabels      = new ArrayList<>();
             do {
                 if (this.peekRead("case")) {
                     caseLabels.add(this.parseExpression());
@@ -2465,8 +2469,8 @@ class Parser {
      */
     public Statement
     parseReturnStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("return");
+        final Location location = this.location();
         Rvalue returnValue = this.peek(";") ? null : this.parseExpression();
         this.read(";");
         return new ReturnStatement(location, returnValue);
@@ -2479,8 +2483,8 @@ class Parser {
      */
     public Statement
     parseThrowStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("throw");
+        final Location location = this.location();
         final Rvalue expression = this.parseExpression();
         this.read(";");
 
@@ -2494,8 +2498,8 @@ class Parser {
      */
     public Statement
     parseBreakStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("break");
+        final Location location = this.location();
         String label = null;
         if (this.peek(TokenType.IDENTIFIER)) label = this.read(TokenType.IDENTIFIER);
         this.read(";");
@@ -2509,8 +2513,8 @@ class Parser {
      */
     public Statement
     parseContinueStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("continue");
+        final Location location = this.location();
         String label = null;
         if (this.peek(TokenType.IDENTIFIER)) label = this.read(TokenType.IDENTIFIER);
         this.read(";");
@@ -2541,8 +2545,8 @@ class Parser {
      */
     public Statement
     parseEmptyStatement() throws CompileException, IOException {
-        Location location = this.location();
         this.read(";");
+        Location location = this.location();
         return new EmptyStatement(location);
     }
 
@@ -2553,7 +2557,7 @@ class Parser {
      */
     public Rvalue[]
     parseExpressionList() throws CompileException, IOException {
-        List<Rvalue> l = new ArrayList<Rvalue>();
+        List<Rvalue> l = new ArrayList<>();
         do {
             l.add(this.parseExpression());
         } while (this.peekRead(","));
@@ -2601,7 +2605,7 @@ class Parser {
     public ReferenceType
     parseReferenceType() throws CompileException, IOException {
 
-        List<Annotation> annotations = new ArrayList<Annotation>();
+        List<Annotation> annotations = new ArrayList<>();
         while (this.peek("@")) annotations.add(this.parseAnnotation());
 
         return new ReferenceType(
@@ -2622,7 +2626,7 @@ class Parser {
 
         if (!this.peekRead("<")) return null;
 
-        List<TypeParameter> l = new ArrayList<TypeParameter>();
+        List<TypeParameter> l = new ArrayList<>();
         l.add(this.parseTypeParameter());
         while (this.read(",", ">") == 0) {
             l.add(this.parseTypeParameter());
@@ -2639,7 +2643,7 @@ class Parser {
     parseTypeParameter() throws CompileException, IOException {
         String name = this.read(TokenType.IDENTIFIER);
         if (this.peekRead("extends")) {
-            List<ReferenceType> bound = new ArrayList<ReferenceType>();
+            List<ReferenceType> bound = new ArrayList<>();
             bound.add(this.parseReferenceType());
             while (this.peekRead("&")) this.parseReferenceType();
             return new TypeParameter(name, (ReferenceType[]) bound.toArray(new ReferenceType[bound.size()]));
@@ -2661,7 +2665,7 @@ class Parser {
 
         if (this.peekRead(">")) return new TypeArgument[0];
 
-        List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
+        List<TypeArgument> typeArguments = new ArrayList<>();
         typeArguments.add(this.parseTypeArgument());
         while (this.read(">", ",") == 1) {
             typeArguments.add(this.parseTypeArgument());
@@ -2703,7 +2707,7 @@ class Parser {
      */
     public ReferenceType[]
     parseReferenceTypeList() throws CompileException, IOException {
-        List<ReferenceType> l = new ArrayList<ReferenceType>();
+        List<ReferenceType> l = new ArrayList<>();
         l.add(this.parseReferenceType());
         while (this.peekRead(",")) {
             l.add(this.parseReferenceType());
@@ -2728,7 +2732,7 @@ class Parser {
     }
 
     /**
-     * Same as {@link #parseExpression()}, but types like {@code int} or {@code Map<String, Object} are also parsed.
+     * Same as {@link #parseExpression()}, but types like {@code int} or {@code Map<String, Object>} are also parsed.
      */
     public Atom
     parseExpressionOrType() throws CompileException, IOException {
@@ -2962,7 +2966,7 @@ class Parser {
                 ) {
                     final String[] identifiers = ((AmbiguousName) a).identifiers;
 
-                    // '<' Type [ TypeArguments ] ( '>' | ',' )
+                    // ambiguous-name '<' Type [ TypeArguments ] ( '>' | ',' )
                     this.parseTypeArgumentsOpt();
                     TypeArgument firstTypeArgument;
                     {
@@ -2975,12 +2979,13 @@ class Parser {
                         }
                     }
 
-                    List<TypeArgument> typeArguments = new ArrayList<TypeArgument>();
+                    List<TypeArgument> typeArguments = new ArrayList<>();
                     typeArguments.add(firstTypeArgument);
 
                     // < type-argument { ',' type-argument } '>'
                     while (this.read(">", ",") == 1) typeArguments.add(this.parseTypeArgument());
 
+                    // ambiguous-name '<' Type [ TypeArguments ] { ',' TypeArgument } '>'
                     return new ReferenceType(
                         this.location(),
                         new Annotation[0],
@@ -3216,7 +3221,7 @@ class Parser {
                 // '(' Identifier { ',' Identifier } ')' -> LambdaBody
                 String[] names;
                 {
-                    List<String> l = new ArrayList<String>();
+                    List<String> l = new ArrayList<>();
                     l.add(this.read(TokenType.IDENTIFIER));
                     while (this.peekRead(",")) l.add(this.read(TokenType.IDENTIFIER));
                     names = (String[]) l.toArray(new String[l.size()]);
@@ -3599,7 +3604,7 @@ class Parser {
      */
     public Rvalue[]
     parseDimExprs() throws CompileException, IOException {
-        List<Rvalue> l = new ArrayList<Rvalue>();
+        List<Rvalue> l = new ArrayList<>();
         l.add(this.parseDimExpr());
         while (this.peek("[") && !this.peekNextButOne("]")) {
             l.add(this.parseDimExpr());
@@ -3642,7 +3647,7 @@ class Parser {
     public Rvalue[]
     parseArgumentList() throws CompileException, IOException {
 
-        List<Rvalue> l = new ArrayList<Rvalue>();
+        List<Rvalue> l = new ArrayList<>();
         do { l.add(this.parseExpression()); } while (this.peekRead(","));
 
         return (Rvalue[]) l.toArray(new Rvalue[l.size()]);
@@ -3712,7 +3717,7 @@ class Parser {
 
         // '(' Identifier { ',' Identifier } ')'
         if (this.peek(TokenType.IDENTIFIER) && (this.peekNextButOne(",") || this.peekNextButOne(")"))) {
-            List<String> names = new ArrayList<String>();
+            List<String> names = new ArrayList<>();
             names.add(this.read(TokenType.IDENTIFIER));
             while (this.peekRead(",")) names.add(this.read(TokenType.IDENTIFIER));
             this.read(")");
@@ -3936,6 +3941,10 @@ class Parser {
         }
     }
 
+    /*
+     * Controls the language elements that are accepted. E.g. static interface methods and default methods are only accepted
+     * for source versions 8+. The default is to accept <em>any</var> known language element.
+     */
     public void
     setSourceVersion(int version) { this.sourceVersion = version; }
 
@@ -4128,7 +4137,7 @@ class Parser {
         // Check for duplicate annotations is not possible at parse-time because the annotations' types must be
         // *resolved* before we can check for duplicates. See "UnitCompiler.compileAnnotations()".
 
-        Set<String> keywords = new HashSet<String>();
+        Set<String> keywords = new HashSet<>();
         for (Modifier m : modifiers) {
             if (!(m instanceof Java.AccessModifier)) continue;
             AccessModifier am = (Java.AccessModifier) m;
@@ -4140,7 +4149,7 @@ class Parser {
 
             // Mutually exclusive access modifier keywords?
             for (Set<String> meams : Parser.MUTUALLY_EXCLUSIVE_ACCESS_MODIFIERS) {
-                Set<String> tmp = new HashSet<String>(keywords);
+                Set<String> tmp = new HashSet<>(keywords);
                 tmp.retainAll(meams);
                 if (tmp.size() > 1) {
                     String[] a = (String[]) tmp.toArray(new String[tmp.size()]);
@@ -4168,7 +4177,7 @@ class Parser {
 
     @SuppressWarnings("unchecked") private static final List<Set<String>>
     MUTUALLY_EXCLUSIVE_ACCESS_MODIFIERS = Arrays.<Set<String>>asList(
-        new HashSet<String>(Arrays.asList("public", "protected", "private")),
-        new HashSet<String>(Arrays.asList("abstract", "final"))
+        new HashSet<>(Arrays.asList("public", "protected", "private")),
+        new HashSet<>(Arrays.asList("abstract", "final"))
     );
 }

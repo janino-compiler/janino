@@ -191,7 +191,7 @@ class Iterables {
     public static <T> T[]
     toArray(Iterator<T> delegate, Class<T> componentType) {
 
-        List<T> l = new ArrayList<T>();
+        List<T> l = new ArrayList<>();
         while (delegate.hasNext()) l.add(delegate.next());
 
         @SuppressWarnings("unchecked") T[] array = (T[]) Array.newInstance(componentType, l.size());

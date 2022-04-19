@@ -57,7 +57,7 @@ class StringUtil {
     public static File[]
     parsePath(String s) {
         int        from = 0;
-        List<File> l    = new ArrayList<File>();
+        List<File> l    = new ArrayList<>();
         for (;;) {
             int to = s.indexOf(File.pathSeparatorChar, from);
             if (to == -1) {

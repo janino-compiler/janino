@@ -63,7 +63,7 @@ class MethodDescriptor {
         if (s.charAt(0) != '(') throw new InternalCompilerException();
 
         int          from         = 1;
-        List<String> parameterFDs = new ArrayList<String>();
+        List<String> parameterFDs = new ArrayList<>();
         while (s.charAt(from) != ')') {
             int to = from;
             while (s.charAt(to) == '[') ++to;

@@ -206,13 +206,13 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         return this.defineBytecode(name, bytecode);
     }
 
-    private final Set<UnitCompiler> compiledUnitCompilers = new HashSet<UnitCompiler>();
+    private final Set<UnitCompiler> compiledUnitCompilers = new HashSet<>();
 
     /**
      * This {@link Map} keeps those classes which were already compiled, but not yet defined i.e. which were not yet
      * passed to {@link ClassLoader#defineClass(java.lang.String, byte[], int, int)}.
      */
-    private final Map<String /*name*/, byte[] /*bytecode*/> precompiledClasses = new HashMap<String, byte[]>();
+    private final Map<String /*name*/, byte[] /*bytecode*/> precompiledClasses = new HashMap<>();
 
     /**
      * Finds, scans, parses the right compilation unit. Compile the parsed compilation unit to bytecode. This may cause
@@ -225,7 +225,7 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
-        Map<String /*name*/, byte[] /*bytecode*/> bytecodes             = new HashMap<String, byte[]>();
+        Map<String /*name*/, byte[] /*bytecode*/> bytecodes             = new HashMap<>();
         COMPILE_UNITS:
         for (;;) {
             for (UnitCompiler uc : this.iClassLoader.getUnitCompilers()) {

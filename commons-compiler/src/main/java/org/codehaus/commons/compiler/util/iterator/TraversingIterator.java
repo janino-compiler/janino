@@ -45,9 +45,9 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class TraversingIterator implements Iterator<Object> {
 
-    private final Stack<Iterator<?>> nest = new Stack<Iterator<?>>(); // Iterator
+    private final Stack<Iterator<?>> nest = new Stack<>(); // Iterator
     @Nullable private Object         nextElement;
-    private boolean                  nextElementRead;                 // Have we read ahead?
+    private boolean                  nextElementRead;      // Have we read ahead?
 
     public
     TraversingIterator(Iterator<?> delegate) { this.nest.push(delegate); }
@@ -87,7 +87,7 @@ class TraversingIterator implements Iterator<Object> {
                 this.nest.push(((Collection<?>) o).iterator());
             } else
             if (o instanceof Enumeration) {
-                this.nest.push(new EnumerationIterator<Object>((Enumeration<?>) o));
+                this.nest.push(new EnumerationIterator<>((Enumeration<?>) o));
             } else
             {
                 this.nextElement     = o;

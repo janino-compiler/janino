@@ -34,7 +34,8 @@ import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTyp
 class StackMap {
 
     /**
-     * Elements are never changed.
+     * Elements are never changed. Notice that, according to the JVMS, each local variable or operend, including those
+     * of type LONG and DOUBLE, is represented by <em>one</em> {@link VerificationTypeInfo} object
      */
     private final VerificationTypeInfo[] locals, operands;
 

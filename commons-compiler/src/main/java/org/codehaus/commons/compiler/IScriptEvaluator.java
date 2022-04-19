@@ -164,26 +164,24 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
     void setDebuggingInformation(boolean debugSource, boolean debugLines, boolean debugVars);
 
     /**
-     * By default, {@link CompileException}s are thrown on compile errors, but an application my install its own
-     * {@link ErrorHandler}.
+     * Installs an {@link ErrorHandler} which is invoked during compilation on each error. (By default, the compilation
+     * throws a {@link CompileException} on the first error and terminates.)
      * <p>
-     *   Be aware that a single problem during compilation often causes a bunch of compile errors, so a good {@link
-     *   ErrorHandler} counts errors and throws a {@link CompileException} when a limit is reached.
-     * </p>
-     * <p>
-     *   If the given {@link ErrorHandler} throws {@link CompileException}s, then the compilation is terminated and
+     *   If the given {@link ErrorHandler} throws a {@link CompileException}, then the compilation terminates and
      *   the exception is propagated.
      * </p>
      * <p>
-     *   If the given {@link ErrorHandler} does not throw {@link CompileException}s, then the compiler may or may not
-     *   continue compilation, but must eventually throw a {@link CompileException}.
+     *   If the given {@link ErrorHandler} does not throw a {@link CompileException} but completes normally, then the
+     *   compilation may or may not continue, depending on the error. Iff the compilation
+     *   completes normally but errors were reported, then it will throw a {@link CompileException} indicating the
+     *   number of errors.
      * </p>
      * <p>
-     *   In other words: The {@link ErrorHandler} may throw a {@link CompileException} or not, but the compiler must
+     *   In other words: The {@link ErrorHandler} may throw a {@link CompileException} or not, but the compilation will
      *   definitely throw a {@link CompileException} if one or more compile errors have occurred.
      * </p>
      *
-     * @param compileErrorHandler {@code null} to restore the default behavior (throwing a {@link CompileException}
+     * @param compileErrorHandler {@code null} to restore the default behavior (throwing a {@link CompileException})
      */
     void setCompileErrorHandler(@Nullable ErrorHandler compileErrorHandler);
 

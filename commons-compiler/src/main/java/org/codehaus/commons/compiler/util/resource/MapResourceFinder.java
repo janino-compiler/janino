@@ -44,7 +44,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 public
 class MapResourceFinder extends ListableResourceFinder {
 
-    private final Map<String, Resource> map = new HashMap<String, Resource>();
+    private final Map<String, Resource> map = new HashMap<>();
     private long                        lastModified;
 
     public

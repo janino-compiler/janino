@@ -19,10 +19,10 @@
     <!--
       If you want to enforce a particular JAVAC executable to be used, set these two properties:
     -->
-    <!--
-    <maven.compiler.executable>c:\dev\Java\jdk1.6.0_45\bin\javac.exe</maven.compiler.executable>
+    <!-- -->
+    <maven.compiler.executable>C:\dev\Java\adopt_openjdk-8.0.292.10-hotspot</maven.compiler.executable>
     <maven.compiler.fork>false</maven.compiler.fork>
-    -->
+    <!-- -->
   </properties>
 
   <artifactId>janino-parent</artifactId>
@@ -31,7 +31,7 @@
 
   <groupId>org.codehaus.janino</groupId>
   <packaging>pom</packaging>
-  <version>3.1.5-SNAPSHOT</version>
+  <version>3.1.7-SNAPSHOT</version>
   <dependencyManagement>
     <dependencies>
       <dependency>

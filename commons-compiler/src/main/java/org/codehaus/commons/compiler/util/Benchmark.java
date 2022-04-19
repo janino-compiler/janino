@@ -66,13 +66,13 @@ import org.codehaus.commons.nullanalysis.Nullable;
  */
 public
 class Benchmark {
-    private final Stack<Long> beginTimes = new Stack<Long>();
+    private final Stack<Long> beginTimes = new Stack<>();
 
     /**
      * @see Benchmark
      */
     public void
-    begin() { this.beginTimes.push(new Long(System.currentTimeMillis())); }
+    begin() { this.beginTimes.push(Long.valueOf(System.currentTimeMillis())); }
 
     /**
      * @see Benchmark

@@ -70,20 +70,20 @@ class CompilerFactory extends AbstractCompilerFactory {
     @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader() {
 
-        return AccessController.doPrivileged(new PrivilegedAction<AbstractJavaSourceClassLoader>() {
-
-            @Override public AbstractJavaSourceClassLoader
-            run() { return new JavaSourceClassLoader(); }
-        });
+        return (AbstractJavaSourceClassLoader) AccessController.doPrivileged(
+            new PrivilegedAction<AbstractJavaSourceClassLoader>() {
+                @Override public AbstractJavaSourceClassLoader run() { return new JavaSourceClassLoader(); }
+            }
+        );
     }
 
     @Override public AbstractJavaSourceClassLoader
     newJavaSourceClassLoader(final ClassLoader parentClassLoader) {
 
-        return AccessController.doPrivileged(new PrivilegedAction<AbstractJavaSourceClassLoader>() {
-
-            @Override public AbstractJavaSourceClassLoader
-            run() { return new JavaSourceClassLoader(parentClassLoader); }
-        });
+        return (AbstractJavaSourceClassLoader) AccessController.doPrivileged(
+            new PrivilegedAction<AbstractJavaSourceClassLoader>() {
+                @Override public AbstractJavaSourceClassLoader run() { return new JavaSourceClassLoader(parentClassLoader); }
+            }
+        );
     }
 }

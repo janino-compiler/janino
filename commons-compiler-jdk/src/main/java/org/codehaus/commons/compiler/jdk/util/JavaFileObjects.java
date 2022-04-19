@@ -49,6 +49,7 @@ import org.codehaus.commons.compiler.io.Readers;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
+import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
  * Utility methods related to {@link JavaFileObject}s.
@@ -66,18 +67,30 @@ class JavaFileObjects {
 
         private final Resource resource;
         private final Charset  charset;
+		private final String   name;
 
         private
         ResourceJavaFileObject(Resource resource, String className, Kind kind, Charset charset) {
             super(
-                URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
+        		URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
                 kind
             );
             this.resource = resource;
             this.charset  = charset;
+            this.name = "/" + className.replace('.', '/') + kind.extension;
         }
 
-        @Override public InputStream
+        @Override public boolean
+        isNameCompatible(@Nullable String simpleName, @Nullable Kind kind) {
+            return !"module-info".equals(simpleName);
+        }
+
+        @Override public String
+        getName() {
+        	return this.name;
+    	}
+
+		@Override public InputStream
         openInputStream() throws IOException { return this.resource.open(); }
 
         @Override public Reader
@@ -97,6 +110,9 @@ class JavaFileObjects {
 
         @Override public long
         getLastModified() { return this.resource.lastModified(); }
+
+		public String
+		getResourceFileName() { return this.resource.getFileName(); }
     }
 
     /**

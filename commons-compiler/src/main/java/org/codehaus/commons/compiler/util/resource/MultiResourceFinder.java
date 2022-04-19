@@ -25,6 +25,7 @@
 
 package org.codehaus.commons.compiler.util.resource;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,8 +68,8 @@ class MultiResourceFinder extends ListableResourceFinder {
     }
 
     @Override @Nullable public Iterable<Resource>
-    list(String resourceNamePrefix, boolean recurse) {
-        List<Resource> result = new ArrayList<Resource>();
+    list(String resourceNamePrefix, boolean recurse) throws IOException {
+        List<Resource> result = new ArrayList<>();
         for (ResourceFinder rf : this.resourceFinders) {
             Iterable<Resource> resources = ((ListableResourceFinder) rf).list(resourceNamePrefix, recurse);
             if (resources != null) {

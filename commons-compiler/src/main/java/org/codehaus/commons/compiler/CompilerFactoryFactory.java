@@ -98,7 +98,7 @@ class CompilerFactoryFactory {
 
         return (
             CompilerFactoryFactory.defaultCompilerFactory
-            = CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName)
+            = CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName, classLoader)
         );
     }
 
@@ -130,7 +130,7 @@ class CompilerFactoryFactory {
     public static ICompilerFactory[]
     getAllCompilerFactories(ClassLoader classLoader) throws Exception {
 
-        List<ICompilerFactory> factories = new ArrayList<ICompilerFactory>();
+        List<ICompilerFactory> factories = new ArrayList<>();
         for (Enumeration<URL> en = classLoader.getResources("org.codehaus.commons.compiler.properties"); en.hasMoreElements();) {
             URL url = (URL) en.nextElement();
 
@@ -150,7 +150,7 @@ class CompilerFactoryFactory {
                 throw new IllegalStateException(url.toString() + " does not specify the 'compilerFactory' property");
             }
 
-            factories.add(CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName));
+            factories.add(CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName, classLoader));
         }
         return (ICompilerFactory[]) factories.toArray(new ICompilerFactory[factories.size()]);
     }

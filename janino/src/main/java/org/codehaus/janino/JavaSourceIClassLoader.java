@@ -62,7 +62,7 @@ class JavaSourceIClassLoader extends IClassLoader {
     /**
      * Collection of parsed compilation units.
      */
-    private final Set<UnitCompiler>  unitCompilers = new HashSet<UnitCompiler>();
+    private final Set<UnitCompiler>  unitCompilers = new HashSet<>();
 
     private int                      sourceVersion = -1;
     private int                      targetVersion = -1;

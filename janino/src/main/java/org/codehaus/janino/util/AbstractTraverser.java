@@ -145,11 +145,20 @@ import org.codehaus.janino.Java.TypeDeclaration;
 import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
-import org.codehaus.janino.Visitor;
+import org.codehaus.janino.Visitor.AbstractCompilationUnitVisitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
+import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
+import org.codehaus.janino.Visitor.ConstructorInvocationVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
+import org.codehaus.janino.Visitor.FunctionDeclaratorVisitor;
+import org.codehaus.janino.Visitor.ImportVisitor;
+import org.codehaus.janino.Visitor.LvalueVisitor;
+import org.codehaus.janino.Visitor.RvalueVisitor;
 import org.codehaus.janino.Visitor.TryStatementResourceVisitor;
+import org.codehaus.janino.Visitor.TypeBodyDeclarationVisitor;
+import org.codehaus.janino.Visitor.TypeDeclarationVisitor;
+import org.codehaus.janino.Visitor.TypeVisitor;
 
 /**
  * A basic implementation of {@link Traverser}; each {@code traverse*(s)} method invokes the
@@ -196,8 +205,8 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     /**
      * Invokes the "{@code traverse*()}" method for the concrete {@link AbstractCompilationUnit}.
      */
-    private final Visitor.AbstractCompilationUnitVisitor<Void, EX>
-    abstractCompilationUnitTraverser = new Visitor.AbstractCompilationUnitVisitor<Void, EX>() {
+    private final AbstractCompilationUnitVisitor<Void, EX>
+    abstractCompilationUnitTraverser = new AbstractCompilationUnitVisitor<Void, EX>() {
 
         @Override @Nullable public Void
         visitCompilationUnit(CompilationUnit cu) throws EX {
@@ -215,8 +224,8 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     /**
      * Invokes the "{@code traverse*()}" method for the concrete {@link ImportDeclaration}.
      */
-    private final Visitor.ImportVisitor<Void, EX>
-    importTraverser = new Visitor.ImportVisitor<Void, EX>() {
+    private final ImportVisitor<Void, EX>
+    importTraverser = new ImportVisitor<Void, EX>() {
 
         // SUPPRESS CHECKSTYLE LineLength:4
         @Override @Nullable public Void visitSingleTypeImportDeclaration(AbstractCompilationUnit.SingleTypeImportDeclaration stid)          throws EX { AbstractTraverser.this.delegate.traverseSingleTypeImportDeclaration(stid);      return null; }
@@ -228,8 +237,8 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     /**
      * Invokes the "{@code traverse*()}" method for the concrete {@link TypeDeclaration}.
      */
-    private final Visitor.TypeDeclarationVisitor<Void, EX>
-    typeDeclarationTraverser = new Visitor.TypeDeclarationVisitor<Void, EX>() {
+    private final TypeDeclarationVisitor<Void, EX>
+    typeDeclarationTraverser = new TypeDeclarationVisitor<Void, EX>() {
 
         // SUPPRESS CHECKSTYLE LineLength:11
         @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                             throws EX { AbstractTraverser.this.delegate.traverseAnonymousClassDeclaration(acd);                return null; }
@@ -248,12 +257,12 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     /**
      * Invokes the "{@code traverse*()}" method for the concrete {@link Rvalue}.
      */
-    private final Visitor.RvalueVisitor<Void, EX>
-    rvalueTraverser = new Visitor.RvalueVisitor<Void, EX>() {
+    private final RvalueVisitor<Void, EX>
+    rvalueTraverser = new RvalueVisitor<Void, EX>() {
 
         @Override @Nullable public Void
         visitLvalue(Lvalue lv) throws EX {
-            lv.accept(new Visitor.LvalueVisitor<Void, EX>() {
+            lv.accept(new LvalueVisitor<Void, EX>() {
 
                 // SUPPRESS CHECKSTYLE LineLength:7
                 @Override @Nullable public Void visitAmbiguousName(AmbiguousName an)                                        throws EX { AbstractTraverser.this.delegate.traverseAmbiguousName(an);                      return null; }
@@ -302,12 +311,12 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     /**
      * Invokes the "{@code traverse*()}" method for the concrete {@link TypeBodyDeclaration}.
      */
-    private final Visitor.TypeBodyDeclarationVisitor<Void, EX>
-    typeBodyDeclarationTraverser = new Visitor.TypeBodyDeclarationVisitor<Void, EX>() {
+    private final TypeBodyDeclarationVisitor<Void, EX>
+    typeBodyDeclarationTraverser = new TypeBodyDeclarationVisitor<Void, EX>() {
 
         @Override @Nullable public Void
         visitFunctionDeclarator(FunctionDeclarator fd) throws EX {
-            fd.accept(new Visitor.FunctionDeclaratorVisitor<Void, EX>() {
+            fd.accept(new FunctionDeclaratorVisitor<Void, EX>() {
 
                 // SUPPRESS CHECKSTYLE LineLength:2
                 @Override @Nullable public Void visitConstructorDeclarator(ConstructorDeclarator cd) throws EX { AbstractTraverser.this.delegate.traverseConstructorDeclarator(cd); return null; }
@@ -328,7 +337,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     /**
      * Invokes the "{@code traverse*()}" method for the concrete {@link BlockStatement}.
      */
-    private final Visitor.BlockStatementVisitor<Void, EX>
+    private final BlockStatementVisitor<Void, EX>
     blockStatementTraverser = new BlockStatementVisitor<Void, EX>() {
 
         // SUPPRESS CHECKSTYLE LineLength:23
@@ -360,8 +369,8 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     /**
      * Invokes the "{@code traverse*()}" method for the concrete {@link Atom}.
      */
-    private final Visitor.AtomVisitor<Void, EX>
-    atomTraverser = new Visitor.AtomVisitor<Void, EX>() {
+    private final AtomVisitor<Void, EX>
+    atomTraverser = new AtomVisitor<Void, EX>() {
 
         @Override @Nullable public Void
         visitRvalue(Rvalue rv) throws EX {
@@ -378,7 +387,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         @Override @Nullable public Void
         visitType(Type t) throws EX {
 
-            t.accept(new Visitor.TypeVisitor<Void, EX>() {
+            t.accept(new TypeVisitor<Void, EX>() {
 
                 // SUPPRESS CHECKSTYLE LineLength:5
                 @Override @Nullable public Void visitArrayType(ArrayType at)                throws EX { AbstractTraverser.this.delegate.traverseArrayType(at);         return null; }
@@ -393,7 +402,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         @Override @Nullable public Void
         visitConstructorInvocation(ConstructorInvocation ci) throws EX {
 
-            ci.accept(new Visitor.ConstructorInvocationVisitor<Void, EX>() {
+            ci.accept(new ConstructorInvocationVisitor<Void, EX>() {
 
                 // SUPPRESS CHECKSTYLE LineLength:2
                 @Override @Nullable public Void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci) throws EX { AbstractTraverser.this.delegate.traverseAlternateConstructorInvocation(aci); return null; }
@@ -1002,9 +1011,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     @Override public void
     traverseClassDeclaration(AbstractClassDeclaration cd) throws EX {
         for (ConstructorDeclarator ctord : cd.constructors) ctord.accept(this.typeBodyDeclarationTraverser);
-        for (BlockStatement vdoi : cd.variableDeclaratorsAndInitializers) {
-            vdoi.accept(this.blockStatementTraverser);
-        }
+        for (BlockStatement fdoi : cd.fieldDeclarationsAndInitializers) fdoi.accept(this.blockStatementTraverser);
         this.traverseAbstractTypeDeclaration(cd);
     }
 

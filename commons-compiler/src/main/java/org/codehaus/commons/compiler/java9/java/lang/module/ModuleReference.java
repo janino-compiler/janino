@@ -53,7 +53,7 @@ class ModuleReference {
 
     public Optional<URI> // SUPPRESS CHECKSTYLE Javadoc
     location() {
-        return new Optional<URI>(Methods.<URI, NoException>invoke(ModuleReference.METHOD_location, this.delegate));
+        return new Optional<>(Methods.<URI, NoException>invoke(ModuleReference.METHOD_location, this.delegate));
     }
 
     public ModuleReader // SUPPRESS CHECKSTYLE Javadoc|Alignment

@@ -82,9 +82,9 @@ class HprofScrubber {
 
         BufferedReader br = new BufferedReader(new FileReader(fileName));
         try {
-            Map<Integer /*number*/, String[] /*stackFrames*/> traces  = new HashMap<Integer, String[]>();
-            List<Site>                                        sites   = new ArrayList<Site>();
-            List<Sample>                                      samples = new ArrayList<Sample>();
+            Map<Integer /*number*/, String[] /*stackFrames*/> traces  = new HashMap<>();
+            List<Site>                                        sites   = new ArrayList<>();
+            List<Sample>                                      samples = new ArrayList<>();
 
             String s = br.readLine();
             while (s != null) {
@@ -110,7 +110,7 @@ class HprofScrubber {
                 } else
                 if (s.startsWith("TRACE ") && s.endsWith(":")) {
                     int          traceNumber = Integer.parseInt(s.substring(6, s.length() - 1));
-                    List<String> l           = new ArrayList<String>();
+                    List<String> l           = new ArrayList<>();
                     for (;;) {
                         s = br.readLine();
                         if (!s.startsWith("\t")) break;

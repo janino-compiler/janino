@@ -26,8 +26,6 @@
 
 package org.codehaus.janino;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,9 +39,7 @@ import java.util.Set;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.ClassFile;
-import org.codehaus.janino.util.ClassFile.AttributeInfo;
 import org.codehaus.janino.util.ClassFile.ConstantClassInfo;
-import org.codehaus.janino.util.ClassFile.LineNumberTableAttribute.Entry;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.AppendFrame;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.ChopFrame;
@@ -80,7 +76,7 @@ class CodeContext {
     /**
      * All the local variables that are allocated in any block in this {@link CodeContext}.
      */
-    private final List<Java.LocalVariableSlot> allLocalVars = new ArrayList<Java.LocalVariableSlot>();
+    private final List<Java.LocalVariableSlot> allLocalVars = new ArrayList<>();
 
     /**
      * Each List of Java.LocalVariableSlot is the local variables allocated for a block. They are pushed and popped
@@ -93,7 +89,7 @@ class CodeContext {
 
         @Nullable final LocalScope         parent;
         final short                        startingLocalVariableSlot;
-        final List<Java.LocalVariableSlot> localVars = new ArrayList<Java.LocalVariableSlot>();
+        final List<Java.LocalVariableSlot> localVars = new ArrayList<>();
         final StackMap                     startingStackMap;
 
         LocalScope(@Nullable LocalScope parent, short startingLocalSlot, StackMap startingStackMap) {
@@ -104,7 +100,7 @@ class CodeContext {
     }
 
     private short                   nextLocalVariableSlot;
-    private final List<Relocatable> relocatables = new ArrayList<Relocatable>();
+    private final List<Relocatable> relocatables = new ArrayList<>();
 
     /**
      * Creates an empty "Code" attribute.
@@ -116,7 +112,7 @@ class CodeContext {
         this.maxStack               = 0;
         this.maxLocals              = 0;
         this.code                   = new byte[CodeContext.INITIAL_SIZE];
-        this.exceptionTableEntries  = new ArrayList<ExceptionTableEntry>();
+        this.exceptionTableEntries  = new ArrayList<>();
 
         this.beginning              = new Offset();
         this.beginning.offset       = 0;
@@ -167,7 +163,7 @@ class CodeContext {
      *             LocalVariableTable
      */
     public Java.LocalVariableSlot
-    allocateLocalVariable(short size, @Nullable String name, @Nullable IClass type) {
+    allocateLocalVariable(short size, @Nullable String name, @Nullable IType type) {
 
         LocalScope currentScope = this.currentLocalScope;
         assert currentScope != null : "saveLocalVariables must be called first";
@@ -228,11 +224,10 @@ class CodeContext {
 
         this.currentLocalScope = scopeToPop.parent;
 
-        // reuse local variable slots of the popped scope
+        // Reuse local variable slots of the popped scope.
         this.nextLocalVariableSlot = scopeToPop.startingLocalVariableSlot;
 
-        // To truncate the stack map, it removes local variables
-        // indicated by the popped scope.
+        // To truncate the stack map, remove local variables indicated by the popped scope.
         if (this.currentLocalScope != null) {
             StackMap sm = this.currentInserter.getStackMap();
             if (sm != null && sm.locals().length > 0) {
@@ -250,198 +245,213 @@ class CodeContext {
         }
     }
 
-    /**
-     * @param lineNumberTableAttributeNameIndex 0 == don't generate a "LineNumberTable" attribute
-     */
-    protected void
-    storeCodeAttributeBody(
-        DataOutputStream dos,
-        short            lineNumberTableAttributeNameIndex,
-        short            localVariableTableAttributeNameIndex,
-        short            stackMapTableAttributeNameIndex
-    ) throws IOException {
-        dos.writeShort(this.maxStack);                                               // max_stack
-        dos.writeShort(this.maxLocals);                                              // max_locals
-        dos.writeInt(this.end.offset);                                               // code_length
-        dos.write(this.code, 0, this.end.offset);                                    // code
-        dos.writeShort(this.exceptionTableEntries.size());                           // exception_table_length
-        for (ExceptionTableEntry exceptionTableEntry : this.exceptionTableEntries) { // exception_table
-            dos.writeShort(exceptionTableEntry.startPc.offset);
-            dos.writeShort(exceptionTableEntry.endPc.offset);
-            dos.writeShort(exceptionTableEntry.handlerPc.offset);
-            dos.writeShort(exceptionTableEntry.catchType);
+    public ClassFile.CodeAttribute
+    newCodeAttribute(boolean debugLines, boolean debugVars) {
+
+    	// Transform the exception table from o.c.j.CodeContext to o.c.j.u.ClassFile.
+        ClassFile.CodeAttribute.ExceptionTableEntry[]
+        etes = new ClassFile.CodeAttribute.ExceptionTableEntry[this.exceptionTableEntries.size()];
+
+        for (int i = 0; i < etes.length; i++) {
+            ExceptionTableEntry ete = (ExceptionTableEntry) this.exceptionTableEntries.get(i);
+            etes[i] = new ClassFile.CodeAttribute.ExceptionTableEntry(
+                (short) ete.startPc.offset,   // startPc
+                (short) ete.endPc.offset,     // endPc
+                (short) ete.handlerPc.offset, // handlerPc
+                ete.catchType                 // catchType
+            );
         }
 
-        List<ClassFile.AttributeInfo> attributes = new ArrayList<AttributeInfo>();
+        List<ClassFile.AttributeInfo> attributes = new ArrayList<>();
 
         // Add "LineNumberTable" attribute.
-        if (lineNumberTableAttributeNameIndex != 0) {
-            List<ClassFile.LineNumberTableAttribute.Entry> lnt = new ArrayList<Entry>();
-            for (Offset o = this.beginning; o != null; o = o.next) {
-                if (o instanceof LineNumberOffset) {
-
-                    int offset = o.offset;
-                    if (offset > 0xffff) {
-                        throw new InternalCompilerException("LineNumberTable entry offset out of range");
-                    }
-
-                    short lineNumber = ((LineNumberOffset) o).lineNumber;
-
-                    lnt.add(new ClassFile.LineNumberTableAttribute.Entry((short) offset, lineNumber));
-                }
-            }
-            ClassFile.LineNumberTableAttribute.Entry[] lnte = (ClassFile.LineNumberTableAttribute.Entry[]) lnt.toArray(
-                new ClassFile.LineNumberTableAttribute.Entry[lnt.size()]
-            );
-            attributes.add(new ClassFile.LineNumberTableAttribute(
-                lineNumberTableAttributeNameIndex, // attributeNameIndex
-                lnte                               // lineNumberTableEntries
-            ));
+        if (debugLines) {
+            attributes.add(this.newLineNumberTableAttribute());
         }
 
         // Add "LocalVariableTable" attribute.
-        if (localVariableTableAttributeNameIndex != 0) {
-            ClassFile.AttributeInfo ai = this.storeLocalVariableTable(dos, localVariableTableAttributeNameIndex);
+        if (debugVars) {
+            ClassFile.LocalVariableTableAttribute
+            lvta = this.newLocalVariableTableAttribute();
 
-            if (ai != null) attributes.add(ai);
+            if (lvta != null) attributes.add(lvta);
         }
 
         // Add the "StackMapTable" attribute.
-        {
+        attributes.add(this.newStackMapTableAttribute());
 
-            // Skip the "zeroth" frame.
-            Offset frame = this.beginning;
-            Offset previousFrame = null;
-            while (frame.offset == 0) {
-                previousFrame = frame;
-                frame = frame.next;
-                assert frame != null;
-            }
-            assert previousFrame != null;
+        ClassFile.AttributeInfo[]
+        aia = (ClassFile.AttributeInfo[]) attributes.toArray(new ClassFile.AttributeInfo[attributes.size()]);
+        return new ClassFile.CodeAttribute(
+            this.classFile.addConstantUtf8Info("Code"), // attributeNameIndex
+            (short) this.maxStack,                      // maxStack
+            this.maxLocals,                             // maxLocals
+            Arrays.copyOf(this.code, this.end.offset),  // code
+            etes,                                       // exceptionTableEntries
+            aia                                         // attributes
+        );
+    }
 
-            List<StackMapFrame> smfs = new ArrayList<ClassFile.StackMapTableAttribute.StackMapFrame>();
-            for (; frame != null && frame.offset != this.end.offset; frame = frame.next) {
+    private ClassFile.LineNumberTableAttribute
+    newLineNumberTableAttribute() {
 
-                // "Padder" is used to insert the padding bytes of the LOOKUPSWITCH instruction; skip it, because
-                // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
-                if (frame instanceof Java.Padder) continue;
+        List<ClassFile.LineNumberTableAttribute.Entry> lnt = new ArrayList<>();
+        for (Offset o = this.beginning; o != null; o = o.next) {
+            if (o instanceof LineNumberOffset) {
 
-                // "FourByteOffset" is used to write the offsets of the LOOKUPSWITCH instruction. Skip it, because
-                // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
-                if (frame instanceof FourByteOffset) continue;
-
-                {
-                    Offset next = frame.next;
-                    if (next != null && frame.offset == next.offset) continue;
+                int offset = o.offset;
+                if (offset > 0xffff) {
+                    throw new InternalCompilerException("LineNumberTable entry offset out of range");
                 }
 
-                final int                    offsetDelta               = previousFrame.offset == 0 ? frame.offset : frame.offset - previousFrame.offset - 1;
-                final VerificationTypeInfo[] frameOperands             = frame.getStackMap().operands();
-                final int                    frameOperandsLength       = frameOperands.length;
-                final VerificationTypeInfo[] frameLocals               = frame.getStackMap().locals();
-                final int                    frameLocalsLength         = frameLocals.length;
-                final VerificationTypeInfo[] previousFrameLocals       = previousFrame.getStackMap().locals();
-                final int                    previousFrameLocalsLength = previousFrameLocals.length;
-                int                          k;
+                short lineNumber = ((LineNumberOffset) o).lineNumber;
 
-                // Encode the stack map entry delta as "frames", see JVMS11 4.7.4
-                if (
-                    frameOperandsLength == 0
-                    && Arrays.equals(frameLocals, previousFrameLocals)
-                ) {
-                    if (offsetDelta <= 63) {
-                        smfs.add(new SameFrame(offsetDelta));           // same_frame
-                    } else {
-                        smfs.add(new SameFrameExtended(offsetDelta));   // same_frame_extended
-                    }
-                } else
+                lnt.add(new ClassFile.LineNumberTableAttribute.Entry((short) offset, lineNumber));
+            }
+        }
 
-                if (
-                    frameOperandsLength == 1
-                    && Arrays.equals(frameLocals, previousFrameLocals)
-                ) {
-                    if (offsetDelta <= 63) {
-                        smfs.add(new SameLocals1StackItemFrame(         // same_locals_1_stack_item_frame
-                            offsetDelta,                                //   offset_delta
-                            frameOperands[0]                            //   stack
-                        ));
-                    } else {
-                        smfs.add(new SameLocals1StackItemFrameExtended( // same_locals_1_stack_item_frame_extended
-                            offsetDelta,                                //   offset_delta
-                            frameOperands[0]                            //   stack
-                        ));
-                    }
-                } else
+        ClassFile.LineNumberTableAttribute.Entry[] lnte = (ClassFile.LineNumberTableAttribute.Entry[]) lnt.toArray(
+            new ClassFile.LineNumberTableAttribute.Entry[lnt.size()]
+        );
+        return new ClassFile.LineNumberTableAttribute(
+            this.classFile.addConstantUtf8Info("LineNumberTable"), // attributeNameIndex
+            lnte                                                   // lineNumberTableEntries
+        );
+    }
 
-                if (
-                    frameOperandsLength == 0
-                    && (k = previousFrameLocalsLength - frameLocalsLength) >= 1
-                    && k <= 3
-                    && Arrays.equals(frameLocals, Arrays.copyOf(previousFrameLocals, frameLocalsLength))
-                ) {
-                    smfs.add(new ChopFrame(offsetDelta, k));            // chop_frame
-                } else
+    private StackMapTableAttribute
+    newStackMapTableAttribute() {
 
-                if (
-                    frameOperandsLength == 0
-                    && (k = frameLocalsLength - previousFrameLocalsLength) >= 1
-                    && k <= 3
-                    && Arrays.equals(previousFrameLocals, Arrays.copyOf(frameLocals, previousFrameLocalsLength))
-                ) {
-                    smfs.add(new AppendFrame(                           // append_frame
-                        offsetDelta,                                    //   offset_delta
-                        (VerificationTypeInfo[]) Arrays.copyOfRange(    //   locals
-                            frameLocals,
-                            previousFrameLocalsLength,
-                            frameLocalsLength
-                        )
-                    ));
-                } else
+        // Skip the "zeroth" frame.
+        Offset frame = this.beginning;
+        Offset previousFrame = null;
+        while (frame.offset == 0) {
+            previousFrame = frame;
+            frame = frame.next;
+            assert frame != null;
+        }
+        assert previousFrame != null;
 
-                {
-                    smfs.add(new FullFrame(                             // full_frame
-                        offsetDelta,                                    //   offset_delta
-                        frameLocals,                                    //   locals
-                        frameOperands                                   //   stack
-                    ));
-                }
+        List<StackMapFrame> smfs = new ArrayList<>();
+        for (; frame != null && frame.offset != this.end.offset; frame = frame.next) {
 
-                previousFrame = frame;
+            // "Padder" is used to insert the padding bytes of the LOOKUPSWITCH instruction; skip it, because
+            // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
+            if (frame instanceof Java.Padder) continue;
+
+            // "FourByteOffset" is used to write the offsets of the LOOKUPSWITCH instruction. Skip it, because
+            // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
+            if (frame instanceof FourByteOffset) continue;
+
+            {
+                Offset next = frame.next;
+                if (next != null && frame.offset == next.offset) continue;
             }
 
-            attributes.add(
-                new StackMapTableAttribute(
-                    stackMapTableAttributeNameIndex,
-                    (StackMapFrame[]) smfs.toArray(new StackMapFrame[smfs.size()])
-                )
-            );
+            final int                    offsetDelta               = previousFrame.offset == 0 ? frame.offset : frame.offset - previousFrame.offset - 1;
+            final VerificationTypeInfo[] frameOperands             = frame.getStackMap().operands();
+            final int                    frameOperandsLength       = frameOperands.length;
+            final VerificationTypeInfo[] frameLocals               = frame.getStackMap().locals();
+            final int                    frameLocalsLength         = frameLocals.length;
+            final VerificationTypeInfo[] previousFrameLocals       = previousFrame.getStackMap().locals();
+            final int                    previousFrameLocalsLength = previousFrameLocals.length;
+            int                          k;
+
+            // Encode the stack map entry delta as "frames", see JVMS11 4.7.4
+            if (
+                frameOperandsLength == 0
+                && Arrays.equals(frameLocals, previousFrameLocals)
+            ) {
+                if (offsetDelta <= 63) {
+                    smfs.add(new SameFrame(offsetDelta));           // same_frame
+                } else {
+                    smfs.add(new SameFrameExtended(offsetDelta));   // same_frame_extended
+                }
+            } else
+
+            if (
+                frameOperandsLength == 1
+                && Arrays.equals(frameLocals, previousFrameLocals)
+            ) {
+                if (offsetDelta <= 63) {
+                    smfs.add(new SameLocals1StackItemFrame(         // same_locals_1_stack_item_frame
+                        offsetDelta,                                //   offset_delta
+                        frameOperands[0]                            //   stack
+                    ));
+                } else {
+                    smfs.add(new SameLocals1StackItemFrameExtended( // same_locals_1_stack_item_frame_extended
+                        offsetDelta,                                //   offset_delta
+                        frameOperands[0]                            //   stack
+                    ));
+                }
+            } else
+
+            if (
+                frameOperandsLength == 0
+                && (k = previousFrameLocalsLength - frameLocalsLength) >= 1
+                && k <= 3
+                && Arrays.equals(frameLocals, Arrays.copyOf(previousFrameLocals, frameLocalsLength))
+            ) {
+                smfs.add(new ChopFrame(offsetDelta, k));            // chop_frame
+            } else
+
+            if (
+                frameOperandsLength == 0
+                && (k = frameLocalsLength - previousFrameLocalsLength) >= 1
+                && k <= 3
+                && Arrays.equals(previousFrameLocals, Arrays.copyOf(frameLocals, previousFrameLocalsLength))
+            ) {
+                smfs.add(new AppendFrame(                           // append_frame
+                    offsetDelta,                                    //   offset_delta
+                    (VerificationTypeInfo[]) Arrays.copyOfRange(    //   locals
+                        frameLocals,
+                        previousFrameLocalsLength,
+                        frameLocalsLength
+                    )
+                ));
+            } else
+
+            {
+                smfs.add(new FullFrame(                             // full_frame
+                    offsetDelta,                                    //   offset_delta
+                    frameLocals,                                    //   locals
+                    frameOperands                                   //   stack
+                ));
+            }
+
+            previousFrame = frame;
         }
 
-        dos.writeShort(attributes.size());                     // attributes_count
-        for (ClassFile.AttributeInfo attribute : attributes) { // attributes;
-            attribute.store(dos);
-        }
+        return new StackMapTableAttribute(
+            this.classFile.addConstantUtf8Info("StackMapTable"),           // attributeNameIndex
+            (StackMapFrame[]) smfs.toArray(new StackMapFrame[smfs.size()]) // entries
+        );
+    }
+
+    private static IClass
+    rawTypeOf(IType iType) {
+        while (iType instanceof IParameterizedType) iType = ((IParameterizedType) iType).getRawType();
+        assert iType instanceof IClass;
+        return (IClass) iType;
     }
 
     /**
      * @return A {@link org.codehaus.janino.util.ClassFile.LocalVariableTableAttribute} for this {@link CodeContext}
      */
-    @Nullable protected ClassFile.AttributeInfo
-    storeLocalVariableTable(DataOutputStream dos, short localVariableTableAttributeNameIndex) {
-
-        ClassFile cf = this.getClassFile();
+    @Nullable protected ClassFile.LocalVariableTableAttribute
+    newLocalVariableTableAttribute() {
 
         final List<ClassFile.LocalVariableTableAttribute.Entry>
-        entryList = new ArrayList<org.codehaus.janino.util.ClassFile.LocalVariableTableAttribute.Entry>();
+        entryList = new ArrayList<>();
 
         for (Java.LocalVariableSlot slot : this.getAllLocalVars()) {
 
             String localVariableName = slot.getName();
             if (localVariableName != null) {
 
-                String      typeName    = slot.getType().getDescriptor();
-                final short classSlot   = cf.addConstantUtf8Info(typeName);
-                final short varNameSlot = cf.addConstantUtf8Info(localVariableName);
+                String      typeName    = CodeContext.rawTypeOf(slot.getType()).getDescriptor();
+                final short classSlot   = this.classFile.addConstantUtf8Info(typeName);
+                final short varNameSlot = this.classFile.addConstantUtf8Info(localVariableName);
 
                 Offset start = slot.getStart();
                 Offset end2  = slot.getEnd();
@@ -449,27 +459,24 @@ class CodeContext {
                 assert start != null;
                 assert end2 != null;
 
-                ClassFile.LocalVariableTableAttribute.Entry entry = new ClassFile.LocalVariableTableAttribute.Entry(
+                entryList.add(new ClassFile.LocalVariableTableAttribute.Entry(
                     (short) start.offset,
                     (short) (end2.offset - start.offset),
                     varNameSlot,
                     classSlot,
                     slot.getSlotIndex()
-                );
-                entryList.add(entry);
+                ));
             }
         }
 
-        if (entryList.size() > 0) {
-            Object entries = entryList.toArray(new ClassFile.LocalVariableTableAttribute.Entry[entryList.size()]);
+        if (entryList.isEmpty()) return null;
 
-            return new ClassFile.LocalVariableTableAttribute(
-                localVariableTableAttributeNameIndex,
-                (ClassFile.LocalVariableTableAttribute.Entry[]) entries
-            );
-        }
-
-        return null;
+        return new ClassFile.LocalVariableTableAttribute(
+            this.classFile.addConstantUtf8Info("LocalVariableTable"),
+            (ClassFile.LocalVariableTableAttribute.Entry[]) entryList.toArray(
+                new ClassFile.LocalVariableTableAttribute.Entry[entryList.size()]
+            )
+        );
     }
 
     /**
@@ -789,7 +796,7 @@ class CodeContext {
     BRANCH_OPCODE_INVERSION = CodeContext.createBranchOpcodeInversion();
     private static Map<Integer, Integer>
     createBranchOpcodeInversion() {
-        Map<Integer, Integer> m = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> m = new HashMap<>();
         m.put(Opcode.IF_ACMPEQ, Opcode.IF_ACMPNE);
         m.put(Opcode.IF_ACMPNE, Opcode.IF_ACMPEQ);
         m.put(Opcode.IF_ICMPEQ, Opcode.IF_ICMPNE);
@@ -1150,7 +1157,7 @@ class CodeContext {
 
         // Invalidate all offsets between "from" and "to".
         // Remove all relocatables that originate between "from" and "to".
-        Set<Offset> invalidOffsets = new HashSet<Offset>();
+        Set<Offset> invalidOffsets = new HashSet<>();
         {
             Offset o = from.next;
             assert o != null;
@@ -1399,7 +1406,7 @@ class CodeContext {
             assert expectedFd.equals(Descriptor.VOID) : expectedFd;
         } else
         if (vti instanceof StackMapTableAttribute.ObjectVariableInfo) {
-            assert Descriptor.isReference(expectedFd) : expectedFd;
+            assert Descriptor.isReference(expectedFd) : expectedFd + " vs. " + vti;
 
             final ObjectVariableInfo ovi = (StackMapTableAttribute.ObjectVariableInfo) vti;
             final ConstantClassInfo  cci = this.classFile.getConstantClassInfo(ovi.getConstantClassInfoIndex());
