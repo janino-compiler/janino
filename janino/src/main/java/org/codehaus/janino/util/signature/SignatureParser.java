@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.codehaus.commons.nullanalysis.NotNullByDefault;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.util.charstream.StringCharStream;
 import org.codehaus.janino.util.charstream.UnexpectedCharacterException;
@@ -767,7 +766,7 @@ class SignatureParser {
         @Override String toString();
     }
 
-    @NotNullByDefault public
+    public
     interface FieldTypeSignatureVisitor<T, EX extends Throwable> {
         T visitArrayTypeSignature(ArrayTypeSignature ats) throws EX;
         T visitClassTypeSignature(ClassTypeSignature cts) throws EX;
