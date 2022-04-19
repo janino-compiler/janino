@@ -49,9 +49,35 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.1.7-SNAPSHOT (only available as source code)</h4>
+    <h4>Version 3.1.8-SNAPSHOT (only available as source code)</h4>
     <ul>
       <li>...</li>
+    </ul>
+
+    <h4>Version 3.1.7 2022-04-19</h4>
+    <ul>
+      <li>
+      <li>Merged PR #148 "Correct the logic to truncate Stack map in CodeContext.restoreLocalVariables".</li>
+      <li>Merged PR #163 "Add SUPER flag for package member types only (#163)".</li>
+      <li>Fixed issue #166 "Get generate method bytecode size".</li>
+      <li>Added a test case for issue #165.</li>
+      <li>Fixed issue #165 "Compilation failure when a class and package name match case insensitively".</li>
+      <li>Replaced "new (Byte|Short|Integer|Long|Float|Double|Character|Boolean)(...)" with "valueOf(...)".</li>
+      <li>Replaced types "Visitor.*Visitor" with "*Visitor".</li>
+      <li>Fixed issue #135 again; this time right.</li>
+      <li>Fixed Issue #155 "Enhanced FOR statement does not work with primitive variable".</li>
+      <li>Verified compatibility with Java 17.</li>
+      <li>Began to extend IClass and ClassFile for generics; specifically added IType and ITypeVariable. However generics are not yet supported; work in progress (although regression tested).</li>
+      <li>Implemented private interface methods (a Java 9 feature).</li>
+      <li>Further simplified the org.codehaus.commons.compiler.jdk.SimpleCompiler: It now uses a delegate o.c.c.c.j.Compiler, which saves a lot of duplicate code.</li>
+      <li>Major refactoring of org.codehaus.commons.compiler.jdk to get rid of duplicate code.</li>
+      <li>Fixed the error handling of the o.c.c.c.jdk.(Compiler|SimpleCompiler); added respective test cases.</li>
+      <li>Marking the SimpleCompiler as "cooked" was not reliable.</li>
+      <li>Static and default interface methods were still declared as "not implemented" on the home page, while they are already implemented! Updated the home page, added some test cases and fixed a minor bug.</li>
+      <li>Added a test for the "diamond operator".</li>
+      <li>Removed all "redundant type arguments", i.e. made use of the "diamond operator". This became possible because support was dropped for Java 6.</li>
+      <li>Also dropped support for "funny" intermediate Java versions 9 and 10.</li>
+      <li>Dropped support for Java 6. Thus, Janino is now compiled against the JRE 7 runtime.</li>
     </ul>
 
     <h4>Version 3.1.6 2021-07-28</h4>
