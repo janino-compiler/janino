@@ -1362,6 +1362,8 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
 //            + "}\n"
         );
 
+        Thread.currentThread().getContextClassLoader().loadClass("com.company.user.Country");
+
         IClassBodyEvaluator eval = this.compilerFactory.newClassBodyEvaluator();
         eval.cook("generated.java", toCook);
         Assert.assertEquals(99, eval.getClazz().getMethod("test").invoke(null));
