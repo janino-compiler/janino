@@ -704,7 +704,7 @@ class UnitCompiler {
             LocalVariableDeclarationStatement lvds = new LocalVariableDeclarationStatement(
                 loc,
                 new Modifier[0],
-                new SimpleType(loc, enumIClass.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object)),
+                new SimpleType(loc, this.iClassLoader.getArrayIClass(enumIClass)),
                 new VariableDeclarator[] { vd }
             );
 
@@ -2429,7 +2429,8 @@ class UnitCompiler {
                 if (initializer instanceof Rvalue) {
                     Rvalue rvalue          = (Rvalue) initializer;
                     IType  initializerType = this.compileGetValue(rvalue);
-                    fieldType = fieldType.getArrayIClass(vd.brackets, this.iClassLoader.TYPE_java_lang_Object);
+
+                    fieldType = this.iClassLoader.getArrayIClass(fieldType, vd.brackets);
                     this.assignmentConversion(
                         fd,                           // locatable
                         initializerType,              // sourceType
@@ -3862,7 +3863,7 @@ class UnitCompiler {
         assert parameter.type != null;
         IType parameterType = this.getType(parameter.type);
         if (isVariableArityParameter) {
-            parameterType = UnitCompiler.rawTypeOf(parameterType).getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+            parameterType = this.iClassLoader.getArrayIClass(UnitCompiler.rawTypeOf(parameterType));
         }
 
         return (parameter.localVariable = new LocalVariable(parameter.isFinal(), parameterType));
@@ -7072,7 +7073,7 @@ class UnitCompiler {
 
     private IClass
     getType2(ArrayType at) throws CompileException {
-        return this.getRawType(at.componentType).getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+        return this.iClassLoader.getArrayIClass(this.getRawType(at.componentType));
     }
 
     private IType
@@ -7399,9 +7400,9 @@ class UnitCompiler {
 
     private IClass
     getType2(NewArray na) throws CompileException {
-        return UnitCompiler.rawTypeOf(this.getType(na.type)).getArrayIClass(
-            na.dimExprs.length + na.dims,
-            this.iClassLoader.TYPE_java_lang_Object
+        return UnitCompiler.this.iClassLoader.getArrayIClass(
+            UnitCompiler.rawTypeOf(this.getType(na.type)),
+            na.dimExprs.length + na.dims
         );
     }
 
@@ -8500,9 +8501,9 @@ class UnitCompiler {
 
             @Override public IClass
             getType() throws CompileException {
-                return UnitCompiler.this.getRawType(type).getArrayIClass(
-                    brackets,
-                    UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
+                return UnitCompiler.this.iClassLoader.getArrayIClass(
+                    UnitCompiler.this.getRawType(type),
+                    brackets
                 );
             }
 
@@ -10076,7 +10077,7 @@ class UnitCompiler {
                         getReturnType() {
                             IClass rt = atd.resolvedType;
                             assert rt != null;
-                            return rt.getArrayIClass(UnitCompiler.this.iClassLoader.TYPE_java_lang_Object);
+                            return UnitCompiler.this.iClassLoader.getArrayIClass(rt);
                         }
                     });
 
@@ -10567,9 +10568,7 @@ class UnitCompiler {
                 for (int i = 0; i < parameters.length; ++i) {
                     IClass parameterType = UnitCompiler.this.getRawType(parameters[i].type);
                     if (i == parameters.length - 1 && constructorDeclarator.formalParameters.variableArity) {
-                        parameterType = UnitCompiler.rawTypeOf(parameterType).getArrayIClass(
-                            UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
-                        );
+                        parameterType = UnitCompiler.this.iClassLoader.getArrayIClass(UnitCompiler.rawTypeOf(parameterType));
                     }
                     res[i] = parameterType;
                 }
@@ -10652,9 +10651,7 @@ class UnitCompiler {
                 for (int i = 0; i < parameters.length; ++i) {
                     IClass parameterType = UnitCompiler.this.getRawType(parameters[i].type);
                     if (i == parameters.length - 1 && methodDeclarator.formalParameters.variableArity) {
-                        parameterType = parameterType.getArrayIClass(
-                            UnitCompiler.this.iClassLoader.TYPE_java_lang_Object
-                        );
+                        parameterType = UnitCompiler.this.iClassLoader.getArrayIClass(parameterType);
                     }
                     res[i] = parameterType;
                 }
@@ -11992,7 +11989,7 @@ class UnitCompiler {
 
     private void
     anewarray(Locatable locatable, IClass componentType) {
-        IClass arrayType = componentType.getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+        IClass arrayType = this.iClassLoader.getArrayIClass(componentType);
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().popIntOperand();
@@ -12485,7 +12482,10 @@ class UnitCompiler {
     private void
     multianewarray(Locatable locatable, int dimExprCount, int dims, IType componentType) {
 
-        IClass arrayType = UnitCompiler.rawTypeOf(componentType).getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
+        IClass arrayType = this.iClassLoader.getArrayIClass(
+            UnitCompiler.rawTypeOf(componentType),
+            dimExprCount + dims
+        );
 
         this.addLineNumberOffset(locatable);
         for (int i = 0; i < dimExprCount; i++) this.getCodeContext().popIntOperand();
@@ -12514,7 +12514,7 @@ class UnitCompiler {
 
     private void
     newarray(Locatable locatable, IType componentType) {
-        IClass arrayType = UnitCompiler.rawTypeOf(componentType).getArrayIClass(this.iClassLoader.TYPE_java_lang_Object);
+        IClass arrayType = this.iClassLoader.getArrayIClass(UnitCompiler.rawTypeOf(componentType));
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().popIntOperand();
@@ -13182,7 +13182,7 @@ class UnitCompiler {
 
             // "new <class-or-interface> [<size>]"
             // "new <anything> [<size>] []{dims}"
-            this.anewarray(locatable, rawComponentType.getArrayIClass(dims, this.iClassLoader.TYPE_java_lang_Object));
+            this.anewarray(locatable, this.iClassLoader.getArrayIClass(rawComponentType, dims));
         } else
         {
 
@@ -13192,7 +13192,7 @@ class UnitCompiler {
             this.multianewarray(locatable, dimExprCount, dims, componentType);
         }
 
-        return rawComponentType.getArrayIClass(dimExprCount + dims, this.iClassLoader.TYPE_java_lang_Object);
+        return this.iClassLoader.getArrayIClass(rawComponentType, dimExprCount + dims);
     }
 
     /**

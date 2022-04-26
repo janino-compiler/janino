@@ -308,7 +308,7 @@ class IClassLoader {
                 if (componentIClass == null) return null;
 
                 // Now get and define the array type.
-                IClass arrayIClass = componentIClass.getArrayIClass(this.TYPE_java_lang_Object);
+                IClass arrayIClass = this.getArrayIClass(componentIClass);
                 this.loadedIClasses.put(fieldDescriptor, arrayIClass);
                 return arrayIClass;
             }
@@ -403,6 +403,88 @@ class IClassLoader {
         if (prev != null) {
             throw new InternalCompilerException("Non-identical definition of IClass \"" + descriptor + "\"");
         }
+    }
+
+    /**
+     * Gets an {@link IClass} that represents an n-dimensional array of this type.
+     *
+     * @param n dimension count
+     * @param objectType Required because the superclass of an array class is {@link Object} by definition
+     */
+    public IClass
+    getArrayIClass(IClass componentType, int n) {
+        IClass result = componentType;
+        for (int i = 0; i < n; ++i) result = this.getArrayIClass(result);
+        return result;
+    }
+
+    /**
+     * Gets an {@link IClass} that represents an array of this type.
+     *
+     * @param objectType Required because the superclass of an array class is {@link Object} by definition
+     */
+    public synchronized IClass
+    getArrayIClass(IClass componentType) {
+
+        if (this.parentIClassLoader != null) return this.parentIClassLoader.getArrayIClass(componentType);
+
+        IClass result = (IClass) this.arrayIClasses.get(componentType);
+        if (result != null) return result;
+
+        this.arrayIClasses.put(componentType, (result = this.getArrayIClass2(componentType)));
+        return result;
+    }
+    private final Map<IClass, IClass> arrayIClasses = new HashMap<>();
+
+    /**
+     * @param objectType Must pass {@link IClassLoader#TYPE_java_lang_Object} here
+     */
+    private IClass
+    getArrayIClass2(final IClass componentType) {
+
+        return new IClass() {
+
+            @Override protected ITypeVariable[]    getITypeVariables2()        { return new ITypeVariable[0];       }
+            @Override public IClass.IConstructor[] getDeclaredIConstructors2() { return new IClass.IConstructor[0]; }
+
+            // Special trickery #17: Arrays override "Object.clone()", but without "throws
+            // CloneNotSupportedException"!
+            @Override public IClass.IMethod[]
+            getDeclaredIMethods2() {
+                return new IClass.IMethod[] {
+                    new IMethod() {
+                        @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0];                      }
+                        @Override public Access        getAccess()            { return Access.PUBLIC;                           }
+                        @Override public boolean       isStatic()             { return false;                                   }
+                        @Override public boolean       isAbstract()           { return false;                                   }
+                        @Override public IClass        getReturnType()        { return IClassLoader.this.TYPE_java_lang_Object; }
+                        @Override public String        getName()              { return "clone";                                 }
+                        @Override public IClass[]      getParameterTypes2()   { return new IClass[0];                           }
+                        @Override public boolean       isVarargs()            { return false;                                   }
+                        @Override public IClass[]      getThrownExceptions2() { return new IClass[0];                           }
+                    }
+                };
+            }
+
+            @Override public IClass.IField[]  getDeclaredIFields2()  { return new IClass.IField[0];                    }
+            @Override public IClass[]         getDeclaredIClasses2() { return new IClass[0];                           }
+            @Override @Nullable public IClass getDeclaringIClass2()  { return null;                                    }
+            @Override @Nullable public IClass getOuterIClass2()      { return null;                                    }
+            @Override public IClass           getSuperclass2()       { return IClassLoader.this.TYPE_java_lang_Object; }
+            @Override public IClass[]         getInterfaces2()       { return new IClass[0];                           }
+            @Override public String           getDescriptor2()       { return '[' + componentType.getDescriptor();     }
+            @Override public Access           getAccess()            { return componentType.getAccess();               }
+            @Override public boolean          isFinal()              { return true;                                    }
+            @Override public boolean          isEnum()               { return false;                                   }
+            @Override public boolean          isInterface()          { return false;                                   }
+            @Override public boolean          isAbstract()           { return false;                                   }
+            @Override public boolean          isArray()              { return true;                                    }
+            @Override public boolean          isPrimitive()          { return false;                                   }
+            @Override public boolean          isPrimitiveNumeric()   { return false;                                   }
+            @Override public IClass           getComponentType2()    { return componentType;                           }
+
+            @Override public String toString() { return componentType.toString() + "[]"; }
+        };
     }
 
     /**

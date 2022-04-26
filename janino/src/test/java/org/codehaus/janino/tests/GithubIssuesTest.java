@@ -54,6 +54,7 @@ import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.Rvalue;
 import org.codehaus.janino.Parser;
 import org.codehaus.janino.Scanner;
+import org.codehaus.janino.ScriptEvaluator;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnitCompiler;
 import org.codehaus.janino.Unparser;
@@ -381,6 +382,13 @@ class GithubIssuesTest {
             }
         }
         Assert.assertEquals(9, bcs);
+    }
+
+    @Test public void
+    testIssue167() throws Exception {
+        new ScriptEvaluator().cook("double[] /* <= any primitive array */ arr1;");
+        new ScriptEvaluator().cook("Object x2 = ((double[] /* <= same primitive array type */) null).toString();");
+        // This led to "Assignment conversion not possible from type "java.lang.String" to type "java.lang.Object"".
     }
 
     public ClassLoader
