@@ -1482,18 +1482,12 @@ class UnitCompiler {
 
             // Allocate all our local variables.
 
-            codeContext.allocateLocalVariable((short) 1, "this", override.getDeclaringIClass());
-            this.updateLocalVariableInCurrentStackMap((short) 0, this.verificationTypeInfo(override.getDeclaringIClass()));
+            this.allocateLocalVariableSlot(override.getDeclaringIClass(), "this");
 
             IClass[]            paramTypes = override.getParameterTypes();
             LocalVariableSlot[] locals     = new LocalVariableSlot[paramTypes.length];
             for (int i = 0; i < paramTypes.length; ++i) {
-                locals[i] = codeContext.allocateLocalVariable(
-                    Descriptor.size(paramTypes[i].getDescriptor()),
-                    "param" + i,
-                    paramTypes[i]
-                );
-                this.updateLocalVariableInCurrentStackMap(locals[i].getSlotIndex(), this.verificationTypeInfo(paramTypes[i]));
+                locals[i] = this.allocateLocalVariableSlot(paramTypes[i], "param" + i);
             }
 
             this.load(Located.NOWHERE, declaringIClass, 0);
@@ -1734,11 +1728,7 @@ class UnitCompiler {
 
                 // Allocate the local variable for the current element.
                 LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
-                elementLv.setSlot(this.getCodeContext().allocateLocalVariable(
-                    Descriptor.size(UnitCompiler.rawTypeOf(elementLv.type).getDescriptor()),
-                    fes.currentElement.name,
-                    elementLv.type
-                ));
+                elementLv.setSlot(this.allocateLocalVariableSlot(elementLv.type, fes.currentElement.name));
 
                 // Compile initializer.
                 this.compileGetValue(fes.expression);
@@ -1746,8 +1736,7 @@ class UnitCompiler {
                 this.store(fes.expression, expressionType, expressionLv);
 
                 this.consT(fes, 0);
-                LocalVariable indexLv = new LocalVariable(false, IClass.INT);
-                indexLv.setSlot(this.getCodeContext().allocateLocalVariable((short) 1, null, indexLv.type));
+                LocalVariable indexLv = this.allocateLocalVariable(false /*finaL*/, IClass.INT);
                 this.store(fes, indexLv);
 
                 CodeContext.Offset toCondition = this.getCodeContext().new Offset();
@@ -1801,17 +1790,12 @@ class UnitCompiler {
 
                 // Allocate the local variable for the current element.
                 LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
-                elementLv.setSlot(this.getCodeContext().allocateLocalVariable(
-                    (short) 1,
-                    fes.currentElement.name,
-                    elementLv.type
-                ));
+                elementLv.setSlot(this.allocateLocalVariableSlot(elementLv.type, fes.currentElement.name));
 
                 // Compile initializer.
                 this.compileGetValue(fes.expression);
                 this.invokeMethod(fes.expression, this.iClassLoader.METH_java_lang_Iterable__iterator);
-                LocalVariable iteratorLv = new LocalVariable(false, this.iClassLoader.TYPE_java_util_Iterator);
-                iteratorLv.setSlot(this.getCodeContext().allocateLocalVariable((short) 1, null, iteratorLv.type));
+                LocalVariable iteratorLv = this.allocateLocalVariable(false /*finaL*/, this.iClassLoader.TYPE_java_util_Iterator);
                 this.store(fes, iteratorLv);
 
                 CodeContext.Offset toCondition = this.getCodeContext().new Offset();
@@ -1881,6 +1865,16 @@ class UnitCompiler {
             this.compileError("Cannot iterate over \"" + expressionType + "\"", fes.expression.getLocation());
         }
         return true;
+    }
+
+    private LocalVariable
+    allocateLocalVariable(boolean finaL, IType localVariableType) {
+
+        LocalVariable result = new LocalVariable(finaL, localVariableType);
+
+        result.setSlot(this.allocateLocalVariableSlot(localVariableType, null));
+
+        return result;
     }
 
     private boolean
@@ -2621,14 +2615,7 @@ class UnitCompiler {
 
             try {
                 LocalVariable lv = this.getLocalVariable(lvds, vd);
-                lv.setSlot(
-                    this.getCodeContext().allocateLocalVariable(
-                        Descriptor.size(UnitCompiler.rawTypeOf(lv.type).getDescriptor()),
-                        vd.name,
-                        lv.type
-                    )
-                );
-                // Do not update the StackMap here; this will only happen on the first assigment.
+                lv.setSlot(this.allocateLocalVariableSlot(lv.type, vd.name));
 
                 ArrayInitializerOrRvalue oi = vd.initializer;
                 if (oi != null) {
@@ -2874,14 +2861,8 @@ class UnitCompiler {
 
                         // final {VariableModifierNoFinal} R Identifier = Expression
                         IType         lvType = UnitCompiler.this.getType(lvdr.type);
-                        LocalVariable result = new LocalVariable(true, lvType);
-                        result.setSlot(
-                            UnitCompiler.this.getCodeContext().allocateLocalVariable(
-                                Descriptor.size(UnitCompiler.rawTypeOf(lvType).getDescriptor()), // size
-                                null,                                                            // name
-                                lvType                                                           // type
-                            )
-                        );
+                        LocalVariable result = UnitCompiler.this.allocateLocalVariable(true /*finaL*/, lvType);
+
                         ArrayInitializerOrRvalue oi = lvdr.variableDeclarator.initializer;
                         if (oi instanceof Rvalue) {
                             UnitCompiler.this.compileGetValue((Rvalue) oi);
@@ -2914,14 +2895,9 @@ class UnitCompiler {
                                 var.getLocation()
                             );
                         }
-                        IType         lvType = UnitCompiler.this.compileGetValue(var.variableAccess);
-                        LocalVariable result = new LocalVariable(true, lvType);
-                        result.setSlot(
-                            UnitCompiler.this.getCodeContext().allocateLocalVariable(
-                                Descriptor.size(UnitCompiler.rawTypeOf(lvType).getDescriptor()), // size
-                                null,                                                            // name
-                                lvType                                                           // type
-                            )
+                        LocalVariable result = UnitCompiler.this.allocateLocalVariable(
+                            true,                                                 // finaL
+                            UnitCompiler.this.compileGetValue(var.variableAccess) // localVariableType
                         );
                         UnitCompiler.this.store(ts, result);
                         return result;
@@ -2931,14 +2907,7 @@ class UnitCompiler {
             assert identifier != null;
 
             // Throwable #primaryExc = null;
-            LocalVariable primaryExc = new LocalVariable(true, tt);
-            primaryExc.setSlot(
-                this.getCodeContext().allocateLocalVariable(
-                    Descriptor.size(tt.getDescriptor()),
-                    null, // name
-                    tt
-                )
-            );
+            LocalVariable primaryExc = this.allocateLocalVariable(true /*finaL*/, tt);
             this.consT(ts, (Object) null);
             this.store(ts, primaryExc);
 
@@ -3187,12 +3156,8 @@ class UnitCompiler {
                     this.getCodeContext().pushObjectOperand(caughtExceptionType.getDescriptor());
 
                     // Allocate the "exception variable".
-                    LocalVariableSlot exceptionVarSlot = this.getCodeContext().allocateLocalVariable(
-                        (short) 1,
-                        catchClause.catchParameter.name,
-                        caughtExceptionType
-                    );
-                    final short evi = exceptionVarSlot.getSlotIndex();
+                    LocalVariableSlot
+                    exceptionVarSlot = this.allocateLocalVariableSlot(caughtExceptionType, catchClause.catchParameter.name);
 
                     // Kludge: Treat the exception variable like a local variable of the catch clause body.
                     this.getLocalVariable(catchClause.catchParameter).setSlot(exceptionVarSlot);
@@ -3204,9 +3169,9 @@ class UnitCompiler {
                         caughtExceptionType.getDescriptor() // catchTypeFD
                     );
                     this.store(
-                        catchClause,         // locatable
-                        caughtExceptionType, // lvType
-                        evi                  // lvIndex
+                        catchClause,                    // locatable
+                        caughtExceptionType,            // lvType
+                        exceptionVarSlot.getSlotIndex() // lvIndex
                     );
 
                     if (this.compile(catchClause.body)) {
@@ -3255,10 +3220,10 @@ class UnitCompiler {
 
         if (fd.getAccess() == Access.PRIVATE) {
             if (
-        		fd instanceof MethodDeclarator
-        		&& !((MethodDeclarator) fd).isStatic()
-        		&& !(fd.getDeclaringType() instanceof InterfaceDeclaration)
-    		) {
+                        fd instanceof MethodDeclarator
+                        && !((MethodDeclarator) fd).isStatic()
+                        && !(fd.getDeclaringType() instanceof InterfaceDeclaration)
+                ) {
 
                 // To make the non-static private method invocable for enclosing types, enclosed types and types
                 // enclosed by the same type, it is modified as follows:
@@ -3439,41 +3404,31 @@ class UnitCompiler {
                 if (!md.isStatic()) {
 
                     // Define special parameter "this".
-                    LocalVariableSlot thisLvSlot = this.getCodeContext().allocateLocalVariable((short) 1, "this", this.resolve(fd.getDeclaringType()));
-                    this.updateLocalVariableInCurrentStackMap(thisLvSlot.getSlotIndex(), this.verificationTypeInfo(thisLvSlot.getType()));
+                    this.allocateLocalVariableSlot(this.resolve(fd.getDeclaringType()), "this");
                 }
             }
 
             if (fd instanceof ConstructorDeclarator) {
 
                 // Define special parameter "this".
-                LocalVariableSlot thisLvSlot = this.getCodeContext().allocateLocalVariable((short) 1, "this", this.resolve(fd.getDeclaringType()));
-                this.updateLocalVariableInCurrentStackMap(thisLvSlot.getSlotIndex(), StackMapTableAttribute.UNINITIALIZED_THIS_VARIABLE_INFO);
+                this.allocateLocalVariableSlot(this.resolve(fd.getDeclaringType()), "this");
 
                 ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) fd;
 
                 if (fd.getDeclaringType() instanceof EnumDeclaration) {
 
                     // Define special constructor parameters "String $name" and "int $ordinal" for enums.
-                    LocalVariable lv1 = new LocalVariable(true, this.iClassLoader.TYPE_java_lang_String);
-                    lv1.setSlot(this.getCodeContext().allocateLocalVariable((short) 1, null, null));
-                    this.updateLocalVariableInCurrentStackMap(lv1.getSlotIndex(), this.verificationTypeInfo(this.iClassLoader.TYPE_java_lang_String));
+                    LocalVariable lv1 = this.allocateLocalVariable(true /*finaL*/, this.iClassLoader.TYPE_java_lang_String);
                     constructorDeclarator.syntheticParameters.put("$name", lv1);
 
-                    LocalVariable lv2 = new LocalVariable(true, IClass.INT);
-                    lv2.setSlot(this.getCodeContext().allocateLocalVariable((short) 1, null, null));
-                    this.updateLocalVariableInCurrentStackMap(lv2.getSlotIndex(), this.verificationTypeInfo(IClass.INT));
+                    LocalVariable lv2 = this.allocateLocalVariable(true /*finaL*/, IClass.INT);
                     constructorDeclarator.syntheticParameters.put("$ordinal", lv2);
                 }
 
                 // Define synthetic parameters for inner classes ("this$...", "val$...").
                 for (IField sf : constructorDeclarator.getDeclaringClass().syntheticFields.values()) {
-                    LocalVariable lv = new LocalVariable(true, sf.getType());
 
-                    lv.setSlot(
-                        this.getCodeContext().allocateLocalVariable(Descriptor.size(sf.getDescriptor()), null, null)
-                    );
-                    this.updateLocalVariableInCurrentStackMap(lv.getSlotIndex(), this.verificationTypeInfo(sf.getType()));
+                    LocalVariable lv = this.allocateLocalVariable(true /*finaL*/, sf.getType());
                     constructorDeclarator.syntheticParameters.put(sf.getName(), lv);
                 }
             }
@@ -3640,12 +3595,7 @@ class UnitCompiler {
                 fp,
                 i == fd.formalParameters.parameters.length - 1 && fd.formalParameters.variableArity
             );
-            lv.setSlot(this.getCodeContext().allocateLocalVariable(
-                Descriptor.size(UnitCompiler.rawTypeOf(lv.type).getDescriptor()),
-                fp.name,
-                lv.type
-            ));
-            this.updateLocalVariableInCurrentStackMap(lv.getSlotIndex(), this.verificationTypeInfo(lv.type));
+            lv.setSlot(this.allocateLocalVariableSlot(lv.type, fp.name));
 
             if (localVars.put(fp.name, lv) != null) {
                 this.compileError("Redefinition of parameter \"" + fp.name + "\"", fd.getLocation());
@@ -3662,6 +3612,20 @@ class UnitCompiler {
         if (fd.statements != null) {
             for (BlockStatement bs : fd.statements) localVars = this.buildLocalVariableMap(bs, localVars);
         }
+    }
+
+    private LocalVariableSlot
+    allocateLocalVariableSlot(IType localVariableType, @Nullable String localVariableName) {
+
+        LocalVariableSlot result = this.getCodeContext().allocateLocalVariable(
+            Descriptor.size(UnitCompiler.rawTypeOf(localVariableType).getDescriptor()),
+            localVariableName,
+            localVariableType
+        );
+
+        this.updateLocalVariableInCurrentStackMap(result.getSlotIndex(), this.verificationTypeInfo(localVariableType));
+
+        return result;
     }
 
     /**
