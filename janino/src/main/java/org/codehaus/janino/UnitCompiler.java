@@ -1097,7 +1097,7 @@ class UnitCompiler {
                 this.compileError("Duplicate annotation \"" + annotationIClass + "\"", annotationType.getLocation());
             }
 
-            // Determine the attribute name.
+            // Determine the retention.
             boolean runtimeVisible = false;
             for (IAnnotation aa : annotationAnnotations) {
 
@@ -1240,9 +1240,8 @@ class UnitCompiler {
                 @Override public ClassFile.ElementValue
                 visitAnnotation(Annotation a) throws CompileException {
 
-                    short annotationTypeIndex = (
-                        cf.addConstantClassInfo(UnitCompiler.this.getRawType(a.getType()).getDescriptor())
-                    );
+                    short
+                    annotationTypeIndex = cf.addConstantUtf8Info(UnitCompiler.this.getRawType(a.getType()).getDescriptor());
 
                     final Map<Short, ClassFile.ElementValue>
                     evps = new HashMap<>();
