@@ -134,7 +134,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertExpressionEvaluatesTrue("17 == 021L");
         this.assertExpressionUncookable(
             "17 == 029",
-            "Digit '9' not allowed in octal literal|compiler.err.int.number.too.large"
+            "Digit '9' not allowed in octal literal|compiler.err.int.number.too.large|';' expected"
         );
     }
 
