@@ -25,9 +25,13 @@
 
 package org.codehaus.janino.tests;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -68,66 +72,240 @@ class GithubPullRequestsTest {
      * literal if possible to simplify if statement</a>
      */
     @Test public void
-    testPullRequest10() throws CompileException, IOException {
+    testPullRequest10a() throws Exception {
 
-        String cut = (
-            ""
-            + "public\n"
-            + "class Foo { \n"
-            + "\n"
-            + "    public static String\n"
-            + "    meth() {\n"
-            + "\n"
-            + "        boolean test = true;\n"
-            + "        if (test) {\n"
-            + "            return \"true\";\n"
-            + "        } else {\n"
-            + "            return \"false\";\n"
-            + "        }\n"
-            + "    }\n"
-            + "}\n"
+        GithubPullRequestsTest.assertDisassemblyDoesNotContain(
+            (
+                ""
+                + "public\n"
+                + "class Foo { \n"
+                + "\n"
+                + "    public static String\n"
+                + "    meth() {\n"
+                + "\n"
+                + "        boolean test = true;\n"
+                + "        if (test) {\n"
+                + "            return \"true\";\n"
+                + "        } else {\n"
+                + "            return \"FAIL\";\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"
+            ),
+            "FAIL"
         );
+    }
 
+    @Test public void
+    testPullRequest10b() throws Exception {
+
+        GithubPullRequestsTest.assertDisassemblyDoesNotContain(
+            (
+                ""
+                + "public\n"
+                + "class Foo {\n"
+                + "\n"
+                + "    public static String\n"
+                + "    meth() {\n"
+                + "\n"
+                + "        boolean test = true;\n"
+                + "        int     test2 = 1;\n"
+                + "        if (test) {\n"
+                + "            return \"true\";\n"
+                + "        } else {\n"
+                + "            return \"FAIL\";\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"
+            ),
+            "FAIL"
+        );
+    }
+
+    @Test public void
+    testPullRequest10c() throws Exception {
+
+        GithubPullRequestsTest.assertDisassemblyDoesNotContain(
+            (
+                ""
+                + "public\n"
+                + "class Foo { \n"
+                + "\n"
+                + "    public static String\n"
+                + "    meth() {\n"
+                + "\n"
+                + "        boolean test = true, test1 = false;\n"
+                + "        int test3 = 1;\n"
+                + "        if (test) {\n"
+                + "            return \"true\";\n"
+                + "        } else {\n"
+                + "            return \"FAIL\";\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"
+            ),
+            "FAIL"
+        );
+    }
+
+    @Test public void
+    testPullRequest10d() throws Exception {
+
+        GithubPullRequestsTest.assertDisassemblyDoesNotContain(
+            (
+                ""
+                + "public\n"
+                + "class Foo { \n"
+                + "\n"
+                + "    public static String\n"
+                + "    meth() {\n"
+                + "\n"
+                + "        boolean test = true, test1 = false;\n"
+                + "        boolean test3 = test;\n"
+                + "        if (test) {\n"
+                + "            return \"true\";\n"
+                + "        } else {\n"
+                + "            return \"FAIL\";\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"
+            ),
+            "FAIL"
+        );
+    }
+
+    @Test public void
+    testPullRequest10e() throws Exception {
+
+        GithubPullRequestsTest.assertDisassemblyContainsAllOf(
+            (
+                ""
+                + "public\n"
+                + "class Foo { \n"
+                + "\n"
+                + "    public static String\n"
+                + "    meth() {\n"
+                + "\n"
+                + "        boolean test = true, test1 = false;\n"
+                + "        boolean test3 = (test = false);\n"
+                + "        if (test) {\n"
+                + "            return \"SUCCEED1\";\n"
+                + "        } else {\n"
+                + "            return \"SUCCEED2\";\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"
+            ),
+            "SUCCEED1", "SUCCEED2"
+        );
+    }
+
+    /**
+     * There <em>are</em> initializers with side effects between the offending variable declarator and the IF statement.
+     */
+    @Test public void
+    testPullRequest10f() throws Exception {
+
+        GithubPullRequestsTest.assertDisassemblyContainsAllOf(
+            (
+                ""
+                + "public\n"
+                + "class Foo { \n"
+                + "\n"
+                + "    public static String\n"
+                + "    meth() {\n"
+                + "\n"
+                + "        boolean test = true, test1 = false;\n"
+                + "        Object o = new Object();\n"
+                + "        if (test) {\n"
+                + "            return \"SUCCEED1\";\n"
+                + "        } else {\n"
+                + "            return \"SUCCEED2\";\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"
+            ),
+            "SUCCEED1", "SUCCEED2"
+        );
+    }
+
+    /**
+     * There <em>are</em> initializers with side effects between the offending variable declarator and the IF statement,
+     * but the variable declarator is FINAL.
+     */
+    @Test public void
+    testPullRequest10g() throws Exception {
+
+        GithubPullRequestsTest.assertDisassemblyDoesNotContain(
+            (
+                ""
+                + "public\n"
+                + "class Foo { \n"
+                + "\n"
+                + "    public static String\n"
+                + "    meth() {\n"
+                + "\n"
+                + "        final boolean test = true, test1 = false;\n"
+                + "        Object o = new Object();\n"
+                + "        if (test) {\n"
+                + "            return \"true\";\n"
+                + "        } else {\n"
+                + "            return \"FAIL\";\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n"
+            ),
+            "FAIL"
+        );
+    }
+
+    private static void
+    assertDisassemblyContainsAllOf(String cu, String... infixes) throws Exception {
+        String s = GithubPullRequestsTest.compileAndDisassemble(cu);
+        for (String infix : infixes) {
+            Assert.assertTrue("Disassembly does not contain \"" + infix + "\": " + s, s.contains(infix));
+        }
+    }
+
+    private static void
+    assertDisassemblyDoesNotContain(String cu, String... infixes) throws Exception {
+        String s = GithubPullRequestsTest.compileAndDisassemble(cu);
+        for (String infix : infixes) {
+            Assert.assertFalse("Disassembly contains \"" + infix + "\": " + s, s.contains(infix));
+        }
+    }
+
+    private static String
+    compileAndDisassemble(String cu)
+        throws CompileException, IOException, Exception {
         AbstractCompilationUnit
-        acu = new Parser(new Scanner(null, new StringReader(cut))).parseAbstractCompilationUnit();
+        acu = new Parser(new Scanner(null, new StringReader(cu))).parseAbstractCompilationUnit();
 
-        IClassLoader            icl        = new ClassLoaderIClassLoader(this.getClass().getClassLoader());
-        UnitCompiler            uc         = new UnitCompiler(acu, icl);
-        ClassFile[]             classFiles = uc.compileUnit(
+        IClassLoader icl        = new ClassLoaderIClassLoader(GithubPullRequestsTest.class.getClassLoader());
+        UnitCompiler uc         = new UnitCompiler(acu, icl);
+        ClassFile[]  classFiles = uc.compileUnit(
             false, // debugSource
             false, // debugLines
             false  // debugVars
         );
 
         Assert.assertEquals(1, classFiles.length);
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         classFiles[0].store(baos);
 
-        // The class file disassembles to:
-        //
-        //     // *** Disassembly of 'C:\workspaces\janino\janino\Foo.class'.
-        //
-        //     // Class file version = 50.0 (J2SE 6.0)
-        //
-        //     public class Foo {
-        //
-        //         public static String meth() {
-        //             iconst_1
-        //             istore_0        [v0]
-        //             ldc             "true"
-        //             areturn
-        //         }
-        //
-        //         public Foo() {
-        //             aload_0         [this]
-        //             invokespecial   Object()
-        //             return
-        //         }
-        //     }
-        //
-        // As you see, the IF statement has been optimized away.
-        GithubPullRequestsTest.assertEqualsOneOf("Class file size", new Object[] { 238, 255, 258, 262, 273 }, baos.size());
+        String s = GithubPullRequestsTest.disassemble(new ByteArrayInputStream(baos.toByteArray()));
+        return s;
+    }
+
+    private static String
+    disassemble(InputStream is) throws Exception {
+        Class<?> dc = GithubPullRequestsTest.class.getClassLoader().loadClass("de.unkrig.jdisasm.Disassembler");
+
+        Object       d  = dc.getConstructor().newInstance();             // Disassembler d = new Disassemlber();
+        StringWriter sw = new StringWriter();
+        dc.getDeclaredMethod("setOut", Writer.class).invoke(d, sw);      // dd.setOut(sw);
+        dc.getDeclaredMethod("disasm", InputStream.class).invoke(d, is); // d.disasm(is);
+        return sw.toString();
     }
 
     @Test public void
