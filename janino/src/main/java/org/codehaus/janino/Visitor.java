@@ -34,6 +34,8 @@ import org.codehaus.janino.Java.Annotation;
 import org.codehaus.janino.Java.AnonymousClassDeclaration;
 import org.codehaus.janino.Java.ArrayAccessExpression;
 import org.codehaus.janino.Java.ArrayCreationReference;
+import org.codehaus.janino.Java.ArrayInitializer;
+import org.codehaus.janino.Java.ArrayInitializerOrRvalue;
 import org.codehaus.janino.Java.ArrayLength;
 import org.codehaus.janino.Java.ArrayType;
 import org.codehaus.janino.Java.AssertStatement;
@@ -698,6 +700,18 @@ class Visitor {
          * Invoked by {@link Java.ArrayCreationReference#accept(Visitor.RvalueVisitor)}
          */
         @Nullable R visitArrayCreationReference(ArrayCreationReference acr) throws EX;
+    }
+
+    /**
+     * The visitor for {@link ArrayInitializerOrRvalue}.
+     *
+     * @param <R>  The type of the object returned by the {@code visit*()} methods
+     * @param <EX> The exception that the {@code visit*()} methods may throw
+     */
+    public
+    interface ArrayInitializerOrRvalueVisitor<R, EX extends Throwable> extends RvalueVisitor<R, EX> {
+        @Nullable R visitArrayInitializer(ArrayInitializer ai) throws EX;
+        @Nullable R visitRvalue(Rvalue rvalue)                 throws EX;
     }
 
     /**

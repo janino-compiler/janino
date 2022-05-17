@@ -46,6 +46,7 @@ import org.codehaus.janino.Java.FunctionDeclarator.FormalParameter;
 import org.codehaus.janino.Java.FunctionDeclarator.FormalParameters;
 import org.codehaus.janino.Visitor.AbstractCompilationUnitVisitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
+import org.codehaus.janino.Visitor.ArrayInitializerOrRvalueVisitor;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ConstructorInvocationVisitor;
@@ -4485,6 +4486,9 @@ class Java {
 
         @Override @Nullable public final <R, EX extends Throwable> R
         accept(AtomVisitor<R, EX> visitor) throws EX { return visitor.visitRvalue(this); }
+
+        @Override @Nullable public final <R, EX extends Throwable> R
+        accept(ArrayInitializerOrRvalueVisitor<R, EX> visitor) throws EX { return visitor.visitRvalue(this); }
     }
 
     /**
@@ -5782,6 +5786,11 @@ class Java {
         @Override public void
         setEnclosingScope(Scope s) { for (ArrayInitializerOrRvalue v : this.values) v.setEnclosingScope(s); }
 
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(ArrayInitializerOrRvalueVisitor<R, EX> aiorvv) throws EX {
+            return aiorvv.visitArrayInitializer(this);
+        }
+
         @Override public String
         toString() { return " { (" + this.values.length + " values) }"; }
     }
@@ -5796,6 +5805,9 @@ class Java {
          * Sets the immediately enclosing scope for this array initializer or rvalue.
          */
         void setEnclosingScope(Scope s);
+
+        @Nullable public <R, EX extends Throwable> R
+        accept(ArrayInitializerOrRvalueVisitor<R, EX> aiorvv) throws EX;
     }
 
     /**
