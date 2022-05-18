@@ -879,7 +879,7 @@ public class Main {
         ee.cook("a + b");
 
         // Eventually we evaluate the expression - and that goes super-fast.
-        int result = (Integer) ee.evaluate(new Object[] { 19, 23 });
+        int result = (Integer) ee.evaluate(19, 23);
         System.out.println(result);
     }
 }</pre></div>
