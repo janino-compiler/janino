@@ -1272,30 +1272,25 @@ $ janinoc -sourcepath src -d classes src/com/acme/MyClass.java
 $ janinoc -help
 A drop-in replacement for the JAVAC compiler, see the documentation for JAVAC
 Usage:
-  janinoc [ &lt;option&gt; ] ... &lt;class-name&gt; [ &lt;argument&gt; ] ...
-Options:
-  -sourcepath &lt;dir-list&gt;    Where to look for source files
-  -classpath &lt;dir-list&gt;     Where to look for class files
-  -cp &lt;dir-list&gt;            Synonym for "-classpath"
-  -extdirs &lt;dir-list&gt;       Where to look for extension class files
-  -bootclasspath &lt;dir-list&gt; Where to look for boot class files
-  -encoding &lt;encoding&gt;      Encoding of source files, default is platform-dependent
-  -verbose                  Report about opening, parsing, compiling of files
+
+  java java.lang.Compiler [ &lt;option&gt; ] ... &lt;source-file&gt; ...
+
+Supported &lt;option&gt;s are:
+  -d &lt;output-dir&gt;           Where to save class files
+  -sourcepath &lt;dirlist&gt;     Where to look for other source files
+  -classpath &lt;dirlist&gt;      Where to look for other class files
+  -extdirs &lt;dirlist&gt;        Where to look for other class files
+  -bootclasspath &lt;dirlist&gt;  Where to look for other class files
+  -encoding &lt;encoding&gt;      Encoding of source files, e.g. "UTF-8" or "ISO-8859-1"
+  -verbose
   -g                        Generate all debugging info
-  -g:none                   Generate no debugging info
-  -g:{lines,vars,source}    Generate only some debugging info
-  -warn:&lt;pattern-list&gt;      Issue certain warnings, examples:
-    -warn:*                 Enables all warnings
-    -warn:IASF              Only warn against implicit access to static fields
-    -warn:*-IASF            Enables all warnings, except those against implicit
-                            access to static fields
-    -warn:*-IA*+IASF        Enables all warnings, except those against implicit
-                            accesses, but do warn against implicit access to
-                            static fields
+  -g:none                   Generate no debugging info (the default)
+  -g:{source,lines,vars}    Generate only some debugging info
   -rebuild                  Compile all source files, even if the class files
-                            seems up-to-date
-  -n                        Print subcommands to STDOUT instead of running them
-  (any valid command-line optipon for the JAVA tool, see "java -help")
+                            seem up-to-date
+  -help
+
+The default encoding in this environment is "UTF-8".
 $</pre></div>
 
         <h4>
