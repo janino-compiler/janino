@@ -2001,11 +2001,11 @@ class Parser {
      */
     public VariableDeclarator
     parseVariableDeclaratorRest(String name) throws CompileException, IOException  {
-        Location                 loc         = this.location();
-        int                      brackets    = this.parseBracketsOpt();
-        ArrayInitializerOrRvalue initializer = null;
+        Location loc = this.location();
 
-        if (this.peekRead("=")) initializer = this.parseVariableInitializer();
+        int brackets = this.parseBracketsOpt();
+
+        ArrayInitializerOrRvalue initializer = this.peekRead("=") ? this.parseVariableInitializer() : null;
 
         return new VariableDeclarator(loc, name, brackets, initializer);
     }
