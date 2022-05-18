@@ -175,6 +175,7 @@ import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Visitor.AbstractCompilationUnitVisitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
+import org.codehaus.janino.Visitor.ArrayInitializerOrRvalueVisitor;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ElementValueVisitor;
@@ -769,6 +770,33 @@ class Unparser {
         @Override @Nullable public Void
         visitSimpleType(SimpleType st) {
             Unparser.this.pw.print(st.toString());
+            return null;
+        }
+    };
+
+    private final ArrayInitializerOrRvalueVisitor<Void, RuntimeException>
+    arrayInitializerOrRvalueUnparser = new ArrayInitializerOrRvalueVisitor<Void, RuntimeException>() {
+
+        @Override @Nullable public Void
+        visitRvalue(Rvalue rvalue) throws RuntimeException {
+            Unparser.this.unparseAtom(rvalue);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitArrayInitializer(ArrayInitializer ai) throws RuntimeException {
+            if (ai.values.length == 0) {
+                Unparser.this.pw.print("{}");
+            } else
+            {
+                Unparser.this.pw.print("{ ");
+                Unparser.this.unparseArrayInitializerOrRvalue(ai.values[0]);
+                for (int i = 1; i < ai.values.length; ++i) {
+                    Unparser.this.pw.print(", ");
+                    Unparser.this.unparseArrayInitializerOrRvalue(ai.values[i]);
+                }
+                Unparser.this.pw.print(" }");
+            }
             return null;
         }
     };
@@ -1466,6 +1494,9 @@ class Unparser {
     public void
     unparseAtom(Atom a) { a.accept(this.atomUnparser); }
 
+    private void
+    unparseArrayInitializerOrRvalue(ArrayInitializerOrRvalue aiorv) { aiorv.accept(this.arrayInitializerOrRvalueUnparser); }
+
     public void
     unparseRvalue(Rvalue rv) { rv.accept(this.rvalueUnparser); }
 
@@ -1646,34 +1677,6 @@ class Unparser {
         this.pw.print(AutoIndentWriter.INDENT);
         this.unparseClassDeclarationBody(ncd);
         this.pw.print(AutoIndentWriter.UNINDENT + "}");
-    }
-
-    private void
-    unparseArrayInitializerOrRvalue(ArrayInitializerOrRvalue aiorv) {
-        if (aiorv instanceof Rvalue) {
-            this.unparseAtom((Rvalue) aiorv);
-        } else
-        if (aiorv instanceof ArrayInitializer) {
-            ArrayInitializer ai = (ArrayInitializer) aiorv;
-            if (ai.values.length == 0) {
-                this.pw.print("{}");
-            } else
-            {
-                this.pw.print("{ ");
-                this.unparseArrayInitializerOrRvalue(ai.values[0]);
-                for (int i = 1; i < ai.values.length; ++i) {
-                    this.pw.print(", ");
-                    this.unparseArrayInitializerOrRvalue(ai.values[i]);
-                }
-                this.pw.print(" }");
-            }
-        } else
-        {
-            throw new InternalCompilerException(
-                "Unexpected array initializer or rvalue class "
-                + aiorv.getClass().getName()
-            );
-        }
     }
 
     /**

@@ -4133,7 +4133,9 @@ class Java {
          * @return The enclosing scope (as previously set by {@link #setEnclosingScope(Java.Scope)})
          */
         public Scope
-        getEnclosingScope() { assert this.enclosingScope != null; return this.enclosingScope; }
+        getEnclosingScope() {
+            assert this.enclosingScope != null : this.getLocation() + ": " + this; return this.enclosingScope;
+        }
 
         @Override public Type
         toType() { return this; }
@@ -4439,6 +4441,11 @@ class Java {
                         );
                     }
                     super.traverseType(t);
+                }
+                @Override public void
+                traverseNewInitializedArray(NewInitializedArray nia) {
+                    if (nia.arrayType != null) nia.arrayType.setEnclosingScope(enclosingScope);
+                    nia.arrayInitializer.setEnclosingScope(enclosingScope);
                 }
             }.visitAtom(this);
         }
@@ -6442,7 +6449,7 @@ class Java {
 
         @Override public void
         setEnclosingScope(Scope enclosingScope) {
-        	if (this.referenceType != null) this.referenceType.setEnclosingScope(enclosingScope);
+            if (this.referenceType != null) this.referenceType.setEnclosingScope(enclosingScope);
         }
 
         @Override @Nullable public final <R, EX extends Throwable> R

@@ -2420,27 +2420,7 @@ class UnitCompiler {
                 if (!declaringIClass.isInterface() && !fd.isStatic()) this.load(vd, declaringIClass, 0);
 
                 IClass fieldType = this.getRawType(fd.type);
-                if (initializer instanceof Rvalue) {
-                    Rvalue rvalue          = (Rvalue) initializer;
-                    IType  initializerType = this.compileGetValue(rvalue);
-
-                    fieldType = this.iClassLoader.getArrayIClass(fieldType, vd.brackets);
-                    this.assignmentConversion(
-                        fd,                           // locatable
-                        initializerType,              // sourceType
-                        fieldType,                    // targetType
-                        this.getConstantValue(rvalue) // constantValue
-                    );
-                } else
-                if (initializer instanceof ArrayInitializer) {
-                    this.compileGetValue((ArrayInitializer) initializer, fieldType);
-                } else
-                {
-                    throw new InternalCompilerException(
-                        "Unexpected array initializer or rvalue class "
-                        + initializer.getClass().getName()
-                    );
-                }
+                this.compile(initializer, UnitCompiler.this.iClassLoader.getArrayIClass(fieldType, vd.brackets));
 
                 // No need to check accessibility here.
                 ;
@@ -2617,26 +2597,9 @@ class UnitCompiler {
                 LocalVariable lv = this.getLocalVariable(lvds, vd);
                 lv.setSlot(this.allocateLocalVariableSlot(lv.type, vd.name));
 
-                ArrayInitializerOrRvalue oi = vd.initializer;
-                if (oi != null) {
-                    if (oi instanceof Rvalue) {
-                        Rvalue rhs = (Rvalue) oi;
-                        this.assignmentConversion(
-                            lvds,                      // locatable
-                            this.compileGetValue(rhs), // sourceType
-                            lv.type,                   // targetType
-                            this.getConstantValue(rhs) // constantValue
-                        );
-                    } else
-                    if (oi instanceof ArrayInitializer) {
-                        this.compileGetValue((ArrayInitializer) oi, lv.type);
-                    } else
-                    {
-                        throw new InternalCompilerException(
-                            "Unexpected rvalue or array initialized class "
-                            + oi.getClass().getName()
-                        );
-                    }
+                ArrayInitializerOrRvalue initializer = vd.initializer;
+                if (initializer != null) {
+                    this.compile(initializer, lv.type);
                     this.store(lvds, lv);
                 }
             } catch (RuntimeException re) {
@@ -2644,6 +2607,30 @@ class UnitCompiler {
             }
         }
         return true;
+    }
+
+    private void
+    compile(final ArrayInitializerOrRvalue aiorv, final IType arrayType) throws CompileException {
+
+        aiorv.accept(new ArrayInitializerOrRvalueVisitor<Void, CompileException>() {
+
+            @Override @Nullable public Void
+            visitArrayInitializer(ArrayInitializer ai) throws CompileException {
+                UnitCompiler.this.compileGetValue(ai, arrayType);
+                return null;
+            }
+
+            @Override @Nullable public Void
+            visitRvalue(Rvalue rhs) throws CompileException {
+                UnitCompiler.this.assignmentConversion(
+                    aiorv,                                  // locatable
+                    UnitCompiler.this.compileGetValue(rhs), // sourceType
+                    arrayType,                              // targetType
+                    UnitCompiler.this.getConstantValue(rhs) // constantValue
+                );
+                return null;
+            }
+        });
     }
 
     private VerificationTypeInfo
@@ -2863,18 +2850,12 @@ class UnitCompiler {
                         IType         lvType = UnitCompiler.this.getType(lvdr.type);
                         LocalVariable result = UnitCompiler.this.allocateLocalVariable(true /*finaL*/, lvType);
 
-                        ArrayInitializerOrRvalue oi = lvdr.variableDeclarator.initializer;
-                        if (oi instanceof Rvalue) {
-                            UnitCompiler.this.compileGetValue((Rvalue) oi);
-                        } else
-                        if (oi instanceof ArrayInitializer) {
-                            assert lvType instanceof IClass;
-                            UnitCompiler.this.compileGetValue((ArrayInitializer) oi, (IClass) lvType);
-                        } else
-                        {
-                            throw new InternalCompilerException(String.valueOf(oi));
-                        }
+                        ArrayInitializerOrRvalue initializer = lvdr.variableDeclarator.initializer;
+                        assert initializer != null;
+
+                        UnitCompiler.this.compile(initializer, lvType);
                         UnitCompiler.this.store(ts, result);
+
                         return result;
                     }
 
@@ -5268,11 +5249,11 @@ class UnitCompiler {
         return result;
     }
 
-    /*@SuppressWarnings("null")*/ private static final ArrayInitializerOrRvalueVisitor<Boolean, RuntimeException>
+    private static final ArrayInitializerOrRvalueVisitor<Boolean, RuntimeException>
     MAY_HAVE_SIDE_EFFECTS_VISITOR = new ArrayInitializerOrRvalueVisitor<Boolean, RuntimeException>() {
 
-        @Override @Nullable public Boolean visitRvalue(Rvalue rvalue)                 { return (Boolean) rvalue.accept((RvalueVisitor<Boolean, RuntimeException>) this); }
-        @Override @Nullable public Boolean visitArrayInitializer(ArrayInitializer ai) { return UnitCompiler.mayHaveSideEffects(ai.values);                               }
+        @Override @Nullable public Boolean visitRvalue(Rvalue rvalue)                 { return (Boolean) rvalue.accept(this.rvalueVisitor); }
+        @Override @Nullable public Boolean visitArrayInitializer(ArrayInitializer ai) { return UnitCompiler.mayHaveSideEffects(ai.values);  }
 
         final LvalueVisitor<Boolean, RuntimeException>
         lvalueVisitor = new LvalueVisitor<Boolean, RuntimeException>() {
@@ -5287,37 +5268,41 @@ class UnitCompiler {
             @Override @Nullable public Boolean visitParenthesizedExpression(ParenthesizedExpression pe)                    { return UnitCompiler.mayHaveSideEffects(pe.value);           }
         };
 
-        // SUPPRESS CHECKSTYLE LineLengthCheck:30
-        @Override @Nullable public Boolean visitLvalue(Lvalue lv)                                              { return (Boolean) lv.accept(this.lvalueVisitor);                 }
-        @Override @Nullable public Boolean visitArrayLength(ArrayLength al)                                    { return UnitCompiler.mayHaveSideEffects(al.lhs);                 }
-        @Override @Nullable public Boolean visitAssignment(Assignment a)                                       { return true;                                                    }
-        @Override @Nullable public Boolean visitUnaryOperation(UnaryOperation uo)                              { return UnitCompiler.mayHaveSideEffects(uo.operand);             }
-        @Override @Nullable public Boolean visitBinaryOperation(BinaryOperation bo)                            { return UnitCompiler.mayHaveSideEffects(bo.lhs, bo.rhs);         }
-        @Override @Nullable public Boolean visitCast(Cast c)                                                   { return UnitCompiler.mayHaveSideEffects(c.value);                }
-        @Override @Nullable public Boolean visitClassLiteral(ClassLiteral cl)                                  { return false;                                                   }
-        @Override @Nullable public Boolean visitConditionalExpression(ConditionalExpression ce)                { return UnitCompiler.mayHaveSideEffects(ce.lhs, ce.mhs, ce.rhs); }
-        @Override @Nullable public Boolean visitCrement(Crement c)                                             { return true;                                                    }
-        @Override @Nullable public Boolean visitInstanceof(Instanceof io)                                      { return false;                                                   }
-        @Override @Nullable public Boolean visitMethodInvocation(MethodInvocation mi)                          { return true;                                                    }
-        @Override @Nullable public Boolean visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)     { return true;                                                    }
-        @Override @Nullable public Boolean visitIntegerLiteral(IntegerLiteral il)                              { return false;                                                   }
-        @Override @Nullable public Boolean visitFloatingPointLiteral(FloatingPointLiteral fpl)                 { return false;                                                   }
-        @Override @Nullable public Boolean visitBooleanLiteral(BooleanLiteral bl)                              { return false;                                                   }
-        @Override @Nullable public Boolean visitCharacterLiteral(CharacterLiteral cl)                          { return false;                                                   }
-        @Override @Nullable public Boolean visitStringLiteral(StringLiteral sl)                                { return false;                                                   }
-        @Override @Nullable public Boolean visitNullLiteral(NullLiteral nl)                                    { return false;                                                   }
-        @Override @Nullable public Boolean visitSimpleConstant(SimpleConstant sl)                              { return false;                                                   }
-        @Override @Nullable public Boolean visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      { return true;                                                    }
-        @Override @Nullable public Boolean visitNewArray(NewArray na)                                          { return UnitCompiler.mayHaveSideEffects(na.dimExprs);            }
-        @Override @Nullable public Boolean visitNewInitializedArray(NewInitializedArray nia)                   { return UnitCompiler.mayHaveSideEffects(nia.arrayInitializer);   }
-        @Override @Nullable public Boolean visitNewClassInstance(NewClassInstance nci)                         { return true;                                                    }
-        @Override @Nullable public Boolean visitParameterAccess(ParameterAccess pa)                            { return false;                                                   }
-        @Override @Nullable public Boolean visitQualifiedThisReference(QualifiedThisReference qtr)             { return false;                                                   }
-        @Override @Nullable public Boolean visitThisReference(ThisReference tr)                                { return false;                                                   }
-        @Override @Nullable public Boolean visitLambdaExpression(LambdaExpression le)                          { return true;                                                    }
-        @Override @Nullable public Boolean visitMethodReference(MethodReference mr)                            { return true;                                                    }
-        @Override @Nullable public Boolean visitInstanceCreationReference(ClassInstanceCreationReference cicr) { return true;                                                    }
-        @Override @Nullable public Boolean visitArrayCreationReference(ArrayCreationReference acr)             { return false;                                                   }
+        final RvalueVisitor<Boolean, RuntimeException>
+        rvalueVisitor = new RvalueVisitor<Boolean, RuntimeException>() {
+
+            // SUPPRESS CHECKSTYLE LineLengthCheck:30
+            @Override @Nullable public Boolean visitLvalue(Lvalue lv)                                              { return (Boolean) lv.accept(lvalueVisitor);                      }
+            @Override @Nullable public Boolean visitArrayLength(ArrayLength al)                                    { return UnitCompiler.mayHaveSideEffects(al.lhs);                 }
+            @Override @Nullable public Boolean visitAssignment(Assignment a)                                       { return true;                                                    }
+            @Override @Nullable public Boolean visitUnaryOperation(UnaryOperation uo)                              { return UnitCompiler.mayHaveSideEffects(uo.operand);             }
+            @Override @Nullable public Boolean visitBinaryOperation(BinaryOperation bo)                            { return UnitCompiler.mayHaveSideEffects(bo.lhs, bo.rhs);         }
+            @Override @Nullable public Boolean visitCast(Cast c)                                                   { return UnitCompiler.mayHaveSideEffects(c.value);                }
+            @Override @Nullable public Boolean visitClassLiteral(ClassLiteral cl)                                  { return false;                                                   }
+            @Override @Nullable public Boolean visitConditionalExpression(ConditionalExpression ce)                { return UnitCompiler.mayHaveSideEffects(ce.lhs, ce.mhs, ce.rhs); }
+            @Override @Nullable public Boolean visitCrement(Crement c)                                             { return true;                                                    }
+            @Override @Nullable public Boolean visitInstanceof(Instanceof io)                                      { return false;                                                   }
+            @Override @Nullable public Boolean visitMethodInvocation(MethodInvocation mi)                          { return true;                                                    }
+            @Override @Nullable public Boolean visitSuperclassMethodInvocation(SuperclassMethodInvocation smi)     { return true;                                                    }
+            @Override @Nullable public Boolean visitIntegerLiteral(IntegerLiteral il)                              { return false;                                                   }
+            @Override @Nullable public Boolean visitFloatingPointLiteral(FloatingPointLiteral fpl)                 { return false;                                                   }
+            @Override @Nullable public Boolean visitBooleanLiteral(BooleanLiteral bl)                              { return false;                                                   }
+            @Override @Nullable public Boolean visitCharacterLiteral(CharacterLiteral cl)                          { return false;                                                   }
+            @Override @Nullable public Boolean visitStringLiteral(StringLiteral sl)                                { return false;                                                   }
+            @Override @Nullable public Boolean visitNullLiteral(NullLiteral nl)                                    { return false;                                                   }
+            @Override @Nullable public Boolean visitSimpleConstant(SimpleConstant sl)                              { return false;                                                   }
+            @Override @Nullable public Boolean visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      { return true;                                                    }
+            @Override @Nullable public Boolean visitNewArray(NewArray na)                                          { return UnitCompiler.mayHaveSideEffects(na.dimExprs);            }
+            @Override @Nullable public Boolean visitNewInitializedArray(NewInitializedArray nia)                   { return UnitCompiler.mayHaveSideEffects(nia.arrayInitializer);   }
+            @Override @Nullable public Boolean visitNewClassInstance(NewClassInstance nci)                         { return true;                                                    }
+            @Override @Nullable public Boolean visitParameterAccess(ParameterAccess pa)                            { return false;                                                   }
+            @Override @Nullable public Boolean visitQualifiedThisReference(QualifiedThisReference qtr)             { return false;                                                   }
+            @Override @Nullable public Boolean visitThisReference(ThisReference tr)                                { return false;                                                   }
+            @Override @Nullable public Boolean visitLambdaExpression(LambdaExpression le)                          { return true;                                                    }
+            @Override @Nullable public Boolean visitMethodReference(MethodReference mr)                            { return true;                                                    }
+            @Override @Nullable public Boolean visitInstanceCreationReference(ClassInstanceCreationReference cicr) { return true;                                                    }
+            @Override @Nullable public Boolean visitArrayCreationReference(ArrayCreationReference acr)             { return false;                                                   }
+        };
     };
 
     private IClass
@@ -5653,40 +5638,24 @@ class UnitCompiler {
             this.compileError("Array initializer not allowed for non-array type \"" + arrayType.toString() + "\"");
         }
 
-        IClass ct = ((IClass) arrayType).getComponentType();
-        assert ct != null;
+        IClass componentType = ((IClass) arrayType).getComponentType();
+        assert componentType != null;
 
         this.consT(ai, Integer.valueOf(ai.values.length));
         this.newArray(
-            ai, // locatable
-            1,  // dimExprCount
-            0,  // dims
-            ct  // componentType
+            ai,           // locatable
+            1,            // dimExprCount
+            0,            // dims
+            componentType // componentType
         );
 
-        for (int i = 0; i < ai.values.length; ++i) {
-            ArrayInitializerOrRvalue aiorv = ai.values[i];
+        for (int index = 0; index < ai.values.length; index++) {
+            ArrayInitializerOrRvalue componentInitializer = ai.values[index];
 
-            this.dup(aiorv);
-            this.consT(ai, i);
-            if (aiorv instanceof Rvalue) {
-                Rvalue rv = (Rvalue) aiorv;
-                this.assignmentConversion(
-                    ai,                       // locatable
-                    this.compileGetValue(rv), // sourceType
-                    ct,                       // targetType
-                    this.getConstantValue(rv) // constantValue
-                );
-            } else
-            if (aiorv instanceof ArrayInitializer) {
-                this.compileGetValue((ArrayInitializer) aiorv, ct);
-            } else
-            {
-                throw new InternalCompilerException(
-                    "Unexpected array initializer or rvalue class " + aiorv.getClass().getName()
-                );
-            }
-            this.arraystore(aiorv, ct);
+            this.dup(componentInitializer);
+            this.consT(ai, index);
+            this.compile(componentInitializer, componentType);
+            this.arraystore(componentInitializer, componentType);
         }
     }
 
@@ -5728,6 +5697,30 @@ class UnitCompiler {
      * {@link Java.Rvalue} does not evaluate to a constant value.
      */
     public static final Object NOT_CONSTANT = IClass.NOT_CONSTANT;
+
+    /**
+     * Attempts to evaluate as a constant expression. The result is one of the following: {@link Boolean}, {@link
+     * Byte}, {@link Short}, {@link Integer}, {@link Long}, {@link Float}, {@link Double}, {@link Character}, {@link
+     * String}, {@code null} (representing the {@code null} literal.
+     * <p>
+     *   This method cannot be STATIC, because the constant value may refer to a constant declaration in this
+     *   compilation unit.
+     * </p>
+     *
+     * @return {@link #NOT_CONSTANT} iff the rvalue is not a constant value
+     */
+    @Nullable public final Object
+    getConstantValue(ArrayInitializerOrRvalue rv) throws CompileException {
+
+        return rv.accept(new ArrayInitializerOrRvalueVisitor<Object, CompileException>() {
+
+            @Override @Nullable public Object
+            visitArrayInitializer(ArrayInitializer ai) { return UnitCompiler.NOT_CONSTANT; }
+
+            @Override @Nullable public Object
+            visitRvalue(Rvalue rvalue) throws CompileException { return UnitCompiler.this.getConstantValue(rvalue); }
+        });
+    }
 
     /**
      * Attempts to evaluate as a constant expression. The result is one of the following: {@link Boolean}, {@link
@@ -6125,11 +6118,10 @@ class UnitCompiler {
                                         return UnitCompiler.NOT_CONSTANT;
                                     }
                                     // The LV is FINAL and thus cannot be modified by intervening VD initializers.
-                                    assert lvi instanceof Rvalue : lvi;
-                                    return this.getConstantValue((Rvalue) lvi);
+                                    return this.getConstantValue(lvi);
                                 }
                                 if (lvi != null) {
-                                    haveSideEffects |= !(lvi instanceof Rvalue) || UnitCompiler.mayHaveSideEffects((Rvalue) lvi);
+                                    haveSideEffects |= UnitCompiler.mayHaveSideEffects(lvi);
                                 }
                             }
                         }
@@ -8480,12 +8472,11 @@ class UnitCompiler {
 
             @Override @Nullable public Object
             getConstantValue() throws CompileException {
-                ArrayInitializerOrRvalue oi = initializer;
-                if (finaL && oi instanceof Rvalue) {
-                    Object constantInitializerValue = UnitCompiler.this.getConstantValue((Rvalue) oi);
+                if (finaL && initializer != null) {
+                    Object constantInitializerValue = UnitCompiler.this.getConstantValue(initializer);
                     if (constantInitializerValue != UnitCompiler.NOT_CONSTANT) {
                         return UnitCompiler.this.assignmentConversion(
-                            oi,                       // locatable
+                            initializer,              // locatable
                             constantInitializerValue, // value
                             this.getType()            // targetType
                         );
@@ -8822,11 +8813,11 @@ class UnitCompiler {
                     LocalVariable lv = ((BlockStatement) s).findLocalVariable(identifier);
                     if (lv != null) {
                         if (!lv.finaL) {
-                            this.compileError(
+                            this.compileError((
                                 "Cannot access non-final local variable \""
                                 + identifier
                                 + "\" from inner class"
-                            );
+                            ), location);
                         }
                         final IType   lvType = lv.type;
                         IClass.IField iField = new SimpleIField(

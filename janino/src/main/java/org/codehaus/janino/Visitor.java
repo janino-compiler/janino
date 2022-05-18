@@ -709,7 +709,7 @@ class Visitor {
      * @param <EX> The exception that the {@code visit*()} methods may throw
      */
     public
-    interface ArrayInitializerOrRvalueVisitor<R, EX extends Throwable> extends RvalueVisitor<R, EX> {
+    interface ArrayInitializerOrRvalueVisitor<R, EX extends Throwable> {
         @Nullable R visitArrayInitializer(ArrayInitializer ai) throws EX;
         @Nullable R visitRvalue(Rvalue rvalue)                 throws EX;
     }

@@ -548,6 +548,43 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_8_1_3__Inner_Classes_and_Enclosing_Instances() throws Exception {
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "import org.junit.Assert;\n"
+            + "\n"
+            + "public class Main {\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "        meth(1, new int[][] { { 2 } }, \"c\", new String[][] { { \"d\" } });\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    meth(final int a, final int[] b[], final String c, final String[] d[]) {\n"
+            + "        final int      e   = 5;\n"
+            + "        final int[]    f[] = { { 6 } };\n"
+            + "        final String   g   = \"g\";\n"
+            + "        final String[] h[] = { { \"h\" } };\n"
+            + "        new Runnable() {\n"
+            + "            public void run() {\n"
+            + "                Assert.assertEquals(1, a);\n"
+            + "                Assert.assertEquals(2, b[0][0]);\n"
+            + "                Assert.assertEquals(\"c\", c);\n"
+            + "                Assert.assertEquals(\"d\", d[0][0]);\n"
+            + "                Assert.assertEquals(5, e);\n"
+            + "                Assert.assertEquals(6, f[0][0]);\n"
+            + "                Assert.assertEquals(\"g\", g);\n"
+            + "                Assert.assertEquals(\"h\", h[0][0]);\n"
+            + "            }\n"
+            + "        }.run();\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}\n"
+        ), "Main");
+    }
+
+    @Test public void
     test_8_4_8_3__Requirements_in_Overriding_and_Hiding() throws Exception {
 
         this.assertClassBodyExecutable(
@@ -802,15 +839,15 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // Default interface methods - a Java 8 feature.
 
-    	String cu = (
-    	    ""
+        String cu = (
+            ""
             + "public interface A { default boolean isTrue() { return true; } }\n"
             + "public class B implements A {}\n"
             + "public class Foo { public static boolean main() { return new B().isTrue(); } }\n"
         );
 
-    	{
-    	    SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
+        {
+            SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
             sct.setSourceVersion(7);
             sct.assertUncookable((
                 ""
@@ -820,11 +857,11 @@ class JlsTest extends CommonsCompilerTestSuite {
                 + "|"
                 + "compiler\\.err\\.illegal\\.start\\.of\\.type"
             ));
-    	}
+        }
 
-    	if (CommonsCompilerTestSuite.JVM_VERSION <= 7 && this.isJdk) return;
+        if (CommonsCompilerTestSuite.JVM_VERSION <= 7 && this.isJdk) return;
 
-    	{
+        {
             SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
             sct.setSourceVersion(8);
             sct.setTargetVersion(8);
@@ -1180,6 +1217,21 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}"
         ), "Main");
+    }
+
+    @Test public void
+    test_10_6__Array_Initializers() throws Exception {
+        this.assertCompilationUnitCookable(
+            ""
+            + "class Foo {\n"
+            + "    String[] sa = { \"a\", \"b\" };\n"
+            + "    String sa2[] = { \"a\", \"b\" };\n"
+            + "    void meth() {\n"
+            + "        Number[] na = { 1, 2, 3.3 };\n"
+            + "        Number na2[] = { 1, 2, 3.3 };\n"
+            + "    }\n"
+            + "}\n"
+        );
     }
 
     @Test public void

@@ -31,7 +31,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.codehaus.commons.compiler.CompileException;
-import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
 import org.codehaus.janino.Java.AbstractCompilationUnit.ImportDeclaration;
@@ -156,9 +155,9 @@ import org.codehaus.janino.Java.UnaryOperation;
 import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Java.Wildcard;
-import org.codehaus.janino.Visitor;
 import org.codehaus.janino.Visitor.AbstractCompilationUnitVisitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
+import org.codehaus.janino.Visitor.ArrayInitializerOrRvalueVisitor;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ConstructorInvocationVisitor;
@@ -225,6 +224,14 @@ class DeepCopier {
         @Override @Nullable public TypeDeclaration visitMemberEnumDeclaration(MemberEnumDeclaration med)                                     throws CompileException { return DeepCopier.this.copyMemberEnumDeclaration(med);                     }
         @Override @Nullable public TypeDeclaration visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)                           throws CompileException { return DeepCopier.this.copyMemberInterfaceDeclaration(mid);                }
         @Override @Nullable public TypeDeclaration visitMemberClassDeclaration(MemberClassDeclaration mcd)                                   throws CompileException { return DeepCopier.this.copyMemberClassDeclaration(mcd);                    }
+    };
+
+    private final ArrayInitializerOrRvalueVisitor<ArrayInitializerOrRvalue, CompileException>
+    arrayInitializerOrRvalueCopier = new ArrayInitializerOrRvalueVisitor<ArrayInitializerOrRvalue, CompileException>() {
+
+        // SUPPRESS CHECKSTYLE LineLength:2
+        @Override public ArrayInitializerOrRvalue visitArrayInitializer(ArrayInitializer ai) throws CompileException { return DeepCopier.this.copyArrayInitializer(ai); }
+        @Override public ArrayInitializerOrRvalue visitRvalue(Rvalue rvalue)                 throws CompileException { return DeepCopier.this.copyRvalue(rvalue);       }
     };
 
     private final RvalueVisitor<Rvalue, CompileException>
@@ -426,6 +433,7 @@ class DeepCopier {
     public Lvalue                        copyLvalue(Lvalue subject)                                               throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.lvalueCopier));                        }
     public Type                          copyType(Type subject)                                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.typeCopier));                          }
     public Atom                          copyAtom(Atom subject)                                                   throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.atomCopier));                          }
+    public ArrayInitializerOrRvalue      copyArrayInitializerOrRvalue(ArrayInitializerOrRvalue subject)           throws CompileException { return DeepCopier.assertNotNull(subject.accept(this.arrayInitializerOrRvalueCopier));      }
 
     // SUPPRESS CHECKSTYLE LineLengthCheck:3
     public PackageMemberTypeDeclaration copyPackageMemberTypeDeclaration(PackageMemberTypeDeclaration subject) throws CompileException { return (PackageMemberTypeDeclaration) this.copyTypeDeclaration(subject); }
@@ -1075,19 +1083,6 @@ class DeepCopier {
     public ArrayInitializer
     copyArrayInitializer(ArrayInitializer subject) throws CompileException {
         return new ArrayInitializer(subject.getLocation(), this.copyArrayInitializerOrRvalues(subject.values));
-    }
-
-    public ArrayInitializerOrRvalue
-    copyArrayInitializerOrRvalue(ArrayInitializerOrRvalue subject) throws CompileException {
-
-        if (subject instanceof Rvalue) return this.copyRvalue((Rvalue) subject);
-
-        if (subject instanceof ArrayInitializer) return this.copyArrayInitializer((ArrayInitializer) subject);
-
-        throw new InternalCompilerException(
-            "Unexpected array initializer or rvalue class "
-            + subject.getClass().getName()
-        );
     }
 
     public Rvalue

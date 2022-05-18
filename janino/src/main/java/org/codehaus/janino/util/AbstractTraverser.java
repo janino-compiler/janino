@@ -25,7 +25,6 @@
 
 package org.codehaus.janino.util;
 
-import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AbstractClassDeclaration;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
@@ -147,6 +146,7 @@ import org.codehaus.janino.Java.VariableDeclarator;
 import org.codehaus.janino.Java.WhileStatement;
 import org.codehaus.janino.Visitor.AbstractCompilationUnitVisitor;
 import org.codehaus.janino.Visitor.AnnotationVisitor;
+import org.codehaus.janino.Visitor.ArrayInitializerOrRvalueVisitor;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.BlockStatementVisitor;
 import org.codehaus.janino.Visitor.ConstructorInvocationVisitor;
@@ -408,6 +408,22 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
                 @Override @Nullable public Void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci) throws EX { AbstractTraverser.this.delegate.traverseAlternateConstructorInvocation(aci); return null; }
                 @Override @Nullable public Void visitSuperConstructorInvocation(SuperConstructorInvocation sci)         throws EX { AbstractTraverser.this.delegate.traverseSuperConstructorInvocation(sci);     return null; }
             });
+            return null;
+        }
+    };
+
+    private final ArrayInitializerOrRvalueVisitor<Void, EX>
+    arrayInitializerOrRvalueTraverser = new ArrayInitializerOrRvalueVisitor<Void, EX>() {
+
+        @Override @Nullable public Void
+        visitArrayInitializer(ArrayInitializer ai) throws EX {
+            for (ArrayInitializerOrRvalue value : ai.values) AbstractTraverser.this.traverseArrayInitializerOrRvalue(value);
+            return null;
+        }
+
+        @Override @Nullable public Void
+        visitRvalue(Rvalue rvalue) throws EX {
+            AbstractTraverser.this.traverseRvalue(rvalue);
             return null;
         }
     };
@@ -839,19 +855,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
     @Override public void
     traverseArrayInitializerOrRvalue(ArrayInitializerOrRvalue aiorv) throws EX {
-        if (aiorv instanceof Rvalue) {
-            ((Rvalue) aiorv).accept(this.atomTraverser);
-        } else
-        if (aiorv instanceof ArrayInitializer) {
-            ArrayInitializerOrRvalue[] values = ((ArrayInitializer) aiorv).values;
-            for (ArrayInitializerOrRvalue value : values) this.traverseArrayInitializerOrRvalue(value);
-        } else
-        {
-            throw new InternalCompilerException(
-                "Unexpected array initializer or rvalue class "
-                + aiorv.getClass().getName()
-            );
-        }
+        aiorv.accept(this.arrayInitializerOrRvalueTraverser);
     }
 
     @Override public void
