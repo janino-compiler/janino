@@ -280,7 +280,7 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
      * @param arguments              The actual parameter values
      * @throws IllegalStateException This IScriptEvaluator is not yet cooked
      */
-    @Nullable Object evaluate(@Nullable Object[] arguments) throws InvocationTargetException;
+    @Nullable Object evaluate(@Nullable Object... arguments) throws InvocationTargetException;
 
     /**
      * @return The generated and loaded {@link java.lang.reflect.Method}
