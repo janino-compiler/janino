@@ -146,9 +146,10 @@ class CompilerDemo {
 
     private static final String USAGE = (
         ""
+        + "A drop-in replacement for the JAVAC compiler, see the documentation for JAVAC."
         + "Usage:%n"
         + "%n"
-        + "  java " + Compiler.class.getName() + " [ <option> ] ... <source-file> ...%n"
+        + "  java " + CompilerDemo.class.getName() + " [ <option> ] ... <source-file> ...%n"
         + "%n"
         + "Supported <option>s are:%n"
         + "  -d <output-dir>           Where to save class files%n"
