@@ -322,7 +322,7 @@ class GithubIssuesTest {
     @Test public void
     testIssue135() throws Exception {
 
-    	Java.AbstractCompilationUnit cu = new Parser(new Scanner("Test", new StringReader(
+        Java.AbstractCompilationUnit cu = new Parser(new Scanner("Test", new StringReader(
             ""
             + "public class Test {"
             + "   int blup;"
