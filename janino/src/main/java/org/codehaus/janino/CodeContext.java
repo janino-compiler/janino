@@ -248,7 +248,7 @@ class CodeContext {
     public ClassFile.CodeAttribute
     newCodeAttribute(boolean debugLines, boolean debugVars) {
 
-    	// Transform the exception table from o.c.j.CodeContext to o.c.j.u.ClassFile.
+        // Transform the exception table from o.c.j.CodeContext to o.c.j.u.ClassFile.
         ClassFile.CodeAttribute.ExceptionTableEntry[]
         etes = new ClassFile.CodeAttribute.ExceptionTableEntry[this.exceptionTableEntries.size()];
 
