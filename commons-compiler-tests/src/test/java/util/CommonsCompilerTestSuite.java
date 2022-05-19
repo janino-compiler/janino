@@ -77,7 +77,7 @@ class CommonsCompilerTestSuite {
         this.compilerFactory = compilerFactory;
 
         String compilerFactoryId = compilerFactory.getId();
-        this.isJdk    = compilerFactoryId.equals("org.codehaus.commons.compiler.jdk"); // SUPPRESS CHECKSTYLE EqualsAvoidNull|LineLength
+        this.isJdk    = compilerFactoryId.equals("org.codehaus.commons.compiler.jdk"); // SUPPRESS CHECKSTYLE EqualsAvoidNull
         this.isJanino = compilerFactoryId.equals("org.codehaus.janino");
     }
 

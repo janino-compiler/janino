@@ -965,7 +965,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         if (
             (parser.peek(TokenType.IDENTIFIER) && parser.peekNextButOne(":"))
             || parser.peek(
-                "if", "for", "while", "do", "try", "switch", "synchronized", // SUPPRESS CHECKSTYLE Wrap|LineLength:2
+                "if", "for", "while", "do", "try", "switch", "synchronized", // SUPPRESS CHECKSTYLE Wrap:2
                 "return", "throw", "break", "continue", "assert",
                 "{", ";"
             ) != -1

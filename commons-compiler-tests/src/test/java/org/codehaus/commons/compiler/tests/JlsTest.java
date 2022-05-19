@@ -426,7 +426,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_6_6_1__Determining_Accessibility_member_access() throws Exception {
 
-        // SUPPRESS CHECKSTYLE Whitespace|LineLength:4
+        // SUPPRESS CHECKSTYLE Whitespace:4
         this.assertExpressionEvaluatesTrue("for_sandbox_tests.ClassWithFields.publicField        == 1");
         this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.protectedField     == 2", "Protected member cannot be accessed|compiler.err.report.access");
         this.assertExpressionUncookable   ("for_sandbox_tests.ClassWithFields.packageAccessField == 3", "Member with \"package\" access cannot be accessed|compiler.err.not.def.public.cant.access");

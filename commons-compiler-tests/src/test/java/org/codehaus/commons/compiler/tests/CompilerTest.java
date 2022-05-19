@@ -247,7 +247,7 @@ class CompilerTest {
 
         final ClassLoader cl = compiler.getClass().getClassLoader();
 
-        final Class<?> DirectoryResourceFinder_class = cl.loadClass("org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder"); // SUPPRESS CHECKSTYLE LocalFinalVariableName|LineLength:6
+        final Class<?> DirectoryResourceFinder_class = cl.loadClass("org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder"); // SUPPRESS CHECKSTYLE LocalFinalVariableName:6
         final Class<?> MapResourceCreator_class      = cl.loadClass("org.codehaus.commons.compiler.util.resource.MapResourceCreator");
         final Class<?> MapResourceFinder_class       = cl.loadClass("org.codehaus.commons.compiler.util.resource.MapResourceFinder");
         final Class<?> MultiResourceFinder_class     = cl.loadClass("org.codehaus.commons.compiler.util.resource.MultiResourceFinder");

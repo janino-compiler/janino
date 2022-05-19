@@ -39,7 +39,7 @@ import org.junit.runners.Parameterized.Parameters;
 import util.CommonsCompilerTestSuite;
 import util.TestUtil;
 
-// SUPPRESS CHECKSTYLE Javadoc|LineLength:9999
+// SUPPRESS CHECKSTYLE Javadoc:9999
 
 /**
  * Attempts to reproduce the problems described in <a href="https://github.com/janino-compiler/

@@ -1885,7 +1885,7 @@ class Parser {
         if (
             (this.peek(TokenType.IDENTIFIER) && this.peekNextButOne(":"))
             || this.peek(
-                "if", "for", "while", "do", "try", "switch", "synchronized", // SUPPRESS CHECKSTYLE Wrap|LineLength:1
+                "if", "for", "while", "do", "try", "switch", "synchronized", // SUPPRESS CHECKSTYLE Wrap:1
                 "return", "throw", "break", "continue", "assert"
             ) != -1
             || this.peek("{", ";") != -1
@@ -2580,7 +2580,7 @@ class Parser {
 
         Type res;
         switch (this.peekRead(
-            "byte", "short", "char", "int", "long", "float", "double", "boolean" // SUPPRESS CHECKSTYLE Wrap|LineLength
+            "byte", "short", "char", "int", "long", "float", "double", "boolean" // SUPPRESS CHECKSTYLE Wrap
         )) {
         case 0:  res = new PrimitiveType(this.location(), Primitive.BYTE);    break;
         case 1:  res = new PrimitiveType(this.location(), Primitive.SHORT);   break;
