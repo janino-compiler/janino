@@ -277,7 +277,8 @@ class TokenStreamImpl implements TokenStream {
             return nt.value;
         }
 
-        return (this.nextToken = nt).value;
+        this.nextToken = nt;
+        return null;
     }
 
     @Override public int
