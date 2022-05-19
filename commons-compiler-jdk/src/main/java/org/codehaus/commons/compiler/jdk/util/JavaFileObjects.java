@@ -77,7 +77,7 @@ class JavaFileObjects {
             );
             this.resource = resource;
             this.charset  = charset;
-            this.name = "/" + className.replace('.', '/') + kind.extension;
+            this.name     = "/" + className.replace('.', '/') + kind.extension;
         }
 
         @Override public boolean

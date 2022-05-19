@@ -144,7 +144,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         r = Readers.trackLineAndColumn(r, this.tracker);
 
         // Create one Java source file in memory, which will be compiled later.
-        final String text = Readers.readAll(r);
+        String   text            = Readers.readAll(r);
         Resource compilationUnit = new StringResource(fileName == null ? "simplecompiler" : fileName, text);
 
         // The default classpath of JAVAC is "." - we don't want that.
