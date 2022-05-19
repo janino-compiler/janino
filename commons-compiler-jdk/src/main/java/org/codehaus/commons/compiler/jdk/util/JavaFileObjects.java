@@ -67,12 +67,12 @@ class JavaFileObjects {
 
         private final Resource resource;
         private final Charset  charset;
-		private final String   name;
+        private final String   name;
 
         private
         ResourceJavaFileObject(Resource resource, String className, Kind kind, Charset charset) {
             super(
-        		URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
+                URI.create("bytearray:///" + className.replace('.', '/') + kind.extension),
                 kind
             );
             this.resource = resource;
@@ -87,10 +87,10 @@ class JavaFileObjects {
 
         @Override public String
         getName() {
-        	return this.name;
-    	}
+            return this.name;
+        }
 
-		@Override public InputStream
+        @Override public InputStream
         openInputStream() throws IOException { return this.resource.open(); }
 
         @Override public Reader
@@ -111,8 +111,8 @@ class JavaFileObjects {
         @Override public long
         getLastModified() { return this.resource.lastModified(); }
 
-		public String
-		getResourceFileName() { return this.resource.getFileName(); }
+        public String
+        getResourceFileName() { return this.resource.getFileName(); }
     }
 
     /**

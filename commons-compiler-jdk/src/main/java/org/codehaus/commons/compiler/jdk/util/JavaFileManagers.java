@@ -177,15 +177,15 @@ class JavaFileManagers {
                 return super.getJavaFileForInput(location2, className, kind2);
             }
 
-			@Override @NotNullByDefault(false) public boolean
-			isSameFile(FileObject a, FileObject b) {
+            @Override @NotNullByDefault(false) public boolean
+            isSameFile(FileObject a, FileObject b) {
 
-				if (a instanceof ResourceJavaFileObject && b instanceof ResourceJavaFileObject) {
-					return a.getName().contentEquals(b.getName());
-				}
+                if (a instanceof ResourceJavaFileObject && b instanceof ResourceJavaFileObject) {
+                    return a.getName().contentEquals(b.getName());
+                }
 
-				return super.isSameFile(a, b);
-			}
+                return super.isSameFile(a, b);
+            }
         }
 
         return new ResourceFinderInputJavaFileManager();

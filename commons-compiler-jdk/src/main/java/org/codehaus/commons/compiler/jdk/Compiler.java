@@ -71,7 +71,7 @@ class Compiler extends AbstractCompiler {
 
     public
     Compiler() {
-    	JavaCompiler c = ToolProvider.getSystemJavaCompiler();
+        JavaCompiler c = ToolProvider.getSystemJavaCompiler();
         if (c == null) {
             throw new RuntimeException(
                 "JDK Java compiler not available - probably you're running a JRE, not a JDK",
@@ -105,7 +105,7 @@ class Compiler extends AbstractCompiler {
 
     @Override public void
     compile(final Resource[] sourceResources) throws CompileException, IOException {
-    	this.compile(sourceResources, null);
+        this.compile(sourceResources, null);
     }
 
     public void
@@ -143,46 +143,46 @@ class Compiler extends AbstractCompiler {
 
         // Bootclasspath.
         {
-        	File[] bcp = this.bootClassPath;
-        	if (bcp != null) {
-		        options.add("-bootclasspath");
-				options.add(Compiler.filesToPath(bcp));
-        	}
+            File[] bcp = this.bootClassPath;
+            if (bcp != null) {
+                options.add("-bootclasspath");
+                options.add(Compiler.filesToPath(bcp));
+            }
         }
 
         // Classpath.
-    	options.add("-classpath");
-		options.add(Compiler.filesToPath(this.classPath));
+        options.add("-classpath");
+        options.add(Compiler.filesToPath(this.classPath));
 
         Compiler.compile(
-    		this.compiler,
-    		options,
-    		this.sourceFinder,
-    		this.sourceCharset,
-    		this.classFileFinder,
-    		this.classFileCreator,
-    		sourceResources,
-    		this.compileErrorHandler,
-    		this.warningHandler,
-    		offsets
-		);
+            this.compiler,
+            options,
+            this.sourceFinder,
+            this.sourceCharset,
+            this.classFileFinder,
+            this.classFileCreator,
+            sourceResources,
+            this.compileErrorHandler,
+            this.warningHandler,
+            offsets
+        );
     }
 
-	static void
-	compile(
-		JavaCompiler                  compiler,
-		List<String>                  options,
-		ResourceFinder                sourceFinder,
-		Charset                       sourceFileCharset,
-		ResourceFinder                classFileFinder,
-		ResourceCreator               classFileCreator,
-		Resource[]                    sourceFiles,
-		@Nullable ErrorHandler        compileErrorHandler,
-		@Nullable WarningHandler      warningHandler,
-		@Nullable SortedSet<Location> offsets
-	) throws CompileException, IOException {
+    static void
+    compile(
+        JavaCompiler                  compiler,
+        List<String>                  options,
+        ResourceFinder                sourceFinder,
+        Charset                       sourceFileCharset,
+        ResourceFinder                classFileFinder,
+        ResourceCreator               classFileCreator,
+        Resource[]                    sourceFiles,
+        @Nullable ErrorHandler        compileErrorHandler,
+        @Nullable WarningHandler      warningHandler,
+        @Nullable SortedSet<Location> offsets
+    ) throws CompileException, IOException {
 
-    	// Wrap the source files in JavaFileObjects.
+        // Wrap the source files in JavaFileObjects.
         Collection<JavaFileObject> sourceFileObjects = new ArrayList<>();
         for (int i = 0; i < sourceFiles.length; i++) {
             Resource sourceResource = sourceFiles[i];
@@ -198,27 +198,27 @@ class Compiler extends AbstractCompiler {
             ));
         }
 
-		final JavaFileManager fileManager = Compiler.getJavaFileManager(
-			compiler,
-			sourceFinder,
-			sourceFileCharset,
-			classFileFinder,
-			classFileCreator
-		);
+        final JavaFileManager fileManager = Compiler.getJavaFileManager(
+            compiler,
+            sourceFinder,
+            sourceFileCharset,
+            classFileFinder,
+            classFileCreator
+        );
         try {
-			Compiler.compile(
-        		compiler,
-        		options,
-        		sourceFileObjects,
-        		fileManager,
-        		compileErrorHandler,
-        		warningHandler,
-        		offsets
-    		);
+            Compiler.compile(
+                compiler,
+                options,
+                sourceFileObjects,
+                fileManager,
+                compileErrorHandler,
+                warningHandler,
+                offsets
+            );
         } finally {
             fileManager.close();
         }
-	}
+    }
 
     /**
      * Creates a {@link JavaFileManager} that implements the given <var>sourceFileFinder</var>, <var>sourceFileCharset</var>,
@@ -226,12 +226,12 @@ class Compiler extends AbstractCompiler {
      */
     private static JavaFileManager
     getJavaFileManager(
-		JavaCompiler    compiler,
-		ResourceFinder  sourceFileFinder,
-		Charset         sourceFileCharset,
-		ResourceFinder  classFileFinder,
-		ResourceCreator classFileCreator
-	) {
+        JavaCompiler    compiler,
+        ResourceFinder  sourceFileFinder,
+        Charset         sourceFileCharset,
+        ResourceFinder  classFileFinder,
+        ResourceCreator classFileCreator
+    ) {
 
         // Get the original FM, which reads class files through this JVM's BOOTCLASSPATH and
         // CLASSPATH.
@@ -270,117 +270,117 @@ class Compiler extends AbstractCompiler {
     /**
      * Compiles on the {@link JavaFileManager} / {@link JavaFileObject} level.
      */
-	static void
-	compile(
-		JavaCompiler                        compiler,
-		List<String>                        options,
-		Collection<JavaFileObject>          sourceFileObjects,
-		JavaFileManager                     fileManager,
-		@Nullable final ErrorHandler        compileErrorHandler,
-		@Nullable final WarningHandler      warningHandler,
-		@Nullable final SortedSet<Location> offsets
-	) throws CompileException, IOException {
+    static void
+    compile(
+        JavaCompiler                        compiler,
+        List<String>                        options,
+        Collection<JavaFileObject>          sourceFileObjects,
+        JavaFileManager                     fileManager,
+        @Nullable final ErrorHandler        compileErrorHandler,
+        @Nullable final WarningHandler      warningHandler,
+        @Nullable final SortedSet<Location> offsets
+    ) throws CompileException, IOException {
 
-		fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
+        fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
 
-		final int[] compileErrorCount = new int[1];
-		final DiagnosticListener<JavaFileObject> dl = new DiagnosticListener<JavaFileObject>() {
+        final int[] compileErrorCount = new int[1];
+        final DiagnosticListener<JavaFileObject> dl = new DiagnosticListener<JavaFileObject>() {
 
-		    @Override public void
-		    report(@Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
-		        assert diagnostic != null;
+            @Override public void
+            report(@Nullable Diagnostic<? extends JavaFileObject> diagnostic) {
+                assert diagnostic != null;
 
-		    	JavaFileObject source = diagnostic.getSource();
-				Location loc = new Location(
-					(                                     // fileName
-						source == null                           ? null :
-						source instanceof ResourceJavaFileObject ? ((ResourceJavaFileObject) source).getResourceFileName() :
-						source.getName()
-					),
-					(short) diagnostic.getLineNumber(),
-					(short) diagnostic.getColumnNumber()
-				);
+                JavaFileObject source = diagnostic.getSource();
+                Location loc = new Location(
+                    (                                     // fileName
+                        source == null                           ? null :
+                        source instanceof ResourceJavaFileObject ? ((ResourceJavaFileObject) source).getResourceFileName() :
+                        source.getName()
+                    ),
+                    (short) diagnostic.getLineNumber(),
+                    (short) diagnostic.getColumnNumber()
+                );
 
                 // Manipulate the diagnostic location to accomodate for the "offsets" (see "addOffset(String)"):
-				if (offsets != null) {
-	                SortedSet<Location> hs = offsets.headSet(loc);
-	                if (!hs.isEmpty()) {
-	                    Location co = hs.last();
-	                    loc = new Location(
-	                        co.getFileName(),
-	                        loc.getLineNumber() - co.getLineNumber() + 1,
-	                        (
-	                            loc.getLineNumber() == co.getLineNumber()
-	                            ? loc.getColumnNumber() - co.getColumnNumber() + 1
-	                            : loc.getColumnNumber()
-	                        )
-	                    );
-	                }
-				}
+                if (offsets != null) {
+                    SortedSet<Location> hs = offsets.headSet(loc);
+                    if (!hs.isEmpty()) {
+                        Location co = hs.last();
+                        loc = new Location(
+                            co.getFileName(),
+                            loc.getLineNumber() - co.getLineNumber() + 1,
+                            (
+                                loc.getLineNumber() == co.getLineNumber()
+                                ? loc.getColumnNumber() - co.getColumnNumber() + 1
+                                : loc.getColumnNumber()
+                            )
+                        );
+                    }
+                }
 
-		        String message = diagnostic.getMessage(null) + " (" + diagnostic.getCode() + ")";
+                String message = diagnostic.getMessage(null) + " (" + diagnostic.getCode() + ")";
 
-		    	try {
-		            switch (diagnostic.getKind()) {
+                try {
+                    switch (diagnostic.getKind()) {
 
-		            case ERROR:
-		            	compileErrorCount[0]++;
+                    case ERROR:
+                        compileErrorCount[0]++;
 
-		            	if (compileErrorHandler == null) throw new CompileException(message, loc);
+                        if (compileErrorHandler == null) throw new CompileException(message, loc);
 
-		            	compileErrorHandler.handleError(diagnostic.toString(), loc);
-		                break;
+                        compileErrorHandler.handleError(diagnostic.toString(), loc);
+                        break;
 
-		            case MANDATORY_WARNING:
-		            case WARNING:
-		                if (warningHandler != null) warningHandler.handleWarning(null, message, loc);
-		                break;
+                    case MANDATORY_WARNING:
+                    case WARNING:
+                        if (warningHandler != null) warningHandler.handleWarning(null, message, loc);
+                        break;
 
-		            case NOTE:
-		            case OTHER:
-		            default:
-		                break;
-		            }
-		        } catch (CompileException ce) {
-		            throw new RuntimeException(ce);
-		        }
-		    }
-		};
+                    case NOTE:
+                    case OTHER:
+                    default:
+                        break;
+                    }
+                } catch (CompileException ce) {
+                    throw new RuntimeException(ce);
+                }
+            }
+        };
 
-		// Run the compiler.
-		try {
-		    if (!compiler.getTask(
-		        null,             // out
-		        fileManager,      // fileManager
-		        dl,               // diagnosticListener
-		        options,          // options
-		        null,             // classes
-		        sourceFileObjects // compilationUnits
-		    ).call() || compileErrorCount[0] > 0) {
-		        throw new CompileException("Compilation failed with " + compileErrorCount[0] + " errors", null);
-		    }
-		} catch (RuntimeException rte) {
+        // Run the compiler.
+        try {
+            if (!compiler.getTask(
+                null,             // out
+                fileManager,      // fileManager
+                dl,               // diagnosticListener
+                options,          // options
+                null,             // classes
+                sourceFileObjects // compilationUnits
+            ).call() || compileErrorCount[0] > 0) {
+                throw new CompileException("Compilation failed with " + compileErrorCount[0] + " errors", null);
+            }
+        } catch (RuntimeException rte) {
 
-		    // Unwrap the compilation exception and throw it.
-		    for (Throwable t = rte.getCause(); t != null; t = t.getCause()) {
-		        if (t instanceof CompileException) {
-		            throw (CompileException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
-		        }
-		        if (t instanceof IOException) {
-		            throw (IOException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
-		        }
-		    }
-		    throw rte;
-		}
-	}
+            // Unwrap the compilation exception and throw it.
+            for (Throwable t = rte.getCause(); t != null; t = t.getCause()) {
+                if (t instanceof CompileException) {
+                    throw (CompileException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
+                }
+                if (t instanceof IOException) {
+                    throw (IOException) t; // SUPPRESS CHECKSTYLE AvoidHidingCause
+                }
+            }
+            throw rte;
+        }
+    }
 
-	private static String
-	filesToPath(File[] files) {
-		StringBuilder sb = new StringBuilder();
-		for (File cpe : files) {
-			if (sb.length() > 0) sb.append(File.pathSeparatorChar);
-			sb.append(cpe.getPath());
-		}
-		return sb.toString();
-	}
+    private static String
+    filesToPath(File[] files) {
+        StringBuilder sb = new StringBuilder();
+        for (File cpe : files) {
+            if (sb.length() > 0) sb.append(File.pathSeparatorChar);
+            sb.append(cpe.getPath());
+        }
+        return sb.toString();
+    }
 }
