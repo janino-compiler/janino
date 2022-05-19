@@ -277,7 +277,7 @@ class GithubPullRequestsTest {
 
     private static String
     compileAndDisassemble(String cu)
-        throws CompileException, IOException, Exception {
+    throws CompileException, IOException, Exception {
         AbstractCompilationUnit
         acu = new Parser(new Scanner(null, new StringReader(cu))).parseAbstractCompilationUnit();
 
@@ -351,7 +351,7 @@ class GithubPullRequestsTest {
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook(cu);
         Class<?> c = sc.getClassLoader().loadClass("MyClass");
-        Object o = c.getConstructor(boolean.class).newInstance(true);
+        Object   o = c.getConstructor(boolean.class).newInstance(true);
         Assert.assertEquals(null, c.getDeclaredMethod("apply", Object.class).invoke(o, new Object()));
     }
 

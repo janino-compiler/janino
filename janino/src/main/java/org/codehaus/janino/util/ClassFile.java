@@ -3126,7 +3126,9 @@ class ClassFile implements Annotatable {
         private static VerificationTypeInfo[]
         loadVerificationTypeInfos(DataInputStream dis, int number, ClassFile classFile) throws IOException {
             VerificationTypeInfo[] result = new VerificationTypeInfo[number];
-            for (int i = 0; i < number; i++) result[i] = StackMapTableAttribute.loadVerificationTypeInfo(dis, classFile);
+            for (int i = 0; i < number; i++) {
+                result[i] = StackMapTableAttribute.loadVerificationTypeInfo(dis, classFile);
+            }
             return result;
         }
 
@@ -3490,7 +3492,10 @@ class ClassFile implements Annotatable {
 
     public StackMapTableAttribute.ObjectVariableInfo
     newObjectVariableInfo(String fieldDescriptor) {
-        return new StackMapTableAttribute.ObjectVariableInfo(this.addConstantClassInfo(fieldDescriptor), fieldDescriptor);
+        return new StackMapTableAttribute.ObjectVariableInfo(
+            this.addConstantClassInfo(fieldDescriptor),
+            fieldDescriptor
+        );
     }
 
     public StackMapTableAttribute.UninitializedVariableInfo

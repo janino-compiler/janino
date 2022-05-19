@@ -408,8 +408,8 @@ class IClassLoader {
     /**
      * Gets an {@link IClass} that represents an n-dimensional array of this type.
      *
-     * @param n dimension count
-     * @param objectType Required because the superclass of an array class is {@link Object} by definition
+     * @param componentType Required because the superclass of an array class is {@link Object} by definition
+     * @param n             Dimension count
      */
     public IClass
     getArrayIClass(IClass componentType, int n) {
@@ -421,7 +421,7 @@ class IClassLoader {
     /**
      * Gets an {@link IClass} that represents an array of this type.
      *
-     * @param objectType Required because the superclass of an array class is {@link Object} by definition
+     * @param componentType Required because the superclass of an array class is {@link Object} by definition
      */
     public synchronized IClass
     getArrayIClass(IClass componentType) {

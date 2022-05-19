@@ -1233,9 +1233,8 @@ class IClass implements ITypeVariableOrIClass {
         /**
          * @return The descriptor of this field
          */
-        public String getDescriptor() throws CompileException {
-            return IClass.rawTypeOf(this.getType()).getDescriptor();
-        }
+        public String
+        getDescriptor() throws CompileException { return IClass.rawTypeOf(this.getType()).getDescriptor(); }
 
         /**
          * Returns the value of the field if it is a compile-time constant value, i.e. the field is FINAL and its
@@ -1367,18 +1366,27 @@ class IClass implements ITypeVariableOrIClass {
 //                if (ta instanceof IClass) {
 //                    IClass taic = (IClass) ta;
 //                    if (!(ta == b || taic.isInterface() || taic.isSubclassOf((IClass) b))) {
-//                        throw new CompileException("Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of bound " + b, null);
+//                        throw new CompileException(
+//                            "Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of bound " + b,
+//                            null
+//                        );
 //                    }
 //                } else
 //                if (ta instanceof IWildcardType) {
 //                    IWildcardType tawt = (IWildcardType) ta;
 //                    IClass ub = (IClass) tawt.getUpperBound();
 //                    if (!(ub == b || ub.isSubclassOf((IClass) b))) {
-//                        throw new CompileException("Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of " + b, null);
+//                        throw new CompileException(
+//                            "Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of " + b,
+//                            null
+//                        );
 //                    }
 //                    IClass lb = (IClass) tawt.getLowerBound();
 //                    if (lb != null && !"Ljava/lang/Object;".equals(((IClass) b).getDescriptor())) {
-//                        throw new CompileException("Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of " + b, null);
+//                        throw new CompileException(
+//                            "Type argument #" + (1 + i) + " (" + ta + ") is not a subclass of " + b,
+//                            null
+//                        );
 //                    }
 //                } else
 //                if (ta instanceof ITypeVariable) {

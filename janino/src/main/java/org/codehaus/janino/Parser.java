@@ -1036,7 +1036,7 @@ class Parser {
         }
 
         Type           memberType    = this.parseType();
-        Location       location      = this.location();
+        final Location location      = this.location();
         String         memberName    = this.read(TokenType.IDENTIFIER);
 
         // Method declarator.
@@ -1332,9 +1332,9 @@ class Parser {
                 continue;
             }
 
-            Type     memberType = this.parseType();
-            String   memberName = this.read(TokenType.IDENTIFIER);
-            Location location   = this.location();
+            Type           memberType = this.parseType();
+            String         memberName = this.read(TokenType.IDENTIFIER);
+            final Location location   = this.location();
 
             // Method declarator?
             if (this.peek("(")) {
@@ -2213,7 +2213,7 @@ class Parser {
 
         this.read(";");
 
-        Rvalue condition = this.peek(";") ? null : this.parseExpression();
+        final Rvalue condition = this.peek(";") ? null : this.parseExpression();
 
         this.read(";");
 
@@ -2470,8 +2470,8 @@ class Parser {
     public Statement
     parseReturnStatement() throws CompileException, IOException {
         this.read("return");
-        final Location location = this.location();
-        Rvalue returnValue = this.peek(";") ? null : this.parseExpression();
+        Location location    = this.location();
+        Rvalue   returnValue = this.peek(";") ? null : this.parseExpression();
         this.read(";");
         return new ReturnStatement(location, returnValue);
     }
@@ -2484,8 +2484,8 @@ class Parser {
     public Statement
     parseThrowStatement() throws CompileException, IOException {
         this.read("throw");
-        final Location location = this.location();
-        final Rvalue expression = this.parseExpression();
+        Location location   = this.location();
+        Rvalue   expression = this.parseExpression();
         this.read(";");
 
         return new ThrowStatement(location, expression);
@@ -2500,7 +2500,7 @@ class Parser {
     parseBreakStatement() throws CompileException, IOException {
         this.read("break");
         final Location location = this.location();
-        String label = null;
+        String         label    = null;
         if (this.peek(TokenType.IDENTIFIER)) label = this.read(TokenType.IDENTIFIER);
         this.read(";");
         return new BreakStatement(location, label);
@@ -2513,10 +2513,12 @@ class Parser {
      */
     public Statement
     parseContinueStatement() throws CompileException, IOException {
+
         this.read("continue");
-        final Location location = this.location();
-        String label = null;
-        if (this.peek(TokenType.IDENTIFIER)) label = this.read(TokenType.IDENTIFIER);
+
+        Location location = this.location();
+        String   label    = this.peekRead(TokenType.IDENTIFIER);
+
         this.read(";");
         return new ContinueStatement(location, label);
     }
@@ -2942,7 +2944,12 @@ class Parser {
             } else
             if (this.peek("<", ">", "<=", ">=") != -1) {
 
-                if (this.preferParametrizedTypes && a instanceof AmbiguousName && this.peek("<") && this.peekNextButOne("?")) {
+                if (
+                    this.preferParametrizedTypes
+                    && a instanceof AmbiguousName
+                    && this.peek("<")
+                    && this.peekNextButOne("?")
+                ) {
 
                     // ambiguous-name '<' '?' ...
                     return new ReferenceType(
@@ -3942,8 +3949,8 @@ class Parser {
     }
 
     /*
-     * Controls the language elements that are accepted. E.g. static interface methods and default methods are only accepted
-     * for source versions 8+. The default is to accept <em>any</var> known language element.
+     * Controls the language elements that are accepted. E.g. static interface methods and default methods are only
+     * accepted for source versions 8+. The default is to accept <em>any</var> known language element.
      */
     public void
     setSourceVersion(int version) { this.sourceVersion = version; }

@@ -410,7 +410,7 @@ class Compiler extends AbstractCompiler {
     /**
      * @return Loads "auxiliary classes", either through the {@link IClassLoader} that was explicitly set with
      *         {@link #setIClassLoader(IClassLoader)}, or otherwise from {@link #setBootClassPath(File[])}, {@link
-     *         #setExtensionDirectories(File[])} and {@link #setClassPath
+     *         #setExtensionDirectories(File[])} and {@link #setClassPath(File[])}
      */
     private IClassLoader
     getIClassLoader() {

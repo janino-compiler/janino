@@ -27,7 +27,8 @@ package org.codehaus.janino;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
-public interface IWildcardType extends IType {
+public
+interface IWildcardType extends IType {
 
     /**
      * @return The type of the {@code extends} clause, or {@code Object.class}

@@ -762,8 +762,8 @@ class SignatureParser {
      */
     public
     interface FieldTypeSignature extends TypeSignature {
-        public <T, EX extends Throwable> T accept(FieldTypeSignatureVisitor<T, EX> visitor) throws EX;
-        @Override String toString();
+        <T, EX extends Throwable> T accept(FieldTypeSignatureVisitor<T, EX> visitor) throws EX;
+        @Override String            toString();
     }
 
     public

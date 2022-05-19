@@ -28,9 +28,11 @@ package org.codehaus.janino;
 import org.codehaus.commons.compiler.CompileException;
 
 /**
- * Type bounds can either be a class or interface type, or a type variable. Example: {@code MySet<K extends Comparable & T>}
+ * Type bounds can either be a class or interface type, or a type variable. Example: {@code MySet<K extends
+ * Comparable & T>}
  */
-public interface ITypeVariable extends ITypeVariableOrIClass {
+public
+interface ITypeVariable extends ITypeVariableOrIClass {
 
     String getName();
 

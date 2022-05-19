@@ -2837,7 +2837,9 @@ class Java {
         // Implement FieldDeclarationOrInitializer.
 
         @Override @Nullable public <R, EX extends Throwable> R
-        accept(FieldDeclarationOrInitializerVisitor<R, EX> visitor) throws EX { return visitor.visitFieldDeclaration(this); }
+        accept(FieldDeclarationOrInitializerVisitor<R, EX> visitor) throws EX {
+            return visitor.visitFieldDeclaration(this);
+        }
 
         // Implement TypeBodyDeclaration.
 
@@ -3228,7 +3230,9 @@ class Java {
         toString() { return this.lcd.toString(); }
 
         @Override @Nullable public <R, EX extends Throwable> R
-        accept(BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitLocalClassDeclarationStatement(this); }
+        accept(BlockStatementVisitor<R, EX> visitor) throws EX {
+            return visitor.visitLocalClassDeclarationStatement(this);
+        }
     }
 
     /**
@@ -3840,7 +3844,9 @@ class Java {
         // Compile time members:
 
         @Override @Nullable public <R, EX extends Throwable> R
-        accept(BlockStatementVisitor<R, EX> visitor) throws EX { return visitor.visitLocalVariableDeclarationStatement(this); }
+        accept(BlockStatementVisitor<R, EX> visitor) throws EX {
+            return visitor.visitLocalVariableDeclarationStatement(this);
+        }
 
         @Override public String
         toString() {
@@ -5813,7 +5819,7 @@ class Java {
          */
         void setEnclosingScope(Scope s);
 
-        @Nullable public <R, EX extends Throwable> R
+        @Nullable <R, EX extends Throwable> R
         accept(ArrayInitializerOrRvalueVisitor<R, EX> aiorvv) throws EX;
     }
 

@@ -25,6 +25,6 @@
 
 package org.codehaus.janino;
 
-public interface ITypeVariableOrIClass extends IType {
-
+public
+interface ITypeVariableOrIClass extends IType {
 }

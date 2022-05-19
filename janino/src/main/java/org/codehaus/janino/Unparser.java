@@ -1495,7 +1495,9 @@ class Unparser {
     unparseAtom(Atom a) { a.accept(this.atomUnparser); }
 
     private void
-    unparseArrayInitializerOrRvalue(ArrayInitializerOrRvalue aiorv) { aiorv.accept(this.arrayInitializerOrRvalueUnparser); }
+    unparseArrayInitializerOrRvalue(ArrayInitializerOrRvalue aiorv) {
+        aiorv.accept(this.arrayInitializerOrRvalueUnparser);
+    }
 
     public void
     unparseRvalue(Rvalue rv) { rv.accept(this.rvalueUnparser); }

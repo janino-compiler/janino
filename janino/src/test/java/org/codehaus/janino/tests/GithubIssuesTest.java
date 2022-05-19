@@ -121,28 +121,23 @@ class GithubIssuesTest {
 
             ExpressionEvaluator ee = new ExpressionEvaluator();
 
-//            try {
-                switch (i) {
+            // All these invocations are expected to throw an IllegalStateException.
+            switch (i) {
 
-//                 All these invocations are expected to throw an IllegalStateException.
-                // SUPPRESS CHECKSTYLE LineLength:8
-                case 0: Assert.assertEquals(7, ee.createFastEvaluator(new StringReader(e), interfaceToImplement, parameterNames).compareTo("foo"));                    break;
-                case 1: Assert.assertEquals(7, ee.createFastEvaluator(new Scanner(null, new StringReader(e)), interfaceToImplement, parameterNames).compareTo("foo")); break;
-                case 2: Assert.assertEquals(7, ee.createFastEvaluator(e, interfaceToImplement, parameterNames).compareTo("foo"));                                      break;
-//                case 3: ee.setExpressionType(int.class); ee.cook(e); Assert.assertEquals(7, ee.evaluate(arguments));                                                                               break;
-//                case 4: ee.setExpressionType(int.class); ee.cook(e); Assert.assertEquals(7, ee.evaluate(0, arguments));                                                                            break;
-//                case 5: ee.setExpressionType(int.class); ee.cook(e); Assert.assertNotNull(ee.getClazz());                                                                                        break;
-//                case 6: ee.setExpressionType(int.class); ee.cook(e); Assert.assertNotNull(ee.getMethod());                                                                                       break;
-//                case 7: ee.setExpressionType(int.class); ee.cook(e); Assert.assertNotNull(ee.getMethod(0));                                                                                      break;
+            // SUPPRESS CHECKSTYLE LineLength:8
+            case 0: Assert.assertEquals(7, ee.createFastEvaluator(new StringReader(e), interfaceToImplement, parameterNames).compareTo("foo"));                    break;
+            case 1: Assert.assertEquals(7, ee.createFastEvaluator(new Scanner(null, new StringReader(e)), interfaceToImplement, parameterNames).compareTo("foo")); break;
+            case 2: Assert.assertEquals(7, ee.createFastEvaluator(e, interfaceToImplement, parameterNames).compareTo("foo"));                                      break;
+//            case 3: ee.setExpressionType(int.class); ee.cook(e); Assert.assertEquals(7, ee.evaluate(arguments));                                                   break;
+//            case 4: ee.setExpressionType(int.class); ee.cook(e); Assert.assertEquals(7, ee.evaluate(0, arguments));                                                break;
+//            case 5: ee.setExpressionType(int.class); ee.cook(e); Assert.assertNotNull(ee.getClazz());                                                              break;
+//            case 6: ee.setExpressionType(int.class); ee.cook(e); Assert.assertNotNull(ee.getMethod());                                                             break;
+//            case 7: ee.setExpressionType(int.class); ee.cook(e); Assert.assertNotNull(ee.getMethod(0));                                                            break;
 
-                case /*8*/3: break CASES;
+            case /*8*/3: break CASES;
 
-                default: continue;
-                }
-//                Assert.fail("Exception expected (case " + i + ")");
-//            } catch (IllegalStateException ise) {
-//                ;
-//            }
+            default: continue;
+            }
         }
 
         {
@@ -331,8 +326,8 @@ class GithubIssuesTest {
 
         cu = new DeepCopier().copyAbstractCompilationUnit(cu);
 
-        SimpleCompiler sc = new SimpleCompiler();
-        boolean works = false;
+        SimpleCompiler sc    = new SimpleCompiler();
+        boolean        works = false;
         if (works) {
             StringWriter sw = new StringWriter();
             Unparser.unparse(cu, sw);

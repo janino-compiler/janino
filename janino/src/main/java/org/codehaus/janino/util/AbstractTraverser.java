@@ -417,7 +417,9 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
         @Override @Nullable public Void
         visitArrayInitializer(ArrayInitializer ai) throws EX {
-            for (ArrayInitializerOrRvalue value : ai.values) AbstractTraverser.this.traverseArrayInitializerOrRvalue(value);
+            for (ArrayInitializerOrRvalue value : ai.values) {
+                AbstractTraverser.this.traverseArrayInitializerOrRvalue(value);
+            }
             return null;
         }
 

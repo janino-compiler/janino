@@ -72,7 +72,7 @@ class ClassFileIClass extends IClass {
     private final ClassFile                classFile;
     private final IClassLoader             iClassLoader;
     private final short                    accessFlags;
-    @Nullable final private ClassSignature classSignature;
+    @Nullable private final ClassSignature classSignature;
 
     private final Map<ClassFile.FieldInfo, IField> resolvedFields = new HashMap<>();
 
@@ -89,10 +89,14 @@ class ClassFileIClass extends IClass {
         this.accessFlags = classFile.accessFlags;
 
         SignatureAttribute sa = classFile.getSignatureAttribute();
-        try {
-            this.classSignature = sa == null ? null : new SignatureParser().decodeClassSignature(sa.getSignature(classFile));
-        } catch (SignatureException e) {
-            throw new InternalCompilerException("Decoding signature of \"" + this + "\"", e);
+        if (sa == null) {
+            this.classSignature = null;
+        } else {
+            try {
+                this.classSignature = new SignatureParser().decodeClassSignature(sa.getSignature(classFile));
+            } catch (SignatureException e) {
+                throw new InternalCompilerException("Decoding signature of \"" + this + "\"", e);
+            }
         }
 
         // Example 1:
@@ -122,7 +126,7 @@ class ClassFileIClass extends IClass {
 
         ITypeVariable[] result = new ITypeVariable[cs.formalTypeParameters.size()];
         for (int i = 0; i < result.length; i++) {
-            final FormalTypeParameter ftp = (FormalTypeParameter) cs.formalTypeParameters.get(i);
+            final FormalTypeParameter     ftp    = (FormalTypeParameter) cs.formalTypeParameters.get(i);
             final ITypeVariableOrIClass[] bounds = ClassFileIClass.this.getBounds(ftp);
             result[i] = new ITypeVariable() {
 
@@ -135,7 +139,7 @@ class ClassFileIClass extends IClass {
                 @Override public String
                 toString() {
                     ITypeVariableOrIClass[] bs = this.getBounds();
-                    String s = this.getName() + " extends " + bs[0];
+                    String                  s  = this.getName() + " extends " + bs[0];
                     for (int i = 1; i < bs.length; i++) s += " & " + bs[i];
                     return s;
                 }
@@ -157,36 +161,40 @@ class ClassFileIClass extends IClass {
     private ITypeVariableOrIClass
     fieldTypeSignatureToITypeVariableOrIClass(FieldTypeSignature fts) throws CompileException {
 
-        return (ITypeVariableOrIClass) fts.accept(new FieldTypeSignatureVisitor<ITypeVariableOrIClass, CompileException>() {
+        return (ITypeVariableOrIClass) fts.accept(
+            new FieldTypeSignatureVisitor<ITypeVariableOrIClass, CompileException>() {
 
-            @Override public ITypeVariableOrIClass
-            visitArrayTypeSignature(ArrayTypeSignature ats) { throw new AssertionError(ats); }
+                @Override public ITypeVariableOrIClass
+                visitArrayTypeSignature(ArrayTypeSignature ats) { throw new AssertionError(ats); }
 
-            @Override public ITypeVariableOrIClass
-            visitClassTypeSignature(ClassTypeSignature cts) throws CompileException {
-                String fd = Descriptor.fromClassName(cts.packageSpecifier + cts.simpleClassName);
-                IClass result;
-                try {
-                    result = ClassFileIClass.this.iClassLoader.loadIClass(fd);
-                } catch (ClassNotFoundException cnfe) {
-                    throw new CompileException("Loading \"" + Descriptor.toClassName(fd) + "\"", null, cnfe);
+                @Override public ITypeVariableOrIClass
+                visitClassTypeSignature(ClassTypeSignature cts) throws CompileException {
+                    String fd = Descriptor.fromClassName(cts.packageSpecifier + cts.simpleClassName);
+                    IClass result;
+                    try {
+                        result = ClassFileIClass.this.iClassLoader.loadIClass(fd);
+                    } catch (ClassNotFoundException cnfe) {
+                        throw new CompileException("Loading \"" + Descriptor.toClassName(fd) + "\"", null, cnfe);
+                    }
+                    if (result == null) {
+                        throw new CompileException("Cannot load \"" + Descriptor.toClassName(fd) + "\"", null);
+                    }
+                    return result;
                 }
-                if (result == null) throw new CompileException("Cannot load \"" + Descriptor.toClassName(fd) + "\"", null);
-                return result;
+
+                @Override public ITypeVariableOrIClass
+                visitTypeVariableSignature(final TypeVariableSignature tvs) {
+                    return new ITypeVariable() {
+
+                        @Override public String
+                        getName() { return tvs.identifier; }
+
+                        @Override public ITypeVariableOrIClass[]
+                        getBounds() { throw new AssertionError(this); }
+                    };
+                }
             }
-
-            @Override public ITypeVariableOrIClass
-            visitTypeVariableSignature(final TypeVariableSignature tvs) {
-                return new ITypeVariable() {
-
-                    @Override public String
-                    getName() { return tvs.identifier; }
-
-                    @Override public ITypeVariableOrIClass[]
-                    getBounds() { throw new AssertionError(this); }
-                };
-            }
-        });
+        );
     }
 
     @Override protected IConstructor[]
