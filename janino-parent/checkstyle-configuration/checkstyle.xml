@@ -176,7 +176,9 @@
     </module>
   </module>
   <module name="LineLength">
+    <property name="severity" value="ignore"/>
     <property name="max" value="120"/>
+    <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit"/>
   </module>
   <module name="JavadocPackage"/>
   <module name="RegexpHeader">

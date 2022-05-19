@@ -152,7 +152,6 @@ class JavaFileObjects {
             @Override public Kind
             getKind() { return kind; }
 
-            // SUPPRESS CHECKSTYLE LineLength:9
             @Override public OutputStream openOutputStream()                             { throw new UnsupportedOperationException(); }
             @Override public Reader       openReader(boolean ignoreEncodingErrors)       { throw new UnsupportedOperationException(); }
             @Override public CharSequence getCharContent(boolean ignoreEncodingErrors)   { throw new UnsupportedOperationException(); }

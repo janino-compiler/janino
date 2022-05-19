@@ -454,7 +454,7 @@ class Compiler extends AbstractCompiler {
 
                         for (final ModuleReference mr : mrs) {
                             final URI           moduleContentLocation = (URI) mr.location().get();
-                            final URL           classFileUrl          = new URL(moduleContentLocation + "/" + resourceName); // SUPPRESS CHECKSTYLE LineLength
+                            final URL           classFileUrl          = new URL(moduleContentLocation + "/" + resourceName);
                             final URLConnection uc                    = classFileUrl.openConnection();
                             try {
                                 uc.connect();

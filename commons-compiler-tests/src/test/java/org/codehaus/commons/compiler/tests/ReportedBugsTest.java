@@ -732,7 +732,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     testBug169() throws Exception {
-        // SUPPRESS CHECKSTYLE LineLength:94
         this.assertCompilationUnitCookable(
             ""
             + "import java.util.*;\n"

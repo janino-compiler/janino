@@ -32,7 +32,7 @@ public
 class ExternalClass extends BaseOfExternalClass implements InterfaceOfExternalClass {
     public final OtherExternalClass x = new OtherExternalClass();
 
-    public static int                                            m1()                      { return OtherExternalClass.m1(); } // SUPPRESS CHECKSTYLE LineLength:2
+    public static int                                            m1()                      { return OtherExternalClass.m1(); }
     @SuppressWarnings("static-method") public OtherExternalClass m2()                      { return null; }
     public void                                                  m2(OtherExternalClass fc) {}
 }

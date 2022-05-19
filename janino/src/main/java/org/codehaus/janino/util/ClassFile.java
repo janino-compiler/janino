@@ -3101,7 +3101,7 @@ class ClassFile implements Annotatable {
                         StackMapTableAttribute.loadVerificationTypeInfos(dis, frameType - 251, classFile) // locals
                     ) :
                     frameType == 255 ? new FullFrame(
-                        dis.readUnsignedShort(),                                                                   // offsetDelta SUPPRESS CHECKSTYLE LineLength:2
+                        dis.readUnsignedShort(),                                                                   // offsetDelta
                         StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort(), classFile), // locals
                         StackMapTableAttribute.loadVerificationTypeInfos(dis, dis.readUnsignedShort(), classFile)  // stack
                     ) :
@@ -3269,7 +3269,6 @@ class ClassFile implements Annotatable {
         }
     }
 
-    // SUPPRESS CHECKSTYLE LineLength|JavadocType:50
     public static final
     class ByteElementValue extends ConstantElementValue {
         public                                          ByteElementValue(short constantValueIndex) { super((byte) 'B', constantValueIndex);      }
@@ -3439,7 +3438,6 @@ class ClassFile implements Annotatable {
         @Override public void
         store(DataOutputStream dos) throws IOException {
 
-            // SUPPRESS CHECKSTYLE LineLength:4
             dos.writeShort(this.typeIndex);                // type_index
             dos.writeShort(this.elementValuePairs.size()); // num_element_value_pairs
             for (                                          // element_value_pairs[num_element_value_pairs]

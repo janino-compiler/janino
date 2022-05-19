@@ -55,7 +55,7 @@ interface ICompiler {
      * @see #setClassFileFinder(ResourceFinder)
      */
     ResourceFinder FIND_NEXT_TO_SOURCE_FILE = new ListableResourceFinder() {
-        @Override @Nullable public Resource           findResource(String resourceName)                { throw new UnsupportedOperationException("FIND_NEXT_TO_SOUJRCE_FILE"); } // SUPPRESS CHECKSTYLE LineLength:2
+        @Override @Nullable public Resource           findResource(String resourceName)                { throw new UnsupportedOperationException("FIND_NEXT_TO_SOUJRCE_FILE"); }
         @Override @Nullable public Iterable<Resource> list(String resourceNamePrefix, boolean recurse) { return Collections.emptyList();                                       }
         @Override public String                       toString()                                       { return "FIND_NEXT_TO_SOUJRCE_FILE";                                   }
     };
@@ -65,7 +65,7 @@ interface ICompiler {
      * created in the directory of the .java resource from which they are generated.
      */
     ResourceCreator CREATE_NEXT_TO_SOURCE_FILE = new ResourceCreator() {
-        @Override public boolean      deleteResource(String resourceName) { throw new UnsupportedOperationException("CREATE_NEXT_TO_SOURCE_FILE"); } // SUPPRESS CHECKSTYLE LineLength:2
+        @Override public boolean      deleteResource(String resourceName) { throw new UnsupportedOperationException("CREATE_NEXT_TO_SOURCE_FILE"); }
         @Override public OutputStream createResource(String resourceName) { throw new UnsupportedOperationException("CREATE_NEXT_TO_SOURCE_FILE"); }
         @Override public String       toString()                          { return "CREATE_NEXT_TO_SOURCE_FILE";                                   }
     };

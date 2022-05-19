@@ -166,6 +166,7 @@ class CompilerFactoryFactory {
      * @param compilerFactoryClassName Name of a class that implements {@link ICompilerFactory}
      * @throws Exception               Many things can go wrong while finding and initializing the default compiler
      *                                 factory
+     * @deprecated                     Use {@link #getCompilerFactory(String, ClassLoader)} instead
      */
     @Deprecated public static ICompilerFactory
     getCompilerFactory(String compilerFactoryClassName) throws Exception {

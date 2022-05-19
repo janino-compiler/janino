@@ -504,7 +504,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_8_1_1__Class_Modifiers() throws Exception {
 
-        // Modifiers for package member class: SUPPRESS CHECKSTYLE LineLength:18
+        // Modifiers for package member class:
         this.assertCompilationUnitCookable("@SuppressWarnings(\"foo\") class Foo {}");
         this.assertCompilationUnitCookable("abstract                   class Foo {}");
         this.assertCompilationUnitCookable("final                      class Foo {}");
@@ -876,7 +876,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_9_4__Method_Declarations__5() throws Exception {
 
-        // Modifiers for interface method: SUPPRESS CHECKSTYLE LineLength:18
+        // Modifiers for interface method:
         this.assertCompilationUnitCookable("interface Foo { @SuppressWarnings(\"foo\") void meth();   }");
         this.assertCompilationUnitCookable("interface Foo { abstract                   void meth();   }");
         this.assertCompilationUnitCookable("interface Foo { public                     void meth();   }");
@@ -1149,7 +1149,6 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "        );\n"
             + "        if (anno == null) throw new AssertionError(1);\n"
             + "\n"
-            // SUPPRESS CHECKSTYLE LineLength:13
             + "        if (!anno.booleanValue())                                                       throw new AssertionError(2);\n"
             + "        if (anno.byteValue() != 127)                                                    throw new AssertionError(3);\n"
             + "        if (anno.shortValue() != 32767)                                                 throw new AssertionError(4);\n"
@@ -1264,7 +1263,6 @@ class JlsTest extends CommonsCompilerTestSuite {
     @Test public void
     test_14_10__The_assert_statement() throws Exception {
 
-        // SUPPRESS CHECKSTYLE LineLength:5
         this.assertScriptExecutable("assert true;");
         this.assertScriptReturnsTrue("try { assert false;                  } catch (AssertionError ae) { return true;                          } return false;");
         this.assertScriptReturnsTrue("try { assert false : \"x\";          } catch (AssertionError ae) { return \"x\".equals(ae.getMessage()); } return false;");
@@ -2949,7 +2947,7 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // List 1, bullet 5
         this.assertExpressionEvaluatesTrue("(true ? new Object() : \"\") != null");
-        this.assertExpressionEvaluatesTrue("(true ? new Object() : 7).getClass().getName().equals(\"java.lang.Object\")"); // SUPPRESS CHECKSTYLE LineLength:11
+        this.assertExpressionEvaluatesTrue("(true ? new Object() : 7).getClass().getName().equals(\"java.lang.Object\")");
         this.assertExpressionEvaluatesTrue("(true ? new Object() : Integer.valueOf(7)).getClass().getName().equals(\"java.lang.Object\")");
         this.assertExpressionEvaluatesTrue("(true ? Integer.valueOf(9) : Integer.valueOf(7)).getClass().getName().equals(\"java.lang.Integer\")");
         this.assertExpressionEvaluatesTrue("(true ? Integer.valueOf(9) : Long.valueOf(7)) == 9L");

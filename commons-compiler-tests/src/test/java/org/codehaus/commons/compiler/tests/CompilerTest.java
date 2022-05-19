@@ -150,7 +150,7 @@ class CompilerTest {
                 ? new File(CompilerTest.COMMONS_COMPILER_JDK_SRC + "/org/codehaus/commons/compiler/jdk/Compiler.java")
                 : new File(CompilerTest.JANINO_SRC               +               "/org/codehaus/janino/Compiler.java")
             ),
-            new File(CompilerTest.COMMONS_COMPILER_SRC     + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),  // SUPPRESS CHECKSTYLE LineLength:2
+            new File(CompilerTest.COMMONS_COMPILER_SRC     + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),
             new File(CompilerTest.COMMONS_COMPILER_SRC     + "/org/codehaus/commons/compiler/util/resource/MapResourceCreator.java"),
             new File(CompilerTest.COMMONS_COMPILER_SRC     + "/org/codehaus/commons/compiler/util/resource/MapResourceFinder.java"),
         };
@@ -640,7 +640,7 @@ class CompilerTest {
 
         // Now compile two units with different package declarations.
         compiler.compile(new Resource[] {
-            new StringResource("pkg1/A.java", "package pkg1; public class A { public static int meth() { return pkg2.B.meth(); } }"), // SUPPRESS CHECKSTYLE LineLength:4
+            new StringResource("pkg1/A.java", "package pkg1; public class A { public static int meth() { return pkg2.B.meth(); } }"),
             new StringResource("pkg2/B.java", "package pkg2; public class B { public static int meth() { return 77;            } }"),
         });
 

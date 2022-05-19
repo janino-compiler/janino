@@ -707,7 +707,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
             this.makeStatements(i, parsers[i], statements, localMethods);
 
             statementss[i]   = (BlockStatement[])   statements.toArray(new Java.BlockStatement[statements.size()]);
-            localMethodss[i] = (MethodDeclarator[]) localMethods.toArray(new Java.MethodDeclarator[localMethods.size()]); // SUPPRESS CHECKSTYLE LineLength
+            localMethodss[i] = (MethodDeclarator[]) localMethods.toArray(new Java.MethodDeclarator[localMethods.size()]);
         }
 
         this.cook(

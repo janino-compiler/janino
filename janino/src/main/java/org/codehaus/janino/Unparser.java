@@ -434,8 +434,6 @@ class Unparser {
 
     private final TypeBodyDeclarationVisitor<Void, RuntimeException>
     typeBodyDeclarationUnparser = new TypeBodyDeclarationVisitor<Void, RuntimeException>() {
-
-        // SUPPRESS CHECKSTYLE LineLength:7
         @Override @Nullable public Void visitMemberEnumDeclaration(MemberEnumDeclaration med)                      { Unparser.this.unparseEnumDeclaration(med);            return null; }
         @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd)                    { Unparser.this.unparseNamedClassDeclaration(mcd);      return null; }
         @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)            { Unparser.this.unparseInterfaceDeclaration(mid);       return null; }
@@ -903,7 +901,6 @@ class Unparser {
             return null;
         }
 
-        // SUPPRESS CHECKSTYLE LineLength:8
         @Override @Nullable public Void visitIntegerLiteral(IntegerLiteral il)              { Unparser.this.pw.print(il.value);             return null; }
         @Override @Nullable public Void visitFloatingPointLiteral(FloatingPointLiteral fpl) { Unparser.this.pw.print(fpl.value);            return null; }
         @Override @Nullable public Void visitBooleanLiteral(BooleanLiteral bl)              { Unparser.this.pw.print(bl.value);             return null; }
@@ -1629,7 +1626,7 @@ class Unparser {
 
     static {
         Object[] operators = {
-            Unparser.RIGHT_ASSOCIATIVE_OPERATORS, "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=", "&=", "^=", "|=", // SUPPRESS CHECKSTYLE LineLength
+            Unparser.RIGHT_ASSOCIATIVE_OPERATORS, "=", "*=", "/=", "%=", "+=", "-=", "<<=", ">>=", ">>>=", "&=", "^=", "|=",
             Unparser.RIGHT_ASSOCIATIVE_OPERATORS, "?:",
             Unparser.LEFT_ASSOCIATIVE_OPERATORS,  "||",
             Unparser.LEFT_ASSOCIATIVE_OPERATORS,  "&&",

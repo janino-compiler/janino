@@ -124,7 +124,6 @@ class GithubIssuesTest {
             // All these invocations are expected to throw an IllegalStateException.
             switch (i) {
 
-            // SUPPRESS CHECKSTYLE LineLength:8
             case 0: Assert.assertEquals(7, ee.createFastEvaluator(new StringReader(e), interfaceToImplement, parameterNames).compareTo("foo"));                    break;
             case 1: Assert.assertEquals(7, ee.createFastEvaluator(new Scanner(null, new StringReader(e)), interfaceToImplement, parameterNames).compareTo("foo")); break;
             case 2: Assert.assertEquals(7, ee.createFastEvaluator(e, interfaceToImplement, parameterNames).compareTo("foo"));                                      break;

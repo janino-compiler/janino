@@ -336,7 +336,6 @@ class UnitCompiler {
 
             this.abstractCompilationUnit.accept(new AbstractCompilationUnitVisitor<Void, CompileException>() {
 
-                // SUPPRESS CHECKSTYLE LineLength:2
                 @Override @Nullable public Void visitCompilationUnit(CompilationUnit cu)                throws CompileException { UnitCompiler.this.compile2(cu);  return null; }
                 @Override @Nullable public Void visitModularCompilationUnit(ModularCompilationUnit mcu) throws CompileException { UnitCompiler.this.compile2(mcu); return null; }
             });
@@ -392,7 +391,6 @@ class UnitCompiler {
 
         td.accept(new TypeDeclarationVisitor<Void, CompileException>() {
 
-            // SUPPRESS CHECKSTYLE LineLength:9
             @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                             throws CompileException { UnitCompiler.this.compile2(acd);                           return null; }
             @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd)                                     throws CompileException { UnitCompiler.this.compile2(lcd);                           return null; }
             @Override @Nullable public Void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)                    throws CompileException { UnitCompiler.this.compile2(pmcd);                          return null; }
@@ -403,7 +401,6 @@ class UnitCompiler {
             @Override @Nullable public Void visitPackageMemberEnumDeclaration(PackageMemberEnumDeclaration pmed)                      throws CompileException { UnitCompiler.this.compile2(pmed);                          return null; }
             @Override @Nullable public Void visitPackageMemberAnnotationTypeDeclaration(PackageMemberAnnotationTypeDeclaration pmatd) throws CompileException { UnitCompiler.this.compile2(pmatd);                         return null; }
 
-            // SUPPRESS CHECKSTYLE LineLength:2
             @Override @Nullable public Void visitEnumConstant(EnumConstant ec)                                         throws CompileException { UnitCompiler.this.compileError("Compilation of enum constant NYI",                      ec.getLocation());   return null; }
             @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws CompileException { UnitCompiler.this.compileError("Compilation of member annotation type declaration NYI", matd.getLocation()); return null; }
         });
@@ -736,7 +733,6 @@ class UnitCompiler {
                             new SimpleType(loc, this.iClassLoader.TYPE_java_lang_System), // target
                             "arraycopy",                                                  // methodName
                             new Rvalue[] {                                                // arguments
-                                // SUPPRESS CHECKSTYLE LineLength:5
                                 new FieldAccessExpression(loc, new SimpleType(loc, enumIClass), "ENUM$VALUES"), // Argument #1: E.ENUM$VALUES
                                 new IntegerLiteral(loc, "0"),                                                   // Argument #2: 0
                                 new LocalVariableAccess(loc, this.getLocalVariable(lvds, vd)),                  // Argument #3: tmp
@@ -1224,7 +1220,6 @@ class UnitCompiler {
                         );
                     }
 
-                    // SUPPRESS CHECKSTYLE LineLength:9
                     if (cv instanceof Boolean)   { return new ClassFile.BooleanElementValue(cf.addConstantIntegerInfo((Boolean) cv ? 1 : 0)); }
                     if (cv instanceof Byte)      { return new ClassFile.ByteElementValue(cf.addConstantIntegerInfo((Byte) cv));               }
                     if (cv instanceof Short)     { return new ClassFile.ShortElementValue(cf.addConstantIntegerInfo((Short) cv));             }
@@ -1513,8 +1508,6 @@ class UnitCompiler {
     compile(BlockStatement bs) throws CompileException {
 
         Boolean result = (Boolean) bs.accept(new BlockStatementVisitor<Boolean, CompileException>() {
-
-            // SUPPRESS CHECKSTYLE LineLengthCheck:23
             @Override public Boolean visitInitializer(Initializer i)                                                throws CompileException { return UnitCompiler.this.compile2(i);    }
             @Override public Boolean visitFieldDeclaration(FieldDeclaration fd)                                     throws CompileException { return UnitCompiler.this.compile2(fd);   }
             @Override public Boolean visitLabeledStatement(LabeledStatement ls)                                     throws CompileException { return UnitCompiler.this.compile2(ls);   }
@@ -3359,16 +3352,16 @@ class UnitCompiler {
         ) {
             if (((MethodDeclarator) fd).isDefault()) {
                 if (!(fd.getDeclaringType() instanceof InterfaceDeclaration)) {
-                    this.compileError("Only interface method declarations may have the \"default\" modifier", fd.getLocation()); // SUPPRESS CHECKSTYLE LineLength
+                    this.compileError("Only interface method declarations may have the \"default\" modifier", fd.getLocation());
                 } else
                 if (((MethodDeclarator) fd).isStatic()) {
-                    this.compileError("Static interface method declarations must not have the \"default\" modifier", fd.getLocation()); // SUPPRESS CHECKSTYLE LineLength
+                    this.compileError("Static interface method declarations must not have the \"default\" modifier", fd.getLocation());
                 } else
                 if (fd.statements == null) {
                     this.compileError("Default method declarations must have a body", fd.getLocation());
                 }
             } else {
-                if (fd.statements != null) this.compileError("Method must not declare a body", fd.getLocation()); // SUPPRESS CHECKSTYLE LineLength
+                if (fd.statements != null) this.compileError("Method must not declare a body", fd.getLocation());
                 return;
             }
         }
@@ -3620,7 +3613,6 @@ class UnitCompiler {
             new BlockStatementVisitor<Map<String, LocalVariable>, CompileException>() {
 
                 // Basic statements that use the default handlers.
-                // SUPPRESS CHECKSTYLE LineLengthCheck:11
                 @Override public Map<String, LocalVariable> visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)  { UnitCompiler.buildLocalVariableMap(aci, localVars);  return localVars; }
                 @Override public Map<String, LocalVariable> visitBreakStatement(BreakStatement bs)                                   { UnitCompiler.buildLocalVariableMap(bs, localVars);   return localVars; }
                 @Override public Map<String, LocalVariable> visitContinueStatement(ContinueStatement cs)                             { UnitCompiler.buildLocalVariableMap(cs, localVars);   return localVars; }
@@ -3634,7 +3626,6 @@ class UnitCompiler {
                 @Override public Map<String, LocalVariable> visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds) { UnitCompiler.buildLocalVariableMap(lcds, localVars); return localVars; }
 
                 // More complicated statements with specialized handlers, but don't add new variables in this scope.
-                // SUPPRESS CHECKSTYLE LineLengthCheck:10
                 @Override public Map<String, LocalVariable> visitBlock(Block b)                                  throws CompileException { UnitCompiler.this.buildLocalVariableMap(b,   localVars); return localVars; }
                 @Override public Map<String, LocalVariable> visitDoStatement(DoStatement ds)                     throws CompileException { UnitCompiler.this.buildLocalVariableMap(ds,  localVars); return localVars; }
                 @Override public Map<String, LocalVariable> visitForStatement(ForStatement fs)                   throws CompileException { UnitCompiler.this.buildLocalVariableMap(fs,  localVars); return localVars; }
@@ -3647,7 +3638,6 @@ class UnitCompiler {
                 @Override public Map<String, LocalVariable> visitWhileStatement(WhileStatement ws)               throws CompileException { UnitCompiler.this.buildLocalVariableMap(ws,  localVars); return localVars; }
 
                 // More complicated statements with specialized handlers, that can add variables in this scope.
-                // SUPPRESS CHECKSTYLE LineLengthCheck:2
                 @Override public Map<String, LocalVariable> visitLabeledStatement(LabeledStatement ls)                                     throws CompileException { return UnitCompiler.this.buildLocalVariableMap(ls,   localVars); }
                 @Override public Map<String, LocalVariable> visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) throws CompileException { return UnitCompiler.this.buildLocalVariableMap(lvds, localVars); }
             }
@@ -3861,8 +3851,6 @@ class UnitCompiler {
             @Override @Nullable public Void
             visitLvalue(Lvalue lv) throws CompileException {
                 lv.accept(new LvalueVisitor<Void, CompileException>() {
-
-                    // SUPPRESS CHECKSTYLE LineLength:7
                     @Override @Nullable public Void visitAmbiguousName(AmbiguousName an)                                        throws CompileException { UnitCompiler.this.compile2(an);    return null; }
                     @Override @Nullable public Void visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { UnitCompiler.this.compile2(aae);   return null; }
                     @Override @Nullable public Void visitFieldAccess(FieldAccess fa)                                            throws CompileException { UnitCompiler.this.compile2(fa);    return null; }
@@ -3874,7 +3862,6 @@ class UnitCompiler {
                 return null;
             }
 
-            // SUPPRESS CHECKSTYLE LineLength:29
             @Override @Nullable public Void visitArrayLength(ArrayLength al)                                    throws CompileException { UnitCompiler.this.compile2(al);    return null; }
             @Override @Nullable public Void visitAssignment(Assignment a)                                       throws CompileException { UnitCompiler.this.compile2(a);     return null; }
             @Override @Nullable public Void visitUnaryOperation(UnaryOperation uo)                              throws CompileException { UnitCompiler.this.compile2(uo);    return null; }
@@ -4081,8 +4068,6 @@ class UnitCompiler {
             @Override @Nullable public Void
             visitLvalue(Lvalue lv) throws CompileException {
                 lv.accept(new LvalueVisitor<Void, CompileException>() {
-
-                    // SUPPRESS CHECKSTYLE LineLength:7
                     @Override @Nullable public Void visitAmbiguousName(AmbiguousName an)                                        throws CompileException { UnitCompiler.this.compileBoolean2(an,    dst, orientation); return null; }
                     @Override @Nullable public Void visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { UnitCompiler.this.compileBoolean2(aae,   dst, orientation); return null; }
                     @Override @Nullable public Void visitFieldAccess(FieldAccess fa)                                            throws CompileException { UnitCompiler.this.compileBoolean2(fa,    dst, orientation); return null; }
@@ -4094,7 +4079,6 @@ class UnitCompiler {
                 return null;
             }
 
-            // SUPPRESS CHECKSTYLE LineLength:29
             @Override @Nullable public Void visitArrayLength(ArrayLength al)                                    throws CompileException { UnitCompiler.this.compileBoolean2(al,   dst, orientation); return null; }
             @Override @Nullable public Void visitAssignment(Assignment a)                                       throws CompileException { UnitCompiler.this.compileBoolean2(a,    dst, orientation); return null; }
             @Override @Nullable public Void visitUnaryOperation(UnaryOperation uo)                              throws CompileException { UnitCompiler.this.compileBoolean2(uo,   dst, orientation); return null; }
@@ -4359,7 +4343,7 @@ class UnitCompiler {
             // Note: Comparison with "null" is already handled above.
             if (!UnitCompiler.rawTypeOf(lhsType).isPrimitive() && !UnitCompiler.rawTypeOf(rhsType).isPrimitive()) {
                 if (bo.operator != "==" && bo.operator != "!=") { // SUPPRESS CHECKSTYLE StringLiteralEquality
-                    this.compileError("Operator \"" + bo.operator + "\" not allowed on reference operands", bo.getLocation()); // SUPPRESS CHECKSTYLE LineLength
+                    this.compileError("Operator \"" + bo.operator + "\" not allowed on reference operands", bo.getLocation());
                 }
                 if (
                     !this.isCastReferenceConvertible(lhsType, rhsType)
@@ -4402,8 +4386,6 @@ class UnitCompiler {
             @Override @Nullable public Integer
             visitLvalue(Lvalue lv) throws CompileException {
                 return (Integer) lv.accept(new LvalueVisitor<Integer, CompileException>() {
-
-                    // SUPPRESS CHECKSTYLE LineLength:7
                     @Override public Integer visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.compileContext2(an);    }
                     @Override public Integer visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.compileContext2(aae);   }
                     @Override public Integer visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.compileContext2(fa);    }
@@ -4414,7 +4396,6 @@ class UnitCompiler {
                 });
             }
 
-            // SUPPRESS CHECKSTYLE LineLength:29
             @Override public Integer visitArrayLength(ArrayLength al)            throws CompileException { return UnitCompiler.this.compileContext2(al);   }
             @Override public Integer visitAssignment(Assignment a)                                       { return UnitCompiler.this.compileContext2(a);    }
             @Override public Integer visitUnaryOperation(UnaryOperation uo)                              { return UnitCompiler.this.compileContext2(uo);   }
@@ -4541,8 +4522,6 @@ class UnitCompiler {
             @Override @Nullable public IType
             visitLvalue(Lvalue lv) throws CompileException {
                 return (IType) lv.accept(new LvalueVisitor<IType, CompileException>() {
-
-                    // SUPPRESS CHECKSTYLE LineLength:7
                     @Override public IType visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.compileGet2(an);    }
                     @Override public IType visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.compileGet2(aae);   }
                     @Override public IType visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.compileGet2(fa);    }
@@ -4553,7 +4532,6 @@ class UnitCompiler {
                 });
             }
 
-            // SUPPRESS CHECKSTYLE LineLength:29
             @Override public IType visitArrayLength(ArrayLength al)                                                            { return UnitCompiler.this.compileGet2(al);   }
             @Override public IType visitAssignment(Assignment a)                                       throws CompileException { return UnitCompiler.this.compileGet2(a);    }
             @Override public IType visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return UnitCompiler.this.compileGet2(uo);   }
@@ -5224,7 +5202,7 @@ class UnitCompiler {
 
     private static boolean
     isStaticContext(TypeBodyDeclaration tbd) {
-        if (tbd instanceof FieldDeclaration)       return ((FieldDeclaration)       tbd).isStatic() || ((FieldDeclaration) tbd).getDeclaringType() instanceof InterfaceDeclaration; // SUPPRESS CHECKSTYLE LineLength
+        if (tbd instanceof FieldDeclaration)       return ((FieldDeclaration)       tbd).isStatic() || ((FieldDeclaration) tbd).getDeclaringType() instanceof InterfaceDeclaration;
         if (tbd instanceof MethodDeclarator)       return ((MethodDeclarator)       tbd).isStatic();
         if (tbd instanceof Initializer)            return ((Initializer)            tbd).isStatic();
         if (tbd instanceof MemberClassDeclaration) return ((MemberClassDeclaration) tbd).isStatic();
@@ -5257,8 +5235,6 @@ class UnitCompiler {
 
         final LvalueVisitor<Boolean, RuntimeException>
         lvalueVisitor = new LvalueVisitor<Boolean, RuntimeException>() {
-
-            // SUPPRESS CHECKSTYLE LineLengthCheck:7
             @Override @Nullable public Boolean visitAmbiguousName(AmbiguousName an)                                        { return false;                                               }
             @Override @Nullable public Boolean visitArrayAccessExpression(ArrayAccessExpression aae)                       { return UnitCompiler.mayHaveSideEffects(aae.lhs, aae.index); }
             @Override @Nullable public Boolean visitFieldAccess(FieldAccess fa)                                            { return false;                                               }
@@ -5270,8 +5246,6 @@ class UnitCompiler {
 
         final RvalueVisitor<Boolean, RuntimeException>
         rvalueVisitor = new RvalueVisitor<Boolean, RuntimeException>() {
-
-            // SUPPRESS CHECKSTYLE LineLengthCheck:30
             @Override @Nullable public Boolean visitLvalue(Lvalue lv)                                              { return (Boolean) lv.accept(lvalueVisitor);                      }
             @Override @Nullable public Boolean visitArrayLength(ArrayLength al)                                    { return UnitCompiler.mayHaveSideEffects(al.lhs);                 }
             @Override @Nullable public Boolean visitAssignment(Assignment a)                                       { return true;                                                    }
@@ -5743,8 +5717,6 @@ class UnitCompiler {
             @Override @Nullable public Object
             visitLvalue(Lvalue lv) throws CompileException {
                 return lv.accept(new LvalueVisitor<Object, CompileException>() {
-
-                    // SUPPRESS CHECKSTYLE LineLengthCheck:7
                     @Override @Nullable public Object visitAmbiguousName(AmbiguousName an)                     throws CompileException { return UnitCompiler.this.getConstantValue2(an);    }
                     @Override @Nullable public Object visitArrayAccessExpression(ArrayAccessExpression aae)                            { return UnitCompiler.this.getConstantValue2(aae);   }
                     @Override @Nullable public Object visitFieldAccess(FieldAccess fa)                         throws CompileException { return UnitCompiler.this.getConstantValue2(fa);    }
@@ -5755,7 +5727,6 @@ class UnitCompiler {
                 });
             }
 
-            // SUPPRESS CHECKSTYLE LineLengthCheck:29
             @Override @Nullable public Object visitArrayLength(ArrayLength al)                                             { return UnitCompiler.this.getConstantValue2(al);   }
             @Override @Nullable public Object visitAssignment(Assignment a)                                                { return UnitCompiler.this.getConstantValue2(a);    }
             @Override @Nullable public Object visitUnaryOperation(UnaryOperation uo)               throws CompileException { return UnitCompiler.this.getConstantValue2(uo);   }
@@ -6329,8 +6300,6 @@ class UnitCompiler {
     generatesCode(BlockStatement bs) throws CompileException {
 
         Boolean result = (Boolean) bs.accept(new BlockStatementVisitor<Boolean, CompileException>() {
-
-            // SUPPRESS CHECKSTYLE LineLengthCheck:23
             @Override public Boolean visitInitializer(Initializer i)                        throws CompileException { return UnitCompiler.this.generatesCode2(i);    }
             @Override public Boolean visitFieldDeclaration(FieldDeclaration fd)             throws CompileException { return UnitCompiler.this.generatesCode2(fd);   }
             @Override public Boolean visitLabeledStatement(LabeledStatement ls)                                     { return UnitCompiler.this.generatesCode2(ls);   }
@@ -6406,8 +6375,6 @@ class UnitCompiler {
     private void
     leave(BlockStatement bs) throws CompileException {
         BlockStatementVisitor<Void, CompileException> bsv = new BlockStatementVisitor<Void, CompileException>() {
-
-            // SUPPRESS CHECKSTYLE LineLengthCheck:23
             @Override @Nullable public Void visitInitializer(Initializer i)                                                { UnitCompiler.this.leave2(i);    return null; }
             @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd)                                     { UnitCompiler.this.leave2(fd);   return null; }
             @Override @Nullable public Void visitLabeledStatement(LabeledStatement ls)                                     { UnitCompiler.this.leave2(ls);   return null; }
@@ -6468,8 +6435,6 @@ class UnitCompiler {
     compileSet(Lvalue lv) throws CompileException {
 
         lv.accept(new LvalueVisitor<Void, CompileException>() {
-
-            // SUPPRESS CHECKSTYLE LineLength:7
             @Override @Nullable public Void visitAmbiguousName(AmbiguousName an)                                        throws CompileException { UnitCompiler.this.compileSet2(an);    return null; }
             @Override @Nullable public Void visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { UnitCompiler.this.compileSet2(aae);   return null; }
             @Override @Nullable public Void visitFieldAccess(FieldAccess fa)                                            throws CompileException { UnitCompiler.this.compileSet2(fa);    return null; }
@@ -6561,8 +6526,6 @@ class UnitCompiler {
     private IType
     getType(Type t) throws CompileException {
         IType result = (IType) t.accept(new TypeVisitor<IType, CompileException>() {
-
-            // SUPPRESS CHECKSTYLE LineLengthCheck:5
             @Override public IType visitArrayType(ArrayType at)                throws CompileException { return UnitCompiler.this.getType2(at);  }
             @Override public IType visitPrimitiveType(PrimitiveType bt)                                { return UnitCompiler.this.getType2(bt);  }
             @Override public IType visitReferenceType(ReferenceType rt)        throws CompileException { return UnitCompiler.this.getType2(rt);  }
@@ -6588,7 +6551,6 @@ class UnitCompiler {
             @Override @Nullable public IType
             visitLvalue(Lvalue lv) throws CompileException { return UnitCompiler.this.getType(lv); }
 
-            // SUPPRESS CHECKSTYLE LineLengthCheck:29
             @Override public IType visitArrayLength(ArrayLength al)                                                            { return UnitCompiler.this.getType2(al);   }
             @Override public IType visitAssignment(Assignment a)                                       throws CompileException { return UnitCompiler.this.getType2(a);    }
             @Override public IType visitUnaryOperation(UnaryOperation uo)                              throws CompileException { return UnitCompiler.this.getType2(uo);   }
@@ -6627,8 +6589,6 @@ class UnitCompiler {
     private IType
     getType(Lvalue lv) throws CompileException {
         IType result = (IType) lv.accept(new LvalueVisitor<IType, CompileException>() {
-
-            // SUPPRESS CHECKSTYLE LineLengthCheck:7
             @Override public IType visitAmbiguousName(AmbiguousName an)                                        throws CompileException { return UnitCompiler.this.getType2(an);    }
             @Override public IType visitArrayAccessExpression(ArrayAccessExpression aae)                       throws CompileException { return UnitCompiler.this.getType2(aae);   }
             @Override public IType visitFieldAccess(FieldAccess fa)                                            throws CompileException { return UnitCompiler.this.getType2(fa);    }
@@ -7436,8 +7396,6 @@ class UnitCompiler {
             visitType(Type t) {
 
                 return (Boolean) t.accept(new TypeVisitor<Boolean, RuntimeException>() {
-
-                    // SUPPRESS CHECKSTYLE LineLengthCheck:5
                     @Override public Boolean visitArrayType(ArrayType at)                { return UnitCompiler.this.isType2(at);  }
                     @Override public Boolean visitPrimitiveType(PrimitiveType bt)        { return UnitCompiler.this.isType2(bt);  }
                     @Override public Boolean visitReferenceType(ReferenceType rt)        { return UnitCompiler.this.isType2(rt);  }
@@ -7455,8 +7413,6 @@ class UnitCompiler {
                     visitLvalue(Lvalue lv) throws CompileException {
 
                         return (Boolean) lv.accept(new LvalueVisitor<Boolean, CompileException>() {
-
-                            // SUPPRESS CHECKSTYLE LineLengthCheck:7
                             @Override public Boolean visitAmbiguousName(AmbiguousName an)                throws CompileException { return UnitCompiler.this.isType2(an);    }
                             @Override public Boolean visitArrayAccessExpression(ArrayAccessExpression aae)                       { return UnitCompiler.this.isType2(aae);   }
                             @Override public Boolean visitFieldAccess(FieldAccess fa)                                            { return UnitCompiler.this.isType2(fa);    }
@@ -7467,7 +7423,6 @@ class UnitCompiler {
                         });
                     }
 
-                    // SUPPRESS CHECKSTYLE LineLengthCheck:29
                     @Override public Boolean visitArrayLength(ArrayLength al)                                    { return UnitCompiler.this.isType2(al);   }
                     @Override public Boolean visitAssignment(Assignment a)                                       { return UnitCompiler.this.isType2(a);    }
                     @Override public Boolean visitUnaryOperation(UnaryOperation uo)                              { return UnitCompiler.this.isType2(uo);   }
@@ -7710,7 +7665,7 @@ class UnitCompiler {
 
                 // Check whether the type is accessed from within the same package.
                 String packageDeclaringType = Descriptor.getPackageName(type.getDescriptor());
-                String contextPackage       = Descriptor.getPackageName(iClassDeclaringContextBlockStatement.getDescriptor()); // SUPPRESS CHECKSTYLE LineLength
+                String contextPackage       = Descriptor.getPackageName(iClassDeclaringContextBlockStatement.getDescriptor());
                 if (
                     packageDeclaringType == null
                     ? contextPackage != null
@@ -9759,7 +9714,7 @@ class UnitCompiler {
             final IClass[]       tes = (IClass[]) s.toArray(new IClass[s.size()]);
             return im.getDeclaringIClass().new IMethod() {
 
-                @Override public IAnnotation[] getAnnotations()                             { return im.getAnnotations();    } // SUPPRESS CHECKSTYLE LineLength:9
+                @Override public IAnnotation[] getAnnotations()                             { return im.getAnnotations();    }
                 @Override public Access        getAccess()                                  { return im.getAccess();         }
                 // JLS8 15.12.2.5.B8.B2: "In this case, the most specific method is considered to be abstract"
                 @Override public boolean       isAbstract()                                 { return true;                   }
@@ -10042,7 +9997,7 @@ class UnitCompiler {
 
                     res.add(new IMethod() {
 
-                        @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0];                                                    } // SUPPRESS CHECKSTYLE LineLength:7
+                        @Override public IAnnotation[] getAnnotations()       { return new IAnnotation[0];                                                    }
                         @Override public Access        getAccess()            { return Access.PUBLIC;                                                         }
                         @Override public boolean       isStatic()             { return true;                                                                  }
                         @Override public boolean       isAbstract()           { return false;                                                                 }
@@ -10212,7 +10167,7 @@ class UnitCompiler {
             @Override public Access
             getAccess() {
 
-                if (atd instanceof MemberClassDeclaration)            return ((MemberClassDeclaration)            atd).getAccess(); // SUPPRESS CHECKSTYLE LineLength:3
+                if (atd instanceof MemberClassDeclaration)            return ((MemberClassDeclaration)            atd).getAccess();
                 if (atd instanceof PackageMemberClassDeclaration)     return ((PackageMemberClassDeclaration)     atd).getAccess();
                 if (atd instanceof MemberInterfaceDeclaration)        return ((MemberInterfaceDeclaration)        atd).getAccess();
                 if (atd instanceof PackageMemberInterfaceDeclaration) return ((PackageMemberInterfaceDeclaration) atd).getAccess();
@@ -10673,8 +10628,6 @@ class UnitCompiler {
     toIInvocable(final FunctionDeclarator fd) {
         IClass.IInvocable result = (IClass.IInvocable) fd.accept(
             new FunctionDeclaratorVisitor<IInvocable, RuntimeException>() {
-
-                // SUPPRESS CHECKSTYLE LineLength:2
                 @Override public IInvocable visitMethodDeclarator(MethodDeclarator md)           { return UnitCompiler.this.toIMethod((MethodDeclarator) fd);           }
                 @Override public IInvocable visitConstructorDeclarator(ConstructorDeclarator cd) { return UnitCompiler.this.toIConstructor((ConstructorDeclarator) fd); }
             }
@@ -10718,7 +10671,7 @@ class UnitCompiler {
             for (ImportDeclaration id : this.abstractCompilationUnit.importDeclarations) {
                 id.accept(new ImportVisitor<Void, RuntimeException>() {
 
-                    @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { stids.add(stid); return null; } // SUPPRESS CHECKSTYLE LineLength:3
+                    @Override @Nullable public Void visitSingleTypeImportDeclaration(SingleTypeImportDeclaration stid)          { stids.add(stid); return null; }
                     @Override @Nullable public Void visitTypeImportOnDemandDeclaration(TypeImportOnDemandDeclaration tiodd)     { return null;                  }
                     @Override @Nullable public Void visitSingleStaticImportDeclaration(SingleStaticImportDeclaration ssid)      { return null;                  }
                     @Override @Nullable public Void visitStaticImportOnDemandDeclaration(StaticImportOnDemandDeclaration siodd) { return null;                  }

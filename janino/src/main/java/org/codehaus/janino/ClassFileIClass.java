@@ -384,7 +384,6 @@ class ClassFileIClass extends IClass {
 
                     final ClassFile cf = ClassFileIClass.this.classFile;
 
-                    // SUPPRESS CHECKSTYLE LineLength:13
                     @Override public Object visitBooleanElementValue(BooleanElementValue subject) { return this.getConstantValue(subject.constantValueIndex); }
                     @Override public Object visitByteElementValue(ByteElementValue subject)       { return this.getConstantValue(subject.constantValueIndex); }
                     @Override public Object visitCharElementValue(CharElementValue subject)       { return this.getConstantValue(subject.constantValueIndex); }
@@ -639,7 +638,7 @@ class ClassFileIClass extends IClass {
         } else {
 
             result = new IClass.IMethod() {
-                @Override public IAnnotation[] getAnnotations()       { return iAnnotations;                                } // SUPPRESS CHECKSTYLE LineLength:9
+                @Override public IAnnotation[] getAnnotations()       { return iAnnotations;                                }
                 @Override public Access        getAccess()            { return access;                                      }
                 @Override public boolean       isStatic()             { return Mod.isStatic(methodInfo.getAccessFlags());   }
                 @Override public boolean       isAbstract()           { return Mod.isAbstract(methodInfo.getAccessFlags()); }

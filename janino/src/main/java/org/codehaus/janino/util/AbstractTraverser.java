@@ -227,7 +227,6 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     private final ImportVisitor<Void, EX>
     importTraverser = new ImportVisitor<Void, EX>() {
 
-        // SUPPRESS CHECKSTYLE LineLength:4
         @Override @Nullable public Void visitSingleTypeImportDeclaration(AbstractCompilationUnit.SingleTypeImportDeclaration stid)          throws EX { AbstractTraverser.this.delegate.traverseSingleTypeImportDeclaration(stid);      return null; }
         @Override @Nullable public Void visitTypeImportOnDemandDeclaration(AbstractCompilationUnit.TypeImportOnDemandDeclaration tiodd)     throws EX { AbstractTraverser.this.delegate.traverseTypeImportOnDemandDeclaration(tiodd);   return null; }
         @Override @Nullable public Void visitSingleStaticImportDeclaration(AbstractCompilationUnit.SingleStaticImportDeclaration ssid)      throws EX { AbstractTraverser.this.delegate.traverseSingleStaticImportDeclaration(ssid);    return null; }
@@ -240,7 +239,6 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
     private final TypeDeclarationVisitor<Void, EX>
     typeDeclarationTraverser = new TypeDeclarationVisitor<Void, EX>() {
 
-        // SUPPRESS CHECKSTYLE LineLength:11
         @Override @Nullable public Void visitAnonymousClassDeclaration(AnonymousClassDeclaration acd)                             throws EX { AbstractTraverser.this.delegate.traverseAnonymousClassDeclaration(acd);                return null; }
         @Override @Nullable public Void visitLocalClassDeclaration(LocalClassDeclaration lcd)                                     throws EX { AbstractTraverser.this.delegate.traverseLocalClassDeclaration(lcd);                    return null; }
         @Override @Nullable public Void visitPackageMemberClassDeclaration(PackageMemberClassDeclaration pmcd)                    throws EX { AbstractTraverser.this.delegate.traversePackageMemberClassDeclaration(pmcd);           return null; }
@@ -264,7 +262,6 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         visitLvalue(Lvalue lv) throws EX {
             lv.accept(new LvalueVisitor<Void, EX>() {
 
-                // SUPPRESS CHECKSTYLE LineLength:7
                 @Override @Nullable public Void visitAmbiguousName(AmbiguousName an)                                        throws EX { AbstractTraverser.this.delegate.traverseAmbiguousName(an);                      return null; }
                 @Override @Nullable public Void visitArrayAccessExpression(ArrayAccessExpression aae)                       throws EX { AbstractTraverser.this.delegate.traverseArrayAccessExpression(aae);             return null; }
                 @Override @Nullable public Void visitFieldAccess(FieldAccess fa)                                            throws EX { AbstractTraverser.this.delegate.traverseFieldAccess(fa);                        return null; }
@@ -276,7 +273,6 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
             return null;
         }
 
-        // SUPPRESS CHECKSTYLE LineLength:29
         @Override @Nullable public Void visitArrayLength(ArrayLength al)                                    throws EX { AbstractTraverser.this.delegate.traverseArrayLength(al);                      return null; }
         @Override @Nullable public Void visitAssignment(Assignment a)                                       throws EX { AbstractTraverser.this.delegate.traverseAssignment(a);                        return null; }
         @Override @Nullable public Void visitUnaryOperation(UnaryOperation uo)                              throws EX { AbstractTraverser.this.delegate.traverseUnaryOperation(uo);                   return null; }
@@ -317,15 +313,12 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         @Override @Nullable public Void
         visitFunctionDeclarator(FunctionDeclarator fd) throws EX {
             fd.accept(new FunctionDeclaratorVisitor<Void, EX>() {
-
-                // SUPPRESS CHECKSTYLE LineLength:2
                 @Override @Nullable public Void visitConstructorDeclarator(ConstructorDeclarator cd) throws EX { AbstractTraverser.this.delegate.traverseConstructorDeclarator(cd); return null; }
                 @Override @Nullable public Void visitMethodDeclarator(MethodDeclarator md)           throws EX { AbstractTraverser.this.delegate.traverseMethodDeclarator(md);      return null; }
             });
             return null;
         }
 
-        // SUPPRESS CHECKSTYLE LineLength:6
         @Override @Nullable public Void visitMemberAnnotationTypeDeclaration(MemberAnnotationTypeDeclaration matd) throws EX { AbstractTraverser.this.delegate.traverseMemberAnnotationTypeDeclaration(matd); return null; }
         @Override @Nullable public Void visitMemberInterfaceDeclaration(MemberInterfaceDeclaration mid)            throws EX { AbstractTraverser.this.delegate.traverseMemberInterfaceDeclaration(mid);       return null; }
         @Override @Nullable public Void visitMemberClassDeclaration(MemberClassDeclaration mcd)                    throws EX { AbstractTraverser.this.delegate.traverseMemberClassDeclaration(mcd);           return null; }
@@ -339,8 +332,6 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
      */
     private final BlockStatementVisitor<Void, EX>
     blockStatementTraverser = new BlockStatementVisitor<Void, EX>() {
-
-        // SUPPRESS CHECKSTYLE LineLength:23
         @Override @Nullable public Void visitInitializer(Initializer i)                                                throws EX { AbstractTraverser.this.delegate.traverseInitializer(i);                          return null; }
         @Override @Nullable public Void visitFieldDeclaration(FieldDeclaration fd)                                     throws EX { AbstractTraverser.this.delegate.traverseFieldDeclaration(fd);                    return null; }
         @Override @Nullable public Void visitLabeledStatement(LabeledStatement ls)                                     throws EX { AbstractTraverser.this.delegate.traverseLabeledStatement(ls);                    return null; }
@@ -388,8 +379,6 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         visitType(Type t) throws EX {
 
             t.accept(new TypeVisitor<Void, EX>() {
-
-                // SUPPRESS CHECKSTYLE LineLength:5
                 @Override @Nullable public Void visitArrayType(ArrayType at)                throws EX { AbstractTraverser.this.delegate.traverseArrayType(at);         return null; }
                 @Override @Nullable public Void visitPrimitiveType(PrimitiveType bt)        throws EX { AbstractTraverser.this.delegate.traversePrimitiveType(bt);     return null; }
                 @Override @Nullable public Void visitReferenceType(ReferenceType rt)        throws EX { AbstractTraverser.this.delegate.traverseReferenceType(rt);     return null; }
@@ -403,8 +392,6 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         visitConstructorInvocation(ConstructorInvocation ci) throws EX {
 
             ci.accept(new ConstructorInvocationVisitor<Void, EX>() {
-
-                // SUPPRESS CHECKSTYLE LineLength:2
                 @Override @Nullable public Void visitAlternateConstructorInvocation(AlternateConstructorInvocation aci) throws EX { AbstractTraverser.this.delegate.traverseAlternateConstructorInvocation(aci); return null; }
                 @Override @Nullable public Void visitSuperConstructorInvocation(SuperConstructorInvocation sci)         throws EX { AbstractTraverser.this.delegate.traverseSuperConstructorInvocation(sci);     return null; }
             });
@@ -442,7 +429,6 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
             return null;
         }
 
-        // SUPPRESS CHECKSTYLE LineLength:2
         @Override @Nullable public Void visitElementValueArrayInitializer(ElementValueArrayInitializer evai) throws EX { AbstractTraverser.this.delegate.traverseElementValueArrayInitializer(evai); return null; }
         @Override @Nullable public Void visitAnnotation(Annotation a)                                        throws EX { AbstractTraverser.this.delegate.traverseAnnotation(a);                      return null; }
     };
@@ -452,8 +438,6 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
      */
     private final AnnotationVisitor<Void, EX>
     annotationTraverser = new AnnotationVisitor<Void, EX>() {
-
-        // SUPPRESS CHECKSTYLE LineLength:3
         @Override @Nullable public Void visitMarkerAnnotation(MarkerAnnotation ma)                throws EX { AbstractTraverser.this.delegate.traverseMarkerAnnotation(ma);         return null; }
         @Override @Nullable public Void visitNormalAnnotation(NormalAnnotation na)                throws EX { AbstractTraverser.this.delegate.traverseNormalAnnotation(na);         return null; }
         @Override @Nullable public Void visitSingleElementAnnotation(SingleElementAnnotation sea) throws EX { AbstractTraverser.this.delegate.traverseSingleElementAnnotation(sea); return null; }
@@ -461,8 +445,6 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
     private final TryStatementResourceVisitor<Void, EX>
     resourceTraverser = new TryStatementResourceVisitor<Void, EX>() {
-
-        // SUPPRESS CHECKSTYLE LineLength:2
         @Override @Nullable public Void visitLocalVariableDeclaratorResource(LocalVariableDeclaratorResource lvdr) throws EX { AbstractTraverser.this.delegate.traverseLocalVariableDeclaratorResource(lvdr);  return null; }
         @Override @Nullable public Void visitVariableAccessResource(VariableAccessResource var)                    throws EX { AbstractTraverser.this.delegate.traverseVariableAccessResource(var);            return null; }
     };

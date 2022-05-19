@@ -1,9 +1,8 @@
 
 /*
- * JDISASM - A Java[TM] class file disassembler
+ * Janino - An embedded Java[TM] compiler
  *
- * Copyright (c) 2001, Arno Unkrig
- * All rights reserved.
+ * Copyright (c) 2021 Arno Unkrig. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
  * following conditions are met:

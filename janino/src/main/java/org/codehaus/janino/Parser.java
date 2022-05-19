@@ -3772,7 +3772,7 @@ class Parser {
 
     // Token-level methods.
 
-    // Shorthand for the various "TokenStream" methods.       SUPPRESS CHECKSTYLE LineLength|JavadocMethod:16
+    // Shorthand for the various "TokenStream" methods.
     public Token            peek()                              throws CompileException, IOException { return this.tokenStream.peek();                             }
     public Token            read()                              throws CompileException, IOException { return this.tokenStream.read();                             }
     public boolean          peek(String suspected)              throws CompileException, IOException { return this.tokenStream.peek(suspected);                    }
