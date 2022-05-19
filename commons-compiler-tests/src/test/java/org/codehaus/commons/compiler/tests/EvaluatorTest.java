@@ -267,7 +267,9 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
 
             final int[] count = new int[1];
             et.setCompileErrorHandler(new ErrorHandler() {
-                @Override public void handleError(String message, @Nullable Location location) throws CompileException {
+
+                @Override public void
+                handleError(String message, @Nullable Location location) throws CompileException {
                     count[0]++;
                     throw new CompileException(message, location);
                 }
