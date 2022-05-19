@@ -284,6 +284,7 @@ class Compiler extends AbstractCompiler {
         fileManager = (JavaFileManager) ApiLog.logMethodInvocations(fileManager);
 
         final int[] compileErrorCount = new int[1];
+
         final DiagnosticListener<JavaFileObject> dl = new DiagnosticListener<JavaFileObject>() {
 
             @Override public void
@@ -291,7 +292,7 @@ class Compiler extends AbstractCompiler {
                 assert diagnostic != null;
 
                 JavaFileObject source = diagnostic.getSource();
-                Location loc = new Location(
+                Location       loc    = new Location(
                     (                                     // fileName
                         source == null                           ? null :
                         source instanceof ResourceJavaFileObject ? ((ResourceJavaFileObject) source).getResourceFileName() :
