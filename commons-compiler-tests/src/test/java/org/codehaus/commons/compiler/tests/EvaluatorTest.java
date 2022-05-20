@@ -1228,7 +1228,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             + "return meth();\n"
             + "static int meth() { return 7; }\n"
         ));
-        Assert.assertEquals(7, se.evaluate(null));
+        Assert.assertEquals(7, se.evaluate());
     }
 
     @Test public void
