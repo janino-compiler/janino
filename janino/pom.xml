@@ -36,6 +36,12 @@
     	<scope>provided</scope>
     	<optional>true</optional>
     </dependency>
+    <dependency>
+    	<groupId>de.unkrig.jdisasm</groupId>
+    	<artifactId>jdisasm</artifactId>
+    	<version>1.0.6</version>
+    	<scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
