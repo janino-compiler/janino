@@ -5254,7 +5254,10 @@ class UnitCompiler {
 
         final RvalueVisitor<Boolean, RuntimeException>
         rvalueVisitor = new RvalueVisitor<Boolean, RuntimeException>() {
-            @Override @Nullable public Boolean visitLvalue(Lvalue lv)                                              { return (Boolean) lv.accept(lvalueVisitor);                      }
+
+            @SuppressWarnings("unqualified-field-access") @Override @Nullable public Boolean
+            visitLvalue(Lvalue lv) { return (Boolean) lv.accept(lvalueVisitor); }
+
             @Override @Nullable public Boolean visitArrayLength(ArrayLength al)                                    { return UnitCompiler.mayHaveSideEffects(al.lhs);                 }
             @Override @Nullable public Boolean visitAssignment(Assignment a)                                       { return true;                                                    }
             @Override @Nullable public Boolean visitUnaryOperation(UnaryOperation uo)                              { return UnitCompiler.mayHaveSideEffects(uo.operand);             }
@@ -6792,7 +6795,7 @@ class UnitCompiler {
         }
     }
 
-    private IType
+    @SuppressWarnings("unused") private IType
     typeArgumentToIType(TypeArgument ta) throws CompileException {
 
         if (ta instanceof ReferenceType) {
