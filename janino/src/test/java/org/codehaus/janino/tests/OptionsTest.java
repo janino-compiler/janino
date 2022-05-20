@@ -99,7 +99,7 @@ class OptionsTest {
         se.setDebuggingInformation(true, true, true);
         se.options(EnumSet.copyOf(Arrays.asList(options)));
         se.cook(script);
-        se.evaluate(null);
+        se.evaluate();
     }
 
     private static void

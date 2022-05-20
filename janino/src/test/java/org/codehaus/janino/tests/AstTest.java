@@ -63,7 +63,6 @@ import org.codehaus.janino.Java.Primitive;
 import org.codehaus.janino.Java.PrimitiveType;
 import org.codehaus.janino.Java.ReturnStatement;
 import org.codehaus.janino.Java.Rvalue;
-import org.codehaus.janino.Java.Statement;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.TypeDeclaration;

@@ -1507,34 +1507,38 @@ class UnitCompiler {
     private boolean
     compile(BlockStatement bs) throws CompileException {
 
-        Boolean result = (Boolean) bs.accept(new BlockStatementVisitor<Boolean, CompileException>() {
-            @Override public Boolean visitInitializer(Initializer i)                                                throws CompileException { return UnitCompiler.this.compile2(i);    }
-            @Override public Boolean visitFieldDeclaration(FieldDeclaration fd)                                     throws CompileException { return UnitCompiler.this.compile2(fd);   }
-            @Override public Boolean visitLabeledStatement(LabeledStatement ls)                                     throws CompileException { return UnitCompiler.this.compile2(ls);   }
-            @Override public Boolean visitBlock(Block b)                                                            throws CompileException { return UnitCompiler.this.compile2(b);    }
-            @Override public Boolean visitExpressionStatement(ExpressionStatement es)                               throws CompileException { return UnitCompiler.this.compile2(es);   }
-            @Override public Boolean visitIfStatement(IfStatement is)                                               throws CompileException { return UnitCompiler.this.compile2(is);   }
-            @Override public Boolean visitForStatement(ForStatement fs)                                             throws CompileException { return UnitCompiler.this.compile2(fs);   }
-            @Override public Boolean visitForEachStatement(ForEachStatement fes)                                    throws CompileException { return UnitCompiler.this.compile2(fes);  }
-            @Override public Boolean visitWhileStatement(WhileStatement ws)                                         throws CompileException { return UnitCompiler.this.compile2(ws);   }
-            @Override public Boolean visitTryStatement(TryStatement ts)                                             throws CompileException { return UnitCompiler.this.compile2(ts);   }
-            @Override public Boolean visitSwitchStatement(SwitchStatement ss)                                       throws CompileException { return UnitCompiler.this.compile2(ss);   }
-            @Override public Boolean visitSynchronizedStatement(SynchronizedStatement ss)                           throws CompileException { return UnitCompiler.this.compile2(ss);   }
-            @Override public Boolean visitDoStatement(DoStatement ds)                                               throws CompileException { return UnitCompiler.this.compile2(ds);   }
-            @Override public Boolean visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) throws CompileException { return UnitCompiler.this.compile2(lvds); }
-            @Override public Boolean visitReturnStatement(ReturnStatement rs)                                       throws CompileException { return UnitCompiler.this.compile2(rs);   }
-            @Override public Boolean visitThrowStatement(ThrowStatement ts)                                         throws CompileException { return UnitCompiler.this.compile2(ts);   }
-            @Override public Boolean visitBreakStatement(BreakStatement bs)                                         throws CompileException { return UnitCompiler.this.compile2(bs);   }
-            @Override public Boolean visitContinueStatement(ContinueStatement cs)                                   throws CompileException { return UnitCompiler.this.compile2(cs);   }
-            @Override public Boolean visitAssertStatement(AssertStatement as)                                       throws CompileException { return UnitCompiler.this.compile2(as);   }
-            @Override public Boolean visitEmptyStatement(EmptyStatement es)                                                                 { return UnitCompiler.this.compile2(es);   }
-            @Override public Boolean visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       throws CompileException { return UnitCompiler.this.compile2(lcds); }
-            @Override public Boolean visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        throws CompileException { return UnitCompiler.this.compile2(aci);  }
-            @Override public Boolean visitSuperConstructorInvocation(SuperConstructorInvocation sci)                throws CompileException { return UnitCompiler.this.compile2(sci);  }
-        });
+        try {
+            Boolean result = (Boolean) bs.accept(new BlockStatementVisitor<Boolean, CompileException>() {
+                @Override public Boolean visitInitializer(Initializer i)                                                throws CompileException { return UnitCompiler.this.compile2(i);    }
+                @Override public Boolean visitFieldDeclaration(FieldDeclaration fd)                                     throws CompileException { return UnitCompiler.this.compile2(fd);   }
+                @Override public Boolean visitLabeledStatement(LabeledStatement ls)                                     throws CompileException { return UnitCompiler.this.compile2(ls);   }
+                @Override public Boolean visitBlock(Block b)                                                            throws CompileException { return UnitCompiler.this.compile2(b);    }
+                @Override public Boolean visitExpressionStatement(ExpressionStatement es)                               throws CompileException { return UnitCompiler.this.compile2(es);   }
+                @Override public Boolean visitIfStatement(IfStatement is)                                               throws CompileException { return UnitCompiler.this.compile2(is);   }
+                @Override public Boolean visitForStatement(ForStatement fs)                                             throws CompileException { return UnitCompiler.this.compile2(fs);   }
+                @Override public Boolean visitForEachStatement(ForEachStatement fes)                                    throws CompileException { return UnitCompiler.this.compile2(fes);  }
+                @Override public Boolean visitWhileStatement(WhileStatement ws)                                         throws CompileException { return UnitCompiler.this.compile2(ws);   }
+                @Override public Boolean visitTryStatement(TryStatement ts)                                             throws CompileException { return UnitCompiler.this.compile2(ts);   }
+                @Override public Boolean visitSwitchStatement(SwitchStatement ss)                                       throws CompileException { return UnitCompiler.this.compile2(ss);   }
+                @Override public Boolean visitSynchronizedStatement(SynchronizedStatement ss)                           throws CompileException { return UnitCompiler.this.compile2(ss);   }
+                @Override public Boolean visitDoStatement(DoStatement ds)                                               throws CompileException { return UnitCompiler.this.compile2(ds);   }
+                @Override public Boolean visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatement lvds) throws CompileException { return UnitCompiler.this.compile2(lvds); }
+                @Override public Boolean visitReturnStatement(ReturnStatement rs)                                       throws CompileException { return UnitCompiler.this.compile2(rs);   }
+                @Override public Boolean visitThrowStatement(ThrowStatement ts)                                         throws CompileException { return UnitCompiler.this.compile2(ts);   }
+                @Override public Boolean visitBreakStatement(BreakStatement bs)                                         throws CompileException { return UnitCompiler.this.compile2(bs);   }
+                @Override public Boolean visitContinueStatement(ContinueStatement cs)                                   throws CompileException { return UnitCompiler.this.compile2(cs);   }
+                @Override public Boolean visitAssertStatement(AssertStatement as)                                       throws CompileException { return UnitCompiler.this.compile2(as);   }
+                @Override public Boolean visitEmptyStatement(EmptyStatement es)                                                                 { return UnitCompiler.this.compile2(es);   }
+                @Override public Boolean visitLocalClassDeclarationStatement(LocalClassDeclarationStatement lcds)       throws CompileException { return UnitCompiler.this.compile2(lcds); }
+                @Override public Boolean visitAlternateConstructorInvocation(AlternateConstructorInvocation aci)        throws CompileException { return UnitCompiler.this.compile2(aci);  }
+                @Override public Boolean visitSuperConstructorInvocation(SuperConstructorInvocation sci)                throws CompileException { return UnitCompiler.this.compile2(sci);  }
+            });
 
-        assert result != null;
-        return result;
+            assert result != null;
+            return result;
+        } catch (RuntimeException re) {
+            throw new RuntimeException(bs.getLocation().toString(), re);
+        }
     }
 
     /**
@@ -1590,6 +1594,8 @@ class UnitCompiler {
             }
             try {
                 previousStatementCanCompleteNormally = this.compile(bs);
+            } catch (RuntimeException re) {
+                throw new RuntimeException(bs.getLocation().toString(), re);
             } catch (AssertionError ae) {
                 throw new InternalCompilerException(bs.getLocation() + ": " + ae, ae);
             }
@@ -11283,7 +11289,7 @@ class UnitCompiler {
     }
 
     private void
-    reverseUnaryNumericPromotion(Locatable locatable, IClass sourceType, IType targetType) throws CompileException {
+    reverseUnaryNumericPromotion(Locatable locatable, IClass sourceType, IType targetType) {
         IClass unboxedType = this.isUnboxingConvertible(targetType);
         IType  pt          = unboxedType != null ? unboxedType : targetType;
         if (
@@ -11589,8 +11595,7 @@ class UnitCompiler {
      * @param targetType    The type to convert to
      */
     private boolean
-    tryConstantAssignmentConversion(Locatable locatable, @Nullable Object constantValue, IType targetType)
-    throws CompileException {
+    tryConstantAssignmentConversion(Locatable locatable, @Nullable Object constantValue, IType targetType) {
         UnitCompiler.LOGGER.entering(
             null,
             "tryConstantAssignmentConversion",
@@ -11731,7 +11736,7 @@ class UnitCompiler {
     }
 
     private boolean
-    tryBoxingConversion(Locatable locatable, IType sourceType, IType targetType) throws CompileException {
+    tryBoxingConversion(Locatable locatable, IType sourceType, IType targetType) {
         if (this.isBoxingConvertible(sourceType) == targetType) {
             this.boxingConversion(locatable, sourceType, targetType);
             return true;
@@ -11744,7 +11749,7 @@ class UnitCompiler {
      * @param targetType the corresponding wrapper type
      */
     private void
-    boxingConversion(Locatable locatable, IType sourceType, IType targetType) throws CompileException {
+    boxingConversion(Locatable locatable, IType sourceType, IType targetType) {
 
         assert targetType instanceof IClass;
         IClass targetClass = (IClass) targetType;
@@ -11801,7 +11806,7 @@ class UnitCompiler {
      * @param sourceType the corresponding wrapper type
      */
     private void
-    unboxingConversion(Locatable locatable, IType sourceType, IClass targetType) throws CompileException {
+    unboxingConversion(Locatable locatable, IType sourceType, IClass targetType) {
 
         assert sourceType instanceof IClass;
 

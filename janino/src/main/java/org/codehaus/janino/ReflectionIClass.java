@@ -71,7 +71,7 @@ class ReflectionIClass extends IClass {
     }
 
     private ITypeVariable
-    typeVariableToITypeVariable(final TypeVariable tv) {
+    typeVariableToITypeVariable(final TypeVariable<?> tv) {
 
         return new ITypeVariable() {
 

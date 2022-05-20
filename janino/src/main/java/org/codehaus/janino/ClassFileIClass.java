@@ -151,7 +151,7 @@ class ClassFileIClass extends IClass {
 
     private ITypeVariableOrIClass[]
     getBounds(SignatureParser.FormalTypeParameter ftp) throws CompileException {
-        List<ITypeVariableOrIClass> result = new ArrayList<ITypeVariableOrIClass>();
+        List<ITypeVariableOrIClass> result = new ArrayList<>();
         if (ftp.classBound != null) {
             result.add(this.fieldTypeSignatureToITypeVariableOrIClass(ftp.classBound));
         }

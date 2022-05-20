@@ -4182,7 +4182,7 @@ class Parser {
         return modifiers;
     }
 
-    @SuppressWarnings("unchecked") private static final List<Set<String>>
+    private static final List<Set<String>>
     MUTUALLY_EXCLUSIVE_ACCESS_MODIFIERS = Arrays.<Set<String>>asList(
         new HashSet<>(Arrays.asList("public", "protected", "private")),
         new HashSet<>(Arrays.asList("abstract", "final"))

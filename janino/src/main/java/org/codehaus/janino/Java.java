@@ -3562,11 +3562,11 @@ class Java {
             if (finallY != null) finallY.setEnclosingScope(this);
         }
 
-        @SuppressWarnings("null") @Override public String
+        @Override public String
         toString() {
             return (
                 "try ... "
-                + (this.catchClauses == null ? "???" : Integer.toString(this.catchClauses.size()))
+                + Integer.toString(this.catchClauses.size())
                 + (this.finallY == null ? " catches" : " catches ... finally")
             );
         }
@@ -3661,15 +3661,9 @@ class Java {
             }
         }
 
-        @SuppressWarnings("null") @Override public String
+        @Override public String
         toString() {
-            return (
-                "switch ("
-                + this.condition
-                + ") { ("
-                + (this.sbsgs == null ? "???" : Integer.toString(this.sbsgs.size()))
-                + " statement groups) }"
-            );
+            return "switch (" + this.condition + ") { (" + Integer.toString(this.sbsgs.size()) + " statement groups) }";
         }
 
         /**
