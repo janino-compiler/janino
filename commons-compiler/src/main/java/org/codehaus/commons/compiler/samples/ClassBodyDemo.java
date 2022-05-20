@@ -70,7 +70,11 @@ class ClassBodyDemo {
         System.arraycopy(args, i, arguments, 0, arguments.length);
 
         // Compile the class body.
-        IClassBodyEvaluator cbe = CompilerFactoryFactory.getDefaultCompilerFactory().newClassBodyEvaluator();
+        IClassBodyEvaluator cbe = (
+            CompilerFactoryFactory
+            .getDefaultCompilerFactory(ClassBodyDemo.class.getClassLoader())
+            .newClassBodyEvaluator()
+        );
         cbe.cook(classBody);
         Class<?> c = cbe.getClazz();
 

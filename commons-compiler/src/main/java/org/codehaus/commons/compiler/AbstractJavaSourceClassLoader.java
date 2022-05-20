@@ -207,7 +207,9 @@ class AbstractJavaSourceClassLoader extends ClassLoader {
 
         // Set up a JavaSourceClassLoader or a CachingJavaSourceClassLoader.
         AbstractJavaSourceClassLoader ajscl = (
-            CompilerFactoryFactory.getDefaultCompilerFactory().newJavaSourceClassLoader()
+            CompilerFactoryFactory
+            .getDefaultCompilerFactory(AbstractJavaSourceClassLoader.class.getClassLoader())
+            .newJavaSourceClassLoader()
         );
         if (haveDebuggingInfo) ajscl.setDebuggingInfo(debuggingInfoLines, debuggingInfoVars, debuggingInfoSource);
         if (characterEncoding != null) ajscl.setSourceFileCharacterEncoding(characterEncoding);

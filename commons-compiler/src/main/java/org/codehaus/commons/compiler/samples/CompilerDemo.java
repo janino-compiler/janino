@@ -117,7 +117,11 @@ class CompilerDemo {
         for (int j = i; j < args.length; ++j) sourceFiles[j - i] = new File(args[j]);
 
         // Create the compiler object.
-        ICompiler compiler = CompilerFactoryFactory.getDefaultCompilerFactory().newCompiler();
+        ICompiler compiler = (
+            CompilerFactoryFactory
+            .getDefaultCompilerFactory(CompilerDemo.class.getClassLoader())
+            .newCompiler()
+        );
         compiler.setSourcePath(sourcePath);
         compiler.setClassPath(classPath);
         compiler.setExtensionDirectories(extDirs);

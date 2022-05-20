@@ -53,7 +53,7 @@ class TestUtil {
     public static List<Object[]>
     getCompilerFactoriesForParameters() throws Exception {
         ArrayList<Object[]> f = new ArrayList<>();
-        for (ICompilerFactory fact : CompilerFactoryFactory.getAllCompilerFactories()) {
+        for (ICompilerFactory fact : CompilerFactoryFactory.getAllCompilerFactories(TestUtil.class.getClassLoader())) {
             f.add(new Object[] { fact });
         }
         if (f.isEmpty()) {

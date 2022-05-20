@@ -108,7 +108,11 @@ class ScriptDemo extends DemoBase {
         }
 
         // Create "ScriptEvaluator" object.
-        IScriptEvaluator se = CompilerFactoryFactory.getDefaultCompilerFactory().newScriptEvaluator();
+        IScriptEvaluator se = (
+            CompilerFactoryFactory
+            .getDefaultCompilerFactory(ScriptDemo.class.getClassLoader())
+            .newScriptEvaluator()
+        );
         se.setReturnType(returnType);
         se.setDefaultImports(defaultImports);
         se.setParameters(parameterNames, parameterTypes);

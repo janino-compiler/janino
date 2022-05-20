@@ -51,7 +51,11 @@ class ShippingCost {
         Object[] arguments = { new Double(args[0]) };
 
         // Create "ExpressionEvaluator" object.
-        IExpressionEvaluator ee = CompilerFactoryFactory.getDefaultCompilerFactory().newExpressionEvaluator();
+        IExpressionEvaluator ee = (
+            CompilerFactoryFactory
+            .getDefaultCompilerFactory(ShippingCost.class.getClassLoader())
+            .newExpressionEvaluator()
+        );
         ee.setExpressionType(double.class);
         ee.setParameters(new String[] { "total" }, new Class[] { double.class });
         ee.cook("total >= 100.0 ? 0.0 : 7.95");
