@@ -230,7 +230,7 @@ class CodeContext {
         // To truncate the stack map, remove local variables indicated by the popped scope.
         if (this.currentLocalScope != null) {
             StackMap sm = this.currentInserter.getStackMap();
-            if (sm != null && sm.locals().length > 0) {
+            if (sm.locals().length > 0) {
                 int numActiveSlots = 0;
                 int nextLvIndex = 0;
                 for (VerificationTypeInfo slot : sm.locals()) {

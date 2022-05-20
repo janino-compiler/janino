@@ -3412,12 +3412,13 @@ class UnitCompiler {
             // Compile the constructor preamble.
             if (fd instanceof ConstructorDeclarator) {
                 ConstructorDeclarator cd = (ConstructorDeclarator) fd;
-                if (cd.constructorInvocation != null) {
-                    if (cd.constructorInvocation instanceof SuperConstructorInvocation) {
+                ConstructorInvocation ci = cd.constructorInvocation;
+                if (ci != null) {
+                    if (ci instanceof SuperConstructorInvocation) {
                         this.assignSyntheticParametersToSyntheticFields(cd);
                     }
-                    this.compile(cd.constructorInvocation);
-                    if (cd.constructorInvocation instanceof SuperConstructorInvocation) {
+                    this.compile(ci);
+                    if (ci instanceof SuperConstructorInvocation) {
                         this.initializeInstanceVariablesAndInvokeInstanceInitializers(cd);
                     }
 
@@ -3579,8 +3580,9 @@ class UnitCompiler {
         fd.localVariables = localVars;
         if (fd instanceof ConstructorDeclarator) {
             ConstructorDeclarator cd = (ConstructorDeclarator) fd;
-            if (cd.constructorInvocation != null) {
-                UnitCompiler.buildLocalVariableMap(cd.constructorInvocation, localVars);
+            ConstructorInvocation ci = cd.constructorInvocation;
+            if (ci != null) {
+                UnitCompiler.buildLocalVariableMap(ci, localVars);
             }
         }
         if (fd.statements != null) {
@@ -9942,7 +9944,8 @@ class UnitCompiler {
                 NamedTypeDeclaration ntd = (NamedTypeDeclaration) atd;
 
                 final Java.TypeParameter[] typeParameters = ntd.getOptionalTypeParameters();
-                ITypeVariable[] result = new ITypeVariable[typeParameters == null ? 0 : typeParameters.length];
+                if (typeParameters == null) return new ITypeVariable[0];
+                ITypeVariable[] result = new ITypeVariable[typeParameters.length];
                 for (int i = 0; i < result.length; i++) {
                     final TypeParameter tp = typeParameters[i];
 
