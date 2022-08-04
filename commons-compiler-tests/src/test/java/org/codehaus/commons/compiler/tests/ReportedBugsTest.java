@@ -1372,6 +1372,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     @Test public void
     testIssue168() throws Exception {
         ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
+        // Reference a package in the *classpath* (not the bootclasspath!):
         sc.cook("import de.unkrig.jdisasm.Disassembler;");
     }
 }
