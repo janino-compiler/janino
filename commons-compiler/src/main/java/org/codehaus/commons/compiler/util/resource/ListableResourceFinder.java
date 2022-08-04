@@ -36,7 +36,32 @@ public abstract
 class ListableResourceFinder extends ResourceFinder {
 
     /**
-     * @param resourceNamePrefix E.g. {@code ""} or {@code "java/lang"}
+     * Returns all resources who's names start with a given string.
+     * <p>
+     *   If the prefix string ends with "/", you will get a proper directory listing (<var>recurse</var>{@code =false})
+     *   or directory tree (<var>recurse</var>{@code =true}). Example:
+     * </p>
+     * <pre>
+     *   resourceFinder.list("dir/", true) =>
+     *     dir/
+     *     dir/afile
+     *     dir/bfile
+     *     dir/adir/
+     *     dir/adir/file
+     *     dir/bdir/
+     *     dir/bdir/file
+     * </pre>
+     * <p>
+     *   Otherwise, you will get a strange subset of a directory listing, resp. directory tree, as follows:
+     * </p>
+     * <pre>
+     *   resourceFinder.list("dir/a", true) =>
+     *     dir/afile
+     *     dir/adir/
+     *     dir/adir/file
+     * </pre>
+     *
+     * @param resourceNamePrefix E.g. {@code ""} or {@code "java/lang/"}
      * @return                   All resources who's name starts with the given prefix; {@code null} iff
      *                           a location designated by the <var>resourceNamePrefix</var> does not exist
      */
