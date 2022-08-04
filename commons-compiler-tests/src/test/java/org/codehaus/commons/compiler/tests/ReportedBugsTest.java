@@ -1026,8 +1026,8 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         try {
             IExpressionEvaluator ee = this.compilerFactory.newExpressionEvaluator();
 
-            ee.setSourceVersion(8);
-            ee.setTargetVersion(8);
+//            ee.setSourceVersion(8);
+//            ee.setTargetVersion(8);
 
             ee.cook("java.util.stream.Stream.of(1, 2, 3).toArray()");
             Assert.assertArrayEquals(new Object[] { 1, 2, 3 }, (Object[]) ee.evaluate());
@@ -1367,5 +1367,11 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         IClassBodyEvaluator eval = this.compilerFactory.newClassBodyEvaluator();
         eval.cook("generated.java", toCook);
         Assert.assertEquals(99, eval.getClazz().getMethod("test").invoke(null));
+    }
+
+    @Test public void
+    testIssue168() throws Exception {
+        ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
+        sc.cook("import de.unkrig.jdisasm.Disassembler;");
     }
 }
