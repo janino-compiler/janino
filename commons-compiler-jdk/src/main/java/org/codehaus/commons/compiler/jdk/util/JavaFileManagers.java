@@ -117,7 +117,7 @@ class JavaFileManagers {
                     assert resourceFinder instanceof ListableResourceFinder : resourceFinder;
                     ListableResourceFinder lrf = (ListableResourceFinder) resourceFinder;
 
-                    Iterable<Resource> resources = lrf.list(packageName.replace('.', '/'), recurse);
+                    Iterable<Resource> resources = lrf.list(packageName.replace('.', '/') + "/", recurse);
                     if (resources != null) {
                         List<JavaFileObject> result = new ArrayList<>();
                         for (Resource r : resources) {
