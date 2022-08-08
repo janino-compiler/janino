@@ -1375,4 +1375,22 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         // Reference a package in the *classpath* (not the bootclasspath!):
         sc.cook("import de.unkrig.jdisasm.Disassembler;");
     }
+
+    @Test public void
+    testIssue172() throws Exception {
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "public class test {\n"
+            + "    public static boolean\n"
+            + "    main(/*String[] args*/) {\n"
+            + "        String s;\n"
+            + "        if (Boolean.FALSE || (s=\"Hello World!\")==null) {\n"
+            + "            return true;\n"
+            + "        }\n"
+            + "        System.out.println(s);\n"
+            + "        return false;\n"
+            + "    }\n"
+            + "}\n"
+        ), "test");
+    }
 }
