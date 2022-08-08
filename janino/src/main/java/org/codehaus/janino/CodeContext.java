@@ -61,7 +61,9 @@ import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTyp
 public
 class CodeContext {
 
-    private static final int     INITIAL_SIZE   = 128;
+    private static final boolean SUPPRESS_STACK_MAP_TABLE = Boolean.getBoolean(CodeContext.class.getName() + ".suppressStackMapTable");
+
+    private static final int INITIAL_SIZE = 128;
 
     private final ClassFile classFile;
 
@@ -246,8 +248,11 @@ class CodeContext {
         }
     }
 
+    /**
+     * @param initialLocalsCount The number of parameters, plus one iff there is a "this" parameter
+     */
     public ClassFile.CodeAttribute
-    newCodeAttribute(boolean debugLines, boolean debugVars) {
+    newCodeAttribute(int initialLocalsCount, boolean debugLines, boolean debugVars) {
 
         // Transform the exception table from o.c.j.CodeContext to o.c.j.u.ClassFile.
         ClassFile.CodeAttribute.ExceptionTableEntry[]
@@ -279,7 +284,9 @@ class CodeContext {
         }
 
         // Add the "StackMapTable" attribute.
-        attributes.add(this.newStackMapTableAttribute());
+        if (!CodeContext.SUPPRESS_STACK_MAP_TABLE) {
+            attributes.add(this.newStackMapTableAttribute(initialLocalsCount));
+        }
 
         ClassFile.AttributeInfo[]
         aia = (ClassFile.AttributeInfo[]) attributes.toArray(new ClassFile.AttributeInfo[attributes.size()]);
@@ -321,17 +328,21 @@ class CodeContext {
     }
 
     private StackMapTableAttribute
-    newStackMapTableAttribute() {
+    newStackMapTableAttribute(int initialLocalsCount) {
 
         // Skip the "zeroth" frame.
-        Offset frame = this.beginning;
+        Offset frame = this.beginning.next;
         Offset previousFrame = null;
-        while (frame.offset == 0) {
-            previousFrame = frame;
-            frame = frame.next;
-            assert frame != null;
-        }
-        assert previousFrame != null;
+//        while (frame.offset == 0) {
+//            previousFrame = frame;
+//            frame = frame.next;
+//            assert frame != null;
+//        }
+//        assert previousFrame != null;
+
+        for (; frame.stackMap.locals().length < initialLocalsCount; frame = frame.next);
+        previousFrame = frame;
+        frame = frame.next;
 
         List<StackMapFrame> smfs = new ArrayList<>();
         for (; frame != null && frame.offset != this.end.offset; frame = frame.next) {
@@ -349,7 +360,7 @@ class CodeContext {
                 if (next != null && frame.offset == next.offset) continue;
             }
 
-            final int                    offsetDelta               = previousFrame.offset == 0 ? frame.offset : frame.offset - previousFrame.offset - 1;
+            final int                    offsetDelta               = smfs.isEmpty() ? frame.offset : frame.offset - previousFrame.offset - 1;
             final VerificationTypeInfo[] frameOperands             = frame.getStackMap().operands();
             final int                    frameOperandsLength       = frameOperands.length;
             final VerificationTypeInfo[] frameLocals               = frame.getStackMap().locals();
