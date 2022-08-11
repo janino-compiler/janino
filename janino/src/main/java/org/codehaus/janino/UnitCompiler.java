@@ -1496,8 +1496,9 @@ class UnitCompiler {
 
         // Generate Code attribute and add to the MethodInfo.
         mi.addAttribute(codeContext.newCodeAttribute(
-            false, // debugLines
-            false  // debugVars
+            1 + override.getParameterTypes().length, // initialLocalsCount
+            false,                                   // debugLines
+            false                                    // debugVars
         ));
     }
 
@@ -3515,7 +3516,19 @@ class UnitCompiler {
         }
 
         // Add the code context as a code attribute to the MethodInfo.
-        mi.addAttribute(codeContext.newCodeAttribute(this.debugLines, this.debugVars));
+        boolean hasThis = (Boolean) fd.accept(new FunctionDeclaratorVisitor<Boolean, RuntimeException>() {
+
+            @Override @Nullable public Boolean
+            visitConstructorDeclarator(ConstructorDeclarator cd) { return true; }
+
+            @Override @Nullable public Boolean
+            visitMethodDeclarator(MethodDeclarator md) { return !md.isStatic(); }
+        });
+        mi.addAttribute(codeContext.newCodeAttribute((
+            (hasThis ? 1 : 0)
+            + (fd instanceof ConstructorDeclarator ? ((ConstructorDeclarator) fd).syntheticParameters.size() : 0)
+            + fd.formalParameters.parameters.length
+        ), this.debugLines, this.debugVars));
     }
 
     private int getTargetVersion() {
