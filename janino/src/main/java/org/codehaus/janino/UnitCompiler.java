@@ -7388,7 +7388,7 @@ class UnitCompiler {
 
     @SuppressWarnings("static-method") private IClass
     getType2(NullLiteral nl) {
-        return IClass.VOID;
+        return IClass.NULL;
     }
 
     private IClass
@@ -7403,7 +7403,7 @@ class UnitCompiler {
         if (v instanceof Boolean)   return IClass.BOOLEAN;
         if (v instanceof Character) return IClass.CHAR;
         if (v instanceof String)    return this.iClassLoader.TYPE_java_lang_String;
-        if (v == null)              return IClass.VOID;
+        if (v == null)              return IClass.NULL;
         throw new InternalCompilerException("Invalid SimpleLiteral value type \"" + v.getClass() + "\"");
     }
 
@@ -10831,7 +10831,7 @@ class UnitCompiler {
      * </table>
      *
      * @return The computational type of the value that was pushed, e.g. {@link IClass#INT} for {@link Byte} or {@link
-     *         IClass#VOID} for {@code null}
+     *         IClass#NULL} for {@code null}
      */
     private IClass
     consT(Locatable locatable, @Nullable Object value) throws CompileException {
@@ -10883,7 +10883,7 @@ class UnitCompiler {
 
         if (value == null) {
             this.aconstnull(locatable);
-            return IClass.VOID;
+            return IClass.NULL;
         }
 
         throw new InternalCompilerException("Unknown literal \"" + value + "\"");
@@ -11104,7 +11104,7 @@ class UnitCompiler {
 
         // JLS7 5.1.4 Widening reference conversion.
         if (this.isWideningReferenceConvertible(sourceType, targetType)) {
-            this.getCodeContext().popOperand(UnitCompiler.rawTypeOf(sourceType).getDescriptor());
+            this.getCodeContext().popOperand(sourceType == IClass.NULL ? Descriptor.VOID : UnitCompiler.rawTypeOf(sourceType).getDescriptor());
             this.getCodeContext().pushOperand(UnitCompiler.rawTypeOf(targetType).getDescriptor());
             return true;
         }

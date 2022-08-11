@@ -62,6 +62,11 @@ class IClass implements ITypeVariableOrIClass {
     };
 
     /**
+     * The {@link IClass} of the {@code null} literal.
+     */
+    public static final IClass NULL    = new PrimitiveIClass("");
+
+    /**
      * The {@link IClass} object for the type VOID.
      */
     public static final IClass VOID    = new PrimitiveIClass(Descriptor.VOID);
@@ -645,7 +650,7 @@ class IClass implements ITypeVariableOrIClass {
             if (that.implementsInterface(this)) return true;
 
             // JLS7 5.1.4.3 Convert "null" literal to any reference type.
-            if (that == IClass.VOID && !this.isPrimitive()) return true;
+            if (that == IClass.NULL && !this.isPrimitive()) return true;
 
             // JLS7 5.1.4.5: From any interface to type "Object".
             if (that.isInterface() && this.getDescriptor().equals(Descriptor.JAVA_LANG_OBJECT)) return true;
