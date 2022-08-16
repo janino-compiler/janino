@@ -982,7 +982,11 @@ class JlsTest extends CommonsCompilerTestSuite {
         {
             SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
             sct.setSourceVersion(8);
-            sct.assertUncookable("Private interface methods only available for target version 9\\+|private interface methods are not supported in -source 8");
+            sct.assertUncookable(
+                "Private interface methods only available for target version 9\\+"
+                + "|private interface methods are not supported in -source 8"
+                + "|modifier private not allowed here"
+            );
         }
 
         {
@@ -990,7 +994,7 @@ class JlsTest extends CommonsCompilerTestSuite {
             sct.setSourceVersion(9);
             sct.setTargetVersion(9);
             if (CommonsCompilerTestSuite.JVM_VERSION < 9) {
-                sct.assertCookable();
+                if (this.isJanino) sct.assertCookable();
             } else {
                 sct.assertResultTrue();
             }
@@ -1451,6 +1455,30 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "default:\n"
             + "    return false;"
             + "}\n"
+        );
+    }
+
+    @Test public void
+    test_14_11__The_switch_statement_DefiniteAssignment() throws Exception {
+        this.assertScriptReturnsTrue(
+            ""
+            + "int a = 2;\n"
+            + "int b; // = -99;\n"  // <= Do not initialize "b" here.
+            + "// This will compile into a TABLESWITCH because the case labels are so contiguous:\n"
+            + "switch (a) {\n"
+            + "case 0:\n"
+            + "    b = 0;\n"
+            + "    break;\n"
+            + "case 1:\n"
+            + "    b = 11;\n"
+            + "    break;\n"
+            + "case 2:\n"
+            + "    b = 22;\n"
+            + "    break;\n"
+            + "default:\n"
+            + "    throw new AssertionError();\n"
+            + "}\n"
+            + "return b == 22;\n"   // <= Is "b" initialized at this point?
         );
     }
 
