@@ -36,7 +36,8 @@ public abstract
 class ListableResourceFinder extends ResourceFinder {
 
     /**
-     * Returns all resources who's names start with a given string.
+     * Returns all resources who's names start with a given string. Only resources with a content are included, no
+     * "special entries" of any kind, e.g. directories.
      * <p>
      *   If the prefix string ends with "/", you will get a proper directory listing (<var>recurse</var>{@code =false})
      *   or directory tree (<var>recurse</var>{@code =true}). Example:
