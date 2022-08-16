@@ -2844,7 +2844,7 @@ class ClassFile implements Annotatable {
 
             @Override public String
             toString() {
-                return "append_frame(locals+=" + Arrays.toString(this.locals) + ", stack=[])";
+                return "append_frame(offsetDelta=" + this.offsetDelta + ", locals+=" + Arrays.toString(this.locals) + ", stack=[])";
             }
         }
 
