@@ -42,7 +42,13 @@ import org.codehaus.commons.nullanalysis.Nullable;
  */
 public
 class DirectoryResourceFinder extends FileResourceFinder {
-    private final File                                     directory;
+
+    private final File directory;
+
+    /**
+     * Keys don't have trailing file separators (like "dir\"). The "root directory" is designated by key {@code null}.
+     * A {@code null} value indicates that the directory does not exist.
+     */
     private final Map<String /*directoryName*/, Set<File>> subdirectoryNameToFiles = new HashMap<>();
 
     /**
@@ -75,38 +81,69 @@ class DirectoryResourceFinder extends FileResourceFinder {
         return file;
     }
 
+    /**
+     * @param subdirectoryName E.g {@code "java/lang"}, or {@code "java\lang"}, or {@code null}
+     * @return {@code null}    iff that subdirectory does not exist
+     */
     @Nullable private Set<File>
     listFiles(@Nullable String subdirectoryName) {
 
-        // Determine files existing in this subdirectory.
-        Set<File> files = (Set<File>) this.subdirectoryNameToFiles.get(subdirectoryName);
-        if (files == null && !this.subdirectoryNameToFiles.containsKey(subdirectoryName)) {
-            File subDirectory = (
-                subdirectoryName == null || subdirectoryName.isEmpty()
-                ? this.directory
-                : new File(this.directory, subdirectoryName)
-            );
-            File[] fa = subDirectory.listFiles();
-            if (fa != null) {
-                files = new HashSet<>();
-                for (File file : fa) {
-                    if (file.isFile()) files.add(file);
-                }
-            }
-            this.subdirectoryNameToFiles.put(subdirectoryName, files);
+        // Unify file separators.
+        if (subdirectoryName != null) {
+            subdirectoryName = subdirectoryName.replace('/', File.separatorChar);
         }
 
-        return files;
+        // Check the cache.
+        {
+            Set<File> files = (Set<File>) this.subdirectoryNameToFiles.get(subdirectoryName);
+            if (files != null || this.subdirectoryNameToFiles.containsKey(subdirectoryName)) {
+
+                // Cache hit!
+                return files;
+            }
+        }
+
+        // Determine files existing in this subdirectory.
+        File subDirectory = subdirectoryName == null ? this.directory : new File(this.directory, subdirectoryName);
+
+        File[] members = subDirectory.listFiles();
+        if (members == null) {
+
+            // Directory does not exist; put a "null" value in the cache.
+            this.subdirectoryNameToFiles.put(subdirectoryName, null);
+            return null;
+        }
+
+        // Reduce to "normal" files.
+        Set<File> normalFiles = new HashSet<>();
+        for (File file : members) {
+            if (file.isFile()) normalFiles.add(file);
+        }
+        this.subdirectoryNameToFiles.put(subdirectoryName, normalFiles);
+
+        return normalFiles;
     }
 
     @Override @Nullable public Iterable<Resource>
     list(String resourceNamePrefix, boolean recurse) {
 
-        Set<File> files = this.listFiles(resourceNamePrefix.replace('/', File.separatorChar));
+        assert !recurse : "This implementation does not support recursive directory listings";
+
+        int    idx              = resourceNamePrefix.lastIndexOf('/');
+        String directoryName    = idx == -1 ? null : resourceNamePrefix.substring(0, idx); // No trailing slashes
+        String relativeFileName = resourceNamePrefix.substring(idx + 1);    // Contains no slashes. "" means "all".
+
+        // List all files in the directory.
+        Set<File> files = this.listFiles(directoryName);
         if (files == null) return null;
 
+        // Select the members with the given prefix, and wrap them as FileResources.
         List<Resource> result = new ArrayList<>();
-        for (File f : files) result.add(new FileResource(f));
+        for (File file : files) {
+            if (file.getName().startsWith(relativeFileName)) {
+                result.add(new FileResource(file));
+            }
+        }
 
         return result;
     }
