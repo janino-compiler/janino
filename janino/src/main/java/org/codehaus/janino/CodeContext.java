@@ -330,6 +330,13 @@ class CodeContext {
     private StackMapTableAttribute
     newStackMapTableAttribute(int initialLocalsCount) {
 
+        // TODO: Eliminate some stack map frames, as follows:
+        // JVMS 7, 8, 11, 17 4.10.1 Verification by Type Checking: "The intent is that a stack map frame must
+        // appear at the beginning of each basic block in a method."
+        // [ Defining a VM by expressing "intents"?? ]
+        // The JVMS does not define what a "basic block" (in the context of the JVM) is.
+    	// This is expected to fix #174.
+
         // Skip the "zeroth" frame.
         Offset frame = this.beginning.next;
         Offset previousFrame = null;
@@ -367,7 +374,7 @@ class CodeContext {
             final int                    frameLocalsLength         = frameLocals.length;
             final VerificationTypeInfo[] previousFrameLocals       = previousFrame.getStackMap().locals();
             final int                    previousFrameLocalsLength = previousFrameLocals.length;
-            int                          k;
+            int                          k = 99; // SMT: Workaround for a known SMT bug in Janino.
 
             // Encode the stack map entry delta as "frames", see JVMS11 4.7.4
             if (
@@ -1011,7 +1018,6 @@ class CodeContext {
         @Override public String
         toString() { return CodeContext.this.classFile.getThisClassName() + ": " + this.offset; }
     }
-
 
     @Nullable private static final StackMap
     mergeStackMaps(@Nullable StackMap sm1, @Nullable StackMap sm2) {

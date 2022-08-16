@@ -1477,12 +1477,12 @@ class UnitCompiler {
 
             // Allocate all our local variables.
 
-            this.allocateLocalVariableSlot(override.getDeclaringIClass(), "this");
+            this.allocateLocalVariableSlotAndMarkAsInitialized(override.getDeclaringIClass(), "this");
 
             IClass[]            paramTypes = override.getParameterTypes();
             LocalVariableSlot[] locals     = new LocalVariableSlot[paramTypes.length];
             for (int i = 0; i < paramTypes.length; ++i) {
-                locals[i] = this.allocateLocalVariableSlot(paramTypes[i], "param" + i);
+                locals[i] = this.allocateLocalVariableSlotAndMarkAsInitialized(paramTypes[i], "param" + i);
             }
 
             this.load(Located.NOWHERE, declaringIClass, 0);
@@ -1877,6 +1877,16 @@ class UnitCompiler {
         return result;
     }
 
+    private LocalVariable
+    allocateLocalVariableAndMarkAsInitialized(boolean finaL, IType localVariableType) {
+
+        LocalVariable result = new LocalVariable(finaL, localVariableType);
+
+        result.setSlot(this.allocateLocalVariableSlotAndMarkAsInitialized(localVariableType, null));
+
+        return result;
+    }
+
     private boolean
     compile2(WhileStatement ws) throws CompileException {
         Object cvc = this.getConstantValue(ws.condition);
@@ -1984,37 +1994,18 @@ class UnitCompiler {
         SwitchKind kind;
         short      ssvLvIndex = -1; // Only relevant if kind == STRING.
 
-        // Compute condition.
-        IType switchExpressionType = this.compileGetValue(ss.condition);
+        StackMap smBeforeSwitch = this.codeContext.currentInserter().getStackMap();
+
+        // Determine SWITCH kind.
+        IType switchExpressionType = this.getType(ss.condition);
         if (this.iClassLoader.TYPE_java_lang_String == switchExpressionType) {
-
             kind = SwitchKind.STRING;
-
-            // Store the string value in a (hidden) local variable, because after we do the SWITCH
-            // on the string's hash code, we need to check for string equality with the CASE
-            // labels.
-            this.dup(ss);
-            ssvLvIndex = this.getCodeContext().allocateLocalVariable((short) 1);
-            this.store(
-                ss,                                      // locatable
-                this.iClassLoader.TYPE_java_lang_String, // lvType
-                ssvLvIndex                               // lvIndex
-            );
-
-            this.invokeMethod(ss, this.iClassLoader.METH_java_lang_String__hashCode);
         } else
         if (UnitCompiler.isAssignableFrom(this.iClassLoader.TYPE_java_lang_Enum, switchExpressionType)) {
             kind = SwitchKind.ENUM;
-            this.invokeMethod(ss, this.iClassLoader.METH_java_lang_Enum__ordinal);
         } else
         {
             kind = SwitchKind.INT;
-            this.assignmentConversion(
-                ss,                   // locatable
-                switchExpressionType, // sourceType
-                IClass.INT,           // targetType
-                null                  // constantValue
-            );
         }
 
         // Prepare the map of case labels to code offsets.
@@ -2142,11 +2133,48 @@ class UnitCompiler {
         }
         if (defaultLabelOffset == null) defaultLabelOffset = this.getWhereToBreak(ss);
 
+        // Compute the condition.
+        this.compileGetValue(ss.condition);
+
+        // Postprocess the condition.
+        switch (kind) {
+
+        case STRING:
+
+            // Store the string value in a (hidden) local variable, because after we do the SWITCH
+            // on the string's hash code, we need to check for string equality with the CASE
+            // labels.
+            this.dup(ss);
+            ssvLvIndex = this.getCodeContext().allocateLocalVariable((short) 1);
+            this.store(
+                ss,                                      // locatable
+                this.iClassLoader.TYPE_java_lang_String, // lvType
+                ssvLvIndex                               // lvIndex
+            );
+            this.invokeMethod(ss, this.iClassLoader.METH_java_lang_String__hashCode);
+            break;
+
+        case ENUM:
+            this.invokeMethod(ss, this.iClassLoader.METH_java_lang_Enum__ordinal);
+            break;
+
+        case INT:
+            this.assignmentConversion(
+                ss,                   // locatable
+                switchExpressionType, // sourceType
+                IClass.INT,           // targetType
+                null                  // constantValue
+            );
+            break;
+
+        default:
+            throw new AssertionError(kind);
+        }
+
         // Generate TABLESWITCH or LOOKUPSWITCH instruction.
-        CodeContext.Offset switchOffset = this.getCodeContext().newOffset();
         if (caseLabelMap.isEmpty()) {
             // Special case: SWITCH statement without CASE labels (but maybe a DEFAULT label).
-            ;
+            this.pop(ss, IClass.INT);
         } else
         if (
             (Integer) caseLabelMap.firstKey() + caseLabelMap.size() // Beware of INT overflow!
@@ -2156,12 +2184,12 @@ class UnitCompiler {
             // The case label values are strictly consecutive or almost consecutive (at most 50%
             // 'gaps'), so let's use a TABLESWITCH.
 
-            this.tableswitch(ss, caseLabelMap, switchOffset, defaultLabelOffset);
+            this.tableswitch(ss, caseLabelMap, defaultLabelOffset);
         } else
         {
 
             // The case label values are not 'consecutive enough', so use a LOOKUPSWITCH.
-            this.lookupswitch(ss, caseLabelMap, switchOffset, defaultLabelOffset);
+            this.lookupswitch(ss, caseLabelMap, defaultLabelOffset);
         }
 
         if (kind == SwitchKind.STRING) {
@@ -2208,6 +2236,7 @@ class UnitCompiler {
         for (int i = 0; i < ss.sbsgs.size(); ++i) {
             SwitchBlockStatementGroup sbsg = (SwitchBlockStatementGroup) ss.sbsgs.get(i);
             sbsgOffsets[i].set();
+            this.codeContext.currentInserter().setStackMap(smBeforeSwitch);
             canCompleteNormally = true;
             for (BlockStatement bs : sbsg.blockStatements) {
                 if (!canCompleteNormally) {
@@ -2221,6 +2250,7 @@ class UnitCompiler {
         Offset wtb = ss.whereToBreak;
         if (wtb == null) return canCompleteNormally;
 
+        if (!canCompleteNormally) this.codeContext.currentInserter().setStackMap(wtb.getStackMap());
         wtb.set();
 
         ss.whereToBreak = null;
@@ -2750,6 +2780,7 @@ class UnitCompiler {
             // Compile the statement body.
             final CodeContext.Offset monitorExitOffset = this.getCodeContext().new Offset();
             final CodeContext.Offset beginningOfBody   = this.getCodeContext().newOffset();
+            StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
             canCompleteNormally = this.compile(ss.body);
             if (canCompleteNormally) {
                 this.gotO(ss, monitorExitOffset);
@@ -2763,9 +2794,15 @@ class UnitCompiler {
                 here,            // handlerPC
                 null             // catchTypeFD
             );
-            this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
-            this.leave(ss);
-            this.athrow(ss);
+            StackMap save = this.codeContext.currentInserter().getStackMap();
+            try {
+                this.codeContext.currentInserter().setStackMap(smBeforeBody);
+                this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
+                this.leave(ss);
+                this.athrow(ss);
+            } finally {
+                this.codeContext.currentInserter().setStackMap(save);
+            }
 
             // Unlock monitor object.
             if (canCompleteNormally) {
@@ -3022,6 +3059,11 @@ class UnitCompiler {
             this.getCodeContext().saveLocalVariables();
             try {
 
+                this.getCodeContext().currentInserter().setStackMap(smBeforeBody);
+
+                // Push the exception on the operand stack.
+                this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
+
                 CodeContext.Offset here = this.getCodeContext().newOffset();
                 this.getCodeContext().addExceptionTableEntry(
                     beginningOfBody, // startPC
@@ -3029,11 +3071,6 @@ class UnitCompiler {
                     here,            // handlerPC
                     null             // catchTypeFD
                 );
-
-                this.getCodeContext().currentInserter().setStackMap(smBeforeBody);
-
-                // Push the exception on the operand stack.
-                this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
 
                 // Save the exception object in an anonymous local variable.
                 short evi = this.getCodeContext().allocateLocalVariable((short) 1);
@@ -3201,10 +3238,10 @@ class UnitCompiler {
 
         if (fd.getAccess() == Access.PRIVATE) {
             if (
-                        fd instanceof MethodDeclarator
-                        && !((MethodDeclarator) fd).isStatic()
-                        && !(fd.getDeclaringType() instanceof InterfaceDeclaration)
-                ) {
+                fd instanceof MethodDeclarator
+                && !((MethodDeclarator) fd).isStatic()
+                && !(fd.getDeclaringType() instanceof InterfaceDeclaration)
+            ) {
 
                 // To make the non-static private method invocable for enclosing types, enclosed types and types
                 // enclosed by the same type, it is modified as follows:
@@ -3385,31 +3422,42 @@ class UnitCompiler {
                 if (!md.isStatic()) {
 
                     // Define special parameter "this".
-                    this.allocateLocalVariableSlot(this.resolve(fd.getDeclaringType()), "this");
+                    this.allocateLocalVariableSlotAndMarkAsInitialized(this.resolve(fd.getDeclaringType()), "this");
                 }
             }
 
             if (fd instanceof ConstructorDeclarator) {
 
-                // Define special parameter "this".
-                this.allocateLocalVariableSlot(this.resolve(fd.getDeclaringType()), "this");
+                // Define special parameter "unititialized this".
+                {
+                    IClass rawThisType = this.resolve(fd.getDeclaringType());
+                    LocalVariableSlot result = this.getCodeContext().allocateLocalVariable(
+                        (short) 1,
+                        "this",
+                        rawThisType
+                    );
+                    this.updateLocalVariableInCurrentStackMap(
+                        result.getSlotIndex(),
+                        StackMapTableAttribute.UNINITIALIZED_THIS_VARIABLE_INFO
+                    );
+                }
 
                 ConstructorDeclarator constructorDeclarator = (ConstructorDeclarator) fd;
 
                 if (fd.getDeclaringType() instanceof EnumDeclaration) {
 
                     // Define special constructor parameters "String $name" and "int $ordinal" for enums.
-                    LocalVariable lv1 = this.allocateLocalVariable(true /*finaL*/, this.iClassLoader.TYPE_java_lang_String);
+                    LocalVariable lv1 = this.allocateLocalVariableAndMarkAsInitialized(true /*finaL*/, this.iClassLoader.TYPE_java_lang_String);
                     constructorDeclarator.syntheticParameters.put("$name", lv1);
 
-                    LocalVariable lv2 = this.allocateLocalVariable(true /*finaL*/, IClass.INT);
+                    LocalVariable lv2 = this.allocateLocalVariableAndMarkAsInitialized(true /*finaL*/, IClass.INT);
                     constructorDeclarator.syntheticParameters.put("$ordinal", lv2);
                 }
 
                 // Define synthetic parameters for inner classes ("this$...", "val$...").
                 for (IField sf : constructorDeclarator.getDeclaringClass().syntheticFields.values()) {
 
-                    LocalVariable lv = this.allocateLocalVariable(true /*finaL*/, sf.getType());
+                    LocalVariable lv = this.allocateLocalVariableAndMarkAsInitialized(true /*finaL*/, sf.getType());
                     constructorDeclarator.syntheticParameters.put(sf.getName(), lv);
                 }
             }
@@ -3425,13 +3473,14 @@ class UnitCompiler {
                         this.assignSyntheticParametersToSyntheticFields(cd);
                     }
                     this.compile(ci);
-                    if (ci instanceof SuperConstructorInvocation) {
-                        this.initializeInstanceVariablesAndInvokeInstanceInitializers(cd);
-                    }
 
                     // Object initialization is complete; change the verification type info of "this" from
                     // "uninitializedThis" to "object".
                     this.updateLocalVariableInCurrentStackMap((short) 0, this.verificationTypeInfo(this.resolve(fd.getDeclaringType())));
+
+                    if (ci instanceof SuperConstructorInvocation) {
+                        this.initializeInstanceVariablesAndInvokeInstanceInitializers(cd);
+                    }
                 } else {
 
                     // Determine qualification for superconstructor invocation.
@@ -3538,15 +3587,15 @@ class UnitCompiler {
             this.targetVersion = UnitCompiler.defaultTargetVersion;
             if (this.targetVersion == -1) {
 
-//            // System property               Description                                    Example values
-//            // ------------------------------------------------------------------------------------------------
-//            // java.vm.specification.version Java Virtual Machine specification version     "1.8", "11"
-//            // java.specification.version    Java Runtime Environment specification version "1.8", "11"
-//            // java.version                  Java Runtime Environment version               "1.8.0_45", "11-ea"
-//            // java.class.version            Java class format version number               "52.0", "55.0"
-//            String jsv = System.getProperty("java.specification.version");
-//            jsv = jsv.substring(jsv.indexOf('.') + 1);
-//            this.targetVersion = Integer.parseInt(jsv);
+//                // System property               Description                                    Example values
+//                // ------------------------------------------------------------------------------------------------
+//                // java.vm.specification.version Java Virtual Machine specification version     "1.8", "11"
+//                // java.specification.version    Java Runtime Environment specification version "1.8", "11"
+//                // java.version                  Java Runtime Environment version               "1.8.0_45", "11-ea"
+//                // java.class.version            Java class format version number               "52.0", "55.0"
+//                String jsv = System.getProperty("java.specification.version");
+//                jsv = jsv.substring(jsv.indexOf('.') + 1);
+//                this.targetVersion = Integer.parseInt(jsv);
 
                 // Because the generation of the StackMapTable attribute is still experimental, we still produce
                 // only Java 6 .class files by default:
@@ -3589,7 +3638,7 @@ class UnitCompiler {
                 fp,
                 i == fd.formalParameters.parameters.length - 1 && fd.formalParameters.variableArity
             );
-            lv.setSlot(this.allocateLocalVariableSlot(lv.type, fp.name));
+            lv.setSlot(this.allocateLocalVariableSlotAndMarkAsInitialized(lv.type, fp.name));
 
             if (localVars.put(fp.name, lv) != null) {
                 this.compileError("Redefinition of parameter \"" + fp.name + "\"", fd.getLocation());
@@ -3618,8 +3667,13 @@ class UnitCompiler {
             localVariableType
         );
 
-        this.updateLocalVariableInCurrentStackMap(result.getSlotIndex(), this.verificationTypeInfo(localVariableType));
+        return result;
+    }
 
+    private LocalVariableSlot
+    allocateLocalVariableSlotAndMarkAsInitialized(IType localVariableType, @Nullable String localVariableName) {
+        LocalVariableSlot result = this.allocateLocalVariableSlot(localVariableType, localVariableName);
+        this.updateLocalVariableInCurrentStackMap(result.getSlotIndex(), this.verificationTypeInfo(localVariableType));
         return result;
     }
 
@@ -12359,9 +12413,9 @@ class UnitCompiler {
     lookupswitch(
         Locatable                  locatable,
         SortedMap<Integer, Offset> caseLabelMap,
-        Offset                     switchOffset,
         Offset                     defaultLabelOffset
     ) {
+        CodeContext.Offset switchOffset = this.getCodeContext().newOffset();
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().popIntOperand();
@@ -12580,9 +12634,10 @@ class UnitCompiler {
     tableswitch(
         Locatable                              locatable,
         SortedMap<Integer, CodeContext.Offset> caseLabelMap,
-        Offset                                 switchOffset,
         Offset                                 defaultLabelOffset
     ) {
+        CodeContext.Offset switchOffset = this.getCodeContext().newOffset();
+
         final int low  = (Integer) caseLabelMap.firstKey();
         final int high = (Integer) caseLabelMap.lastKey();
 
@@ -13050,9 +13105,19 @@ class UnitCompiler {
     private CodeContext.Offset
     getWhereToBreak(BreakableStatement bs) {
 
-        if (bs.whereToBreak != null) return bs.whereToBreak;
+        Offset wtb = bs.whereToBreak;
+        if (wtb != null) {
 
-        return (bs.whereToBreak = this.getCodeContext().new Offset());
+            StackMap saved = this.codeContext.currentInserter().getStackMap();
+            wtb.setStackMap();
+            this.codeContext.currentInserter().setStackMap(saved);
+
+            return wtb;
+        }
+
+        wtb = this.getCodeContext().new Offset();
+        wtb.setStackMap(this.codeContext.currentInserter().getStackMap());
+        return (bs.whereToBreak = wtb);
     }
 
     private TypeBodyDeclaration
