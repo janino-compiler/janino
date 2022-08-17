@@ -354,18 +354,11 @@ class CodeContext {
         List<StackMapFrame> smfs = new ArrayList<>();
         for (; frame != null && frame.offset != this.end.offset; frame = frame.next) {
 
-            // "Padder" is used to insert the padding bytes of the LOOKUPSWITCH instruction; skip it, because
-            // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
-            if (frame instanceof Java.Padder) continue;
+            if (!(frame instanceof BasicBlock)) continue;
 
-            // "FourByteOffset" is used to write the offsets of the LOOKUPSWITCH instruction. Skip it, because
-            // it sits INSIDE the instruction and would cause a "StackMapTable error: bad offset".
-            if (frame instanceof FourByteOffset) continue;
+            if (previousFrame.offset == frame.offset) continue;
 
-            {
-                Offset next = frame.next;
-                if (next != null && frame.offset == next.offset) continue;
-            }
+            assert frame.getStackMap() != null;
 
             final int                    offsetDelta               = smfs.isEmpty() ? frame.offset : frame.offset - previousFrame.offset - 1;
             final VerificationTypeInfo[] frameOperands             = frame.getStackMap().operands();
@@ -887,6 +880,12 @@ class CodeContext {
         return o;
     }
 
+    public Offset
+    newBasicBlock() {
+        new BasicBlock().set();
+        return this.newOffset();
+    }
+
     /**
      * Allocates an {@link Inserter}, set it to the current offset, and inserts it before the current offset.
      * <p>
@@ -984,6 +983,14 @@ class CodeContext {
             ci.prev  = this;
         }
 
+        // Set this offset, and mark it as the the beginning of a "basic block".
+        public void
+        setBasicBlock() {
+            this.set();
+            assert CodeContext.this.currentInserter.getStackMap() != null;
+            new BasicBlock().set();
+        }
+
         /**
          * Merges the stack maps of the current inserter and THIS offset, and assigns the result to the current
          * inserter and THIS offset.
@@ -1008,7 +1015,9 @@ class CodeContext {
         getStackMap() { return this.stackMap; }
 
         public void
-        setStackMap(StackMap stackMap) { this.stackMap = stackMap; }
+        setStackMap(StackMap stackMap) {
+            this.stackMap = stackMap;
+        }
 
         /**
          * @return The {@link CodeContext} that this {@link Offset} belongs to
@@ -1127,6 +1136,19 @@ class CodeContext {
             this.lineNumber = lineNumber;
             this.offset     = offset;
             this.setStackMap(stackMap);
+        }
+    }
+
+    /**
+     * This {@link Offset} marks the first byte of a "basic block" in the sense of JLS 17 "4.10.1 Verification by Type
+     * Checking":
+     *
+     *      The intent is that a stack map frame must appear at the beginning of each basic block in a method.
+     */
+    public final
+    class BasicBlock extends Offset {
+        public BasicBlock() {
+            System.currentTimeMillis();
         }
     }
 
@@ -1342,6 +1364,7 @@ class CodeContext {
         final Inserter ci = this.currentInserter();
 
         StackMap sm = ci.getStackMap();
+        assert sm != null;
         sm = sm.pushOperand(topOperand);
         ci.setStackMap(sm);
 

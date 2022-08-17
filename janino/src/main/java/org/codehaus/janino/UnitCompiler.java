@@ -1620,7 +1620,7 @@ class UnitCompiler {
             }
         }
 
-        final CodeContext.Offset bodyOffset = this.getCodeContext().newOffset();
+        final CodeContext.Offset bodyOffset = this.getCodeContext().newBasicBlock();
 
         // Compile body.
         ds.whereToContinue = null;
@@ -1682,11 +1682,13 @@ class UnitCompiler {
             }
 
             CodeContext.Offset toCondition = this.getCodeContext().new Offset();
+            StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
             this.gotO(fs, toCondition);
 
             // Compile body.
             fs.whereToContinue = null;
-            final CodeContext.Offset bodyOffset = this.getCodeContext().newOffset();
+            this.codeContext.currentInserter().setStackMap(smBeforeBody);
+            final CodeContext.Offset bodyOffset = this.getCodeContext().newBasicBlock();
             boolean                  bodyCcn    = this.compile(fs.body);
             if (fs.whereToContinue != null) fs.whereToContinue.set();
 
@@ -1739,10 +1741,13 @@ class UnitCompiler {
                 LocalVariable indexLv = this.allocateLocalVariable(false /*finaL*/, IClass.INT);
                 this.store(fes, indexLv);
 
+                StackMap beforeBody = this.getCodeContext().currentInserter().getStackMap();
+
                 CodeContext.Offset toCondition = this.getCodeContext().new Offset();
                 this.gotO(fes, toCondition);
 
-                // Compile the body.
+                // Get the next array element.
+                this.codeContext.currentInserter().setStackMap(beforeBody);
                 fes.whereToContinue = null;
                 final CodeContext.Offset bodyOffset = this.getCodeContext().newOffset();
 
@@ -1754,6 +1759,7 @@ class UnitCompiler {
                 this.assignmentConversion(fes.currentElement, componentType, elementLv.type, null);
                 this.store(fes, elementLv);
 
+                // Compile the body.
                 boolean bodyCcn = this.compile(fes.body);
                 if (fes.whereToContinue != null) fes.whereToContinue.set();
 
@@ -1799,9 +1805,11 @@ class UnitCompiler {
                 this.store(fes, iteratorLv);
 
                 CodeContext.Offset toCondition = this.getCodeContext().new Offset();
+                StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
                 this.gotO(fes, toCondition);
 
                 // Compile the body.
+                this.codeContext.currentInserter().setStackMap(smBeforeBody);
                 fes.whereToContinue = null;
                 final CodeContext.Offset bodyOffset = this.getCodeContext().newOffset();
 
@@ -1905,8 +1913,10 @@ class UnitCompiler {
 
         // Compile body.
         Offset wtc = (ws.whereToContinue = this.getCodeContext().new Offset());
+        StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
         this.gotO(ws, wtc);
-        final CodeContext.Offset bodyOffset = this.getCodeContext().newOffset();
+        this.codeContext.currentInserter().setStackMap(smBeforeBody);
+        final CodeContext.Offset bodyOffset = this.getCodeContext().newBasicBlock();
         this.compile(ws.body); // Return value (CCN) is ignored.
         assert ws.whereToContinue == wtc;
         wtc.set();
@@ -2196,6 +2206,7 @@ class UnitCompiler {
 
             // For STRING SWITCH, we must generate extra code that checks for string equality --
             // the strings' hash codes are not globally unique (as, e.g. MD5).
+            StackMap smBeforeSbsg = this.codeContext.currentInserter().getStackMap();
             for (Entry<Integer, CodeContext.Offset> e : caseLabelMap.entrySet()) {
                 final Integer            caseHashCode = (Integer) e.getKey();
                 final CodeContext.Offset offset       = (CodeContext.Offset) e.getValue();
@@ -2206,6 +2217,7 @@ class UnitCompiler {
                 for (int i = 0; i < ss.sbsgs.size(); i++) {
                     SwitchBlockStatementGroup sbsg = (SwitchBlockStatementGroup) ss.sbsgs.get(i);
 
+                    this.codeContext.currentInserter().setStackMap(smBeforeSbsg);
                     for (Rvalue caseLabel : sbsg.caseLabels) {
 
                         String cv = (String) this.getConstantValue(caseLabel);
@@ -2412,7 +2424,7 @@ class UnitCompiler {
             this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_ASSERTIONERROR);
             this.athrow(as);
         } finally {
-            end.set();
+            end.setBasicBlock();
         }
         return true;
     }
@@ -2490,9 +2502,15 @@ class UnitCompiler {
             }
 
             // Compile the seeing statement.
-            final CodeContext.Inserter ins   = this.getCodeContext().newInserter();
-            boolean                    ssccn = this.compile(seeingStatement);
-            boolean                    bsccn = this.fakeCompile(blindStatement);
+            final CodeContext.Inserter ins                     = this.getCodeContext().newInserter();
+            StackMap                   smBeforeSeeingStatement = this.codeContext.currentInserter().getStackMap();
+            boolean                    ssccn                   = this.compile(seeingStatement);
+
+            // Fake-compile the blind statement.
+            this.codeContext.currentInserter().setStackMap(smBeforeSeeingStatement);
+            boolean bsccn = this.fakeCompile(blindStatement);
+            this.codeContext.currentInserter().setStackMap(smBeforeSeeingStatement);
+
             if (ssccn) return true;
             if (!bsccn) return false;
 
@@ -2512,6 +2530,7 @@ class UnitCompiler {
                 this.getCodeContext().popInserter();
             }
 
+            // Now return "ccn=true" so that the following statements are not reported as "unreachable".
             return true;
         }
 
@@ -2523,13 +2542,28 @@ class UnitCompiler {
                 CodeContext.Offset eso = this.getCodeContext().new Offset();
                 CodeContext.Offset end = this.getCodeContext().new Offset();
                 this.compileBoolean(is.condition, eso, UnitCompiler.JUMP_IF_FALSE);
+                StackMap smAfterCondition = this.codeContext.currentInserter().getStackMap();
+
+                // Compile "then" statement.
                 boolean tsccn = this.compile(is.thenStatement);
-                if (tsccn) this.gotO(is, end);
-                this.getCodeContext().currentInserter().setStackMap(null);
-                eso.set();
+                StackMap smAfterThenStatement;
+                if (tsccn) {
+                    smAfterThenStatement = this.codeContext.currentInserter().getStackMap();
+                    this.gotO(is, end);
+                } else {
+                    smAfterThenStatement = null;
+                }
+
+                // Compile "else" statment.
+                this.getCodeContext().currentInserter().setStackMap(smAfterCondition);
+                eso.setBasicBlock();
                 boolean esccn = this.compile(es);
-                if (!esccn) this.getCodeContext().currentInserter().setStackMap(null);
-                end.set();
+
+                if (!tsccn && !esccn) return false;
+
+                if (!esccn) this.getCodeContext().currentInserter().setStackMap(smAfterThenStatement);
+
+                end.setBasicBlock();
                 return tsccn || esccn;
             } else {
 
@@ -2537,7 +2571,7 @@ class UnitCompiler {
                 CodeContext.Offset end = this.getCodeContext().new Offset();
                 this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_FALSE);
                 this.compile(is.thenStatement);
-                end.set();
+                end.setBasicBlock();
                 return true;
             }
         } else {
@@ -2548,7 +2582,7 @@ class UnitCompiler {
                 this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_TRUE);
                 this.compile(es);
                 end.setStackMap(null);
-                end.set();
+                end.setBasicBlock();
                 return true;
             } else {
 
@@ -4650,8 +4684,7 @@ class UnitCompiler {
         this.consT(brv, 0);
         CodeContext.Offset end = this.getCodeContext().new Offset();
         this.gotO(brv, end);
-        this.getCodeContext().currentInserter().setStackMap(null);
-        isTrue.set();
+        isTrue.setBasicBlock();
         this.consT(brv, 1);
         end.set();
 
@@ -4835,7 +4868,7 @@ class UnitCompiler {
             this.gotO(ce, toEnd);
 
             this.getCodeContext().currentInserter().setStackMap(sm);
-            toRhs.set();
+            toRhs.setBasicBlock();
             this.compileGetValue(ce.rhs);
             this.assignmentConversion(ce.mhs, rhsType, expressionType, UnitCompiler.NOT_CONSTANT);
 
@@ -12207,7 +12240,7 @@ class UnitCompiler {
         private void
         gotO(Locatable locatable, CodeContext.Offset dst) {
             this.getCodeContext().writeBranch(Opcode.GOTO, dst);
-    //        this.getCodeContext().currentInserter().setStackMap(null);
+            this.getCodeContext().currentInserter().setStackMap(null);
         }
 
     /**
@@ -13382,8 +13415,11 @@ class UnitCompiler {
     private VerificationTypeInfo
     getLocalVariableTypeInfo(short lvIndex) {
 
+        StackMap cism = this.getCodeContext().currentInserter().getStackMap();
+        assert cism != null;
+
         int nextLvIndex = 0;
-        for (VerificationTypeInfo vti : this.getCodeContext().currentInserter().getStackMap().locals()) {
+        for (VerificationTypeInfo vti : cism.locals()) {
             if (nextLvIndex == lvIndex) return vti;
             nextLvIndex += vti.category();
         }
