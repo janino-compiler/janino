@@ -246,6 +246,8 @@ class Compiler extends AbstractCompiler {
             Charset.defaultCharset()
         );
 
+//        classFileFinder = ResourceFinders.debugResourceFinder(classFileFinder);
+
         // Find existing .class files through the classFileFinder.
         jfm = JavaFileManagers.fromResourceFinder(
             jfm,
@@ -254,6 +256,8 @@ class Compiler extends AbstractCompiler {
             classFileFinder,
             Charset.defaultCharset() // irrelevant
         );
+
+//        sourceFileFinder = ResourceFinders.debugResourceFinder(sourceFileFinder);
 
         // Wrap it in a file manager that finds source files through the .sourceFinder.
         jfm = JavaFileManagers.fromResourceFinder(
