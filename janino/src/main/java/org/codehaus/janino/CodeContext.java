@@ -1034,33 +1034,43 @@ class CodeContext {
             throw new InternalCompilerException("Inconsistent operand stack: " + sm1 + " vs. " + sm2);
         }
 
-        VerificationTypeInfo[] locals1 = sm1.locals();
-        VerificationTypeInfo[] locals2 = sm2.locals();
-        VerificationTypeInfo[] tmp     = new VerificationTypeInfo[Math.min(locals1.length, locals2.length)];
+        VerificationTypeInfo[]     locals1 = sm1.locals();
+        VerificationTypeInfo[]     locals2 = sm2.locals();
+        List<VerificationTypeInfo> tmp     = new ArrayList<>();
 
-        for (int i = 0; i < tmp.length; i++) {
-            VerificationTypeInfo local1 = locals1[i];
-            VerificationTypeInfo local2 = locals2[i];
+        for (int i1 = 0, i2 = 0; i1 < locals1.length && i2 < locals2.length;) {
+
+            VerificationTypeInfo local1 = locals1[i1++];
+            VerificationTypeInfo local2 = locals2[i2++];
+
             VerificationTypeInfo tmpLocal;
             if (local1.equals(local2)) {
-                tmpLocal = local1;
-            } else
-            if (local1 == StackMapTableAttribute.TOP_VARIABLE_INFO || local2 == StackMapTableAttribute.TOP_VARIABLE_INFO) {
-                tmpLocal = StackMapTableAttribute.TOP_VARIABLE_INFO;
-            } else
-            {
-                // This check would be wrong, because the different flow paths may have used the slot
-                // for different locals.
-//                throw new InternalCompilerException(
-//                    "Inconsistent local variable #" + i + " verification type: " + sm1 + " vs. " + sm2
-//                );
-                tmpLocal = StackMapTableAttribute.TOP_VARIABLE_INFO;
-            }
+                tmp.add(local1);
+            } else {
+                if (local1 == StackMapTableAttribute.TOP_VARIABLE_INFO && local2.category() == 2) {
 
-            tmp[i] = tmpLocal;
+                    // Issue #178:
+                    // top,top / double => top,top
+                    assert i1 < locals1.length;
+                    assert locals1[i1] == StackMapTableAttribute.TOP_VARIABLE_INFO;
+                    i1++;
+                    tmp.add(StackMapTableAttribute.TOP_VARIABLE_INFO);
+                } else
+                if (local2 == StackMapTableAttribute.TOP_VARIABLE_INFO && local1.category() == 2) {
+
+                    // Issue #178:
+                    // double / top,top => top,top
+                    assert i2 < locals2.length;
+                    assert locals2[i2] == StackMapTableAttribute.TOP_VARIABLE_INFO;
+                    i2++;
+                    tmp.add(StackMapTableAttribute.TOP_VARIABLE_INFO);
+                }
+
+                tmp.add(StackMapTableAttribute.TOP_VARIABLE_INFO);
+            }
         }
 
-        return new StackMap(tmp, sm1.operands());
+        return new StackMap((VerificationTypeInfo[]) tmp.toArray(new VerificationTypeInfo[tmp.size()]), sm1.operands());
     }
 
     /**

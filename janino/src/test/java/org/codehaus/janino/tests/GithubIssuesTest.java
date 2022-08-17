@@ -385,6 +385,26 @@ class GithubIssuesTest {
         // This led to "Assignment conversion not possible from type "java.lang.String" to type "java.lang.Object"".
     }
 
+    @Test public void
+    testIssue178() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook(
+            ""
+            + "public\n"
+            + "class test3 {\n"
+            + "\n"
+            + "    public static void\n"
+            + "    main(String[] args){\n"
+            + "        double a;\n"
+            + "        for (int i = 0; i < 3; ++i) {\n"
+            + "            a = i;\n"
+            + "            System.out.println(a);\n"
+            + "        }\n"
+            + "    }\n"
+            + "}\n"
+        );
+    }
+
     public ClassLoader
     compile(ClassLoader parentClassLoader, CompileUnit... compileUnits) {
 
