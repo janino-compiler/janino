@@ -1378,19 +1378,41 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     testIssue172() throws Exception {
-        this.assertCompilationUnitMainReturnsTrue((
-            ""
-            + "public class test {\n"
-            + "    public static boolean\n"
-            + "    main(/*String[] args*/) {\n"
-            + "        String s;\n"
-            + "        if (Boolean.FALSE || (s = \"Hello World!\") == null) {\n"
-            + "            return true;\n"
-            + "        }\n"
-            + "        System.out.println(s);\n"
-            + "        return false;\n"
-            + "    }\n"
-            + "}\n"
-        ), "test");
+
+        // For absolutely unknown reasons, JAVA 7, 8, 11 and 17 compile this piece of code, and "s" is initialized to
+        // "No references to s have been made.". Hair-raising.
+        if (this.isJdk) return;
+
+        // Janino does not report a regular compile error, but, at least, throws an InternalCompilerException.
+        try {
+            this.assertCompilationUnitMainReturnsTrue((
+                ""
+                + "public class test {\n"
+                + "    public static boolean\n"
+                + "    main() {\n"
+                + "        String[] args = { \"4\" };\n"
+                + "        String s;\n"
+                + "        if (f(Integer.parseInt(args[0])) || (s = \"Hello World!\") == null) {\n"
+                + "            System.out.println(\"No references to s have been made.\");\n"
+                + "            return true;\n"
+                + "        }\n"
+                + "        System.out.println(s);\n"
+                + "        return true;\n"
+                + "    }\n"
+                + "\n"
+                + "    public static boolean\n"
+                + "    f(int x) {\n"
+                + "        boolean b = true;\n"
+                + "        for (int i = 0; i < x; ++i) {\n"
+                + "            b ^= true;\n"
+                + "        }\n"
+                + "        return b;\n"
+                + "    }\n"
+                + "}\n"
+            ), "test");
+            Assert.fail();
+        } catch (Exception e) {
+            ;
+        }
     }
 }
