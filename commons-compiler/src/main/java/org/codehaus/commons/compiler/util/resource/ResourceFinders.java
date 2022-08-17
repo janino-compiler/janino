@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -89,6 +90,58 @@ class ResourceFinders {
                 return result;
             }
         };
+    }
+
+    public static ResourceFinder
+    debugResourceFinder(final ResourceFinder delegate) {
+
+        if (delegate instanceof ListableResourceFinder) {
+            return ResourceFinders.debugListableResourceFinder((ListableResourceFinder) delegate);
+        }
+
+        return new ResourceFinder() {
+
+            @Override @Nullable public Resource
+            findResource(String resourceName) {
+                Resource result = delegate.findResource(resourceName);
+                System.err.println("findResource(\"" + resourceName + "\") => " + result);
+                return result;
+            }
+        };
+    }
+
+    private static ResourceFinder
+    debugListableResourceFinder(final ListableResourceFinder delegate) {
+
+        return new ListableResourceFinder() {
+
+            @Override @Nullable public Resource
+            findResource(String resourceName) {
+                Resource result = delegate.findResource(resourceName);
+                System.err.println("findResource(\"" + resourceName + "\") => " + result);
+                return result;
+            }
+
+            @Override @Nullable public Iterable<Resource>
+            list(String resourceNamePrefix, boolean recurse) throws IOException {
+                Iterable<Resource> result = delegate.list(resourceNamePrefix, recurse);
+                System.err.println(
+                    "list(\"" + resourceNamePrefix + "\", " + recurse + ")"
+                    + " => "
+                    + ResourceFinders.toString(result)
+                );
+                return result;
+            }
+        };
+    }
+
+    private static <T> String
+    toString(Iterable<T> i) {
+        Iterator<T> it = i.iterator();
+        if (!it.hasNext()) return "[]";
+        StringBuilder sb = new StringBuilder("[ ").append(it.next().toString());
+        while (it.hasNext()) sb.append(", ").append(it.next());
+        return sb.append(" ]").toString();
     }
 
     private static LocatableResource

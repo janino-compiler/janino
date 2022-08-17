@@ -119,10 +119,7 @@ class MapResourceFinder extends ListableResourceFinder {
                 final int rnpl         = resourceNamePrefix.length(); // E.g. "org/codehaus/janino"
                 return (
                     resourceName.startsWith(resourceNamePrefix)
-                    && (recurse || (
-                        resourceName.charAt(rnpl) == '/'
-                        && resourceName.indexOf('/', rnpl + 1) == -1
-                    ))
+                    && (recurse || resourceName.indexOf('/', rnpl) == -1)
                 );
             }
         });
