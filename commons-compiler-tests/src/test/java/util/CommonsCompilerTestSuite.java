@@ -756,4 +756,20 @@ class CommonsCompilerTestSuite {
         }
         return -1;
     }
+
+    public static void
+    assertLessThan(@Nullable String message, int expected, int actual) {
+        Assert.assertTrue(
+            (message == null ? "" : message + ": ") + "Expected less than " + expected + ", but were " + actual,
+            actual < expected
+        );
+    }
+
+    public static void
+    assertMoreThan(@Nullable String message, int expected, int actual) {
+        Assert.assertTrue(
+            (message == null ? "" : message + ": ") + "Expected more than " + expected + ", but were " + actual,
+            actual > expected
+        );
+    }
 }
