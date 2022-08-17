@@ -33,6 +33,7 @@ import java.io.StringReader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1414,5 +1415,97 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         } catch (Exception e) {
             ;
         }
+    }
+
+    @Test
+    public void
+    testIssue174__SmallMethod() throws Exception {
+        String  body = ReportedBugsTest.getClassBody(10);
+        Nukable obj  = this.createObject(body);
+//        System.out.println("Got the object " + obj);
+//        System.out.println("Invoking nuke method");
+//        System.out.println(Arrays.toString(obj.nuke()));
+    }
+
+    @Test
+    public void
+    testIssue174__BigMethod() throws Exception {
+        // Generate inefficient code with lots of assignments.
+        // Breaks JVMs >=16 when using more than 840 assignments:
+        // #  Internal Error (metaspaceArena.cpp:88), pid=12308, tid=6659
+        // #  guarantee(requested_word_size <= chunklevel::MAX_CHUNK_WORD_SIZE) failed: Requested size too large (756627) - max allowed size per allocation is 524288.
+        String  body = ReportedBugsTest.getClassBody(1000);
+        Nukable obj  = this.createObject(body);
+//        System.out.println("Got the object " + obj);
+//        System.out.println("Invoking nuke method");
+//        System.out.println(Arrays.toString(obj.nuke()));
+    }
+
+    private Nukable
+    createObject(String body) throws Exception {
+
+        // Store source code in .java file for manual analysis.
+//        try (Writer w = new FileWriter("Nuke" + body.length() + ".java")) {
+//            w.write(body);
+//        }
+
+        // Instantiate an object from the generated class.
+        IClassBodyEvaluator cbe = this.compilerFactory.newClassBodyEvaluator();
+        cbe.setClassName("Nuke");
+        cbe.setImplementedInterfaces(new Class[] { Nukable.class });
+        cbe.setParentClassLoader(this.getClass().getClassLoader());
+        cbe.setDefaultImports("java.util.Arrays");
+        Nukable result = (Nukable) cbe.createInstance(new StringReader(body));
+        for (Entry<String, byte[]> e : cbe.getBytecodes().entrySet()) {
+            byte[] bytecode  = e.getValue();
+            String className = e.getKey();
+
+//            System.out.printf("  %-20s %d%n", className + ":", bytecode.length);
+            CommonsCompilerTestSuite.assertLessThan(className, 14000, bytecode.length);
+
+            // Store the bytecode in .class files for manual analysis.
+//            try (OutputStream os = new FileOutputStream("Nuke" + body.length() + ".class")) {
+//                byte[] buffer = new byte[4096];
+//                ByteArrayInputStream is = new ByteArrayInputStream(e.getValue());
+//                for (;;) {
+//                    int n = is.read(buffer);
+//                    if (n == -1) break;
+//                    os.write(buffer, 0, n);
+//                }
+//            }
+        }
+        return result;
+    }
+
+    private static String
+    getClassBody(int numAssignments) {
+        String template = (
+            ""
+            + "public Object[] nuke() {%n"
+            + "    String bloat = \"some_bloat\";%n"
+            + "    // Lots of variables%n"
+            + "%s"
+            + "    // Big array initialization%n"
+            + "    return new Object[] {%n"
+            + "%s"
+            + "    };%n"
+            + "}%n"
+            + "%n"
+            + "public static void main(String[] args) throws Exception {%n"
+            + "    System.out.println(Arrays.toString(new Nuke().nuke()));%n"
+            + "}%n"
+        );
+        StringBuilder localVariableDeclarations = new StringBuilder();
+        StringBuilder arrayInitializerBody      = new StringBuilder();
+        for (int i = 0; i < numAssignments; i++) {
+            localVariableDeclarations.append(String.format("    final String current%s = bloat;%n", i));
+            arrayInitializerBody.append(String.format("        current%s,%n", i));
+        }
+        return String.format(template, localVariableDeclarations, arrayInitializerBody);
+    }
+
+    public
+    interface Nukable {
+        Object[] nuke();
     }
 }
