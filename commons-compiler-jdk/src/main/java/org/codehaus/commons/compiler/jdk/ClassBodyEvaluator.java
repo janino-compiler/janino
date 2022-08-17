@@ -195,10 +195,10 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
 
                 if (this.implementedTypes.length > 0) {
                     pw.print(" implements ");
-                    pw.print(this.implementedTypes[0].getName());
+                    pw.print(this.implementedTypes[0].getCanonicalName());
                     for (int i = 1; i < this.implementedTypes.length; ++i) {
                         pw.print(", ");
-                        pw.print(this.implementedTypes[i].getName());
+                        pw.print(this.implementedTypes[i].getCanonicalName());
                     }
                 }
                 pw.println(" {");
@@ -312,7 +312,7 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
                 + "or has no zero-parameter constructor"
             ), null, ie);
         } catch (Exception e) {
-            throw new CompileException("Instantiating \"" + this.getClazz().getName() + "\"", null, e);
+            throw new CompileException("Instantiating \"" + this.getClazz().getCanonicalName() + "\"", null, e);
         }
     }
 }
