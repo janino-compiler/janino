@@ -25,6 +25,9 @@
 
 package org.codehaus.commons.compiler.util.reflect;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.Collections;
 import java.util.Map;
 
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -51,6 +54,11 @@ class ByteArrayClassLoader extends ClassLoader {
     ByteArrayClassLoader(Map<String /*className*/, byte[] /*data*/> classes, ClassLoader parent) {
         super(parent);
         this.classes = classes;
+    }
+
+    public void
+    setResources(Map<String /*resourceName*/, byte[] /*data*/> resources) {
+        this.resources = resources;
     }
 
     /**
@@ -83,5 +91,17 @@ class ByteArrayClassLoader extends ClassLoader {
         );
     }
 
+    @Override public InputStream
+    getResourceAsStream(String name) {
+
+        InputStream result = super.getResourceAsStream(name);
+        if (result != null) return result;
+
+        byte[] ba = this.resources.get(name);
+        return ba == null ? null : new ByteArrayInputStream(ba);
+    }
+
+
     private final Map<String /*className-or-classFileName*/, byte[] /*data*/> classes;
+    private Map<String, byte[]>                                               resources = Collections.emptyMap();
 }
