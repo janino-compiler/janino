@@ -97,7 +97,7 @@ class ByteArrayClassLoader extends ClassLoader {
         InputStream result = super.getResourceAsStream(name);
         if (result != null) return result;
 
-        byte[] ba = this.resources.get(name);
+        byte[] ba = (byte[]) this.resources.get(name);
         return ba == null ? null : new ByteArrayInputStream(ba);
     }
 
