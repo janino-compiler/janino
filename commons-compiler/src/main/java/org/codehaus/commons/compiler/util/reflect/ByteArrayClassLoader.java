@@ -25,6 +25,8 @@
 
 package org.codehaus.commons.compiler.util.reflect;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Map;
 
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -81,6 +83,15 @@ class ByteArrayClassLoader extends ClassLoader {
             data.length,                          // len
             this.getClass().getProtectionDomain() // protectionDomain
         );
+    }
+
+    /**
+     * Implements {@link ClassLoader#getResourceAsStream(String)}.
+     */
+    @Override public InputStream
+    getResourceAsStream(String name) {
+        byte[] classData = classes.get(name);
+        return classData == null ? null : new ByteArrayInputStream(classData);
     }
 
     private final Map<String /*className-or-classFileName*/, byte[] /*data*/> classes;
