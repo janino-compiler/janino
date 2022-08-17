@@ -386,6 +386,20 @@ class GithubIssuesTest {
     }
 
     @Test public void
+    testIssue177() throws Exception {
+        SimpleCompiler sc = new SimpleCompiler();
+        sc.cook(
+            ""
+            + "public class test2 {\n"
+            + "  public final static double x = 0;\n"
+            + "  public static void main(String[] args){\n"
+            + "    System.out.println(\"Hello World!\");\n"
+            + "  }\n"
+            + "}\n"
+        );
+    }
+
+    @Test public void
     testIssue178() throws Exception {
         SimpleCompiler sc = new SimpleCompiler();
         sc.cook(
