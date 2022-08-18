@@ -26,5 +26,5 @@
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="janino"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#13;&#10;-Xverify:all&#13;&#10;-DxxxUnitCompiler.disassembleClassFilesToStdout=true&#13;&#10;-Dorg.codehaus.commons.compiler.util.Disassembler.printStackMap=true&#13;&#10;-Dorg.codehaus.commons.compiler.util.Disassembler.printAllOffsets=true&#13;&#10;-Dorg.codehaus.commons.compiler.util.Disassembler.printAllAttributes=true"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#13;&#10;-Xverify:all&#13;&#10;-DxxSimpleCompiler.disassembleClassFilesToStdout=true&#13;&#10;-DxxAbstractCompiler.disassembleClassFilesToStdout=true&#13;&#10;-Dxxorg.codehaus.commons.compiler.util.Disassembler.printStackMap=true&#13;&#10;-Dxxorg.codehaus.commons.compiler.util.Disassembler.printAllOffsets=true&#13;&#10;-Dxxorg.codehaus.commons.compiler.util.Disassembler.printAllAttributes=true&#13;&#10;-Dxxorg.codehaus.commons.compiler.util.Disassembler.dumpConstantPool=true&#13;&#10;-Dxxorg.codehaus.commons.compiler.util.Disassembler.showClassPoolIndexes=true"/>
 </launchConfiguration>
