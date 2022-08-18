@@ -1052,7 +1052,6 @@ class CodeContext {
             VerificationTypeInfo local1 = locals1[i1++];
             VerificationTypeInfo local2 = locals2[i2++];
 
-            VerificationTypeInfo tmpLocal;
             if (local1.equals(local2)) {
                 tmp.add(local1);
             } else {
