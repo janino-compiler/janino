@@ -317,7 +317,8 @@ class CommonsCompilerTestSuite {
     }
 
     /**
-     * Asserts that the given <var>classBody</var> can be cooked without errors and warnings.
+     * Asserts that the given <var>classBody</var> can be cooked (scanned, parsed, compiled and loaded) without errors
+     * and warnings.
      */
     protected void
     assertClassBodyCookable(String classBody) throws Exception {
