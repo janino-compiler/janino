@@ -65,6 +65,7 @@ import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.ResourceCreator;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.UnitCompiler.ClassFileConsumer;
 import org.codehaus.janino.util.ClassFile;
 
 /**
@@ -243,7 +244,7 @@ class Compiler extends AbstractCompiler {
             for (int i = 0; i < this.parsedCompilationUnits.size(); ++i) {
                 UnitCompiler unitCompiler = (UnitCompiler) this.parsedCompilationUnits.get(i);
 
-                File sourceFile;
+                final File sourceFile;
                 {
                     Java.AbstractCompilationUnit acu = unitCompiler.getAbstractCompilationUnit();
                     if (acu.fileName == null) throw new InternalCompilerException();
@@ -255,25 +256,21 @@ class Compiler extends AbstractCompiler {
                 unitCompiler.setWarningHandler(this.warningHandler);
 
                 this.benchmark.beginReporting("Compiling compilation unit \"" + sourceFile + "\"");
-                ClassFile[] classFiles;
                 try {
 
                     // Compile the compilation unit.
-                    classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
-                } finally {
-                    this.benchmark.endReporting();
-                }
+                    unitCompiler.compileUnit(
+                        this.debugSource,
+                        this.debugLines,
+                        this.debugVars,
+                        new ClassFileConsumer() {
 
-                // Store the compiled classes and interfaces into class files.
-                this.benchmark.beginReporting(
-                    "Storing "
-                    + classFiles.length
-                    + " class file(s) resulting from compilation unit \""
-                    + sourceFile
-                    + "\""
-                );
-                try {
-                    for (ClassFile classFile : classFiles) this.storeClassFile(classFile, sourceFile);
+                            @Override public void
+                            consume(ClassFile classFile) throws IOException {
+                                Compiler.this.storeClassFile(classFile, sourceFile);
+                            }
+                        }
+                    );
                 } finally {
                     this.benchmark.endReporting();
                 }
@@ -375,6 +372,8 @@ class Compiler extends AbstractCompiler {
                 }
             };
         }
+
+        // Now store the .class file there.
         OutputStream os = rc.createResource(classFileResourceName);
         try {
             classFile.store(os);

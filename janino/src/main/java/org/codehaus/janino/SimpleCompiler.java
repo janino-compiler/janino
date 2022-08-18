@@ -32,6 +32,9 @@ import java.io.Reader;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,9 +47,12 @@ import org.codehaus.commons.compiler.ISimpleCompiler;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
+import org.codehaus.commons.compiler.util.Disassembler;
+import org.codehaus.commons.compiler.util.SystemProperties;
 import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
 import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
+import org.codehaus.janino.UnitCompiler.ClassFileConsumer;
 import org.codehaus.janino.Visitor.AtomVisitor;
 import org.codehaus.janino.Visitor.TypeVisitor;
 import org.codehaus.janino.util.ClassFile;
@@ -57,6 +63,9 @@ import org.codehaus.janino.util.ClassFile;
  */
 public
 class SimpleCompiler extends Cookable implements ISimpleCompiler {
+
+    private static final boolean
+    disassembleClassFilesToStdout = SystemProperties.getBooleanClassProperty(SimpleCompiler.class, "disassembleClassFilesToStdout");
 
     private static final Logger LOGGER = Logger.getLogger(SimpleCompiler.class.getName());
 
@@ -80,13 +89,13 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
     /**
      * {@code Null} before cooking, non-{@code null} after cooking.
      */
-    @Nullable private ClassFile[] classFiles;
+    @Nullable private Collection<ClassFile> classFiles;
 
     public static void // SUPPRESS CHECKSTYLE JavadocMethod
     main(String[] args) throws Exception {
         if (args.length >= 1 && "-help".equals(args[0])) {
             System.out.println("Usage:");
-            System.out.println("    org.codehaus.janino.SimpleCompiler <source-file> <class-name> { <argument> }");
+            System.out.println("    java " + SimpleCompiler.class.getName() + " <source-file> <class-name> { <argument> }");
             System.out.println("Reads a compilation unit from the given <source-file> and invokes method");
             System.out.println("\"public static void main(String[])\" of class <class-name>, passing the");
             System.out.println("given <argument>s.");
@@ -225,7 +234,7 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
         try {
             acu = parser.parseAbstractCompilationUnit();
         } catch (CompileException ce) {
-            this.classFiles = new ClassFile[0]; // Mark this SimpleCompiler as "cooked".
+            this.classFiles = Collections.emptyList(); // Mark this SimpleCompiler as "cooked".
             throw ce;
         }
 
@@ -251,9 +260,23 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
             unitCompiler.setCompileErrorHandler(this.compileErrorHandler);
             unitCompiler.setWarningHandler(this.warningHandler);
 
-            this.classFiles = unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars);
+            final Collection<ClassFile> cfs = new ArrayList<>();
+            unitCompiler.compileUnit(this.debugSource, this.debugLines, this.debugVars, new ClassFileConsumer() {
+
+                @Override public void
+                consume(ClassFile classFile) {
+
+                    if (SimpleCompiler.disassembleClassFilesToStdout) {
+                        Disassembler.disassembleToStdout(classFile.toByteArray());
+                    }
+
+                    cfs.add(classFile);
+                }
+            });
+
+            this.classFiles = cfs;
         } catch (CompileException ce) {
-            this.classFiles = new ClassFile[0]; // Mark this SimpleCompiler as "cooked".
+            this.classFiles = Collections.emptyList(); // Mark this SimpleCompiler as "cooked".
             throw ce;
         } finally {
             this.classLoaderIClassLoader = null;
@@ -264,7 +287,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      * @return The {@link ClassFile}s that were generated during cooking
      */
     public ClassFile[]
-    getClassFiles() { return this.assertCooked(); }
+    getClassFiles() {
+        Collection<ClassFile> c = this.assertCooked();
+        return (ClassFile[]) c.toArray(new ClassFile[c.size()]);
+    }
 
     /**
      * Controls the language elements that are accepted by the {@link Parser}.
@@ -505,10 +531,10 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      *
      * @throws IllegalStateException This SimpleCompiler is not yet cooked
      */
-    private ClassFile[]
+    private Collection<ClassFile>
     assertCooked() {
 
-        ClassFile[] result = this.classFiles;
+        Collection<ClassFile> result = this.classFiles;
         if (result == null) throw new IllegalStateException("Must only be called after \"cook()\"");
 
         return result;

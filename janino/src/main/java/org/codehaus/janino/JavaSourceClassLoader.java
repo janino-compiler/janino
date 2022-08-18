@@ -44,6 +44,7 @@ import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.PathResourceFinder;
 import org.codehaus.commons.compiler.util.resource.ResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.UnitCompiler.ClassFileConsumer;
 import org.codehaus.janino.util.ClassFile;
 
 /**
@@ -225,18 +226,27 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     generateBytecodes(String name) throws ClassNotFoundException {
         if (this.iClassLoader.loadIClass(Descriptor.fromClassName(name)) == null) return null;
 
-        Map<String /*name*/, byte[] /*bytecode*/> bytecodes             = new HashMap<>();
+        final Map<String /*className*/, byte[] /*bytecode*/> bytecodes = new HashMap<>();
         COMPILE_UNITS:
         for (;;) {
             for (UnitCompiler uc : this.iClassLoader.getUnitCompilers()) {
                 if (!this.compiledUnitCompilers.contains(uc)) {
-                    ClassFile[] cfs;
                     try {
-                        cfs = uc.compileUnit(this.debugSource, this.debugLines, this.debugVars);
+                        uc.compileUnit(
+                            this.debugSource,
+                            this.debugLines,
+                            this.debugVars,
+                            new ClassFileConsumer() {
+
+                                @Override public void
+                                consume(ClassFile classFile) {
+                                    bytecodes.put(classFile.getThisClassName(), classFile.toByteArray());
+                                }
+                            }
+                        );
                     } catch (CompileException ex) {
                         throw new ClassNotFoundException(ex.getMessage(), ex);
                     }
-                    for (ClassFile cf : cfs) bytecodes.put(cf.getThisClassName(), cf.toByteArray());
                     this.compiledUnitCompilers.add(uc);
                     continue COMPILE_UNITS;
                 }

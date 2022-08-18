@@ -27,6 +27,7 @@
 package org.codehaus.janino;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,7 +52,6 @@ import org.codehaus.commons.compiler.ErrorHandler;
 import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.WarningHandler;
-import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.compiler.util.Numbers;
 import org.codehaus.commons.compiler.util.SystemProperties;
 import org.codehaus.commons.compiler.util.iterator.Iterables;
@@ -235,9 +235,7 @@ public
 class UnitCompiler {
     private static final Logger LOGGER = Logger.getLogger(UnitCompiler.class.getName());
 
-    // Some debug flags; controlled by system properties.
-    private static final boolean disassembleClassFilesToStdout = SystemProperties.getBooleanClassProperty(UnitCompiler.class, "disassembleClassFilesToStdout");
-    private static final int     defaultTargetVersion          = SystemProperties.getIntegerClassProperty(UnitCompiler.class, "defaultTargetVersion", -1);
+    private static final int defaultTargetVersion = SystemProperties.getIntegerClassProperty(UnitCompiler.class, "defaultTargetVersion", -1);
 
     /**
      * This constant determines the number of operands up to which the
@@ -318,20 +316,45 @@ class UnitCompiler {
     getAbstractCompilationUnit() { return this.abstractCompilationUnit; }
 
     /**
-     * Generates an array of {@link ClassFile} objects which represent the classes and interfaces declared in the
+     * Generates a set of {@link ClassFile} objects which represent the classes and interfaces declared in the
      * compilation unit.
+     *
+     * @param generatedClassFiles Adds generated {@link ClassFile}s to this {@link Collection}
      */
-    public ClassFile[]
-    compileUnit(boolean debugSource, boolean debugLines, boolean debugVars) throws CompileException {
+    public void
+    compileUnit(
+        boolean                     debugSource,
+        boolean                     debugLines,
+        boolean                     debugVars,
+        final Collection<ClassFile> generatedClassFiles
+    ) throws CompileException {
+
+        this.compileUnit(
+            debugSource,
+            debugLines,
+            debugVars,
+            new ClassFileConsumer() { @Override public void consume(ClassFile classFile) { generatedClassFiles.add(classFile); }
+        });
+    }
+
+    /**
+     * Generates a set of {@link ClassFile} objects which represent the classes and interfaces declared in the
+     * compilation unit.
+     *
+     * @param storesClassFiles Consumes each generated {@link ClassFile}
+     */
+    public void
+    compileUnit(boolean debugSource, boolean debugLines, boolean debugVars, ClassFileConsumer storesClassFiles)
+    throws CompileException {
 
         this.debugSource = debugSource;
         this.debugLines  = debugLines;
         this.debugVars   = debugVars;
 
-        if (this.generatedClassFiles != null) {
+        if (this.storesClassFiles != null) {
             throw new IllegalStateException("\"UnitCompiler.compileUnit()\" is not reentrant");
         }
-        final List<ClassFile> gcfs = (this.generatedClassFiles = new ArrayList<>());
+        this.storesClassFiles = storesClassFiles;
         try {
 
             this.abstractCompilationUnit.accept(new AbstractCompilationUnitVisitor<Void, CompileException>() {
@@ -348,12 +371,15 @@ class UnitCompiler {
                     + "\""
                 ), null);
             }
-            return (ClassFile[]) gcfs.toArray(new ClassFile[gcfs.size()]);
         } finally {
-            this.generatedClassFiles = null;
+            this.storesClassFiles = null;
         }
     }
 
+    public
+    interface ClassFileConsumer {
+        void consume(ClassFile classFile) throws IOException;
+    }
     /**
      * Compiles an (ordinary, not modular) compilation unit
      */
@@ -880,10 +906,12 @@ class UnitCompiler {
     private void
     addClassFile(ClassFile cf) {
 
-        if (UnitCompiler.disassembleClassFilesToStdout) Disassembler.disassembleToStdout(cf.toByteArray());
-
-        assert this.generatedClassFiles != null;
-        this.generatedClassFiles.add(cf);
+        assert this.storesClassFiles != null;
+        try {
+            this.storesClassFiles.consume(cf);
+        } catch (IOException ioe) {
+            throw new InternalCompilerException(cf.getThisClassName(), ioe);
+        }
     }
 
     /**
@@ -11263,7 +11291,7 @@ class UnitCompiler {
             if (value instanceof Boolean) return value;
         } else
         if (targetType == this.iClassLoader.TYPE_java_lang_String) {
-            if (value instanceof String) return value;
+            if (value instanceof String || value == null) return value;
         } else
         if (targetType == IClass.BYTE) {
             if (value instanceof Byte) {
@@ -13501,9 +13529,9 @@ class UnitCompiler {
     private final IClassLoader iClassLoader;
 
     /**
-     * Non-{@code null} while {@link #compileUnit(boolean, boolean, boolean)} is executing.
+     * Non-{@code null} while {@link #compileUnit(boolean, boolean, boolean, ClassFileConsumer)} is executing.
      */
-    @Nullable private List<ClassFile> generatedClassFiles;
+    @Nullable private ClassFileConsumer storesClassFiles;
 
     private boolean debugSource;
     private boolean debugLines;
