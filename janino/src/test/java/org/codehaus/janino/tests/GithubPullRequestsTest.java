@@ -32,7 +32,9 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -281,17 +283,20 @@ class GithubPullRequestsTest {
         AbstractCompilationUnit
         acu = new Parser(new Scanner(null, new StringReader(cu))).parseAbstractCompilationUnit();
 
-        IClassLoader icl        = new ClassLoaderIClassLoader(GithubPullRequestsTest.class.getClassLoader());
-        UnitCompiler uc         = new UnitCompiler(acu, icl);
-        ClassFile[]  classFiles = uc.compileUnit(
+        IClassLoader          icl        = new ClassLoaderIClassLoader(GithubPullRequestsTest.class.getClassLoader());
+        UnitCompiler          uc         = new UnitCompiler(acu, icl);
+        Collection<ClassFile> classFiles = new ArrayList<>();
+
+        uc.compileUnit(
             false, // debugSource
             false, // debugLines
-            false  // debugVars
+            false, // debugVars
+            classFiles
         );
 
-        Assert.assertEquals(1, classFiles.length);
+        Assert.assertEquals(1, classFiles.size());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        classFiles[0].store(baos);
+        classFiles.iterator().next().store(baos);
 
         String s = GithubPullRequestsTest.disassemble(new ByteArrayInputStream(baos.toByteArray()));
         return s;

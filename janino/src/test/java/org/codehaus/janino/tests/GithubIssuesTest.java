@@ -57,6 +57,7 @@ import org.codehaus.janino.Scanner;
 import org.codehaus.janino.ScriptEvaluator;
 import org.codehaus.janino.SimpleCompiler;
 import org.codehaus.janino.UnitCompiler;
+import org.codehaus.janino.UnitCompiler.ClassFileConsumer;
 import org.codehaus.janino.Unparser;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.AttributeInfo;
@@ -356,25 +357,28 @@ class GithubIssuesTest {
 
         IClassLoader icl = new ClassLoaderIClassLoader();
 
-        ClassFile[] classFiles = new UnitCompiler(acu, icl).compileUnit(false, false, false);
+        final int[] bcs = { -1 };
+        new UnitCompiler(acu, icl).compileUnit(false, false, false, new ClassFileConsumer() {
 
-        int bcs = -1;
-        for (ClassFile cf : classFiles) {
-            if ("foo.Main".equals(cf.getThisClassName())) {
-                for (MethodInfo mi : cf.methodInfos) {
-                    if ("main".equals(mi.getName())) {
-                        for (AttributeInfo ai : mi.getAttributes()) {
-                            if (ai instanceof CodeAttribute) {
-                                CodeAttribute ca = (CodeAttribute) ai;
+            @Override public void
+            consume(ClassFile cf) {
+                if ("foo.Main".equals(cf.getThisClassName())) {
+                    for (MethodInfo mi : cf.methodInfos) {
+                        if ("main".equals(mi.getName())) {
+                            for (AttributeInfo ai : mi.getAttributes()) {
+                                if (ai instanceof CodeAttribute) {
+                                    CodeAttribute ca = (CodeAttribute) ai;
 
-                                Assert.assertEquals(-1, bcs);
-                                bcs = ca.code.length;
+                                    Assert.assertEquals(-1, bcs);
+                                    bcs[0] = ca.code.length;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
+        });
+
         Assert.assertEquals(9, bcs);
     }
 
@@ -508,7 +512,7 @@ class GithubIssuesTest {
                 acus.add(acu);
 
                 // Compile them.
-                cfs.addAll(Arrays.asList(new UnitCompiler(acu, cl).compileUnit(debugSource, debugLines, debugVars)));
+                new UnitCompiler(acu, cl).compileUnit(debugSource, debugLines, debugVars, cfs);
             } finally {
                 try { r.close(); } catch (Exception e) {}
             }
