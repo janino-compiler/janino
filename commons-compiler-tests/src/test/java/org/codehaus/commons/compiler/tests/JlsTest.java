@@ -63,7 +63,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         super(compilerFactory);
     }
 
-    @SuppressWarnings("static-method") // JUNIT does not like it when "setUp()" is STATIC.
+    @SuppressWarnings("static-method")
     @Before public void
     setUp() throws Exception {
 
@@ -787,6 +787,39 @@ class JlsTest extends CommonsCompilerTestSuite {
             + "    }\n"
             + "}"
         ), "Main");
+    }
+
+    @Test public void
+    test_9_3_1__Initialization_of_Fields_in_Interfaces__1() throws Exception {
+        this.assertClassBodyCookable("public final static double x = 0;");
+        this.assertClassBodyCookable("public final static double x = 0F;");
+        this.assertClassBodyCookable("public final static double x = 0D;");
+    }
+    @Test public void
+    test_9_3_1__Initialization_of_Fields_in_Interfaces__2() throws Exception {
+        this.assertClassBodyCookable("public final static float x = 0;");
+        this.assertClassBodyCookable("public final static float x = 0F;");
+        this.assertClassBodyUncookable("public final static float x = 0D;");
+    }
+    @Test public void
+    test_9_3_1__Initialization_of_Fields_in_Interfaces__3() throws Exception {
+        this.assertClassBodyCookable("public final static int x = 0;");
+    }
+    @Test public void
+    test_9_3_1__Initialization_of_Fields_in_Interfaces__4() throws Exception {
+        this.assertClassBodyCookable("public final static byte x = 0;");
+        this.assertClassBodyCookable("public final static byte x = 127;");
+        this.assertClassBodyUncookable("public final static byte x = 128;");
+    }
+    @Test public void
+    test_9_3_1__Initialization_of_Fields_in_Interfaces__5() throws Exception {
+        this.assertClassBodyCookable("public final static java.util.Map x = null;");
+    }
+    @Test public void
+    test_9_3_1__Initialization_of_Fields_in_Interfaces__6() throws Exception {
+        this.assertClassBodyCookable("public final static String x = null;");
+        this.assertClassBodyCookable("public final static String x = \"ABC\";");
+        this.assertClassBodyCookable("public final static String x = \"ABC\" + \"DEF\";");
     }
 
     @Test public void
