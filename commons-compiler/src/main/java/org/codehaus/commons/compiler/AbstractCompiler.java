@@ -25,11 +25,15 @@
 
 package org.codehaus.commons.compiler;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 
+import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.compiler.util.StringUtil;
+import org.codehaus.commons.compiler.util.SystemProperties;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceCreator;
 import org.codehaus.commons.compiler.util.resource.DirectoryResourceFinder;
 import org.codehaus.commons.compiler.util.resource.FileResource;
@@ -44,6 +48,9 @@ import org.codehaus.commons.nullanalysis.Nullable;
  */
 public abstract
 class AbstractCompiler implements ICompiler {
+
+    private static final boolean
+    disassembleClassFilesToStdout = SystemProperties.getBooleanClassProperty(AbstractCompiler.class, "disassembleClassFilesToStdout");
 
     /** Implements the JAVAC {@code -sourcepath} option. */
     protected ResourceFinder sourceFinder = ResourceFinder.EMPTY_RESOURCE_FINDER;
@@ -91,7 +98,36 @@ class AbstractCompiler implements ICompiler {
      *                         its source file"
      */
     @Override public final void
-    setClassFileCreator(ResourceCreator classFileCreator) { this.classFileCreator = classFileCreator; }
+    setClassFileCreator(ResourceCreator classFileCreator) {
+
+        if (AbstractCompiler.disassembleClassFilesToStdout) {
+            final ResourceCreator delegate = classFileCreator;
+            classFileCreator = new ResourceCreator() {
+
+                @Override public OutputStream
+                createResource(String resourceName) throws IOException {
+                    final OutputStream delegateOs = delegate.createResource(resourceName);
+                    return new ByteArrayOutputStream() {
+
+                        @Override public void
+                        close() throws IOException {
+                            byte[] ba = this.toByteArray();
+                            Disassembler.disassembleToStdout(ba);
+                            delegateOs.write(ba);
+                            delegateOs.close();
+                        }
+                    };
+                }
+
+                @Override
+                public boolean deleteResource(String resourceName) {
+                    // TODO Auto-generated method stub
+                    return false;
+                }};
+        }
+
+        this.classFileCreator = classFileCreator;
+    }
 
     @Override
     public final boolean
