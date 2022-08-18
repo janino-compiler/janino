@@ -896,10 +896,15 @@ class UnitCompiler {
             Type type = fd.type;
             for (int i = 0; i < vd.brackets; ++i) type = new ArrayType(type);
 
-            Object ocv = UnitCompiler.NOT_CONSTANT;
-            if (fd.isFinal() && vd.initializer instanceof Rvalue) {
-                ocv = this.getConstantValue((Rvalue) vd.initializer);
-            }
+            Object ocv = ( // Optional constant value
+                fd.isFinal() && vd.initializer instanceof Rvalue
+                ? this.constantAssignmentConversion(
+                    vd.initializer,                                 // locatable
+                    this.getConstantValue((Rvalue) vd.initializer), // value
+                    this.getRawType(type)                           // targetType
+                )
+                : UnitCompiler.NOT_CONSTANT
+            );
 
             short accessFlags = this.accessFlags(fd.modifiers);
 
@@ -7228,13 +7233,13 @@ class UnitCompiler {
             if (
                 (mhsType == IClass.BYTE || mhsType == IClass.SHORT || mhsType == IClass.CHAR)
                 && rhscv != null
-                && this.assignmentConversion(ce.rhs, rhscv, mhsType) != null
+                && this.constantAssignmentConversion(ce.rhs, rhscv, mhsType) != null
             ) return mhsType;
             Object mhscv = this.getConstantValue(ce.mhs);
             if (
                 (rhsType == IClass.BYTE || rhsType == IClass.SHORT || rhsType == IClass.CHAR)
                 && mhscv != null
-                && this.assignmentConversion(ce.mhs, mhscv, rhsType) != null
+                && this.constantAssignmentConversion(ce.mhs, mhscv, rhsType) != null
             ) return rhsType;
 
             // JLS7 15.25, list 1, bullet 4, bullet 3: "b ? 127 : byte => byte"
@@ -8541,7 +8546,7 @@ class UnitCompiler {
                 if (finaL && initializer != null) {
                     Object constantInitializerValue = UnitCompiler.this.getConstantValue(initializer);
                     if (constantInitializerValue != UnitCompiler.NOT_CONSTANT) {
-                        return UnitCompiler.this.assignmentConversion(
+                        return UnitCompiler.this.constantAssignmentConversion(
                             initializer,              // locatable
                             constantInitializerValue, // value
                             this.getType()            // targetType
@@ -11247,10 +11252,13 @@ class UnitCompiler {
      * @param value Must be a {@link Boolean}, {@link String}, {@link Byte}, {@link Short}, {@link Integer}, {@link
      *              Character}, {@link Long}, {@link Float}, {@link Double} or {@code null}
      * @return      A {@link Boolean}, {@link String}, {@link Byte}, {@link Short}, {@link Integer}, {@link Character},
-     *              {@link Long}, {@link Float}, {@link Double} or {@code null}
+     *              {@link Long}, {@link Float}, {@link Double} or {@code null} (representing the {@code null} literal)
      */
     @Nullable private Object
-    assignmentConversion(Locatable locatable, @Nullable Object value, IType targetType) throws CompileException {
+    constantAssignmentConversion(Locatable locatable, @Nullable Object value, IType targetType) throws CompileException {
+
+        if (value == UnitCompiler.NOT_CONSTANT) return UnitCompiler.NOT_CONSTANT;
+
         if (targetType == IClass.BOOLEAN) {
             if (value instanceof Boolean) return value;
         } else

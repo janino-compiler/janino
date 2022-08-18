@@ -1508,4 +1508,18 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     interface Nukable {
         Object[] nuke();
     }
+
+    @Test
+    public void
+    testIssue177() throws Exception {
+        this.assertCompilationUnitMainExecutable((
+            ""
+            + "public class\n"
+            + "test2 {\n"
+            + "    public final static double x = 0;\n"
+            + "    public static void main() {}\n"
+            + "}\n"
+            + ""
+        ), "test2");
+    }
 }
