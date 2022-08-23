@@ -347,7 +347,8 @@ class CodeContext {
 //        }
 //        assert previousFrame != null;
 
-        for (; frame.stackMap.locals().length < initialLocalsCount; frame = frame.next);
+        for (; frame != this.end && frame.stackMap.locals().length < initialLocalsCount; frame = frame.next);
+
         previousFrame = frame;
         frame = frame.next;
 

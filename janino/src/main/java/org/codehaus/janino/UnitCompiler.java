@@ -392,15 +392,14 @@ class UnitCompiler {
             } catch (ClassFileException cfe) {
                 throw new CompileException(cfe.getMessage(), pmtd.getLocation(), cfe);
             } catch (RuntimeException re) {
-                throw new InternalCompilerException(
+                throw new InternalCompilerException((
                     "Compiling \""
                     + pmtd
                     + "\" in "
                     + pmtd.getLocation()
                     + ": "
-                    + re.getMessage(),
-                    re
-                );
+                    + re.getMessage()
+                ), re);
             }
         }
     }
@@ -876,7 +875,20 @@ class UnitCompiler {
                 if (
                     override != null
                     && base.getReturnType() != override.getReturnType()
-                ) this.generateBridgeMethod(cf, iClass, base, override);
+                ) {
+                    try {
+                        this.generateBridgeMethod(cf, iClass, base, override);
+                    } catch (RuntimeException re) {
+                        throw new InternalCompilerException(cd.getLocation(), (
+                            "Generating bridge method from \""
+                            + base
+                            + "\" to \""
+                            + override
+                            + "\": "
+                            + re.getMessage()
+                        ), re);
+                    }
+                }
             }
         }
 
@@ -1631,7 +1643,7 @@ class UnitCompiler {
             } catch (RuntimeException re) {
                 throw new RuntimeException(bs.getLocation().toString(), re);
             } catch (AssertionError ae) {
-                throw new InternalCompilerException(bs.getLocation() + ": " + ae, ae);
+                throw new InternalCompilerException(bs.getLocation(), null, ae);
             }
         }
         return previousStatementCanCompleteNormally;
@@ -1872,7 +1884,7 @@ class UnitCompiler {
                     ;
                 } else
                 {
-                    throw new InternalCompilerException("Don't know how to convert to " + elementLv.type);
+                    throw new InternalCompilerException(fes.getLocation(), "Don't know how to convert to " + elementLv.type);
                 }
 
                 this.store(fes, elementLv);
@@ -2471,7 +2483,7 @@ class UnitCompiler {
         try {
             this.compile(ee.rvalue);
         } catch (InternalCompilerException ice) {
-            throw new InternalCompilerException(ee.rvalue.getLocation() + ": " + ice, ice);
+            throw new InternalCompilerException(ee.rvalue.getLocation(), null, ice);
         }
 
         return true;
@@ -2507,7 +2519,7 @@ class UnitCompiler {
                 assert iField != null : fd.getDeclaringType() + " has no field " + vd.name;
                 this.putfield(fd, iField);
             } catch (InternalCompilerException ice) {
-                throw new InternalCompilerException(initializer.getLocation() + ": " + ice, ice);
+                throw new InternalCompilerException(initializer.getLocation(), null, ice);
             }
         }
         return true;
@@ -2515,23 +2527,21 @@ class UnitCompiler {
 
     private boolean
     compile2(IfStatement is) throws CompileException {
-        Object         cv = this.getConstantValue(is.condition);
-        BlockStatement es = (
-            is.elseStatement != null
-            ? is.elseStatement
-            : new EmptyStatement(is.thenStatement.getLocation())
-        );
+        final BlockStatement ts = is.thenStatement;
+        final BlockStatement es = is.elseStatement != null ? is.elseStatement : new EmptyStatement(ts.getLocation());
+
+        Object cv = this.getConstantValue(is.condition);
         if (cv instanceof Boolean) {
 
             // Constant condition.
             this.fakeCompile(is.condition);
             BlockStatement seeingStatement, blindStatement;
             if (((Boolean) cv).booleanValue()) {
-                seeingStatement = is.thenStatement;
+                seeingStatement = ts;
                 blindStatement  = es;
             } else {
                 seeingStatement = es;
-                blindStatement  = is.thenStatement;
+                blindStatement  = ts;
             }
 
             // Compile the seeing statement.
@@ -2568,58 +2578,51 @@ class UnitCompiler {
         }
 
         // Non-constant condition.
-        if (this.generatesCode(is.thenStatement)) {
+        if (this.generatesCode(ts)) {
             if (this.generatesCode(es)) {
 
-                // if (expression) statement else statement
+                // if (<expression>) <then-statement> else <else-statement>
                 CodeContext.Offset eso = this.getCodeContext().new Offset();
                 CodeContext.Offset end = this.getCodeContext().new Offset();
                 this.compileBoolean(is.condition, eso, UnitCompiler.JUMP_IF_FALSE);
-                StackMap smAfterCondition = this.codeContext.currentInserter().getStackMap();
 
                 // Compile "then" statement.
-                boolean tsccn = this.compile(is.thenStatement);
-                StackMap smAfterThenStatement;
+                boolean tsccn = this.compile(ts);
                 if (tsccn) {
-                    smAfterThenStatement = this.codeContext.currentInserter().getStackMap();
                     this.gotO(is, end);
                 } else {
-                    smAfterThenStatement = null;
                 }
 
                 // Compile "else" statment.
-                this.getCodeContext().currentInserter().setStackMap(smAfterCondition);
                 eso.setBasicBlock();
                 boolean esccn = this.compile(es);
 
                 if (!tsccn && !esccn) return false;
 
-                if (!esccn) this.getCodeContext().currentInserter().setStackMap(smAfterThenStatement);
 
                 end.setBasicBlock();
                 return tsccn || esccn;
             } else {
 
-                // if (expression) statement else ;
+                // if (<expression>) <then-statement> else ;
                 CodeContext.Offset end = this.getCodeContext().new Offset();
                 this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_FALSE);
-                this.compile(is.thenStatement);
+                this.compile(ts);
                 end.setBasicBlock();
                 return true;
             }
         } else {
             if (this.generatesCode(es)) {
 
-                // if (expression) ; else statement
+                // if (<expression>) ; else <else-statement>
                 CodeContext.Offset end = this.getCodeContext().new Offset();
                 this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_TRUE);
                 this.compile(es);
-                end.setStackMap(null);
                 end.setBasicBlock();
                 return true;
             } else {
 
-                // if (expression) ; else ;
+                // if (<expression>) ; else ;
                 IType conditionType = this.compileGetValue(is.condition);
                 if (conditionType != IClass.BOOLEAN) this.compileError("Not a boolean expression", is.getLocation());
                 this.pop(is, conditionType);
@@ -3287,7 +3290,7 @@ class UnitCompiler {
         } catch (ClassFileException cfe) {
             throw new ClassFileException("Compiling \"" + fd + "\": " + cfe.getMessage(), cfe);
         } catch (RuntimeException re) {
-            throw new InternalCompilerException(fd.getLocation() + ": Compiling \"" + fd + "\": " + re.getMessage(), re);
+            throw new InternalCompilerException(fd.getLocation(), "Compiling \"" + fd + "\"", re);
         }
     }
 
@@ -4858,7 +4861,7 @@ class UnitCompiler {
         if (
             !this.tryIdentityConversion(resultType, lhsType)
             && !this.tryNarrowingPrimitiveConversion(a, resultType, lhsType)
-        ) throw new InternalCompilerException("SNO: \"" + a.operator + "\" reconversion failed");
+        ) throw new InternalCompilerException(a.getLocation(), "SNO: \"" + a.operator + "\" reconversion failed");
         this.dupx(a);
         this.compileSet(a.lhs);
         return lhsType;
@@ -5580,7 +5583,7 @@ class UnitCompiler {
 
         IClass.IConstructor[] superclassIConstructors = sc.getDeclaredIConstructors();
         if (superclassIConstructors.length == 0) {
-            throw new InternalCompilerException("SNO: Superclass has no constructors");
+            throw new InternalCompilerException(naci.getLocation(), "SNO: Superclass has no constructors");
         }
 
         // Determine the most specific constructor of the superclass.
@@ -5804,7 +5807,7 @@ class UnitCompiler {
             this.compileContext(rv);
             return this.compileGet(rv);
         } catch (RuntimeException re) {
-            throw new InternalCompilerException(rv.getLocation() + ": Compiling \"" + rv + "\": " + re.getMessage(), re);
+            throw new InternalCompilerException(rv.getLocation(), "Compiling \"" + rv + "\"", re);
         }
     }
 
@@ -6330,13 +6333,13 @@ class UnitCompiler {
             try {
                 fv = Float.parseFloat(v);
             } catch (NumberFormatException e) {
-                throw new InternalCompilerException("SNO: parsing float literal \"" + v + "\": " + e.getMessage(), e);
+                throw new InternalCompilerException(fpl.getLocation(), "SNO: parsing float literal \"" + v + "\": " + e.getMessage(), e);
             }
             if (Float.isInfinite(fv)) {
                 throw UnitCompiler.compileException(fpl, "Value of float literal \"" + v + "\" is out of range");
             }
             if (Float.isNaN(fv)) {
-                throw new InternalCompilerException("SNO: parsing float literal \"" + v + "\" results in NaN");
+                throw new InternalCompilerException(fpl.getLocation(), "SNO: parsing float literal \"" + v + "\" results in NaN");
             }
 
             // Check for FLOAT underrun.
@@ -6362,13 +6365,13 @@ class UnitCompiler {
         try {
             dv = Double.parseDouble(v);
         } catch (NumberFormatException e) {
-            throw new InternalCompilerException("SNO: parsing double literal \"" + v + "\": " + e.getMessage(), e);
+            throw new InternalCompilerException(fpl.getLocation(), "SNO: parsing double literal \"" + v + "\": " + e.getMessage(), e);
         }
         if (Double.isInfinite(dv)) {
             throw UnitCompiler.compileException(fpl, "Value of double literal \"" + v + "\" is out of range");
         }
         if (Double.isNaN(dv)) {
-            throw new InternalCompilerException("SNO: parsing double literal \"" + v + "\" results is NaN");
+            throw new InternalCompilerException(fpl.getLocation(), "SNO: parsing double literal \"" + v + "\" results is NaN");
         }
 
         // Check for DOUBLE underrun.
@@ -6392,7 +6395,7 @@ class UnitCompiler {
     getConstantValue2(BooleanLiteral bl) {
         if (bl.value == "true")  return true;  // SUPPRESS CHECKSTYLE StringLiteralEquality
         if (bl.value == "false") return false; // SUPPRESS CHECKSTYLE StringLiteralEquality
-        throw new InternalCompilerException(bl.value);
+        throw new InternalCompilerException(bl.getLocation(), bl.value);
     }
 
     @SuppressWarnings("static-method") private char
@@ -6767,7 +6770,7 @@ class UnitCompiler {
         case FLOAT:   return IClass.FLOAT;
         case DOUBLE:  return IClass.DOUBLE;
         case BOOLEAN: return IClass.BOOLEAN;
-        default:      throw new InternalCompilerException("Invalid primitive " + bt.primitive);
+        default:      throw new InternalCompilerException(bt.getLocation(), "Invalid primitive " + bt.primitive);
         }
     }
     private IType
@@ -7524,7 +7527,7 @@ class UnitCompiler {
         if (v instanceof Character) return IClass.CHAR;
         if (v instanceof String)    return this.iClassLoader.TYPE_java_lang_String;
         if (v == null)              return IClass.NULL;
-        throw new InternalCompilerException("Invalid SimpleLiteral value type \"" + v.getClass() + "\"");
+        throw new InternalCompilerException(sl.getLocation(), "Invalid SimpleLiteral value type \"" + v.getClass() + "\"");
     }
 
     // ---------------- Atom.isType() ---------------
@@ -7874,11 +7877,11 @@ class UnitCompiler {
         for (IClass.IField sf : cd.getDeclaringClass().syntheticFields.values()) {
             LocalVariable syntheticParameter = (LocalVariable) cd.syntheticParameters.get(sf.getName());
             if (syntheticParameter == null) {
-                throw new InternalCompilerException(
+                throw new InternalCompilerException(cd.getLocation(), (
                     "SNO: Synthetic parameter for synthetic field \""
                     + sf.getName()
                     + "\" not found"
-                );
+                ));
             }
             ExpressionStatement es = new ExpressionStatement(new Assignment(
                 cd.getLocation(),                    // location
@@ -8097,7 +8100,7 @@ class UnitCompiler {
             return type;
         }
 
-        throw new InternalCompilerException("Unexpected operator \"" + operator + "\"");
+        throw new InternalCompilerException(locatable.getLocation(), "Unexpected operator \"" + operator + "\"");
     }
 
     /**
@@ -8256,6 +8259,7 @@ class UnitCompiler {
         IClass.IConstructor[] iConstructors = rawTargetType.getDeclaredIConstructors();
         if (iConstructors.length == 0) {
             throw new InternalCompilerException(
+                locatable.getLocation(),
                 "SNO: Target class \"" + rawTargetType.getDescriptor() + "\" has no constructors"
             );
         }
@@ -8330,7 +8334,7 @@ class UnitCompiler {
 
             if (!(scopeTypeDeclaration instanceof AbstractClassDeclaration)) {
                 if (syntheticFields.length > 0) {
-                    throw new InternalCompilerException("SNO: Target class has synthetic fields");
+                    throw new InternalCompilerException(locatable.getLocation(), "SNO: Target class has synthetic fields");
                 }
             }
 
@@ -8431,11 +8435,11 @@ class UnitCompiler {
                                     break DETERMINE_LV;
                                 }
                             }
-                            throw new InternalCompilerException(
+                            throw new InternalCompilerException(fd.getLocation(), (
                                 "SNO: Synthetic field \""
                                 + sf.getName()
                                 + "\" neither maps a synthetic field of an enclosing instance nor a local variable"
-                            );
+                            ));
                         }
                         this.load(locatable, lv);
                     }
@@ -8549,7 +8553,7 @@ class UnitCompiler {
                 try {
                     return (this.ias = UnitCompiler.this.toIAnnotations(annotations));
                 } catch (CompileException ce) {
-                    throw new InternalCompilerException(null, ce);
+                    throw new InternalCompilerException(declaringType.getLocation(), null, ce);
                 }
             }
 
@@ -9768,10 +9772,11 @@ class UnitCompiler {
 
                                     // JLS8 15.12.2.5.B9: "Otherwise, the method invocation is ambiguous, and a
                                     // compile-time error occurs."
-                                    throw new InternalCompilerException(
-                                        "Two non-abstract methods \"" + m + "\" have the same parameter types, "
-                                        + "declaring type and return type"
-                                    );
+                                    throw new InternalCompilerException(locatable.getLocation(), (
+                                        "Two non-abstract methods \""
+                                        + m
+                                        + "\" have the same parameter types, declaring type and return type"
+                                    ));
                                 } else
                                 if (m.getReturnType().isAssignableFrom(theNonAbstractMethod.getReturnType())) {
                                     ;
@@ -9780,7 +9785,7 @@ class UnitCompiler {
                                     theNonAbstractMethod = m;
                                 } else
                                 {
-                                    throw new InternalCompilerException("Incompatible return types");
+                                    throw new InternalCompilerException(locatable.getLocation(), "Incompatible return types");
                                 }
                             } else
                             if (declaringIClass.isAssignableFrom(theNonAbstractMethodDeclaringIClass)) {
@@ -10202,7 +10207,7 @@ class UnitCompiler {
             isArray() { return false; }
 
             @Override protected IClass
-            getComponentType2() { throw new InternalCompilerException("SNO: Non-array type has no component type"); }
+            getComponentType2() { throw new InternalCompilerException(td.getLocation(), "SNO: Non-array type has no component type"); }
 
             @Override public boolean
             isPrimitive() { return false; }
@@ -10268,6 +10273,7 @@ class UnitCompiler {
                 } else
                 {
                     throw new InternalCompilerException(
+                        td.getLocation(),
                         "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
                     );
                 }
@@ -10319,7 +10325,7 @@ class UnitCompiler {
                 if (atd instanceof AnonymousClassDeclaration)         return Access.PUBLIC;
                 if (atd instanceof LocalClassDeclaration)             return Access.PUBLIC;
 
-                throw new InternalCompilerException(atd.getClass().getName());
+                throw new InternalCompilerException(td.getLocation(), atd.getClass().getName());
             }
 
             @Override public boolean
@@ -10362,6 +10368,7 @@ class UnitCompiler {
                     return res;
                 } else {
                     throw new InternalCompilerException(
+                        td.getLocation(),
                         "SNO: AbstractTypeDeclaration is neither ClassDeclaration nor InterfaceDeclaration"
                     );
                 }
@@ -10436,7 +10443,10 @@ class UnitCompiler {
             String        spn                = "this$" + (path.size() - 2);
             LocalVariable syntheticParameter = (LocalVariable) constructorDeclarator.syntheticParameters.get(spn);
             if (syntheticParameter == null) {
-                throw new InternalCompilerException("SNO: Synthetic parameter \"" + spn + "\" not found");
+                throw new InternalCompilerException(
+                    locatable.getLocation(),
+                    "SNO: Synthetic parameter \"" + spn + "\" not found"
+                );
             }
             this.load(locatable, syntheticParameter);
             i = 1;
@@ -10576,7 +10586,7 @@ class UnitCompiler {
                 try {
                     return (this.ias = UnitCompiler.this.toIAnnotations(constructorDeclarator.getAnnotations()));
                 } catch (CompileException ce) {
-                    throw new InternalCompilerException(null, ce);
+                    throw new InternalCompilerException(constructorDeclarator.getLocation(), null, ce);
                 }
             }
 
@@ -10694,7 +10704,7 @@ class UnitCompiler {
                 try {
                     return (this.ias = UnitCompiler.this.toIAnnotations(methodDeclarator.getAnnotations()));
                 } catch (CompileException ce) {
-                    throw new InternalCompilerException(null, ce);
+                    throw new InternalCompilerException(methodDeclarator.getLocation(), null, ce);
                 }
             }
 
@@ -11006,7 +11016,7 @@ class UnitCompiler {
             return IClass.NULL;
         }
 
-        throw new InternalCompilerException("Unknown literal \"" + value + "\"");
+        throw new InternalCompilerException(locatable.getLocation(), "Unknown literal \"" + value + "\"");
     }
 
     /**
@@ -11438,7 +11448,7 @@ class UnitCompiler {
                 sourceType, // sourceType
                 pt          // targetType
             )
-        ) throw new InternalCompilerException("SNO: reverse unary numeric promotion failed");
+        ) throw new InternalCompilerException(locatable.getLocation(), "SNO: reverse unary numeric promotion failed");
         if (unboxedType != null) this.boxingConversion(locatable, unboxedType, targetType);
     }
 
@@ -11472,7 +11482,7 @@ class UnitCompiler {
                 sourceType, // sourceType
                 targetType  // targetType
             )
-        ) throw new InternalCompilerException("SNO: Conversion failed");
+        ) throw new InternalCompilerException(locatable.getLocation(), "SNO: Conversion failed");
     }
 
     private IClass
@@ -12010,7 +12020,7 @@ class UnitCompiler {
             this.ifxx(locatable, orientation == UnitCompiler.JUMP_IF_FALSE ? opIdx ^ 1 : opIdx, dst);
         } else
         {
-            throw new InternalCompilerException("Unexpected computational type \"" + topOperand + "\"");
+            throw new InternalCompilerException(locatable.getLocation(), "Unexpected computational type \"" + topOperand + "\"");
         }
     }
 
@@ -12066,7 +12076,7 @@ class UnitCompiler {
             this.write(Opcode.ARRAYLENGTH);
             this.getCodeContext().pushIntOperand();
         } catch (AssertionError ae) {
-            throw new InternalCompilerException(locatable.getLocation() + ": " + ae, ae);
+            throw new InternalCompilerException(locatable.getLocation(), null, ae);
         }
     }
 
@@ -12084,7 +12094,8 @@ class UnitCompiler {
     athrow(Locatable locatable) {
         this.addLineNumberOffset(locatable);
         this.write(Opcode.ATHROW);
-        this.getCodeContext().popReferenceOperand();
+
+        this.codeContext.currentInserter().setStackMap(null);
     }
 
     private void
@@ -12759,7 +12770,7 @@ class UnitCompiler {
 
         this.write(Opcode.IRETURN + UnitCompiler.ilfda(returnType));
 
-        this.getCodeContext().popOperandAssignableTo(UnitCompiler.rawTypeOf(returnType).getDescriptor());
+        this.codeContext.currentInserter().setStackMap(null);
     }
 
     /**
