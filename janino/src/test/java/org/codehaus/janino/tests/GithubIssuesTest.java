@@ -369,7 +369,7 @@ class GithubIssuesTest {
                                 if (ai instanceof CodeAttribute) {
                                     CodeAttribute ca = (CodeAttribute) ai;
 
-                                    Assert.assertEquals(-1, bcs);
+                                    Assert.assertEquals(-1, bcs[0]);
                                     bcs[0] = ca.code.length;
                                 }
                             }
@@ -379,7 +379,7 @@ class GithubIssuesTest {
             }
         });
 
-        Assert.assertEquals(9, bcs);
+        Assert.assertEquals(9, bcs[0]);
     }
 
     @Test public void
