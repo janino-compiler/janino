@@ -131,7 +131,7 @@ class DirectoryResourceFinder extends FileResourceFinder {
 
         int    idx              = resourceNamePrefix.lastIndexOf('/');
         String directoryName    = idx == -1 ? null : resourceNamePrefix.substring(0, idx); // No trailing slashes
-        String relativeFileName = resourceNamePrefix.substring(idx + 1);    // Contains no slashes. "" means "all".
+        String relativeFileName = resourceNamePrefix.substring(idx + 1);                   // Contains no slashes. "" means "all".
 
         // List all files in the directory.
         Set<File> files = this.listFiles(directoryName);
