@@ -119,11 +119,9 @@ class AbstractCompiler implements ICompiler {
                     };
                 }
 
-                @Override
-                public boolean deleteResource(String resourceName) {
-                    // TODO Auto-generated method stub
-                    return false;
-                }};
+                @Override public boolean
+                deleteResource(String resourceName) { return delegate.deleteResource(resourceName); }
+            };
         }
 
         this.classFileCreator = classFileCreator;
