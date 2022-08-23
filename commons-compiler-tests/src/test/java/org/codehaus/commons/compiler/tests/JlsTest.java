@@ -3103,4 +3103,26 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         this.assertScriptExecutable("java.util.function.Function<String, Integer> f = (var s) -> s.length();\n");
     }
+
+    @Test public void
+    test_16_2_13__break_yield_continue_return_and_throw_Statements() throws Exception {
+        this.assertClassBodyMainReturnsTrue(
+            ""
+            + "public static boolean\n"
+            + "main() {\n"
+            + "    String s;\n"
+            + "    if (System.currentTimeMillis() == 7) {\n"
+            + "        s = \"seven\";\n"
+            + "    } else\n"
+            + "    if (System.currentTimeMillis() != 8) {\n"
+            + "        s = \"not eight\";\n"
+            + "    } else\n"
+            + "    {\n"
+            + "        throw new RuntimeException();\n"
+            + "    }\n"
+            + "\n"
+            + "    return s.equals(\"not eight\");\n"
+            + "}\n"
+        );
+    }
 }
