@@ -12633,6 +12633,7 @@ class UnitCompiler {
     returN(Locatable locatable) {
         this.addLineNumberOffset(locatable);
         this.write(Opcode.RETURN);
+        this.codeContext.currentInserter().setStackMap(null);
     }
 
     /**
