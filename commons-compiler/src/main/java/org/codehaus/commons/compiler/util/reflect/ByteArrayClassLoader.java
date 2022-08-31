@@ -27,6 +27,8 @@ package org.codehaus.commons.compiler.util.reflect;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.security.AccessControlException;
+import java.security.ProtectionDomain;
 import java.util.Collections;
 import java.util.Map;
 
@@ -82,12 +84,20 @@ class ByteArrayClassLoader extends ClassLoader {
         // JNLP. See
         //     http://jira.codehaus.org/browse/JANINO-104
         //     http://www.nabble.com/-Help-jel--java.security.AccessControlException-to13073723.html
+        ProtectionDomain protectionDomain;
+        try {
+
+            // With JRE 7, "getProtectionDomain" sometimes is not allowed.
+            protectionDomain = this.getClass().getProtectionDomain();
+        } catch (AccessControlException ace) {
+            protectionDomain = null;
+        }
         return super.defineClass(
-            name,                                 // name
-            data,                                 // b
-            0,                                    // off
-            data.length,                          // len
-            this.getClass().getProtectionDomain() // protectionDomain
+            name,            // name
+            data,            // b
+            0,               // off
+            data.length,     // len
+            protectionDomain // protectionDomain
         );
     }
 
