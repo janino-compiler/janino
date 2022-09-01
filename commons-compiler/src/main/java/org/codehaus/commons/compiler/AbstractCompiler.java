@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.regex.Pattern;
 
 import org.codehaus.commons.compiler.util.Disassembler;
 import org.codehaus.commons.compiler.util.StringUtil;
@@ -51,6 +52,8 @@ class AbstractCompiler implements ICompiler {
 
     private static final boolean
     disassembleClassFilesToStdout = SystemProperties.getBooleanClassProperty(AbstractCompiler.class, "disassembleClassFilesToStdout");
+    private static final Pattern
+    disassembleClassNames = Pattern.compile(SystemProperties.getClassProperty(AbstractCompiler.class, "disassembleClassNames", ".*"));
 
     /** Implements the JAVAC {@code -sourcepath} option. */
     protected ResourceFinder sourceFinder = ResourceFinder.EMPTY_RESOURCE_FINDER;
@@ -107,16 +110,24 @@ class AbstractCompiler implements ICompiler {
                 @Override public OutputStream
                 createResource(String resourceName) throws IOException {
                     final OutputStream delegateOs = delegate.createResource(resourceName);
-                    return new ByteArrayOutputStream() {
 
-                        @Override public void
-                        close() throws IOException {
-                            byte[] ba = this.toByteArray();
-                            Disassembler.disassembleToStdout(ba);
-                            delegateOs.write(ba);
-                            delegateOs.close();
-                        }
-                    };
+                    // Is disassembling enabled for that class name?
+                    assert resourceName.endsWith(".class");
+                    String className = resourceName.substring(0, resourceName.length() - 6).replace('/', '.');
+                    if (AbstractCompiler.disassembleClassNames.matcher(className).matches()) {
+                        return new ByteArrayOutputStream() {
+
+                            @Override public void
+                            close() throws IOException {
+                                byte[] ba = this.toByteArray();
+                                Disassembler.disassembleToStdout(ba);
+                                delegateOs.write(ba);
+                                delegateOs.close();
+                            }
+                        };
+                    } else {
+                        return delegateOs;
+                    }
                 }
 
                 @Override public boolean
