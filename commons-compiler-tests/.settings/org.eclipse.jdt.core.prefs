@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+org.eclipse.jdt.core.builder.annotationPath.allLocations=disabled
 org.eclipse.jdt.core.compiler.annotation.inheritNullAnnotations=disabled
 org.eclipse.jdt.core.compiler.annotation.missingNonNullByDefaultAnnotation=warning
 org.eclipse.jdt.core.compiler.annotation.nonnull=org.codehaus.commons.nullanalysis.NotNull
@@ -7,7 +8,7 @@ org.eclipse.jdt.core.compiler.annotation.nonnullbydefault=org.codehaus.commons.n
 org.eclipse.jdt.core.compiler.annotation.nonnullbydefault.secondary=
 org.eclipse.jdt.core.compiler.annotation.nullable=org.codehaus.commons.nullanalysis.Nullable
 org.eclipse.jdt.core.compiler.annotation.nullable.secondary=
-org.eclipse.jdt.core.compiler.annotation.nullanalysis=enabled
+org.eclipse.jdt.core.compiler.annotation.nullanalysis=disabled
 org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode=enabled
 org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.7
 org.eclipse.jdt.core.compiler.codegen.unusedLocal=preserve
