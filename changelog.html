@@ -49,14 +49,38 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.1.8-SNAPSHOT (only available as source code)</h4>
+    <h4>Version 3.1.9-SNAPSHOT (only available as source code)</h4>
     <ul>
       <li>...</li>
     </ul>
 
+    <h4>Version 3.1.8 2022-09-01</h4>
+    <ul>
+      <li>Generation of the StackMapTable is finally correct! However, the default tar version is still 6.</li>
+      <li>Regression tests finally pass for target version 8!</li>
+      <li>Fixed an AccessControlException with JRE 7.</li>
+      <li>Fixed issue #172 "SimpleCompiler Variable Bug", and also for VOID return type. Added test cases for issue 172 "SimpleCompiler Variable Bug".</li>
+      <li>Added more test cases for the "ConstantValue" attribute.</li>
+      <li>Added fix and regression test case for issue #177 "ClassFormatError when assigning integer to constant double". Added test cases.</li>
+      <li>Fixed issue #174: "Byte code is 350 times larger due to StackMapTable, JVM crashes when loading the class". Added test cases.</li>
+      <li>Implementing nested types didn't work (dollar signs in class name).</li>
+      <li>Added code for debugging the loading of .class file and source files.</li>
+      <li>Added fix and regression test case for issue #178 "Janino incorrectly thinks variables are uninitialized". Added regression test cases.</li>
+      <li>Issue #176: "String s = System.out.println();" throws an InternalCompilerException</li>
+      <li>Implemented a system property "org.codehaus.janino.CodeContext.suppressStackMapTable" (boolean).</li>
+      <li>Fixed Issue #168 "commons-compiler-jdk: Unable to load class".</li>
+      <li>Added JDISASM with scope "test" because some test cases now need JDISASM.</li>
+      <li>Fixed GITHUB PR #10: Replace if condition with literal if possible to simplify if statement</li>
+      <li>Allow variable declarators between the LV declaration and the IF statement iff none of the VDs modify the LV.</li>
+      <li>Added "-Xverify:all" to all run configuration to enforce the strictest bytecode verification possible.</li>
+      <li>Test case "JlsTest.test_9_7_1__Normal_Annotations2()" choked because of annotation-type element value (annotation type is described by an UTF8 CPE, not a CLASS CPE).</li>
+      <li>Fixed issue #167 "After a successful compilation, compiling identical (or similar) code fails with an assignment conversion error".</li>
+      <li>Moved the "getArrayIClass(...)" methods from "IClass" to "IClassLoader", and keep the array classes per-class-loader (which is important because arrays refer to java.lang.Object). Also added a test case.</li>
+      <li>Removed JUnit launch configurations for Java 12, 15 and 16, which are no longer supported.</li>
+    </ul>
+
     <h4>Version 3.1.7 2022-04-19</h4>
     <ul>
-      <li>
       <li>Merged PR #148 "Correct the logic to truncate Stack map in CodeContext.restoreLocalVariables".</li>
       <li>Merged PR #163 "Add SUPER flag for package member types only (#163)".</li>
       <li>Fixed issue #166 "Get generate method bytecode size".</li>
