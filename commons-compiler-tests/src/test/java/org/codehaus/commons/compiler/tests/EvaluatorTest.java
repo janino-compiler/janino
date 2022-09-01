@@ -48,6 +48,7 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
+import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -561,7 +562,22 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             + "}"
         );
 
-        int[] repetitionss = new int[] { 1, 10, 100, Short.MAX_VALUE / 5, Short.MAX_VALUE / 4, Short.MAX_VALUE / 2 };
+        int[] repetitionss = new int[] {
+            1,
+            10,
+            100,
+            Short.MAX_VALUE / 5,
+            Short.MAX_VALUE / 4,
+
+            10930,
+            10921,
+            10922,
+
+            21837,
+            21838,
+
+            Short.MAX_VALUE / 2,
+        };
         for (int repetitions : repetitionss) {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
@@ -571,12 +587,26 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             sb.append(postamble);
 
             ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
-            sc.cook(sb.toString());
+            try {
+                sc.cook(sb.toString());
+            } catch (InternalCompilerException ice) {
+                if (repetitions >= 21838) {
+                    String message = ice.getCause().getCause().getMessage();
+                    Assert.assertTrue(message, message.contains("beyond 64 KB"));
+                    continue;
+                }
+                throw new InternalCompilerException("repetitions=" + repetitions, ice);
+            }
 
-            Class<?> c   = sc.getClassLoader().loadClass("test.Test");
-            Method   m   = c.getDeclaredMethod("run", new Class[0]);
-            Object   o   = c.newInstance();
-            Object   res = m.invoke(o, new Object[0]);
+            Object   res;
+            try {
+                Class<?> c   = sc.getClassLoader().loadClass("test.Test");
+                Method   m   = c.getDeclaredMethod("run", new Class[0]);
+                Object   o   = c.newInstance();
+                res = m.invoke(o, new Object[0]);
+            } catch (Error e) {
+                throw new Error("repetitions=" + repetitions, e);
+            }
             Assert.assertEquals(2 * repetitions, res);
         }
 

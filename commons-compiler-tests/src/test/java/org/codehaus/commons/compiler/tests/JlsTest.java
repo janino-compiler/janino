@@ -1516,18 +1516,25 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_14_14_2_1__The_enhanced_for_statement_Iterable() throws Exception {
+    test_14_14_2_1__The_enhanced_for_statement_Iterable1() throws Exception {
         this.assertScriptReturnsTrue(
             "String x = \"A\";\n"
             + "for (Object y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y;\n"
             + "return x.equals(\"ABC\");"
         );
+    }
+
+    @Test public void
+    test_14_14_2_1__The_enhanced_for_statement_Iterable2() throws Exception {
         this.assertScriptReturnsTrue(
             "String x = \"A\";\n"
             + "for (String y : java.util.Arrays.asList(new String[] { \"B\", \"C\" })) x += y.length();\n"
             + "return x.equals(\"A11\");"
         );
+    }
 
+    @Test public void
+    test_14_14_2_1__The_enhanced_for_statement_Iterable3() throws Exception {
         String script = (
             ""
             + "String x = \"A\";\n"
@@ -1536,7 +1543,10 @@ class JlsTest extends CommonsCompilerTestSuite {
         );
         if (this.isJanino)                                            this.assertScriptUncookable(script, "NYI");
         if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION >= 10) this.assertScriptReturnsTrue(script);
+    }
 
+    @Test public void
+    test_14_14_2_1__The_enhanced_for_statement_Iterable4() throws Exception {
         this.assertScriptReturnsTrue(
             "java.util.List<Integer> l = new java.util.ArrayList<Integer>();\n"
             + "l.add(1);\n"

@@ -78,6 +78,7 @@ class CompilerTest {
     private static final String COMMONS_COMPILER_SRC     = "../commons-compiler/src/main/java";
     private static final String COMMONS_COMPILER_JDK_SRC = "../commons-compiler-jdk/src/main/java";
     private static final String JANINO_SRC               = "../janino/src/main/java";
+    private static final String JANINO8_SRC              = "../janino8/src";
     private static final String RESOURCE_DIR             = "src/test/resources";
 
     /**
@@ -148,6 +149,8 @@ class CompilerTest {
             (
                 this.isJdk
                 ? new File(CompilerTest.COMMONS_COMPILER_JDK_SRC + "/org/codehaus/commons/compiler/jdk/Compiler.java")
+                : this.compilerFactory.getId().equals("org.codehaus.janino8")
+                ? new File(CompilerTest.JANINO8_SRC              +              "/org/codehaus/janino8/Compiler.java")
                 : new File(CompilerTest.JANINO_SRC               +               "/org/codehaus/janino/Compiler.java")
             ),
             new File(CompilerTest.COMMONS_COMPILER_SRC     + "/org/codehaus/commons/compiler/samples/ExpressionDemo.java"),

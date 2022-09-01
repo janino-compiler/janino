@@ -924,7 +924,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
 
         String cfid      = this.compilerFactory.getId();
         String fieldName = (
-            "org.codehaus.janino".equals(cfid)               ? "ENUM$VALUES" :
+            cfid.startsWith("org.codehaus.janino")           ? "ENUM$VALUES" :
             "org.codehaus.commons.compiler.jdk".equals(cfid) ? "$VALUES"     :
             "???"
         );
@@ -1386,9 +1386,8 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "    main() {\n"
             + "        String s;\n"
             + "        if (Boolean.FALSE || (s = \"Hello World!\") == null) {\n"
-            + "            return true;\n"
+            + "            return false;\n"
             + "        }\n"
-            + "        System.out.println(s);\n"
             + "        return true;\n"
             + "    }\n"
             + "}\n"
@@ -1403,23 +1402,34 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "public class test {\n"
             + "    public static boolean\n"
             + "    main() {\n"
-            + "        String[] args = { \"4\" };\n"
             + "        String s;\n"
-            + "        if (f(Integer.parseInt(args[0])) || (s = \"Hello World!\") == null) {\n"
-            + "            System.out.println(\"No references to s have been made.\");\n"
+            + "        if (f() || (s = \"Hello World!\") == null) {\n"
             + "            return true;\n"
             + "        }\n"
-            + "        System.out.println(s);\n"
             + "        return false;\n"
             + "    }\n"
             + "\n"
             + "    public static boolean\n"
-            + "    f(int x) {\n"
-            + "        boolean b = true;\n"
-            + "        for (int i = 0; i < x; ++i) {\n"
-            + "            b ^= true;\n"
+            + "    f() { return true; }\n"
+            + "}\n"
+        ), "test");
+    }
+
+    @Test public void
+    testIssue172__3() throws Exception {
+
+        this.assertCompilationUnitMainExecutable((
+            ""
+            + "public class test {\n"
+            + "    public static void\n"
+            + "    main() {\n"
+            + "        String[] args = { \"4\" };\n"
+            + "        boolean b = args.length > 0;\n"
+            + "        String s;\n"
+            + "        if (b || (s = \"Hello World!\") == null) {\n"
+            + "            return;\n"
             + "        }\n"
-            + "        return b;\n"
+            + "        System.currentTimeMillis();\n"
             + "    }\n"
             + "}\n"
         ), "test");
@@ -1430,9 +1440,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     testIssue174__SmallMethod() throws Exception {
         String  body = ReportedBugsTest.getClassBody(10);
         Nukable obj  = this.createObject(body);
-//        System.out.println("Got the object " + obj);
-//        System.out.println("Invoking nuke method");
-//        System.out.println(Arrays.toString(obj.nuke()));
     }
 
     @Test
@@ -1444,9 +1451,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         // #  guarantee(requested_word_size <= chunklevel::MAX_CHUNK_WORD_SIZE) failed: Requested size too large (756627) - max allowed size per allocation is 524288.
         String  body = ReportedBugsTest.getClassBody(1000);
         Nukable obj  = this.createObject(body);
-//        System.out.println("Got the object " + obj);
-//        System.out.println("Invoking nuke method");
-//        System.out.println(Arrays.toString(obj.nuke()));
     }
 
     private Nukable
@@ -1468,7 +1472,6 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             byte[] bytecode  = e.getValue();
             String className = e.getKey();
 
-//            System.out.printf("  %-20s %d%n", className + ":", bytecode.length);
             CommonsCompilerTestSuite.assertLessThan(className, 14000, bytecode.length);
 
             // Store the bytecode in .class files for manual analysis.

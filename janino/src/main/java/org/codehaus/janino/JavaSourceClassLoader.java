@@ -154,6 +154,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
         this.debugVars   = debugVars;
     }
 
+    public void
+    setTargetVersion(int version) { this.iClassLoader.setTargetVersion(version); }
+
     /**
      * @see UnitCompiler#setCompileErrorHandler
      */

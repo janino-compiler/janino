@@ -330,22 +330,8 @@ class CodeContext {
     private StackMapTableAttribute
     newStackMapTableAttribute(int initialLocalsCount) {
 
-        // TODO: Eliminate some stack map frames, as follows:
-        // JVMS 7, 8, 11, 17 4.10.1 Verification by Type Checking: "The intent is that a stack map frame must
-        // appear at the beginning of each basic block in a method."
-        // [ Defining a VM by expressing "intents"?? ]
-        // The JVMS does not define what a "basic block" (in the context of the JVM) is.
-    	// This is expected to fix #174.
-
-        // Skip the "zeroth" frame.
         Offset frame = this.beginning.next;
         Offset previousFrame = null;
-//        while (frame.offset == 0) {
-//            previousFrame = frame;
-//            frame = frame.next;
-//            assert frame != null;
-//        }
-//        assert previousFrame != null;
 
         for (; frame != this.end && frame.stackMap.locals().length < initialLocalsCount; frame = frame.next);
 
@@ -357,9 +343,14 @@ class CodeContext {
 
             if (!(frame instanceof BasicBlock)) continue;
 
-            if (previousFrame.offset == frame.offset) continue;
+            // Sometimes, e.g. when the last statement in a FOREACH body is an IF statement, the first BasicBlock
+            // sees "too many" local variables, and the second BB is right.
+            for (Offset o = frame.next; o != null && o.offset == frame.offset; o = o.next) {
+                if (o instanceof BasicBlock) frame = o;
+            }
 
-            assert frame.getStackMap() != null;
+            // Some intermediate offsets (e.g. right before a branch target) have no stack map.
+            if (frame.getStackMap() == null) continue;
 
             final int                    offsetDelta               = smfs.isEmpty() ? frame.offset : frame.offset - previousFrame.offset - 1;
             final VerificationTypeInfo[] frameOperands             = frame.getStackMap().operands();
@@ -507,8 +498,10 @@ class CodeContext {
      */
     private void
     maybeGrow() {
-        for (Relocatable relocatable : this.relocatables) {
-            relocatable.grow();
+
+        // "Relocatable.grow()" may add relocatables, so iterate with index instead of Iterator.
+        for (int i = 0; i < this.relocatables.size(); i++) {
+            ((Relocatable) this.relocatables.get(i)).grow();
         }
     }
 
@@ -608,6 +601,24 @@ class CodeContext {
         this.code[o]   = b4;
     }
 
+    /**
+     * Inserts bytes at the current insertion position. Creates {@link LineNumberOffset}s as necessary.
+     * <p>
+     *   This method is an optimization to avoid allocating small byte[] and ease GC load.
+     * </p>
+     */
+    public void
+    write(byte b1, byte b2, byte b3, byte b4, byte b5) {
+
+        int o = this.makeSpace(5);
+
+        this.code[o++] = b1;
+        this.code[o++] = b2;
+        this.code[o++] = b3;
+        this.code[o++] = b4;
+        this.code[o]   = b5;
+    }
+
     public void
     addLineNumberOffset(int lineNumber) {
 
@@ -655,15 +666,27 @@ class CodeContext {
 
         final int cio = this.currentInserter.offset;
 
-        if (size == 0) return cio;
+        if (size == 0) {
+            ;
+        } else
+        if (size < 0) {
 
+            // Make "negative space", i.e. remove bytes after current position.
+            assert cio <= this.end.offset + size; // Are there enough bytes to remove?
+            System.arraycopy(this.code, cio - size, this.code, cio, this.end.offset - cio + size);
+            for (Offset o = this.currentInserter.next; o != null; o = o.next) o.offset += size;
+        } else
         if (this.end.offset + size <= this.code.length) {
 
-            // Optimization to avoid a trivial method call in the common case
-            if (cio != this.end.offset) {
+            // Make space; no need to enlarge the byte array.
+            if (cio != this.end.offset) { // Optimization to avoid a trivial method call in the common case
                 System.arraycopy(this.code, cio, this.code, cio + size, this.end.offset - cio);
+                Arrays.fill(this.code, cio, cio + size, (byte) 0);
             }
+            for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += size;
         } else {
+
+            // Enlarge the byte array to make enough space.
             byte[] oldCode = this.code;
             //double size to avoid horrible performance, but don't grow over our limit
             int newSize = Math.max(Math.min(oldCode.length * 2, 0xffff), oldCode.length + size);
@@ -671,9 +694,9 @@ class CodeContext {
             this.code = new byte[newSize];
             System.arraycopy(oldCode, 0, this.code, 0, cio);
             System.arraycopy(oldCode, cio, this.code, cio + size, this.end.offset - cio);
+            Arrays.fill(this.code, cio, cio + size, (byte) 0);
+            for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += size;
         }
-        Arrays.fill(this.code, cio, cio + size, (byte) 0);
-        for (Offset o = this.currentInserter; o != null; o = o.next) o.offset += size;
 
         return cio;
     }
@@ -692,14 +715,29 @@ class CodeContext {
     public void
     writeBranch(int opcode, final Offset dst) {
 
+        assert dst instanceof CodeContext.BasicBlock;
+
         if (dst.offset == -1) {
             if (dst.stackMap == null) {
                 dst.stackMap = this.currentInserter.getStackMap();
             }
         }
 
-        this.relocatables.add(new Branch(opcode, dst));
-        this.write((byte) opcode, (byte) -1, (byte) -1);
+        @SuppressWarnings("deprecation") int opcodeJsr = Opcode.JSR;
+        if (
+            (opcode >= Opcode.IFEQ && opcode <= opcodeJsr)             // 6xIF??, 6xIF_ICMP??, 2xIF_ACMP??, GOTO, JSR
+            || (opcode >= Opcode.IFNULL && opcode <= Opcode.IFNONNULL) // IFNULL, IFNONNULL
+        ) {
+            this.relocatables.add(new Branch(opcode, dst));
+            this.write((byte) opcode, (byte) -1, (byte) -1);
+        } else
+        if (opcode >= Opcode.GOTO_W && opcode <= Opcode.JSR_W) {       // GOTO_W, JSR_W
+            this.relocatables.add(new Branch(opcode, dst));
+            this.write((byte) opcode, (byte) -1, (byte) -1, (byte) -1, (byte) -1);
+        } else
+        {
+            throw new AssertionError(opcode);
+        }
     }
 
     private
@@ -709,13 +747,6 @@ class CodeContext {
             this.opcode      = opcode;
             this.source      = CodeContext.this.newInserter();
             this.destination = destination;
-            if (opcode == Opcode.JSR_W || opcode == Opcode.GOTO_W) {
-
-                // No need to expand wide opcodes.
-                this.expanded = true;
-            } else {
-                this.expanded = false;
-            }
         }
 
         @Override public void
@@ -726,19 +757,65 @@ class CodeContext {
             int offset = this.destination.offset - this.source.offset;
 
             @SuppressWarnings("deprecation") final int opcodeJsr = Opcode.JSR;
-            if (!this.expanded && (offset > Short.MAX_VALUE || offset < Short.MIN_VALUE)) {
-                //we want to insert the data without skewing our source position,
-                //so we will cache it and then restore it later.
-                final int pos = this.source.offset;
-                CodeContext.this.pushInserter(this.source);
-                {
-                    // Promotion to a wide instruction only requires 2 extra bytes. Everything else requires a new
-                    // GOTO_W instruction after a negated if (5 extra bytes).
-                    CodeContext.this.makeSpace(this.opcode == Opcode.GOTO || this.opcode == opcodeJsr ? 2 : 5);
+
+            if (this.opcode >= Opcode.GOTO && this.opcode <= opcodeJsr) { // GOTO, JSR
+                if (offset > Short.MAX_VALUE || offset < Short.MIN_VALUE) {
+                    CodeContext.this.pushInserter(this.source);
+                    {
+                        this.source = CodeContext.this.newInserter();
+
+                        // Remove the original GOTO or JSR instruction.
+                        CodeContext.this.makeSpace(-3);
+
+                        // Insert a GOTO_W resp. JSR_instruction.
+                        CodeContext.this.writeBranch((this.opcode = this.opcode + 33), this.destination);
+                    }
+                    CodeContext.this.popInserter();
                 }
-                CodeContext.this.popInserter();
-                this.source.offset = pos;
-                this.expanded      = true;
+            } else
+            if (
+                (this.opcode >= Opcode.IFEQ && this.opcode <= Opcode.IF_ACMPNE)      // 6xIF??, 6xIF_ICMP??, 2xIF_ACMP??
+                || (this.opcode >= Opcode.IFNULL && this.opcode <= Opcode.IFNONNULL) // IFNULL, IFNONNULL
+            ) {
+                if (offset > Short.MAX_VALUE || offset < Short.MIN_VALUE) {
+                    CodeContext.this.pushInserter(this.source);
+                    {
+                        this.source = CodeContext.this.newInserter();
+
+                        // Remove the original IF* instruction.
+                        CodeContext.this.makeSpace(-3);
+
+                        // Insert "IF-NEGATE-* skip; GOTO_W offset; skip:"
+                        BasicBlock skip = CodeContext.this.new BasicBlock();
+                        CodeContext.this.writeBranch((this.opcode = CodeContext.invertBranchOpcode(this.opcode)), skip);
+                        if (this.opcode >= Opcode.IFEQ && this.opcode <= Opcode.IFLE) {
+                            CodeContext.this.popIntOperand();
+                        } else
+                        if (this.opcode >= Opcode.IF_ICMPEQ && this.opcode <= Opcode.IF_ICMPLE) {
+                            CodeContext.this.popIntOperand();
+                            CodeContext.this.popIntOperand();
+                        } else
+                        if (this.opcode == Opcode.IF_ACMPEQ || this.opcode == Opcode.IF_ACMPNE) {
+                            CodeContext.this.popReferenceOperand();
+                            CodeContext.this.popReferenceOperand();
+                        } else
+                        if (this.opcode == Opcode.IFNULL || this.opcode == Opcode.IFNONNULL) {
+                            CodeContext.this.popReferenceOperand();
+                        } else
+                        {
+                            throw new AssertionError(this.opcode);
+                        }
+                        CodeContext.this.writeBranch(Opcode.GOTO_W, this.destination);
+                        skip.setStackMap(CodeContext.this.currentInserter.getStackMap());
+                        skip.set();
+                    }
+                    CodeContext.this.popInserter();
+                }
+            } else
+            if (this.opcode >= Opcode.GOTO_W && this.opcode <= Opcode.JSR_W) { // GOTO_W, JSR_W
+                ;
+            } else {
+                throw new AssertionError(this.opcode);
             }
         }
 
@@ -747,52 +824,32 @@ class CodeContext {
             if (this.destination.offset == Offset.UNSET) {
                 throw new InternalCompilerException("Cannot relocate branch to unset destination offset");
             }
-            int offset = this.destination.offset - this.source.offset;
 
             @SuppressWarnings("deprecation") final int opcodeJsr = Opcode.JSR;
-            final byte[] ba;
-            if (!this.expanded) {
-                //we fit in a 16-bit jump
-                ba = new byte[] { (byte) this.opcode, (byte) (offset >> 8), (byte) offset };
-            } else {
-                if (this.opcode == Opcode.GOTO || this.opcode == opcodeJsr) {
-                    ba = new byte[] {
-                        (byte) (this.opcode + 33), // GOTO => GOTO_W; JSR => JSR_W
-                        (byte) (offset >> 24),
-                        (byte) (offset >> 16),
-                        (byte) (offset >> 8),
-                        (byte) offset
-                    };
-                } else
-                {
-                    //exclude the if-statement from jump target
-                    //if jumping backwards this will increase the jump to go over it
-                    //if jumping forwards this will decrease the jump by it
-                    offset -= 3;
 
-                    //  [if cond offset]
-                    //expands to
-                    //  [if !cond skip_goto]
-                    //  [GOTO_W offset]
-                    ba = new byte[] {
-                        (byte) CodeContext.invertBranchOpcode(this.opcode),
-                        0,
-                        8, // Jump from this instruction past the GOTO_W
-                        (byte) Opcode.GOTO_W,
-                        (byte) (offset >> 24),
-                        (byte) (offset >> 16),
-                        (byte) (offset >> 8),
-                        (byte) offset
-                    };
-                }
+            if (
+                (this.opcode >= Opcode.IFEQ && this.opcode <= opcodeJsr)             // 6xIF??, 6xIF_ICMP??, 2xIF_ACMP??, GOTO, JSR
+                || (this.opcode >= Opcode.IFNULL && this.opcode <= Opcode.IFNONNULL) // IFNULL, IFNONNULL
+            ) {
+                int offset = this.destination.offset - this.source.offset;
+                CodeContext.this.code[this.source.offset + 1] = (byte) (offset >> 8);
+                CodeContext.this.code[this.source.offset + 2] = (byte) offset;
+            } else
+            if (this.opcode >= Opcode.GOTO_W && this.opcode <= Opcode.JSR_W) {       // GOTO_W, JSR_W
+                int offset = this.destination.offset - this.source.offset;
+                CodeContext.this.code[this.source.offset + 1] = (byte) (offset >> 24);
+                CodeContext.this.code[this.source.offset + 2] = (byte) (offset >> 16);
+                CodeContext.this.code[this.source.offset + 3] = (byte) (offset >> 8);
+                CodeContext.this.code[this.source.offset + 4] = (byte) offset;
+            } else
+            {
+                throw new AssertionError(this.opcode);
             }
-            System.arraycopy(ba, 0, CodeContext.this.code, this.source.offset, ba.length);
         }
 
-        private boolean        expanded; //marks whether this has been expanded to account for a wide branch
-        private final int      opcode;
-        private final Inserter source;
-        private final Offset   destination;
+        private int          opcode;
+        private Inserter     source;
+        private final Offset destination;
     }
 
     /**
@@ -883,8 +940,9 @@ class CodeContext {
 
     public Offset
     newBasicBlock() {
-        new BasicBlock().set();
-        return this.newOffset();
+        Offset o = new BasicBlock();
+        o.set();
+        return o;
     }
 
     /**
@@ -984,7 +1042,9 @@ class CodeContext {
             ci.prev  = this;
         }
 
-        // Set this offset, and mark it as the the beginning of a "basic block".
+        /**
+         * Set this offset, and mark it as the the beginning of a "basic block".
+         */
         public void
         setBasicBlock() {
             this.set();
@@ -1146,11 +1206,7 @@ class CodeContext {
      *      The intent is that a stack map frame must appear at the beginning of each basic block in a method.
      */
     public final
-    class BasicBlock extends Offset {
-        public BasicBlock() {
-            System.currentTimeMillis();
-        }
-    }
+    class BasicBlock extends Offset {}
 
     private abstract
     class Relocatable {

@@ -56,6 +56,7 @@ import org.codehaus.commons.compiler.util.Numbers;
 import org.codehaus.commons.compiler.util.SystemProperties;
 import org.codehaus.commons.compiler.util.iterator.Iterables;
 import org.codehaus.commons.nullanalysis.Nullable;
+import org.codehaus.janino.CodeContext.BasicBlock;
 import org.codehaus.janino.CodeContext.Inserter;
 import org.codehaus.janino.CodeContext.Offset;
 import org.codehaus.janino.IClass.IAnnotation;
@@ -1603,6 +1604,7 @@ class UnitCompiler {
 
         this.getCodeContext().removeCode(from, to);
 
+        this.codeContext.currentInserter().setStackMap(from.getStackMap());
         return ccn;
     }
 
@@ -1726,7 +1728,7 @@ class UnitCompiler {
                 }
             }
 
-            CodeContext.Offset toCondition = this.getCodeContext().new Offset();
+            CodeContext.Offset toCondition = this.getCodeContext().new BasicBlock();
             StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
             this.gotO(fs, toCondition);
 
@@ -1788,13 +1790,13 @@ class UnitCompiler {
 
                 StackMap beforeBody = this.getCodeContext().currentInserter().getStackMap();
 
-                CodeContext.Offset toCondition = this.getCodeContext().new Offset();
+                CodeContext.Offset toCondition = this.getCodeContext().new BasicBlock();
                 this.gotO(fes, toCondition);
 
                 // Get the next array element.
                 this.codeContext.currentInserter().setStackMap(beforeBody);
                 fes.whereToContinue = null;
-                final CodeContext.Offset bodyOffset = this.getCodeContext().newOffset();
+                final CodeContext.Offset bodyOffset = this.getCodeContext().newBasicBlock();
 
                 this.load(fes, expressionType, expressionLv);
                 this.load(fes, indexLv);
@@ -1839,24 +1841,25 @@ class UnitCompiler {
 
                 StackMap beforeStatement = this.getCodeContext().currentInserter().getStackMap();
 
-                // Allocate the local variable for the current element.
-                LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
-                elementLv.setSlot(this.allocateLocalVariableSlot(elementLv.type, fes.currentElement.name));
-
                 // Compile initializer.
                 this.compileGetValue(fes.expression);
                 this.invokeMethod(fes.expression, this.iClassLoader.METH_java_lang_Iterable__iterator);
                 LocalVariable iteratorLv = this.allocateLocalVariable(false /*finaL*/, this.iClassLoader.TYPE_java_util_Iterator);
                 this.store(fes, iteratorLv);
 
-                CodeContext.Offset toCondition = this.getCodeContext().new Offset();
+                CodeContext.Offset toCondition = this.getCodeContext().new BasicBlock();
                 StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
                 this.gotO(fes, toCondition);
 
                 // Compile the body.
                 this.codeContext.currentInserter().setStackMap(smBeforeBody);
+
+                // Allocate the local variable for the current element.
+                LocalVariable elementLv = this.getLocalVariable(fes.currentElement, false);
+                elementLv.setSlot(this.allocateLocalVariableSlot(elementLv.type, fes.currentElement.name));
+
                 fes.whereToContinue = null;
-                final CodeContext.Offset bodyOffset = this.getCodeContext().newOffset();
+                final CodeContext.Offset bodyOffset = this.getCodeContext().newBasicBlock();
 
                 this.load(fes, iteratorLv);
                 this.invokeMethod(fes.expression, this.iClassLoader.METH_java_util_Iterator__next);
@@ -1957,7 +1960,7 @@ class UnitCompiler {
         }
 
         // Compile body.
-        Offset wtc = (ws.whereToContinue = this.getCodeContext().new Offset());
+        Offset wtc = (ws.whereToContinue = this.getCodeContext().new BasicBlock());
         StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
         this.gotO(ws, wtc);
         this.codeContext.currentInserter().setStackMap(smBeforeBody);
@@ -1983,7 +1986,7 @@ class UnitCompiler {
         if (update != null) return this.compileUnconditionalLoopWithUpdate(cs, body, update);
 
         // Compile body.
-        Offset wtc = (cs.whereToContinue = this.getCodeContext().newOffset());
+        Offset wtc = (cs.whereToContinue = this.getCodeContext().newBasicBlock());
         if (this.compile(body)) this.gotO(cs, wtc);
         cs.whereToContinue = null;
 
@@ -2001,7 +2004,7 @@ class UnitCompiler {
 
         // Compile body.
         cs.whereToContinue = null;
-        final CodeContext.Offset bodyOffset = this.getCodeContext().newOffset();
+        final CodeContext.Offset bodyOffset = this.getCodeContext().newBasicBlock();
         boolean                  bodyCcn    = this.compile(body);
 
         // Compile the "update".
@@ -2069,7 +2072,7 @@ class UnitCompiler {
         CodeContext.Offset[]                 sbsgOffsets        = new CodeContext.Offset[ss.sbsgs.size()];
         for (int i = 0; i < ss.sbsgs.size(); ++i) {
             SwitchBlockStatementGroup sbsg = (SwitchBlockStatementGroup) ss.sbsgs.get(i);
-            sbsgOffsets[i] = this.getCodeContext().new Offset();
+            sbsgOffsets[i] = this.getCodeContext().new BasicBlock();
             for (Rvalue caseLabel : sbsg.caseLabels) {
 
                 Integer civ;
@@ -2170,7 +2173,7 @@ class UnitCompiler {
 
                     // Store in case label map.
                     if (!caseLabelMap.containsKey(civ)) {
-                        caseLabelMap.put(civ, this.getCodeContext().new Offset());
+                        caseLabelMap.put(civ, this.getCodeContext().new BasicBlock());
                     }
                     break;
 
@@ -2426,7 +2429,7 @@ class UnitCompiler {
 
         Offset wtc = continuedStatement.whereToContinue;
         if (wtc == null) {
-            wtc = (continuedStatement.whereToContinue = this.getCodeContext().new Offset());
+            wtc = (continuedStatement.whereToContinue = this.getCodeContext().new BasicBlock());
         }
 
         this.leaveStatements(
@@ -2446,7 +2449,7 @@ class UnitCompiler {
         //   if (!expression1) throw new AssertionError();
         // assert expression1 : expression2;
         //   if (!expression1) throw new AssertionError(expression2);
-        CodeContext.Offset end = this.getCodeContext().new Offset();
+        CodeContext.Offset end = this.getCodeContext().new BasicBlock();
         try {
             this.compileBoolean(as.expression1, end, UnitCompiler.JUMP_IF_TRUE);
 
@@ -2552,7 +2555,6 @@ class UnitCompiler {
             // Fake-compile the blind statement.
             this.codeContext.currentInserter().setStackMap(smBeforeSeeingStatement);
             boolean bsccn = this.fakeCompile(blindStatement);
-            this.codeContext.currentInserter().setStackMap(smBeforeSeeingStatement);
 
             if (ssccn) return true;
             if (!bsccn) return false;
@@ -2563,7 +2565,7 @@ class UnitCompiler {
             // then the remaining bytecode can be written to a "fake" code context, i.e. be thrown away.
 
             // Compile constant-condition-IF statement as non-constant-condition-IF statement.
-            CodeContext.Offset off = this.getCodeContext().newOffset();
+            CodeContext.Offset off = this.getCodeContext().newBasicBlock();
 
             this.getCodeContext().pushInserter(ins);
             try {
@@ -2582,8 +2584,8 @@ class UnitCompiler {
             if (this.generatesCode(es)) {
 
                 // if (<expression>) <then-statement> else <else-statement>
-                CodeContext.Offset eso = this.getCodeContext().new Offset();
-                CodeContext.Offset end = this.getCodeContext().new Offset();
+                CodeContext.Offset eso = this.getCodeContext().new BasicBlock();
+                CodeContext.Offset end = this.getCodeContext().new BasicBlock();
                 this.compileBoolean(is.condition, eso, UnitCompiler.JUMP_IF_FALSE);
 
                 // Compile "then" statement.
@@ -2605,7 +2607,7 @@ class UnitCompiler {
             } else {
 
                 // if (<expression>) <then-statement> else ;
-                CodeContext.Offset end = this.getCodeContext().new Offset();
+                CodeContext.Offset end = this.getCodeContext().new BasicBlock();
                 this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_FALSE);
                 this.compile(ts);
                 end.setBasicBlock();
@@ -2615,7 +2617,7 @@ class UnitCompiler {
             if (this.generatesCode(es)) {
 
                 // if (<expression>) ; else <else-statement>
-                CodeContext.Offset end = this.getCodeContext().new Offset();
+                CodeContext.Offset end = this.getCodeContext().new BasicBlock();
                 this.compileBoolean(is.condition, end, UnitCompiler.JUMP_IF_TRUE);
                 this.compile(es);
                 end.setBasicBlock();
@@ -2848,7 +2850,7 @@ class UnitCompiler {
             this.monitorenter(ss);
 
             // Compile the statement body.
-            final CodeContext.Offset monitorExitOffset = this.getCodeContext().new Offset();
+            final CodeContext.Offset monitorExitOffset = this.getCodeContext().new BasicBlock();
             final CodeContext.Offset beginningOfBody   = this.getCodeContext().newOffset();
             StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
             canCompleteNormally = this.compile(ss.body);
@@ -2856,18 +2858,19 @@ class UnitCompiler {
                 this.gotO(ss, monitorExitOffset);
             }
 
-            // Generate the exception handler.
-            CodeContext.Offset here = this.getCodeContext().newOffset();
-            this.getCodeContext().addExceptionTableEntry(
-                beginningOfBody, // startPC
-                here,            // endPC
-                here,            // handlerPC
-                null             // catchTypeFD
-            );
             StackMap save = this.codeContext.currentInserter().getStackMap();
             try {
                 this.codeContext.currentInserter().setStackMap(smBeforeBody);
                 this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
+
+                // Generate the exception handler.
+                CodeContext.Offset here = this.getCodeContext().newBasicBlock();
+                this.getCodeContext().addExceptionTableEntry(
+                    beginningOfBody, // startPC
+                    here,            // endPC
+                    here,            // handlerPC
+                    null             // catchTypeFD
+                );
                 this.leave(ss);
                 this.athrow(ss);
             } finally {
@@ -3103,7 +3106,7 @@ class UnitCompiler {
 
         if (finallY == null) {
             final CodeContext.Offset beginningOfBody = this.getCodeContext().newOffset();
-            final CodeContext.Offset afterStatement  = this.getCodeContext().new Offset();
+            final CodeContext.Offset afterStatement  = this.getCodeContext().new BasicBlock();
 
             boolean canCompleteNormally = this.compileTryCatch(ts, compileBody, beginningOfBody, afterStatement);
             afterStatement.set();
@@ -3112,7 +3115,7 @@ class UnitCompiler {
 
         // Compile a TRY statement *with* a FINALLY clause.
 
-        final CodeContext.Offset afterStatement = this.getCodeContext().new Offset();
+        final CodeContext.Offset afterStatement = this.getCodeContext().new BasicBlock();
         boolean                  canCompleteNormally;
 
         this.getCodeContext().saveLocalVariables();
@@ -3134,7 +3137,7 @@ class UnitCompiler {
                 // Push the exception on the operand stack.
                 this.getCodeContext().pushObjectOperand(Descriptor.JAVA_LANG_THROWABLE);
 
-                CodeContext.Offset here = this.getCodeContext().newOffset();
+                CodeContext.Offset here = this.getCodeContext().newBasicBlock();
                 this.getCodeContext().addExceptionTableEntry(
                     beginningOfBody, // startPC
                     here,            // endPC
@@ -3251,10 +3254,10 @@ class UnitCompiler {
                     this.getLocalVariable(catchClause.catchParameter).setSlot(exceptionVarSlot);
 
                     this.getCodeContext().addExceptionTableEntry(
-                        beginningOfBody,                    // startPC
-                        afterBody,                          // endPC
-                        this.getCodeContext().newOffset(),  // handlerPC
-                        caughtExceptionType.getDescriptor() // catchTypeFD
+                        beginningOfBody,                       // startPC
+                        afterBody,                             // endPC
+                        this.getCodeContext().newBasicBlock(), // handlerPC
+                        caughtExceptionType.getDescriptor()    // catchTypeFD
                     );
                     this.store(
                         catchClause,                    // locatable
@@ -3533,6 +3536,7 @@ class UnitCompiler {
             }
 
             this.buildLocalVariableMap(fd);
+            this.codeContext.newOffset();
 
             // Compile the constructor preamble.
             if (fd instanceof ConstructorDeclarator) {
@@ -3643,11 +3647,16 @@ class UnitCompiler {
             @Override @Nullable public Boolean
             visitMethodDeclarator(MethodDeclarator md) { return !md.isStatic(); }
         });
-        mi.addAttribute(codeContext.newCodeAttribute((
-            (hasThis ? 1 : 0)
-            + (fd instanceof ConstructorDeclarator ? ((ConstructorDeclarator) fd).syntheticParameters.size() : 0)
-            + fd.formalParameters.parameters.length
-        ), this.debugLines, this.debugVars));
+
+        try {
+            mi.addAttribute(codeContext.newCodeAttribute((
+                (hasThis ? 1 : 0)
+                + (fd instanceof ConstructorDeclarator ? ((ConstructorDeclarator) fd).syntheticParameters.size() : 0)
+                + fd.formalParameters.parameters.length
+            ), this.debugLines, this.debugVars));
+        } catch (Error e) {
+            throw new InternalCompilerException(fd.getLocation(), null, e);
+        }
     }
 
     private int getTargetVersion() {
@@ -4180,11 +4189,11 @@ class UnitCompiler {
             }
         }
         this.invokeConstructor(
-            sci,                       // locatable
-            declaringConstructor,      // scope
-            enclosingInstance, // enclosingInstance
-            superclass,                // targetClass
-            sci.arguments              // arguments
+            sci,                  // locatable
+            declaringConstructor, // scope
+            enclosingInstance,    // enclosingInstance
+            superclass,           // targetClass
+            sci.arguments         // arguments
         );
         return true;
     }
@@ -4351,7 +4360,7 @@ class UnitCompiler {
                 this.compileBoolean(bo.lhs, dst, orientation);
                 this.compileBoolean(bo.rhs, dst, orientation);
             } else {
-                CodeContext.Offset end = this.getCodeContext().new Offset();
+                CodeContext.Offset end = this.getCodeContext().new BasicBlock();
                 this.compileBoolean(bo.lhs, end, !orientation);
                 this.compileBoolean(bo.rhs, dst, orientation);
                 end.set();
@@ -4714,11 +4723,11 @@ class UnitCompiler {
 
     private IClass
     compileGet2(BooleanRvalue brv) throws CompileException {
-        CodeContext.Offset isTrue = this.getCodeContext().new Offset();
+        CodeContext.Offset isTrue = this.getCodeContext().new BasicBlock();
         isTrue.setStackMap(this.getCodeContext().currentInserter().getStackMap());
         this.compileBoolean(brv, isTrue, UnitCompiler.JUMP_IF_TRUE);
         this.consT(brv, 0);
-        CodeContext.Offset end = this.getCodeContext().new Offset();
+        CodeContext.Offset end = this.getCodeContext().new BasicBlock();
         this.gotO(brv, end);
         isTrue.setBasicBlock();
         this.consT(brv, 1);
@@ -4892,8 +4901,8 @@ class UnitCompiler {
 
         // Non-constant LHS.
         {
-            final CodeContext.Offset toEnd = this.getCodeContext().new Offset();
-            final CodeContext.Offset toRhs = this.getCodeContext().new Offset();
+            final CodeContext.Offset toEnd = this.getCodeContext().new BasicBlock();
+            final CodeContext.Offset toRhs = this.getCodeContext().new BasicBlock();
 
             StackMap sm = this.getCodeContext().currentInserter().getStackMap();
 
@@ -12286,6 +12295,7 @@ class UnitCompiler {
          */
         private void
         gotO(Locatable locatable, CodeContext.Offset dst) {
+            assert dst instanceof CodeContext.BasicBlock;
             this.getCodeContext().writeBranch(Opcode.GOTO, dst);
             this.getCodeContext().currentInserter().setStackMap(null);
         }
@@ -12310,6 +12320,8 @@ class UnitCompiler {
     private void
     if_icmpxx(Locatable locatable, int opIdx, CodeContext.Offset dst) {
         assert opIdx >= UnitCompiler.EQ && opIdx <= UnitCompiler.LE;
+
+        assert dst instanceof BasicBlock;
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().writeBranch(Opcode.IF_ICMPEQ + opIdx, dst);
@@ -12499,13 +12511,19 @@ class UnitCompiler {
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().popIntOperand();
+        StackMap smAtCase = this.getCodeContext().currentInserter().getStackMap();
         this.write(Opcode.LOOKUPSWITCH);                                            // lookupswitch
         new Padder(this.getCodeContext()).set();                                    // 0-3 byte pad
+        defaultLabelOffset.setStackMap(smAtCase);
         this.writeOffset(switchOffset, defaultLabelOffset);                         // defaultbyte1-4
         this.writeInt(caseLabelMap.size());                                         // npairs1-4
         for (Map.Entry<Integer, CodeContext.Offset> me : caseLabelMap.entrySet()) {
-            this.writeInt((Integer) me.getKey());                                   // match
-            this.writeOffset(switchOffset, (CodeContext.Offset) me.getValue());     // offset
+            Integer match = (Integer) me.getKey();
+            CodeContext.Offset offset = (CodeContext.Offset) me.getValue();
+
+            offset.setStackMap(smAtCase);
+            this.writeInt(match);                       // match
+            this.writeOffset(switchOffset, offset);     // offset
         }
     }
 
@@ -12717,6 +12735,8 @@ class UnitCompiler {
         SortedMap<Integer, CodeContext.Offset> caseLabelMap,
         Offset                                 defaultLabelOffset
     ) {
+        assert defaultLabelOffset instanceof CodeContext.BasicBlock;
+
         CodeContext.Offset switchOffset = this.getCodeContext().newOffset();
 
         final int low  = (Integer) caseLabelMap.firstKey();
@@ -12724,8 +12744,10 @@ class UnitCompiler {
 
         this.addLineNumberOffset(locatable);
         this.getCodeContext().popIntOperand();
+        StackMap smAtCase = this.getCodeContext().currentInserter().getStackMap();
         this.write(Opcode.TABLESWITCH);
         new Padder(this.getCodeContext()).set();
+        defaultLabelOffset.setStackMap(smAtCase);
         this.writeOffset(switchOffset, defaultLabelOffset);
         this.writeInt(low);
         this.writeInt(high);
@@ -12735,6 +12757,9 @@ class UnitCompiler {
             int                caseLabelValue  = (Integer) me.getKey();
             CodeContext.Offset caseLabelOffset = (CodeContext.Offset) me.getValue();
 
+            assert caseLabelOffset instanceof BasicBlock;
+
+            caseLabelOffset.setStackMap(smAtCase);
             while (cur < caseLabelValue) {
                 this.writeOffset(switchOffset, defaultLabelOffset);
                 ++cur;
@@ -12768,9 +12793,7 @@ class UnitCompiler {
     private void
     xreturn(Locatable locatable, IType returnType) {
         this.addLineNumberOffset(locatable);
-
         this.write(Opcode.IRETURN + UnitCompiler.ilfda(returnType));
-
         this.codeContext.currentInserter().setStackMap(null);
     }
 
@@ -13196,7 +13219,7 @@ class UnitCompiler {
             return wtb;
         }
 
-        wtb = this.getCodeContext().new Offset();
+        wtb = this.getCodeContext().new BasicBlock();
         wtb.setStackMap(this.codeContext.currentInserter().getStackMap());
         return (bs.whereToBreak = wtb);
     }

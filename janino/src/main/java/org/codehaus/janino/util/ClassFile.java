@@ -2649,7 +2649,13 @@ class ClassFile implements Annotatable {
              */
             final int offsetDelta;
 
-            public StackMapFrame(int offsetDelta) { this.offsetDelta = offsetDelta; }
+            public
+            StackMapFrame(int offsetDelta) {
+
+                assert offsetDelta >= 0 && offsetDelta <= 0xffff;
+
+                this.offsetDelta = offsetDelta;
+            }
 
             /**
              * Invokes the "right" {@code visit...()} method of the {@link StackMapFrameVisitor}.
