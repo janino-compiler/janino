@@ -48,7 +48,6 @@ import org.codehaus.commons.compiler.ICompilerFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
 import org.codehaus.commons.compiler.IScriptEvaluator;
 import org.codehaus.commons.compiler.ISimpleCompiler;
-import org.codehaus.commons.compiler.InternalCompilerException;
 import org.codehaus.commons.compiler.Location;
 import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
 import org.codehaus.commons.nullanalysis.Nullable;
@@ -578,7 +577,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
 
             Short.MAX_VALUE / 2,
         };
-        for (int repetitions : repetitionss) {
+        REPETITION: for (int repetitions : repetitionss) {
             StringBuilder sb = new StringBuilder();
             sb.append(preamble);
             for (int j = 0; j < repetitions; ++j) {
@@ -589,13 +588,14 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
             ISimpleCompiler sc = this.compilerFactory.newSimpleCompiler();
             try {
                 sc.cook(sb.toString());
-            } catch (InternalCompilerException ice) {
+            } catch (Exception e) {
                 if (repetitions >= 21838) {
-                    String message = ice.getCause().getCause().getMessage();
-                    Assert.assertTrue(message, message.contains("beyond 64 KB"));
-                    continue;
+                    for (Throwable t = e; t != null; t = t.getCause()) {
+                        String message = t.getMessage();
+                        if (message.contains("beyond 64 KB") || message.contains("code too large")) continue REPETITION;
+                    }
                 }
-                throw new InternalCompilerException("repetitions=" + repetitions, ice);
+                throw new AssertionError("repetitions=" + repetitions, e);
             }
 
             Object   res;
