@@ -12994,10 +12994,10 @@ class UnitCompiler {
      * </p>
      * <p>
      *   If the given {@link ErrorHandler} does not throw {@link CompileException}s, then {@link
-     *   #compileUnit(boolean, boolean, boolean)} will throw one when the compilation of the unit is finished, and
-     *   errors had occurred. In other words: The {@link ErrorHandler} may throw a {@link CompileException} or not, but
-     *   {@link #compileUnit(boolean, boolean, boolean)} will definitely throw a {@link CompileException} if one or
-     *   more compile errors have occurred.
+     *   #compileUnit(boolean, boolean, boolean, ClassFileConsumer)} will throw one when the compilation of the unit is
+     *   finished, and errors had occurred. In other words: The {@link ErrorHandler} may throw a {@link
+     *   CompileException} or not, but {@link #compileUnit(boolean, boolean, boolean, ClassFileConsumer)} will
+     *   definitely throw a {@link CompileException} if one or more compile errors have occurred.
      * </p>
      *
      * @param compileErrorHandler {@code null} to restore the default behavior (throwing a {@link

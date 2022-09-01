@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.codehaus.janino</groupId>
     <artifactId>janino-parent</artifactId>
-    <version>3.1.8-SNAPSHOT</version>
+    <version>3.1.8</version>
     <relativePath>../janino-parent</relativePath>
   </parent>
 
@@ -26,6 +26,12 @@
       <artifactId>commons-compiler</artifactId>
       <version>${project.parent.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>de.unkrig.jdisasm</groupId>
+    	<artifactId>jdisasm</artifactId>
+    	<version>1.0.6</version>
+    	<scope>test</scope>
     </dependency>
   </dependencies>
 
