@@ -285,7 +285,8 @@ class CodeContext {
 
         // Add the "StackMapTable" attribute.
         if (!CodeContext.SUPPRESS_STACK_MAP_TABLE) {
-            attributes.add(this.newStackMapTableAttribute(initialLocalsCount));
+            StackMapTableAttribute smta = this.newStackMapTableAttribute(initialLocalsCount);
+            if (smta != null) attributes.add(smta);
         }
 
         ClassFile.AttributeInfo[]
@@ -327,7 +328,10 @@ class CodeContext {
         );
     }
 
-    private StackMapTableAttribute
+    /**
+     * @return {@code null} iff the stack map is empty
+     */
+    @Nullable private StackMapTableAttribute
     newStackMapTableAttribute(int initialLocalsCount) {
 
         Offset frame = this.beginning.next;
@@ -425,6 +429,8 @@ class CodeContext {
 
             previousFrame = frame;
         }
+
+        if (smfs.isEmpty()) return null;
 
         return new StackMapTableAttribute(
             this.classFile.addConstantUtf8Info("StackMapTable"),           // attributeNameIndex
