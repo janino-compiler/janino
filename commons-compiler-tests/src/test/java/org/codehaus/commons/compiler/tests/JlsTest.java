@@ -1293,8 +1293,8 @@ class JlsTest extends CommonsCompilerTestSuite {
         this.assertScriptReturnsTrue("int a; a = 8; ++a; a++; if (a != 10) return false; --a; a--; return a == 8;");
         this.assertScriptExecutable("System.currentTimeMillis();");
         this.assertScriptExecutable("new Object();");
-        this.assertScriptUncookable("new Object[3];");
-        this.assertScriptUncookable("int a; a;");
+        this.assertScriptUncookable("new Object[3];", "not a statement|not allowed as an expression statement");
+        this.assertScriptUncookable("int a; a;",      "not a statement|not allowed as an expression statement");
     }
 
     @Test public void
@@ -1476,19 +1476,19 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 7) return;
 
-        this.assertScriptUncookable(
+        this.assertScriptUncookable((
             ""
             + "String s = \"c\";\n"
             + "\n"
             + "switch (s) {\n"
             + "case \"a\": case \"b\": case \"c\":\n"
-            + "    return false;\n"
+            + "    return;\n"
             + "case \"c\": case \"d\": case \"e\":\n"
-            + "    return false;\n"
+            + "    return;\n"
             + "default:\n"
-            + "    return false;"
+            + "    return;"
             + "}\n"
-        );
+        ), "(?i)Duplicate case label");
     }
 
     @Test public void
