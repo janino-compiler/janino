@@ -29,6 +29,7 @@ import java.util.Arrays;
 
 import org.codehaus.commons.compiler.CompilerFactoryFactory;
 import org.codehaus.commons.compiler.IExpressionEvaluator;
+import org.codehaus.commons.compiler.util.Benchmark;
 
 /**
  * A test program that allows you to play around with the {@link IExpressionEvaluator} class.
@@ -45,6 +46,7 @@ class ExpressionDemo extends DemoBase {
         Class<?>[] parameterTypes   = {};
         Class<?>[] thrownExceptions = {};
         String[]   defaultImports   = new String[0];
+        boolean    benchmark        = false;
 
         int i;
         for (i = 0; i < args.length; ++i) {
@@ -65,6 +67,9 @@ class ExpressionDemo extends DemoBase {
             if ("-di".equals(arg)) {
                 defaultImports = DemoBase.explode(args[++i]);
             } else
+            if ("-benchmark".equals(arg)) {
+                benchmark = true;
+            } else
             if ("-help".equals(arg)) {
                 System.err.println("Usage:");
                 System.err.println("  ExpressionDemo { <option> } <expression> { <parameter-value> }");
@@ -75,6 +80,7 @@ class ExpressionDemo extends DemoBase {
                 System.err.println(" -pt <comma-separated-parameter-types>        (default: none)");
                 System.err.println(" -te <comma-separated-thrown-exception-types> (default: none)");
                 System.err.println(" -di <comma-separated-default-imports>        (default: none)");
+                System.err.println(" -benchmark                                   Report time usages");
                 System.err.println(" -help");
                 System.err.println("The number of parameter names, types and values must be identical.");
                 System.exit(0);
@@ -133,7 +139,10 @@ class ExpressionDemo extends DemoBase {
         ee.cook(expression);
 
         // Evaluate expression with actual parameter values.
+        Benchmark b = new Benchmark(benchmark);
+        b.beginReporting();
         Object res = ee.evaluate(arguments);
+        b.endReporting();
 
         // Print expression result.
         System.out.println("Result = " + (
