@@ -9787,10 +9787,18 @@ class UnitCompiler {
                                         + "\" have the same parameter types, declaring type and return type"
                                     ));
                                 } else
-                                if (m.getReturnType().isAssignableFrom(theNonAbstractMethod.getReturnType())) {
+
+                                // For compatibility with SCALA, also allow for boxing conversion, e.g. return types
+                                // "int" and "Object" are comnpatible, and "int" is more specific. See issue #182.
+//                                if (m.getReturnType().isAssignableFrom(theNonAbstractMethod.getReturnType())) {
+                                if (this.isMethodInvocationConvertible(theNonAbstractMethod.getReturnType(), m.getReturnType(), boxingPermitted)) {
                                     ;
                                 } else
-                                if (theNonAbstractMethod.getReturnType().isAssignableFrom(m.getReturnType())) {
+
+                                // For compatibility with SCALA, also allow for boxing conversion, e.g. return types
+                                // "int" and "Object" are comnpatible, and "int" is more specific. See issue #182.
+//                                if (theNonAbstractMethod.getReturnType().isAssignableFrom(m.getReturnType())) {
+                                if (this.isMethodInvocationConvertible(m.getReturnType(), theNonAbstractMethod.getReturnType(), boxingPermitted)) {
                                     theNonAbstractMethod = m;
                                 } else
                                 {
