@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1520,6 +1521,79 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         Object[] nuke();
     }
 
+    // -------------------------------
+
+    /**
+     * Supposed to reproduce https://github.com/janino-compiler/janino/issues/174#issuecomment-1243022653, but doesn't.
+     */
+    @Test public void
+    testIssue174__JaninoCompilerTest() throws Exception {
+
+//        // public void compile_long_method(@TempDir Path tempDir) throws Exception {
+        String code = ReportedBugsTest.getClassCode(ReportedBugsTest.getClassBody2(1000));
+//        JaninoCompiler compiler = new JaninoCompiler();
+//        compiler.getArgs().setDestdir(tempDir.toFile().getAbsolutePath());
+//        compiler.getArgs().setSource(code, "Nuke.java");
+//        compiler.getArgs().setFullClassName("Nuke");
+//        compiler.compile();
+
+//        URL[] urls = new URL[]{tempDir.toUri().toURL()};
+//        ClassLoader cl = new URLClassLoader(urls);
+//        ClassLoader cl = sc.getClassLoader();
+        AbstractJavaSourceClassLoader cl = this.compilerFactory.newJavaSourceClassLoader();
+        cl.setSourceFinder(new MapResourceFinder(Collections.singletonMap("Nuke.java", code.getBytes("UTF-8"))));
+
+        Class<?> clazz = cl.loadClass("Nuke");
+        Object   o     = clazz.getDeclaredConstructor().newInstance();
+        System.out.println(o);
+    }
+
+    private static String
+    getClassCode(String body) {
+        return (
+            ""
+            + "import java.util.Arrays;\n\n"
+            + "public class Nuke {"
+            + body
+            + "}"
+        );
+    }
+
+    private static String
+    getClassBody2(int numAssignments) {
+        String template = (
+            ""
+            + "public Object[] nuke() {\n"
+            + "\tString bloat = \"some_bloat\";\n"
+            + "\t//Lots of variables\n"
+            + "%s"
+            + "\t//Big array initialization\n"
+            + "\treturn new Object[]\n"
+            + "\t{\n"
+            + "%s"
+            + "\t};\n"
+            + "}\n"
+            + "\n"
+            + ""
+            + "public static void main(String[] args) throws Exception {"
+            + "\tSystem.out.println(Arrays.toString(new Nuke().nuke()));"
+            + "}"
+        );
+        StringBuilder assignments = new StringBuilder();
+        StringBuilder appends     = new StringBuilder();
+        for (int i = 0; i < numAssignments; i++) {
+            assignments.append(String.format("\tfinal String current%s = bloat;\n", i));
+            appends.append(String.format("\t\tcurrent%s", i));
+            if (i < numAssignments - 1) {
+                appends.append(",");
+            }
+            appends.append("\n");
+        }
+        return String.format(template, assignments, appends);
+    }
+
+    // --------------------
+
     @Test
     public void
     testIssue177() throws Exception {
@@ -1532,5 +1606,32 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "}\n"
             + ""
         ), "test2");
+    }
+
+    // TODO: Doesn't reproduce the problem!
+    @Test
+    public void
+    testIssue181() throws Exception {
+        this.assertCompilationUnitCookable(
+            ""
+            + "public\n"
+            + "interface Main {\n"
+            + "    class Member {\n"
+            + "        Object i = new Object();\n"
+            + "    }\n"
+            + "}\n"
+        );
+    }
+
+    @Test public void
+    testIssue185() throws Exception {
+        this.assertScriptCookable(
+            ""
+            + "java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));\n"
+            + "String line;\n"
+            + "while ((line = br.readLine()) != null) {\n"
+            + "    System.out.println(line);\n"
+            + "}\n"
+        );
     }
 }
