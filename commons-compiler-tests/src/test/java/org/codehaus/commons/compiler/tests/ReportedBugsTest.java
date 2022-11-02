@@ -1634,4 +1634,29 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "}\n"
         );
     }
+
+    @Test public void
+    testIssue187() throws Exception {
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "public class MyClass {\n"
+            + "    public static boolean main() {\n"
+            + "        boolean b;\n"
+            + "        if (false) {\n"
+            + "            b = true;\n"
+            + "        } else {\n"
+            + "            b = false;\n"
+            + "        }\n"
+            + "        return !b;\n"
+            + "    }\n"
+            + "}"
+        ), "MyClass");
+    }
+
+    @Test public void
+    testIssue188() throws Exception {
+        this.assertScriptExecutable("Object o = true ? (String) null : \"\";");
+        this.assertScriptExecutable("Object o = true ? (Object) null : \"\";");
+        this.assertScriptExecutable("Object o = true ?          null : \"\";"); // <= InternalCompilerException
+    }
 }
