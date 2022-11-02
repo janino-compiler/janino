@@ -1959,24 +1959,43 @@ class UnitCompiler {
             }
         }
 
-        // Compile body.
-        Offset wtc = (ws.whereToContinue = this.getCodeContext().new BasicBlock());
-        StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
+        // GOTO condition.
+        Offset wtc = this.getCodeContext().new BasicBlock();
         this.gotO(ws, wtc);
-        this.codeContext.currentInserter().setStackMap(smBeforeBody);
         final CodeContext.Offset bodyOffset = this.getCodeContext().newBasicBlock();
-        this.compile(ws.body); // Return value (CCN) is ignored.
-        assert ws.whereToContinue == wtc;
+        Inserter bodyInserter = this.codeContext.newInserter();
         wtc.set();
         ws.whereToContinue = null;
 
-        // Compile condition.
+        // Compile the condition first.
+        // This is necessary because the condition may modify the stack map, e.g.
+        //     String line;
+        //     while ((line = bufferedReader.readLine()) != null) {
+        //         System.out.println(line);
+        //     }
         this.compileBoolean(ws.condition, bodyOffset, UnitCompiler.JUMP_IF_TRUE);
+
+        // Now compile the body.
+        try {
+            StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
+            this.codeContext.pushInserter(bodyInserter);
+            this.codeContext.currentInserter().setStackMap(smBeforeBody);
+
+            this.compile(ws.body); // Return value (CCN) is ignored.
+
+            if (ws.whereToContinue != null) {
+                ws.whereToContinue.set();
+                ws.whereToContinue = null;
+            }
+        } finally {
+            this.codeContext.popInserter();
+        }
 
         if (ws.whereToBreak != null) {
             ws.whereToBreak.set();
             ws.whereToBreak = null;
         }
+
         return true;
     }
 
