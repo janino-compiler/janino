@@ -1589,7 +1589,8 @@ class UnitCompiler {
     }
 
     /**
-     * Called to check whether the given {@link Rvalue} compiles or not.
+     * Called to check whether the given {@link BlockStatement} compiles or not.
+     * Updates the stack map of the current inserter.
      *
      * @return Whether the block statement can complete normally
      */
@@ -1604,7 +1605,6 @@ class UnitCompiler {
 
         this.getCodeContext().removeCode(from, to);
 
-        this.codeContext.currentInserter().setStackMap(from.getStackMap());
         return ccn;
     }
 
@@ -2570,10 +2570,12 @@ class UnitCompiler {
             final CodeContext.Inserter ins                     = this.getCodeContext().newInserter();
             StackMap                   smBeforeSeeingStatement = this.codeContext.currentInserter().getStackMap();
             boolean                    ssccn                   = this.compile(seeingStatement);
+            Offset                     afterSeeingStatement    = this.codeContext.newOffset();
 
             // Fake-compile the blind statement.
             this.codeContext.currentInserter().setStackMap(smBeforeSeeingStatement);
             boolean bsccn = this.fakeCompile(blindStatement);
+            afterSeeingStatement.setStackMap(); // Merge stack maps after seeing and after blind statements.
 
             if (ssccn) return true;
             if (!bsccn) return false;
@@ -2611,7 +2613,6 @@ class UnitCompiler {
                 boolean tsccn = this.compile(ts);
                 if (tsccn) {
                     this.gotO(is, end);
-                } else {
                 }
 
                 // Compile "else" statment.
