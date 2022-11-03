@@ -1636,8 +1636,10 @@ class Parser {
      */
     public ArrayInitializer
     parseArrayInitializer() throws CompileException, IOException {
-        final Location location = this.location();
+
         this.read("{");
+        final Location location = this.location();
+
         List<ArrayInitializerOrRvalue> l = new ArrayList<>();
         while (!this.peekRead("}")) {
             l.add(this.parseVariableInitializer());
@@ -2238,8 +2240,8 @@ class Parser {
      */
     public Statement
     parseWhileStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("while");
+        final Location location = this.location();
 
         this.read("(");
         Rvalue condition = this.parseExpression();
@@ -2259,8 +2261,8 @@ class Parser {
      */
     public Statement
     parseDoStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("do");
+        final Location location = this.location();
 
         final Statement body = this.parseStatement();
 
@@ -2399,8 +2401,8 @@ class Parser {
      */
     public Statement
     parseSwitchStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("switch");
+        final Location location = this.location();
 
         this.read("(");
         final Rvalue condition = this.parseExpression();
@@ -2450,8 +2452,8 @@ class Parser {
      */
     public Statement
     parseSynchronizedStatement() throws CompileException, IOException {
-        final Location location = this.location();
         this.read("synchronized");
+        final Location location = this.location();
         this.read("(");
         Rvalue expression = this.parseExpression();
         this.read(")");
@@ -2515,9 +2517,9 @@ class Parser {
     parseContinueStatement() throws CompileException, IOException {
 
         this.read("continue");
-
         Location location = this.location();
-        String   label    = this.peekRead(TokenType.IDENTIFIER);
+
+        String label = this.peekRead(TokenType.IDENTIFIER);
 
         this.read(";");
         return new ContinueStatement(location, label);
