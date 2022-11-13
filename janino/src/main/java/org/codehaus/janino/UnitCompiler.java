@@ -1131,9 +1131,9 @@ class UnitCompiler {
 
         final Set<IClass> seenAnnotations = new HashSet<>();
         ANNOTATIONS: for (final Annotation a : annotations) {
-            Type          annotationType        = a.getType();
-            IClass        annotationIClass      = this.getRawType(annotationType);
-            IAnnotation[] annotationAnnotations = annotationIClass.getIAnnotations();
+            final Type          annotationType        = a.getType();
+            final IClass        annotationIClass      = this.getRawType(annotationType);
+            final IAnnotation[] annotationAnnotations = annotationIClass.getIAnnotations();
 
             // Check for duplicate annotations.
             if (!seenAnnotations.add(annotationIClass)) {
@@ -1172,9 +1172,12 @@ class UnitCompiler {
 
                 @Override @Nullable public Void
                 visitSingleElementAnnotation(SingleElementAnnotation sea) throws CompileException {
+                    IMethod[] definitions = annotationIClass.getDeclaredIMethods("value");
+                    assert definitions.length == 1;
+                    boolean isArray = definitions[0].getReturnType().isArray();
                     evps.put(
                         cf.addConstantUtf8Info("value"),
-                        UnitCompiler.this.compileElementValue(sea.elementValue, cf)
+                        UnitCompiler.this.compileElementValue(sea.elementValue, cf, isArray)
                     );
                     return null;
                 }
@@ -1182,9 +1185,12 @@ class UnitCompiler {
                 @Override @Nullable public Void
                 visitNormalAnnotation(NormalAnnotation na) throws CompileException {
                     for (ElementValuePair evp : na.elementValuePairs) {
+                        IMethod[] definitions = annotationIClass.getDeclaredIMethods(evp.identifier);
+                        assert definitions.length == 1;
+                        boolean isArray = definitions[0].getReturnType().isArray();
                         evps.put(
                             cf.addConstantUtf8Info(evp.identifier),
-                            UnitCompiler.this.compileElementValue(evp.elementValue, cf)
+                            UnitCompiler.this.compileElementValue(evp.elementValue, cf, isArray)
                         );
                     }
                     return null;
@@ -1203,7 +1209,7 @@ class UnitCompiler {
     }
 
     private ClassFile.ElementValue
-    compileElementValue(ElementValue elementValue, final ClassFile cf) throws CompileException {
+    compileElementValue(ElementValue elementValue, final ClassFile cf, boolean compileAsArray) throws CompileException {
 
         ClassFile.ElementValue
         result = (ClassFile.ElementValue) elementValue.accept(
@@ -1282,11 +1288,10 @@ class UnitCompiler {
                 @Override public ClassFile.ElementValue
                 visitAnnotation(Annotation a) throws CompileException {
 
-                    short
-                    annotationTypeIndex = cf.addConstantUtf8Info(UnitCompiler.this.getRawType(a.getType()).getDescriptor());
+                    final IClass annotationIClass    = UnitCompiler.this.getRawType(a.getType());
+                    short        annotationTypeIndex = cf.addConstantUtf8Info(annotationIClass.getDescriptor());
 
-                    final Map<Short, ClassFile.ElementValue>
-                    evps = new HashMap<>();
+                    final Map<Short, ClassFile.ElementValue> evps = new HashMap<>();
                     a.accept(new AnnotationVisitor<Void, CompileException>() {
 
                         @Override @Nullable public Void
@@ -1297,9 +1302,12 @@ class UnitCompiler {
 
                         @Override @Nullable public Void
                         visitSingleElementAnnotation(SingleElementAnnotation sea) throws CompileException {
+                            IMethod[] definitions = annotationIClass.getDeclaredIMethods("value");
+                            assert definitions.length == 1;
+                            boolean expectArray = definitions[0].getReturnType().isArray();
                             evps.put(
                                 cf.addConstantUtf8Info("value"),
-                                UnitCompiler.this.compileElementValue(sea.elementValue, cf)
+                                UnitCompiler.this.compileElementValue(sea.elementValue, cf, expectArray)
                             );
                             return null;
                         }
@@ -1307,9 +1315,12 @@ class UnitCompiler {
                         @Override @Nullable public Void
                         visitNormalAnnotation(NormalAnnotation na) throws CompileException {
                             for (ElementValuePair evp : na.elementValuePairs) {
+                                IMethod[] definitions = annotationIClass.getDeclaredIMethods(evp.identifier);
+                                assert definitions.length == 1;
+                                boolean expectArray = Descriptor.isArrayReference(definitions[0].getDescriptor().returnFd);
                                 evps.put(
                                     cf.addConstantUtf8Info(evp.identifier),
-                                    UnitCompiler.this.compileElementValue(evp.elementValue, cf)
+                                    UnitCompiler.this.compileElementValue(evp.elementValue, cf, expectArray)
                                 );
                             }
                             return null;
@@ -1324,12 +1335,18 @@ class UnitCompiler {
                     evs = new ClassFile.ElementValue[evai.elementValues.length];
 
                     for (int i = 0; i < evai.elementValues.length; i++) {
-                        evs[i] = UnitCompiler.this.compileElementValue(evai.elementValues[i], cf);
+                        evs[i] = UnitCompiler.this.compileElementValue(evai.elementValues[i], cf, false);
                     }
                     return new ClassFile.ArrayElementValue(evs);
                 }
             }
         );
+
+        if (compileAsArray && result instanceof ClassFile.ConstantElementValue) {
+            ClassFile.ElementValue[] arrayValues = new ClassFile.ElementValue[1];
+            arrayValues[0] = result;
+            result = new ClassFile.ArrayElementValue(arrayValues);
+        }
 
         assert result != null;
         return result;
@@ -3455,7 +3472,7 @@ class UnitCompiler {
                 mi.addAttribute(
                     new ClassFile.AnnotationDefaultAttribute(
                         classFile.addConstantUtf8Info("AnnotationDefault"),
-                        UnitCompiler.this.compileElementValue(defaultValue, classFile)
+                        UnitCompiler.this.compileElementValue(defaultValue, classFile, fd.type instanceof ArrayType)
                     )
                 );
             }
