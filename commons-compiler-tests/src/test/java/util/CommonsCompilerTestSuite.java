@@ -247,9 +247,10 @@ class CommonsCompilerTestSuite {
         protected final IScriptEvaluator scriptEvaluator;
 
         public
-        ScriptTest(String script) throws Exception {
+        ScriptTest(String script) {
             this.script          = script;
             this.scriptEvaluator = CommonsCompilerTestSuite.this.compilerFactory.newScriptEvaluator();
+            this.scriptEvaluator.setThrownExceptions(new Class<?>[] { Exception.class });
         }
 
         @Override public void setSourceVersion(int sourceVersion)               { this.scriptEvaluator.setSourceVersion(sourceVersion);      }
