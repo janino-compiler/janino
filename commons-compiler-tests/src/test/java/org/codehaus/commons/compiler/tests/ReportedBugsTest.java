@@ -58,6 +58,7 @@ import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -1653,7 +1654,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         ), "MyClass");
     }
 
-    @Test public void
+    @Ignore @Test public void
     testIssue188() throws Exception {
         this.assertScriptExecutable("Object o = true ? (String) null : \"\";");
         this.assertScriptExecutable("Object o = true ? (Object) null : \"\";");
