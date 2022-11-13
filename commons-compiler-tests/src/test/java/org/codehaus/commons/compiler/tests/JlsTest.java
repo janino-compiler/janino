@@ -1001,16 +1001,16 @@ class JlsTest extends CommonsCompilerTestSuite {
 
         // Static interface methods (a Java 8 feature).
 
-        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 8) return;
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 9) return; // Default methods=Java 8+, private interface mathod=Java 9+
 
-            String cu = (
+        String cu = (
                 ""
-                + "public interface MyInterface {\n"
-                + "    private boolean isTrue2() { return true; }\n"
-                + "    default boolean isTrue() { return isTrue2(); }\n"
-                + "}\n"
-                + "public class Foo { public static boolean main() { return new MyInterface() {}.isTrue(); } }\n"
-            );
+            + "public interface MyInterface {\n"
+            + "    private boolean isTrue2() { return true; }\n"
+            + "    default boolean isTrue() { return isTrue2(); }\n"
+            + "}\n"
+            + "public class Foo { public static boolean main() { return new MyInterface() {}.isTrue(); } }\n"
+        );
 
         {
             SimpleCompilerTest sct = new SimpleCompilerTest(cu, "Foo");
