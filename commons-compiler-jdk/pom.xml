@@ -15,6 +15,10 @@
 
   <name>commons-compiler-jdk</name>
 
+  <properties>
+    <automaticModuleName>org.codehaus.commons.compiler.jdk</automaticModuleName>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.codehaus.janino</groupId>

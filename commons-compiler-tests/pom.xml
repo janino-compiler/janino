@@ -15,6 +15,10 @@
 
   <name>commons-compiler-tests</name>
 
+  <properties>
+    <automaticModuleName>org.codehaus.commons.compiler.tests</automaticModuleName>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>

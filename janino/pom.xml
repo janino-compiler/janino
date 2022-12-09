@@ -14,7 +14,11 @@
   <artifactId>janino</artifactId>
 
   <name>janino</name>
-  
+
+  <properties>
+    <automaticModuleName>org.codehaus.janino</automaticModuleName>
+  </properties>
+
   <description>The &quot;JANINO&quot; implementation of the &quot;commons-compiler&quot; API: Super-small, super-fast, independent from the JDK's &quot;tools.jar&quot;.</description>
 
   <dependencies>

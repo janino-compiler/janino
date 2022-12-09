@@ -95,6 +95,9 @@
 
             <!-- This line is required, otherwise the maven-bundle-plugin doesn't add the OSGi lines. -->
             <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+            <manifestEntries combine.children="append">
+              <Automatic-Module-Name>${automaticModuleName}</Automatic-Module-Name>
+            </manifestEntries>
           </archive> 
         </configuration>
       </plugin>

@@ -15,6 +15,10 @@
 
   <name>commons-compiler</name>
 
+  <properties>
+    <automaticModuleName>org.codehaus.commons.compiler</automaticModuleName>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
