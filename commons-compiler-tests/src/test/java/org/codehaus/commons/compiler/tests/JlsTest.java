@@ -1206,6 +1206,33 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_9_7_1__Normal_Annotations3() throws Exception {
+
+        this.assertCompilationUnitMainReturnsTrue((
+            ""
+            + "import java.util.Arrays;\n"
+            + "import org.codehaus.commons.compiler.tests.annotation.RuntimeRetainedAnnotation5;\n"
+            + "\n"
+            + "@RuntimeRetainedAnnotation5(String.class)\n"
+            + "public\n"
+            + "class Main {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "        RuntimeRetainedAnnotation5 anno = (\n"
+            + "            (RuntimeRetainedAnnotation5) Main.class.getAnnotation(RuntimeRetainedAnnotation5.class)\n"
+            + "        );\n"
+            + "        if (anno == null) throw new AssertionError(1);\n"
+            + "\n"
+            + "        if (!(anno.value() instanceof Class[])) throw new AssertionError(2);\n"
+            + "        if (!(anno.value()[0] == String.class)) throw new AssertionError(3);\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}"
+        ), "Main");
+    }
+
+    @Test public void
     test_9_7_4__Where_Annotations_May_Appear_field() throws Exception {
 
         this.assertCompilationUnitMainReturnsTrue((
