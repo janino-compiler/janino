@@ -9999,6 +9999,8 @@ class UnitCompiler {
 
         // 5.3 TODO: FLOAT or DOUBLE value set conversion
 
+        if (this.isNullConvertible(sourceType, targetType)) return true;
+
         return false;
     }
 
@@ -11250,7 +11252,7 @@ class UnitCompiler {
     }
 
     /**
-     * Implements "assignment conversion" (JLS7 5.2).
+     * Implements "assignment conversion" (JLS7 5.2) (more precisely: "assignment contexts".)
      */
     private void
     assignmentConversion(
@@ -11326,7 +11328,7 @@ class UnitCompiler {
             }
         }
 
-        // 5.2 Special narrowing primitive conversion.
+        // Constant value narrowing primitive conversion.
         if (constantValue != UnitCompiler.NOT_CONSTANT) {
             if (this.tryConstantAssignmentConversion(
                 locatable,
@@ -11334,6 +11336,8 @@ class UnitCompiler {
                 targetType     // targetType
             )) return true;
         }
+
+        if (this.tryNullConversion(sourceType, targetType)) return true;
 
         return false;
     }
@@ -11691,6 +11695,10 @@ class UnitCompiler {
 
         if (targetClass.isPrimitive() || sourceType == targetType) return false;
 
+        // JLS11 5.1.5: "The null type is not a reference type, and so a widening reference conversion does not exist
+        // from the null type to a reference type."
+        if (sourceClass == IClass.NULL) return false;
+
         return targetClass.isAssignableFrom(sourceClass);
     }
 
@@ -11944,6 +11952,32 @@ class UnitCompiler {
             this.boxingConversion(locatable, sourceType, targetType);
             return true;
         }
+        return false;
+    }
+
+    @SuppressWarnings("static-method") private boolean
+    isNullConvertible(IType sourceType, IType targetType) {
+
+        return (
+            sourceType == IClass.NULL
+            && targetType instanceof IClass
+            && !((IClass) targetType).isPrimitive()
+        );
+    }
+
+    /**
+     * JLS11 5.2: "Finally, a value of the null type (the null reference is the only such value) may be assigned to any
+     * reference type".
+     */
+    private boolean
+    tryNullConversion(IType sourceType, IType targetType) {
+
+        if (this.isNullConvertible(sourceType, targetType)) {
+            this.getCodeContext().popNullOperand();
+            this.getCodeContext().pushOperand(UnitCompiler.rawTypeOf(targetType).getDescriptor());
+            return true;
+        }
+
         return false;
     }
 

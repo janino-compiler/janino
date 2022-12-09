@@ -1516,7 +1516,7 @@ class CodeContext {
             assert expectedFd.equals(Descriptor.DOUBLE) : expectedFd;
         } else
         if (vti == StackMapTableAttribute.NULL_VARIABLE_INFO) {
-            assert expectedFd.equals(Descriptor.VOID) : expectedFd;
+            assert expectedFd.equals(Descriptor.VOID) || Descriptor.isReference(expectedFd) : expectedFd;
         } else
         if (vti instanceof StackMapTableAttribute.ObjectVariableInfo) {
             assert Descriptor.isReference(expectedFd) : expectedFd + " vs. " + vti;
@@ -1579,6 +1579,12 @@ class CodeContext {
     popReferenceOperand() {
         assert this.peekObjectOperand() || this.peekNullOperand() : this.peekOperand();
         this.popOperand();
+    }
+
+    public void
+    popNullOperand() {
+        VerificationTypeInfo vti = this.popOperand();
+        assert vti == StackMapTableAttribute.NULL_VARIABLE_INFO;
     }
 
     /**

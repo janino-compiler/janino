@@ -64,7 +64,28 @@ class IClass implements ITypeVariableOrIClass {
     /**
      * The {@link IClass} of the {@code null} literal.
      */
-    public static final IClass NULL    = new PrimitiveIClass("");
+    public static final IClass NULL = new IClass() {
+        @Override protected ITypeVariable[]  getITypeVariables2()        { return new ITypeVariable[0]; }
+        @Override @Nullable protected IClass getComponentType2()         { return null;                 }
+        @Override protected IClass[]         getDeclaredIClasses2()      { return new IClass[0];        }
+        @Override protected IConstructor[]   getDeclaredIConstructors2() { return new IConstructor[0];  }
+        @Override protected IField[]         getDeclaredIFields2()       { return new IField[0];        }
+        @Override protected IMethod[]        getDeclaredIMethods2()      { return new IMethod[0];       }
+        @Override @Nullable protected IClass getDeclaringIClass2()       { return null;                 }
+        @Override protected String           getDescriptor2()            { return "";                   }
+        @Override protected IClass[]         getInterfaces2()            { return new IClass[0];        }
+        @Override @Nullable protected IClass getOuterIClass2()           { return null;                 }
+        @Override @Nullable protected IClass getSuperclass2()            { return null;                 }
+        @Override public boolean             isAbstract()                { return false;                }
+        @Override public boolean             isArray()                   { return false;                }
+        @Override public boolean             isFinal()                   { return true;                 }
+        @Override public boolean             isEnum()                    { return false;                }
+        @Override public boolean             isInterface()               { return false;                }
+        @Override public boolean             isPrimitive()               { return true;                 }
+        @Override public Access              getAccess()                 { return Access.PUBLIC;        }
+        @Override public boolean             isPrimitiveNumeric()        { return false;                }
+        @Override public String              toString()                  { return "(null type)";        }
+    };
 
     /**
      * The {@link IClass} object for the type VOID.
