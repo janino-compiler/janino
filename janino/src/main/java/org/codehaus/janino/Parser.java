@@ -2976,13 +2976,28 @@ class Parser {
                     final String[] identifiers = ((AmbiguousName) a).identifiers;
 
                     // ambiguous-name '<' Type [ TypeArguments ] ( '>' | ',' )
-                    this.parseTypeArgumentsOpt();
+                    TypeArgument[] ftatas = this.parseTypeArgumentsOpt(); // Type arguments of first type argument
+
                     TypeArgument firstTypeArgument;
                     {
                         Type t = rhs.toTypeOrCompileException();
 
-                        if (t instanceof ArrayType)     { firstTypeArgument = (ArrayType)     t; } else
-                        if (t instanceof ReferenceType) { firstTypeArgument = (ReferenceType) t; } else
+                        if (t instanceof ArrayType && ftatas == null) {
+                            firstTypeArgument = (ArrayType) t;
+                        } else
+                        if (t instanceof ReferenceType) {
+                            ReferenceType rt = (ReferenceType) t;
+                            if (ftatas == null) {
+                                firstTypeArgument = rt;
+                            } else {
+                                firstTypeArgument = new ReferenceType(
+                                    rt.getLocation(),
+                                    rt.annotations,
+                                    rt.identifiers,
+                                    ftatas
+                                );
+                            }
+                        } else
                         {
                             throw this.compileException("'" + t + "' is not a valid type argument");
                         }

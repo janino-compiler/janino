@@ -49,6 +49,7 @@ import org.codehaus.janino.ExpressionEvaluator;
 import org.codehaus.janino.IClassLoader;
 import org.codehaus.janino.Java;
 import org.codehaus.janino.Java.AbstractCompilationUnit;
+import org.codehaus.janino.Java.BlockStatement;
 import org.codehaus.janino.Java.CompilationUnit;
 import org.codehaus.janino.Java.IntegerLiteral;
 import org.codehaus.janino.Java.Rvalue;
@@ -520,4 +521,25 @@ class GithubIssuesTest {
         return cfs;
     }
 
+    @Test public void
+    testIssue196() throws Exception {
+
+        GithubIssuesTest.assertParseUnparseEquals("BiConsumer<String, List<String>> a;");
+        GithubIssuesTest.assertParseUnparseEquals("BiConsumer<List<String>, String> a;");
+    }
+
+    private static void
+    assertParseUnparseEquals(String sourceCode) throws CompileException, IOException {
+
+        BlockStatement bs = new Parser(new org.codehaus.janino.Scanner("filename", new StringReader(
+            sourceCode
+        ))).parseBlockStatement();
+
+        StringWriter sw       = new StringWriter();
+        Unparser     unparser = new Unparser(sw);
+        unparser.unparseBlockStatement(bs);
+        unparser.close();
+
+        Assert.assertEquals(sourceCode, sw.toString());
+    }
 }
