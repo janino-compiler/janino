@@ -197,7 +197,7 @@ import org.codehaus.janino.util.AutoIndentWriter;
  * Unparses (un-compiles) an AST to a {@link Writer}. See {@link #main(String[])} for a usage example.
  */
 public
-class Unparser {
+class Unparser implements AutoCloseable {
 
     private final AbstractCompilationUnitVisitor<Void, RuntimeException>
     compilationUnitUnparser = new AbstractCompilationUnitVisitor<Void, RuntimeException>() {
@@ -1308,12 +1308,19 @@ class Unparser {
 
     public
     Unparser(Writer w) {
-        this.pw  = new PrintWriter(new AutoIndentWriter(w), true);
+        this.pw = new PrintWriter(new AutoIndentWriter(w), true);
     }
 
     /**
      * Flushes all generated code.
      */
+    public void
+    flush() { this.pw.flush(); }
+
+    /**
+     * Flushes all generated code.
+     */
+    @Override
     public void
     close() { this.pw.flush(); }
 
