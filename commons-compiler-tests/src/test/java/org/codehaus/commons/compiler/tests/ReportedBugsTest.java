@@ -1659,4 +1659,16 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         this.assertScriptExecutable("Object o = true ? (Object) null : \"\";");
         this.assertScriptExecutable("Object o = true ?          null : \"\";"); // <= InternalCompilerException
     }
+
+    @Test public void
+    testIssue195() throws Exception {
+
+        this.assertCompilationUnitUncookable(
+            ""
+            + "public class Test {\n"
+            + "    public Test(int i) {}\n"
+            + "    public Test(int i) {}\n"
+            + "}\n"
+        );
+    }
 }

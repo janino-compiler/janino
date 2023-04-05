@@ -224,6 +224,7 @@ import org.codehaus.janino.Visitor.TypeVisitor;
 import org.codehaus.janino.util.Annotatable;
 import org.codehaus.janino.util.ClassFile;
 import org.codehaus.janino.util.ClassFile.ClassFileException;
+import org.codehaus.janino.util.ClassFile.MethodInfo;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.ObjectVariableInfo;
 import org.codehaus.janino.util.ClassFile.StackMapTableAttribute.VerificationTypeInfo;
@@ -3362,7 +3363,9 @@ class UnitCompiler {
                 short accessFlags = UnitCompiler.changeAccessibility(this.accessFlags(fd.getModifiers()), Mod.PACKAGE);
                 accessFlags |= Mod.STATIC;
 
-                mi = classFile.addMethodInfo(
+                mi = UnitCompiler.addMethodInfo(
+                    fd,            // locatable
+                    classFile,     // classFile
                     accessFlags,   // accessFlags
                     fd.name + '$', // methodName
                     (              // methodMd
@@ -3388,7 +3391,9 @@ class UnitCompiler {
 
                 if (fd.formalParameters.variableArity) accessFlags |= Mod.VARARGS;
 
-                mi = classFile.addMethodInfo(
+                mi = UnitCompiler.addMethodInfo(
+                    fd,                                   // locatable
+                    classFile,                            // classFile
                     accessFlags,                          // accessFlags
                     fd.name,                              // methodName
                     this.toIInvocable(fd).getDescriptor() // methodMD
@@ -3421,7 +3426,9 @@ class UnitCompiler {
                 }
             }
 
-            mi = classFile.addMethodInfo(
+            mi = UnitCompiler.addMethodInfo(
+                fd,                                   // locatable
+                classFile,                            // classFile
                 accessFlags,                          // accessFlags
                 fd.name,                              // methodName
                 this.toIInvocable(fd).getDescriptor() // methodMD
@@ -3694,6 +3701,30 @@ class UnitCompiler {
         } catch (Error e) {
             throw new InternalCompilerException(fd.getLocation(), null, e);
         }
+    }
+
+    private static MethodInfo
+    addMethodInfo(
+        Locatable        locatable,
+        ClassFile        classFile,
+        short            accessFlags,
+        String           methodName,
+        MethodDescriptor methodMd
+    ) throws CompileException {
+
+        MethodInfo mi = classFile.addMethodInfo(accessFlags, methodName, methodMd);
+
+        for (MethodInfo mi2 : classFile.methodInfos) {
+            if (
+                mi2 != mi
+                && mi.getName().equals(mi2.getName())
+                && mi.getDescriptor().contentEquals(mi2.getDescriptor())
+            ) {
+                throw new CompileException("Redeclaration of \"" + locatable + "\" with same signature", locatable.getLocation());
+            }
+        }
+
+        return mi;
     }
 
     private int getTargetVersion() {
