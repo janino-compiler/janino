@@ -257,18 +257,21 @@ class AutoIndentWriter extends FilterWriter {
 
     @Override public void
     close() throws IOException {
+        if (this.lineBuffer.length() > 0) {
+            this.line(this.lineBuffer.toString());
+            this.lineBuffer.setLength(0);
+        }
         if (this.tabulatorBuffer != null) this.flushTabulatorBuffer();
-        if (this.lineBuffer.length() > 0) this.line(this.lineBuffer.toString());
         this.out.close();
     }
 
     @Override public void
     flush() throws IOException {
-        if (this.tabulatorBuffer != null) this.flushTabulatorBuffer();
         if (this.lineBuffer.length() > 0) {
             this.line(this.lineBuffer.toString());
             this.lineBuffer.setLength(0);
         }
+        if (this.tabulatorBuffer != null) this.flushTabulatorBuffer();
         this.out.flush();
     }
 }
