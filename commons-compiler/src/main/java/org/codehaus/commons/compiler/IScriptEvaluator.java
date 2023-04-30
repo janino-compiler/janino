@@ -237,7 +237,10 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
     void setReturnType(Class<?> returnType);
 
     /**
-     * Defines the name of the generated method. {@code null} means use a reasonable {@value #DEFAULT_METHOD_NAME}.
+     * Defines the name of the generated method. Initially, the method name is {@value #DEFAULT_METHOD_NAME}.
+     *
+     * @param methodName {@code null} means reset to default name
+     * @see              IScriptEvaluator#DEFAULT_METHOD_NAME
      */
     void setMethodName(@Nullable String methodName);
 
