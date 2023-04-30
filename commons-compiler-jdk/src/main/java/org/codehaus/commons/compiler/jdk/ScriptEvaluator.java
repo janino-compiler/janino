@@ -94,7 +94,7 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
         @Nullable private Class<?> returnType;
 
         /**
-         * The name of the generated method. {@code null} means to use a reasonable defalut.
+         * The name of the generated method. {@code null} means to use a reasonable default.
          */
         @Nullable private String methodName;
 
