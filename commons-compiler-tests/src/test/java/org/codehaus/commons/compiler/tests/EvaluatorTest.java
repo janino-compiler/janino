@@ -1282,13 +1282,16 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
 
         final IScriptEvaluator se = this.compilerFactory.newScriptEvaluator();
         try {
-            se.cook(new String[] {
+            se.cook(new String[] {  // TWO scripts that declare a local method with the same name.
                 "void meth() {}\n",
                 "void meth() {}\n"
             });
             Assert.fail("Compilation exception expected");
-        } catch (ClassFormatError cfe) {
-            Assert.assertTrue(cfe.getMessage(), cfe.getMessage().contains("Duplicate method"));
+        } catch (CompileException ce) {
+            Assert.assertTrue(
+                ce.getMessage(),
+                ce.getMessage().contains("Redeclaration")
+            );
         }
     }
 }
