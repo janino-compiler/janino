@@ -46,6 +46,7 @@ import org.codehaus.commons.nullanalysis.Nullable;
 import org.codehaus.janino.Descriptor;
 import org.codehaus.janino.MethodDescriptor;
 import org.codehaus.janino.Mod;
+import org.codehaus.janino.util.ClassFile.ConstantElementValue;
 
 /**
  * An object that implements the Java "class file" format.
@@ -2981,7 +2982,7 @@ class ClassFile implements Annotatable {
 
             @Override public int     category()                                     { return 1;           }
             @Override public void    store(DataOutputStream dos) throws IOException { dos.writeByte(5);   }
-            @Override public String  toString()                                     { return "null";      }
+            @Override public String  toString()                                     { return "NULL";      }
             @Override public int     hashCode()                                     { return 5;           }
             @Override public boolean equals(@Nullable Object obj)                   { return obj == this; }
         };
