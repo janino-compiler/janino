@@ -1615,6 +1615,7 @@ class CodeContext {
             result instanceof StackMapTableAttribute.UninitializedVariableInfo
             || result instanceof StackMapTableAttribute.ObjectVariableInfo
             || result == StackMapTableAttribute.UNINITIALIZED_THIS_VARIABLE_INFO
+            || result == StackMapTableAttribute.NULL_VARIABLE_INFO
         ) : result;
         return result;
     }
