@@ -9859,16 +9859,17 @@ class UnitCompiler {
                                 // For compatibility with SCALA, also allow for boxing conversion, e.g. return types
                                 // "int" and "Object" are comnpatible, and "int" is more specific. See issue #182.
 //                                if (m.getReturnType().isAssignableFrom(theNonAbstractMethod.getReturnType())) {
-                                if (this.isMethodInvocationConvertible(theNonAbstractMethod.getReturnType(), m.getReturnType(), boxingPermitted)) {
+                                if (this.isMethodInvocationConvertible(theNonAbstractMethod.getReturnType(), m.getReturnType(), /*boxingPermitted*/ true)) {
                                     ;
                                 } else
 
                                 // For compatibility with SCALA, also allow for boxing conversion, e.g. return types
                                 // "int" and "Object" are comnpatible, and "int" is more specific. See issue #182.
 //                                if (theNonAbstractMethod.getReturnType().isAssignableFrom(m.getReturnType())) {
-                                if (this.isMethodInvocationConvertible(m.getReturnType(), theNonAbstractMethod.getReturnType(), boxingPermitted)) {
+                                if (this.isMethodInvocationConvertible(m.getReturnType(), theNonAbstractMethod.getReturnType(), /*boxingPermitted*/ true)) {
                                     theNonAbstractMethod = m;
                                 } else
+
                                 {
                                     throw new InternalCompilerException(locatable.getLocation(), "Incompatible return types");
                                 }
