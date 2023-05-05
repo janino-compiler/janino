@@ -322,7 +322,10 @@ class Scanner {
             if (this.peekRead('=')) return TokenType.OPERATOR; // E.g. "/="
 
             if (this.peekRead('/')) { // C++-style comment.
-                while (!this.peek("\r\n")) this.read();
+
+                // Consume all chars before EOL or EOI:
+                while (!this.peek("\r\n") && !this.peekRead(-1)) this.read();
+
                 return TokenType.C_PLUS_PLUS_STYLE_COMMENT;
             }
 
@@ -668,6 +671,8 @@ class Scanner {
 
     /**
      * Returns the next character, but does not consume it.
+     *
+     * @return -1 iff there is no next character, i.e the input stream is at end-of-input
      */
     private int
     peek() throws CompileException, IOException {
@@ -680,7 +685,11 @@ class Scanner {
     }
 
     /**
-     * @return Whether the next character is one of the <var>expectedCharacters</var>
+     * Checks whether the next character is one of the <var>expectedCharacters</var>.
+     * <p>
+     *   It is not possible to peek exactly for "end-of-input"; use {@link #peekRead(int) peekRead}{@code (-1)}
+     *   instead.
+     * </p>
      */
     private boolean
     peek(String expectedCharacters) throws CompileException, IOException {
@@ -704,7 +713,7 @@ class Scanner {
     /**
      * Consumes and returns the next character.
      *
-     * @return Whether the next character equalled the <var>expected</var> character
+     * @throws CompileException There is no next charcter, i.e. the input stream is at end-of-input
      */
     private char
     read() throws CompileException, IOException {
@@ -760,6 +769,9 @@ class Scanner {
         return true;
     }
 
+    /**
+     * @return -1 iff there is no next character, i.e the input stream is at end-of-input
+     */
     private int
     internalRead() throws IOException, CompileException {
 
