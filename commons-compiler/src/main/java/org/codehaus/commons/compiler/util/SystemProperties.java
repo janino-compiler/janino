@@ -89,11 +89,19 @@ class SystemProperties {
     @Nullable public static String
     getClassProperty(Class<?> targetClass, String classPropertyName, @Nullable String defaultValue) {
 
-        String result = System.getProperty(targetClass.getName() + "." + classPropertyName);
-        if (result != null) return result;
+        try {
+            String result = System.getProperty(targetClass.getName() + "." + classPropertyName);
+            if (result != null) return result;
+        } catch (SecurityException se) {
+            ;
+        }
 
-        result = System.getProperty(targetClass.getSimpleName() + "." + classPropertyName);
-        if (result != null) return result;
+        try {
+            String result = System.getProperty(targetClass.getSimpleName() + "." + classPropertyName);
+            if (result != null) return result;
+        } catch (SecurityException se) {
+            ;
+        }
 
         return defaultValue;
     }
