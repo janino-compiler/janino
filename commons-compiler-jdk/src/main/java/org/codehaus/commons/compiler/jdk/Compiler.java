@@ -347,6 +347,19 @@ class Compiler extends AbstractCompiler {
                         break;
                     }
                 } catch (CompileException ce) {
+
+                    // Wrap the CompileException in a RuntimeException in order to "tunnel" it through the JAVAC
+                    // error handling.
+                    //
+                    // Unfortunately this does not work in VERY specific circumstances, namely test case
+                    // "org.codehaus.commons.compiler.tests.JlsTest.test_9_3_1__Initialization_of_Fields_in_Interfaces__2()".
+                    // The reason being is that "com.sun.tools.javac.api.ClientCodeWrapper.WrappedDiagnosticListener.report(Diagnostic<? extends T>)"
+                    // wraps the RuntimeException in a com.sun.tools.javac.util.ClientCodeException, and
+                    // "com.sun.tools.javac.code.Symbol.VarSymbol.getConstValue()" catches that and throws an
+                    // AssertionError, which leads to a stack trace on STDERR.
+                    //
+                    // There is no obvious way to fix this.
+                    // This problem exists for (at least) JAVA 7, 8, 11 an 17.
                     throw new RuntimeException(ce);
                 }
             }
