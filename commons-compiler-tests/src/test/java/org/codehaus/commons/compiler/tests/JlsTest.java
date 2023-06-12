@@ -1004,7 +1004,7 @@ class JlsTest extends CommonsCompilerTestSuite {
         if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 9) return; // Default methods=Java 8+, private interface mathod=Java 9+
 
         String cu = (
-                ""
+            ""
             + "public interface MyInterface {\n"
             + "    private boolean isTrue2() { return true; }\n"
             + "    default boolean isTrue() { return isTrue2(); }\n"
