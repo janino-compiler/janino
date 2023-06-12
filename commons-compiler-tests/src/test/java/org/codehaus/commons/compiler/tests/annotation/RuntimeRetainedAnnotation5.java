@@ -34,8 +34,7 @@ import java.lang.annotation.Target;
 /**
  * An annotation type with retention policy "Runtime".
  */
-@Target(TYPE)
-@Retention(RUNTIME)
-public @interface RuntimeRetainedAnnotation5 {
+@Target(TYPE) @Retention(RUNTIME) public
+@interface RuntimeRetainedAnnotation5 {
     Class<? extends CharSequence>[] value();
 }
