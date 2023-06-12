@@ -265,6 +265,11 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
     void setThrownExceptions(Class<?>[] thrownExceptions);
 
     /**
+     * Shorthand for {@link #evaluate(Object[]) evaluate}{@code (new Object[0])}.
+     */
+    @Nullable Object evaluate() throws InvocationTargetException;
+
+    /**
      * Calls the script with concrete parameter values.
      * <p>
      *   Each argument must have the same type as specified through the {@code parameterTypes} parameter of {@link
@@ -279,11 +284,17 @@ interface IScriptEvaluator extends ICookable, IMultiCookable {
      * <p>
      *   This method is thread-safe.
      * </p>
+     * <p>
+     *   <b>Notice:</b> In version 3.1.8, the <var>arguments</var> parameter was changed from {@code Object[]} to
+     *   {@code Object...}, which turned out to be a really bad decision because it caused a very ugly invocation
+     *   ambiguity with {@link #evaluate(int, Object[])}. Thus, with version 3.1.10, the parameter was changed back
+     *   to {@code Object[]}.
+     * </p>
      *
      * @param arguments              The actual parameter values
      * @throws IllegalStateException This IScriptEvaluator is not yet cooked
      */
-    @Nullable Object evaluate(@Nullable Object... arguments) throws InvocationTargetException;
+    @Nullable Object evaluate(@Nullable Object[] arguments) throws InvocationTargetException;
 
     /**
      * @return The generated and loaded {@link java.lang.reflect.Method}

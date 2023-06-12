@@ -882,7 +882,10 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
     }
 
     @Override @Nullable public Object
-    evaluate(@Nullable Object... arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
+    evaluate() throws InvocationTargetException { return this.evaluate(new Object[0]); }
+
+    @Override @Nullable public Object
+    evaluate(@Nullable Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
 
     @Override @Nullable public Object
     evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException {

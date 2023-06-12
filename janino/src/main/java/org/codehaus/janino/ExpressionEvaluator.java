@@ -518,10 +518,13 @@ class ExpressionEvaluator extends MultiCookable implements IExpressionEvaluator 
     classToType(final Location location, final Class<?> clazz) { return this.se.classToType(location, clazz); }
 
     @Override @Nullable public Object
-    evaluate(@Nullable Object... arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
+    evaluate() throws InvocationTargetException { return this.evaluate(new Object[0]); }
 
     @Override @Nullable public Object
-    evaluate(int idx, @Nullable Object... arguments) throws InvocationTargetException {
+    evaluate(@Nullable Object[] arguments) throws InvocationTargetException { return this.evaluate(0, arguments); }
+
+    @Override @Nullable public Object
+    evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException {
 
         Method method = this.getMethod(idx);
 

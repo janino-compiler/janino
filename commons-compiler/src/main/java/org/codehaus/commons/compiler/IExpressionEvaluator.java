@@ -188,6 +188,11 @@ interface IExpressionEvaluator extends ICookable, IMultiCookable {
     void setWarningHandler(@Nullable WarningHandler warningHandler);
 
     /**
+     * Shorthand for {@link #evaluate(Object[]) evaluate}{@code (new Object[0])}.
+     */
+    @Nullable Object evaluate() throws InvocationTargetException;
+
+    /**
      * Evaluates the expression with concrete parameter values.
      * <p>
      *   Each argument value must have the same type as specified through the "parameterTypes" parameter of {@link
@@ -205,10 +210,16 @@ interface IExpressionEvaluator extends ICookable, IMultiCookable {
      * <p>
      *   {@code Null} <var>arguments</var> is equivalent with {@code new Object[0]}.
      * </p>
+     * <p>
+     *   <b>Notice:</b> In version 3.1.8, the <var>arguments</var> parameter was changed from {@code Object[]} to
+     *   {@code Object...}, which turned out to be a really bad decision because it caused a very ugly invocation
+     *   ambiguity with {@link #evaluate(int, Object[])}. Thus, with version 3.1.10, the parameter was changed back
+     *   to {@code Object[]}.
+     * </p>
      *
      * @param arguments The actual parameter values
      */
-    @Nullable Object evaluate(@Nullable Object... arguments) throws InvocationTargetException;
+    @Nullable Object evaluate(@Nullable Object[] arguments) throws InvocationTargetException;
 
     /**
      * Reconfigures the "default expression type"; if no expression type is configured for an expression, then, when
@@ -372,8 +383,14 @@ interface IExpressionEvaluator extends ICookable, IMultiCookable {
 
     /**
      * Same as {@link #evaluate(Object[])}, but for multiple expressions.
+     * <p>
+     *   <b>Notice:</b> In version 3.1.8, the <var>arguments</var> parameter was changed from {@code Object[]} to
+     *   {@code Object...}, which turned out to be a really bad decision because it caused a very ugly invocation
+     *   ambiguity with {@link #evaluate(int, Object[])}. Thus, with version 3.1.10, the parameter was changed back
+     *   to {@code Object[]}.
+     * </p>
      */
-    @Nullable Object evaluate(int idx, @Nullable Object... arguments) throws InvocationTargetException;
+    @Nullable Object evaluate(int idx, @Nullable Object[] arguments) throws InvocationTargetException;
 
     /**
      * If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator
