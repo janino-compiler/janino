@@ -36,36 +36,64 @@ import java.util.List;
 import org.codehaus.commons.nullanalysis.Nullable;
 
 /**
- * A {@link java.io.FilterWriter} that automatically indents lines by looking at trailing opening braces ('{') and
- * leading closing braces ('}').
+ * A {@link java.io.FilterWriter} that indents lines by processing some control characters in the character stream.
+ * <p>
+ *   {@link #INDENT} or {@link #UNINDENT} may precede lines and indicate that the line and all following lines should
+ *   be (un)indented by one position.
+ * </p>
+ * <p>
+ *   {@link #TABULATOR}s may appear anywhere in lines and dictate that portions of all following lines should be
+ *   vertically aligned (see {@link #resolveTabs(List)}).
+ * </p>
  */
 public
 class AutoIndentWriter extends FilterWriter {
 
     /**
-     * Special character indicating a tabular layout of the following text.
+     * Special character indicating a tabular layout of all following lines until {@link #UNINDENT}.
      */
     public static final char TABULATOR = 0xffff;
 
     /**
-     * Special character indicating to clear all tabluar layout that was configured through {@link #TABULATOR}.
+     * Special character at the beginning of a line that flushes a tabular layout.
      */
     public static final char CLEAR_TABULATORS = 0xfffe;
 
     /**
-     * Special character that inserts a line break and indents the following text by one position.
+     * Special character at the beginning of a line that indents the following text by one position.
      */
     public static final char INDENT = 0xfffd;
 
     /**
-     * Special character that inserts a line break and unindents the following text by one position.
+     * Special character at the beginning of a line that unindents the following text by one position.
      */
     public static final char UNINDENT = 0xfffc;
 
-    private final StringBuilder           lineBuffer = new StringBuilder();
-    private int                           indentation;
+    /**
+     * Buffer for the "current line", including the trailing line break (CR, LF or CRLF).
+     */
+    private final StringBuilder lineBuffer = new StringBuilder();
+
+    /**
+     * The current indentation level; incremented by a {@link #INDENT} char at the beginning of a line, and decremented
+     * by a {@link #UNINDENT} char at the beginning of a line.
+     */
+    private int indentation;
+
+    /**
+     * Iff non-null, then we are in "tab mode". While in tab mode, lines are not printed immediately, but stored in
+     * this buffer. Tab mode starts when a line contains a {@link #TABULATOR}. Tab mode ends when output is unindented
+     * beyond the level when tab mode started, or when this writer is closed.
+     * <p>
+     *   When tab mode ends, all buffered lines are vertically aligned at the {@link #TABULATOR}s and printed.
+     * </p>
+     */
     @Nullable private List<StringBuilder> tabulatorBuffer;
-    private int                           tabulatorIndentation;
+
+    /**
+     * The {@link #indentation} when tab mode started.
+     */
+    private int tabulatorIndentation;
 
     public
     AutoIndentWriter(Writer out) { super(out); }
@@ -91,6 +119,8 @@ class AutoIndentWriter extends FilterWriter {
             return;
         }
         if (this.lineBuffer.length() > 0 && this.lineBuffer.charAt(this.lineBuffer.length() - 1) == '\r') {
+
+            // Non-LF char after CR, i.e. a "Mac line break", "\r":
             this.line(this.lineBuffer.toString());
             this.lineBuffer.setCharAt(0, (char) c);
             this.lineBuffer.setLength(1);
