@@ -51,7 +51,17 @@ h5 {
 
     <h4>Version 3.1.10-SNAPSHOT (only available as source code)</h4>
     <ul>
-      <li>...</li>
+      <li>Fixed issue #202: Gracefully degradation if loading system properties throws an SecurityException</li>
+      <li>Fixed issue #182: Incompatible return types, when there are multiple methods with different return type</li>
+      <li>Fixed issue #188: Some expressions are failing without explicit cast of null</li>
+      <li>C++-style comment before EOI caused an internal compiler error.</li>
+      <li>Fixed issue #195: "Redefinition of constructors and methods allowed".</li>
+      <li>
+        AutoIndentWriter: flush() / close(): The "tabulatorBuffer" and the "lineBuffer" were flushed in the wrong
+        order, leaving the tabulatorBuffer unflushed under some conditions.
+      </li>
+      <li>Fixed issue #196: "First type argument in ReferenceType lose its type arguments".</li>
+      <li>Fixed issue #183: "Add Automatic-Module-Name to MANIFEST.MF".</li>
     </ul>
 
     <h4>Version 3.1.9 2022-11-16</h4>
