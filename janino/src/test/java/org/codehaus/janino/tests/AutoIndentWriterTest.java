@@ -75,6 +75,10 @@ class AutoIndentWriterTest {
         pw.println(AutoIndentWriter.CLEAR_TABULATORS + "aaaa "  + AutoIndentWriter.TABULATOR + "bbbb "  + AutoIndentWriter.TABULATOR + "cccc");
         pw.println(                                    "aaaaa " + AutoIndentWriter.TABULATOR + "bbbbb " + AutoIndentWriter.TABULATOR + "ccccc");
         pw.println(AutoIndentWriter.UNINDENT         + "a b c");
+        pw.println(                                    "aa "    + AutoIndentWriter.TABULATOR + "bb "    + AutoIndentWriter.TABULATOR + "cc");
+        pw.println(                                    "aaa "   + AutoIndentWriter.TABULATOR + "bbb "   + AutoIndentWriter.TABULATOR + "ccc");
+        pw.println(AutoIndentWriter.CLEAR_TABULATORS + "aaaa "  + AutoIndentWriter.TABULATOR + "bbbb "  + AutoIndentWriter.TABULATOR + "cccc");
+        pw.println(                                    "aaaaa " + AutoIndentWriter.TABULATOR + "bbbbb " + AutoIndentWriter.TABULATOR + "ccccc");
         pw.close();
 
         Assert.assertEquals((
@@ -86,6 +90,10 @@ class AutoIndentWriterTest {
             + "    aaaa  bbbb  cccc\n"
             + "    aaaaa bbbbb ccccc\n"
             + "a b c\n"
+            + "aa  bb  cc\n"
+            + "aaa bbb ccc\n"
+            + "aaaa  bbbb  cccc\n"
+            + "aaaaa bbbbb ccccc\n"
         ).replace("\n", AutoIndentWriterTest.LS), sw.toString());
     }
 }
