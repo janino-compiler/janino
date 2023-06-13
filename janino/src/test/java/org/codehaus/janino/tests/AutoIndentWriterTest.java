@@ -25,8 +25,8 @@
 
 package org.codehaus.janino.tests;
 
-import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 
 import org.codehaus.janino.util.AutoIndentWriter;
 import org.junit.Assert;
@@ -38,71 +38,89 @@ class AutoIndentWriterTest {
     private static final String LS = System.getProperty("line.separator");
 
     @Test public void
-    testIndent() {
+    testIndent() throws Exception {
 
-        StringWriter sw = new StringWriter();
-        PrintWriter  pw = new PrintWriter(new AutoIndentWriter(sw));
+        StringWriter sw  = new StringWriter();
+        Writer       aiw = new AutoIndentWriter(sw);
 
-        pw.println("aaa");
-        pw.println(AutoIndentWriter.INDENT + "bbb");
-        pw.println(AutoIndentWriter.INDENT + "ccc");
-        pw.println(AutoIndentWriter.UNINDENT + "ddd");
-        pw.println(AutoIndentWriter.UNINDENT + "eee");
-        pw.println("fff");
-        pw.close();
+        aiw.write(
+            (
+                ""
+                +                             "aaa\n"
+                + AutoIndentWriter.INDENT   + "bbb\n"
+                + AutoIndentWriter.INDENT   + "ccc\n"
+                + AutoIndentWriter.UNINDENT + "ddd\n"
+                + AutoIndentWriter.UNINDENT + "eee\n"
+                +                             "fff\n"
+            ).replace("\n", AutoIndentWriterTest.LS)
+        );
+        aiw.close();
 
-        Assert.assertEquals((
-            ""
-            + "aaa\n"
-            + "    bbb\n"
-            + "        ccc\n"
-            + "    ddd\n"
-            + "eee\n"
-            + "fff\n"
-        ).replace("\n", AutoIndentWriterTest.LS), sw.toString());
+        Assert.assertEquals(
+            (
+                ""
+                + "aaa\n"
+                + "    bbb\n"
+                + "        ccc\n"
+                + "    ddd\n"
+                + "eee\n"
+                + "fff\n"
+            ).replace("\n", AutoIndentWriterTest.LS),
+            sw.toString()
+        );
     }
 
     @Test public void
-    testTabulator() {
+    testTabulator() throws Exception {
 
-        StringWriter sw = new StringWriter();
-        PrintWriter  pw = new PrintWriter(new AutoIndentWriter(sw));
+        StringWriter sw  = new StringWriter();
+        Writer       aiw = new AutoIndentWriter(sw);
 
         // SUPPRESS CHECKSTYLE Whitespace:15
-        pw.println(                                    "a b c");
-        pw.println(                                    "aa "    + AutoIndentWriter.TABULATOR + "bb "    + AutoIndentWriter.TABULATOR + "cc");
-        pw.println(                                    "aaa "   + AutoIndentWriter.TABULATOR + "bbb "   + AutoIndentWriter.TABULATOR + "ccc");
-        pw.println(AutoIndentWriter.CLEAR_TABULATORS + "aaaa "  + AutoIndentWriter.TABULATOR + "bbbb "  + AutoIndentWriter.TABULATOR + "cccc");
-        pw.println(                                    "aaaaa " + AutoIndentWriter.TABULATOR + "bbbbb " + AutoIndentWriter.TABULATOR + "ccccc");
-        pw.println(AutoIndentWriter.INDENT           + "a b c");
-        pw.println(                                    "aa "    + AutoIndentWriter.TABULATOR + "bb "    + AutoIndentWriter.TABULATOR + "cc");
-        pw.println(                                    "aaa "   + AutoIndentWriter.TABULATOR + "bbb "   + AutoIndentWriter.TABULATOR + "ccc");
-        pw.println(AutoIndentWriter.CLEAR_TABULATORS + "aaaa "  + AutoIndentWriter.TABULATOR + "bbbb "  + AutoIndentWriter.TABULATOR + "cccc");
-        pw.println(                                    "aaaaa " + AutoIndentWriter.TABULATOR + "bbbbb " + AutoIndentWriter.TABULATOR + "ccccc");
-        pw.println(AutoIndentWriter.UNINDENT         + "a b c");
-        pw.println(                                    "aa "    + AutoIndentWriter.TABULATOR + "bb "    + AutoIndentWriter.TABULATOR + "cc");
-        pw.println(                                    "aaa "   + AutoIndentWriter.TABULATOR + "bbb "   + AutoIndentWriter.TABULATOR + "ccc");
-        pw.println(AutoIndentWriter.CLEAR_TABULATORS + "a "     + AutoIndentWriter.TABULATOR + "b "     + AutoIndentWriter.TABULATOR + "c");
-        pw.println(                                    "aa "    + AutoIndentWriter.TABULATOR + "bb "    + AutoIndentWriter.TABULATOR + "cc");
-        pw.close();
+        aiw.write(
+            (
+                ""
+                +                                     "a b c\n"
+                +                                     "aa \tbb \tcc\n"
+                +                                     "aaa \tbbb \tccc\n"
+                + AutoIndentWriter.CLEAR_TABULATORS + "aaaa \tbbbb \tcccc\n"
+                +                                     "aaaaa \tbbbbb \tccccc\n"
+                + AutoIndentWriter.INDENT           + "a b c\n"
+                +                                     "aa \tbb \tcc\n"
+                +                                     "aaa \tbbb \tccc\n"
+                + AutoIndentWriter.CLEAR_TABULATORS + "aaaa \tbbbb \tcccc\n"
+                +                                     "aaaaa \tbbbbb \tccccc\n"
+                + AutoIndentWriter.UNINDENT         + "a b c\n"
+                +                                     "aa \tbb \tcc\n"
+                +                                     "aaa \tbbb \tccc\n"
+                + AutoIndentWriter.CLEAR_TABULATORS + "a \tb \tc\n"
+                +                                     "aa \tbb \tcc\n"
+            )
+            .replace("\n", AutoIndentWriterTest.LS)
+            .replace("\t", Character.toString(AutoIndentWriter.TABULATOR))
+        );
+        aiw.close();
 
-        Assert.assertEquals((
-            ""
-            + "a b c\n"
-            + "aa  bb  cc\n"            // Tabbing #1
-            + "aaa bbb ccc\n"           // Tabbing #1
-            + "aaaa  bbbb  cccc\n"      // Tabbing #2
-            + "aaaaa bbbbb ccccc\n"     // Tabbing #2
-            + "    a b c\n"
-            + "    aa  bb  cc\n"        // Tabbing #3
-            + "    aaa bbb ccc\n"       // Tabbing #3
-            + "    aaaa  bbbb  cccc\n"  // Tabbing #4
-            + "    aaaaa bbbbb ccccc\n" // Tabbing #4
-            + "a b c\n"
-            + "aa    bb    cc\n"        // Tabbing #2 continued
-            + "aaa   bbb   ccc\n"       // Tabbing #2
-            + "a  b  c\n"               // Tabbing #5
-            + "aa bb cc\n"              // Tabbing #5
-        ).replace("\n", AutoIndentWriterTest.LS), sw.toString());
+        Assert.assertEquals(
+            (
+                ""
+                + "a b c\n"
+                + "aa  bb  cc\n"            // Tabbing #1
+                + "aaa bbb ccc\n"           // Tabbing #1
+                + "aaaa  bbbb  cccc\n"      // Tabbing #2
+                + "aaaaa bbbbb ccccc\n"     // Tabbing #2
+                + "    a b c\n"
+                + "    aa  bb  cc\n"        // Tabbing #3
+                + "    aaa bbb ccc\n"       // Tabbing #3
+                + "    aaaa  bbbb  cccc\n"  // Tabbing #4
+                + "    aaaaa bbbbb ccccc\n" // Tabbing #4
+                + "a b c\n"
+                + "aa    bb    cc\n"        // Tabbing #2 continued
+                + "aaa   bbb   ccc\n"       // Tabbing #2
+                + "a  b  c\n"               // Tabbing #5
+                + "aa bb cc\n"              // Tabbing #5
+            ).replace("\n", AutoIndentWriterTest.LS),
+            sw.toString()
+        );
     }
 }
