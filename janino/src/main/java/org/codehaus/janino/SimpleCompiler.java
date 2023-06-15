@@ -225,6 +225,15 @@ class SimpleCompiler extends Cookable implements ISimpleCompiler {
      */
     public void
     cook(Scanner scanner) throws CompileException, IOException {
+        try {
+            this.cook2(scanner);
+        } catch (StackOverflowError soe) {
+            throw new CompileException("Compilation unit is nested too deeply", null, soe);
+        }
+    }
+
+    private void
+    cook2(Scanner scanner) throws CompileException, IOException {
 
         Parser parser = new Parser(scanner);
         parser.setSourceVersion(this.sourceVersion);

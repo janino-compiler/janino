@@ -150,6 +150,8 @@ class CommonsCompilerTestSuite {
         @Override public void setCompileErrorHandler(ErrorHandler errorHandler) { this.expressionEvaluator.setCompileErrorHandler(errorHandler); }
         @Override public void setWarningHandler(WarningHandler warningHandler)  { this.expressionEvaluator.setWarningHandler(warningHandler);    }
 
+        public void setParameters(String[] parameterNames, Class<?>[] parameterTypes) { this.expressionEvaluator.setParameters(parameterNames, parameterTypes); }
+
         @Override protected void
         cook() throws Exception {
             this.expressionEvaluator.cook(this.expression);

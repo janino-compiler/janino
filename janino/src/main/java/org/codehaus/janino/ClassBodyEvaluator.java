@@ -269,6 +269,15 @@ class ClassBodyEvaluator extends Cookable implements IClassBodyEvaluator {
 
     public void
     cook(Scanner scanner) throws CompileException, IOException {
+        try {
+            this.cook2(scanner);
+        } catch (StackOverflowError soe) {
+            throw new CompileException("Script is nested too deeply", null, soe);
+        }
+    }
+
+    private void
+    cook2(Scanner scanner) throws CompileException, IOException {
 
         Parser parser = new Parser(scanner);
         parser.setSourceVersion(this.sourceVersion);

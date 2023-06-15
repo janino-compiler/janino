@@ -374,9 +374,7 @@ class Compiler extends AbstractCompiler {
                 options,          // options
                 null,             // classes
                 sourceFileObjects // compilationUnits
-            ).call() || compileErrorCount[0] > 0) {
-                throw new CompileException("Compilation failed with " + compileErrorCount[0] + " errors", null);
-            }
+            ).call() && compileErrorCount[0] == 0) throw new CompileException("Compilation failed for an unknown reason", null);
         } catch (RuntimeException rte) {
 
             // Unwrap the compilation exception and throw it.
@@ -389,6 +387,10 @@ class Compiler extends AbstractCompiler {
                 }
             }
             throw rte;
+        }
+
+        if (compileErrorCount[0] > 0) {
+            throw new CompileException("Compilation failed with " + compileErrorCount[0] + " errors", null);
         }
     }
 

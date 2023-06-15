@@ -527,7 +527,11 @@ class CompilerTest {
                 @Override public void handleError(String message, @Nullable Location location) { count[0]++; }
             });
 
-            CompilerTest.assertUncompilable("Compilation failed with 1 errors|error.*while compiling", compiler, sourceFinder);
+            CompilerTest.assertUncompilable(
+                "Compilation failed with 1 errors|error.*while compiling|unknown reason",
+                compiler,
+                sourceFinder
+            );
             Assert.assertEquals(1, count[0]);
         }
     }

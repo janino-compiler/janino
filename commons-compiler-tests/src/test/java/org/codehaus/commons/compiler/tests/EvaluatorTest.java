@@ -287,7 +287,7 @@ class EvaluatorTest extends CommonsCompilerTestSuite {
                 @Override public void handleError(String message, @Nullable Location location) { count[0]++; }
             });
 
-            et.assertUncookable("failed with 1 errors|error.*while compiling");
+            et.assertUncookable("failed with 1 errors|error.*while compiling|unknown reason");
             Assert.assertTrue(count[0] > 0);
         }
     }

@@ -1674,4 +1674,25 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "}\n"
         );
     }
+
+    @Test public void
+    testIssue201() throws Exception {
+
+        // That should be enough to cause a stack overflow:
+        String expression = ReportedBugsTest._nestedDoc(20000, "( ", ") ", "t");
+
+        ExpressionTest et = new ExpressionTest(expression);
+        et.setParameters(new String[] { "t" }, new Class[] { int.class });
+
+        et.assertUncookable("nested|unknown reason");
+    }
+
+    public static String
+    _nestedDoc(int nesting, String open, String close, String content) {
+        StringBuilder sb = new StringBuilder(nesting * (open.length() + close.length()));
+        for (int i = 0; i < nesting; ++i) sb.append(open);
+        sb.append(content);
+        for (int i = 0; i < nesting; ++i) sb.append(close);
+        return sb.toString();
+    }
 }

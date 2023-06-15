@@ -209,6 +209,15 @@ class Compiler extends AbstractCompiler {
 
     @Override public void
     compile(Resource[] sourceResources) throws CompileException, IOException {
+        try {
+            this.compile2(sourceResources);
+        } catch (StackOverflowError soe) {
+            throw new CompileException("Compilation unit is nested too deeply", null, soe);
+        }
+    }
+
+    private void
+    compile2(Resource[] sourceResources) throws CompileException, IOException {
 
         this.benchmark.beginReporting();
         try {

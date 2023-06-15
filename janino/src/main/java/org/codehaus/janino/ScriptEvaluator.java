@@ -683,6 +683,15 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      */
     public final void
     cook(Parser[] parsers) throws CompileException, IOException {
+        try {
+            this.cook2(parsers);
+        } catch (StackOverflowError soe) {
+            throw new CompileException("Script is nested too deeply", null, soe);
+        }
+    }
+
+    private void
+    cook2(Parser[] parsers) throws CompileException, IOException {
 
         int count = parsers.length;
 
@@ -1306,6 +1315,15 @@ class ScriptEvaluator extends MultiCookable implements IScriptEvaluator {
      */
     public static String[]
     guessParameterNames(Scanner scanner) throws CompileException, IOException {
+        try {
+            return ScriptEvaluator.guessParameterNames2(scanner);
+        } catch (StackOverflowError soe) {
+            throw new CompileException("Script is nested too deeply", null, soe);
+        }
+    }
+
+    private static String[]
+    guessParameterNames2(Scanner scanner) throws CompileException, IOException {
 
         Parser parser = new Parser(scanner);
 
