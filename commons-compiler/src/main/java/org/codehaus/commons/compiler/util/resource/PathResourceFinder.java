@@ -90,9 +90,10 @@ class PathResourceFinder extends LazyMultiResourceFinder {
     createResourceFinder(final File entry) {
 
         // ZIP file or JAR file.
+        // Notice: In old JDKs, the ZIP and JAR files had to be named "*.zip" and ".jar", but no longer. Issue #205
         if (
-            (entry.getName().endsWith(".jar") || entry.getName().endsWith(".zip"))
-            && entry.isFile()
+//            (entry.getName().endsWith(".jar") || entry.getName().endsWith(".zip")) &&
+            entry.isFile()
         ) {
             try {
                 return new ZipFileResourceFinder(new ZipFile(entry));
