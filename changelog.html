@@ -49,8 +49,16 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.1.10-SNAPSHOT (only available as source code)</h4>
+    <h4>Version 3.1.11 (only available as source code)</h4>
     <ul>
+      <li>...</li>
+    </ul>
+
+    <h4>Version 3.1.10 2023-07-04</h4>
+    <ul>
+      <li>Fixed issue #205: Classpath: Class archive file naming: Removed the file name check for class file archives; previously: *.jar and *.zip</li>
+      <li>Fixed issue #201: A Stack overflow error: Catch StackOverflowError in all relevant API methods 8e.g. "cook()" and "guessParameterNames()") and convert it into a CompileException.</li>
+      <li>Fixed issue #204: Evaluate method is ambiguous: Changed method "evaluate(Object...)" back to "evaluate(Object[])", and added a method "evaluate()" for convenience.</li>
       <li>Fixed issue #202: Gracefully degradation if loading system properties throws an SecurityException</li>
       <li>Fixed issue #182: Incompatible return types, when there are multiple methods with different return type</li>
       <li>Fixed issue #188: Some expressions are failing without explicit cast of null</li>
