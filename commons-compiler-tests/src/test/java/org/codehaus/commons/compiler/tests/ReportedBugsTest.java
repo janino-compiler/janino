@@ -1695,4 +1695,186 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         for (int i = 0; i < nesting; ++i) sb.append(close);
         return sb.toString();
     }
+
+    @Test public void
+    testIssue208UnconditionalForWithUpdateWithBodyThatCannotCompleteNormally() throws Exception {
+
+        String body = (
+            ""
+            + "public class MyClass {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "\n"
+            + "        for (int c = 7; true; c++) {\n"
+            + "            boolean a = false;\n"  // Any type but "long" or "double"\n"
+            + "            long    b = 33;\n"     // "double" works as well.\n"
+            + "            break;\n"           // Unconditional; "break" works as well.\n"
+            + "        }\n"        // Doesn't matter if condition has constant value or not.\n"
+            + "        \n"
+            + "        int     c = 9;\n"          // Any type but "long" or "double"\n"
+            + "        boolean d = false;\n"      // Any type but "long" or "double"\n"
+            + "        long    e = -1;\n"         // "double" works as well <== java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -1 is negative\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}\n"
+        );
+        this.assertCompilationUnitMainReturnsTrue(body, "MyClass");
+    }
+
+    @Test public void
+    testIssue208UnconditionalForWithoutUpdateWithBodyThatCannotCompleteNormally() throws Exception {
+
+        String body = (
+            ""
+            + "public class MyClass {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "\n"
+            + "        for (int c = 7; true;) {\n" // Doesn't matter if condition has constant value or not.
+            + "            boolean a = false;\n"   // Any type but "long" or "double"
+            + "            long    b = 33;\n"      // "double" works as well.
+            + "            break;\n"               // Unconditional
+            + "        }\n"
+            + "        \n"
+            + "        int     c = 9;\n"          // Any type but "long" or "double"
+            + "        boolean d = false;\n"      // Any type but "long" or "double"
+            + "        long    e = -1;\n"         // "double" works as well <== java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -1 is negative
+            + "        return true;\n"
+            + "    }\n"
+            + "}\n"
+        );
+        this.assertCompilationUnitMainReturnsTrue(body, "MyClass");
+    }
+
+    @Test public void
+    testIssue208UnconditionalWhileWithBodyThatCannotCompleteNormally() throws Exception {
+
+        String body = (
+            ""
+            + "public class MyClass {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "\n"
+            + "        while (true) {\n"          // Doesn't matter if condition has constant value or not.\n"
+            + "            boolean a = false;\n"  // Any type but "long" or "double"\n"
+            + "            long    b = 33;\n"     // "double" works as well.\n"
+            + "            break;\n"              // Unconditional
+            + "        }\n"
+            + "        \n"
+            + "        int     c = 9;\n"          // Any type but "long" or "double"\n"
+            + "        boolean d = false;\n"      // Any type but "long" or "double"\n"
+            + "        long    e = -1;\n"         // "double" works as well <== java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -1 is negative\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}\n"
+        );
+        this.assertCompilationUnitMainReturnsTrue(body, "MyClass");
+    }
+
+    @Test public void
+    testIssue208WhileWithBodyThatCannotCompleteNormally() throws Exception {
+
+        String body = (
+            ""
+            + "public class MyClass {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "\n"
+            + "        while (System.currentTimeMillis() != 0) {\n" // Doesn't matter if condition has constant value or not.
+            + "            boolean a = false;\n"                    // Any type but "long" or "double"
+            + "            long    b = 33;\n"                       // "double" works as well.
+            + "            break;\n"                                // Unconditional
+            + "        }\n"
+            + "        \n"
+            + "        int     c = 9;\n"                            // Any type but "long" or "double"
+            + "        boolean d = false;\n"                        // Any type but "long" or "double"
+            + "        long    e = -1;\n"                           // "double" works as well <== java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -1 is negative
+            + "        return true;\n"
+            + "    }\n"
+            + "}\n"
+        );
+        this.assertCompilationUnitMainReturnsTrue(body, "MyClass");
+    }
+
+    @Test public void
+    testIssue208DoWithBodyThatCannotCompleteNormally1() throws Exception {
+
+        String body = (
+            ""
+            + "public class MyClass {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "\n"
+            + "        do {\n"
+            + "            boolean a = false;\n"  // Any type but "long" or "double"
+            + "            long    b = 33;\n"     // "double" works as well.
+            + "            continue;\n"           // Unconditional
+            + "        } while (false);\n"        // Doesn't matter if condition has constant value or not.
+            + "        \n"
+            + "        int     c = 9;\n"          // Any type but "long" or "double"
+            + "        boolean d = false;\n"      // Any type but "long" or "double"
+            + "        long    e = -1;\n"         // "double" works as well <== java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -1 is negative
+            + "        return true;\n"
+            + "    }\n"
+            + "}\n"
+        );
+        this.assertCompilationUnitMainReturnsTrue(body, "MyClass");
+    }
+
+    @Test public void
+    testIssue208DoWithBodyThatCannotCompleteNormally2() throws Exception {
+
+        String body = (
+            ""
+            + "public class MyClass {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "\n"
+            + "        do {\n"
+            + "            boolean a = false;\n"  // Any type but "long" or "double"
+            + "            long    b = 33;\n"     // "double" works as well.
+            + "            break;\n"              // Unconditional
+            + "        } while (false);\n"        // Doesn't matter if condition has constant value or not.
+            + "        \n"
+            + "        int     c = 9;\n"          // Any type but "long" or "double"
+            + "        boolean d = false;\n"      // Any type but "long" or "double"
+            + "        long    e = -1;\n"         // "double" works as well <== java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -1 is negative
+            + "        return true;\n"
+            + "    }\n"
+            + "}\n"
+        );
+        this.assertCompilationUnitMainReturnsTrue(body, "MyClass");
+    }
+
+    @Test public void
+    testIssue208LabeledStatemntWithBodyThatCannotCompleteNormally() throws Exception {
+
+        String body = (
+            ""
+            + "public class MyClass {\n"
+            + "\n"
+            + "    public static boolean\n"
+            + "    main() {\n"
+            + "\n"
+            + "        LABEL: {\n"
+            + "            boolean a = false;\n"  // Any type but "long" or "double"
+            + "            long    b = 33;\n"     // "double" works as well.
+            + "            break;\n"              // Unconditional
+            + "        }\n"
+            + "        \n"
+            + "        int     c = 9;\n"          // Any type but "long" or "double"
+            + "        boolean d = false;\n"      // Any type but "long" or "double"
+            + "        long    e = -1;\n"         // "double" works as well <== java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -1 is negative
+            + "        return true;\n"
+            + "    }\n"
+            + "}\n"
+        );
+        this.assertCompilationUnitMainReturnsTrue(body, "MyClass");
+    }
 }

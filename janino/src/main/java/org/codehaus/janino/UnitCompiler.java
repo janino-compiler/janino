@@ -1688,32 +1688,38 @@ class UnitCompiler {
         final CodeContext.Offset bodyOffset = this.getCodeContext().newBasicBlock();
 
         // Compile body.
-        ds.whereToContinue = null;
-        if (!this.compile(ds.body) && ds.whereToContinue == null) {
-            this.warning("DSNTC", "\"do\" statement never tests its condition", ds.getLocation());
+        assert ds.whereToBreak    == null;
+        assert ds.whereToContinue == null;
+
+        this.getCodeContext().saveLocalVariables();
+        try {
+
+            if (!this.compile(ds.body) && ds.whereToContinue == null) {
+                this.warning("DSNTC", "\"do\" statement never tests its condition", ds.getLocation());
+
+                Offset wtb = ds.whereToBreak;
+                if (wtb == null) return false;
+
+                wtb.set();
+
+                return true;
+            }
+
+            Offset wtc = ds.whereToContinue;
+            if (wtc != null) wtc.set();
+
+            // Compile condition.
+            this.compileBoolean(ds.condition, bodyOffset, UnitCompiler.JUMP_IF_TRUE);
 
             Offset wtb = ds.whereToBreak;
-            if (wtb == null) return false;
-
-            wtb.set();
-            ds.whereToBreak = null;
+            if (wtb != null) wtb.set();
 
             return true;
-        }
-        if (ds.whereToContinue != null) {
-            ds.whereToContinue.set();
+        } finally {
+            ds.whereToBreak   = null;
             ds.whereToContinue = null;
+            this.getCodeContext().restoreLocalVariables();
         }
-
-        // Compile condition.
-        this.compileBoolean(ds.condition, bodyOffset, UnitCompiler.JUMP_IF_TRUE);
-
-        if (ds.whereToBreak != null) {
-            ds.whereToBreak.set();
-            ds.whereToBreak = null;
-        }
-
-        return true;
     }
 
     private boolean
@@ -1963,6 +1969,8 @@ class UnitCompiler {
 
     private boolean
     compile2(WhileStatement ws) throws CompileException {
+
+        // Check for special case: WHILE with constant condition.
         Object cvc = this.getConstantValue(ws.condition);
         if (cvc != UnitCompiler.NOT_CONSTANT) {
             if (Boolean.TRUE.equals(cvc)) {
@@ -1977,13 +1985,19 @@ class UnitCompiler {
             }
         }
 
+        assert ws.whereToBreak    == null;
+        assert ws.whereToContinue == null;
+
         // GOTO condition.
-        Offset wtc = this.getCodeContext().new BasicBlock();
-        this.gotO(ws, wtc);
-        final CodeContext.Offset bodyOffset = this.getCodeContext().newBasicBlock();
-        Inserter bodyInserter = this.codeContext.newInserter();
-        wtc.set();
-        ws.whereToContinue = null;
+        final CodeContext.Offset bodyOffset;
+        final Inserter           bodyInserter;
+        {
+            Offset wtc = this.getCodeContext().new BasicBlock();
+            this.gotO(ws, wtc);
+            bodyOffset = this.getCodeContext().newBasicBlock();
+            bodyInserter = this.codeContext.newInserter();
+            wtc.set();
+        }
 
         // Compile the condition first.
         // This is necessary because the condition may modify the stack map, e.g.
@@ -1994,47 +2008,64 @@ class UnitCompiler {
         this.compileBoolean(ws.condition, bodyOffset, UnitCompiler.JUMP_IF_TRUE);
 
         // Now compile the body.
+        this.getCodeContext().saveLocalVariables();
         try {
-            StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
-            this.codeContext.pushInserter(bodyInserter);
-            this.codeContext.currentInserter().setStackMap(smBeforeBody);
 
-            this.compile(ws.body); // Return value (CCN) is ignored.
+            try {
+                StackMap smBeforeBody = this.codeContext.currentInserter().getStackMap();
+                this.codeContext.pushInserter(bodyInserter);
+                this.codeContext.currentInserter().setStackMap(smBeforeBody);
 
-            if (ws.whereToContinue != null) {
-                ws.whereToContinue.set();
-                ws.whereToContinue = null;
+                if (!this.compile(ws.body) && ws.whereToContinue == null) {
+                    this.warning("DSNTC", "\"where\" statement never repeats", ws.getLocation());
+                }
+
+                Offset wtc = ws.whereToContinue;
+                if (wtc != null) wtc.set();
+            } finally {
+                this.codeContext.popInserter();
             }
+
+            Offset wtb = ws.whereToBreak;
+            if (wtb != null) wtb.set();
+
+            return true;
         } finally {
-            this.codeContext.popInserter();
+            ws.whereToBreak    = null;
+            ws.whereToContinue = null;
+            this.getCodeContext().restoreLocalVariables();
         }
-
-        if (ws.whereToBreak != null) {
-            ws.whereToBreak.set();
-            ws.whereToBreak = null;
-        }
-
-        return true;
     }
 
     private boolean
     compileUnconditionalLoop(ContinuableStatement cs, BlockStatement body, @Nullable Rvalue[] update)
     throws CompileException {
+
         if (update != null) return this.compileUnconditionalLoopWithUpdate(cs, body, update);
 
-        // Compile body.
-        Offset wtc = (cs.whereToContinue = this.getCodeContext().newBasicBlock());
-        if (this.compile(body)) this.gotO(cs, wtc);
-        cs.whereToContinue = null;
+        assert cs.whereToBreak    == null;
+        assert cs.whereToContinue == null;
 
-        Offset wtb = cs.whereToBreak;
-        if (wtb == null) return false;
+        this.getCodeContext().saveLocalVariables();
+        try {
 
-        wtb.set();
-        cs.whereToBreak = null;
+            // Compile body.
+            Offset wtc = (cs.whereToContinue = this.getCodeContext().newBasicBlock());
+            if (this.compile(body)) this.gotO(cs, wtc);
 
-        return true;
+            Offset wtb = cs.whereToBreak;
+            if (wtb == null) return false;
+
+            wtb.set();
+
+            return true;
+        } finally {
+            cs.whereToBreak    = null;
+            cs.whereToContinue = null;
+            this.getCodeContext().restoreLocalVariables();
+        }
     }
+
     private boolean
     compileUnconditionalLoopWithUpdate(ContinuableStatement cs, BlockStatement body, Rvalue[] update)
     throws CompileException {
@@ -2067,18 +2098,24 @@ class UnitCompiler {
 
     private boolean
     compile2(LabeledStatement ls) throws CompileException {
-        boolean canCompleteNormally = this.compile(ls.body);
 
-        Offset wtb = ls.whereToBreak;
-        if (wtb == null) return canCompleteNormally;
+        assert ls.whereToBreak == null;
 
-        if (!canCompleteNormally) this.getCodeContext().currentInserter().setStackMap(wtb.getStackMap());
+        this.getCodeContext().saveLocalVariables();
+        try {
 
-        wtb.set();
+            boolean canCompleteNormally = this.compile(ls.body);
 
-        ls.whereToBreak = null;
+            Offset wtb = ls.whereToBreak;
+            if (wtb == null) return canCompleteNormally;
 
-        return true;
+            wtb.set();
+
+            return true;
+        } finally {
+            ls.whereToBreak = null;
+            this.getCodeContext().restoreLocalVariables();
+        }
     }
 
     private enum SwitchKind { INT, ENUM, STRING }
