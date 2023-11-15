@@ -1738,9 +1738,9 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "            break;\n"               // Unconditional
             + "        }\n"
             + "        \n"
-            + "        int     c = 9;\n"          // Any type but "long" or "double"
-            + "        boolean d = false;\n"      // Any type but "long" or "double"
-            + "        long    e = -1;\n"         // "double" works as well <== java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -1 is negative
+            + "        int     c = 9;\n"           // Any type but "long" or "double"
+            + "        boolean d = false;\n"       // Any type but "long" or "double"
+            + "        long    e = -1;\n"          // "double" works as well <== java.lang.ArrayIndexOutOfBoundsException: arraycopy: length -1 is negative
             + "        return true;\n"
             + "    }\n"
             + "}\n"
