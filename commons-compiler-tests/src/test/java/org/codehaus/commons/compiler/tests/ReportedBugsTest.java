@@ -1853,7 +1853,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    testIssue208LabeledStatemntWithBodyThatCannotCompleteNormally() throws Exception {
+    testIssue208LabeledStatementWithBodyThatCannotCompleteNormally() throws Exception {
 
         String body = (
             ""
@@ -1865,7 +1865,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "        LABEL: {\n"
             + "            boolean a = false;\n"  // Any type but "long" or "double"
             + "            long    b = 33;\n"     // "double" works as well.
-            + "            break;\n"              // Unconditional
+            + "            break LABEL;\n"        // Unconditional
             + "        }\n"
             + "        \n"
             + "        int     c = 9;\n"          // Any type but "long" or "double"
