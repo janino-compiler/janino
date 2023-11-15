@@ -2398,12 +2398,14 @@ class UnitCompiler {
         // Find the broken statement.
         BreakableStatement brokenStatement = null;
         if (bs.label == null) {
+
+            // Unlabeled BREAK:
             for (
                 Scope s = bs.getEnclosingScope();
                 s instanceof Statement || s instanceof CatchClause;
                 s = s.getEnclosingScope()
             ) {
-                if (s instanceof BreakableStatement) {
+                if (s instanceof BreakableStatement && !(s instanceof LabeledStatement)) {
                     brokenStatement = (BreakableStatement) s;
                     break;
                 }
@@ -2413,6 +2415,8 @@ class UnitCompiler {
                 return false;
             }
         } else {
+
+            // Labeled BREAK:
             for (
                 Scope s = bs.getEnclosingScope();
                 s instanceof Statement || s instanceof CatchClause;
@@ -2452,6 +2456,8 @@ class UnitCompiler {
         // Find the continued statement.
         ContinuableStatement continuedStatement = null;
         if (cs.label == null) {
+
+            // Unlabeled CONTINUE:
             for (
                 Scope s = cs.getEnclosingScope();
                 s instanceof Statement || s instanceof CatchClause;
@@ -2470,6 +2476,8 @@ class UnitCompiler {
                 return false;
             }
         } else {
+
+            // Labeled CONTINUE:
             for (
                 Scope s = cs.getEnclosingScope();
                 s instanceof Statement || s instanceof CatchClause;
