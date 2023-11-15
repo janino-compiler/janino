@@ -25,12 +25,9 @@
 
 package org.codehaus.commons.compiler;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Properties;
+import java.util.ServiceLoader;
 
 import org.codehaus.commons.nullanalysis.Nullable;
 
@@ -76,30 +73,17 @@ class CompilerFactoryFactory {
             return CompilerFactoryFactory.defaultCompilerFactory;
         }
 
-        Properties properties;
-        {
-            InputStream is = classLoader.getResourceAsStream("org.codehaus.commons.compiler.properties");
-            if (is == null) {
-                throw new ClassNotFoundException(
-                    "No implementation of org.codehaus.commons.compiler could be loaded."
-                    + " Typically, you'd have  \"janino.jar\", or \"commons-compiler-jdk.jar\","
-                    + " or both on the classpath, and use the \"ClassLoader.getSystemClassLoader\" to load them."
-                );
-            }
-            try {
-                properties = new Properties();
-                properties.load(is);
-            } finally {
-                is.close();
-            }
+        ICompilerFactory[] allCompilerFactories = CompilerFactoryFactory.getAllCompilerFactories(classLoader);
+        if (allCompilerFactories.length == 0) {
+            throw new ClassNotFoundException(
+                "No implementation of org.codehaus.commons.compiler could be loaded."
+                + " Typically, you'd have  \"janino.jar\", or \"commons-compiler-jdk.jar\","
+                + " or both on the classpath, and use the \"ClassLoader.getSystemClassLoader\" to load them."
+            );
         }
+        ICompilerFactory cf = allCompilerFactories[0];
 
-        String compilerFactoryClassName = properties.getProperty("compilerFactory");
-
-        return (
-            CompilerFactoryFactory.defaultCompilerFactory
-            = CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName, classLoader)
-        );
+        return (CompilerFactoryFactory.defaultCompilerFactory = allCompilerFactories[0]);
     }
 
     /**
@@ -131,27 +115,7 @@ class CompilerFactoryFactory {
     getAllCompilerFactories(ClassLoader classLoader) throws Exception {
 
         List<ICompilerFactory> factories = new ArrayList<>();
-        for (Enumeration<URL> en = classLoader.getResources("org.codehaus.commons.compiler.properties"); en.hasMoreElements();) {
-            URL url = (URL) en.nextElement();
-
-            Properties properties;
-            {
-                properties = new Properties();
-                InputStream is = url.openStream();
-                try {
-                    properties.load(is);
-                } finally {
-                    is.close();
-                }
-            }
-
-            String compilerFactoryClassName = properties.getProperty("compilerFactory");
-            if (compilerFactoryClassName == null) {
-                throw new IllegalStateException(url.toString() + " does not specify the 'compilerFactory' property");
-            }
-
-            factories.add(CompilerFactoryFactory.getCompilerFactory(compilerFactoryClassName, classLoader));
-        }
+        for (ICompilerFactory cf : ServiceLoader.load(ICompilerFactory.class, classLoader)) factories.add(cf);
         return (ICompilerFactory[]) factories.toArray(new ICompilerFactory[factories.size()]);
     }
 
