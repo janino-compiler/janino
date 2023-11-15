@@ -133,6 +133,7 @@ import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
 import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.SwitchStatement;
 import org.codehaus.janino.Java.SynchronizedStatement;
+import org.codehaus.janino.Java.TextBlock;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
@@ -289,6 +290,7 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
         @Override @Nullable public Void visitBooleanLiteral(BooleanLiteral bl)                              throws EX { AbstractTraverser.this.delegate.traverseBooleanLiteral(bl);                   return null; }
         @Override @Nullable public Void visitCharacterLiteral(CharacterLiteral cl)                          throws EX { AbstractTraverser.this.delegate.traverseCharacterLiteral(cl);                 return null; }
         @Override @Nullable public Void visitStringLiteral(StringLiteral sl)                                throws EX { AbstractTraverser.this.delegate.traverseStringLiteral(sl);                    return null; }
+        @Override @Nullable public Void visitTextBlock(TextBlock tb)                                        throws EX { AbstractTraverser.this.delegate.traverseTextBlock(tb);                        return null; }
         @Override @Nullable public Void visitNullLiteral(NullLiteral nl)                                    throws EX { AbstractTraverser.this.delegate.traverseNullLiteral(nl);                      return null; }
         @Override @Nullable public Void visitSimpleConstant(SimpleConstant sl)                              throws EX { AbstractTraverser.this.delegate.traverseSimpleLiteral(sl);                    return null; }
         @Override @Nullable public Void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      throws EX { AbstractTraverser.this.delegate.traverseNewAnonymousClassInstance(naci);      return null; }
@@ -806,6 +808,9 @@ class AbstractTraverser<EX extends Throwable> implements Traverser<EX> {
 
     @Override public void
     traverseStringLiteral(StringLiteral sl) throws EX { this.traverseLiteral(sl); }
+
+    @Override public void
+    traverseTextBlock(TextBlock tb) throws EX { this.traverseLiteral(tb); }
 
     @Override public void
     traverseNullLiteral(NullLiteral nl) throws EX { this.traverseLiteral(nl); }

@@ -6054,6 +6054,17 @@ class Java {
     }
 
     /**
+     * Representation of a "text block" (JLS17 3.10.6 Text Blocks) (type {@link String}).
+     */
+    public static final
+    class TextBlock extends Literal {
+        public TextBlock(Location location, String value) { super(location, value); }
+
+        @Override @Nullable public <R, EX extends Throwable> R
+        accept(RvalueVisitor<R, EX> visitor) throws EX { return visitor.visitTextBlock(this); }
+    }
+
+    /**
      * Representation of a "null literal" (JLS7 3.10.7).
      */
     public static final

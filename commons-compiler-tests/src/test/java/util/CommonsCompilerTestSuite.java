@@ -133,6 +133,16 @@ class CommonsCompilerTestSuite {
         new ExpressionTest(expression).assertResultTrue();
     }
 
+    /**
+     * @return The result of the expression evaluation
+     */
+    protected Object
+    evaluateExpression(String expression) throws Exception {
+        ExpressionTest et = new ExpressionTest(expression);
+        et.cook();
+        return et.execute();
+    }
+
     public
     class ExpressionTest extends CompileAndExecuteTest {
 

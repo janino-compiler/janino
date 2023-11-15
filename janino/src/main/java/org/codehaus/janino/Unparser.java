@@ -160,6 +160,7 @@ import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
 import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.SwitchStatement;
 import org.codehaus.janino.Java.SynchronizedStatement;
+import org.codehaus.janino.Java.TextBlock;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
@@ -906,6 +907,7 @@ class Unparser implements AutoCloseable {
         @Override @Nullable public Void visitBooleanLiteral(BooleanLiteral bl)              { Unparser.this.pw.print(bl.value);             return null; }
         @Override @Nullable public Void visitCharacterLiteral(CharacterLiteral cl)          { Unparser.this.pw.print(cl.value);             return null; }
         @Override @Nullable public Void visitStringLiteral(StringLiteral sl)                { Unparser.this.pw.print(sl.value);             return null; }
+        @Override @Nullable public Void visitTextBlock(TextBlock tb)                        { Unparser.this.pw.print(tb.value);             return null; }
         @Override @Nullable public Void visitNullLiteral(NullLiteral nl)                    { Unparser.this.pw.print(nl.value);             return null; }
         @Override @Nullable public Void visitSimpleConstant(SimpleConstant sl)              { Unparser.this.pw.print("[" + sl.value + ']'); return null; }
 

@@ -82,6 +82,7 @@ import org.codehaus.janino.Java.SimpleConstant;
 import org.codehaus.janino.Java.StringLiteral;
 import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
 import org.codehaus.janino.Java.SuperclassMethodInvocation;
+import org.codehaus.janino.Java.TextBlock;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.Type;
 import org.codehaus.janino.Java.UnaryOperation;
@@ -377,6 +378,7 @@ class UnparserTest {
             @Override public Rvalue visitBooleanLiteral(BooleanLiteral bl)              { return bl;  }
             @Override public Rvalue visitCharacterLiteral(CharacterLiteral cl)          { return cl;  }
             @Override public Rvalue visitStringLiteral(StringLiteral sl)                { return sl;  }
+            @Override public Rvalue visitTextBlock(TextBlock tb)                        { return tb;  }
             @Override public Rvalue visitNullLiteral(NullLiteral nl)                    { return nl;  }
 
             @Override public Rvalue visitSimpleConstant(SimpleConstant sl) { return sl; }
@@ -497,8 +499,10 @@ class UnparserTest {
         Object[][] tests = {
             { new FloatingPointLiteral(Location.NOWHERE, "-0.0D"), "-0.0D" },
             { new FloatingPointLiteral(Location.NOWHERE, "-0.0F"), "-0.0F" },
+            { new TextBlock(Location.NOWHERE, "\"\"\"  \r   Line 1\r    Line 2\r\n   \t Line 3 \"\"\""), "\"\"\"  \r   Line 1\r    Line 2\r\n   \t Line 3 \"\"\"" },
         };
         for (Object[] test : tests) {
+            assert test.length == 2;
             final Atom   expr     = (Atom)   test[0];
             final String expected = (String) test[1];
 
@@ -691,6 +695,29 @@ class UnparserTest {
             + "private List<@NotNull AssetRelationship>        sources = new ArrayList<>();\n"
         );
         UnparserTest.helpTestScript("@Foo int a;");
+    }
+
+    @Test public void
+    testParseUnparseJava15() throws Exception {
+
+        // Text blocks.
+        UnparserTest.helpTestExpr(
+            (                        // input
+                ""
+                + "   \"\"\" \r"
+                + "Line 1\n"
+                + "Line 2\r\n"
+                + "Line3   \"\"\"  "
+            ),
+            (                        // expected
+                ""
+                + "\"\"\" \r"
+                + "Line 1\n"
+                + "Line 2\r\n"
+                + "Line3   \"\"\""
+            ),
+            false
+        );
     }
 
     @Test public void

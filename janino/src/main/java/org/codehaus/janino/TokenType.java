@@ -77,6 +77,12 @@ enum TokenType {
     STRING_LITERAL,
 
     /**
+     * The token represents a text block; its {@link Token#value} is the text of the text block exactly as
+     * it appears in the source code (including the leading and trailing {@code """}).
+     */
+    TEXT_BLOCK,
+
+    /**
      * The token represents the {@code null} literal; its {@link Token#value} is 'null'.
      */
     NULL_LITERAL,

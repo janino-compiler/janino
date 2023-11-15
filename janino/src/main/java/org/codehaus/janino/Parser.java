@@ -151,6 +151,7 @@ import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
 import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.SwitchStatement;
 import org.codehaus.janino.Java.SynchronizedStatement;
+import org.codehaus.janino.Java.TextBlock;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
@@ -3697,6 +3698,7 @@ class Parser {
         case BOOLEAN_LITERAL:        return new BooleanLiteral(t.getLocation(), t.value);
         case CHARACTER_LITERAL:      return new CharacterLiteral(t.getLocation(), t.value);
         case STRING_LITERAL:         return new StringLiteral(t.getLocation(), t.value);
+        case TEXT_BLOCK:             return new TextBlock(t.getLocation(), t.value);
         case NULL_LITERAL:           return new NullLiteral(t.getLocation());
         default:
             throw this.compileException("Literal expected");
@@ -3810,7 +3812,7 @@ class Parser {
     peekLiteral() throws CompileException, IOException {
         return this.peek(
             TokenType.INTEGER_LITERAL, TokenType.FLOATING_POINT_LITERAL, TokenType.BOOLEAN_LITERAL,
-            TokenType.CHARACTER_LITERAL, TokenType.STRING_LITERAL, TokenType.NULL_LITERAL
+            TokenType.CHARACTER_LITERAL, TokenType.STRING_LITERAL, TokenType.TEXT_BLOCK, TokenType.NULL_LITERAL
         ) != -1;
     }
 

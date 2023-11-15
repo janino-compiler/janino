@@ -133,6 +133,7 @@ import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
 import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.SwitchStatement;
 import org.codehaus.janino.Java.SynchronizedStatement;
+import org.codehaus.janino.Java.TextBlock;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
@@ -220,6 +221,7 @@ interface Traverser<EX extends Throwable> {
     void traverseBooleanLiteral(BooleanLiteral bl)                                                    throws EX;
     void traverseCharacterLiteral(CharacterLiteral cl)                                                throws EX;
     void traverseStringLiteral(StringLiteral sl)                                                      throws EX;
+    void traverseTextBlock(TextBlock tb)                                                              throws EX;
     void traverseNullLiteral(NullLiteral nl)                                                          throws EX;
     void traverseSimpleLiteral(SimpleConstant sl)                                                     throws EX;
     void traverseNewAnonymousClassInstance(NewAnonymousClassInstance naci)                            throws EX;

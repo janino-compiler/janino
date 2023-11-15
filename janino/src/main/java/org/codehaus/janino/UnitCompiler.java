@@ -26,8 +26,10 @@
 
 package org.codehaus.janino;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -194,6 +196,7 @@ import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.SwitchStatement;
 import org.codehaus.janino.Java.SwitchStatement.SwitchBlockStatementGroup;
 import org.codehaus.janino.Java.SynchronizedStatement;
+import org.codehaus.janino.Java.TextBlock;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
@@ -4145,6 +4148,7 @@ class UnitCompiler {
             @Override @Nullable public Void visitBooleanLiteral(BooleanLiteral bl)                              throws CompileException { UnitCompiler.this.compile2(bl);    return null; }
             @Override @Nullable public Void visitCharacterLiteral(CharacterLiteral cl)                          throws CompileException { UnitCompiler.this.compile2(cl);    return null; }
             @Override @Nullable public Void visitStringLiteral(StringLiteral sl)                                throws CompileException { UnitCompiler.this.compile2(sl);    return null; }
+            @Override @Nullable public Void visitTextBlock(TextBlock tb)                                        throws CompileException { UnitCompiler.this.compile2(tb);    return null; }
             @Override @Nullable public Void visitNullLiteral(NullLiteral nl)                                    throws CompileException { UnitCompiler.this.compile2(nl);    return null; }
             @Override @Nullable public Void visitSimpleConstant(SimpleConstant sl)                              throws CompileException { UnitCompiler.this.compile2(sl);    return null; }
             @Override @Nullable public Void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      throws CompileException { UnitCompiler.this.compile2(naci);  return null; }
@@ -4362,6 +4366,7 @@ class UnitCompiler {
             @Override @Nullable public Void visitBooleanLiteral(BooleanLiteral bl)                              throws CompileException { UnitCompiler.this.compileBoolean2(bl,   dst, orientation); return null; }
             @Override @Nullable public Void visitCharacterLiteral(CharacterLiteral cl)                          throws CompileException { UnitCompiler.this.compileBoolean2(cl,   dst, orientation); return null; }
             @Override @Nullable public Void visitStringLiteral(StringLiteral sl)                                throws CompileException { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); return null; }
+            @Override @Nullable public Void visitTextBlock(TextBlock tb)                                        throws CompileException { UnitCompiler.this.compileBoolean2(tb,   dst, orientation); return null; }
             @Override @Nullable public Void visitNullLiteral(NullLiteral nl)                                    throws CompileException { UnitCompiler.this.compileBoolean2(nl,   dst, orientation); return null; }
             @Override @Nullable public Void visitSimpleConstant(SimpleConstant sl)                              throws CompileException { UnitCompiler.this.compileBoolean2(sl,   dst, orientation); return null; }
             @Override @Nullable public Void visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      throws CompileException { UnitCompiler.this.compileBoolean2(naci, dst, orientation); return null; }
@@ -4679,6 +4684,7 @@ class UnitCompiler {
             @Override public Integer visitBooleanLiteral(BooleanLiteral bl)                              { return UnitCompiler.this.compileContext2(bl);   }
             @Override public Integer visitCharacterLiteral(CharacterLiteral cl)                          { return UnitCompiler.this.compileContext2(cl);   }
             @Override public Integer visitStringLiteral(StringLiteral sl)                                { return UnitCompiler.this.compileContext2(sl);   }
+            @Override public Integer visitTextBlock(TextBlock tb)                                        { return UnitCompiler.this.compileContext2(tb);   }
             @Override public Integer visitNullLiteral(NullLiteral nl)                                    { return UnitCompiler.this.compileContext2(nl);   }
             @Override public Integer visitSimpleConstant(SimpleConstant sl)                              { return UnitCompiler.this.compileContext2(sl);   }
             @Override public Integer visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      { return UnitCompiler.this.compileContext2(naci); }
@@ -4815,6 +4821,7 @@ class UnitCompiler {
             @Override public IType visitBooleanLiteral(BooleanLiteral bl)                              throws CompileException { return UnitCompiler.this.compileGet2(bl);   }
             @Override public IType visitCharacterLiteral(CharacterLiteral cl)                          throws CompileException { return UnitCompiler.this.compileGet2(cl);   }
             @Override public IType visitStringLiteral(StringLiteral sl)                                throws CompileException { return UnitCompiler.this.compileGet2(sl);   }
+            @Override public IType visitTextBlock(TextBlock tb)                                        throws CompileException { return UnitCompiler.this.compileGet2(tb);   }
             @Override public IType visitNullLiteral(NullLiteral nl)                                    throws CompileException { return UnitCompiler.this.compileGet2(nl);   }
             @Override public IType visitSimpleConstant(SimpleConstant sl)                              throws CompileException { return UnitCompiler.this.compileGet2(sl);   }
             @Override public IType visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      throws CompileException { return UnitCompiler.this.compileGet2(naci); }
@@ -5532,6 +5539,7 @@ class UnitCompiler {
             @Override @Nullable public Boolean visitBooleanLiteral(BooleanLiteral bl)                              { return false;                                                   }
             @Override @Nullable public Boolean visitCharacterLiteral(CharacterLiteral cl)                          { return false;                                                   }
             @Override @Nullable public Boolean visitStringLiteral(StringLiteral sl)                                { return false;                                                   }
+            @Override @Nullable public Boolean visitTextBlock(TextBlock tb)                                        { return false;                                                   }
             @Override @Nullable public Boolean visitNullLiteral(NullLiteral nl)                                    { return false;                                                   }
             @Override @Nullable public Boolean visitSimpleConstant(SimpleConstant sl)                              { return false;                                                   }
             @Override @Nullable public Boolean visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      { return true;                                                    }
@@ -6012,6 +6020,7 @@ class UnitCompiler {
             @Override @Nullable public Object visitBooleanLiteral(BooleanLiteral bl)                                       { return UnitCompiler.this.getConstantValue2(bl);   }
             @Override @Nullable public Object visitCharacterLiteral(CharacterLiteral cl)           throws CompileException { return UnitCompiler.this.getConstantValue2(cl);   }
             @Override @Nullable public Object visitStringLiteral(StringLiteral sl)                 throws CompileException { return UnitCompiler.this.getConstantValue2(sl);   }
+            @Override @Nullable public Object visitTextBlock(TextBlock tb)                         throws CompileException { return UnitCompiler.this.getConstantValue2(tb);   }
             @Override @Nullable public Object visitNullLiteral(NullLiteral nl)                                             { return UnitCompiler.this.getConstantValue2(nl);   }
             @Override @Nullable public Object visitSimpleConstant(SimpleConstant sl)                                       { return UnitCompiler.this.getConstantValue2(sl);   }
             @Override @Nullable public Object visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)               { return UnitCompiler.this.getConstantValue2(naci); }
@@ -6552,6 +6561,81 @@ class UnitCompiler {
         return v;
     }
 
+    @SuppressWarnings("static-method") private String
+    getConstantValue2(TextBlock tb) throws CompileException {
+
+        // Calculate the minimum number of leading spaces for all text block lines.
+        int minLeadingSpace = Integer.MAX_VALUE;
+        try {
+            BufferedReader br = new BufferedReader(new StringReader(tb.value));
+            br.readLine(); // Skip triple-quote, space, line-break.
+            for (;;) {
+                String l = br.readLine();
+                if (l == null) break;
+                assert l != null : "String \"" + tb.value + "\": Trailing \"\"\" missing";
+                for (int i = 0; i < minLeadingSpace; i++) {
+                    if (i >= l.length() || !Character.isWhitespace(l.charAt(i))) {
+                        minLeadingSpace = i;
+                        break;
+                    }
+                }
+            }
+        } catch (IOException ioe) {
+            throw new AssertionError(ioe);
+        }
+
+        // Process the text block's value again and compose the represented string.
+        StringBuilder v = new StringBuilder();
+        try {
+            BufferedReader br = new BufferedReader(new StringReader(tb.value));
+            br.readLine(); // Skip leading triple-quote, space, line-break.
+            for (;;) {
+
+                // Read input line.
+                String l = br.readLine();
+                assert l != null; // The scanner ensures that the text block value has the trailing """.
+
+                // Strip leading space.
+                l = l.substring(minLeadingSpace);
+
+                boolean endsWithTripleQuote = false;
+                if (l.endsWith("\"\"\"")) {
+
+                    // Strip trailing triple-quote.
+                    l = l.substring(0, l.length() - 3);
+                    endsWithTripleQuote = true;
+                }
+
+                // Strip trailing space.
+                for (int i = l.length() - 1;; i--) {
+                    if (i == -1) {
+                        l = "";
+                        break;
+                    }
+                    if (!Character.isWhitespace(l.charAt(i))) {
+                        l = l.substring(0, i + 1);
+                        break;
+                    }
+                }
+
+                // Unescape escaped characters.
+                l = UnitCompiler.unescape(l, tb.getLocation());
+
+                // Append input line.
+                v.append(l);
+
+                if (endsWithTripleQuote) break;
+
+                // Append ONE LF char.
+                v.append('\n');
+            }
+        } catch (IOException ioe) {
+            throw new AssertionError(ioe);
+        }
+
+        return v.toString();
+    }
+
     @SuppressWarnings("static-method")
     @Nullable private Object
     getConstantValue2(NullLiteral nl) { return null; }
@@ -6836,6 +6920,7 @@ class UnitCompiler {
             @Override public IType visitBooleanLiteral(BooleanLiteral bl)                                                      { return UnitCompiler.this.getType2(bl);   }
             @Override public IType visitCharacterLiteral(CharacterLiteral cl)                                                  { return UnitCompiler.this.getType2(cl);   }
             @Override public IType visitStringLiteral(StringLiteral sl)                                                        { return UnitCompiler.this.getType2(sl);   }
+            @Override public IType visitTextBlock(TextBlock tb)                                                                { return UnitCompiler.this.getType2(tb);   }
             @Override public IType visitNullLiteral(NullLiteral nl)                                                            { return UnitCompiler.this.getType2(nl);   }
             @Override public IType visitSimpleConstant(SimpleConstant sl)                                                      { return UnitCompiler.this.getType2(sl);   }
             @Override public IType visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)                              { return UnitCompiler.this.getType2(naci); }
@@ -7627,9 +7712,10 @@ class UnitCompiler {
     }
 
     private IClass
-    getType2(StringLiteral sl) {
-        return this.iClassLoader.TYPE_java_lang_String;
-    }
+    getType2(StringLiteral sl) { return this.iClassLoader.TYPE_java_lang_String; }
+
+    private IClass
+    getType2(TextBlock tb) { return this.iClassLoader.TYPE_java_lang_String; }
 
     @SuppressWarnings("static-method") private IClass
     getType2(NullLiteral nl) {
@@ -7708,6 +7794,7 @@ class UnitCompiler {
                     @Override public Boolean visitBooleanLiteral(BooleanLiteral bl)                              { return UnitCompiler.this.isType2(bl);   }
                     @Override public Boolean visitCharacterLiteral(CharacterLiteral cl)                          { return UnitCompiler.this.isType2(cl);   }
                     @Override public Boolean visitStringLiteral(StringLiteral sl)                                { return UnitCompiler.this.isType2(sl);   }
+                    @Override public Boolean visitTextBlock(TextBlock tb)                                        { return UnitCompiler.this.isType2(tb);   }
                     @Override public Boolean visitNullLiteral(NullLiteral nl)                                    { return UnitCompiler.this.isType2(nl);   }
                     @Override public Boolean visitSimpleConstant(SimpleConstant sl)                              { return UnitCompiler.this.isType2(sl);   }
                     @Override public Boolean visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      { return UnitCompiler.this.isType2(naci); }

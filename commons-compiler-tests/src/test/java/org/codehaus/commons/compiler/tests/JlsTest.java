@@ -287,7 +287,51 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3_10_6__Escape_sequences_for_character_and_string_literals() throws Exception {
+    test_3_10_6__Text_Blocks_1() throws Exception {
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 15) return;
+        this.assertExpressionUncookable("\"\"\"    a"); // No non-space allowed between leading """ and line break;
+    }
+
+    @Test public void
+    test_3_10_6__Text_Blocks_2() throws Exception {
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 15) return;
+        Assert.assertEquals("abc", this.evaluateExpression("\"\"\"   \r   abc   \"\"\""));
+    }
+
+    @Test public void
+    test_3_10_6__Text_Blocks_3() throws Exception {
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 15) return;
+        Assert.assertEquals(
+            "Zeile 1\nZeile 2\nZeile 3\n",
+            this.evaluateExpression(
+                ""
+                + "   \"\"\"      \n"
+                + "   Zeile 1     \r"    // <= Three leading spaces
+                + "\t\t\tZeile 2   \n"   // <= Three leading TABs
+                + " \t Zeile 3\r\n"      // <= Leading Space-TAB-Space
+                + "\t \t    \"\"\"     " // <= Leading TAB-Space-TAB
+            )
+        );
+    }
+
+    @Test public void
+    test_3_10_6__Text_Blocks_4() throws Exception {
+        if (this.isJdk && CommonsCompilerTestSuite.JVM_VERSION < 15) return;
+        Assert.assertEquals(
+            "          Zeile 1\n\tZeile 2\n  \t   \tZeile 3\n",
+            this.evaluateExpression(
+                ""
+                + "\"\"\"      \r\n"
+                + "            Zeile 1     \r" // <= 12 leading SPACEs
+                + "\t\t\tZeile 2   \n"         // <= 3 leading TABs
+                + " \t  \t   \tZeile 3\r\n"    // <= Combination of 9 leading TABs and SPACEs
+                + "  \"\"\"     "              // Two leading SPACEs
+            )
+        );
+    }
+
+    @Test public void
+    test_3_10_7__Escape_sequences_for_character_and_string_literals() throws Exception {
         this.assertExpressionUncookable("'\\u000a'"); // 0x000a is LF
         this.assertExpressionEvaluatesTrue("'\\b' == 8");
         this.assertExpressionEvaluatesTrue("'\\t' == 9");
@@ -305,7 +349,7 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
-    test_3_10_7__The_null_literal() throws Exception {
+    test_3_10_8__The_null_literal() throws Exception {
         this.assertExpressionEvaluatable("null");
     }
 

@@ -140,6 +140,7 @@ import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.SwitchStatement;
 import org.codehaus.janino.Java.SwitchStatement.SwitchBlockStatementGroup;
 import org.codehaus.janino.Java.SynchronizedStatement;
+import org.codehaus.janino.Java.TextBlock;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
@@ -245,6 +246,7 @@ class DeepCopier {
         @Override public Rvalue visitBooleanLiteral(BooleanLiteral bl)                              throws CompileException { return DeepCopier.this.copyBooleanLiteral(bl);                      }
         @Override public Rvalue visitCharacterLiteral(CharacterLiteral cl)                          throws CompileException { return DeepCopier.this.copyCharacterLiteral(cl);                    }
         @Override public Rvalue visitStringLiteral(StringLiteral sl)                                throws CompileException { return DeepCopier.this.copyStringLiteral(sl);                       }
+        @Override public Rvalue visitTextBlock(TextBlock tb)                                        throws CompileException { return DeepCopier.this.copyTextBlock(tb);                           }
         @Override public Rvalue visitNullLiteral(NullLiteral nl)                                    throws CompileException { return DeepCopier.this.copyNullLiteral(nl);                         }
         @Override public Rvalue visitSimpleConstant(SimpleConstant sl)                              throws CompileException { return DeepCopier.this.copySimpleLiteral(sl);                       }
         @Override public Rvalue visitNewAnonymousClassInstance(NewAnonymousClassInstance naci)      throws CompileException { return DeepCopier.this.copyNewAnonymousClassInstance(naci);         }
@@ -1001,6 +1003,11 @@ class DeepCopier {
     public Rvalue
     copyStringLiteral(StringLiteral subject) throws CompileException {
         return new StringLiteral(subject.getLocation(), subject.value);
+    }
+
+    public Rvalue
+    copyTextBlock(TextBlock subject) throws CompileException {
+        return new TextBlock(subject.getLocation(), subject.value);
     }
 
     public Rvalue

@@ -368,8 +368,30 @@ class Scanner {
             || (this.peek() == '.' && Character.isDigit(this.peekButOne())) // .999
         ) return this.scanNumericLiteral();
 
-        // Scan string literal.
         if (this.peekRead('"')) {
+            if (this.peek() == '"' && this.peekButOne() == '"') {
+
+                // Scan text block.
+                this.read();                  // Consume second quote.
+                this.read();                  // Consume third quote.
+                while (this.peekRead(" \t")); // Consume space.
+                if (this.peekRead('\r')) {    // Consume line break.
+                    this.peekRead('\n');
+                } else
+                if (this.peekRead('\n')) {
+                    ;
+                } else
+                {
+                    throw new CompileException("Line break expected after \"\"\"", this.location());
+                }
+                // Consume the following chars including the trailing """.
+                for (;;) {
+                    if (this.peekRead('"') && this.peekRead('"') && this.peekRead('"')) return TokenType.TEXT_BLOCK;
+                    this.read();
+                }
+            }
+
+            // Scan string literal.
             while (!this.peekRead('"')) this.scanLiteralCharacter();
             return TokenType.STRING_LITERAL;
         }

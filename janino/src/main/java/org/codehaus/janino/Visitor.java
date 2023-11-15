@@ -123,6 +123,7 @@ import org.codehaus.janino.Java.SuperclassFieldAccessExpression;
 import org.codehaus.janino.Java.SuperclassMethodInvocation;
 import org.codehaus.janino.Java.SwitchStatement;
 import org.codehaus.janino.Java.SynchronizedStatement;
+import org.codehaus.janino.Java.TextBlock;
 import org.codehaus.janino.Java.ThisReference;
 import org.codehaus.janino.Java.ThrowStatement;
 import org.codehaus.janino.Java.TryStatement;
@@ -635,6 +636,11 @@ class Visitor {
          * Invoked by {@link Java.StringLiteral#accept(Visitor.RvalueVisitor)}
          */
         @Nullable R visitStringLiteral(StringLiteral sl) throws EX;
+
+        /**
+         * Invoked by {@link Java.TextBlock#accept(RvalueVisitor)}
+         */
+        @Nullable R visitTextBlock(TextBlock tb) throws EX;
 
         /**
          * Invoked by {@link Java.NullLiteral#accept(Visitor.RvalueVisitor)}
