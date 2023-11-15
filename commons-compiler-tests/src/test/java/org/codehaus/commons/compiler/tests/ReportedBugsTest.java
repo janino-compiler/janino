@@ -1440,7 +1440,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     public void
     testIssue174__SmallMethod() throws Exception {
         String  body = ReportedBugsTest.getClassBody(10);
-        Nukable obj  = this.createObject(body);
+        this.createObject(body);
     }
 
     @Test
@@ -1451,7 +1451,7 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         // #  Internal Error (metaspaceArena.cpp:88), pid=12308, tid=6659
         // #  guarantee(requested_word_size <= chunklevel::MAX_CHUNK_WORD_SIZE) failed: Requested size too large (756627) - max allowed size per allocation is 524288.
         String  body = ReportedBugsTest.getClassBody(1000);
-        Nukable obj  = this.createObject(body);
+        this.createObject(body);
     }
 
     private Nukable
@@ -1709,8 +1709,8 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "        for (int c = 7; true; c++) {\n"
             + "            boolean a = false;\n"  // Any type but "long" or "double"\n"
             + "            long    b = 33;\n"     // "double" works as well.\n"
-            + "            break;\n"           // Unconditional; "break" works as well.\n"
-            + "        }\n"        // Doesn't matter if condition has constant value or not.\n"
+            + "            break;\n"              // Unconditional; "break" works as well.\n"
+            + "        }\n"                       // Doesn't matter if condition has constant value or not.\n"
             + "        \n"
             + "        int     c = 9;\n"          // Any type but "long" or "double"\n"
             + "        boolean d = false;\n"      // Any type but "long" or "double"\n"
