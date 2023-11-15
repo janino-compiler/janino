@@ -1628,6 +1628,22 @@ class JlsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    test_14_15__The_break_Statement() throws Exception {
+        this.assertScriptReturnsTrue(
+            ""
+            + "int result = 0;\n"
+            + "for (int i = 0; i < 10; i++) {\n"
+            + "    LABEL: {\n"
+            + "        if (i == 3) break LABEL;\n"
+            + "        if (i == 5) break;\n"       // <= Breaks the FOR loop, not the labeled BREAK!
+            + "        result++;\n"
+            + "    }\n"
+            + "}\n"
+            + "return result == 4;\n"
+        );
+    }
+
+    @Test public void
     test_14_20_1__Execution_of_try_catch__1() throws Exception {
         this.assertClassBodyMainReturnsTrue(
             ""
