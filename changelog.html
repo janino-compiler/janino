@@ -49,9 +49,17 @@ h5 {
 
     <a href="http://janino-compiler.github.io/janino/">Back to the JANINO home page</a>
 
-    <h4>Version 3.1.11 (only available as source code)</h4>
+    <h4>Version 3.1.12 (only available as source code)</h4>
     <ul>
       <li>...</li>
+    </ul>
+
+    <h4>Version 3.1.11 2023-11-27</h4>
+    <ul>
+      <li>Implemented the Java 15 feature "text blocks".</li>
+      <li>Fixed issue #209 "Use Java's ServiceLoader instead of org.codehaus.commons.compiler.properties".</li>
+      <li>Bug fixed: Unlabeled BREAK did break a labeled statement, which is wrong (it breaks the loop enclosing the labeled statement).</li>
+      <li>Fixed issue #208 "spark compilation failed with ArrayIndexOutOfBoundsException"</li>
     </ul>
 
     <h4>Version 3.1.10 2023-07-04</h4>
