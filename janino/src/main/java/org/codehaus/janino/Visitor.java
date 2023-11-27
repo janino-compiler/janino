@@ -638,7 +638,7 @@ class Visitor {
         @Nullable R visitStringLiteral(StringLiteral sl) throws EX;
 
         /**
-         * Invoked by {@link Java.TextBlock#accept(RvalueVisitor)}
+         * Invoked by {@link Java.TextBlock#accept(Visitor.RvalueVisitor)}
          */
         @Nullable R visitTextBlock(TextBlock tb) throws EX;
 
