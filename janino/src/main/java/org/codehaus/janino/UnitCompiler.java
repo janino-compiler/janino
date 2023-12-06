@@ -7182,8 +7182,17 @@ class UnitCompiler {
             if (lcd != null) return this.resolve(lcd);
         }
 
-        // 6.5.5.1.2 Member type.
         for (Scope s = scope; !(s instanceof CompilationUnit); s = s.getEnclosingScope()) {
+
+            // This type, or an enclosing type.
+            if (s instanceof NamedTypeDeclaration) {
+                NamedTypeDeclaration ntd = (NamedTypeDeclaration) s;
+                if (ntd.getName().equals(simpleTypeName)) {
+                    return this.resolve((NamedTypeDeclaration) s);
+                }
+            }
+
+            // 6.5.5.1.2 Member type (of this type or an enclosing type).
             if (s instanceof TypeDeclaration) {
                 IClass mt = this.findMemberType(
                     this.resolve((AbstractTypeDeclaration) s),

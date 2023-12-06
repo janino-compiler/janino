@@ -1877,4 +1877,46 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         );
         this.assertCompilationUnitMainReturnsTrue(body, "MyClass");
     }
+
+    @Test public void
+    testIssue210CompilerExceptionWithStaticInnerClasses() throws Exception {
+
+        String body = (
+            ""
+            + "public class Base1 {\n"
+            + "\n"
+            + "    public static void setFirstName(String firstName) {}\n"
+            + "\n"
+            + "    public static class Builder {\n"
+            + "        public Builder setFirstName(String firstName) { return this; }\n"
+            + "    }\n"
+            + "}\n"
+            + "\n"
+            + "public class Base2 extends Base1 {\n"
+            + "\n"
+            + "    public static void setLastName(String lastName) {}\n"
+            + "\n"
+            + "    public static class Builder extends Base1.Builder {\n"
+            + "        public Builder setLastName(String lastName) { return this; }\n"
+            + "    }\n"
+            + "}\n"
+            + "\n"
+            + "public class Derived {\n"
+            + "\n"
+            + "    public static void setAge(int age) {}\n"
+            + "\n"
+            + "    public static class Builder extends Base2.Builder {\n"
+            + "        public Builder setAge(int age) { return this; }\n"
+            + "    }\n"
+            + "}\n"
+            + "\n"
+            + "public class MyClass {\n"
+            + "    public static boolean main() {\n"
+            + "        new Derived.Builder().setAge(17);\n"
+            + "        return true;\n"
+            + "    }\n"
+            + "}\n"
+        );
+        this.assertCompilationUnitMainReturnsTrue(body, "MyClass");
+    }
 }
