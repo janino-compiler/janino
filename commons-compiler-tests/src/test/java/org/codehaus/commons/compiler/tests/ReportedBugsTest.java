@@ -1355,20 +1355,14 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
 
     @Test public void
     testIssue165() throws Exception {
-        String toCook = (
-            ""
-//            + "public class Test {\n"
-            + "  public static int test() {\n"
-            + "    return com.company.user.Country.get();\n"
-            + "  }\n"
-//            + "}\n"
-        );
-
         Thread.currentThread().getContextClassLoader().loadClass("com.company.user.Country");
 
-        IClassBodyEvaluator eval = this.compilerFactory.newClassBodyEvaluator();
-        eval.cook("generated.java", toCook);
-        Assert.assertEquals(99, eval.getClazz().getMethod("test").invoke(null));
+        this.assertClassBodyMainReturnsTrue((
+            ""
+            + "public static boolean main() {\n"
+            + "    return com.company.user.Country.get() == 99;\n"
+            + "}\n"
+        ));
     }
 
     @Test public void
