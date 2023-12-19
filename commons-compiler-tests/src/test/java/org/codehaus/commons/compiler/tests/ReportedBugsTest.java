@@ -1379,6 +1379,31 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
     }
 
     @Test public void
+    testIssue169() throws Exception {
+        this.assertCompilationUnitMainExecutable((
+            ""
+            + "public interface Actor {\n"
+            + "    Actor dashed(float... dashed);\n"
+            + "    Actor xx(int... test);\n"
+            + "}\n"
+            + "\n"
+            + "public class ActorImpl implements Actor {\n"
+            + "    @Override public Actor dashed(float... dashed) { return this; }\n"
+            + "    @Override public Actor xx(int... test)         { return this; }\n"
+            + "}\n"
+            + "\n"
+            + "public class Main {\n"
+            + "    public static void main() {\n"
+            + "        new ActorImpl().dashed(1f, 10f).xx(1, 2, 3);\n"
+            + "\n"
+            + "        ActorImpl a = new ActorImpl();\n"
+            + "        a.dashed(1f, 10f).xx(1, 2, 3);\n"
+            + "    }\n"
+            + "}\n"
+        ), "Main");
+    }
+
+    @Test public void
     testIssue172__1() throws Exception {
         this.assertCompilationUnitMainReturnsTrue((
             ""
