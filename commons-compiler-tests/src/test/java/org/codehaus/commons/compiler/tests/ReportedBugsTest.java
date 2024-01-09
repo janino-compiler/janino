@@ -1938,4 +1938,25 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
         );
         this.assertCompilationUnitMainReturnsTrue(body, "MyClass");
     }
+
+    @Test public void
+    testIssue212AssignmentConversionNotPossibleFromTypeInterfaceClassToTypeAbstractClass() throws Exception {
+
+        String body = (
+            ""
+            + "import org.codehaus.commons.compiler.tests.issue212.base.IBase;\n"
+            + "import org.codehaus.commons.compiler.tests.issue212.base.BaseClass;\n"
+            + "import org.codehaus.commons.compiler.tests.issue212.base.DerivedClass;\n"
+            + "import org.codehaus.commons.compiler.tests.issue212.base.MapperClass;\n"
+            + "\n"
+            + "public class MyClass {\n"
+            + "    public static String main() {\n"
+            + "        IBase     o1 = new MapperClass().mapper().path();\n"
+            + "        BaseClass o2 = new MapperClass().mapper().path();\n"
+            + "        return o2.toString();\n"
+            + "    }\n"
+            + "}\n"
+        );
+        this.assertCompilationUnitMainEquals("BaseClass [baseId=0]DerivedClass [name=default]", body, "MyClass");
+    }
 }

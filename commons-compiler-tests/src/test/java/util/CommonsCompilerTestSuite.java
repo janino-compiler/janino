@@ -461,12 +461,21 @@ class CommonsCompilerTestSuite {
 
     /**
      * Asserts that the given <var>compilationUnit</var> can be cooked by the {@link ISimpleCompiler} and its {@code
-     * public static boolean }<em>className</em>{@code .main()} method returns TRUE, <em>or</em> issues an error that matches
+     * public static boolean }<var>className</var>{@code .main()} method returns TRUE, <em>or</em> issues an error that matches
      * the <var>messageRegex</var>.
      */
     protected void
     assertCompilationUnitMainReturnsTrue(String compilationUnit, String className, String messageRegex) throws Exception {
         new SimpleCompilerTest(compilationUnit, className).assertResultTrue(messageRegex);
+    }
+
+    /**
+     * Asserts that the given <var>compilationUnit</var> can be cooked by the {@link ISimpleCompiler}, and its {@code
+     * public static any-type }<var>className</var>{@code .main()} method returns a value that equals <var>expected</var>.
+     */
+    protected void
+    assertCompilationUnitMainEquals(Object expected, String compilationUnit, String className) throws Exception {
+        new SimpleCompilerTest(compilationUnit, className).assertResultEquals(expected);
     }
 
     public
@@ -730,6 +739,16 @@ class CommonsCompilerTestSuite {
             Assert.assertNotNull("Test result not NULL", result);
             Assert.assertSame(String.valueOf(result), Boolean.class, result.getClass());
             Assert.assertTrue("Test result is FALSE", (Boolean) result);
+        }
+
+        /**
+         * Asserts that cooking completes normally and executing returns a value that equals <var>expected</var>.
+         */
+        public void
+        assertResultEquals(@Nullable Object expected) throws Exception {
+            this.cook();
+            Object result = this.execute();
+            Assert.assertEquals(expected, result);
         }
 
         /**
