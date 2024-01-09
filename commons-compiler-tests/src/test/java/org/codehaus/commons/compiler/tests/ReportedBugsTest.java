@@ -1947,16 +1947,16 @@ class ReportedBugsTest extends CommonsCompilerTestSuite {
             + "import org.codehaus.commons.compiler.tests.issue212.base.IBase;\n"
             + "import org.codehaus.commons.compiler.tests.issue212.base.BaseClass;\n"
             + "import org.codehaus.commons.compiler.tests.issue212.base.DerivedClass;\n"
-            + "import org.codehaus.commons.compiler.tests.issue212.base.MapperClass;\n"
             + "\n"
             + "public class MyClass {\n"
             + "    public static String main() {\n"
-            + "        IBase     o1 = new MapperClass().mapper().path();\n"
-            + "        BaseClass o2 = new MapperClass().mapper().path();\n"
-            + "        return o2.toString();\n"
+            + "        BaseClass o1 = new DerivedClass().path();\n"               // <= Works
+            + "        IBase     o2 = ((IBase) new DerivedClass()).path();\n"     // <= Works
+            + "        BaseClass o3 = ((BaseClass) new DerivedClass()).path();\n" // <= "Ass. conv. not possible from IBase to BaseClass"
+            + "        return o3.toString();\n"
             + "    }\n"
             + "}\n"
         );
-        this.assertCompilationUnitMainEquals("BaseClass [baseId=0]DerivedClass [name=default]", body, "MyClass");
+        this.assertCompilationUnitMainEquals("BaseClass DerivedClass", body, "MyClass");
     }
 }
