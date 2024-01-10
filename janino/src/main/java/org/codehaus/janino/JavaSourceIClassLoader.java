@@ -88,11 +88,6 @@ class JavaSourceIClassLoader extends IClassLoader {
     public void
     setTargetVersion(int version) { this.targetVersion = version; }
 
-    public int
-    getTargetVersion() {
-        return this.targetVersion != -1 ? this.targetVersion : UnitCompiler.getDefaultTargetVersion();
-    }
-
     /**
      * Returns the set of {@link UnitCompiler}s that were created so far.
      */
