@@ -157,6 +157,9 @@ class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
     public void
     setTargetVersion(int version) { this.iClassLoader.setTargetVersion(version); }
 
+    public int
+    getTargetVersion() { return this.iClassLoader.getTargetVersion(); }
+
     /**
      * @see UnitCompiler#setCompileErrorHandler
      */

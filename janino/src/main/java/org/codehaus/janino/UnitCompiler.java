@@ -3775,31 +3775,38 @@ class UnitCompiler {
         return mi;
     }
 
-    private int getTargetVersion() {
+    public int
+    getTargetVersion() {
 
         if (this.targetVersion == -1) {
-
-            this.targetVersion = UnitCompiler.defaultTargetVersion;
-            if (this.targetVersion == -1) {
-
-//                // System property               Description                                    Example values
-//                // ------------------------------------------------------------------------------------------------
-//                // java.vm.specification.version Java Virtual Machine specification version     "1.8", "11"
-//                // java.specification.version    Java Runtime Environment specification version "1.8", "11"
-//                // java.version                  Java Runtime Environment version               "1.8.0_45", "11-ea"
-//                // java.class.version            Java class format version number               "52.0", "55.0"
-//                String jsv = System.getProperty("java.specification.version");
-//                jsv = jsv.substring(jsv.indexOf('.') + 1);
-//                this.targetVersion = Integer.parseInt(jsv);
-
-                // Because the generation of the StackMapTable attribute is still experimental, we still produce
-                // only Java 6 .class files by default:
-                this.targetVersion = 6;
-            }
+            this.targetVersion = UnitCompiler.getDefaultTargetVersion();
         }
 
-
         return this.targetVersion;
+    }
+
+    /**
+     * @return The target version that applies iff no target version is actively configured with {@link
+     *         #setTargetVersion(int)}
+     */
+    public static int
+    getDefaultTargetVersion() {
+
+        if (UnitCompiler.defaultTargetVersion != -1) return UnitCompiler.defaultTargetVersion;
+
+//        // System property               Description                                    Example values
+//        // ------------------------------------------------------------------------------------------------
+//        // java.vm.specification.version Java Virtual Machine specification version     "1.8", "11"
+//        // java.specification.version    Java Runtime Environment specification version "1.8", "11"
+//        // java.version                  Java Runtime Environment version               "1.8.0_45", "11-ea"
+//        // java.class.version            Java class format version number               "52.0", "55.0"
+//        String jsv = System.getProperty("java.specification.version");
+//        jsv = jsv.substring(jsv.indexOf('.') + 1);
+//        this.targetVersion = Integer.parseInt(jsv);
+
+        // Because the generation of the StackMapTable attribute is still experimental, we still produce
+        // only Java 6 .class files by default:
+        return 6;
     }
 
     /**
