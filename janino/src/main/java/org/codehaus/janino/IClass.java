@@ -1192,6 +1192,22 @@ class IClass implements ITypeVariableOrIClass {
             );
         }
 
+        @Override public boolean
+        isMoreSpecificThan(IInvocable that) throws CompileException {
+            return super.isMoreSpecificThan(that);
+        }
+
+        @Override public boolean
+        isLessSpecificThan(IInvocable that) throws CompileException {
+            return (
+                super.isLessSpecificThan(that)
+                || (
+                    !((IMethod) that).getReturnType().isAssignableFrom(this.getReturnType())
+                    && this.getReturnType().isAssignableFrom(((IMethod) that).getReturnType())
+                )
+            );
+        }
+
         @Override public String
         toString() {
             StringBuilder sb = new StringBuilder();
