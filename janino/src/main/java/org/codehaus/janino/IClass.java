@@ -1194,7 +1194,13 @@ class IClass implements ITypeVariableOrIClass {
 
         @Override public boolean
         isMoreSpecificThan(IInvocable that) throws CompileException {
-            return super.isMoreSpecificThan(that);
+            return (
+                super.isMoreSpecificThan(that)
+                || (
+                    !this.getReturnType().isAssignableFrom(((IMethod) that).getReturnType())
+                    && ((IMethod) that).getReturnType().isAssignableFrom(this.getReturnType())
+                )
+            );
         }
 
         @Override public boolean
