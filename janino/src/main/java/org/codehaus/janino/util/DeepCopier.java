@@ -484,7 +484,11 @@ class DeepCopier {
 
     public TypeArgument
     copyWildcard(Wildcard subject) throws CompileException {
-        return new Wildcard(subject.bounds, this.copyOptionalReferenceType(subject.referenceType));
+        return new Wildcard(
+            subject.bounds,
+            this.copyOptionalReferenceType(subject.referenceType),
+            this.copyAnnotations(subject.annotations)
+        );
     }
 
     public PackageDeclaration
