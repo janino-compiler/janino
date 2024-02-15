@@ -2613,9 +2613,25 @@ class Parser {
         List<Annotation> annotations = new ArrayList<>();
         while (this.peek("@")) annotations.add(this.parseAnnotation());
 
+        return this.parseReferenceType((Annotation[]) annotations.toArray(new Annotation[annotations.size()]));
+    }
+
+    /**
+     * Note: This method assumes that annotations of the reference type (if any) were already read
+     * ahead of time and that they are passed to this method. If this assumption is false,
+     * {@link #parseReferenceType()} should be used instead. This behaviour is required as
+     * {@link #parseTypeArgument()} cannot be certain whether the annotations are for a wildcard
+     * or for a reference type until all annotations have been read.
+     *
+     * <pre>
+     *   ReferenceType := { Annotation } QualifiedIdentifier [ TypeArguments ]
+     * </pre>
+     */
+    public ReferenceType
+    parseReferenceType(Annotation[] annotations)  throws CompileException, IOException {
         return new ReferenceType(
             this.location(),
-            (Annotation[]) annotations.toArray(new Annotation[annotations.size()]),
+            annotations,
             this.parseQualifiedIdentifier(),
             this.parseTypeArgumentsOpt()
         );
@@ -2683,21 +2699,33 @@ class Parser {
      *   TypeArgument :=
      *     ReferenceType { '[' ']' }    &lt;= The optional brackets are missing in JLS7, section 18!?
      *     | PrimitiveType '[' ']' { '[' ']' }
-     *     | '?' extends ReferenceType
-     *     | '?' super ReferenceType
+     *     | { Annotation } '?' extends ReferenceType
+     *     | { Annotation } '?' super ReferenceType
      * </pre>
      */
     private TypeArgument
     parseTypeArgument() throws CompileException, IOException {
+        List<Annotation> annotations = new ArrayList<>();
+        while (this.peek("@")) annotations.add(this.parseAnnotation());
+
         if (this.peekRead("?")) {
+            Annotation[] annotationArray = (Annotation[]) annotations.toArray(new Annotation[annotations.size()]);
             return (
-                this.peekRead("extends") ? new Wildcard(Wildcard.BOUNDS_EXTENDS, this.parseReferenceType()) :
-                this.peekRead("super")   ? new Wildcard(Wildcard.BOUNDS_SUPER,   this.parseReferenceType()) :
-                new Wildcard()
+                this.peekRead("extends") ? new Wildcard(Wildcard.BOUNDS_EXTENDS, this.parseReferenceType(), annotationArray) :
+                this.peekRead("super")   ? new Wildcard(Wildcard.BOUNDS_SUPER,   this.parseReferenceType(), annotationArray) :
+                new Wildcard(annotationArray)
             );
         }
 
-        Type t = this.parseType();
+        Type t;
+        if (annotations.isEmpty()) {
+            t = this.parseType();
+        } else {
+            // we know that primitives cannot be annotated with anything if they are a type argument so the
+            // only thing that would give trouble are arrays of primitives, which cannot be annotated yet.
+            Annotation[] annotationArray = (Annotation[]) annotations.toArray(new Annotation[annotations.size()]);
+            t = this.parseReferenceType(annotationArray);
+        }
 
         int i = this.parseBracketsOpt();
         for (; i > 0; i--) t = new ArrayType(t);

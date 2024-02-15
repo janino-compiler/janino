@@ -6438,15 +6438,20 @@ class Java {
         public final int bounds;
 
         /**
+         * The annotations of the wildcard type, defined by JLS8, 4.5.1 since JLS8.
+         */
+        public final Annotation[] annotations;
+
+        /**
          * The reference type of this wildcard's EXTENDS or SUPER bounds.
          */
         @Nullable public final ReferenceType referenceType;
 
         public
-        Wildcard() { this(Wildcard.BOUNDS_NONE, null); }
+        Wildcard(Annotation[] annotations) { this(Wildcard.BOUNDS_NONE, null, annotations); }
 
         public
-        Wildcard(int bounds, @Nullable ReferenceType referenceType) {
+        Wildcard(int bounds, @Nullable ReferenceType referenceType, Annotation[] annotations) {
             if (referenceType == null) {
                 assert bounds == Wildcard.BOUNDS_NONE;
                 this.bounds        = bounds;
@@ -6456,6 +6461,9 @@ class Java {
                 this.bounds        = bounds;
                 this.referenceType = referenceType;
             }
+
+            assert annotations != null;
+            this.annotations = annotations;
         }
 
         @Override public void
@@ -6468,7 +6476,9 @@ class Java {
 
         @Override public String
         toString() {
-            return (
+            String s = Java.join(this.annotations, " ");
+            if (this.annotations.length >= 1) s += ' ';
+            return s + (
                 this.bounds == Wildcard.BOUNDS_EXTENDS ? "? extends " + this.referenceType :
                 this.bounds == Wildcard.BOUNDS_SUPER   ? "? super "   + this.referenceType :
                 "?"
