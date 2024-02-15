@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -34,7 +33,7 @@ var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -161,9 +160,9 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
-<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,short,org.codehaus.janino.IClass)">LocalVariableSlot</a></span>&#8203;(java.lang.String&nbsp;name,
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,short,org.codehaus.janino.IType)">LocalVariableSlot</a></span>&#8203;(java.lang.String&nbsp;name,
                  short&nbsp;slotNumber,
-                 <a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;type)</code></th>
+                 <a href="IType.html" title="interface in org.codehaus.janino">IType</a>&nbsp;type)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -205,7 +204,7 @@ extends java.lang.Object</pre>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code><a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
+<td class="colFirst"><code><a href="IType.html" title="interface in org.codehaus.janino">IType</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getType()">getType</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
@@ -258,7 +257,7 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a id="&lt;init&gt;(java.lang.String,short,org.codehaus.janino.IClass)">
+<a id="&lt;init&gt;(java.lang.String,short,org.codehaus.janino.IType)">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -268,7 +267,11 @@ extends java.lang.Object</pre>
                          java.lang.String&nbsp;name,
                          short&nbsp;slotNumber,
                          <a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                         <a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;type)</pre>
+                         <a href="IType.html" title="interface in org.codehaus.janino">IType</a>&nbsp;type)</pre>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>slotNumber</code> - (two slots for LONG and DOUBLE local variables)</dd>
+</dl>
 </li>
 </ul>
 </li>
@@ -303,7 +306,8 @@ extends java.lang.Object</pre>
 <pre class="methodSignature">public&nbsp;short&nbsp;getSlotIndex()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The "local variable index" associated with this local variable</dd>
+<dd>The "local variable index" associated with this local variable (two slots for LONG and DOUBLE local
+         variables)</dd>
 </dl>
 </li>
 </ul>
@@ -407,7 +411,7 @@ public&nbsp;<a href="CodeContext.Offset.html" title="class in org.codehaus.janin
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getType</h4>
-<pre class="methodSignature">public&nbsp;<a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;getType()</pre>
+<pre class="methodSignature">public&nbsp;<a href="IType.html" title="interface in org.codehaus.janino">IType</a>&nbsp;getType()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>the resolved type of this local variable</dd>

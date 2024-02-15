@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6,"i15":6,"i16":6,"i17":6,"i18":6,"i19":6,"i20":6,"i21":6,"i22":6,"i23":6,"i24":6,"i25":6,"i26":38,"i27":6,"i28":6,"i29":6,"i30":6,"i31":6};
+var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6,"i15":6,"i16":6,"i17":6,"i18":6,"i19":6,"i20":6,"i21":6,"i22":6,"i23":6,"i24":6,"i25":6,"i26":6,"i27":38,"i28":6,"i29":6,"i30":6,"i31":6,"i32":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -178,7 +177,7 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
  </ol>
  <p>
    After the <a href="IExpressionEvaluator.html" title="interface in org.codehaus.commons.compiler"><code>IExpressionEvaluator</code></a> object is set up, the expression can be evaluated as often with different
-   parameter values (see <a href="#evaluate(java.lang.Object...)"><code>evaluate(Object[])</code></a>). This evaluation is very fast, compared to the compilation.
+   parameter values (see <a href="#evaluate(java.lang.Object%5B%5D)"><code>evaluate(Object[])</code></a>). This evaluation is very fast, compared to the compilation.
  </p>
  <p>
    Less common methods exist that allow for the specification of the name of the generated class, the class it
@@ -197,7 +196,7 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
    <li><a href="#setStaticMethod(boolean%5B%5D)"><code>setStaticMethod(boolean[])</code></a>
    <li><a href="#setThrownExceptions(java.lang.Class%5B%5D%5B%5D)"><code>setThrownExceptions(Class[][])</code></a>
    <li><a href="IMultiCookable.html#cook(java.lang.String%5B%5D,java.io.Reader%5B%5D)"><code>IMultiCookable.cook(String[], Reader[])</code></a>
-   <li><a href="#evaluate(int,java.lang.Object...)"><code>evaluate(int, Object[])</code></a>
+   <li><a href="#evaluate(int,java.lang.Object%5B%5D)"><code>evaluate(int, Object[])</code></a>
  </ul>
  <p>
     Notice that these methods have array parameters in contrast to their one-expression brethren.
@@ -291,63 +290,73 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.Object</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#evaluate(int,java.lang.Object...)">evaluate</a></span>&#8203;(int&nbsp;idx,
-        java.lang.Object...&nbsp;arguments)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#evaluate()">evaluate</a></span>()</code></th>
 <td class="colLast">
-<div class="block"><code>Null</code> <var>arguments</var> is equivalent with <code>new Object[0]</code>.</div>
+<div class="block">Shorthand for <a href="#evaluate(java.lang.Object%5B%5D)"><code>evaluate</code></a><code>(new Object[0])</code>.</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.lang.Object</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#evaluate(java.lang.Object...)">evaluate</a></span>&#8203;(java.lang.Object...&nbsp;arguments)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#evaluate(int,java.lang.Object%5B%5D)">evaluate</a></span>&#8203;(int&nbsp;idx,
+        java.lang.Object[]&nbsp;arguments)</code></th>
+<td class="colLast">
+<div class="block">Same as <a href="#evaluate(java.lang.Object%5B%5D)"><code>evaluate(Object[])</code></a>, but for multiple expressions.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>java.lang.Object</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#evaluate(java.lang.Object%5B%5D)">evaluate</a></span>&#8203;(java.lang.Object[]&nbsp;arguments)</code></th>
 <td class="colLast">
 <div class="block">Evaluates the expression with concrete parameter values.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.lang.Class&lt;?&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getClazz()">getClazz</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>java.lang.Class&lt;?&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getDefaultExpressionType()">getDefaultExpressionType</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getDefaultImports()">getDefaultImports</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>java.lang.reflect.Method</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getMethod()">getMethod</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.lang.reflect.Method</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getMethod(int)">getMethod</a></span>&#8203;(int&nbsp;idx)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Same as <a href="#getMethod()"><code>getMethod()</code></a>, but for multiple expressions.</div>
+</td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>java.lang.reflect.Method[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getResult()">getResult</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i10" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setClassName(java.lang.String)">setClassName</a></span>&#8203;(java.lang.String&nbsp;className)</code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">setCompileErrorHandler</a></span>&#8203;(<a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;compileErrorHandler)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setClassName(java.lang.String)">setClassName</a></span>&#8203;(java.lang.String&nbsp;className)</code></th>
 <td class="colLast">
-<div class="block">By default, <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s are thrown on compile errors, but an application my install its own
- <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a>.</div>
+<div class="block">Sets the name of the generated class.</div>
 </td>
 </tr>
 <tr id="i12" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">setCompileErrorHandler</a></span>&#8203;(<a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;compileErrorHandler)</code></th>
+<td class="colLast">
+<div class="block">Installs an <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> which is invoked during compilation on each error.</div>
+</td>
+</tr>
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setDebuggingInformation(boolean,boolean,boolean)">setDebuggingInformation</a></span>&#8203;(boolean&nbsp;debugSource,
                        boolean&nbsp;debugLines,
@@ -356,7 +365,7 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
 <div class="block">Determines what kind of debugging information is included in the generates classes.</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setDefaultExpressionType(java.lang.Class)">setDefaultExpressionType</a></span>&#8203;(java.lang.Class&lt;?&gt;&nbsp;defaultExpressionType)</code></th>
 <td class="colLast">
@@ -364,77 +373,94 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
  cooking this <a href="IExpressionEvaluator.html" title="interface in org.codehaus.commons.compiler"><code>IExpressionEvaluator</code></a>, the "default expression type" is used for the expression</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setDefaultImports(java.lang.String...)">setDefaultImports</a></span>&#8203;(java.lang.String...&nbsp;defaultImports)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">"Default imports" add to the system import "java.lang", i.e. the evaluator may refer to classes imported by
+ default imports without having to explicitly declare IMPORT statements.</div>
+</td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setExpressionType(java.lang.Class)">setExpressionType</a></span>&#8203;(java.lang.Class&lt;?&gt;&nbsp;expressionType)</code></th>
 <td class="colLast">
 <div class="block">Defines the type of the expression.</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setExpressionTypes(java.lang.Class%5B%5D)">setExpressionTypes</a></span>&#8203;(java.lang.Class&lt;?&gt;[]&nbsp;expressionTypes)</code></th>
 <td class="colLast">
 <div class="block">Configures the types of the expressions.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setExtendedClass(java.lang.Class)">setExtendedClass</a></span>&#8203;(java.lang.Class&lt;?&gt;&nbsp;extendedType)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Sets a particular superclass that the generated class will extend.</div>
+</td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setImplementedInterfaces(java.lang.Class%5B%5D)">setImplementedInterfaces</a></span>&#8203;(java.lang.Class&lt;?&gt;[]&nbsp;implementedTypes)</code></th>
 <td class="colLast">
 <div class="block">Configures the interfaces that the generated class implements.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setMethodName(java.lang.String)">setMethodName</a></span>&#8203;(java.lang.String&nbsp;methodName)</code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
 <tr id="i20" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setMethodNames(java.lang.String%5B%5D)">setMethodNames</a></span>&#8203;(java.lang.String[]&nbsp;methodNames)</code></th>
-<td class="colLast">&nbsp;</td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setMethodName(java.lang.String)">setMethodName</a></span>&#8203;(java.lang.String&nbsp;methodName)</code></th>
+<td class="colLast">
+<div class="block">Defines the name of the generated method.</div>
+</td>
 </tr>
 <tr id="i21" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setOverrideMethod(boolean)">setOverrideMethod</a></span>&#8203;(boolean&nbsp;overrideMethod)</code></th>
-<td class="colLast">&nbsp;</td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setMethodNames(java.lang.String%5B%5D)">setMethodNames</a></span>&#8203;(java.lang.String[]&nbsp;methodNames)</code></th>
+<td class="colLast">
+<div class="block">Same as <a href="#setMethodName(java.lang.String)"><code>setMethodName(String)</code></a>, but for multiple expressions.</div>
+</td>
 </tr>
 <tr id="i22" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setOverrideMethod(boolean%5B%5D)">setOverrideMethod</a></span>&#8203;(boolean[]&nbsp;overrideMethod)</code></th>
-<td class="colLast">&nbsp;</td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setOverrideMethod(boolean)">setOverrideMethod</a></span>&#8203;(boolean&nbsp;overrideMethod)</code></th>
+<td class="colLast">
+<div class="block">Defines whether the generated method overrides a methods declared in a supertype.</div>
+</td>
 </tr>
 <tr id="i23" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setParameters(java.lang.String%5B%5D%5B%5D,java.lang.Class%5B%5D%5B%5D)">setParameters</a></span>&#8203;(java.lang.String[][]&nbsp;parameterNames,
-             java.lang.Class&lt;?&gt;[][]&nbsp;parameterTypes)</code></th>
-<td class="colLast">&nbsp;</td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setOverrideMethod(boolean%5B%5D)">setOverrideMethod</a></span>&#8203;(boolean[]&nbsp;overrideMethod)</code></th>
+<td class="colLast">
+<div class="block">Same as <a href="#setOverrideMethod(boolean)"><code>setOverrideMethod(boolean)</code></a>, but for multiple expressions.</div>
+</td>
 </tr>
 <tr id="i24" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setParameters(java.lang.String%5B%5D,java.lang.Class%5B%5D)">setParameters</a></span>&#8203;(java.lang.String[]&nbsp;parameterNames,
-             java.lang.Class&lt;?&gt;[]&nbsp;parameterTypes)</code></th>
-<td class="colLast">&nbsp;</td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setParameters(java.lang.String%5B%5D%5B%5D,java.lang.Class%5B%5D%5B%5D)">setParameters</a></span>&#8203;(java.lang.String[][]&nbsp;parameterNames,
+             java.lang.Class&lt;?&gt;[][]&nbsp;parameterTypes)</code></th>
+<td class="colLast">
+<div class="block">Same as <a href="#setParameters(java.lang.String%5B%5D,java.lang.Class%5B%5D)"><code>setParameters(String[], Class[])</code></a>, but for multiple expressions.</div>
+</td>
 </tr>
 <tr id="i25" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setParameters(java.lang.String%5B%5D,java.lang.Class%5B%5D)">setParameters</a></span>&#8203;(java.lang.String[]&nbsp;parameterNames,
+             java.lang.Class&lt;?&gt;[]&nbsp;parameterTypes)</code></th>
+<td class="colLast">
+<div class="block">Defines the names and types of the parameters of the generated method.</div>
+</td>
+</tr>
+<tr id="i26" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setParentClassLoader(java.lang.ClassLoader)">setParentClassLoader</a></span>&#8203;(java.lang.ClassLoader&nbsp;parentClassLoader)</code></th>
 <td class="colLast">
 <div class="block">The "parent class loader" is used to load referenced classes.</div>
 </td>
 </tr>
-<tr id="i26" class="altColor">
+<tr id="i27" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setReturnType(java.lang.Class)">setReturnType</a></span>&#8203;(java.lang.Class&lt;?&gt;&nbsp;returnType)</code></th>
 <td class="colLast">
@@ -443,27 +469,35 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
 </div>
 </td>
 </tr>
-<tr id="i27" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setStaticMethod(boolean)">setStaticMethod</a></span>&#8203;(boolean&nbsp;staticMethod)</code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
 <tr id="i28" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setStaticMethod(boolean%5B%5D)">setStaticMethod</a></span>&#8203;(boolean[]&nbsp;staticMethod)</code></th>
-<td class="colLast">&nbsp;</td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setStaticMethod(boolean)">setStaticMethod</a></span>&#8203;(boolean&nbsp;staticMethod)</code></th>
+<td class="colLast">
+<div class="block">Defines whether the generated method should be STATIC or not.</div>
+</td>
 </tr>
 <tr id="i29" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setThrownExceptions(java.lang.Class%5B%5D)">setThrownExceptions</a></span>&#8203;(java.lang.Class&lt;?&gt;[]&nbsp;thrownExceptions)</code></th>
-<td class="colLast">&nbsp;</td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setStaticMethod(boolean%5B%5D)">setStaticMethod</a></span>&#8203;(boolean[]&nbsp;staticMethod)</code></th>
+<td class="colLast">
+<div class="block">Same as <a href="#setStaticMethod(boolean)"><code>setStaticMethod(boolean)</code></a>, but for multiple expressions.</div>
+</td>
 </tr>
 <tr id="i30" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setThrownExceptions(java.lang.Class%5B%5D%5B%5D)">setThrownExceptions</a></span>&#8203;(java.lang.Class&lt;?&gt;[][]&nbsp;thrownExceptions)</code></th>
-<td class="colLast">&nbsp;</td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setThrownExceptions(java.lang.Class%5B%5D)">setThrownExceptions</a></span>&#8203;(java.lang.Class&lt;?&gt;[]&nbsp;thrownExceptions)</code></th>
+<td class="colLast">
+<div class="block">Defines the exceptions that the generated method may throw.</div>
+</td>
 </tr>
 <tr id="i31" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setThrownExceptions(java.lang.Class%5B%5D%5B%5D)">setThrownExceptions</a></span>&#8203;(java.lang.Class&lt;?&gt;[][]&nbsp;thrownExceptions)</code></th>
+<td class="colLast">
+<div class="block">Same as <a href="#setThrownExceptions(java.lang.Class%5B%5D)"><code>setThrownExceptions(Class[])</code></a>, but for multiple expressions.</div>
+</td>
+</tr>
+<tr id="i32" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setWarningHandler(org.codehaus.commons.compiler.WarningHandler)">setWarningHandler</a></span>&#8203;(<a href="WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;warningHandler)</code></th>
 <td class="colLast">
@@ -476,7 +510,7 @@ extends <a href="ICookable.html" title="interface in org.codehaus.commons.compil
 <!--   -->
 </a>
 <h3>Methods inherited from interface&nbsp;org.codehaus.commons.compiler.<a href="ICookable.html" title="interface in org.codehaus.commons.compiler">ICookable</a></h3>
-<code><a href="ICookable.html#cook(java.io.InputStream)">cook</a>, <a href="ICookable.html#cook(java.io.InputStream,java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.io.Reader)">cook</a>, <a href="ICookable.html#cook(java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.InputStream)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.InputStream,java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.Reader)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.lang.String)">cook</a>, <a href="ICookable.html#cookFile(java.io.File)">cookFile</a>, <a href="ICookable.html#cookFile(java.io.File,java.lang.String)">cookFile</a>, <a href="ICookable.html#cookFile(java.lang.String)">cookFile</a>, <a href="ICookable.html#cookFile(java.lang.String,java.lang.String)">cookFile</a>, <a href="ICookable.html#getBytecodes()">getBytecodes</a></code></li>
+<code><a href="ICookable.html#cook(java.io.InputStream)">cook</a>, <a href="ICookable.html#cook(java.io.InputStream,java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.io.Reader)">cook</a>, <a href="ICookable.html#cook(java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.InputStream)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.InputStream,java.lang.String)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.io.Reader)">cook</a>, <a href="ICookable.html#cook(java.lang.String,java.lang.String)">cook</a>, <a href="ICookable.html#cookFile(java.io.File)">cookFile</a>, <a href="ICookable.html#cookFile(java.io.File,java.lang.String)">cookFile</a>, <a href="ICookable.html#cookFile(java.lang.String)">cookFile</a>, <a href="ICookable.html#cookFile(java.lang.String,java.lang.String)">cookFile</a>, <a href="ICookable.html#getBytecodes()">getBytecodes</a>, <a href="ICookable.html#setSourceVersion(int)">setSourceVersion</a>, <a href="ICookable.html#setTargetVersion(int)">setTargetVersion</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.org.codehaus.commons.compiler.IMultiCookable">
@@ -595,26 +629,25 @@ static final&nbsp;java.lang.Class&lt;?&gt; ANY_TYPE</pre>
 <h4>setCompileErrorHandler</h4>
 <pre class="methodSignature">void&nbsp;setCompileErrorHandler&#8203;(<a href="../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                             <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;compileErrorHandler)</pre>
-<div class="block">By default, <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s are thrown on compile errors, but an application my install its own
- <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a>.
+<div class="block">Installs an <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> which is invoked during compilation on each error. (By default, the compilation
+ throws a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> on the first error and terminates.)
  <p>
-   Be aware that a single problem during compilation often causes a bunch of compile errors, so a good <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> counts errors and throws a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> when a limit is reached.
- </p>
- <p>
-   If the given <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> throws <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s, then the compilation is terminated and
+   If the given <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> throws a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>, then the compilation terminates and
    the exception is propagated.
  </p>
  <p>
-   If the given <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> does not throw <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s, then the compiler may or may not
-   continue compilation, but must eventually throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>.
+   If the given <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> does not throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> but completes normally, then the
+   compilation may or may not continue, depending on the error. Iff the compilation
+   completes normally but errors were reported, then it will throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> indicating the
+   number of errors.
  </p>
  <p>
-   In other words: The <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> may throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> or not, but the compiler must
+   In other words: The <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> may throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> or not, but the compilation will
    definitely throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> if one or more compile errors have occurred.
  </p></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>compileErrorHandler</code> - <code>null</code> to restore the default behavior (throwing a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a></dd>
+<dd><code>compileErrorHandler</code> - <code>null</code> to restore the default behavior (throwing a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>)</dd>
 </dl>
 </li>
 </ul>
@@ -633,7 +666,23 @@ static final&nbsp;java.lang.Class&lt;?&gt; ANY_TYPE</pre>
 </dl>
 </li>
 </ul>
-<a id="evaluate(java.lang.Object...)">
+<a id="evaluate()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>evaluate</h4>
+<pre class="methodSignature"><a href="../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+java.lang.Object&nbsp;evaluate()
+                   throws java.lang.reflect.InvocationTargetException</pre>
+<div class="block">Shorthand for <a href="#evaluate(java.lang.Object%5B%5D)"><code>evaluate</code></a><code>(new Object[0])</code>.</div>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.reflect.InvocationTargetException</code></dd>
+</dl>
+</li>
+</ul>
+<a id="evaluate(java.lang.Object[])">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -641,7 +690,7 @@ static final&nbsp;java.lang.Class&lt;?&gt; ANY_TYPE</pre>
 <h4>evaluate</h4>
 <pre class="methodSignature"><a href="../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
 java.lang.Object&nbsp;evaluate&#8203;(<a href="../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                          java.lang.Object...&nbsp;arguments)
+                          java.lang.Object[]&nbsp;arguments)
                    throws java.lang.reflect.InvocationTargetException</pre>
 <div class="block">Evaluates the expression with concrete parameter values.
  <p>
@@ -658,6 +707,12 @@ java.lang.Object&nbsp;evaluate&#8203;(<a href="../nullanalysis/Nullable.html" ti
  </p>
  <p>
    <code>Null</code> <var>arguments</var> is equivalent with <code>new Object[0]</code>.
+ </p>
+ <p>
+   <b>Notice:</b> In version 3.1.8, the <var>arguments</var> parameter was changed from <code>Object[]</code> to
+   <code>Object...</code>, which turned out to be a really bad decision because it caused a very ugly invocation
+   ambiguity with <a href="#evaluate(int,java.lang.Object%5B%5D)"><code>evaluate(int, Object[])</code></a>. Thus, with version 3.1.10, the parameter was changed back
+   to <code>Object[]</code>.
  </p></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -758,10 +813,7 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setOverrideMethod</h4>
 <pre class="methodSignature">void&nbsp;setOverrideMethod&#8203;(boolean&nbsp;overrideMethod)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#setOverrideMethod(boolean)"><code>IScriptEvaluator.setOverrideMethod(boolean)</code></a></dd>
-</dl>
+<div class="block">Defines whether the generated method overrides a methods declared in a supertype.</div>
 </li>
 </ul>
 <a id="setOverrideMethod(boolean[])">
@@ -771,10 +823,7 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setOverrideMethod</h4>
 <pre class="methodSignature">void&nbsp;setOverrideMethod&#8203;(boolean[]&nbsp;overrideMethod)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#setOverrideMethod(boolean%5B%5D)"><code>IScriptEvaluator.setOverrideMethod(boolean[])</code></a></dd>
-</dl>
+<div class="block">Same as <a href="#setOverrideMethod(boolean)"><code>setOverrideMethod(boolean)</code></a>, but for multiple expressions.</div>
 </li>
 </ul>
 <a id="setParameters(java.lang.String[],java.lang.Class[])">
@@ -785,10 +834,17 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <h4>setParameters</h4>
 <pre class="methodSignature">void&nbsp;setParameters&#8203;(java.lang.String[]&nbsp;parameterNames,
                    java.lang.Class&lt;?&gt;[]&nbsp;parameterTypes)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#setParameters(java.lang.String%5B%5D,java.lang.Class%5B%5D)"><code>IScriptEvaluator.setParameters(String[], Class[])</code></a></dd>
-</dl>
+<div class="block">Defines the names and types of the parameters of the generated method.
+ <p>
+   <var>names</var><code>.length</code> and <var>types</var><code>.length</code> must be equal. This invariant may be
+   checked immediately, or later when the expression is cooked.
+ </p>
+ <p>
+   The parameters can be of primitive type, e.g. <code>double.class</code>.
+ </p>
+ <p>
+   The default is to have zero parameters.
+ </p></div>
 </li>
 </ul>
 <a id="setParameters(java.lang.String[][],java.lang.Class[][])">
@@ -799,10 +855,7 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <h4>setParameters</h4>
 <pre class="methodSignature">void&nbsp;setParameters&#8203;(java.lang.String[][]&nbsp;parameterNames,
                    java.lang.Class&lt;?&gt;[][]&nbsp;parameterTypes)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#setParameters(java.lang.String%5B%5D%5B%5D,java.lang.Class%5B%5D%5B%5D)"><code>IScriptEvaluator.setParameters(String[][], Class[][])</code></a></dd>
-</dl>
+<div class="block">Same as <a href="#setParameters(java.lang.String%5B%5D,java.lang.Class%5B%5D)"><code>setParameters(String[], Class[])</code></a>, but for multiple expressions.</div>
 </li>
 </ul>
 <a id="setClassName(java.lang.String)">
@@ -812,10 +865,13 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setClassName</h4>
 <pre class="methodSignature">void&nbsp;setClassName&#8203;(java.lang.String&nbsp;className)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IClassBodyEvaluator.html#setClassName(java.lang.String)"><code>IClassBodyEvaluator.setClassName(String)</code></a></dd>
-</dl>
+<div class="block">Sets the name of the generated class. Defaults to <a href="#DEFAULT_CLASS_NAME"><code>DEFAULT_CLASS_NAME</code></a>. In most cases, there is no need
+ to set this name, because the generated class is loaded into its own <code>ClassLoader</code> where its
+ name cannot collide with classes generated by other evaluators.
+ <p>
+   One reason to use this function is to have a class name in a non-default package, which can be relevant when
+   types and members with DEFAULT accessibility are accessed.
+ </p></div>
 </li>
 </ul>
 <a id="setExtendedClass(java.lang.Class)">
@@ -825,10 +881,12 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setExtendedClass</h4>
 <pre class="methodSignature">void&nbsp;setExtendedClass&#8203;(java.lang.Class&lt;?&gt;&nbsp;extendedType)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IClassBodyEvaluator.html#setExtendedClass(java.lang.Class)"><code>IClassBodyEvaluator.setExtendedClass(Class)</code></a></dd>
-</dl>
+<div class="block">Sets a particular superclass that the generated class will extend. If <var>extendedClass</var> is <code>
+ null</code>, the generated class will extend <code>Object</code>.
+ <p>
+   The usual reason to set a base class for an evaluator is that the generated class can directly access the
+   superclass's (non-private) members.
+ </p></div>
 </li>
 </ul>
 <a id="setDefaultImports(java.lang.String...)">
@@ -838,10 +896,18 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setDefaultImports</h4>
 <pre class="methodSignature">void&nbsp;setDefaultImports&#8203;(java.lang.String...&nbsp;defaultImports)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IClassBodyEvaluator.html#setDefaultImports(java.lang.String...)"><code>IClassBodyEvaluator.setDefaultImports(String...)</code></a></dd>
-</dl>
+<div class="block">"Default imports" add to the system import "java.lang", i.e. the evaluator may refer to classes imported by
+ default imports without having to explicitly declare IMPORT statements.
+ <p>
+   Notice that JDK 5 "static imports" are also supported, as shown here:
+ </p>
+ <pre>
+     sc.setDefaultImports(
+         "java.util.Map",                          // Single type import
+         "java.io.*",                              // Type-import-on-demand
+         "static java.util.Collections.EMPTY_MAP", // Single static import
+         "static java.util.Collections.*",         // Static-import-on-demand
+     );</pre></div>
 </li>
 </ul>
 <a id="getDefaultImports()">
@@ -852,8 +918,8 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <h4>getDefaultImports</h4>
 <pre class="methodSignature">java.lang.String[]&nbsp;getDefaultImports()</pre>
 <dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IClassBodyEvaluator.html#getDefaultImports()"><code>IClassBodyEvaluator.getDefaultImports()</code></a></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The default imports that were previously configured with <a href="#setDefaultImports(java.lang.String...)"><code>setDefaultImports(String...)</code></a></dd>
 </dl>
 </li>
 </ul>
@@ -864,10 +930,7 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setStaticMethod</h4>
 <pre class="methodSignature">void&nbsp;setStaticMethod&#8203;(boolean&nbsp;staticMethod)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#setStaticMethod(boolean)"><code>IScriptEvaluator.setStaticMethod(boolean)</code></a></dd>
-</dl>
+<div class="block">Defines whether the generated method should be STATIC or not. Defaults to <code>true</code>.</div>
 </li>
 </ul>
 <a id="setStaticMethod(boolean[])">
@@ -877,10 +940,7 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setStaticMethod</h4>
 <pre class="methodSignature">void&nbsp;setStaticMethod&#8203;(boolean[]&nbsp;staticMethod)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#setStaticMethod(boolean%5B%5D)"><code>IScriptEvaluator.setStaticMethod(boolean[])</code></a></dd>
-</dl>
+<div class="block">Same as <a href="#setStaticMethod(boolean)"><code>setStaticMethod(boolean)</code></a>, but for multiple expressions.</div>
 </li>
 </ul>
 <a id="setMethodName(java.lang.String)">
@@ -890,9 +950,12 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setMethodName</h4>
 <pre class="methodSignature">void&nbsp;setMethodName&#8203;(java.lang.String&nbsp;methodName)</pre>
+<div class="block">Defines the name of the generated method. Initially, the method name is <a href="IScriptEvaluator.html#DEFAULT_METHOD_NAME">"eval*"</a>.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>methodName</code> - <code>null</code> means reset to default name</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#setMethodName(java.lang.String)"><code>IScriptEvaluator.setMethodName(String)</code></a></dd>
+<dd><a href="IScriptEvaluator.html#DEFAULT_METHOD_NAME"><code>IScriptEvaluator.DEFAULT_METHOD_NAME</code></a></dd>
 </dl>
 </li>
 </ul>
@@ -903,10 +966,14 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setMethodNames</h4>
 <pre class="methodSignature">void&nbsp;setMethodNames&#8203;(java.lang.String[]&nbsp;methodNames)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#setMethodNames(java.lang.String%5B%5D)"><code>IScriptEvaluator.setMethodNames(String[])</code></a></dd>
-</dl>
+<div class="block">Same as <a href="#setMethodName(java.lang.String)"><code>setMethodName(String)</code></a>, but for multiple expressions.
+ <p>
+   Define the names of the generated methods. By default the methods have distinct and implementation-specific
+   names.
+ </p>
+ <p>
+   If two expressions have the same name, then they must have different parameter types (see <a href="#setParameters(java.lang.String%5B%5D%5B%5D,java.lang.Class%5B%5D%5B%5D)"><code>setParameters(String[][], Class[][])</code></a>).
+ </p></div>
 </li>
 </ul>
 <a id="setThrownExceptions(java.lang.Class[])">
@@ -916,10 +983,7 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setThrownExceptions</h4>
 <pre class="methodSignature">void&nbsp;setThrownExceptions&#8203;(java.lang.Class&lt;?&gt;[]&nbsp;thrownExceptions)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#setThrownExceptions(java.lang.Class%5B%5D)"><code>IScriptEvaluator.setThrownExceptions(Class[])</code></a></dd>
-</dl>
+<div class="block">Defines the exceptions that the generated method may throw.</div>
 </li>
 </ul>
 <a id="setThrownExceptions(java.lang.Class[][])">
@@ -929,13 +993,10 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <li class="blockList">
 <h4>setThrownExceptions</h4>
 <pre class="methodSignature">void&nbsp;setThrownExceptions&#8203;(java.lang.Class&lt;?&gt;[][]&nbsp;thrownExceptions)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#setThrownExceptions(java.lang.Class%5B%5D%5B%5D)"><code>IScriptEvaluator.setThrownExceptions(Class[][])</code></a></dd>
-</dl>
+<div class="block">Same as <a href="#setThrownExceptions(java.lang.Class%5B%5D)"><code>setThrownExceptions(Class[])</code></a>, but for multiple expressions.</div>
 </li>
 </ul>
-<a id="evaluate(int,java.lang.Object...)">
+<a id="evaluate(int,java.lang.Object[])">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -944,9 +1005,15 @@ void&nbsp;setReturnType&#8203;(@Deprecated
 <pre class="methodSignature"><a href="../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
 java.lang.Object&nbsp;evaluate&#8203;(int&nbsp;idx,
                           <a href="../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-                          java.lang.Object...&nbsp;arguments)
+                          java.lang.Object[]&nbsp;arguments)
                    throws java.lang.reflect.InvocationTargetException</pre>
-<div class="block"><code>Null</code> <var>arguments</var> is equivalent with <code>new Object[0]</code>.</div>
+<div class="block">Same as <a href="#evaluate(java.lang.Object%5B%5D)"><code>evaluate(Object[])</code></a>, but for multiple expressions.
+ <p>
+   <b>Notice:</b> In version 3.1.8, the <var>arguments</var> parameter was changed from <code>Object[]</code> to
+   <code>Object...</code>, which turned out to be a really bad decision because it caused a very ugly invocation
+   ambiguity with <a href="#evaluate(int,java.lang.Object%5B%5D)"><code>evaluate(int, Object[])</code></a>. Thus, with version 3.1.10, the parameter was changed back
+   to <code>Object[]</code>.
+ </p></div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.reflect.InvocationTargetException</code></dd>
@@ -965,7 +1032,7 @@ java.lang.Object&nbsp;evaluate&#8203;(int&nbsp;idx,
                    throws <a href="CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
 <div class="block">If the parameter and return types of the expression are known at compile time, then a "fast" expression evaluator
  can be instantiated through <a href="#createFastEvaluator(java.lang.String,java.lang.Class,java.lang.String...)"><code>createFastEvaluator(String, Class, String[])</code></a>. Expression evaluation is
- faster than through <a href="#evaluate(java.lang.Object...)"><code>evaluate(Object[])</code></a>, because it is not done through reflection but through direct
+ faster than through <a href="#evaluate(java.lang.Object%5B%5D)"><code>evaluate(Object[])</code></a>, because it is not done through reflection but through direct
  method invocation.
  <p>
    Example:
@@ -1033,8 +1100,10 @@ java.lang.Object&nbsp;evaluate&#8203;(int&nbsp;idx,
 <h4>getMethod</h4>
 <pre class="methodSignature">java.lang.reflect.Method&nbsp;getMethod()</pre>
 <dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#getMethod()"><code>IScriptEvaluator.getMethod()</code></a></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The generated and loaded <code>Method</code></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.IllegalStateException</code> - This IExpressionEvaluator is not yet cooked</dd>
 </dl>
 </li>
 </ul>
@@ -1045,10 +1114,7 @@ java.lang.Object&nbsp;evaluate&#8203;(int&nbsp;idx,
 <li class="blockList">
 <h4>getMethod</h4>
 <pre class="methodSignature">java.lang.reflect.Method&nbsp;getMethod&#8203;(int&nbsp;idx)</pre>
-<dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#getMethod(int)"><code>IScriptEvaluator.getMethod(int)</code></a></dd>
-</dl>
+<div class="block">Same as <a href="#getMethod()"><code>getMethod()</code></a>, but for multiple expressions.</div>
 </li>
 </ul>
 <a id="getClazz()">
@@ -1059,8 +1125,10 @@ java.lang.Object&nbsp;evaluate&#8203;(int&nbsp;idx,
 <h4>getClazz</h4>
 <pre class="methodSignature">java.lang.Class&lt;?&gt;&nbsp;getClazz()</pre>
 <dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IClassBodyEvaluator.html#getClazz()"><code>IClassBodyEvaluator.getClazz()</code></a></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The generated <code>Class</code></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.IllegalStateException</code> - This <a href="IClassBodyEvaluator.html" title="interface in org.codehaus.commons.compiler"><code>IClassBodyEvaluator</code></a> is not yet cooked</dd>
 </dl>
 </li>
 </ul>
@@ -1072,8 +1140,10 @@ java.lang.Object&nbsp;evaluate&#8203;(int&nbsp;idx,
 <h4>getResult</h4>
 <pre class="methodSignature">java.lang.reflect.Method[]&nbsp;getResult()</pre>
 <dl>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="IScriptEvaluator.html#getResult()"><code>IScriptEvaluator.getResult()</code></a></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The generated and loaded methods that implement the cooked expressions</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.IllegalStateException</code> - This <a href="IScriptEvaluator.html" title="interface in org.codehaus.commons.compiler"><code>IScriptEvaluator</code></a> is not yet cooked</dd>
 </dl>
 </li>
 </ul>

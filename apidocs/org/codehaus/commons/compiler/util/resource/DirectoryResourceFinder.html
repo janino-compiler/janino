@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -34,7 +33,7 @@ var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -220,7 +219,9 @@ extends <a href="FileResourceFinder.html" title="class in org.codehaus.commons.c
 <td class="colFirst"><code>java.lang.Iterable&lt;<a href="Resource.html" title="interface in org.codehaus.commons.compiler.util.resource">Resource</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#list(java.lang.String,boolean)">list</a></span>&#8203;(java.lang.String&nbsp;resourceNamePrefix,
     boolean&nbsp;recurse)</code></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Returns all resources who's names start with a given string.</div>
+</td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
@@ -326,11 +327,40 @@ protected final&nbsp;java.io.File&nbsp;findResourceAsFile&#8203;(java.lang.Strin
 <pre class="methodSignature"><a href="../../../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
 public&nbsp;java.lang.Iterable&lt;<a href="Resource.html" title="interface in org.codehaus.commons.compiler.util.resource">Resource</a>&gt;&nbsp;list&#8203;(java.lang.String&nbsp;resourceNamePrefix,
                                          boolean&nbsp;recurse)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="ListableResourceFinder.html#list(java.lang.String,boolean)">ListableResourceFinder</a></code></span></div>
+<div class="block">Returns all resources who's names start with a given string. Only resources with a content are included, no
+ "special entries" of any kind, e.g. directories.
+ <p>
+   If the prefix string ends with "/", you will get a proper directory listing (<var>recurse</var><code>=false</code>)
+   or directory tree (<var>recurse</var><code>=true</code>). Example:
+ </p>
+ <pre>
+   resourceFinder.list("dir/", true) =>
+     dir/
+     dir/afile
+     dir/bfile
+     dir/adir/
+     dir/adir/file
+     dir/bdir/
+     dir/bdir/file
+ </pre>
+ <p>
+   Otherwise, you will get a strange subset of a directory listing, resp. directory tree, as follows:
+ </p>
+ <pre>
+   resourceFinder.list("dir/a", true) =>
+     dir/afile
+     dir/adir/
+     dir/adir/file
+ </pre></div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="ListableResourceFinder.html#list(java.lang.String,boolean)">list</a></code>&nbsp;in class&nbsp;<code><a href="ListableResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource">ListableResourceFinder</a></code></dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>resourceNamePrefix</code> - E.g. <code>""</code> or <code>"java/lang/"</code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>All resources who's name starts with the given prefix</dd>
+<dd>All resources who's name starts with the given prefix; <code>null</code> iff
+                           a location designated by the <var>resourceNamePrefix</var> does not exist</dd>
 </dl>
 </li>
 </ul>

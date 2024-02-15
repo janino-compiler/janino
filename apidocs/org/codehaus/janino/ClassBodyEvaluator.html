@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":9,"i6":41,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":41,"i6":41,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -290,7 +289,9 @@ implements <a href="../commons/compiler/IClassBodyEvaluator.html" title="interfa
                             java.lang.Class&lt;?&gt;&nbsp;baseType,
                             java.lang.ClassLoader&nbsp;parentClassLoader)</code></th>
 <td class="colLast">
-<div class="block">Use <a href="#createInstance(java.io.Reader)"><code>createInstance(Reader)</code></a> instead:</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#createInstance(java.io.Reader)"><code>createInstance(Reader)</code></a> instead</div>
+</div>
 </td>
 </tr>
 <tr id="i6" class="altColor">
@@ -358,8 +359,7 @@ implements <a href="../commons/compiler/IClassBodyEvaluator.html" title="interfa
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">setCompileErrorHandler</a></span>&#8203;(<a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;compileErrorHandler)</code></th>
 <td class="colLast">
-<div class="block">By default, <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s are thrown on compile errors, but an application my install its own
- <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a>.</div>
+<div class="block">Installs an <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> which is invoked during compilation on each error.</div>
 </td>
 </tr>
 <tr id="i16" class="altColor">
@@ -411,6 +411,21 @@ implements <a href="../commons/compiler/IClassBodyEvaluator.html" title="interfa
 </td>
 </tr>
 <tr id="i23" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setSourceVersion(int)">setSourceVersion</a></span>&#8203;(int&nbsp;version)</code></th>
+<td class="colLast">
+<div class="block">Specifies the version of source code accepted, in analogy with JAVAC's <code>-source</code> command line option.</div>
+</td>
+</tr>
+<tr id="i24" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTargetVersion(int)">setTargetVersion</a></span>&#8203;(int&nbsp;version)</code></th>
+<td class="colLast">
+<div class="block">Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's <code>
+ -target</code> command line option.</div>
+</td>
+</tr>
+<tr id="i25" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setWarningHandler(org.codehaus.commons.compiler.WarningHandler)">setWarningHandler</a></span>&#8203;(<a href="../commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;warningHandler)</code></th>
 <td class="colLast">
@@ -821,6 +836,45 @@ implements <a href="../commons/compiler/IClassBodyEvaluator.html" title="interfa
 </dl>
 </li>
 </ul>
+<a id="setSourceVersion(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setSourceVersion</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;setSourceVersion&#8203;(int&nbsp;version)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../commons/compiler/ICookable.html#setSourceVersion(int)">ICookable</a></code></span></div>
+<div class="block">Specifies the version of source code accepted, in analogy with JAVAC's <code>-source</code> command line option.
+ May be ignored by an implementation (e.g. the <code>janino</code> implementation always accepts the language features
+ as described on the home page).
+ Allowed values, and the default value, depend on the implementation.
+ <code>-1</code> means to use a default version.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../commons/compiler/ICookable.html#setSourceVersion(int)">setSourceVersion</a></code>&nbsp;in interface&nbsp;<code><a href="../commons/compiler/ICookable.html" title="interface in org.codehaus.commons.compiler">ICookable</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="setTargetVersion(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setTargetVersion</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;setTargetVersion&#8203;(int&nbsp;version)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../commons/compiler/ICookable.html#setTargetVersion(int)">ICookable</a></code></span></div>
+<div class="block">Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's <code>
+ -target</code> command line option.
+ Allowed values depend on the implementation.
+ The default value also depends on the implementation.
+ The only invariant is that the generated class files are suitable for the currently executing JVM.
+ <code>-1</code> means to use a default version.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="../commons/compiler/ICookable.html#setTargetVersion(int)">setTargetVersion</a></code>&nbsp;in interface&nbsp;<code><a href="../commons/compiler/ICookable.html" title="interface in org.codehaus.commons.compiler">ICookable</a></code></dd>
+</dl>
+</li>
+</ul>
 <a id="setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">
 <!--   -->
 </a>
@@ -830,28 +884,27 @@ implements <a href="../commons/compiler/IClassBodyEvaluator.html" title="interfa
 <pre class="methodSignature">public&nbsp;void&nbsp;setCompileErrorHandler&#8203;(<a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                                    <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;compileErrorHandler)</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="../commons/compiler/IClassBodyEvaluator.html#setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">IClassBodyEvaluator</a></code></span></div>
-<div class="block">By default, <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s are thrown on compile errors, but an application my install its own
- <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a>.
+<div class="block">Installs an <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> which is invoked during compilation on each error. (By default, the compilation
+ throws a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> on the first error and terminates.)
  <p>
-   Be aware that a single problem during compilation often causes a bunch of compile errors, so a good <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> counts errors and throws a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> when a limit is reached.
- </p>
- <p>
-   If the given <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s, then the compilation is terminated and
+   If the given <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> throws a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>, then the compilation terminates and
    the exception is propagated.
  </p>
  <p>
-   If the given <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> does not throw <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s, then the compiler may or may not
-   continue compilation, but must eventually throw a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>.
+   If the given <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> does not throw a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> but completes normally, then the
+   compilation may or may not continue, depending on the error. Iff the compilation
+   completes normally but errors were reported, then it will throw a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> indicating the
+   number of errors.
  </p>
  <p>
-   In other words: The <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> may throw a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> or not, but the compiler must
+   In other words: The <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> may throw a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> or not, but the compilation will
    definitely throw a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> if one or more compile errors have occurred.
  </p></div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="../commons/compiler/IClassBodyEvaluator.html#setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">setCompileErrorHandler</a></code>&nbsp;in interface&nbsp;<code><a href="../commons/compiler/IClassBodyEvaluator.html" title="interface in org.codehaus.commons.compiler">IClassBodyEvaluator</a></code></dd>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>compileErrorHandler</code> - <code>null</code> to restore the default behavior (throwing a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a></dd>
+<dd><code>compileErrorHandler</code> - <code>null</code> to restore the default behavior (throwing a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>)</dd>
 </dl>
 </li>
 </ul>
@@ -1056,13 +1109,17 @@ protected&nbsp;<a href="Java.Type.html" title="class in org.codehaus.janino">Jav
 <ul class="blockList">
 <li class="blockList">
 <h4>createFastClassBodyEvaluator</h4>
-<pre class="methodSignature">public static&nbsp;java.lang.Object&nbsp;createFastClassBodyEvaluator&#8203;(<a href="Scanner.html" title="class in org.codehaus.janino">Scanner</a>&nbsp;scanner,
+<pre class="methodSignature">@Deprecated
+public static&nbsp;java.lang.Object&nbsp;createFastClassBodyEvaluator&#8203;(<a href="Scanner.html" title="class in org.codehaus.janino">Scanner</a>&nbsp;scanner,
                                                             <a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                                                             java.lang.Class&lt;?&gt;&nbsp;baseType,
                                                             <a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                                                             java.lang.ClassLoader&nbsp;parentClassLoader)
                                                      throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a>,
                                                             java.io.IOException</pre>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#createInstance(java.io.Reader)"><code>createInstance(Reader)</code></a> instead</div>
+</div>
 <div class="block">Use <a href="#createInstance(java.io.Reader)"><code>createInstance(Reader)</code></a> instead:
  <pre>
      IClassBodyEvaluator cbe = <a href="../commons/compiler/CompilerFactoryFactory.html" title="class in org.codehaus.commons.compiler"><code>CompilerFactoryFactory</code></a>.<a href="../commons/compiler/CompilerFactoryFactory.html#getDefaultCompilerFactory()"><code>getDefaultCompilerFactory</code></a>().<a href="../commons/compiler/ICompilerFactory.html#newClassBodyEvaluator()"><code>newClassBodyEvaluator</code></a>();
@@ -1080,8 +1137,6 @@ protected&nbsp;<a href="Java.Type.html" title="class in org.codehaus.janino">Jav
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 <dd><code>java.io.IOException</code></dd>
-<dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="#createInstance(java.io.Reader)"><code>createInstance(Reader)</code></a></dd>
 </dl>
 </li>
 </ul>

@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":42,"i7":10,"i8":10,"i9":10,"i10":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":42,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -266,6 +265,16 @@ extends <a href="IClassLoader.html" title="class in org.codehaus.janino">IClassL
 </tr>
 <tr id="i10" class="altColor">
 <td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setSourceVersion(int)">setSourceVersion</a></span>&#8203;(int&nbsp;version)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTargetVersion(int)">setTargetVersion</a></span>&#8203;(int&nbsp;version)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setWarningHandler(org.codehaus.commons.compiler.WarningHandler)">setWarningHandler</a></span>&#8203;(<a href="../commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;warningHandler)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
@@ -275,7 +284,7 @@ extends <a href="IClassLoader.html" title="class in org.codehaus.janino">IClassL
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a></h3>
-<code><a href="IClassLoader.html#createJavacLikePathIClassLoader(java.io.File%5B%5D,java.io.File%5B%5D,java.io.File%5B%5D)">createJavacLikePathIClassLoader</a>, <a href="IClassLoader.html#defineIClass(org.codehaus.janino.IClass)">defineIClass</a>, <a href="IClassLoader.html#getParentIClassLoader()">getParentIClassLoader</a>, <a href="IClassLoader.html#loadIClass(java.lang.String)">loadIClass</a>, <a href="IClassLoader.html#postConstruct()">postConstruct</a></code></li>
+<code><a href="IClassLoader.html#createJavacLikePathIClassLoader(java.io.File%5B%5D,java.io.File%5B%5D,java.io.File%5B%5D)">createJavacLikePathIClassLoader</a>, <a href="IClassLoader.html#defineIClass(org.codehaus.janino.IClass)">defineIClass</a>, <a href="IClassLoader.html#getArrayIClass(org.codehaus.janino.IClass)">getArrayIClass</a>, <a href="IClassLoader.html#getArrayIClass(org.codehaus.janino.IClass,int)">getArrayIClass</a>, <a href="IClassLoader.html#getParentIClassLoader()">getParentIClassLoader</a>, <a href="IClassLoader.html#loadIClass(java.lang.String)">loadIClass</a>, <a href="IClassLoader.html#postConstruct()">postConstruct</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -323,6 +332,24 @@ extends <a href="IClassLoader.html" title="class in org.codehaus.janino">IClassL
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a id="setSourceVersion(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setSourceVersion</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;setSourceVersion&#8203;(int&nbsp;version)</pre>
+</li>
+</ul>
+<a id="setTargetVersion(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setTargetVersion</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;setTargetVersion&#8203;(int&nbsp;version)</pre>
+</li>
+</ul>
 <a id="getUnitCompilers()">
 <!--   -->
 </a>

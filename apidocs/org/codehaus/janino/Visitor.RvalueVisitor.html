@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6,"i15":6,"i16":6,"i17":6,"i18":6,"i19":6,"i20":6,"i21":6,"i22":6,"i23":6,"i24":6,"i25":6,"i26":6,"i27":6,"i28":6,"i29":6};
+var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6,"i15":6,"i16":6,"i17":6,"i18":6,"i19":6,"i20":6,"i21":6,"i22":6,"i23":6,"i24":6,"i25":6,"i26":6,"i27":6,"i28":6,"i29":6,"i30":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -352,12 +351,19 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </tr>
 <tr id="i28" class="altColor">
 <td class="colFirst"><code><a href="Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">R</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitTextBlock(org.codehaus.janino.Java.TextBlock)">visitTextBlock</a></span>&#8203;(<a href="Java.TextBlock.html" title="class in org.codehaus.janino">Java.TextBlock</a>&nbsp;tb)</code></th>
+<td class="colLast">
+<div class="block">Invoked by <a href="Java.TextBlock.html#accept(org.codehaus.janino.Visitor.RvalueVisitor)"><code>Java.TextBlock.accept(Visitor.RvalueVisitor)</code></a></div>
+</td>
+</tr>
+<tr id="i29" class="rowColor">
+<td class="colFirst"><code><a href="Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitThisReference(org.codehaus.janino.Java.ThisReference)">visitThisReference</a></span>&#8203;(<a href="Java.ThisReference.html" title="class in org.codehaus.janino">Java.ThisReference</a>&nbsp;tr)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.ArrayLength.html#accept(org.codehaus.janino.Visitor.RvalueVisitor)"><code>Java.ArrayLength.accept(Visitor.RvalueVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i29" class="rowColor">
+<tr id="i30" class="altColor">
 <td class="colFirst"><code><a href="Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitUnaryOperation(org.codehaus.janino.Java.UnaryOperation)">visitUnaryOperation</a></span>&#8203;(<a href="Java.UnaryOperation.html" title="class in org.codehaus.janino">Java.UnaryOperation</a>&nbsp;uo)</code></th>
 <td class="colLast">
@@ -647,6 +653,22 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <a href="Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">R</a>&nbsp;visitStringLiteral&#8203;(<a href="Java.StringLiteral.html" title="class in org.codehaus.janino">Java.StringLiteral</a>&nbsp;sl)
               throws <a href="Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">EX</a> extends java.lang.Throwable</pre>
 <div class="block">Invoked by <a href="Java.StringLiteral.html#accept(org.codehaus.janino.Visitor.RvalueVisitor)"><code>Java.StringLiteral.accept(Visitor.RvalueVisitor)</code></a></div>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">EX</a> extends java.lang.Throwable</code></dd>
+</dl>
+</li>
+</ul>
+<a id="visitTextBlock(org.codehaus.janino.Java.TextBlock)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>visitTextBlock</h4>
+<pre class="methodSignature"><a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+<a href="Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">R</a>&nbsp;visitTextBlock&#8203;(<a href="Java.TextBlock.html" title="class in org.codehaus.janino">Java.TextBlock</a>&nbsp;tb)
+          throws <a href="Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">EX</a> extends java.lang.Throwable</pre>
+<div class="block">Invoked by <a href="Java.TextBlock.html#accept(org.codehaus.janino.Visitor.RvalueVisitor)"><code>Java.TextBlock.accept(Visitor.RvalueVisitor)</code></a></div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="Visitor.RvalueVisitor.html" title="type parameter in Visitor.RvalueVisitor">EX</a> extends java.lang.Throwable</code></dd>

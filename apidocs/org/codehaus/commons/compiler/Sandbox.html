@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -34,7 +33,7 @@ var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -133,6 +132,24 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <hr>
 <pre>public final class <span class="typeNameLabel">Sandbox</span>
 extends java.lang.Object</pre>
+<div class="block">Executes a <code>PrivilegedAction</code> or <code>PrivilegedExceptionAction</code> in a context with restricted permissions.
+ This is useful for executing "untrusted" code, e.g. user-provided expressions or scripts that were compiled with
+ <a href="https://janino.unkrig.de/">JANINO</a>.
+ <p>
+   Code example:
+ </p>
+ <pre>
+     Permissions noPermissions = new Permissions();
+     Sandbox sandbox = new Sandbox(noPermissions);
+     sandbox.confine(new PrivilegedExceptionAction&lt;Object>() {
+         &#64;Override public Object run() throws Exception { new java.io.File("xxx").delete(); return null; }
+     });
+ </pre></div>
+<dl>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="https://docs.oracle.com/javase/tutorial/essential/environment/security.html">ORACLE: Java Essentials:
+      The Security Manager</a></dd>
+</dl>
 </li>
 </ul>
 </div>

@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -178,10 +177,10 @@ extends <a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type<
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#iClass">iClass</a></span></code></th>
+<td class="colFirst"><code><a href="IType.html" title="interface in org.codehaus.janino">IType</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#iType">iType</a></span></code></th>
 <td class="colLast">
-<div class="block">The <a href="IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a> represented by this <a href="Java.Type.html" title="class in org.codehaus.janino"><code>Java.Type</code></a>.</div>
+<div class="block">The <a href="IType.html" title="interface in org.codehaus.janino"><code>IType</code></a> represented by this <a href="Java.Type.html" title="class in org.codehaus.janino"><code>Java.Type</code></a>.</div>
 </td>
 </tr>
 </table>
@@ -209,8 +208,8 @@ extends <a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type<
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
-<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(org.codehaus.commons.compiler.Location,org.codehaus.janino.IClass)">SimpleType</a></span>&#8203;(<a href="../commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-          <a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;iClass)</code></th>
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(org.codehaus.commons.compiler.Location,org.codehaus.janino.IType)">SimpleType</a></span>&#8203;(<a href="../commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
+          <a href="IType.html" title="interface in org.codehaus.janino">IType</a>&nbsp;iType)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -246,6 +245,18 @@ extends <a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type<
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code><a href="Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getEnclosingScope()">getEnclosingScope</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setEnclosingScope(org.codehaus.janino.Java.Scope)">setEnclosingScope</a></span>&#8203;(<a href="Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>&nbsp;enclosingScope)</code></th>
+<td class="colLast">
+<div class="block">Sets the enclosing scope for this object and all subordinate <a href="Java.Type.html" title="class in org.codehaus.janino"><code>Java.Type</code></a> objects.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toString()">toString</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
@@ -256,7 +267,7 @@ extends <a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type<
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type</a></h3>
-<code><a href="Java.Type.html#getEnclosingScope()">getEnclosingScope</a>, <a href="Java.Type.html#setEnclosingScope(org.codehaus.janino.Java.Scope)">setEnclosingScope</a>, <a href="Java.Type.html#toType()">toType</a></code></li>
+<code><a href="Java.Type.html#toType()">toType</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.org.codehaus.janino.Java.Atom">
@@ -295,14 +306,14 @@ extends <a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type<
 <!--   -->
 </a>
 <h3>Field Detail</h3>
-<a id="iClass">
+<a id="iType">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>iClass</h4>
-<pre>public final&nbsp;<a href="IClass.html" title="class in org.codehaus.janino">IClass</a> iClass</pre>
-<div class="block">The <a href="IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a> represented by this <a href="Java.Type.html" title="class in org.codehaus.janino"><code>Java.Type</code></a>.</div>
+<h4>iType</h4>
+<pre>public final&nbsp;<a href="IType.html" title="interface in org.codehaus.janino">IType</a> iType</pre>
+<div class="block">The <a href="IType.html" title="interface in org.codehaus.janino"><code>IType</code></a> represented by this <a href="Java.Type.html" title="class in org.codehaus.janino"><code>Java.Type</code></a>.</div>
 </li>
 </ul>
 </li>
@@ -315,14 +326,14 @@ extends <a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type<
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a id="&lt;init&gt;(org.codehaus.commons.compiler.Location,org.codehaus.janino.IClass)">
+<a id="&lt;init&gt;(org.codehaus.commons.compiler.Location,org.codehaus.janino.IType)">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>SimpleType</h4>
 <pre>public&nbsp;SimpleType&#8203;(<a href="../commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location,
-                  <a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;iClass)</pre>
+                  <a href="IType.html" title="interface in org.codehaus.janino">IType</a>&nbsp;iType)</pre>
 </li>
 </ul>
 </li>
@@ -335,6 +346,36 @@ extends <a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type<
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a id="setEnclosingScope(org.codehaus.janino.Java.Scope)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setEnclosingScope</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;setEnclosingScope&#8203;(<a href="Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>&nbsp;enclosingScope)</pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="Java.Type.html#setEnclosingScope(org.codehaus.janino.Java.Scope)">Java.Type</a></code></span></div>
+<div class="block">Sets the enclosing scope for this object and all subordinate <a href="Java.Type.html" title="class in org.codehaus.janino"><code>Java.Type</code></a> objects.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code><a href="Java.Type.html#setEnclosingScope(org.codehaus.janino.Java.Scope)">setEnclosingScope</a></code>&nbsp;in class&nbsp;<code><a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="getEnclosingScope()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getEnclosingScope</h4>
+<pre class="methodSignature">public&nbsp;<a href="Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>&nbsp;getEnclosingScope()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code><a href="Java.Type.html#getEnclosingScope()">getEnclosingScope</a></code>&nbsp;in class&nbsp;<code><a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type</a></code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The enclosing scope (as previously set by <a href="Java.Type.html#setEnclosingScope(org.codehaus.janino.Java.Scope)"><code>Java.Type.setEnclosingScope(Java.Scope)</code></a>)</dd>
+</dl>
+</li>
+</ul>
 <a id="toString()">
 <!--   -->
 </a>

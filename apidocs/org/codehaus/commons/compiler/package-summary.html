@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -28,7 +27,7 @@
     }
 //-->
 var pathtoroot = "../../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -163,7 +162,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <tr class="rowColor">
 <th class="colFirst" scope="row"><a href="ICookable.html" title="interface in org.codehaus.commons.compiler">ICookable</a></th>
 <td class="colLast">
-<div class="block">"Cooking" means processing a sequence of characters (a "document").</div>
+<div class="block">An entity that processes a sequence of characters (a "document").</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -251,7 +250,9 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </tr>
 <tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Sandbox.html" title="class in org.codehaus.commons.compiler">Sandbox</a></th>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Executes a <code>PrivilegedAction</code> or <code>PrivilegedExceptionAction</code> in a context with restricted permissions.</div>
+</td>
 </tr>
 </tbody>
 </table>

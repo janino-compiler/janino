@@ -6,18 +6,19 @@
 	<taskdef resource="de/unkrig/txt2html/antlib/ant.xml">
 		<classpath>
 			<!-- Assume that the "<txt2html>" antlib project lives in the same ECLIPSE workspace: -->
-			<fileset dir="../txt2html-antlib/target" includes="txt2html-antlib-*-antlib.jar" />
+<!--			<fileset dir="../txt2html-antlib/target" includes="txt2html-antlib-*-antlib.jar" />-->
+			<fileset dir="C:/dev/mavenrepo/de/unkrig/txt2html/txt2html-antlib/1.0.0" includes="txt2html-antlib-*-antlib.jar" />
 		</classpath>
 	</taskdef>
 
-	<xmlproperty file="../janino-parent/pom.xml" prefix="pom.xml" />
+	<xmlproperty file="../janino/janino-parent/pom.xml" prefix="pom.xml" />
 	<property name="janino.version" value="${pom.xml.project.version}" />
 
 	<target name="default" depends="generate.apidocs.for.publication" />
 
 	<target name="generate.apidocs.for.publication">
 
-		<!-- Delete the old files, but not the directory structure (in order to not confus SVN). -->
+		<!-- Delete the old files, but not the directory structure (in order to not confuse SVN). -->
 		<delete failonerror="false"><fileset dir="apidocs" includes="**/*" /></delete>
 
 <!--
@@ -26,15 +27,16 @@
 		<javadoc destdir="apidocs">
 			<classpath>
 				<!--  "org.codehausjanino.AntCompilerAdapter" JAVADOC has references to APACHE ANT: -->
-				<pathelement location="../janino/lib/ant-1.7.1.jar" />
+				<pathelement location="../janino/janino/lib/ant-1.7.1.jar" />
 			</classpath>
 
 			<doctitle>JANINO ${janino.version}</doctitle>
 
 			<arg value="-notimestamp" />
 			<arg value="-Xdoclint:none" />
-			<arg value="-overview" /><arg file="../janino/src/main/javadoc/overview.html" />
+			<arg value="-overview" /><arg file="../janino/janino/src/main/javadoc/overview.html" />
 			<arg value="-quiet" />
+			<arg value="--no-module-directories" /> <!-- See https://stackoverflow.com/questions/52326318/maven-javadoc-search-redirects-to-undefined-url -->
 
 			<!--
 				Since Java 10, JAVADOC has a nice "-add-stylesheet" command line option, but for backwards
@@ -42,9 +44,9 @@
 			<arg value="-add-stylesheet" /><arg file="additional-stylesheet.css" />
 			-->
 			
-			<fileset dir="../commons-compiler"     includes="src/main/java/**/*.java" />
-			<fileset dir="../commons-compiler-jdk" includes="src/main/java/**/*.java" />
-			<fileset dir="../janino"               includes="src/main/java/**/*.java" />
+			<fileset dir="../janino/commons-compiler"     includes="src/main/java/**/*.java" />
+			<fileset dir="../janino/commons-compiler-jdk" includes="src/main/java/**/*.java" />
+			<fileset dir="../janino/janino"               includes="src/main/java/**/*.java" />
 		</javadoc>
 
 		<!--

@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6,"i1":6,"i2":6,"i3":38,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6,"i15":6,"i16":6,"i17":6,"i18":6,"i19":6};
+var data = {"i0":6,"i1":6,"i2":6,"i3":38,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6,"i15":6,"i16":6,"i17":6,"i18":6,"i19":6,"i20":6,"i21":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -258,8 +257,7 @@ GUID-AEEC9F07-CB49-4E96-8BC7-BCC2C7F725C9__GUID-45DC2932-19BD-435B-B14C-A230D0A4
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">setCompileErrorHandler</a></span>&#8203;(<a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;errorHandler)</code></th>
 <td class="colLast">
-<div class="block">By default, <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s are thrown on compile errors, but an application my install its own
- <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a>.</div>
+<div class="block">Installs an <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> which is invoked during compilation on each error.</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
@@ -330,12 +328,27 @@ GUID-AEEC9F07-CB49-4E96-8BC7-BCC2C7F725C9__GUID-45DC2932-19BD-435B-B14C-A230D0A4
 </tr>
 <tr id="i18" class="altColor">
 <td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setSourceVersion(int)">setSourceVersion</a></span>&#8203;(int&nbsp;version)</code></th>
+<td class="colLast">
+<div class="block">Specifies the version of source code accepted, in analogy with JAVAC's <code>-source</code> command line option.</div>
+</td>
+</tr>
+<tr id="i19" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTargetVersion(int)">setTargetVersion</a></span>&#8203;(int&nbsp;version)</code></th>
+<td class="colLast">
+<div class="block">Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's <code>
+ -target</code> command line option.</div>
+</td>
+</tr>
+<tr id="i20" class="altColor">
+<td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setVerbose(boolean)">setVerbose</a></span>&#8203;(boolean&nbsp;verbose)</code></th>
 <td class="colLast">
 <div class="block">Equivalent of <code>-verbose</code>.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setWarningHandler(org.codehaus.commons.compiler.WarningHandler)">setWarningHandler</a></span>&#8203;(<a href="WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;warningHandler)</code></th>
 <td class="colLast">
@@ -472,6 +485,35 @@ void&nbsp;setCharacterEncoding&#8203;(<a href="../nullanalysis/Nullable.html" ti
 <h4>setDebugSource</h4>
 <pre class="methodSignature">void&nbsp;setDebugSource&#8203;(boolean&nbsp;value)</pre>
 <div class="block">Equivalent of <code>-g:source</code>.</div>
+</li>
+</ul>
+<a id="setSourceVersion(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setSourceVersion</h4>
+<pre class="methodSignature">void&nbsp;setSourceVersion&#8203;(int&nbsp;version)</pre>
+<div class="block">Specifies the version of source code accepted, in analogy with JAVAC's <code>-source</code> command line option.
+ May be ignored by an implementation (e.g. the <code>janino</code> implementation always accepts the language features
+ as described on the home page).
+ Allowed values, and the default value, depend on the implementation.
+ <code>-1</code> means to use a default version.</div>
+</li>
+</ul>
+<a id="setTargetVersion(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setTargetVersion</h4>
+<pre class="methodSignature">void&nbsp;setTargetVersion&#8203;(int&nbsp;version)</pre>
+<div class="block">Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's <code>
+ -target</code> command line option.
+ Allowed values depend on the implementation.
+ The default value also depends on the implementation.
+ The only invariant is that the generated class files are suitable for the currently executing JVM.
+ <code>-1</code> means to use a default version.</div>
 </li>
 </ul>
 <a id="setSourceFinder(org.codehaus.commons.compiler.util.resource.ResourceFinder)">
@@ -694,26 +736,25 @@ GUID-AEEC9F07-CB49-4E96-8BC7-BCC2C7F725C9__GUID-45DC2932-19BD-435B-B14C-A230D0A4
 <h4>setCompileErrorHandler</h4>
 <pre class="methodSignature">void&nbsp;setCompileErrorHandler&#8203;(<a href="../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
                             <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;errorHandler)</pre>
-<div class="block">By default, <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s are thrown on compile errors, but an application my install its own
- <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a>.
+<div class="block">Installs an <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> which is invoked during compilation on each error. (By default, the compilation
+ throws a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> on the first error and terminates.)
  <p>
-   Be aware that a single problem during compilation often causes a bunch of compile errors, so a good <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> counts errors and throws a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> when a limit is reached.
- </p>
- <p>
-   If the given <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> throws <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s, then the compilation is terminated and
+   If the given <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> throws a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>, then the compilation terminates and
    the exception is propagated.
  </p>
  <p>
-   If the given <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> does not throw <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s, then the compiler may or may not
-   continue compilation, but must eventually throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>.
+   If the given <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> does not throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> but completes normally, then the
+   compilation may or may not continue, depending on the error. Iff the compilation of a compilation unit
+   completes normally but errors were reported, then it will throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> indicating the
+   number of errors.
  </p>
  <p>
-   In other words: The <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> may throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> or not, but the compiler must
+   In other words: The <a href="ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> may throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> or not, but the compilation will
    definitely throw a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> if one or more compile errors have occurred.
  </p></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>errorHandler</code> - <code>null</code> to restore the default behavior (throwing a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a></dd>
+<dd><code>errorHandler</code> - <code>null</code> to restore the default behavior (throwing a <a href="CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>)</dd>
 </dl>
 </li>
 </ul>

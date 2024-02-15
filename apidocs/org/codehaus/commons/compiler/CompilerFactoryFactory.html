@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":9,"i1":9,"i2":9,"i3":9};
-var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
+var data = {"i0":41,"i1":9,"i2":41,"i3":9,"i4":41,"i5":9,"i6":9};
+var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -148,7 +147,7 @@ extends java.lang.Object</pre>
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t1" class="tableTab"><span><a href="javascript:show(1);">Static Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t1" class="tableTab"><span><a href="javascript:show(1);">Static Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t6" class="tableTab"><span><a href="javascript:show(32);">Deprecated Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colSecond" scope="col">Method</th>
@@ -158,26 +157,54 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>static <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getAllCompilerFactories()">getAllCompilerFactories</a></span>()</code></th>
 <td class="colLast">
-<div class="block">Finds all implementation of <code>org.codehaus.commons.compiler</code> on the class path, then loads and
- instantiates their <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a>s.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#getAllCompilerFactories(java.lang.ClassLoader)"><code>getAllCompilerFactories(ClassLoader)</code></a> instead</div>
+</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>static <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getCompilerFactory(java.lang.String)">getCompilerFactory</a></span>&#8203;(java.lang.String&nbsp;compilerFactoryClassName)</code></th>
+<td class="colFirst"><code>static <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>[]</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getAllCompilerFactories(java.lang.ClassLoader)">getAllCompilerFactories</a></span>&#8203;(java.lang.ClassLoader&nbsp;classLoader)</code></th>
 <td class="colLast">
-<div class="block">Loads an <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a> by class name.</div>
+<div class="block">Finds all implementation of <code>org.codehaus.commons.compiler</code> through the <var>classLoader</var>, then loads
+ and instantiates the implementations' <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a>s.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>static <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getDefaultCompilerFactory()">getDefaultCompilerFactory</a></span>()</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getCompilerFactory(java.lang.String)">getCompilerFactory</a></span>&#8203;(java.lang.String&nbsp;compilerFactoryClassName)</code></th>
 <td class="colLast">
-<div class="block">Finds the first implementation of <code>org.codehaus.commons.compiler</code> on the class path, then loads and
- instantiates its <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a>.</div>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#getCompilerFactory(java.lang.String,java.lang.ClassLoader)"><code>getCompilerFactory(String, ClassLoader)</code></a> instead</div>
+</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
+<td class="colFirst"><code>static <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getCompilerFactory(java.lang.String,java.lang.ClassLoader)">getCompilerFactory</a></span>&#8203;(java.lang.String&nbsp;compilerFactoryClassName,
+                  java.lang.ClassLoader&nbsp;classLoader)</code></th>
+<td class="colLast">
+<div class="block">Loads an <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a> implementation by class name.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>static <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getDefaultCompilerFactory()">getDefaultCompilerFactory</a></span>()</code></th>
+<td class="colLast">
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#getDefaultCompilerFactory(java.lang.ClassLoader)"><code>getDefaultCompilerFactory(ClassLoader)</code></a> instead</div>
+</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>static <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getDefaultCompilerFactory(java.lang.ClassLoader)">getDefaultCompilerFactory</a></span>&#8203;(java.lang.ClassLoader&nbsp;classLoader)</code></th>
+<td class="colLast">
+<div class="block">Finds the first implementation of <code>org.codehaus.commons.compiler</code> through the <var>classLoader</var>, then
+ loads and instantiates the implementation's <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a>.</div>
+</td>
+</tr>
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getSpecificationVersion()">getSpecificationVersion</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
@@ -212,13 +239,41 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getDefaultCompilerFactory</h4>
-<pre class="methodSignature">public static&nbsp;<a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>&nbsp;getDefaultCompilerFactory()
+<pre class="methodSignature">@Deprecated
+public static&nbsp;<a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>&nbsp;getDefaultCompilerFactory()
                                                   throws java.lang.Exception</pre>
-<div class="block">Finds the first implementation of <code>org.codehaus.commons.compiler</code> on the class path, then loads and
- instantiates its <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a>.</div>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#getDefaultCompilerFactory(java.lang.ClassLoader)"><code>getDefaultCompilerFactory(ClassLoader)</code></a> instead</div>
+</div>
+<div class="block">Equivalent with <code>getDefaultCompilerFactory(Thread.currentThread().getContextClassLoader())</code>.
+ The context class loader is typically a bad choice, because frameworks use (abuse?) the context class loader
+ for different purposes, which causes problems in individual contexts.</div>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="https://stackoverflow.com/a/36228195">Context class loaders are for cases where you forgot
+             to pass an explicit class loader parameter</a></dd>
+</dl>
+</li>
+</ul>
+<a id="getDefaultCompilerFactory(java.lang.ClassLoader)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getDefaultCompilerFactory</h4>
+<pre class="methodSignature">public static&nbsp;<a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>&nbsp;getDefaultCompilerFactory&#8203;(java.lang.ClassLoader&nbsp;classLoader)
+                                                  throws java.lang.Exception</pre>
+<div class="block">Finds the first implementation of <code>org.codehaus.commons.compiler</code> through the <var>classLoader</var>, then
+ loads and instantiates the implementation's <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a>.
+ <p>
+   If the implementation is on the application class path (which is the case for probably 99% of all
+   environments), then the correct class loader to use would be <code>ClassLoader.getSystemClassLoader()</code>.
+ </p></div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a> of the first implementation on the class path</dd>
+<dd>The <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a> of the first implementation that was loaded</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>java.lang.Exception</code> - Many things can go wrong while finding and initializing the default compiler factory</dd>
 </dl>
@@ -230,15 +285,43 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getAllCompilerFactories</h4>
-<pre class="methodSignature">public static&nbsp;<a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>[]&nbsp;getAllCompilerFactories()
+<pre class="methodSignature">@Deprecated
+public static&nbsp;<a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>[]&nbsp;getAllCompilerFactories()
                                                   throws java.lang.Exception</pre>
-<div class="block">Finds all implementation of <code>org.codehaus.commons.compiler</code> on the class path, then loads and
- instantiates their <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a>s.</div>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#getAllCompilerFactories(java.lang.ClassLoader)"><code>getAllCompilerFactories(ClassLoader)</code></a> instead</div>
+</div>
+<div class="block">Equivalent with <code>getAllCompilerFactories(Thread.currentThread().getContextClassLoader())</code>.
+ The context class loader is typically a bad choice, because frameworks use (abuse?) the context class loader
+ for different purposes, which causes problems in individual contexts.</div>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.Exception</code></dd>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="https://stackoverflow.com/a/36228195">Context class loaders are for cases where you forgot
+             to pass an explicit class loader parameter</a></dd>
+</dl>
+</li>
+</ul>
+<a id="getAllCompilerFactories(java.lang.ClassLoader)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAllCompilerFactories</h4>
+<pre class="methodSignature">public static&nbsp;<a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>[]&nbsp;getAllCompilerFactories&#8203;(java.lang.ClassLoader&nbsp;classLoader)
+                                                  throws java.lang.Exception</pre>
+<div class="block">Finds all implementation of <code>org.codehaus.commons.compiler</code> through the <var>classLoader</var>, then loads
+ and instantiates the implementations' <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a>s.
+ <p>
+   If the implementations are on the application class path (which is the case for probably 99% of all
+   environments), then the correct class loader to use would be <code>ClassLoader.getSystemClassLoader()</code>.
+ </p></div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a>s of all implementations on the class path</dd>
+<dd>The <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a>s of all implementations that were loaded</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code>java.lang.Exception</code> - Many things can go wrong while finding and initializing compiler factories</dd>
+<dd><code>java.lang.Exception</code> - Many things can go wrong while finding and initializing the default compiler factory</dd>
 </dl>
 </li>
 </ul>
@@ -248,9 +331,40 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getCompilerFactory</h4>
-<pre class="methodSignature">public static&nbsp;<a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>&nbsp;getCompilerFactory&#8203;(java.lang.String&nbsp;compilerFactoryClassName)
+<pre class="methodSignature">@Deprecated
+public static&nbsp;<a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>&nbsp;getCompilerFactory&#8203;(java.lang.String&nbsp;compilerFactoryClassName)
                                            throws java.lang.Exception</pre>
-<div class="block">Loads an <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a> by class name.</div>
+<div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span>
+<div class="deprecationComment">Use <a href="#getCompilerFactory(java.lang.String,java.lang.ClassLoader)"><code>getCompilerFactory(String, ClassLoader)</code></a> instead</div>
+</div>
+<div class="block">Equivalent with <a href="#getCompilerFactory(java.lang.String,java.lang.ClassLoader)"><code>getCompilerFactory(Thread.currentThread().getContextClassLoader())</code></a>.
+ <p>
+   If the implementation is on the application class path (which is the case for probably 99% of all
+   environments), then the correct class loader to use would be <code>ClassLoader.getSystemClassLoader()</code>.
+ </p></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>compilerFactoryClassName</code> - Name of a class that implements <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>java.lang.Exception</code> - Many things can go wrong while finding and initializing the default compiler
+                                 factory</dd>
+</dl>
+</li>
+</ul>
+<a id="getCompilerFactory(java.lang.String,java.lang.ClassLoader)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getCompilerFactory</h4>
+<pre class="methodSignature">public static&nbsp;<a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler">ICompilerFactory</a>&nbsp;getCompilerFactory&#8203;(java.lang.String&nbsp;compilerFactoryClassName,
+                                                  java.lang.ClassLoader&nbsp;classLoader)
+                                           throws java.lang.Exception</pre>
+<div class="block">Loads an <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a> implementation by class name.
+ <p>
+   If the implementation is on the application class path (which is the case for probably 99% of all
+   environments), then the correct class loader to use would be <code>ClassLoader.getSystemClassLoader()</code>.
+ </p></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>compilerFactoryClassName</code> - Name of a class that implements <a href="ICompilerFactory.html" title="interface in org.codehaus.commons.compiler"><code>ICompilerFactory</code></a></dd>

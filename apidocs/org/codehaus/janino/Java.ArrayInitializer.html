@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10};
+var data = {"i0":10,"i1":10,"i2":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -226,13 +225,18 @@ implements <a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>&lt;R,&#8203;EX extends java.lang.Throwable&gt;<br>R</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#accept(org.codehaus.janino.Visitor.ArrayInitializerOrRvalueVisitor)">accept</a></span>&#8203;(<a href="Visitor.ArrayInitializerOrRvalueVisitor.html" title="interface in org.codehaus.janino">Visitor.ArrayInitializerOrRvalueVisitor</a>&lt;R,&#8203;EX&gt;&nbsp;aiorvv)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setEnclosingScope(org.codehaus.janino.Java.Scope)">setEnclosingScope</a></span>&#8203;(<a href="Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>&nbsp;s)</code></th>
 <td class="colLast">
 <div class="block">Sets the immediately enclosing scope for this array initializer or rvalue.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toString()">toString</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
@@ -327,6 +331,23 @@ implements <a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="Java.ArrayInitializerOrRvalue.html#setEnclosingScope(org.codehaus.janino.Java.Scope)">setEnclosingScope</a></code>&nbsp;in interface&nbsp;<code><a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.codehaus.janino">Java.ArrayInitializerOrRvalue</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="accept(org.codehaus.janino.Visitor.ArrayInitializerOrRvalueVisitor)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>accept</h4>
+<pre class="methodSignature"><a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+public&nbsp;&lt;R,&#8203;EX extends java.lang.Throwable&gt;&nbsp;R&nbsp;accept&#8203;(<a href="Visitor.ArrayInitializerOrRvalueVisitor.html" title="interface in org.codehaus.janino">Visitor.ArrayInitializerOrRvalueVisitor</a>&lt;R,&#8203;EX&gt;&nbsp;aiorvv)
+                                                  throws EX extends java.lang.Throwable</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="Java.ArrayInitializerOrRvalue.html#accept(org.codehaus.janino.Visitor.ArrayInitializerOrRvalueVisitor)">accept</a></code>&nbsp;in interface&nbsp;<code><a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.codehaus.janino">Java.ArrayInitializerOrRvalue</a></code></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>EX extends java.lang.Throwable</code></dd>
 </dl>
 </li>
 </ul>

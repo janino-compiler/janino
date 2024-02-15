@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -34,7 +33,7 @@ var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -147,8 +146,15 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <hr>
 <pre>public class <span class="typeNameLabel">AutoIndentWriter</span>
 extends java.io.FilterWriter</pre>
-<div class="block">A <code>FilterWriter</code> that automatically indents lines by looking at trailing opening braces ('{') and
- leading closing braces ('}').</div>
+<div class="block">A <code>FilterWriter</code> that indents lines by processing some control characters in the character stream.
+ <p>
+   <a href="#INDENT"><code>INDENT</code></a> or <a href="#UNINDENT"><code>UNINDENT</code></a> may precede lines and indicate that the line and all following lines should
+   be (un)indented by one position.
+ </p>
+ <p>
+   <a href="#TABULATOR"><code>TABULATOR</code></a>s may appear anywhere in lines and dictate that portions of all following lines should be
+   vertically aligned (see <a href="#resolveTabs(java.util.List)"><code>resolveTabs(List)</code></a>).
+ </p></div>
 </li>
 </ul>
 </div>
@@ -173,28 +179,28 @@ extends java.io.FilterWriter</pre>
 <td class="colFirst"><code>static char</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#CLEAR_TABULATORS">CLEAR_TABULATORS</a></span></code></th>
 <td class="colLast">
-<div class="block">Special character indicating to clear all tabluar layout that was configured through <a href="#TABULATOR"><code>TABULATOR</code></a>.</div>
+<div class="block">Special character at the beginning of a line that flushes a tabular layout.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static char</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#INDENT">INDENT</a></span></code></th>
 <td class="colLast">
-<div class="block">Special character that inserts a line break and indents the following text by one position.</div>
+<div class="block">Special character at the beginning of a line that indents the following text by one position.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static char</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#TABULATOR">TABULATOR</a></span></code></th>
 <td class="colLast">
-<div class="block">Special character indicating a tabular layout of the following text.</div>
+<div class="block">Special character indicating a tabular layout of all following lines until <a href="#UNINDENT"><code>UNINDENT</code></a>.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static char</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#UNINDENT">UNINDENT</a></span></code></th>
 <td class="colLast">
-<div class="block">Special character that inserts a line break and unindents the following text by one position.</div>
+<div class="block">Special character at the beginning of a line that unindents the following text by one position.</div>
 </td>
 </tr>
 </table>
@@ -317,7 +323,7 @@ extends java.io.FilterWriter</pre>
 <li class="blockList">
 <h4>TABULATOR</h4>
 <pre>public static final&nbsp;char TABULATOR</pre>
-<div class="block">Special character indicating a tabular layout of the following text.</div>
+<div class="block">Special character indicating a tabular layout of all following lines until <a href="#UNINDENT"><code>UNINDENT</code></a>.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#org.codehaus.janino.util.AutoIndentWriter.TABULATOR">Constant Field Values</a></dd>
@@ -331,7 +337,7 @@ extends java.io.FilterWriter</pre>
 <li class="blockList">
 <h4>CLEAR_TABULATORS</h4>
 <pre>public static final&nbsp;char CLEAR_TABULATORS</pre>
-<div class="block">Special character indicating to clear all tabluar layout that was configured through <a href="#TABULATOR"><code>TABULATOR</code></a>.</div>
+<div class="block">Special character at the beginning of a line that flushes a tabular layout.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#org.codehaus.janino.util.AutoIndentWriter.CLEAR_TABULATORS">Constant Field Values</a></dd>
@@ -345,7 +351,7 @@ extends java.io.FilterWriter</pre>
 <li class="blockList">
 <h4>INDENT</h4>
 <pre>public static final&nbsp;char INDENT</pre>
-<div class="block">Special character that inserts a line break and indents the following text by one position.</div>
+<div class="block">Special character at the beginning of a line that indents the following text by one position.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#org.codehaus.janino.util.AutoIndentWriter.INDENT">Constant Field Values</a></dd>
@@ -359,7 +365,7 @@ extends java.io.FilterWriter</pre>
 <li class="blockList">
 <h4>UNINDENT</h4>
 <pre>public static final&nbsp;char UNINDENT</pre>
-<div class="block">Special character that inserts a line break and unindents the following text by one position.</div>
+<div class="block">Special character at the beginning of a line that unindents the following text by one position.</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../../constant-values.html#org.codehaus.janino.util.AutoIndentWriter.UNINDENT">Constant Field Values</a></dd>

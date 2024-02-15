@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -28,7 +27,7 @@
     }
 //-->
 var pathtoroot = "./";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -161,77 +160,94 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </tr>
 <tbody>
 <tr class="altColor">
+<th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/commons/compiler/CompilerFactoryFactory.html#getAllCompilerFactories()">org.codehaus.commons.compiler.CompilerFactoryFactory.getAllCompilerFactories()</a></th>
+<td class="colLast">
+<div class="deprecationComment">Use <a href="org/codehaus/commons/compiler/CompilerFactoryFactory.html#getAllCompilerFactories(java.lang.ClassLoader)"><code>CompilerFactoryFactory.getAllCompilerFactories(ClassLoader)</code></a> instead</div>
+</td>
+</tr>
+<tr class="rowColor">
+<th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/commons/compiler/CompilerFactoryFactory.html#getCompilerFactory(java.lang.String)">org.codehaus.commons.compiler.CompilerFactoryFactory.getCompilerFactory&#8203;(String)</a></th>
+<td class="colLast">
+<div class="deprecationComment">Use <a href="org/codehaus/commons/compiler/CompilerFactoryFactory.html#getCompilerFactory(java.lang.String,java.lang.ClassLoader)"><code>CompilerFactoryFactory.getCompilerFactory(String, ClassLoader)</code></a> instead</div>
+</td>
+</tr>
+<tr class="altColor">
+<th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/commons/compiler/CompilerFactoryFactory.html#getDefaultCompilerFactory()">org.codehaus.commons.compiler.CompilerFactoryFactory.getDefaultCompilerFactory()</a></th>
+<td class="colLast">
+<div class="deprecationComment">Use <a href="org/codehaus/commons/compiler/CompilerFactoryFactory.html#getDefaultCompilerFactory(java.lang.ClassLoader)"><code>CompilerFactoryFactory.getDefaultCompilerFactory(ClassLoader)</code></a> instead</div>
+</td>
+</tr>
+<tr class="rowColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/commons/compiler/IClassBodyEvaluator.html#setExtendedType(java.lang.Class)">org.codehaus.commons.compiler.IClassBodyEvaluator.setExtendedType&#8203;(Class&lt;?&gt;)</a></th>
 <td class="colLast">
 <div class="deprecationComment">Use <a href="org/codehaus/commons/compiler/IClassBodyEvaluator.html#setExtendedClass(java.lang.Class)"><code>IClassBodyEvaluator.setExtendedClass(Class)</code></a> instead</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/commons/compiler/IClassBodyEvaluator.html#setImplementedTypes(java.lang.Class%5B%5D)">org.codehaus.commons.compiler.IClassBodyEvaluator.setImplementedTypes&#8203;(Class&lt;?&gt;[])</a></th>
 <td class="colLast">
 <div class="deprecationComment">Use <a href="org/codehaus/commons/compiler/IClassBodyEvaluator.html#setImplementedInterfaces(java.lang.Class%5B%5D)"><code>IClassBodyEvaluator.setImplementedInterfaces(Class[])</code></a> instead</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/commons/compiler/ICompiler.html#setCharacterEncoding(java.lang.String)">org.codehaus.commons.compiler.ICompiler.setCharacterEncoding&#8203;(String)</a></th>
 <td class="colLast">
 <div class="deprecationComment">Use <a href="org/codehaus/commons/compiler/ICompiler.html#setSourceCharset(java.nio.charset.Charset)"><code>ICompiler.setSourceCharset(Charset)</code></a> instead</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/commons/compiler/IExpressionEvaluator.html#setReturnType(java.lang.Class)">org.codehaus.commons.compiler.IExpressionEvaluator.setReturnType&#8203;(Class&lt;?&gt;)</a></th>
 <td class="colLast">
 <div class="deprecationComment">Use <a href="org/codehaus/commons/compiler/IExpressionEvaluator.html#setExpressionType(java.lang.Class)"><code>IExpressionEvaluator.setExpressionType(Class)</code></a> instead</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setExtendedType(java.lang.Class)">org.codehaus.commons.compiler.jdk.ClassBodyEvaluator.setExtendedType&#8203;(Class&lt;?&gt;)</a></th>
 <td class="colLast">
 <div class="deprecationComment">Use <a href="org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setExtendedClass(java.lang.Class)"><code>ClassBodyEvaluator.setExtendedClass(Class)</code></a> instead</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setImplementedTypes(java.lang.Class%5B%5D)">org.codehaus.commons.compiler.jdk.ClassBodyEvaluator.setImplementedTypes&#8203;(Class&lt;?&gt;[])</a></th>
 <td class="colLast">
 <div class="deprecationComment">Use <a href="org/codehaus/commons/compiler/jdk/ClassBodyEvaluator.html#setImplementedInterfaces(java.lang.Class%5B%5D)"><code>ClassBodyEvaluator.setImplementedInterfaces(Class[])</code></a> instead</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/commons/compiler/jdk/SimpleCompiler.html#setParentClassLoader(java.lang.ClassLoader,java.lang.Class%5B%5D)">org.codehaus.commons.compiler.jdk.SimpleCompiler.setParentClassLoader&#8203;(ClassLoader, Class&lt;?&gt;[])</a></th>
 <td class="colLast">
 <div class="deprecationComment">Auxiliary classes never really worked... don't use them.</div>
 </td>
 </tr>
-<tr class="rowColor">
-<th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/janino/ClassBodyEvaluator.html#createFastClassBodyEvaluator(org.codehaus.janino.Scanner,java.lang.String,java.lang.Class,java.lang.Class%5B%5D,java.lang.ClassLoader)">org.codehaus.janino.ClassBodyEvaluator.createFastClassBodyEvaluator&#8203;(Scanner, String, Class&lt;?&gt;, Class&lt;?&gt;[], ClassLoader)</a></th>
+<tr class="altColor">
+<th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/janino/ClassBodyEvaluator.html#createFastClassBodyEvaluator(org.codehaus.janino.Scanner,java.lang.Class,java.lang.ClassLoader)">org.codehaus.janino.ClassBodyEvaluator.createFastClassBodyEvaluator&#8203;(Scanner, Class&lt;?&gt;, ClassLoader)</a></th>
 <td class="colLast">
 <div class="deprecationComment">Use <a href="org/codehaus/janino/ClassBodyEvaluator.html#createInstance(java.io.Reader)"><code>ClassBodyEvaluator.createInstance(Reader)</code></a> instead</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/janino/ExpressionEvaluator.html#createFastExpressionEvaluator(java.lang.String,java.lang.Class,java.lang.String%5B%5D,java.lang.ClassLoader)">org.codehaus.janino.ExpressionEvaluator.createFastExpressionEvaluator&#8203;(String, Class&lt;?&gt;, String[], ClassLoader)</a></th>
 <td class="colLast">
 <div class="deprecationComment">Use <a href="org/codehaus/janino/ExpressionEvaluator.html#createFastEvaluator(java.lang.String,java.lang.Class,java.lang.String...)"><code>ExpressionEvaluator.createFastEvaluator(String, Class, String[])</code></a> instead:</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/janino/JavaSourceIClassLoader.html#setCharacterEncoding(java.lang.String)">org.codehaus.janino.JavaSourceIClassLoader.setCharacterEncoding&#8203;(String)</a></th>
 <td class="colLast">
 <div class="deprecationComment">Use <a href="org/codehaus/janino/JavaSourceIClassLoader.html#setSourceCharset(java.nio.charset.Charset)"><code>JavaSourceIClassLoader.setSourceCharset(Charset)</code></a> instead</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/janino/Scanner.html#close()">org.codehaus.janino.Scanner.close()</a></th>
 <td class="colLast">
 <div class="deprecationComment">This method is deprecated, because the concept described above is confusing. An application should
              close the underlying <code>InputStream</code> or <code>Reader</code> itself</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colDeprecatedItemName" scope="row"><a href="org/codehaus/janino/ScriptEvaluator.html#createFastScriptEvaluator(java.lang.String,java.lang.Class,java.lang.String%5B%5D)">org.codehaus.janino.ScriptEvaluator.createFastScriptEvaluator&#8203;(String, Class&lt;?&gt;, String[])</a></th>
 <td class="colLast">
-<div class="deprecationComment">Use <a href="org/codehaus/janino/ScriptEvaluator.html#createFastScriptEvaluator(org.codehaus.janino.Scanner,java.lang.String%5B%5D,java.lang.String,java.lang.Class,java.lang.Class,java.lang.String%5B%5D,java.lang.ClassLoader)"><code>ScriptEvaluator.createFastScriptEvaluator(Scanner, String[], String, Class, Class, String[],
-             ClassLoader)</code></a> instead</div>
+<div class="deprecationComment">Use <a href="org/codehaus/janino/ScriptEvaluator.html#createFastEvaluator(org.codehaus.janino.Scanner,java.lang.Class,java.lang.String%5B%5D)"><code>ScriptEvaluator.createFastEvaluator(Scanner, Class, String[])</code></a> instead</div>
 </td>
 </tr>
 </tbody>

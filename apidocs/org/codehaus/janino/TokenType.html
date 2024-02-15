@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -34,7 +33,7 @@ var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -240,6 +239,13 @@ extends java.lang.Enum&lt;<a href="TokenType.html" title="enum in org.codehaus.j
 </td>
 </tr>
 <tr class="altColor">
+<th class="colFirst" scope="row"><code><span class="memberNameLink"><a href="#TEXT_BLOCK">TEXT_BLOCK</a></span></code></th>
+<td class="colLast">
+<div class="block">The token represents a text block; its <a href="Token.html#value"><code>Token.value</code></a> is the text of the text block exactly as
+ it appears in the source code (including the leading and trailing <code>"""</code>).</div>
+</td>
+</tr>
+<tr class="rowColor">
 <th class="colFirst" scope="row"><code><span class="memberNameLink"><a href="#WHITE_SPACE">WHITE_SPACE</a></span></code></th>
 <td class="colLast">
 <div class="block">The token represents "white space"; i.e. a non-empty sequence of whitespace characters.</div>
@@ -392,6 +398,17 @@ the order they are declared.</div>
 <pre>public static final&nbsp;<a href="TokenType.html" title="enum in org.codehaus.janino">TokenType</a> STRING_LITERAL</pre>
 <div class="block">The token represents a string literal; its <a href="Token.html#value"><code>Token.value</code></a> is the text of the string literal exactly as
  it appears in the source code (including the double quotes around it).</div>
+</li>
+</ul>
+<a id="TEXT_BLOCK">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>TEXT_BLOCK</h4>
+<pre>public static final&nbsp;<a href="TokenType.html" title="enum in org.codehaus.janino">TokenType</a> TEXT_BLOCK</pre>
+<div class="block">The token represents a text block; its <a href="Token.html#value"><code>Token.value</code></a> is the text of the text block exactly as
+ it appears in the source code (including the leading and trailing <code>"""</code>).</div>
 </li>
 </ul>
 <a id="NULL_LITERAL">

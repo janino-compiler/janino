@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -180,8 +179,8 @@ implements <a href="Java.ClassDeclaration.html" title="interface in org.codehaus
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;<a href="Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&gt;</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#variableDeclaratorsAndInitializers">variableDeclaratorsAndInitializers</a></span></code></th>
+<td class="colFirst"><code>java.util.List&lt;<a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a>&gt;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#fieldDeclarationsAndInitializers">fieldDeclarationsAndInitializers</a></span></code></th>
 <td class="colLast">
 <div class="block">List of <a href="Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeBodyDeclaration</code></a>s of this class: Field declarations (both static and non-static),
  (static and non-static) initializers (a.k.a.</div>
@@ -251,23 +250,30 @@ implements <a href="Java.ClassDeclaration.html" title="interface in org.codehaus
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#addFieldDeclarationOrInitializer(org.codehaus.janino.Java.FieldDeclarationOrInitializer)">addFieldDeclarationOrInitializer</a></span>&#8203;(<a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a>&nbsp;fdoi)</code></th>
+<td class="colLast">
+<div class="block">Adds one field declaration or initializer to this class.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#addInitializer(org.codehaus.janino.Java.Initializer)">addInitializer</a></span>&#8203;(<a href="Java.Initializer.html" title="class in org.codehaus.janino">Java.Initializer</a>&nbsp;i)</code></th>
 <td class="colLast">
 <div class="block">Adds one initializer to this class.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#defineSyntheticField(org.codehaus.janino.IClass.IField)">defineSyntheticField</a></span>&#8203;(<a href="IClass.IField.html" title="class in org.codehaus.janino">IClass.IField</a>&nbsp;iField)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.util.SortedMap&lt;java.lang.String,&#8203;<a href="IClass.IField.html" title="class in org.codehaus.janino">IClass.IField</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getSyntheticFields()">getSyntheticFields</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;<a href="Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&gt;</code></td>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;<a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getVariableDeclaratorsAndInitializers()">getVariableDeclaratorsAndInitializers</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Returns the initializers for class variables (JLS7 8.3.2.1) and instance variables (JLS7 8.3.2.2), and
@@ -344,13 +350,13 @@ implements <a href="Java.ClassDeclaration.html" title="interface in org.codehaus
 <div class="block">List of <a href="Java.ConstructorDeclarator.html" title="class in org.codehaus.janino"><code>Java.ConstructorDeclarator</code></a>s of this class.</div>
 </li>
 </ul>
-<a id="variableDeclaratorsAndInitializers">
+<a id="fieldDeclarationsAndInitializers">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>variableDeclaratorsAndInitializers</h4>
-<pre>public final&nbsp;java.util.List&lt;<a href="Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&gt; variableDeclaratorsAndInitializers</pre>
+<h4>fieldDeclarationsAndInitializers</h4>
+<pre>public final&nbsp;java.util.List&lt;<a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a>&gt; fieldDeclarationsAndInitializers</pre>
 <div class="block">List of <a href="Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeBodyDeclaration</code></a>s of this class: Field declarations (both static and non-static),
  (static and non-static) initializers (a.k.a. "class initializers" and "instance initializers").</div>
 </li>
@@ -417,6 +423,16 @@ implements <a href="Java.ClassDeclaration.html" title="interface in org.codehaus
 <div class="block">Adds one initializer to this class.</div>
 </li>
 </ul>
+<a id="addFieldDeclarationOrInitializer(org.codehaus.janino.Java.FieldDeclarationOrInitializer)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>addFieldDeclarationOrInitializer</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;addFieldDeclarationOrInitializer&#8203;(<a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a>&nbsp;fdoi)</pre>
+<div class="block">Adds one field declaration or initializer to this class.</div>
+</li>
+</ul>
 <a id="defineSyntheticField(org.codehaus.janino.IClass.IField)">
 <!--   -->
 </a>
@@ -439,7 +455,7 @@ implements <a href="Java.ClassDeclaration.html" title="interface in org.codehaus
 <ul class="blockList">
 <li class="blockList">
 <h4>getVariableDeclaratorsAndInitializers</h4>
-<pre class="methodSignature">public&nbsp;java.util.List&lt;<a href="Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&gt;&nbsp;getVariableDeclaratorsAndInitializers()</pre>
+<pre class="methodSignature">public&nbsp;java.util.List&lt;<a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a>&gt;&nbsp;getVariableDeclaratorsAndInitializers()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="Java.ClassDeclaration.html#getVariableDeclaratorsAndInitializers()">Java.ClassDeclaration</a></code></span></div>
 <div class="block">Returns the initializers for class variables (JLS7 8.3.2.1) and instance variables (JLS7 8.3.2.2), and
  the instance initializers (JLS7 8.6) and static initializers (JLS7 8.7) <em>in the order as they appear in

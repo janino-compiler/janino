@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -34,7 +33,7 @@ var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -169,7 +168,7 @@ extends <a href="Java.TypeDeclaration.html" title="interface in org.codehaus.jan
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code>java.util.List&lt;<a href="Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&gt;</code></td>
+<td class="colFirst"><code>java.util.List&lt;<a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getVariableDeclaratorsAndInitializers()">getVariableDeclaratorsAndInitializers</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Returns the initializers for class variables (JLS7 8.3.2.1) and instance variables (JLS7 8.3.2.2), and
@@ -228,7 +227,7 @@ extends <a href="Java.TypeDeclaration.html" title="interface in org.codehaus.jan
 <ul class="blockList">
 <li class="blockList">
 <h4>getVariableDeclaratorsAndInitializers</h4>
-<pre class="methodSignature">java.util.List&lt;<a href="Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>&gt;&nbsp;getVariableDeclaratorsAndInitializers()</pre>
+<pre class="methodSignature">java.util.List&lt;<a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a>&gt;&nbsp;getVariableDeclaratorsAndInitializers()</pre>
 <div class="block">Returns the initializers for class variables (JLS7 8.3.2.1) and instance variables (JLS7 8.3.2.2), and
  the instance initializers (JLS7 8.6) and static initializers (JLS7 8.7) <em>in the order as they appear in
  the type declaration</em>.</div>

@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -34,7 +33,7 @@ var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -173,7 +172,7 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
+<td class="colFirst"><code><a href="IType.html" title="interface in org.codehaus.janino">IType</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#type">type</a></span></code></th>
 <td class="colLast">
 <div class="block">The type of this local variable.</div>
@@ -197,8 +196,8 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
-<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(boolean,org.codehaus.janino.IClass)">LocalVariable</a></span>&#8203;(boolean&nbsp;finaL,
-             <a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;type)</code></th>
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(boolean,org.codehaus.janino.IType)">LocalVariable</a></span>&#8203;(boolean&nbsp;finaL,
+             <a href="IType.html" title="interface in org.codehaus.janino">IType</a>&nbsp;type)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -274,7 +273,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>type</h4>
-<pre>public final&nbsp;<a href="IClass.html" title="class in org.codehaus.janino">IClass</a> type</pre>
+<pre>public final&nbsp;<a href="IType.html" title="interface in org.codehaus.janino">IType</a> type</pre>
 <div class="block">The type of this local variable.</div>
 </li>
 </ul>
@@ -299,14 +298,14 @@ public&nbsp;<a href="Java.LocalVariableSlot.html" title="class in org.codehaus.j
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a id="&lt;init&gt;(boolean,org.codehaus.janino.IClass)">
+<a id="&lt;init&gt;(boolean,org.codehaus.janino.IType)">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>LocalVariable</h4>
 <pre>public&nbsp;LocalVariable&#8203;(boolean&nbsp;finaL,
-                     <a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;type)</pre>
+                     <a href="IType.html" title="interface in org.codehaus.janino">IType</a>&nbsp;type)</pre>
 </li>
 </ul>
 </li>
@@ -354,7 +353,7 @@ public&nbsp;<a href="Java.LocalVariableSlot.html" title="class in org.codehaus.j
 <pre class="methodSignature">public&nbsp;short&nbsp;getSlotIndex()</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>The slot reserved for this local variable</dd>
+<dd>The slot reserved for this local variable (two slots for LONG and DOUBLE local variables)</dd>
 </dl>
 </li>
 </ul>

@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -135,6 +134,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="description">
 <ul class="blockList">
 <li class="blockList">
+<dl>
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="IType.html" title="interface in org.codehaus.janino">IType</a></code>, <code><a href="ITypeVariableOrIClass.html" title="interface in org.codehaus.janino">ITypeVariableOrIClass</a></code></dd>
+</dl>
 <hr>
 <pre>public class <span class="typeNameLabel">ClassFileIClass</span>
 extends <a href="IClass.html" title="class in org.codehaus.janino">IClass</a></pre>
@@ -174,7 +177,7 @@ extends <a href="IClass.html" title="class in org.codehaus.janino">IClass</a></p
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;org.codehaus.janino.<a href="IClass.html" title="class in org.codehaus.janino">IClass</a></h3>
-<code><a href="IClass.html#BOOLEAN">BOOLEAN</a>, <a href="IClass.html#BYTE">BYTE</a>, <a href="IClass.html#CHAR">CHAR</a>, <a href="IClass.html#DOUBLE">DOUBLE</a>, <a href="IClass.html#FLOAT">FLOAT</a>, <a href="IClass.html#INT">INT</a>, <a href="IClass.html#LONG">LONG</a>, <a href="IClass.html#NO_ANNOTATIONS">NO_ANNOTATIONS</a>, <a href="IClass.html#NOT_CONSTANT">NOT_CONSTANT</a>, <a href="IClass.html#SHORT">SHORT</a>, <a href="IClass.html#VOID">VOID</a></code></li>
+<code><a href="IClass.html#BOOLEAN">BOOLEAN</a>, <a href="IClass.html#BYTE">BYTE</a>, <a href="IClass.html#CHAR">CHAR</a>, <a href="IClass.html#DOUBLE">DOUBLE</a>, <a href="IClass.html#FLOAT">FLOAT</a>, <a href="IClass.html#INT">INT</a>, <a href="IClass.html#LONG">LONG</a>, <a href="IClass.html#NO_ANNOTATIONS">NO_ANNOTATIONS</a>, <a href="IClass.html#NOT_CONSTANT">NOT_CONSTANT</a>, <a href="IClass.html#NULL">NULL</a>, <a href="IClass.html#SHORT">SHORT</a>, <a href="IClass.html#VOID">VOID</a></code></li>
 </ul>
 </li>
 </ul>
@@ -272,55 +275,62 @@ extends <a href="IClass.html" title="class in org.codehaus.janino">IClass</a></p
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i10" class="altColor">
+<td class="colFirst"><code>protected <a href="ITypeVariable.html" title="interface in org.codehaus.janino">ITypeVariable</a>[]</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getITypeVariables2()">getITypeVariables2</a></span>()</code></th>
+<td class="colLast">
+<div class="block">The uncached version of <a href="IClass.html#getDeclaredIConstructors()"><code>IClass.getDeclaredIConstructors()</code></a> which must be implemented by derived classes.</div>
+</td>
+</tr>
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>protected <a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getOuterIClass2()">getOuterIClass2</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>protected <a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getSuperclass2()">getSuperclass2</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isAbstract()">isAbstract</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Whether the class may be instantiated (JVMS 4.1 access_flags).</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isArray()">isArray</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isEnum()">isEnum</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isFinal()">isFinal</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Whether subclassing is allowed (JVMS 4.1 access_flags)</div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isInterface()">isInterface</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isPrimitive()">isPrimitive</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isPrimitiveNumeric()">isPrimitiveNumeric</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#resolveAllClasses()">resolveAllClasses</a></span>()</code></th>
 <td class="colLast">
@@ -333,7 +343,7 @@ extends <a href="IClass.html" title="class in org.codehaus.janino">IClass</a></p
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="IClass.html" title="class in org.codehaus.janino">IClass</a></h3>
-<code><a href="IClass.html#clearIFieldCaches()">clearIFieldCaches</a>, <a href="IClass.html#findIConstructor(org.codehaus.janino.IClass%5B%5D)">findIConstructor</a>, <a href="IClass.html#findIMethod(java.lang.String,org.codehaus.janino.IClass%5B%5D)">findIMethod</a>, <a href="IClass.html#getArrayIClass(int,org.codehaus.janino.IClass)">getArrayIClass</a>, <a href="IClass.html#getArrayIClass(org.codehaus.janino.IClass)">getArrayIClass</a>, <a href="IClass.html#getComponentType()">getComponentType</a>, <a href="IClass.html#getDeclaredIClasses()">getDeclaredIClasses</a>, <a href="IClass.html#getDeclaredIConstructors()">getDeclaredIConstructors</a>, <a href="IClass.html#getDeclaredIField(java.lang.String)">getDeclaredIField</a>, <a href="IClass.html#getDeclaredIFields()">getDeclaredIFields</a>, <a href="IClass.html#getDeclaredIMethods()">getDeclaredIMethods</a>, <a href="IClass.html#getDeclaredIMethods(java.lang.String)">getDeclaredIMethods</a>, <a href="IClass.html#getDeclaringIClass()">getDeclaringIClass</a>, <a href="IClass.html#getDescriptor()">getDescriptor</a>, <a href="IClass.html#getDescriptors(org.codehaus.janino.IClass%5B%5D)">getDescriptors</a>, <a href="IClass.html#getIAnnotations()">getIAnnotations</a>, <a href="IClass.html#getIMethods()">getIMethods</a>, <a href="IClass.html#getInterfaces()">getInterfaces</a>, <a href="IClass.html#getOuterIClass()">getOuterIClass</a>, <a href="IClass.html#getSuperclass()">getSuperclass</a>, <a href="IClass.html#getSyntheticIFields()">getSyntheticIFields</a>, <a href="IClass.html#hasIMethod(java.lang.String,org.codehaus.janino.IClass%5B%5D)">hasIMethod</a>, <a href="IClass.html#implementsInterface(org.codehaus.janino.IClass)">implementsInterface</a>, <a href="IClass.html#invalidateMethodCaches()">invalidateMethodCaches</a>, <a href="IClass.html#isAssignableFrom(org.codehaus.janino.IClass)">isAssignableFrom</a>, <a href="IClass.html#isSubclassOf(org.codehaus.janino.IClass)">isSubclassOf</a>, <a href="IClass.html#toString()">toString</a></code></li>
+<code><a href="IClass.html#clearIFieldCaches()">clearIFieldCaches</a>, <a href="IClass.html#findIConstructor(org.codehaus.janino.IClass%5B%5D)">findIConstructor</a>, <a href="IClass.html#findIMethod(java.lang.String,org.codehaus.janino.IClass%5B%5D)">findIMethod</a>, <a href="IClass.html#getComponentType()">getComponentType</a>, <a href="IClass.html#getDeclaredIClasses()">getDeclaredIClasses</a>, <a href="IClass.html#getDeclaredIConstructors()">getDeclaredIConstructors</a>, <a href="IClass.html#getDeclaredIField(java.lang.String)">getDeclaredIField</a>, <a href="IClass.html#getDeclaredIFields()">getDeclaredIFields</a>, <a href="IClass.html#getDeclaredIMethods()">getDeclaredIMethods</a>, <a href="IClass.html#getDeclaredIMethods(java.lang.String)">getDeclaredIMethods</a>, <a href="IClass.html#getDeclaringIClass()">getDeclaringIClass</a>, <a href="IClass.html#getDescriptor()">getDescriptor</a>, <a href="IClass.html#getDescriptors(org.codehaus.janino.IClass%5B%5D)">getDescriptors</a>, <a href="IClass.html#getIAnnotations()">getIAnnotations</a>, <a href="IClass.html#getIMethods()">getIMethods</a>, <a href="IClass.html#getInterfaces()">getInterfaces</a>, <a href="IClass.html#getITypeVariables()">getITypeVariables</a>, <a href="IClass.html#getOuterIClass()">getOuterIClass</a>, <a href="IClass.html#getSuperclass()">getSuperclass</a>, <a href="IClass.html#getSyntheticIFields()">getSyntheticIFields</a>, <a href="IClass.html#hasIMethod(java.lang.String,org.codehaus.janino.IClass%5B%5D)">hasIMethod</a>, <a href="IClass.html#implementsInterface(org.codehaus.janino.IClass)">implementsInterface</a>, <a href="IClass.html#invalidateMethodCaches()">invalidateMethodCaches</a>, <a href="IClass.html#isAssignableFrom(org.codehaus.janino.IClass)">isAssignableFrom</a>, <a href="IClass.html#isSubclassOf(org.codehaus.janino.IClass)">isSubclassOf</a>, <a href="IClass.html#rawTypeOf(org.codehaus.janino.IType)">rawTypeOf</a>, <a href="IClass.html#toString()">toString</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -383,6 +393,24 @@ extends <a href="IClass.html" title="class in org.codehaus.janino">IClass</a></p
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a id="getITypeVariables2()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getITypeVariables2</h4>
+<pre class="methodSignature">protected&nbsp;<a href="ITypeVariable.html" title="interface in org.codehaus.janino">ITypeVariable</a>[]&nbsp;getITypeVariables2()
+                                      throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="IClass.html#getITypeVariables2()">IClass</a></code></span></div>
+<div class="block">The uncached version of <a href="IClass.html#getDeclaredIConstructors()"><code>IClass.getDeclaredIConstructors()</code></a> which must be implemented by derived classes.</div>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="IClass.html#getITypeVariables2()">getITypeVariables2</a></code>&nbsp;in class&nbsp;<code><a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
+</dl>
+</li>
+</ul>
 <a id="getDeclaredIConstructors2()">
 <!--   -->
 </a>

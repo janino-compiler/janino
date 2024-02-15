@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":9,"i1":10,"i2":6,"i3":10,"i4":10,"i5":10};
+var data = {"i0":9,"i1":10,"i2":6,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -477,18 +476,33 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
+<td class="colFirst"><code><a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getArrayIClass(org.codehaus.janino.IClass)">getArrayIClass</a></span>&#8203;(<a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;componentType)</code></th>
+<td class="colLast">
+<div class="block">Gets an <a href="IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a> that represents an array of this type.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code><a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getArrayIClass(org.codehaus.janino.IClass,int)">getArrayIClass</a></span>&#8203;(<a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;componentType,
+              int&nbsp;n)</code></th>
+<td class="colLast">
+<div class="block">Gets an <a href="IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a> that represents an n-dimensional array of this type.</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code><a href="IClassLoader.html" title="class in org.codehaus.janino">IClassLoader</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getParentIClassLoader()">getParentIClassLoader</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code><a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#loadIClass(java.lang.String)">loadIClass</a></span>&#8203;(java.lang.String&nbsp;fieldDescriptor)</code></th>
 <td class="colLast">
 <div class="block">Gets an <a href="IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a> by field descriptor.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#postConstruct()">postConstruct</a></span>()</code></th>
 <td class="colLast">
@@ -1108,6 +1122,36 @@ protected abstract&nbsp;<a href="IClass.html" title="class in org.codehaus.janin
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../commons/compiler/InternalCompilerException.html" title="class in org.codehaus.commons.compiler">InternalCompilerException</a></code> - A different <a href="IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a> object is already defined for this type</dd>
+</dl>
+</li>
+</ul>
+<a id="getArrayIClass(org.codehaus.janino.IClass,int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getArrayIClass</h4>
+<pre class="methodSignature">public&nbsp;<a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;getArrayIClass&#8203;(<a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;componentType,
+                             int&nbsp;n)</pre>
+<div class="block">Gets an <a href="IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a> that represents an n-dimensional array of this type.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>componentType</code> - Required because the superclass of an array class is <code>Object</code> by definition</dd>
+<dd><code>n</code> - Dimension count</dd>
+</dl>
+</li>
+</ul>
+<a id="getArrayIClass(org.codehaus.janino.IClass)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getArrayIClass</h4>
+<pre class="methodSignature">public&nbsp;<a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;getArrayIClass&#8203;(<a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;componentType)</pre>
+<div class="block">Gets an <a href="IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a> that represents an array of this type.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>componentType</code> - Required because the superclass of an array class is <code>Object</code> by definition</dd>
 </dl>
 </li>
 </ul>

@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -212,11 +211,27 @@ extends javax.tools.SimpleJavaFileObject</pre>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getName()">getName</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i3" class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getResourceFileName()">getResourceFileName</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isNameCompatible(java.lang.String,javax.tools.JavaFileObject.Kind)">isNameCompatible</a></span>&#8203;(java.lang.String&nbsp;simpleName,
+                javax.tools.JavaFileObject.Kind&nbsp;kind)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.io.InputStream</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#openInputStream()">openInputStream</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>java.io.Reader</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#openReader(boolean)">openReader</a></span>&#8203;(boolean&nbsp;ignoreEncodingErrors)</code></th>
 <td class="colLast">&nbsp;</td>
@@ -227,7 +242,7 @@ extends javax.tools.SimpleJavaFileObject</pre>
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;javax.tools.SimpleJavaFileObject</h3>
-<code>delete, getAccessLevel, getKind, getName, getNestingKind, isNameCompatible, openOutputStream, openWriter, toString, toUri</code></li>
+<code>delete, getAccessLevel, getKind, getNestingKind, openOutputStream, openWriter, toString, toUri</code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -252,6 +267,39 @@ extends javax.tools.SimpleJavaFileObject</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a id="isNameCompatible(java.lang.String,javax.tools.JavaFileObject.Kind)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isNameCompatible</h4>
+<pre class="methodSignature">public&nbsp;boolean&nbsp;isNameCompatible&#8203;(<a href="../../../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                                java.lang.String&nbsp;simpleName,
+                                <a href="../../../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                                javax.tools.JavaFileObject.Kind&nbsp;kind)</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code>isNameCompatible</code>&nbsp;in interface&nbsp;<code>javax.tools.JavaFileObject</code></dd>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code>isNameCompatible</code>&nbsp;in class&nbsp;<code>javax.tools.SimpleJavaFileObject</code></dd>
+</dl>
+</li>
+</ul>
+<a id="getName()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getName</h4>
+<pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getName()</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code>getName</code>&nbsp;in interface&nbsp;<code>javax.tools.FileObject</code></dd>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code>getName</code>&nbsp;in class&nbsp;<code>javax.tools.SimpleJavaFileObject</code></dd>
+</dl>
+</li>
+</ul>
 <a id="openInputStream()">
 <!--   -->
 </a>
@@ -309,7 +357,7 @@ extends javax.tools.SimpleJavaFileObject</pre>
 <a id="getLastModified()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>getLastModified</h4>
 <pre class="methodSignature">public&nbsp;long&nbsp;getLastModified()</pre>
@@ -319,6 +367,15 @@ extends javax.tools.SimpleJavaFileObject</pre>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>getLastModified</code>&nbsp;in class&nbsp;<code>javax.tools.SimpleJavaFileObject</code></dd>
 </dl>
+</li>
+</ul>
+<a id="getResourceFileName()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getResourceFileName</h4>
+<pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getResourceFileName()</pre>
 </li>
 </ul>
 </li>

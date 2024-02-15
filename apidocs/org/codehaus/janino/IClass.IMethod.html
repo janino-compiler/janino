@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":6,"i2":6,"i3":6,"i4":6,"i5":10};
+var data = {"i0":10,"i1":6,"i2":6,"i3":6,"i4":10,"i5":10,"i6":6,"i7":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -211,11 +210,21 @@ extends <a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IC
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i4" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isLessSpecificThan(org.codehaus.janino.IClass.IInvocable)">isLessSpecificThan</a></span>&#8203;(<a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IClass.IInvocable</a>&nbsp;that)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isMoreSpecificThan(org.codehaus.janino.IClass.IInvocable)">isMoreSpecificThan</a></span>&#8203;(<a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IClass.IInvocable</a>&nbsp;that)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>abstract boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isStatic()">isStatic</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toString()">toString</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
@@ -226,7 +235,7 @@ extends <a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IC
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.janino.<a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IClass.IInvocable</a></h3>
-<code><a href="IClass.IInvocable.html#argsNeedAdjust()">argsNeedAdjust</a>, <a href="IClass.IInvocable.html#getDeclaringIClass()">getDeclaringIClass</a>, <a href="IClass.IInvocable.html#getDescriptor()">getDescriptor</a>, <a href="IClass.IInvocable.html#getParameterTypes()">getParameterTypes</a>, <a href="IClass.IInvocable.html#getParameterTypes2()">getParameterTypes2</a>, <a href="IClass.IInvocable.html#getThrownExceptions()">getThrownExceptions</a>, <a href="IClass.IInvocable.html#getThrownExceptions2()">getThrownExceptions2</a>, <a href="IClass.IInvocable.html#isLessSpecificThan(org.codehaus.janino.IClass.IInvocable)">isLessSpecificThan</a>, <a href="IClass.IInvocable.html#isMoreSpecificThan(org.codehaus.janino.IClass.IInvocable)">isMoreSpecificThan</a>, <a href="IClass.IInvocable.html#isVarargs()">isVarargs</a>, <a href="IClass.IInvocable.html#setArgsNeedAdjust(boolean)">setArgsNeedAdjust</a></code></li>
+<code><a href="IClass.IInvocable.html#argsNeedAdjust()">argsNeedAdjust</a>, <a href="IClass.IInvocable.html#getDeclaringIClass()">getDeclaringIClass</a>, <a href="IClass.IInvocable.html#getDescriptor()">getDescriptor</a>, <a href="IClass.IInvocable.html#getParameterTypes()">getParameterTypes</a>, <a href="IClass.IInvocable.html#getParameterTypes2()">getParameterTypes2</a>, <a href="IClass.IInvocable.html#getThrownExceptions()">getThrownExceptions</a>, <a href="IClass.IInvocable.html#getThrownExceptions2()">getThrownExceptions2</a>, <a href="IClass.IInvocable.html#isVarargs()">isVarargs</a>, <a href="IClass.IInvocable.html#setArgsNeedAdjust(boolean)">setArgsNeedAdjust</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -345,6 +354,44 @@ extends <a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IC
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="IClass.IInvocable.html#getDescriptor2()">getDescriptor2</a></code>&nbsp;in class&nbsp;<code><a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IClass.IInvocable</a></code></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="isMoreSpecificThan(org.codehaus.janino.IClass.IInvocable)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isMoreSpecificThan</h4>
+<pre class="methodSignature">public&nbsp;boolean&nbsp;isMoreSpecificThan&#8203;(<a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IClass.IInvocable</a>&nbsp;that)
+                           throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code><a href="IClass.IInvocable.html#isMoreSpecificThan(org.codehaus.janino.IClass.IInvocable)">isMoreSpecificThan</a></code>&nbsp;in class&nbsp;<code><a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IClass.IInvocable</a></code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Whether this <a href="IClass.IInvocable.html" title="class in org.codehaus.janino"><code>IClass.IInvocable</code></a> is more specific then <var>that</var> (in the sense of JLS7
+         15.12.2.5)</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="isLessSpecificThan(org.codehaus.janino.IClass.IInvocable)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isLessSpecificThan</h4>
+<pre class="methodSignature">public&nbsp;boolean&nbsp;isLessSpecificThan&#8203;(<a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IClass.IInvocable</a>&nbsp;that)
+                           throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
+<dd><code><a href="IClass.IInvocable.html#isLessSpecificThan(org.codehaus.janino.IClass.IInvocable)">isLessSpecificThan</a></code>&nbsp;in class&nbsp;<code><a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IClass.IInvocable</a></code></dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Whether this <a href="IClass.IInvocable.html" title="class in org.codehaus.janino"><code>IClass.IInvocable</code></a> is less specific then <var>that</var> (in the sense of JLS7
+         15.12.2.5)</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 </dl>

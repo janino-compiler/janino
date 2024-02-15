@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6,"i15":6,"i16":6,"i17":6,"i18":6,"i19":6,"i20":6,"i21":6,"i22":6};
+var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6,"i15":6,"i16":6,"i17":6,"i18":6,"i19":6,"i20":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -128,11 +127,16 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd><code>EX</code> - The exception that the <code>visit*()</code> methods may throw</dd>
 </dl>
 <dl>
+<dt>All Superinterfaces:</dt>
+<dd><code><a href="Visitor.FieldDeclarationOrInitializerVisitor.html" title="interface in org.codehaus.janino">Visitor.FieldDeclarationOrInitializerVisitor</a>&lt;R,&#8203;EX&gt;</code></dd>
+</dl>
+<dl>
 <dt>Enclosing class:</dt>
 <dd><a href="Visitor.html" title="class in org.codehaus.janino">Visitor</a></dd>
 </dl>
 <hr>
-<pre>public static interface <span class="typeNameLabel">Visitor.BlockStatementVisitor&lt;R,&#8203;EX extends java.lang.Throwable&gt;</span></pre>
+<pre>public static interface <span class="typeNameLabel">Visitor.BlockStatementVisitor&lt;R,&#8203;EX extends java.lang.Throwable&gt;</span>
+extends <a href="Visitor.FieldDeclarationOrInitializerVisitor.html" title="interface in org.codehaus.janino">Visitor.FieldDeclarationOrInitializerVisitor</a>&lt;R,&#8203;EX&gt;</pre>
 <div class="block">The visitor for all kinds of <a href="Java.BlockStatement.html" title="interface in org.codehaus.janino"><code>Java.BlockStatement</code></a>s (statements that may appear with a block).</div>
 </li>
 </ul>
@@ -212,103 +216,89 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitFieldDeclaration(org.codehaus.janino.Java.FieldDeclaration)">visitFieldDeclaration</a></span>&#8203;(<a href="Java.FieldDeclaration.html" title="class in org.codehaus.janino">Java.FieldDeclaration</a>&nbsp;fd)</code></th>
-<td class="colLast">
-<div class="block">Invoked by <a href="Java.FieldDeclaration.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.FieldDeclaration.accept(Visitor.BlockStatementVisitor)</code></a></div>
-</td>
-</tr>
-<tr id="i9" class="rowColor">
-<td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitForEachStatement(org.codehaus.janino.Java.ForEachStatement)">visitForEachStatement</a></span>&#8203;(<a href="Java.ForEachStatement.html" title="class in org.codehaus.janino">Java.ForEachStatement</a>&nbsp;forEachStatement)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.ForEachStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.ForEachStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitForStatement(org.codehaus.janino.Java.ForStatement)">visitForStatement</a></span>&#8203;(<a href="Java.ForStatement.html" title="class in org.codehaus.janino">Java.ForStatement</a>&nbsp;fs)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.ForStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.ForStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitIfStatement(org.codehaus.janino.Java.IfStatement)">visitIfStatement</a></span>&#8203;(<a href="Java.IfStatement.html" title="class in org.codehaus.janino">Java.IfStatement</a>&nbsp;is)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.IfStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.IfStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
-<td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitInitializer(org.codehaus.janino.Java.Initializer)">visitInitializer</a></span>&#8203;(<a href="Java.Initializer.html" title="class in org.codehaus.janino">Java.Initializer</a>&nbsp;i)</code></th>
-<td class="colLast">
-<div class="block">Invoked by <a href="Java.Initializer.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.Initializer.accept(Visitor.BlockStatementVisitor)</code></a></div>
-</td>
-</tr>
-<tr id="i13" class="rowColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitLabeledStatement(org.codehaus.janino.Java.LabeledStatement)">visitLabeledStatement</a></span>&#8203;(<a href="Java.LabeledStatement.html" title="class in org.codehaus.janino">Java.LabeledStatement</a>&nbsp;ls)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.LabeledStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.LabeledStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitLocalClassDeclarationStatement(org.codehaus.janino.Java.LocalClassDeclarationStatement)">visitLocalClassDeclarationStatement</a></span>&#8203;(<a href="Java.LocalClassDeclarationStatement.html" title="class in org.codehaus.janino">Java.LocalClassDeclarationStatement</a>&nbsp;lcds)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.LocalClassDeclarationStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.LocalClassDeclarationStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitLocalVariableDeclarationStatement(org.codehaus.janino.Java.LocalVariableDeclarationStatement)">visitLocalVariableDeclarationStatement</a></span>&#8203;(<a href="Java.LocalVariableDeclarationStatement.html" title="class in org.codehaus.janino">Java.LocalVariableDeclarationStatement</a>&nbsp;lvds)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.LocalVariableDeclarationStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.LocalVariableDeclarationStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitReturnStatement(org.codehaus.janino.Java.ReturnStatement)">visitReturnStatement</a></span>&#8203;(<a href="Java.ReturnStatement.html" title="class in org.codehaus.janino">Java.ReturnStatement</a>&nbsp;rs)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.ReturnStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.ReturnStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitSuperConstructorInvocation(org.codehaus.janino.Java.SuperConstructorInvocation)">visitSuperConstructorInvocation</a></span>&#8203;(<a href="Java.SuperConstructorInvocation.html" title="class in org.codehaus.janino">Java.SuperConstructorInvocation</a>&nbsp;sci)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.SuperConstructorInvocation.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.SuperConstructorInvocation.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitSwitchStatement(org.codehaus.janino.Java.SwitchStatement)">visitSwitchStatement</a></span>&#8203;(<a href="Java.SwitchStatement.html" title="class in org.codehaus.janino">Java.SwitchStatement</a>&nbsp;ss)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.SwitchStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.SwitchStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i17" class="rowColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitSynchronizedStatement(org.codehaus.janino.Java.SynchronizedStatement)">visitSynchronizedStatement</a></span>&#8203;(<a href="Java.SynchronizedStatement.html" title="class in org.codehaus.janino">Java.SynchronizedStatement</a>&nbsp;ss)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.SynchronizedStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.SynchronizedStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i20" class="altColor">
+<tr id="i18" class="altColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitThrowStatement(org.codehaus.janino.Java.ThrowStatement)">visitThrowStatement</a></span>&#8203;(<a href="Java.ThrowStatement.html" title="class in org.codehaus.janino">Java.ThrowStatement</a>&nbsp;ts)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.ThrowStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.ThrowStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i21" class="rowColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitTryStatement(org.codehaus.janino.Java.TryStatement)">visitTryStatement</a></span>&#8203;(<a href="Java.TryStatement.html" title="class in org.codehaus.janino">Java.TryStatement</a>&nbsp;ts)</code></th>
 <td class="colLast">
 <div class="block">Invoked by <a href="Java.TryStatement.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.TryStatement.accept(Visitor.BlockStatementVisitor)</code></a></div>
 </td>
 </tr>
-<tr id="i22" class="altColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#visitWhileStatement(org.codehaus.janino.Java.WhileStatement)">visitWhileStatement</a></span>&#8203;(<a href="Java.WhileStatement.html" title="class in org.codehaus.janino">Java.WhileStatement</a>&nbsp;ws)</code></th>
 <td class="colLast">
@@ -316,6 +306,13 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </td>
 </tr>
 </table>
+<ul class="blockList">
+<li class="blockList"><a id="methods.inherited.from.class.org.codehaus.janino.Visitor.FieldDeclarationOrInitializerVisitor">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;org.codehaus.janino.<a href="Visitor.FieldDeclarationOrInitializerVisitor.html" title="interface in org.codehaus.janino">Visitor.FieldDeclarationOrInitializerVisitor</a></h3>
+<code><a href="Visitor.FieldDeclarationOrInitializerVisitor.html#visitFieldDeclaration(org.codehaus.janino.Java.FieldDeclaration)">visitFieldDeclaration</a>, <a href="Visitor.FieldDeclarationOrInitializerVisitor.html#visitInitializer(org.codehaus.janino.Java.Initializer)">visitInitializer</a></code></li>
+</ul>
 </li>
 </ul>
 </section>
@@ -332,38 +329,6 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a id="visitInitializer(org.codehaus.janino.Java.Initializer)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>visitInitializer</h4>
-<pre class="methodSignature"><a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-<a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a>&nbsp;visitInitializer&#8203;(<a href="Java.Initializer.html" title="class in org.codehaus.janino">Java.Initializer</a>&nbsp;i)
-            throws <a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">EX</a> extends java.lang.Throwable</pre>
-<div class="block">Invoked by <a href="Java.Initializer.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.Initializer.accept(Visitor.BlockStatementVisitor)</code></a></div>
-<dl>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">EX</a> extends java.lang.Throwable</code></dd>
-</dl>
-</li>
-</ul>
-<a id="visitFieldDeclaration(org.codehaus.janino.Java.FieldDeclaration)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>visitFieldDeclaration</h4>
-<pre class="methodSignature"><a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
-<a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">R</a>&nbsp;visitFieldDeclaration&#8203;(<a href="Java.FieldDeclaration.html" title="class in org.codehaus.janino">Java.FieldDeclaration</a>&nbsp;fd)
-                 throws <a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">EX</a> extends java.lang.Throwable</pre>
-<div class="block">Invoked by <a href="Java.FieldDeclaration.html#accept(org.codehaus.janino.Visitor.BlockStatementVisitor)"><code>Java.FieldDeclaration.accept(Visitor.BlockStatementVisitor)</code></a></div>
-<dl>
-<dt><span class="throwsLabel">Throws:</span></dt>
-<dd><code><a href="Visitor.BlockStatementVisitor.html" title="type parameter in Visitor.BlockStatementVisitor">EX</a> extends java.lang.Throwable</code></dd>
-</dl>
-</li>
-</ul>
 <a id="visitLabeledStatement(org.codehaus.janino.Java.LabeledStatement)">
 <!--   -->
 </a>

@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6};
+var data = {"i0":6,"i1":6,"i2":6,"i3":6,"i4":6,"i5":6,"i6":6,"i7":6,"i8":6,"i9":6,"i10":6,"i11":6,"i12":6,"i13":6,"i14":6};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -132,7 +131,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </dl>
 <hr>
 <pre>public interface <span class="typeNameLabel">ICookable</span></pre>
-<div class="block">"Cooking" means processing a sequence of characters (a "document"). For example, if you cook an <a href="IClassBodyEvaluator.html" title="interface in org.codehaus.commons.compiler"><code>IClassBodyEvaluator</code></a>, then the tokens are interpreted as a Java class body and compiled into a <code>Class</code> which
+<div class="block">An entity that processes a sequence of characters (a "document"). For example, if you cook an <a href="IClassBodyEvaluator.html" title="interface in org.codehaus.commons.compiler"><code>IClassBodyEvaluator</code></a>, then the tokens are interpreted as a Java class body and compiled into a <code>Class</code> which
  is accessible through <a href="IClassBodyEvaluator.html#getClazz()"><code>IClassBodyEvaluator.getClazz()</code></a>.</div>
 </li>
 </ul>
@@ -255,6 +254,21 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <td class="colFirst"><code>java.util.Map&lt;java.lang.String,&#8203;byte[]&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getBytecodes()">getBytecodes</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i13" class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setSourceVersion(int)">setSourceVersion</a></span>&#8203;(int&nbsp;version)</code></th>
+<td class="colLast">
+<div class="block">Specifies the version of source code accepted, in analogy with JAVAC's <code>-source</code> command line option.</div>
+</td>
+</tr>
+<tr id="i14" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTargetVersion(int)">setTargetVersion</a></span>&#8203;(int&nbsp;version)</code></th>
+<td class="colLast">
+<div class="block">Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's <code>
+ -target</code> command line option.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -500,6 +514,35 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <dd><code><a href="CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 <dd><code>java.io.IOException</code></dd>
 </dl>
+</li>
+</ul>
+<a id="setSourceVersion(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setSourceVersion</h4>
+<pre class="methodSignature">void&nbsp;setSourceVersion&#8203;(int&nbsp;version)</pre>
+<div class="block">Specifies the version of source code accepted, in analogy with JAVAC's <code>-source</code> command line option.
+ May be ignored by an implementation (e.g. the <code>janino</code> implementation always accepts the language features
+ as described on the home page).
+ Allowed values, and the default value, depend on the implementation.
+ <code>-1</code> means to use a default version.</div>
+</li>
+</ul>
+<a id="setTargetVersion(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setTargetVersion</h4>
+<pre class="methodSignature">void&nbsp;setTargetVersion&#8203;(int&nbsp;version)</pre>
+<div class="block">Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's <code>
+ -target</code> command line option.
+ Allowed values depend on the implementation.
+ The default value also depends on the implementation.
+ The only invariant is that the generated class files are suitable for the currently executing JVM.
+ <code>-1</code> means to use a default version.</div>
 </li>
 </ul>
 <a id="getBytecodes()">

@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -142,7 +141,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <hr>
 <pre>public class <span class="typeNameLabel">Compiler</span>
 extends <a href="../AbstractCompiler.html" title="class in org.codehaus.commons.compiler">AbstractCompiler</a></pre>
-<div class="block">JDK-base implementation of the <a href="../ICompiler.html" title="interface in org.codehaus.commons.compiler"><code>ICompiler</code></a>.</div>
+<div class="block"><code>javax.tools</code>-based implementation of the <a href="../ICompiler.html" title="interface in org.codehaus.commons.compiler"><code>ICompiler</code></a>.</div>
 </li>
 </ul>
 </div>
@@ -161,7 +160,7 @@ extends <a href="../AbstractCompiler.html" title="class in org.codehaus.commons.
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;org.codehaus.commons.compiler.<a href="../AbstractCompiler.html" title="class in org.codehaus.commons.compiler">AbstractCompiler</a></h3>
-<code><a href="../AbstractCompiler.html#bootClassPath">bootClassPath</a>, <a href="../AbstractCompiler.html#classFileCreator">classFileCreator</a>, <a href="../AbstractCompiler.html#classFileFinder">classFileFinder</a>, <a href="../AbstractCompiler.html#classPath">classPath</a>, <a href="../AbstractCompiler.html#compileErrorHandler">compileErrorHandler</a>, <a href="../AbstractCompiler.html#debugLines">debugLines</a>, <a href="../AbstractCompiler.html#debugSource">debugSource</a>, <a href="../AbstractCompiler.html#debugVars">debugVars</a>, <a href="../AbstractCompiler.html#extensionDirectories">extensionDirectories</a>, <a href="../AbstractCompiler.html#sourceCharset">sourceCharset</a>, <a href="../AbstractCompiler.html#sourceFinder">sourceFinder</a>, <a href="../AbstractCompiler.html#warningHandler">warningHandler</a></code></li>
+<code><a href="../AbstractCompiler.html#bootClassPath">bootClassPath</a>, <a href="../AbstractCompiler.html#classFileCreator">classFileCreator</a>, <a href="../AbstractCompiler.html#classFileFinder">classFileFinder</a>, <a href="../AbstractCompiler.html#classPath">classPath</a>, <a href="../AbstractCompiler.html#compileErrorHandler">compileErrorHandler</a>, <a href="../AbstractCompiler.html#debugLines">debugLines</a>, <a href="../AbstractCompiler.html#debugSource">debugSource</a>, <a href="../AbstractCompiler.html#debugVars">debugVars</a>, <a href="../AbstractCompiler.html#extensionDirectories">extensionDirectories</a>, <a href="../AbstractCompiler.html#sourceCharset">sourceCharset</a>, <a href="../AbstractCompiler.html#sourceFinder">sourceFinder</a>, <a href="../AbstractCompiler.html#sourceVersion">sourceVersion</a>, <a href="../AbstractCompiler.html#targetVersion">targetVersion</a>, <a href="../AbstractCompiler.html#warningHandler">warningHandler</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="fields.inherited.from.class.org.codehaus.commons.compiler.ICompiler">
@@ -190,6 +189,12 @@ extends <a href="../AbstractCompiler.html" title="class in org.codehaus.commons.
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E()">Compiler</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
+<tr class="rowColor">
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(javax.tools.JavaCompiler)">Compiler</a></span>&#8203;(javax.tools.JavaCompiler&nbsp;compiler)</code></th>
+<td class="colLast">
+<div class="block">Initializes with a <em>different</em>, <code>javax.tools.JavaCompiler</code>-compatible Java compiler.</div>
+</td>
+</tr>
 </table>
 </li>
 </ul>
@@ -217,12 +222,18 @@ extends <a href="../AbstractCompiler.html" title="class in org.codehaus.commons.
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#compile(org.codehaus.commons.compiler.util.resource.Resource%5B%5D,java.util.SortedSet)">compile</a></span>&#8203;(<a href="../util/resource/Resource.html" title="interface in org.codehaus.commons.compiler.util.resource">Resource</a>[]&nbsp;sourceResources,
+       java.util.SortedSet&lt;<a href="../Location.html" title="class in org.codehaus.commons.compiler">Location</a>&gt;&nbsp;offsets)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompilerOptions(java.lang.String%5B%5D)">setCompilerOptions</a></span>&#8203;(java.lang.String[]&nbsp;compilerOptions)</code></th>
 <td class="colLast">
 <div class="block">Adds command line options that are passed unchecked to the <code>Compiler</code>.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setVerbose(boolean)">setVerbose</a></span>&#8203;(boolean&nbsp;verbose)</code></th>
 <td class="colLast">
@@ -235,7 +246,7 @@ extends <a href="../AbstractCompiler.html" title="class in org.codehaus.commons.
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.codehaus.commons.compiler.<a href="../AbstractCompiler.html" title="class in org.codehaus.commons.compiler">AbstractCompiler</a></h3>
-<code><a href="../AbstractCompiler.html#compile(java.io.File%5B%5D)">compile</a>, <a href="../AbstractCompiler.html#setBootClassPath(java.io.File%5B%5D)">setBootClassPath</a>, <a href="../AbstractCompiler.html#setCharacterEncoding(java.lang.String)">setCharacterEncoding</a>, <a href="../AbstractCompiler.html#setClassFileCreator(org.codehaus.commons.compiler.util.resource.ResourceCreator)">setClassFileCreator</a>, <a href="../AbstractCompiler.html#setClassFileFinder(org.codehaus.commons.compiler.util.resource.ResourceFinder)">setClassFileFinder</a>, <a href="../AbstractCompiler.html#setClassFileFinder(org.codehaus.commons.compiler.util.resource.ResourceFinder,boolean)">setClassFileFinder</a>, <a href="../AbstractCompiler.html#setClassPath(java.io.File%5B%5D)">setClassPath</a>, <a href="../AbstractCompiler.html#setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">setCompileErrorHandler</a>, <a href="../AbstractCompiler.html#setDebugLines(boolean)">setDebugLines</a>, <a href="../AbstractCompiler.html#setDebugSource(boolean)">setDebugSource</a>, <a href="../AbstractCompiler.html#setDebugVars(boolean)">setDebugVars</a>, <a href="../AbstractCompiler.html#setDestinationDirectory(java.io.File,boolean)">setDestinationDirectory</a>, <a href="../AbstractCompiler.html#setEncoding(java.nio.charset.Charset)">setEncoding</a>, <a href="../AbstractCompiler.html#setExtensionDirectories(java.io.File%5B%5D)">setExtensionDirectories</a>, <a href="../AbstractCompiler.html#setSourceCharset(java.nio.charset.Charset)">setSourceCharset</a>, <a href="../AbstractCompiler.html#setSourceFinder(org.codehaus.commons.compiler.util.resource.ResourceFinder)">setSourceFinder</a>, <a href="../AbstractCompiler.html#setSourcePath(java.io.File%5B%5D)">setSourcePath</a>, <a href="../AbstractCompiler.html#setWarningHandler(org.codehaus.commons.compiler.WarningHandler)">setWarningHandler</a></code></li>
+<code><a href="../AbstractCompiler.html#compile(java.io.File%5B%5D)">compile</a>, <a href="../AbstractCompiler.html#setBootClassPath(java.io.File%5B%5D)">setBootClassPath</a>, <a href="../AbstractCompiler.html#setCharacterEncoding(java.lang.String)">setCharacterEncoding</a>, <a href="../AbstractCompiler.html#setClassFileCreator(org.codehaus.commons.compiler.util.resource.ResourceCreator)">setClassFileCreator</a>, <a href="../AbstractCompiler.html#setClassFileFinder(org.codehaus.commons.compiler.util.resource.ResourceFinder)">setClassFileFinder</a>, <a href="../AbstractCompiler.html#setClassFileFinder(org.codehaus.commons.compiler.util.resource.ResourceFinder,boolean)">setClassFileFinder</a>, <a href="../AbstractCompiler.html#setClassPath(java.io.File%5B%5D)">setClassPath</a>, <a href="../AbstractCompiler.html#setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">setCompileErrorHandler</a>, <a href="../AbstractCompiler.html#setDebugLines(boolean)">setDebugLines</a>, <a href="../AbstractCompiler.html#setDebugSource(boolean)">setDebugSource</a>, <a href="../AbstractCompiler.html#setDebugVars(boolean)">setDebugVars</a>, <a href="../AbstractCompiler.html#setDestinationDirectory(java.io.File,boolean)">setDestinationDirectory</a>, <a href="../AbstractCompiler.html#setEncoding(java.nio.charset.Charset)">setEncoding</a>, <a href="../AbstractCompiler.html#setExtensionDirectories(java.io.File%5B%5D)">setExtensionDirectories</a>, <a href="../AbstractCompiler.html#setSourceCharset(java.nio.charset.Charset)">setSourceCharset</a>, <a href="../AbstractCompiler.html#setSourceFinder(org.codehaus.commons.compiler.util.resource.ResourceFinder)">setSourceFinder</a>, <a href="../AbstractCompiler.html#setSourcePath(java.io.File%5B%5D)">setSourcePath</a>, <a href="../AbstractCompiler.html#setSourceVersion(int)">setSourceVersion</a>, <a href="../AbstractCompiler.html#setTargetVersion(int)">setTargetVersion</a>, <a href="../AbstractCompiler.html#setWarningHandler(org.codehaus.commons.compiler.WarningHandler)">setWarningHandler</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -263,10 +274,20 @@ extends <a href="../AbstractCompiler.html" title="class in org.codehaus.commons.
 <a id="&lt;init&gt;()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>Compiler</h4>
 <pre>public&nbsp;Compiler()</pre>
+</li>
+</ul>
+<a id="&lt;init&gt;(javax.tools.JavaCompiler)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>Compiler</h4>
+<pre>public&nbsp;Compiler&#8203;(javax.tools.JavaCompiler&nbsp;compiler)</pre>
+<div class="block">Initializes with a <em>different</em>, <code>javax.tools.JavaCompiler</code>-compatible Java compiler.</div>
 </li>
 </ul>
 </li>
@@ -310,7 +331,7 @@ extends <a href="../AbstractCompiler.html" title="class in org.codehaus.commons.
 <a id="compile(org.codehaus.commons.compiler.util.resource.Resource[])">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>compile</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;compile&#8203;(<a href="../util/resource/Resource.html" title="interface in org.codehaus.commons.compiler.util.resource">Resource</a>[]&nbsp;sourceResources)
@@ -321,6 +342,24 @@ extends <a href="../AbstractCompiler.html" title="class in org.codehaus.commons.
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>sourceResources</code> - Contain the compilation units to compile</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="../CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
+<dd><code>java.io.IOException</code></dd>
+</dl>
+</li>
+</ul>
+<a id="compile(org.codehaus.commons.compiler.util.resource.Resource[],java.util.SortedSet)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>compile</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;compile&#8203;(<a href="../util/resource/Resource.html" title="interface in org.codehaus.commons.compiler.util.resource">Resource</a>[]&nbsp;sourceResources,
+                    <a href="../../nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+                    java.util.SortedSet&lt;<a href="../Location.html" title="class in org.codehaus.commons.compiler">Location</a>&gt;&nbsp;offsets)
+             throws <a href="../CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a>,
+                    java.io.IOException</pre>
+<dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 <dd><code>java.io.IOException</code></dd>

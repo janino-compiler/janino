@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -142,7 +141,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="blockList">
 <dl>
 <dt>All Implemented Interfaces:</dt>
-<dd><code><a href="Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a></code>, <code><a href="Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a></code>, <code><a href="Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a></code>, <code><a href="Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino">Java.TypeBodyDeclaration</a></code></dd>
+<dd><code><a href="Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a></code>, <code><a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a></code>, <code><a href="Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a></code>, <code><a href="Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a></code>, <code><a href="Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino">Java.TypeBodyDeclaration</a></code></dd>
 </dl>
 <dl>
 <dt>Enclosing class:</dt>
@@ -151,7 +150,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <hr>
 <pre>public static final class <span class="typeNameLabel">Java.Initializer</span>
 extends <a href="Java.AbstractTypeBodyDeclaration.html" title="class in org.codehaus.janino">Java.AbstractTypeBodyDeclaration</a>
-implements <a href="Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a></pre>
+implements <a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a></pre>
 <div class="block">Representation of an "instance initializer" (JLS7 8.6) or "static initializer" (JLS7 8.7).</div>
 </li>
 </ul>
@@ -245,23 +244,28 @@ implements <a href="Java.BlockStatement.html" title="interface in org.codehaus.j
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>&lt;R,&#8203;EX extends java.lang.Throwable&gt;<br>R</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#accept(org.codehaus.janino.Visitor.FieldDeclarationOrInitializerVisitor)">accept</a></span>&#8203;(<a href="Visitor.FieldDeclarationOrInitializerVisitor.html" title="interface in org.codehaus.janino">Visitor.FieldDeclarationOrInitializerVisitor</a>&lt;R,&#8203;EX&gt;&nbsp;visitor)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>&lt;R,&#8203;EX extends java.lang.Throwable&gt;<br>R</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#accept(org.codehaus.janino.Visitor.TypeBodyDeclarationVisitor)">accept</a></span>&#8203;(<a href="Visitor.TypeBodyDeclarationVisitor.html" title="interface in org.codehaus.janino">Visitor.TypeBodyDeclarationVisitor</a>&lt;R,&#8203;EX&gt;&nbsp;visitor)</code></th>
 <td class="colLast">
 <div class="block">Invokes the "<code>visit...()</code>" method of <a href="Visitor.TypeBodyDeclarationVisitor.html" title="interface in org.codehaus.janino"><code>Visitor.TypeBodyDeclarationVisitor</code></a> for the concrete
  <a href="Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeBodyDeclaration</code></a> type.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="Java.LocalVariable.html" title="class in org.codehaus.janino">Java.LocalVariable</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#findLocalVariable(java.lang.String)">findLocalVariable</a></span>&#8203;(java.lang.String&nbsp;name)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#isStatic()">isStatic</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toString()">toString</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
@@ -301,6 +305,13 @@ implements <a href="Java.BlockStatement.html" title="interface in org.codehaus.j
 </a>
 <h3>Methods inherited from interface&nbsp;org.codehaus.janino.<a href="Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a></h3>
 <code><a href="Java.Locatable.html#getLocation()">getLocation</a>, <a href="Java.Locatable.html#throwCompileException(java.lang.String)">throwCompileException</a></code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a id="methods.inherited.from.class.org.codehaus.janino.Java.TypeBodyDeclaration">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;org.codehaus.janino.<a href="Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino">Java.TypeBodyDeclaration</a></h3>
+<code><a href="Java.TypeBodyDeclaration.html#getDeclaringType()">getDeclaringType</a>, <a href="Java.TypeBodyDeclaration.html#getModifiers()">getModifiers</a>, <a href="Java.TypeBodyDeclaration.html#setDeclaringType(org.codehaus.janino.Java.TypeDeclaration)">setDeclaringType</a></code></li>
 </ul>
 </li>
 </ul>
@@ -378,6 +389,23 @@ implements <a href="Java.BlockStatement.html" title="interface in org.codehaus.j
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>toString</code>&nbsp;in class&nbsp;<code>java.lang.Object</code></dd>
+</dl>
+</li>
+</ul>
+<a id="accept(org.codehaus.janino.Visitor.FieldDeclarationOrInitializerVisitor)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>accept</h4>
+<pre class="methodSignature"><a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+public&nbsp;&lt;R,&#8203;EX extends java.lang.Throwable&gt;&nbsp;R&nbsp;accept&#8203;(<a href="Visitor.FieldDeclarationOrInitializerVisitor.html" title="interface in org.codehaus.janino">Visitor.FieldDeclarationOrInitializerVisitor</a>&lt;R,&#8203;EX&gt;&nbsp;visitor)
+                                                  throws EX extends java.lang.Throwable</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="Java.FieldDeclarationOrInitializer.html#accept(org.codehaus.janino.Visitor.FieldDeclarationOrInitializerVisitor)">accept</a></code>&nbsp;in interface&nbsp;<code><a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a></code></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>EX extends java.lang.Throwable</code></dd>
 </dl>
 </li>
 </ul>

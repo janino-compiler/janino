@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":6,"i3":10,"i4":10,"i5":10,"i6":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":6,"i4":10,"i5":10,"i6":10,"i7":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],4:["t3","Abstract Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -220,19 +219,24 @@ implements <a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>&lt;R,&#8203;EX extends java.lang.Throwable&gt;<br>R</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#accept(org.codehaus.janino.Visitor.ArrayInitializerOrRvalueVisitor)">accept</a></span>&#8203;(<a href="Visitor.ArrayInitializerOrRvalueVisitor.html" title="interface in org.codehaus.janino">Visitor.ArrayInitializerOrRvalueVisitor</a>&lt;R,&#8203;EX&gt;&nbsp;visitor)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>&lt;R,&#8203;EX extends java.lang.Throwable&gt;<br>R</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#accept(org.codehaus.janino.Visitor.AtomVisitor)">accept</a></span>&#8203;(<a href="Visitor.AtomVisitor.html" title="interface in org.codehaus.janino">Visitor.AtomVisitor</a>&lt;R,&#8203;EX&gt;&nbsp;visitor)</code></th>
 <td class="colLast">
 <div class="block">Invokes the "<code>visit...()</code>" method of <a href="Visitor.AtomVisitor.html" title="interface in org.codehaus.janino"><code>Visitor.AtomVisitor</code></a> for the concrete <a href="Java.Atom.html" title="class in org.codehaus.janino"><code>Java.Atom</code></a> type.</div>
 </td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>&lt;R,&#8203;EX extends java.lang.Throwable&gt;<br>R</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#accept(org.codehaus.janino.Visitor.ElementValueVisitor)">accept</a></span>&#8203;(<a href="Visitor.ElementValueVisitor.html" title="interface in org.codehaus.janino">Visitor.ElementValueVisitor</a>&lt;R,&#8203;EX&gt;&nbsp;visitor)</code></th>
 <td class="colLast">
 <div class="block">Invokes the "<code>visit...()</code>" method of <a href="Visitor.ElementValueVisitor.html" title="interface in org.codehaus.janino"><code>Visitor.ElementValueVisitor</code></a> for the concrete <a href="Java.ElementValue.html" title="interface in org.codehaus.janino"><code>Java.ElementValue</code></a> type.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>abstract &lt;R,&#8203;EX extends java.lang.Throwable&gt;<br>R</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#accept(org.codehaus.janino.Visitor.RvalueVisitor)">accept</a></span>&#8203;(<a href="Visitor.RvalueVisitor.html" title="interface in org.codehaus.janino">Visitor.RvalueVisitor</a>&lt;R,&#8203;EX&gt;&nbsp;rvv)</code></th>
 <td class="colLast">
@@ -240,24 +244,24 @@ implements <a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.
  type.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getEnclosingScope()">getEnclosingScope</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code><a href="Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getEnclosingScopeOrNull()">getEnclosingScopeOrNull</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setEnclosingScope(org.codehaus.janino.Java.Scope)">setEnclosingScope</a></span>&#8203;(<a href="Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>&nbsp;enclosingScope)</code></th>
 <td class="colLast">
 <div class="block">Sets the enclosing scope for this object and all subordinate <a href="Java.Rvalue.html" title="class in org.codehaus.janino"><code>Java.Rvalue</code></a> objects.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code><a href="Java.Rvalue.html" title="class in org.codehaus.janino">Java.Rvalue</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toRvalue()">toRvalue</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
@@ -424,7 +428,7 @@ public abstract&nbsp;&lt;R,&#8203;EX extends java.lang.Throwable&gt;&nbsp;R&nbsp
 <a id="accept(org.codehaus.janino.Visitor.AtomVisitor)">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>accept</h4>
 <pre class="methodSignature"><a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
@@ -435,6 +439,23 @@ public final&nbsp;&lt;R,&#8203;EX extends java.lang.Throwable&gt;&nbsp;R&nbsp;ac
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code><a href="Java.Atom.html#accept(org.codehaus.janino.Visitor.AtomVisitor)">accept</a></code>&nbsp;in class&nbsp;<code><a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a></code></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code>EX extends java.lang.Throwable</code></dd>
+</dl>
+</li>
+</ul>
+<a id="accept(org.codehaus.janino.Visitor.ArrayInitializerOrRvalueVisitor)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>accept</h4>
+<pre class="methodSignature"><a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+public final&nbsp;&lt;R,&#8203;EX extends java.lang.Throwable&gt;&nbsp;R&nbsp;accept&#8203;(<a href="Visitor.ArrayInitializerOrRvalueVisitor.html" title="interface in org.codehaus.janino">Visitor.ArrayInitializerOrRvalueVisitor</a>&lt;R,&#8203;EX&gt;&nbsp;visitor)
+                                                        throws EX extends java.lang.Throwable</pre>
+<dl>
+<dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
+<dd><code><a href="Java.ArrayInitializerOrRvalue.html#accept(org.codehaus.janino.Visitor.ArrayInitializerOrRvalueVisitor)">accept</a></code>&nbsp;in interface&nbsp;<code><a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.codehaus.janino">Java.ArrayInitializerOrRvalue</a></code></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code>EX extends java.lang.Throwable</code></dd>
 </dl>

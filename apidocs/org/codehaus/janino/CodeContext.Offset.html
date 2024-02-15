@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -132,7 +131,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="blockList">
 <dl>
 <dt>Direct Known Subclasses:</dt>
-<dd><code><a href="CodeContext.Inserter.html" title="class in org.codehaus.janino">CodeContext.Inserter</a></code>, <code><a href="CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino">CodeContext.LineNumberOffset</a></code></dd>
+<dd><code><a href="CodeContext.BasicBlock.html" title="class in org.codehaus.janino">CodeContext.BasicBlock</a></code>, <code><a href="CodeContext.Inserter.html" title="class in org.codehaus.janino">CodeContext.Inserter</a></code>, <code><a href="CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino">CodeContext.LineNumberOffset</a></code></dd>
 </dl>
 <dl>
 <dt>Enclosing class:</dt>
@@ -206,15 +205,22 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setBasicBlock()">setBasicBlock</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Set this offset, and mark it as the the beginning of a "basic block".</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
+<td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setOffset()">setOffset</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setStackMap(org.codehaus.janino.StackMap)">setStackMap</a></span>&#8203;(org.codehaus.janino.StackMap&nbsp;stackMap)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toString()">toString</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
@@ -270,6 +276,16 @@ extends java.lang.Object</pre>
 <h4>set</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;set()</pre>
 <div class="block">Sets this "Offset" to the offset of the current inserter; inserts this "Offset" before the current inserter.</div>
+</li>
+</ul>
+<a id="setBasicBlock()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setBasicBlock</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;setBasicBlock()</pre>
+<div class="block">Set this offset, and mark it as the the beginning of a "basic block".</div>
 </li>
 </ul>
 <a id="setOffset()">

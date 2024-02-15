@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -28,7 +27,7 @@
     }
 //-->
 var pathtoroot = "./";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -114,7 +113,9 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li><a href="org/codehaus/janino/package-tree.html">org.codehaus.janino</a>, </li>
 <li><a href="org/codehaus/janino/samples/package-tree.html">org.codehaus.janino.samples</a>, </li>
 <li><a href="org/codehaus/janino/tools/package-tree.html">org.codehaus.janino.tools</a>, </li>
-<li><a href="org/codehaus/janino/util/package-tree.html">org.codehaus.janino.util</a></li>
+<li><a href="org/codehaus/janino/util/package-tree.html">org.codehaus.janino.util</a>, </li>
+<li><a href="org/codehaus/janino/util/charstream/package-tree.html">org.codehaus.janino.util.charstream</a>, </li>
+<li><a href="org/codehaus/janino/util/signature/package-tree.html">org.codehaus.janino.util.signature</a></li>
 </ul>
 </div>
 <div class="contentContainer">
@@ -163,11 +164,13 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.InnerClassesAttribute.html" title="class in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.InnerClassesAttribute</span></a></li>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.LineNumberTableAttribute.html" title="class in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.LineNumberTableAttribute</span></a></li>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.LocalVariableTableAttribute.html" title="class in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.LocalVariableTableAttribute</span></a></li>
+<li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.SignatureAttribute.html" title="class in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.SignatureAttribute</span></a></li>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.SourceFileAttribute.html" title="class in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.SourceFileAttribute</span></a></li>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.StackMapTableAttribute.html" title="class in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.StackMapTableAttribute</span></a></li>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.SyntheticAttribute.html" title="class in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.SyntheticAttribute</span></a></li>
 </ul>
 </li>
+<li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.CodeAttribute.ExceptionTableEntry.html" title="class in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.CodeAttribute.ExceptionTableEntry</span></a></li>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.ConstantElementValue.html" title="class in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.ConstantElementValue</span></a> (implements org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.ElementValue.html" title="interface in org.codehaus.janino.util">ClassFile.ElementValue</a>)
 <ul>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.BooleanElementValue.html" title="class in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.BooleanElementValue</span></a></li>
@@ -234,11 +237,11 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.commons.compiler.util.<a href="org/codehaus/commons/compiler/util/ResourceFinderClassLoader.html" title="class in org.codehaus.commons.compiler.util"><span class="typeNameLink">ResourceFinderClassLoader</span></a></li>
 </ul>
 </li>
-<li class="circle">org.codehaus.commons.compiler.jdk.util.<a href="org/codehaus/commons/compiler/jdk/util/ClassLoaders.html" title="class in org.codehaus.commons.compiler.jdk.util"><span class="typeNameLink">ClassLoaders</span></a></li>
 <li class="circle">org.codehaus.commons.compiler.lang.<a href="org/codehaus/commons/compiler/lang/ClassLoaders.html" title="class in org.codehaus.commons.compiler.lang"><span class="typeNameLink">ClassLoaders</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/CodeContext.html" title="class in org.codehaus.janino"><span class="typeNameLink">CodeContext</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/CodeContext.Offset.html" title="class in org.codehaus.janino"><span class="typeNameLink">CodeContext.Offset</span></a>
 <ul>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/CodeContext.BasicBlock.html" title="class in org.codehaus.janino"><span class="typeNameLink">CodeContext.BasicBlock</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/CodeContext.Inserter.html" title="class in org.codehaus.janino"><span class="typeNameLink">CodeContext.Inserter</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/CodeContext.LineNumberOffset.html" title="class in org.codehaus.janino"><span class="typeNameLink">CodeContext.LineNumberOffset</span></a></li>
 </ul>
@@ -290,7 +293,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/FilterWarningHandler.html" title="class in org.codehaus.janino"><span class="typeNameLink">FilterWarningHandler</span></a> (implements org.codehaus.commons.compiler.<a href="org/codehaus/commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>)</li>
 <li class="circle">org.codehaus.janino.tools.<a href="org/codehaus/janino/tools/HprofScrubber.html" title="class in org.codehaus.janino.tools"><span class="typeNameLink">HprofScrubber</span></a></li>
-<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/IClass.html" title="class in org.codehaus.janino"><span class="typeNameLink">IClass</span></a>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/IClass.html" title="class in org.codehaus.janino"><span class="typeNameLink">IClass</span></a> (implements org.codehaus.janino.<a href="org/codehaus/janino/ITypeVariableOrIClass.html" title="interface in org.codehaus.janino">ITypeVariableOrIClass</a>)
 <ul>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/ClassFileIClass.html" title="class in org.codehaus.janino"><span class="typeNameLink">ClassFileIClass</span></a></li>
 </ul>
@@ -395,7 +398,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.MethodDeclarator.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.MethodDeclarator</span></a></li>
 </ul>
 </li>
-<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.Initializer.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.Initializer</span></a> (implements org.codehaus.janino.<a href="org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>)</li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.Initializer.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.Initializer</span></a> (implements org.codehaus.janino.<a href="org/codehaus/janino/Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a>)</li>
 </ul>
 </li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.AccessModifier.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.AccessModifier</span></a> (implements org.codehaus.janino.<a href="org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>)</li>
@@ -441,6 +444,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.IntegerLiteral.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.IntegerLiteral</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.NullLiteral.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.NullLiteral</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.StringLiteral.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.StringLiteral</span></a></li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.TextBlock.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.TextBlock</span></a></li>
 </ul>
 </li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.Lvalue.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.Lvalue</span></a>
@@ -509,7 +513,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.ContinueStatement.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.ContinueStatement</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.EmptyStatement.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.EmptyStatement</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.ExpressionStatement.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.ExpressionStatement</span></a></li>
-<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.FieldDeclaration.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.FieldDeclaration</span></a> (implements org.codehaus.janino.<a href="org/codehaus/janino/Java.Annotatable.html" title="interface in org.codehaus.janino">Java.Annotatable</a>, org.codehaus.janino.<a href="org/codehaus/janino/Java.DocCommentable.html" title="interface in org.codehaus.janino">Java.DocCommentable</a>, org.codehaus.janino.<a href="org/codehaus/janino/Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino">Java.TypeBodyDeclaration</a>)</li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.FieldDeclaration.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.FieldDeclaration</span></a> (implements org.codehaus.janino.<a href="org/codehaus/janino/Java.Annotatable.html" title="interface in org.codehaus.janino">Java.Annotatable</a>, org.codehaus.janino.<a href="org/codehaus/janino/Java.DocCommentable.html" title="interface in org.codehaus.janino">Java.DocCommentable</a>, org.codehaus.janino.<a href="org/codehaus/janino/Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a>)</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.IfStatement.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.IfStatement</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.LocalClassDeclarationStatement.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.LocalClassDeclarationStatement</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.LocalVariableDeclarationStatement.html" title="class in org.codehaus.janino"><span class="typeNameLink">Java.LocalVariableDeclarationStatement</span></a></li>
@@ -594,12 +598,23 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.commons.compiler.<a href="org/codehaus/commons/compiler/Sandbox.html" title="class in org.codehaus.commons.compiler"><span class="typeNameLink">Sandbox</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Scanner.html" title="class in org.codehaus.janino"><span class="typeNameLink">Scanner</span></a></li>
 <li class="circle">org.codehaus.commons.compiler.samples.<a href="org/codehaus/commons/compiler/samples/ShippingCost.html" title="class in org.codehaus.commons.compiler.samples"><span class="typeNameLink">ShippingCost</span></a></li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser</span></a></li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.ArrayTypeSignature.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.ArrayTypeSignature</span></a> (implements org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.FieldTypeSignature.html" title="interface in org.codehaus.janino.util.signature">SignatureParser.FieldTypeSignature</a>)</li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.ClassSignature.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.ClassSignature</span></a></li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.ClassTypeSignature.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.ClassTypeSignature</span></a> (implements org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.FieldTypeSignature.html" title="interface in org.codehaus.janino.util.signature">SignatureParser.FieldTypeSignature</a>, org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.ThrowsSignature.html" title="interface in org.codehaus.janino.util.signature">SignatureParser.ThrowsSignature</a>)</li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.FormalTypeParameter.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.FormalTypeParameter</span></a></li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.MethodTypeSignature.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.MethodTypeSignature</span></a></li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.PrimitiveTypeSignature.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.PrimitiveTypeSignature</span></a> (implements org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.TypeSignature.html" title="interface in org.codehaus.janino.util.signature">SignatureParser.TypeSignature</a>)</li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.SimpleClassTypeSignature.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.SimpleClassTypeSignature</span></a></li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.TypeArgument.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.TypeArgument</span></a></li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.TypeVariableSignature.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.TypeVariableSignature</span></a> (implements org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.FieldTypeSignature.html" title="interface in org.codehaus.janino.util.signature">SignatureParser.FieldTypeSignature</a>, org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.ThrowsSignature.html" title="interface in org.codehaus.janino.util.signature">SignatureParser.ThrowsSignature</a>)</li>
 <li class="circle">javax.tools.SimpleJavaFileObject (implements javax.tools.JavaFileObject)
 <ul>
 <li class="circle">org.codehaus.commons.compiler.jdk.util.<a href="org/codehaus/commons/compiler/jdk/util/JavaFileObjects.ResourceJavaFileObject.html" title="class in org.codehaus.commons.compiler.jdk.util"><span class="typeNameLink">JavaFileObjects.ResourceJavaFileObject</span></a></li>
 </ul>
 </li>
 <li class="circle">org.codehaus.commons.compiler.java8.java.util.stream.<a href="org/codehaus/commons/compiler/java8/java/util/stream/Stream.html" title="class in org.codehaus.commons.compiler.java8.java.util.stream"><span class="typeNameLink">Stream</span></a>&lt;T&gt;</li>
+<li class="circle">org.codehaus.janino.util.charstream.<a href="org/codehaus/janino/util/charstream/StringCharStream.html" title="class in org.codehaus.janino.util.charstream"><span class="typeNameLink">StringCharStream</span></a> (implements org.codehaus.janino.util.charstream.<a href="org/codehaus/janino/util/charstream/CharStream.html" title="interface in org.codehaus.janino.util.charstream">CharStream</a>)</li>
 <li class="circle">org.codehaus.commons.compiler.util.<a href="org/codehaus/commons/compiler/util/StringPattern.html" title="class in org.codehaus.commons.compiler.util"><span class="typeNameLink">StringPattern</span></a></li>
 <li class="circle">org.codehaus.commons.compiler.util.resource.<a href="org/codehaus/commons/compiler/util/resource/StringResource.html" title="class in org.codehaus.commons.compiler.util.resource"><span class="typeNameLink">StringResource</span></a> (implements org.codehaus.commons.compiler.util.resource.<a href="org/codehaus/commons/compiler/util/resource/Resource.html" title="interface in org.codehaus.commons.compiler.util.resource">Resource</a>)</li>
 <li class="circle">org.codehaus.commons.compiler.util.<a href="org/codehaus/commons/compiler/util/StringUtil.html" title="class in org.codehaus.commons.compiler.util"><span class="typeNameLink">StringUtil</span></a></li>
@@ -608,6 +623,11 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <ul>
 <li class="circle">java.lang.Exception
 <ul>
+<li class="circle">java.io.IOException
+<ul>
+<li class="circle">org.codehaus.janino.util.charstream.<a href="org/codehaus/janino/util/charstream/UnexpectedCharacterException.html" title="class in org.codehaus.janino.util.charstream"><span class="typeNameLink">UnexpectedCharacterException</span></a></li>
+</ul>
+</li>
 <li class="circle">org.codehaus.commons.compiler.<a href="org/codehaus/commons/compiler/LocatedException.html" title="class in org.codehaus.commons.compiler"><span class="typeNameLink">LocatedException</span></a>
 <ul>
 <li class="circle">org.codehaus.commons.compiler.<a href="org/codehaus/commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><span class="typeNameLink">CompileException</span></a></li>
@@ -624,6 +644,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.commons.compiler.util.iterator.<a href="org/codehaus/commons/compiler/util/iterator/UniterableElementException.html" title="class in org.codehaus.commons.compiler.util.iterator"><span class="typeNameLink">UniterableElementException</span></a></li>
 </ul>
 </li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.SignatureException.html" title="class in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.SignatureException</span></a></li>
 </ul>
 </li>
 </ul>
@@ -633,7 +654,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.commons.compiler.util.iterator.<a href="org/codehaus/commons/compiler/util/iterator/TransformingIterator.html" title="class in org.codehaus.commons.compiler.util.iterator"><span class="typeNameLink">TransformingIterator</span></a>&lt;T1,&#8203;T2&gt; (implements java.util.Iterator&lt;E&gt;)</li>
 <li class="circle">org.codehaus.commons.compiler.util.iterator.<a href="org/codehaus/commons/compiler/util/iterator/TraversingIterator.html" title="class in org.codehaus.commons.compiler.util.iterator"><span class="typeNameLink">TraversingIterator</span></a> (implements java.util.Iterator&lt;E&gt;)</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/UnitCompiler.html" title="class in org.codehaus.janino"><span class="typeNameLink">UnitCompiler</span></a></li>
-<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Unparser.html" title="class in org.codehaus.janino"><span class="typeNameLink">Unparser</span></a></li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Unparser.html" title="class in org.codehaus.janino"><span class="typeNameLink">Unparser</span></a> (implements java.lang.AutoCloseable)</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.html" title="class in org.codehaus.janino"><span class="typeNameLink">Visitor</span></a></li>
 <li class="circle">java.io.Writer (implements java.lang.Appendable, java.io.Closeable, java.io.Flushable)
 <ul>
@@ -654,6 +675,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.commons.compiler.<a href="org/codehaus/commons/compiler/AbstractJavaSourceClassLoader.ProtectionDomainFactory.html" title="interface in org.codehaus.commons.compiler"><span class="typeNameLink">AbstractJavaSourceClassLoader.ProtectionDomainFactory</span></a></li>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/Annotatable.html" title="interface in org.codehaus.janino.util"><span class="typeNameLink">Annotatable</span></a></li>
 <li class="circle">org.codehaus.commons.compiler.util.<a href="org/codehaus/commons/compiler/util/Benchmark.Reporter.html" title="interface in org.codehaus.commons.compiler.util"><span class="typeNameLink">Benchmark.Reporter</span></a></li>
+<li class="circle">org.codehaus.janino.util.charstream.<a href="org/codehaus/janino/util/charstream/CharStream.html" title="interface in org.codehaus.janino.util.charstream"><span class="typeNameLink">CharStream</span></a></li>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.ConstantElementValue.Visitor.html" title="interface in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.ConstantElementValue.Visitor</span></a>&lt;R,&#8203;EX&gt;
 <ul>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/ClassFile.ElementValue.Visitor.html" title="interface in org.codehaus.janino.util"><span class="typeNameLink">ClassFile.ElementValue.Visitor</span></a>&lt;R,&#8203;EX&gt;</li>
@@ -692,6 +714,17 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.commons.compiler.<a href="org/codehaus/commons/compiler/IScriptEvaluator.html" title="interface in org.codehaus.commons.compiler"><span class="typeNameLink">IScriptEvaluator</span></a> (also extends org.codehaus.commons.compiler.<a href="org/codehaus/commons/compiler/ICookable.html" title="interface in org.codehaus.commons.compiler">ICookable</a>)</li>
 </ul>
 </li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/IType.html" title="interface in org.codehaus.janino"><span class="typeNameLink">IType</span></a>
+<ul>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/IParameterizedType.html" title="interface in org.codehaus.janino"><span class="typeNameLink">IParameterizedType</span></a></li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/ITypeVariableOrIClass.html" title="interface in org.codehaus.janino"><span class="typeNameLink">ITypeVariableOrIClass</span></a>
+<ul>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/ITypeVariable.html" title="interface in org.codehaus.janino"><span class="typeNameLink">ITypeVariable</span></a></li>
+</ul>
+</li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/IWildcardType.html" title="interface in org.codehaus.janino"><span class="typeNameLink">IWildcardType</span></a></li>
+</ul>
+</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.Annotatable.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.Annotatable</span></a>
 <ul>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.TypeDeclaration.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.TypeDeclaration</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a>, org.codehaus.janino.<a href="org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>)
@@ -725,7 +758,11 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <ul>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.Annotation</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.ElementValue.html" title="interface in org.codehaus.janino">Java.ElementValue</a>, org.codehaus.janino.<a href="org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>)</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.ArrayInitializerOrRvalue.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.ArrayInitializerOrRvalue</span></a></li>
-<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.BlockStatement</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>)</li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.BlockStatement</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>)
+<ul>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.FieldDeclarationOrInitializer</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino">Java.TypeBodyDeclaration</a>)</li>
+</ul>
+</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.ElementValue.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.ElementValue</span></a>
 <ul>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.Annotation.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.Annotation</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a>, org.codehaus.janino.<a href="org/codehaus/janino/Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>)</li>
@@ -738,6 +775,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.TypeBodyDeclaration</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino">Java.Scope</a>)
 <ul>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.FieldDeclarationOrInitializer</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>)</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.MemberTypeDeclaration.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.MemberTypeDeclaration</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.NamedTypeDeclaration.html" title="interface in org.codehaus.janino">Java.NamedTypeDeclaration</a>)</li>
 </ul>
 </li>
@@ -763,9 +801,14 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.ModuleDirective.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.ModuleDirective</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.Scope.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.Scope</span></a>
 <ul>
-<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.BlockStatement</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a>)</li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.BlockStatement</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a>)
+<ul>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.FieldDeclarationOrInitializer</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino">Java.TypeBodyDeclaration</a>)</li>
+</ul>
+</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.TypeBodyDeclaration</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a>)
 <ul>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.FieldDeclarationOrInitializer</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a>)</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Java.MemberTypeDeclaration.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Java.MemberTypeDeclaration</span></a> (also extends org.codehaus.janino.<a href="org/codehaus/janino/Java.NamedTypeDeclaration.html" title="interface in org.codehaus.janino">Java.NamedTypeDeclaration</a>)</li>
 </ul>
 </li>
@@ -797,18 +840,32 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </ul>
 </li>
 <li class="circle">org.codehaus.commons.compiler.util.resource.<a href="org/codehaus/commons/compiler/util/resource/ResourceCreator.html" title="interface in org.codehaus.commons.compiler.util.resource"><span class="typeNameLink">ResourceCreator</span></a></li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.FieldTypeSignatureVisitor.html" title="interface in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.FieldTypeSignatureVisitor</span></a>&lt;T,&#8203;EX&gt;</li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.Options.html" title="interface in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.Options</span></a></li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.ThrowsSignature.html" title="interface in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.ThrowsSignature</span></a></li>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.TypeSignature.html" title="interface in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.TypeSignature</span></a>
+<ul>
+<li class="circle">org.codehaus.janino.util.signature.<a href="org/codehaus/janino/util/signature/SignatureParser.FieldTypeSignature.html" title="interface in org.codehaus.janino.util.signature"><span class="typeNameLink">SignatureParser.FieldTypeSignature</span></a></li>
+</ul>
+</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/TokenStream.html" title="interface in org.codehaus.janino"><span class="typeNameLink">TokenStream</span></a></li>
 <li class="circle">org.codehaus.janino.util.<a href="org/codehaus/janino/util/Traverser.html" title="interface in org.codehaus.janino.util"><span class="typeNameLink">Traverser</span></a>&lt;EX&gt;</li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/UnitCompiler.ClassFileConsumer.html" title="interface in org.codehaus.janino"><span class="typeNameLink">UnitCompiler.ClassFileConsumer</span></a></li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.AbstractCompilationUnitVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.AbstractCompilationUnitVisitor</span></a>&lt;R,&#8203;EX&gt;</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.AnnotationVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.AnnotationVisitor</span></a>&lt;R,&#8203;EX&gt;
 <ul>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.ModifierVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.ModifierVisitor</span></a>&lt;R,&#8203;EX&gt;</li>
 </ul>
 </li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.ArrayInitializerOrRvalueVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.ArrayInitializerOrRvalueVisitor</span></a>&lt;R,&#8203;EX&gt;</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.AtomVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.AtomVisitor</span></a>&lt;R,&#8203;EX&gt;</li>
-<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.BlockStatementVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.BlockStatementVisitor</span></a>&lt;R,&#8203;EX&gt;</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.ConstructorInvocationVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.ConstructorInvocationVisitor</span></a>&lt;R,&#8203;EX&gt;</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.ElementValueVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.ElementValueVisitor</span></a>&lt;R,&#8203;EX&gt;</li>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.FieldDeclarationOrInitializerVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.FieldDeclarationOrInitializerVisitor</span></a>&lt;R,&#8203;EX&gt;
+<ul>
+<li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.BlockStatementVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.BlockStatementVisitor</span></a>&lt;R,&#8203;EX&gt;</li>
+</ul>
+</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.FunctionDeclaratorVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.FunctionDeclaratorVisitor</span></a>&lt;R,&#8203;EX&gt;</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.ImportVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.ImportVisitor</span></a>&lt;R,&#8203;EX&gt;</li>
 <li class="circle">org.codehaus.janino.<a href="org/codehaus/janino/Visitor.LambdaBodyVisitor.html" title="interface in org.codehaus.janino"><span class="typeNameLink">Visitor.LambdaBodyVisitor</span></a>&lt;R,&#8203;EX&gt;</li>

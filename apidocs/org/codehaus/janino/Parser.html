@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":9,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10,"i42":10,"i43":10,"i44":10,"i45":10,"i46":10,"i47":10,"i48":10,"i49":10,"i50":10,"i51":10,"i52":10,"i53":10,"i54":10,"i55":10,"i56":10,"i57":10,"i58":10,"i59":10,"i60":10,"i61":10,"i62":10,"i63":10,"i64":10,"i65":10,"i66":10,"i67":10,"i68":10,"i69":10,"i70":10,"i71":10,"i72":10,"i73":10,"i74":10,"i75":10,"i76":10,"i77":10,"i78":10,"i79":10,"i80":10,"i81":10,"i82":10,"i83":10,"i84":10,"i85":10,"i86":10,"i87":10,"i88":10,"i89":10,"i90":10,"i91":10,"i92":10,"i93":10,"i94":10,"i95":10,"i96":10,"i97":10,"i98":10,"i99":10,"i100":10,"i101":10};
+var data = {"i0":10,"i1":9,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":10,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":10,"i42":10,"i43":10,"i44":10,"i45":10,"i46":10,"i47":10,"i48":10,"i49":10,"i50":10,"i51":10,"i52":10,"i53":10,"i54":10,"i55":10,"i56":10,"i57":10,"i58":10,"i59":10,"i60":10,"i61":10,"i62":10,"i63":10,"i64":10,"i65":10,"i66":10,"i67":10,"i68":10,"i69":10,"i70":10,"i71":10,"i72":10,"i73":10,"i74":10,"i75":10,"i76":10,"i77":10,"i78":10,"i79":10,"i80":10,"i81":10,"i82":10,"i83":10,"i84":10,"i85":10,"i86":10,"i87":10,"i88":10,"i89":10,"i90":10,"i91":10,"i92":10,"i93":10,"i94":10,"i95":10,"i96":10,"i97":10,"i98":10,"i99":10,"i100":10,"i101":10,"i102":10,"i103":10};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -562,7 +561,7 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i36" class="altColor">
-<td class="colFirst"><code><a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a></code></td>
+<td class="colFirst"><code><a href="Java.Rvalue.html" title="class in org.codehaus.janino">Java.Rvalue</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseExpression()">parseExpression</a></span>()</code></th>
 <td class="colLast">
 <div class="block">
@@ -578,6 +577,13 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i38" class="altColor">
+<td class="colFirst"><code><a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a></code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseExpressionOrType()">parseExpressionOrType</a></span>()</code></th>
+<td class="colLast">
+<div class="block">Same as <a href="#parseExpression()"><code>parseExpression()</code></a>, but types like <code>int</code> or <code>Map&lt;String, Object&gt;</code> are also parsed.</div>
+</td>
+</tr>
+<tr id="i39" class="rowColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseExpressionStatement()">parseExpressionStatement</a></span>()</code></th>
 <td class="colLast">
@@ -585,7 +591,7 @@ extends java.lang.Object</pre>
    ExpressionStatement := Expression ';'</div>
 </td>
 </tr>
-<tr id="i39" class="rowColor">
+<tr id="i40" class="altColor">
 <td class="colFirst"><code><a href="Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a>[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseFieldDeclarationRest(java.lang.String)">parseFieldDeclarationRest</a></span>&#8203;(java.lang.String&nbsp;name)</code></th>
 <td class="colLast">
@@ -595,7 +601,7 @@ extends java.lang.Object</pre>
      { ',' VariableDeclarator }</div>
 </td>
 </tr>
-<tr id="i40" class="altColor">
+<tr id="i41" class="rowColor">
 <td class="colFirst"><code><a href="Java.FunctionDeclarator.FormalParameter.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameter</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseFormalParameter(boolean%5B%5D)">parseFormalParameter</a></span>&#8203;(boolean[]&nbsp;hasEllipsis)</code></th>
 <td class="colLast">
@@ -603,7 +609,7 @@ extends java.lang.Object</pre>
    FormalParameter := [ 'final' ] Type FormalParameterRest</div>
 </td>
 </tr>
-<tr id="i41" class="rowColor">
+<tr id="i42" class="altColor">
 <td class="colFirst"><code><a href="Java.FunctionDeclarator.FormalParameters.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameters</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseFormalParameterList()">parseFormalParameterList</a></span>()</code></th>
 <td class="colLast">
@@ -611,7 +617,7 @@ extends java.lang.Object</pre>
    FormalParameterList := FormalParameter { ',' FormalParameter }</div>
 </td>
 </tr>
-<tr id="i42" class="altColor">
+<tr id="i43" class="rowColor">
 <td class="colFirst"><code><a href="Java.FunctionDeclarator.FormalParameters.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameters</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseFormalParameterListRest(org.codehaus.janino.Java.Type)">parseFormalParameterListRest</a></span>&#8203;(<a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;firstParameterType)</code></th>
 <td class="colLast">
@@ -619,7 +625,7 @@ extends java.lang.Object</pre>
    FormalParameterListRest := Identifier { ',' FormalParameter }</div>
 </td>
 </tr>
-<tr id="i43" class="rowColor">
+<tr id="i44" class="altColor">
 <td class="colFirst"><code><a href="Java.FunctionDeclarator.FormalParameter.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameter</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseFormalParameterRest(org.codehaus.janino.Java.Modifier%5B%5D,org.codehaus.janino.Java.Type,boolean%5B%5D)">parseFormalParameterRest</a></span>&#8203;(<a href="Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
                         <a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type</a>&nbsp;type,
@@ -629,7 +635,7 @@ extends java.lang.Object</pre>
    FormalParameterRest := [ '.' '.' '.' ] Identifier BracketsOpt</div>
 </td>
 </tr>
-<tr id="i44" class="altColor">
+<tr id="i45" class="rowColor">
 <td class="colFirst"><code><a href="Java.FunctionDeclarator.FormalParameters.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameters</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseFormalParameters()">parseFormalParameters</a></span>()</code></th>
 <td class="colLast">
@@ -637,7 +643,7 @@ extends java.lang.Object</pre>
    FormalParameters := '(' [ FormalParameterList ] ')'</div>
 </td>
 </tr>
-<tr id="i45" class="rowColor">
+<tr id="i46" class="altColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseForStatement()">parseForStatement</a></span>()</code></th>
 <td class="colLast">
@@ -653,7 +659,7 @@ extends java.lang.Object</pre>
      | Expression { ',' Expression }</div>
 </td>
 </tr>
-<tr id="i46" class="altColor">
+<tr id="i47" class="rowColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseIfStatement()">parseIfStatement</a></span>()</code></th>
 <td class="colLast">
@@ -661,7 +667,7 @@ extends java.lang.Object</pre>
    IfStatement := 'if' '(' Expression ')' Statement [ 'else' Statement ]</div>
 </td>
 </tr>
-<tr id="i47" class="rowColor">
+<tr id="i48" class="altColor">
 <td class="colFirst"><code><a href="Java.AbstractCompilationUnit.ImportDeclaration.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit.ImportDeclaration</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseImportDeclaration()">parseImportDeclaration</a></span>()</code></th>
 <td class="colLast">
@@ -669,7 +675,7 @@ extends java.lang.Object</pre>
    ImportDeclaration := 'import' ImportDeclarationBody ';'</div>
 </td>
 </tr>
-<tr id="i48" class="altColor">
+<tr id="i49" class="rowColor">
 <td class="colFirst"><code><a href="Java.AbstractCompilationUnit.ImportDeclaration.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit.ImportDeclaration</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseImportDeclarationBody()">parseImportDeclarationBody</a></span>()</code></th>
 <td class="colLast">
@@ -677,7 +683,7 @@ extends java.lang.Object</pre>
    ImportDeclarationBody := [ 'static' ] Identifier { '.'</div>
 </td>
 </tr>
-<tr id="i49" class="rowColor">
+<tr id="i50" class="altColor">
 <td class="colFirst"><code><a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseInclusiveOrExpression()">parseInclusiveOrExpression</a></span>()</code></th>
 <td class="colLast">
@@ -686,7 +692,7 @@ extends java.lang.Object</pre>
      ExclusiveOrExpression { '|' ExclusiveOrExpression }</div>
 </td>
 </tr>
-<tr id="i50" class="altColor">
+<tr id="i51" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseInterfaceBody(org.codehaus.janino.Java.InterfaceDeclaration)">parseInterfaceBody</a></span>&#8203;(<a href="Java.InterfaceDeclaration.html" title="class in org.codehaus.janino">Java.InterfaceDeclaration</a>&nbsp;interfaceDeclaration)</code></th>
 <td class="colLast">
@@ -705,7 +711,7 @@ extends java.lang.Object</pre>
    } '}'</div>
 </td>
 </tr>
-<tr id="i51" class="rowColor">
+<tr id="i52" class="altColor">
 <td class="colFirst"><code><a href="Java.InterfaceDeclaration.html" title="class in org.codehaus.janino">Java.InterfaceDeclaration</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseInterfaceDeclarationRest(java.lang.String,org.codehaus.janino.Java.Modifier%5B%5D,org.codehaus.janino.Parser.InterfaceDeclarationContext)">parseInterfaceDeclarationRest</a></span>&#8203;(java.lang.String&nbsp;docComment,
                              <a href="Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
@@ -718,7 +724,7 @@ extends java.lang.Object</pre>
      InterfaceBody</div>
 </td>
 </tr>
-<tr id="i52" class="altColor">
+<tr id="i53" class="rowColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseLabeledStatement()">parseLabeledStatement</a></span>()</code></th>
 <td class="colLast">
@@ -726,7 +732,7 @@ extends java.lang.Object</pre>
    LabeledStatement := Identifier ':' Statement</div>
 </td>
 </tr>
-<tr id="i53" class="rowColor">
+<tr id="i54" class="altColor">
 <td class="colFirst"><code><a href="Java.Rvalue.html" title="class in org.codehaus.janino">Java.Rvalue</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseLiteral()">parseLiteral</a></span>()</code></th>
 <td class="colLast">
@@ -740,7 +746,7 @@ extends java.lang.Object</pre>
      | NullLiteral</div>
 </td>
 </tr>
-<tr id="i54" class="altColor">
+<tr id="i55" class="rowColor">
 <td class="colFirst"><code><a href="Java.Block.html" title="class in org.codehaus.janino">Java.Block</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseMethodBody()">parseMethodBody</a></span>()</code></th>
 <td class="colLast">
@@ -748,14 +754,14 @@ extends java.lang.Object</pre>
    MethodBody := Block</div>
 </td>
 </tr>
-<tr id="i55" class="rowColor">
+<tr id="i56" class="altColor">
 <td class="colFirst"><code><a href="Java.MethodDeclarator.html" title="class in org.codehaus.janino">Java.MethodDeclarator</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseMethodDeclaration()">parseMethodDeclaration</a></span>()</code></th>
 <td class="colLast">
 <div class="block">Equivalent with <code>parseMethodDeclaration(false, MethodDeclarationContext.CLASS_DECLARATION)</code>.</div>
 </td>
 </tr>
-<tr id="i56" class="altColor">
+<tr id="i57" class="rowColor">
 <td class="colFirst"><code><a href="Java.MethodDeclarator.html" title="class in org.codehaus.janino">Java.MethodDeclarator</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseMethodDeclaration(boolean,org.codehaus.janino.Parser.MethodDeclarationContext)">parseMethodDeclaration</a></span>&#8203;(boolean&nbsp;allowDefaultClause,
                       <a href="Parser.MethodDeclarationContext.html" title="enum in org.codehaus.janino">Parser.MethodDeclarationContext</a>&nbsp;context)</code></th>
@@ -765,7 +771,7 @@ extends java.lang.Object</pre>
      [ DocComment ] Modifiers [ TypeParameters ] VoidOrType Identifier MethodDeclarationRest</div>
 </td>
 </tr>
-<tr id="i57" class="rowColor">
+<tr id="i58" class="altColor">
 <td class="colFirst"><code><a href="Java.MethodDeclarator.html" title="class in org.codehaus.janino">Java.MethodDeclarator</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseMethodDeclarationRest(java.lang.String,org.codehaus.janino.Java.Modifier%5B%5D,org.codehaus.janino.Java.TypeParameter%5B%5D,org.codehaus.janino.Java.Type,java.lang.String,boolean,org.codehaus.janino.Parser.MethodDeclarationContext)">parseMethodDeclarationRest</a></span>&#8203;(java.lang.String&nbsp;docComment,
                           <a href="Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers,
@@ -784,7 +790,7 @@ extends java.lang.Object</pre>
      ( ';' | MethodBody )</div>
 </td>
 </tr>
-<tr id="i58" class="altColor">
+<tr id="i59" class="rowColor">
 <td class="colFirst"><code><a href="Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseModifiers()">parseModifiers</a></span>()</code></th>
 <td class="colLast">
@@ -792,7 +798,7 @@ extends java.lang.Object</pre>
    Modifiers := { Modifier }</div>
 </td>
 </tr>
-<tr id="i59" class="rowColor">
+<tr id="i60" class="altColor">
 <td class="colFirst"><code><a href="Java.ModuleDeclaration.html" title="class in org.codehaus.janino">Java.ModuleDeclaration</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseModuleDeclarationRest(org.codehaus.janino.Java.Modifier%5B%5D)">parseModuleDeclarationRest</a></span>&#8203;(<a href="Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers)</code></th>
 <td class="colLast">
@@ -800,7 +806,7 @@ extends java.lang.Object</pre>
    ModuleDeclarationRest := [ 'open' ] 'module' identifier { '.' identifier} '{' { ModuleDirective } '}'</div>
 </td>
 </tr>
-<tr id="i60" class="altColor">
+<tr id="i61" class="rowColor">
 <td class="colFirst"><code><a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseMultiplicativeExpression()">parseMultiplicativeExpression</a></span>()</code></th>
 <td class="colLast">
@@ -809,7 +815,7 @@ extends java.lang.Object</pre>
      UnaryExpression { ( '*' | '/' | '%' ) UnaryExpression }</div>
 </td>
 </tr>
-<tr id="i61" class="rowColor">
+<tr id="i62" class="altColor">
 <td class="colFirst"><code><a href="Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseOptionalModifier()">parseOptionalModifier</a></span>()</code></th>
 <td class="colLast">
@@ -821,7 +827,7 @@ extends java.lang.Object</pre>
        | 'default'</div>
 </td>
 </tr>
-<tr id="i62" class="altColor">
+<tr id="i63" class="rowColor">
 <td class="colFirst"><code><a href="Java.PackageDeclaration.html" title="class in org.codehaus.janino">Java.PackageDeclaration</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parsePackageDeclaration()">parsePackageDeclaration</a></span>()</code></th>
 <td class="colLast">
@@ -829,7 +835,7 @@ extends java.lang.Object</pre>
    PackageDeclaration := 'package' QualifiedIdentifier ';'</div>
 </td>
 </tr>
-<tr id="i63" class="rowColor">
+<tr id="i64" class="altColor">
 <td class="colFirst"><code><a href="Java.PackageDeclaration.html" title="class in org.codehaus.janino">Java.PackageDeclaration</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parsePackageDeclarationRest(java.lang.String,org.codehaus.janino.Java.Modifier%5B%5D)">parsePackageDeclarationRest</a></span>&#8203;(java.lang.String&nbsp;docComment,
                            <a href="Java.Modifier.html" title="interface in org.codehaus.janino">Java.Modifier</a>[]&nbsp;modifiers)</code></th>
@@ -838,7 +844,7 @@ extends java.lang.Object</pre>
    PackageDeclaration := { PackageModifier } 'package' identifier { '.' identifier} ';'</div>
 </td>
 </tr>
-<tr id="i64" class="altColor">
+<tr id="i65" class="rowColor">
 <td class="colFirst"><code><a href="Java.PackageMemberTypeDeclaration.html" title="interface in org.codehaus.janino">Java.PackageMemberTypeDeclaration</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parsePackageMemberTypeDeclaration()">parsePackageMemberTypeDeclaration</a></span>()</code></th>
 <td class="colLast">
@@ -846,7 +852,7 @@ extends java.lang.Object</pre>
    PackageMemberTypeDeclaration := ModifiersOpt PackageMemberTypeDeclarationRest</div>
 </td>
 </tr>
-<tr id="i65" class="rowColor">
+<tr id="i66" class="altColor">
 <td class="colFirst"><code><a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parsePrimary()">parsePrimary</a></span>()</code></th>
 <td class="colLast">
@@ -861,7 +867,7 @@ extends java.lang.Object</pre>
      Name '[]' { '[]' } '.'</div>
 </td>
 </tr>
-<tr id="i66" class="altColor">
+<tr id="i67" class="rowColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseQualifiedIdentifier()">parseQualifiedIdentifier</a></span>()</code></th>
 <td class="colLast">
@@ -869,7 +875,7 @@ extends java.lang.Object</pre>
    QualifiedIdentifier := Identifier { '.'</div>
 </td>
 </tr>
-<tr id="i67" class="rowColor">
+<tr id="i68" class="altColor">
 <td class="colFirst"><code><a href="Java.ReferenceType.html" title="class in org.codehaus.janino">Java.ReferenceType</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseReferenceType()">parseReferenceType</a></span>()</code></th>
 <td class="colLast">
@@ -877,7 +883,7 @@ extends java.lang.Object</pre>
    ReferenceType := { Annotation } QualifiedIdentifier [ TypeArguments ]</div>
 </td>
 </tr>
-<tr id="i68" class="altColor">
+<tr id="i69" class="rowColor">
 <td class="colFirst"><code><a href="Java.ReferenceType.html" title="class in org.codehaus.janino">Java.ReferenceType</a>[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseReferenceTypeList()">parseReferenceTypeList</a></span>()</code></th>
 <td class="colLast">
@@ -885,7 +891,7 @@ extends java.lang.Object</pre>
    ReferenceTypeList := ReferenceType { ',' ReferenceType }</div>
 </td>
 </tr>
-<tr id="i69" class="rowColor">
+<tr id="i70" class="altColor">
 <td class="colFirst"><code><a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseRelationalExpression()">parseRelationalExpression</a></span>()</code></th>
 <td class="colLast">
@@ -899,7 +905,7 @@ extends java.lang.Object</pre>
      }</div>
 </td>
 </tr>
-<tr id="i70" class="altColor">
+<tr id="i71" class="rowColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseReturnStatement()">parseReturnStatement</a></span>()</code></th>
 <td class="colLast">
@@ -907,7 +913,7 @@ extends java.lang.Object</pre>
    ReturnStatement := 'return' [ Expression ] ';'</div>
 </td>
 </tr>
-<tr id="i71" class="rowColor">
+<tr id="i72" class="altColor">
 <td class="colFirst"><code><a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseSelector(org.codehaus.janino.Java.Atom)">parseSelector</a></span>&#8203;(<a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a>&nbsp;atom)</code></th>
 <td class="colLast">
@@ -916,7 +922,7 @@ extends java.lang.Object</pre>
      '.'</div>
 </td>
 </tr>
-<tr id="i72" class="altColor">
+<tr id="i73" class="rowColor">
 <td class="colFirst"><code><a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseShiftExpression()">parseShiftExpression</a></span>()</code></th>
 <td class="colLast">
@@ -925,7 +931,7 @@ extends java.lang.Object</pre>
      AdditiveExpression { ( '&lt;&lt;' | '&gt;&gt;' | '&gt;&gt;&gt;' ) AdditiveExpression }</div>
 </td>
 </tr>
-<tr id="i73" class="rowColor">
+<tr id="i74" class="altColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseStatement()">parseStatement</a></span>()</code></th>
 <td class="colLast">
@@ -948,7 +954,7 @@ extends java.lang.Object</pre>
      ExpressionStatement</div>
 </td>
 </tr>
-<tr id="i74" class="altColor">
+<tr id="i75" class="rowColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseSwitchStatement()">parseSwitchStatement</a></span>()</code></th>
 <td class="colLast">
@@ -961,7 +967,7 @@ extends java.lang.Object</pre>
    SwitchLabel := 'case' Expression ':' | 'default' ':'</div>
 </td>
 </tr>
-<tr id="i75" class="rowColor">
+<tr id="i76" class="altColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseSynchronizedStatement()">parseSynchronizedStatement</a></span>()</code></th>
 <td class="colLast">
@@ -970,7 +976,7 @@ extends java.lang.Object</pre>
      'synchronized' '(' expression ')' Block</div>
 </td>
 </tr>
-<tr id="i76" class="altColor">
+<tr id="i77" class="rowColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseThrowStatement()">parseThrowStatement</a></span>()</code></th>
 <td class="colLast">
@@ -978,7 +984,7 @@ extends java.lang.Object</pre>
    ThrowStatement := 'throw' Expression ';'</div>
 </td>
 </tr>
-<tr id="i77" class="rowColor">
+<tr id="i78" class="altColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseTryStatement()">parseTryStatement</a></span>()</code></th>
 <td class="colLast">
@@ -994,7 +1000,7 @@ extends java.lang.Object</pre>
    Finally := 'finally' Block</div>
 </td>
 </tr>
-<tr id="i78" class="altColor">
+<tr id="i79" class="rowColor">
 <td class="colFirst"><code><a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseType()">parseType</a></span>()</code></th>
 <td class="colLast">
@@ -1006,7 +1012,7 @@ extends java.lang.Object</pre>
    ) { '[' ']' }</div>
 </td>
 </tr>
-<tr id="i79" class="rowColor">
+<tr id="i80" class="altColor">
 <td class="colFirst"><code><a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseUnaryExpression()">parseUnaryExpression</a></span>()</code></th>
 <td class="colLast">
@@ -1017,7 +1023,7 @@ extends java.lang.Object</pre>
    PrefixOperator := '++' | '--' | '+' | '-' | '~' | '!'</div>
 </td>
 </tr>
-<tr id="i80" class="altColor">
+<tr id="i81" class="rowColor">
 <td class="colFirst"><code><a href="Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseVariableDeclarator()">parseVariableDeclarator</a></span>()</code></th>
 <td class="colLast">
@@ -1025,7 +1031,7 @@ extends java.lang.Object</pre>
    VariableDeclarator := Identifier VariableDeclaratorRest</div>
 </td>
 </tr>
-<tr id="i81" class="rowColor">
+<tr id="i82" class="altColor">
 <td class="colFirst"><code><a href="Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseVariableDeclaratorRest(java.lang.String)">parseVariableDeclaratorRest</a></span>&#8203;(java.lang.String&nbsp;name)</code></th>
 <td class="colLast">
@@ -1033,7 +1039,7 @@ extends java.lang.Object</pre>
    VariableDeclaratorRest := { '[' ']' } [ '=' VariableInitializer ]</div>
 </td>
 </tr>
-<tr id="i82" class="altColor">
+<tr id="i83" class="rowColor">
 <td class="colFirst"><code><a href="Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a>[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseVariableDeclarators()">parseVariableDeclarators</a></span>()</code></th>
 <td class="colLast">
@@ -1041,7 +1047,7 @@ extends java.lang.Object</pre>
    VariableDeclarators := VariableDeclarator { ',' VariableDeclarator }</div>
 </td>
 </tr>
-<tr id="i83" class="rowColor">
+<tr id="i84" class="altColor">
 <td class="colFirst"><code><a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.codehaus.janino">Java.ArrayInitializerOrRvalue</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseVariableInitializer()">parseVariableInitializer</a></span>()</code></th>
 <td class="colLast">
@@ -1051,7 +1057,7 @@ extends java.lang.Object</pre>
      Expression</div>
 </td>
 </tr>
-<tr id="i84" class="altColor">
+<tr id="i85" class="rowColor">
 <td class="colFirst"><code><a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseVoidOrType()">parseVoidOrType</a></span>()</code></th>
 <td class="colLast">
@@ -1059,7 +1065,7 @@ extends java.lang.Object</pre>
    VoidOrType := 'void' | Type</div>
 </td>
 </tr>
-<tr id="i85" class="rowColor">
+<tr id="i86" class="altColor">
 <td class="colFirst"><code><a href="Java.Statement.html" title="class in org.codehaus.janino">Java.Statement</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#parseWhileStatement()">parseWhileStatement</a></span>()</code></th>
 <td class="colLast">
@@ -1067,82 +1073,87 @@ extends java.lang.Object</pre>
    WhileStatement := 'while' '(' Expression ')' Statement</div>
 </td>
 </tr>
-<tr id="i86" class="altColor">
+<tr id="i87" class="rowColor">
 <td class="colFirst"><code><a href="Token.html" title="class in org.codehaus.janino">Token</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peek()">peek</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i87" class="rowColor">
+<tr id="i88" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peek(java.lang.String)">peek</a></span>&#8203;(java.lang.String&nbsp;suspected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i88" class="altColor">
+<tr id="i89" class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peek(java.lang.String...)">peek</a></span>&#8203;(java.lang.String...&nbsp;suspected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i89" class="rowColor">
+<tr id="i90" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peek(org.codehaus.janino.TokenType)">peek</a></span>&#8203;(<a href="TokenType.html" title="enum in org.codehaus.janino">TokenType</a>&nbsp;suspected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i90" class="altColor">
+<tr id="i91" class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peek(org.codehaus.janino.TokenType...)">peek</a></span>&#8203;(<a href="TokenType.html" title="enum in org.codehaus.janino">TokenType</a>...&nbsp;suspected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i91" class="rowColor">
+<tr id="i92" class="altColor">
 <td class="colFirst"><code><a href="Token.html" title="class in org.codehaus.janino">Token</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peekNextButOne()">peekNextButOne</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i92" class="altColor">
+<tr id="i93" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peekNextButOne(java.lang.String)">peekNextButOne</a></span>&#8203;(java.lang.String&nbsp;suspected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i93" class="rowColor">
+<tr id="i94" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peekNextButOne(org.codehaus.janino.TokenType)">peekNextButOne</a></span>&#8203;(<a href="TokenType.html" title="enum in org.codehaus.janino">TokenType</a>&nbsp;suspected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i94" class="altColor">
+<tr id="i95" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peekRead(java.lang.String)">peekRead</a></span>&#8203;(java.lang.String&nbsp;suspected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i95" class="rowColor">
+<tr id="i96" class="altColor">
 <td class="colFirst"><code>int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peekRead(java.lang.String...)">peekRead</a></span>&#8203;(java.lang.String...&nbsp;suspected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i96" class="altColor">
+<tr id="i97" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#peekRead(org.codehaus.janino.TokenType)">peekRead</a></span>&#8203;(<a href="TokenType.html" title="enum in org.codehaus.janino">TokenType</a>&nbsp;suspected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i97" class="rowColor">
+<tr id="i98" class="altColor">
 <td class="colFirst"><code><a href="Token.html" title="class in org.codehaus.janino">Token</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#read()">read</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i98" class="altColor">
+<tr id="i99" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#read(java.lang.String)">read</a></span>&#8203;(java.lang.String&nbsp;expected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i99" class="rowColor">
+<tr id="i100" class="altColor">
 <td class="colFirst"><code>int</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#read(java.lang.String...)">read</a></span>&#8203;(java.lang.String...&nbsp;expected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i100" class="altColor">
+<tr id="i101" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#read(org.codehaus.janino.TokenType)">read</a></span>&#8203;(<a href="TokenType.html" title="enum in org.codehaus.janino">TokenType</a>&nbsp;expected)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i101" class="rowColor">
+<tr id="i102" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setSourceVersion(int)">setSourceVersion</a></span>&#8203;(int&nbsp;version)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i103" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setWarningHandler(org.codehaus.commons.compiler.WarningHandler)">setWarningHandler</a></span>&#8203;(<a href="../commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;warningHandler)</code></th>
 <td class="colLast">
@@ -2523,15 +2534,32 @@ public&nbsp;<a href="Java.Modifier.html" title="interface in org.codehaus.janino
 <ul class="blockList">
 <li class="blockList">
 <h4>parseExpression</h4>
-<pre class="methodSignature">public&nbsp;<a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a>&nbsp;parseExpression()
-                          throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a>,
-                                 java.io.IOException</pre>
+<pre class="methodSignature">public&nbsp;<a href="Java.Rvalue.html" title="class in org.codehaus.janino">Java.Rvalue</a>&nbsp;parseExpression()
+                            throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a>,
+                                   java.io.IOException</pre>
 <div class="block"><pre>
    Expression := AssignmentExpression | LambdaExpression
  </pre>
  <p>
    Notice that all other kinds of lambda expressions are parsed in <a href="#parsePrimary()"><code>parsePrimary()</code></a>.
  </p></div>
+<dl>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
+<dd><code>java.io.IOException</code></dd>
+</dl>
+</li>
+</ul>
+<a id="parseExpressionOrType()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>parseExpressionOrType</h4>
+<pre class="methodSignature">public&nbsp;<a href="Java.Atom.html" title="class in org.codehaus.janino">Java.Atom</a>&nbsp;parseExpressionOrType()
+                                throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a>,
+                                       java.io.IOException</pre>
+<div class="block">Same as <a href="#parseExpression()"><code>parseExpression()</code></a>, but types like <code>int</code> or <code>Map&lt;String, Object&gt;</code> are also parsed.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
@@ -2843,6 +2871,9 @@ public&nbsp;<a href="Java.Modifier.html" title="interface in org.codehaus.janino
      PrimitiveType { '[]' } '.' 'class' |    // ClassLiteral 15.8.2
      'void' '.' 'class' |                    // ClassLiteral 15.8.2
      MethodReference                         // MethodReference JLS9 15.13
+
+   Name :=
+     Identifier { '.' Identifier }
 
    CastExpression :=
      '(' PrimitiveType { '[]' } ')' UnaryExpression |
@@ -3271,6 +3302,15 @@ public&nbsp;java.lang.String&nbsp;peekRead&#8203;(<a href="TokenType.html" title
 <dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 <dd><code>java.io.IOException</code></dd>
 </dl>
+</li>
+</ul>
+<a id="setSourceVersion(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setSourceVersion</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;setSourceVersion&#8203;(int&nbsp;version)</pre>
 </li>
 </ul>
 <a id="setWarningHandler(org.codehaus.commons.compiler.WarningHandler)">

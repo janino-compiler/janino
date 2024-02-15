@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -27,14 +26,14 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
+var data = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":9,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10};
+var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
 var tableTab = "tableTab";
 var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -156,6 +155,11 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>static interface&nbsp;</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="UnitCompiler.ClassFileConsumer.html" title="interface in org.codehaus.janino">UnitCompiler.ClassFileConsumer</a></span></code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="UnitCompiler.SimpleIField.html" title="class in org.codehaus.janino">UnitCompiler.SimpleIField</a></span></code></th>
 <td class="colLast">
@@ -241,7 +245,7 @@ extends java.lang.Object</pre>
 </a>
 <h3>Method Summary</h3>
 <table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
+<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t1" class="tableTab"><span><a href="javascript:show(1);">Static Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
 <tr>
 <th class="colFirst" scope="col">Modifier and Type</th>
 <th class="colSecond" scope="col">Method</th>
@@ -256,23 +260,35 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="util/ClassFile.html" title="class in org.codehaus.janino.util">ClassFile</a>[]</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#compileUnit(boolean,boolean,boolean)">compileUnit</a></span>&#8203;(boolean&nbsp;debugSource,
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#compileUnit(boolean,boolean,boolean,java.util.Collection)">compileUnit</a></span>&#8203;(boolean&nbsp;debugSource,
            boolean&nbsp;debugLines,
-           boolean&nbsp;debugVars)</code></th>
+           boolean&nbsp;debugVars,
+           java.util.Collection&lt;<a href="util/ClassFile.html" title="class in org.codehaus.janino.util">ClassFile</a>&gt;&nbsp;generatedClassFiles)</code></th>
 <td class="colLast">
-<div class="block">Generates an array of <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a> objects which represent the classes and interfaces declared in the
+<div class="block">Generates a set of <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a> objects which represent the classes and interfaces declared in the
  compilation unit.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#compileUnit(boolean,boolean,boolean,org.codehaus.janino.UnitCompiler.ClassFileConsumer)">compileUnit</a></span>&#8203;(boolean&nbsp;debugSource,
+           boolean&nbsp;debugLines,
+           boolean&nbsp;debugVars,
+           <a href="UnitCompiler.ClassFileConsumer.html" title="interface in org.codehaus.janino">UnitCompiler.ClassFileConsumer</a>&nbsp;storesClassFiles)</code></th>
+<td class="colLast">
+<div class="block">Generates a set of <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a> objects which represent the classes and interfaces declared in the
+ compilation unit.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#findClass(java.lang.String)">findClass</a></span>&#8203;(java.lang.String&nbsp;className)</code></th>
 <td class="colLast">
 <div class="block">Finds one class or interface declaration in this compilation unit and resolves it into an <a href="IClass.html" title="class in org.codehaus.janino"><code>IClass</code></a>.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="IClass.IMethod.html" title="class in org.codehaus.janino">IClass.IMethod</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#findIMethod(org.codehaus.janino.Java.MethodInvocation)">findIMethod</a></span>&#8203;(<a href="Java.MethodInvocation.html" title="class in org.codehaus.janino">Java.MethodInvocation</a>&nbsp;mi)</code></th>
 <td class="colLast">
@@ -280,12 +296,12 @@ extends java.lang.Object</pre>
  examines the argument types and chooses the most specific method.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code><a href="IClass.IMethod.html" title="class in org.codehaus.janino">IClass.IMethod</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#findIMethod(org.codehaus.janino.Java.SuperclassMethodInvocation)">findIMethod</a></span>&#8203;(<a href="Java.SuperclassMethodInvocation.html" title="class in org.codehaus.janino">Java.SuperclassMethodInvocation</a>&nbsp;superclassMethodInvocation)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code><a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IClass.IInvocable</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#findMostSpecificIInvocable(org.codehaus.janino.Java.Locatable,org.codehaus.janino.IClass.IInvocable%5B%5D,org.codehaus.janino.IClass%5B%5D,boolean,org.codehaus.janino.Java.Scope)">findMostSpecificIInvocable</a></span>&#8203;(<a href="Java.Locatable.html" title="interface in org.codehaus.janino">Java.Locatable</a>&nbsp;locatable,
                           <a href="IClass.IInvocable.html" title="class in org.codehaus.janino">IClass.IInvocable</a>[]&nbsp;iInvocables,
@@ -296,19 +312,31 @@ extends java.lang.Object</pre>
 <div class="block">Determines the applicable invocables and choose the most specific invocable.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code><a href="Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino">Java.AbstractCompilationUnit</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getAbstractCompilationUnit()">getAbstractCompilationUnit</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>java.lang.Object</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getConstantValue(org.codehaus.janino.Java.ArrayInitializerOrRvalue)">getConstantValue</a></span>&#8203;(<a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.codehaus.janino">Java.ArrayInitializerOrRvalue</a>&nbsp;rv)</code></th>
+<td class="colLast">
+<div class="block">Attempts to evaluate as a constant expression.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.lang.Object</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getConstantValue(org.codehaus.janino.Java.Rvalue)">getConstantValue</a></span>&#8203;(<a href="Java.Rvalue.html" title="class in org.codehaus.janino">Java.Rvalue</a>&nbsp;rv)</code></th>
 <td class="colLast">
 <div class="block">Attempts to evaluate as a constant expression.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getDefaultTargetVersion()">getDefaultTargetVersion</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getIMethods(org.codehaus.janino.IClass,java.lang.String,java.util.List)">getIMethods</a></span>&#8203;(<a href="IClass.html" title="class in org.codehaus.janino">IClass</a>&nbsp;type,
            java.lang.String&nbsp;methodName,
@@ -318,29 +346,29 @@ extends java.lang.Object</pre>
  and all their superinterfaces to the result list <var>v</var>.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code><a href="Java.LocalVariable.html" title="class in org.codehaus.janino">Java.LocalVariable</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getLocalVariable(org.codehaus.janino.Java.CatchParameter)">getLocalVariable</a></span>&#8203;(<a href="Java.CatchParameter.html" title="class in org.codehaus.janino">Java.CatchParameter</a>&nbsp;parameter)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code><a href="Java.LocalVariable.html" title="class in org.codehaus.janino">Java.LocalVariable</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getLocalVariable(org.codehaus.janino.Java.FunctionDeclarator.FormalParameter)">getLocalVariable</a></span>&#8203;(<a href="Java.FunctionDeclarator.FormalParameter.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameter</a>&nbsp;parameter)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i14" class="altColor">
 <td class="colFirst"><code><a href="Java.LocalVariable.html" title="class in org.codehaus.janino">Java.LocalVariable</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getLocalVariable(org.codehaus.janino.Java.FunctionDeclarator.FormalParameter,boolean)">getLocalVariable</a></span>&#8203;(<a href="Java.FunctionDeclarator.FormalParameter.html" title="class in org.codehaus.janino">Java.FunctionDeclarator.FormalParameter</a>&nbsp;parameter,
                 boolean&nbsp;isVariableArityParameter)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i15" class="rowColor">
 <td class="colFirst"><code><a href="Java.LocalVariable.html" title="class in org.codehaus.janino">Java.LocalVariable</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getLocalVariable(org.codehaus.janino.Java.LocalVariableDeclarationStatement,org.codehaus.janino.Java.VariableDeclarator)">getLocalVariable</a></span>&#8203;(<a href="Java.LocalVariableDeclarationStatement.html" title="class in org.codehaus.janino">Java.LocalVariableDeclarationStatement</a>&nbsp;lvds,
                 <a href="Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a>&nbsp;vd)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i16" class="altColor">
 <td class="colFirst"><code>java.lang.String[]</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getSingleTypeImport(java.lang.String,org.codehaus.commons.compiler.Location)">getSingleTypeImport</a></span>&#8203;(java.lang.String&nbsp;name,
                    <a href="../commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location)</code></th>
@@ -348,7 +376,12 @@ extends java.lang.Object</pre>
 <div class="block">Checks if the given simple name was imported through a single type import.</div>
 </td>
 </tr>
-<tr id="i14" class="altColor">
+<tr id="i17" class="rowColor">
+<td class="colFirst"><code>int</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getTargetVersion()">getTargetVersion</a></span>()</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr id="i18" class="altColor">
 <td class="colFirst"><code><a href="IClass.html" title="class in org.codehaus.janino">IClass</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#importTypeOnDemand(java.lang.String,org.codehaus.commons.compiler.Location)">importTypeOnDemand</a></span>&#8203;(java.lang.String&nbsp;simpleTypeName,
                   <a href="../commons/compiler/Location.html" title="class in org.codehaus.commons.compiler">Location</a>&nbsp;location)</code></th>
@@ -357,19 +390,19 @@ extends java.lang.Object</pre>
  6.5.5.1.6 Type-import-on-demand declaration.</div>
 </td>
 </tr>
-<tr id="i15" class="rowColor">
+<tr id="i19" class="rowColor">
 <td class="colFirst"><code>java.util.EnumSet&lt;<a href="JaninoOption.html" title="enum in org.codehaus.janino">JaninoOption</a>&gt;</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#options()">options</a></span>()</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
-<tr id="i16" class="altColor">
+<tr id="i20" class="altColor">
 <td class="colFirst"><code><a href="UnitCompiler.html" title="class in org.codehaus.janino">UnitCompiler</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#options(java.util.EnumSet)">options</a></span>&#8203;(java.util.EnumSet&lt;<a href="JaninoOption.html" title="enum in org.codehaus.janino">JaninoOption</a>&gt;&nbsp;options)</code></th>
 <td class="colLast">
 <div class="block">Sets the options for all future compilations.</div>
 </td>
 </tr>
-<tr id="i17" class="rowColor">
+<tr id="i21" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setCompileErrorHandler(org.codehaus.commons.compiler.ErrorHandler)">setCompileErrorHandler</a></span>&#8203;(<a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler">ErrorHandler</a>&nbsp;compileErrorHandler)</code></th>
 <td class="colLast">
@@ -377,14 +410,22 @@ extends java.lang.Object</pre>
  (thread-local) <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a>.</div>
 </td>
 </tr>
-<tr id="i18" class="altColor">
+<tr id="i22" class="altColor">
+<td class="colFirst"><code>void</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTargetVersion(int)">setTargetVersion</a></span>&#8203;(int&nbsp;version)</code></th>
+<td class="colLast">
+<div class="block">Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's <code>
+ -target</code> command line option.</div>
+</td>
+</tr>
+<tr id="i23" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setWarningHandler(org.codehaus.commons.compiler.WarningHandler)">setWarningHandler</a></span>&#8203;(<a href="../commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler">WarningHandler</a>&nbsp;warningHandler)</code></th>
 <td class="colLast">
 <div class="block">By default, warnings are discarded, but an application my install a custom <a href="../commons/compiler/WarningHandler.html" title="interface in org.codehaus.commons.compiler"><code>WarningHandler</code></a>.</div>
 </td>
 </tr>
-<tr id="i19" class="rowColor">
+<tr id="i24" class="altColor">
 <td class="colFirst"><code><a href="IClass.IMethod.html" title="class in org.codehaus.janino">IClass.IMethod</a></code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toIMethod(org.codehaus.janino.Java.MethodDeclarator)">toIMethod</a></span>&#8203;(<a href="Java.MethodDeclarator.html" title="class in org.codehaus.janino">Java.MethodDeclarator</a>&nbsp;methodDeclarator)</code></th>
 <td class="colLast">&nbsp;</td>
@@ -510,6 +551,18 @@ extends java.lang.Object</pre>
 <div class="block">Sets the options for all future compilations.</div>
 </li>
 </ul>
+<a id="setTargetVersion(int)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setTargetVersion</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;setTargetVersion&#8203;(int&nbsp;version)</pre>
+<div class="block">Generates class files that target a specified release of the virtual machine, in analogy with JAVAC's <code>
+ -target</code> command line option.
+ By default, Java 6 .class files are generated.</div>
+</li>
+</ul>
 <a id="getAbstractCompilationUnit()">
 <!--   -->
 </a>
@@ -523,19 +576,43 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a id="compileUnit(boolean,boolean,boolean)">
+<a id="compileUnit(boolean,boolean,boolean,java.util.Collection)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>compileUnit</h4>
-<pre class="methodSignature">public&nbsp;<a href="util/ClassFile.html" title="class in org.codehaus.janino.util">ClassFile</a>[]&nbsp;compileUnit&#8203;(boolean&nbsp;debugSource,
-                               boolean&nbsp;debugLines,
-                               boolean&nbsp;debugVars)
-                        throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
-<div class="block">Generates an array of <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a> objects which represent the classes and interfaces declared in the
+<pre class="methodSignature">public&nbsp;void&nbsp;compileUnit&#8203;(boolean&nbsp;debugSource,
+                        boolean&nbsp;debugLines,
+                        boolean&nbsp;debugVars,
+                        java.util.Collection&lt;<a href="util/ClassFile.html" title="class in org.codehaus.janino.util">ClassFile</a>&gt;&nbsp;generatedClassFiles)
+                 throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
+<div class="block">Generates a set of <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a> objects which represent the classes and interfaces declared in the
  compilation unit.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>generatedClassFiles</code> - Adds generated <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a>s to this <code>Collection</code></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="compileUnit(boolean,boolean,boolean,org.codehaus.janino.UnitCompiler.ClassFileConsumer)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>compileUnit</h4>
+<pre class="methodSignature">public&nbsp;void&nbsp;compileUnit&#8203;(boolean&nbsp;debugSource,
+                        boolean&nbsp;debugLines,
+                        boolean&nbsp;debugVars,
+                        <a href="UnitCompiler.ClassFileConsumer.html" title="interface in org.codehaus.janino">UnitCompiler.ClassFileConsumer</a>&nbsp;storesClassFiles)
+                 throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
+<div class="block">Generates a set of <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a> objects which represent the classes and interfaces declared in the
+ compilation unit.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>storesClassFiles</code> - Consumes each generated <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 </dl>
@@ -555,6 +632,28 @@ extends java.lang.Object</pre>
 <dd>The <a href="Java.LocalVariable.html" title="class in org.codehaus.janino"><code>Java.LocalVariable</code></a> corresponding with the local variable declaration/declarator</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="getTargetVersion()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getTargetVersion</h4>
+<pre class="methodSignature">public&nbsp;int&nbsp;getTargetVersion()</pre>
+</li>
+</ul>
+<a id="getDefaultTargetVersion()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getDefaultTargetVersion</h4>
+<pre class="methodSignature">public static&nbsp;int&nbsp;getDefaultTargetVersion()</pre>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The target version that applies iff no target version is actively configured with <a href="#setTargetVersion(int)"><code>setTargetVersion(int)</code></a></dd>
 </dl>
 </li>
 </ul>
@@ -621,6 +720,28 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>The <a href="Java.LocalVariable.html" title="class in org.codehaus.janino"><code>Java.LocalVariable</code></a> corresponding with the <var>parameter</var></dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
+</dl>
+</li>
+</ul>
+<a id="getConstantValue(org.codehaus.janino.Java.ArrayInitializerOrRvalue)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getConstantValue</h4>
+<pre class="methodSignature"><a href="../commons/nullanalysis/Nullable.html" title="annotation in org.codehaus.commons.nullanalysis">@Nullable</a>
+public final&nbsp;java.lang.Object&nbsp;getConstantValue&#8203;(<a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.codehaus.janino">Java.ArrayInitializerOrRvalue</a>&nbsp;rv)
+                                        throws <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></pre>
+<div class="block">Attempts to evaluate as a constant expression. The result is one of the following: <code>Boolean</code>, <code>Byte</code>, <code>Short</code>, <code>Integer</code>, <code>Long</code>, <code>Float</code>, <code>Double</code>, <code>Character</code>, <code>String</code>, <code>null</code> (representing the <code>null</code> literal.
+ <p>
+   This method cannot be STATIC, because the constant value may refer to a constant declaration in this
+   compilation unit.
+ </p></div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><a href="#NOT_CONSTANT"><code>NOT_CONSTANT</code></a> iff the rvalue is not a constant value</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler">CompileException</a></code></dd>
 </dl>
@@ -813,10 +934,9 @@ public&nbsp;<a href="IClass.html" title="class in org.codehaus.janino">IClass</a
    Be aware that a single problem during compilation often causes a bunch of compile errors, so a good <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> counts errors and throws a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> when a limit is reached.
  </p>
  <p>
-   If the given <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> does not throw <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s, then <a href="#compileUnit(boolean,boolean,boolean)"><code>compileUnit(boolean, boolean, boolean)</code></a> will throw one when the compilation of the unit is finished, and
-   errors had occurred. In other words: The <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> may throw a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> or not, but
-   <a href="#compileUnit(boolean,boolean,boolean)"><code>compileUnit(boolean, boolean, boolean)</code></a> will definitely throw a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> if one or
-   more compile errors have occurred.
+   If the given <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> does not throw <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a>s, then <a href="#compileUnit(boolean,boolean,boolean,org.codehaus.janino.UnitCompiler.ClassFileConsumer)"><code>compileUnit(boolean, boolean, boolean, ClassFileConsumer)</code></a> will throw one when the compilation of the unit is
+   finished, and errors had occurred. In other words: The <a href="../commons/compiler/ErrorHandler.html" title="interface in org.codehaus.commons.compiler"><code>ErrorHandler</code></a> may throw a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> or not, but <a href="#compileUnit(boolean,boolean,boolean,org.codehaus.janino.UnitCompiler.ClassFileConsumer)"><code>compileUnit(boolean, boolean, boolean, ClassFileConsumer)</code></a> will
+   definitely throw a <a href="../commons/compiler/CompileException.html" title="class in org.codehaus.commons.compiler"><code>CompileException</code></a> if one or more compile errors have occurred.
  </p></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

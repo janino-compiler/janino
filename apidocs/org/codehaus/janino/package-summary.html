@@ -13,8 +13,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.3.1.js"></script>
-<script type="text/javascript" src="../../../jquery/jquery-migrate-3.0.1.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.5.1.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.js"></script>
 </head>
 <body>
@@ -28,7 +27,7 @@
     }
 //-->
 var pathtoroot = "../../../";
-var useModuleDirectories = true;
+var useModuleDirectories = false;
 loadScripts(document, 'script');</script>
 <noscript>
 <div>JavaScript is disabled on your browser.</div>
@@ -102,9 +101,8 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <div class="block">The core of the Janino Java compiler.
  <p>
    The package comprises a scanner (<a href="Scanner.html" title="class in org.codehaus.janino"><code>Scanner</code></a>, a parser (<a href="Parser.html" title="class in org.codehaus.janino"><code>Parser</code></a>) and a class file library. The parser builds a syntax tree from the "Java.*" classes
-   that represents the parsed code. The <a href="UnitCompiler.html#compileUnit(boolean,boolean,boolean)"><code>UnitCompiler.compileUnit(boolean, boolean,
-   boolean)</code></a> method compiles this syntax tree into a <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a> object, which can
-   write JVM bytecode to an <code>OutputStream</code>.
+   that represents the parsed code. The <a href="UnitCompiler.html#compileUnit(boolean,boolean,boolean,org.codehaus.janino.UnitCompiler.ClassFileConsumer)"><code>UnitCompiler.compileUnit(boolean, boolean,
+   boolean, org.codehaus.janino.UnitCompiler.ClassFileConsumer)</code></a> method compiles this syntax tree into a <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a> object, which can write JVM bytecode to an <code>OutputStream</code>.
  </p>
  <p>
    This package implements the <code>org.codehaus.commons.compiler</code> API.
@@ -138,60 +136,86 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </td>
 </tr>
 <tr class="rowColor">
+<th class="colFirst" scope="row"><a href="IParameterizedType.html" title="interface in org.codehaus.janino">IParameterizedType</a></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
+<th class="colFirst" scope="row"><a href="IType.html" title="interface in org.codehaus.janino">IType</a></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<th class="colFirst" scope="row"><a href="ITypeVariable.html" title="interface in org.codehaus.janino">ITypeVariable</a></th>
+<td class="colLast">
+<div class="block">Type bounds can either be a class or interface type, or a type variable.</div>
+</td>
+</tr>
+<tr class="altColor">
+<th class="colFirst" scope="row"><a href="ITypeVariableOrIClass.html" title="interface in org.codehaus.janino">ITypeVariableOrIClass</a></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<th class="colFirst" scope="row"><a href="IWildcardType.html" title="interface in org.codehaus.janino">IWildcardType</a></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.Annotatable.html" title="interface in org.codehaus.janino">Java.Annotatable</a></th>
 <td class="colLast">
 <div class="block">Representation of Java elements that can be annotated: Fields, constructors, methods, type declarations.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.Annotation.html" title="interface in org.codehaus.janino">Java.Annotation</a></th>
 <td class="colLast">
 <div class="block">Representation of a Java  annotation.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.AnnotationTypeDeclaration.html" title="interface in org.codehaus.janino">Java.AnnotationTypeDeclaration</a></th>
 <td class="colLast">
 <div class="block">Base for package member ("top-level") and member ("nested") annotation type declarations.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.codehaus.janino">Java.ArrayInitializerOrRvalue</a></th>
 <td class="colLast">
 <div class="block">The union of <a href="Java.ArrayInitializer.html" title="class in org.codehaus.janino"><code>Java.ArrayInitializer</code></a> and <a href="Java.Rvalue.html" title="class in org.codehaus.janino"><code>Java.Rvalue</code></a>.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.BlockStatement.html" title="interface in org.codehaus.janino">Java.BlockStatement</a></th>
 <td class="colLast">
 <div class="block">Everything that can be compiled to code, e.g. the statements occurring in the body of a method or in a block,
  explicit constructor invocations and instance/static initializers.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.ClassDeclaration.html" title="interface in org.codehaus.janino">Java.ClassDeclaration</a></th>
 <td class="colLast">
 <div class="block">Base for the various class declarations (top-level class, local class, anonymous class, nested class, top-level
  enum, nested enum).</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.DocCommentable.html" title="interface in org.codehaus.janino">Java.DocCommentable</a></th>
 <td class="colLast">
 <div class="block">Representation of a Java element that can be annotated with a DOC comment ("<code>&#47;**</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.ElementValue.html" title="interface in org.codehaus.janino">Java.ElementValue</a></th>
 <td class="colLast">
 <div class="block">Base of the possible element values in a <a href="Java.NormalAnnotation.html" title="class in org.codehaus.janino"><code>Java.NormalAnnotation</code></a>.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.EnumDeclaration.html" title="interface in org.codehaus.janino">Java.EnumDeclaration</a></th>
 <td class="colLast">
 <div class="block">Base for package member (a.k.a.</div>
 </td>
+</tr>
+<tr class="rowColor">
+<th class="colFirst" scope="row"><a href="Java.FieldDeclarationOrInitializer.html" title="interface in org.codehaus.janino">Java.FieldDeclarationOrInitializer</a></th>
+<td class="colLast">&nbsp;</td>
 </tr>
 <tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.LambdaBody.html" title="interface in org.codehaus.janino">Java.LambdaBody</a></th>
@@ -273,15 +297,25 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </td>
 </tr>
 <tr class="rowColor">
+<th class="colFirst" scope="row"><a href="UnitCompiler.ClassFileConsumer.html" title="interface in org.codehaus.janino">UnitCompiler.ClassFileConsumer</a></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Visitor.AbstractCompilationUnitVisitor.html" title="interface in org.codehaus.janino">Visitor.AbstractCompilationUnitVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for the different kinds of <a href="Java.AbstractCompilationUnit.html" title="class in org.codehaus.janino"><code>Java.AbstractCompilationUnit</code></a>s.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Visitor.AnnotationVisitor.html" title="interface in org.codehaus.janino">Visitor.AnnotationVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for all kinds of <a href="Java.Annotation.html" title="interface in org.codehaus.janino"><code>Java.Annotation</code></a>s.</div>
+</td>
+</tr>
+<tr class="altColor">
+<th class="colFirst" scope="row"><a href="Visitor.ArrayInitializerOrRvalueVisitor.html" title="interface in org.codehaus.janino">Visitor.ArrayInitializerOrRvalueVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
+<td class="colLast">
+<div class="block">The visitor for <a href="Java.ArrayInitializerOrRvalue.html" title="interface in org.codehaus.janino"><code>Java.ArrayInitializerOrRvalue</code></a>.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -307,79 +341,85 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<th class="colFirst" scope="row"><a href="Visitor.FieldDeclarationOrInitializerVisitor.html" title="interface in org.codehaus.janino">Visitor.FieldDeclarationOrInitializerVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
+<td class="colLast">
+<div class="block">The visitor for all kinds of <a href="Java.BlockStatement.html" title="interface in org.codehaus.janino"><code>Java.BlockStatement</code></a>s (statements that may appear with a block).</div>
+</td>
+</tr>
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Visitor.FunctionDeclaratorVisitor.html" title="interface in org.codehaus.janino">Visitor.FunctionDeclaratorVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for all kinds of <a href="Java.FunctionDeclarator.html" title="class in org.codehaus.janino"><code>Java.FunctionDeclarator</code></a>s.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Visitor.ImportVisitor.html" title="interface in org.codehaus.janino">Visitor.ImportVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for all kinds of <a href="Java.AbstractCompilationUnit.ImportDeclaration.html" title="class in org.codehaus.janino"><code>Java.AbstractCompilationUnit.ImportDeclaration</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Visitor.LambdaBodyVisitor.html" title="interface in org.codehaus.janino">Visitor.LambdaBodyVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for the different kinds of <a href="Java.LambdaBody.html" title="interface in org.codehaus.janino"><code>Java.LambdaBody</code></a>s.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Visitor.LambdaParametersVisitor.html" title="interface in org.codehaus.janino">Visitor.LambdaParametersVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for the different kinds of <a href="Java.LambdaParameters.html" title="interface in org.codehaus.janino"><code>Java.LambdaParameters</code></a> styles.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Visitor.LvalueVisitor.html" title="interface in org.codehaus.janino">Visitor.LvalueVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for all kinds of <a href="Java.Lvalue.html" title="class in org.codehaus.janino"><code>Java.Lvalue</code></a>s.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Visitor.ModifierVisitor.html" title="interface in org.codehaus.janino">Visitor.ModifierVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for the different kinds of <a href="Java.Modifier.html" title="interface in org.codehaus.janino"><code>Java.Modifier</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Visitor.ModuleDirectiveVisitor.html" title="interface in org.codehaus.janino">Visitor.ModuleDirectiveVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for the different kinds of <a href="Java.ModuleDirective.html" title="interface in org.codehaus.janino"><code>Java.ModuleDirective</code></a>s.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Visitor.RvalueVisitor.html" title="interface in org.codehaus.janino">Visitor.RvalueVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for all kinds of <a href="Java.Rvalue.html" title="class in org.codehaus.janino"><code>Java.Rvalue</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Visitor.TryStatementResourceVisitor.html" title="interface in org.codehaus.janino">Visitor.TryStatementResourceVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for all kinds of <a href="Java.TryStatement.Resource.html" title="class in org.codehaus.janino"><code>Java.TryStatement.Resource</code></a>s.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Visitor.TypeArgumentVisitor.html" title="interface in org.codehaus.janino">Visitor.TypeArgumentVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for all kinds of <a href="Java.TypeArgument.html" title="interface in org.codehaus.janino"><code>Java.TypeArgument</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Visitor.TypeBodyDeclarationVisitor.html" title="interface in org.codehaus.janino">Visitor.TypeBodyDeclarationVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for all kinds of <a href="Java.TypeBodyDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeBodyDeclaration</code></a>s (declarations that may appear in the body of a
  type declaration).</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Visitor.TypeDeclarationVisitor.html" title="interface in org.codehaus.janino">Visitor.TypeDeclarationVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for all kinds of <a href="Java.TypeDeclaration.html" title="interface in org.codehaus.janino"><code>Java.TypeDeclaration</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Visitor.TypeVisitor.html" title="interface in org.codehaus.janino">Visitor.TypeVisitor</a>&lt;R,&#8203;EX extends java.lang.Throwable&gt;</th>
 <td class="colLast">
 <div class="block">The visitor for all kinds of <a href="Java.Type.html" title="class in org.codehaus.janino"><code>Java.Type</code></a>s.</div>
@@ -1252,177 +1292,183 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 </td>
 </tr>
 <tr class="altColor">
+<th class="colFirst" scope="row"><a href="Java.TextBlock.html" title="class in org.codehaus.janino">Java.TextBlock</a></th>
+<td class="colLast">
+<div class="block">Representation of a "text block" (JLS17 3.10.6 Text Blocks) (type <code>String</code>).</div>
+</td>
+</tr>
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.ThisReference.html" title="class in org.codehaus.janino">Java.ThisReference</a></th>
 <td class="colLast">
 <div class="block">Representation of an JLS7 15.8.3 access to the innermost enclosing instance.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.ThrowStatement.html" title="class in org.codehaus.janino">Java.ThrowStatement</a></th>
 <td class="colLast">
 <div class="block">Representation of a JLS7 14.18 THROW statement.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.TryStatement.html" title="class in org.codehaus.janino">Java.TryStatement</a></th>
 <td class="colLast">
 <div class="block">Representation of a JLS7 14.20 TRY statement.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.TryStatement.LocalVariableDeclaratorResource.html" title="class in org.codehaus.janino">Java.TryStatement.LocalVariableDeclaratorResource</a></th>
 <td class="colLast">
 <div class="block">Representation of a JLS9 14.20.2 "local-variable-declarator resource" in a TRY-with-resources statement.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.TryStatement.Resource.html" title="class in org.codehaus.janino">Java.TryStatement.Resource</a></th>
 <td class="colLast">
 <div class="block">Representation of a JLS9 14.20.2 "resource" in a TRY-with-resources statement.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.TryStatement.VariableAccessResource.html" title="class in org.codehaus.janino">Java.TryStatement.VariableAccessResource</a></th>
 <td class="colLast">
 <div class="block">Representation of a JLS9 14.20.2 "variable-access resource" in a TRY-with-resources statement.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.Type.html" title="class in org.codehaus.janino">Java.Type</a></th>
 <td class="colLast">
 <div class="block">Representation of a Java type.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.TypeParameter.html" title="class in org.codehaus.janino">Java.TypeParameter</a></th>
 <td class="colLast">
 <div class="block">Representation of a type parameter (which declares a type variable).</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.UnaryOperation.html" title="class in org.codehaus.janino">Java.UnaryOperation</a></th>
 <td class="colLast">
 <div class="block">Representation of a JLS7 15.15.3 "unary plus operator", a JLS7 15.15.4 "unary minus operator", a JLS7 15.15.5
  "bitwise complement operator" or a JLS7 15.15.6 "logical complement operator".</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.UsesModuleDirective.html" title="class in org.codehaus.janino">Java.UsesModuleDirective</a></th>
 <td class="colLast">
 <div class="block">Representation of a (Java 9+) "uses directive", as explained in JLS9 7.7.3.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.VariableDeclarator.html" title="class in org.codehaus.janino">Java.VariableDeclarator</a></th>
 <td class="colLast">
 <div class="block">Used by FieldDeclaration and LocalVariableDeclarationStatement.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Java.WhileStatement.html" title="class in org.codehaus.janino">Java.WhileStatement</a></th>
 <td class="colLast">
 <div class="block">Representation of the JLS7 14.2 WHILE statement.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Java.Wildcard.html" title="class in org.codehaus.janino">Java.Wildcard</a></th>
 <td class="colLast">
 <div class="block">Representation of a JLS7 4.5.1 "wildcard".</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="JavaSourceClassLoader.html" title="class in org.codehaus.janino">JavaSourceClassLoader</a></th>
 <td class="colLast">
 <div class="block">A <code>ClassLoader</code> that, unlike usual <code>ClassLoader</code>s, does not load byte code, but reads Java source code
  and then scans, parses, compiles and loads it into the virtual machine.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="JavaSourceIClassLoader.html" title="class in org.codehaus.janino">JavaSourceIClassLoader</a></th>
 <td class="colLast">
 <div class="block">This <a href="IClassLoader.html" title="class in org.codehaus.janino"><code>IClassLoader</code></a> finds, scans and parses compilation units.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="MethodDescriptor.html" title="class in org.codehaus.janino">MethodDescriptor</a></th>
 <td class="colLast">
 <div class="block">Representation of a "method descriptor" (JVMS 4.3.3).</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Mod.html" title="class in org.codehaus.janino">Mod</a></th>
 <td class="colLast">
 <div class="block">This class defines constants and convenience methods for the handling of modifiers as defined by the JVM.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Parser.html" title="class in org.codehaus.janino">Parser</a></th>
 <td class="colLast">
 <div class="block">A parser for the Java programming language.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="ResourceFinderIClassLoader.html" title="class in org.codehaus.janino">ResourceFinderIClassLoader</a></th>
 <td class="colLast">
 <div class="block">This <a href="IClassLoader.html" title="class in org.codehaus.janino"><code>IClassLoader</code></a> loads IClasses through a a <a href="../commons/compiler/util/resource/ResourceFinder.html" title="class in org.codehaus.commons.compiler.util.resource"><code>ResourceFinder</code></a> that designates <a href="util/ClassFile.html" title="class in org.codehaus.janino.util"><code>ClassFile</code></a>s.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Scanner.html" title="class in org.codehaus.janino">Scanner</a></th>
 <td class="colLast">
 <div class="block">Splits up a character stream into tokens and returns them as <code>String</code> objects.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="ScriptEvaluator.html" title="class in org.codehaus.janino">ScriptEvaluator</a></th>
 <td class="colLast">
 <div class="block">An implementation of <a href="../commons/compiler/IScriptEvaluator.html" title="interface in org.codehaus.commons.compiler"><code>IScriptEvaluator</code></a> that utilizes the JANINO Java compiler.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="SimpleCompiler.html" title="class in org.codehaus.janino">SimpleCompiler</a></th>
 <td class="colLast">
 <div class="block">To set up a <a href="SimpleCompiler.html" title="class in org.codehaus.janino"><code>SimpleCompiler</code></a> object, proceed as described for <a href="../commons/compiler/ISimpleCompiler.html" title="interface in org.codehaus.commons.compiler"><code>ISimpleCompiler</code></a>.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Token.html" title="class in org.codehaus.janino">Token</a></th>
 <td class="colLast">
 <div class="block">Immutable representation of a Java token.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="TokenStreamImpl.html" title="class in org.codehaus.janino">TokenStreamImpl</a></th>
 <td class="colLast">
 <div class="block">Standard implementation for the <a href="TokenStream.html" title="interface in org.codehaus.janino"><code>TokenStream</code></a>.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="UnicodeUnescapeReader.html" title="class in org.codehaus.janino">UnicodeUnescapeReader</a></th>
 <td class="colLast">
 <div class="block">A <code>FilterReader</code> that unescapes the "Unicode Escapes" as described in JLS7 3.10.6.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="UnitCompiler.html" title="class in org.codehaus.janino">UnitCompiler</a></th>
 <td class="colLast">
 <div class="block">This class actually implements the Java compiler.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="UnitCompiler.SimpleIField.html" title="class in org.codehaus.janino">UnitCompiler.SimpleIField</a></th>
 <td class="colLast">
 <div class="block">Short-hand implementation of <a href="IClass.IField.html" title="class in org.codehaus.janino"><code>IClass.IField</code></a> that implements a non-constant, non-static,
  package-accessible field.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <th class="colFirst" scope="row"><a href="Unparser.html" title="class in org.codehaus.janino">Unparser</a></th>
 <td class="colLast">
 <div class="block">Unparses (un-compiles) an AST to a <code>Writer</code>.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <th class="colFirst" scope="row"><a href="Visitor.html" title="class in org.codehaus.janino">Visitor</a></th>
 <td class="colLast">
 <div class="block">The basis for the "visitor" pattern as described in "Gamma, Helm, Johnson, Vlissides: Design Patterns".</div>
