@@ -49,7 +49,7 @@ import org.codehaus.commons.nullanalysis.NotNullByDefault;
  * <pre>
  *     Permissions noPermissions = new Permissions();
  *     Sandbox sandbox = new Sandbox(noPermissions);
- *     sandbox.confine(new PrivilegedExceptionAction&lt;Object>() {
+ *     sandbox.confine(new PrivilegedExceptionAction&lt;Object&gt;() {
  *         &#64;Override public Object run() throws Exception { new java.io.File("xxx").delete(); return null; }
  *     });
  * </pre>
