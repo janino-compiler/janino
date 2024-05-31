@@ -22,6 +22,7 @@
     <!-- -->
     <maven.compiler.executable>C:\dev\Java\adopt_openjdk-8.0.292.10-hotspot</maven.compiler.executable>
     <maven.compiler.fork>false</maven.compiler.fork>
+    <javadoc.executable.path>C:/dev/Java/adopt_openjdk-8.0.292.10-hotspot/bin/javadoc.exe</javadoc.executable.path>
     <!-- -->
   </properties>
 
@@ -153,7 +154,7 @@
         <version>2.10.4</version>
         <configuration>
           <quiet>true</quiet>
-          <javadocExecutable>C:/dev/Java/adopt_openjdk-8.0.292.10-hotspot/bin/javadoc.exe </javadocExecutable>
+          <javadocExecutable>${javadoc.executable.path} </javadocExecutable>
           <additionalparam>-Xdoclint:none</additionalparam>
         </configuration>
         <executions>
