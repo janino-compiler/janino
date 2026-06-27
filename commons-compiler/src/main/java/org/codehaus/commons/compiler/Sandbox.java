@@ -36,74 +36,75 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
+import java.util.logging.Logger;
 
 import org.codehaus.commons.nullanalysis.NotNullByDefault;
 
 /**
  * Executes a {@link PrivilegedAction} or {@link PrivilegedExceptionAction} in a context with restricted permissions.
- * This is useful for executing "untrusted" code, e.g. user-provided expressions or scripts that were compiled with
- * <a href="https://janino.unkrig.de/">JANINO</a>.
- * <p>
- *   Code example:
- * </p>
- * <pre>
- *     Permissions noPermissions = new Permissions();
- *     Sandbox sandbox = new Sandbox(noPermissions);
- *     sandbox.confine(new PrivilegedExceptionAction&lt;Object&gt;() {
- *         &#64;Override public Object run() throws Exception { new java.io.File("xxx").delete(); return null; }
- *     });
- * </pre>
  *
- * @see <a href="https://docs.oracle.com/javase/tutorial/essential/environment/security.html">ORACLE: Java Essentials:
- *      The Security Manager</a>
+ * <p><b>SECURITY WARNING:</b> This class relies on {@link SecurityManager} and {@link AccessController},
+ * both deprecated for removal since Java 17 (JEP 411) and removed in Java 24.
+ * <b>On Java 17+, this class provides NO security protection whatsoever.</b>
+ * Compiled code executed through Janino can call any API (Runtime.exec(), network, filesystem, reflection)
+ * without restriction, regardless of whether this Sandbox is used.</p>
+ *
+ * <p>For sandboxing untrusted code on Java 17+, use process-level isolation (separate JVM),
+ * container isolation, or GraalVM polyglot sandboxing instead.</p>
+ *
+ * @see <a href="https://openjdk.org/jeps/411">JEP 411: Deprecate the Security Manager for Removal</a>
+ * @deprecated This class is non-functional on Java 17+ due to SecurityManager removal.
+ *             It provides a false sense of security. Use process-level or container-level
+ *             isolation for untrusted code instead.
  */
+@Deprecated(since = "3.1.13", forRemoval = true)
+@SuppressWarnings("removal")
 public final
 class Sandbox {
 
+    private static final Logger LOGGER = Logger.getLogger(Sandbox.class.getName());
+
+    private static final boolean SECURITY_MANAGER_AVAILABLE;
+
     static {
+        boolean smAvailable = false;
+        try {
+            if (System.getSecurityManager() == null) {
+                Policy.setPolicy(new Policy() {
 
-        if (System.getSecurityManager() == null) {
-
-            // Before installing the security manager, configure a decent ("positive") policy. Otherwise a policy is
-            // determine automatically as follows:
-            // (1) If seccurity property "policy.provider" is set: Load a class with that name, and cast it to "Policy".
-            // (2) Otherwise, use class "sun.security.provider.PolicyFile" as the policy. That class reads a plethora
-            //     of "*.policy" files:
-            //         jre/lib/security/java[ws].policy     (Java 6, 8)
-            //         conf/security/javaws.policy          (Java 9)
-            //         conf/security/java.policy            (Java 9, 10, 11, 12)
-            //         conf/security/policy/[un]limited/**  (Java 9, 10, 11, 12)
-            //         lib/security/default.policy          (Java 9, 10, 11, 12)
-            //     That eventually leads to a very restricted policy which typically allows applications to read only
-            //     a small set of system properties and nothing else.
-            Policy.setPolicy(new Policy() {
-
-                @Override @NotNullByDefault(false) public PermissionCollection
-                getPermissions(CodeSource codesource) {
-
-                    // Taken from https://github.com/elastic/elasticsearch/pull/14274, on request of
-                    // https://github.com/janino-compiler/janino/issues/124:
-
-                    // Code should not rely on this method, or at least use it correctly:
-                    // https://bugs.openjdk.java.net/browse/JDK-8014008
-                    // return them a new empty permissions object so jvisualvm etc work
-                    for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
-                        if (
-                            "sun.rmi.server.LoaderHandler".equals(element.getClassName())
-                            && "loadClass".equals(element.getMethodName())
-                        ) return new Permissions();
+                    @Override @NotNullByDefault(false) public PermissionCollection
+                    getPermissions(CodeSource codesource) {
+                        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+                            if (
+                                "sun.rmi.server.LoaderHandler".equals(element.getClassName())
+                                && "loadClass".equals(element.getMethodName())
+                            ) return new Permissions();
+                        }
+                        return super.getPermissions(codesource);
                     }
 
-                    // Return UNSUPPORTED_EMPTY_COLLECTION since it is safe.
-                    return super.getPermissions(codesource);
-                }
+                    @Override @NotNullByDefault(false) public boolean
+                    implies(ProtectionDomain domain, Permission permission) { return true; }
+                });
 
-                @Override @NotNullByDefault(false) public boolean
-                implies(ProtectionDomain domain, Permission permission) { return true; }
-            });
-
-            System.setSecurityManager(new SecurityManager());
+                System.setSecurityManager(new SecurityManager());
+            }
+            smAvailable = true;
+        } catch (UnsupportedOperationException e) {
+            LOGGER.severe(
+                "SECURITY WARNING: Janino Sandbox is NON-FUNCTIONAL on this JVM (Java 17+). "
+                + "SecurityManager is deprecated/removed. "
+                + "Compiled code has UNRESTRICTED access to all APIs including Runtime.exec(), "
+                + "filesystem, network, and reflection. "
+                + "Use process-level or container-level isolation for untrusted code."
+            );
+        } catch (Exception e) {
+            LOGGER.severe(
+                "SECURITY WARNING: Failed to initialize Sandbox SecurityManager: " + e.getMessage()
+                + ". Sandbox provides NO protection."
+            );
         }
+        SECURITY_MANAGER_AVAILABLE = smAvailable;
     }
 
     private final AccessControlContext accessControlContext;
@@ -111,9 +112,20 @@ class Sandbox {
     /**
      * @param permissions Will be applied on later calls to {@link #confine(PrivilegedAction)} and {@link
      *                    #confine(PrivilegedExceptionAction)}
+     * @throws SecurityException if the SecurityManager is not available (Java 17+)
+     * @deprecated Use process-level isolation instead. This class is non-functional on Java 17+.
      */
+    @Deprecated(since = "3.1.13", forRemoval = true)
     public
     Sandbox(PermissionCollection permissions) {
+        if (!SECURITY_MANAGER_AVAILABLE) {
+            throw new SecurityException(
+                "Janino Sandbox is non-functional: SecurityManager is not available on this JVM "
+                + "(Java " + System.getProperty("java.version") + "). "
+                + "The Sandbox cannot restrict code execution. "
+                + "Use process-level or container-level isolation instead."
+            );
+        }
         this.accessControlContext = new AccessControlContext(new ProtectionDomain[] {
             new ProtectionDomain(null, permissions)
         });
@@ -124,18 +136,40 @@ class Sandbox {
      * #Sandbox(PermissionCollection) constructor}.
      *
      * @return The value returned by the <var>action</var>
+     * @deprecated Use process-level isolation instead.
      */
+    @Deprecated(since = "3.1.13", forRemoval = true)
     public <R> R
     confine(PrivilegedAction<R> action) {
+        if (!SECURITY_MANAGER_AVAILABLE) {
+            throw new SecurityException("Sandbox is non-functional on this JVM.");
+        }
         return AccessController.doPrivileged(action, this.accessControlContext);
     }
 
+    /**
+     * @deprecated Use process-level isolation instead.
+     */
+    @Deprecated(since = "3.1.13", forRemoval = true)
     public <R> R
     confine(PrivilegedExceptionAction<R> action) throws Exception {
+        if (!SECURITY_MANAGER_AVAILABLE) {
+            throw new SecurityException("Sandbox is non-functional on this JVM.");
+        }
         try {
             return AccessController.doPrivileged(action, this.accessControlContext);
         } catch (PrivilegedActionException pae) {
             throw pae.getException();
         }
+    }
+
+    /**
+     * Returns whether the Sandbox can actually enforce restrictions on this JVM.
+     * On Java 17+, this returns {@code false}.
+     *
+     * @return {@code true} if SecurityManager is available and the Sandbox can function
+     */
+    public static boolean isAvailable() {
+        return SECURITY_MANAGER_AVAILABLE;
     }
 }
